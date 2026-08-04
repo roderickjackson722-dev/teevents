@@ -3966,6 +3966,7 @@ export type Database = {
           id: string
           league_id: string
           loss_points: number
+          participation_points: number
           position_points: Json
           standings_mode: string
           tie_points: number
@@ -3977,6 +3978,7 @@ export type Database = {
           id?: string
           league_id: string
           loss_points?: number
+          participation_points?: number
           position_points?: Json
           standings_mode?: string
           tie_points?: number
@@ -3988,6 +3990,7 @@ export type Database = {
           id?: string
           league_id?: string
           loss_points?: number
+          participation_points?: number
           position_points?: Json
           standings_mode?: string
           tie_points?: number
@@ -4253,6 +4256,7 @@ export type Database = {
           matches_played: number
           member_id: string
           points: number
+          prize_money_cents: number
           season_id: string | null
           ties: number
           total_gross: number
@@ -4268,6 +4272,7 @@ export type Database = {
           matches_played?: number
           member_id: string
           points?: number
+          prize_money_cents?: number
           season_id?: string | null
           ties?: number
           total_gross?: number
@@ -4283,6 +4288,7 @@ export type Database = {
           matches_played?: number
           member_id?: string
           points?: number
+          prize_money_cents?: number
           season_id?: string | null
           ties?: number
           total_gross?: number
@@ -11296,6 +11302,21 @@ export type Database = {
       get_league_event_leaderboard: {
         Args: { _event_id: string }
         Returns: Json
+      }
+      get_league_season_standings: {
+        Args: { _league_slug: string }
+        Returns: {
+          losses: number
+          matches_played: number
+          member_id: string
+          member_name: string
+          points: number
+          prize_money_cents: number
+          ties: number
+          total_gross: number
+          total_net: number
+          wins: number
+        }[]
       }
       get_live_scoring_group: {
         Args: { _group_number: number; _tournament_id: string }

@@ -19,6 +19,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
   const winPoints = pts?.win_points ?? 2;
   const tiePoints = pts?.tie_points ?? 1;
   const lossPoints = pts?.loss_points ?? 0;
+  const participationPoints = pts?.participation_points ?? 0;
 
   const { data: events } = await (supabase as any)
     .from("league_events")
@@ -60,7 +61,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
       const tiedWithPrev = idx > 0 && ranked[idx - 1].gross === p.gross;
       const tiedWithNext = idx < ranked.length - 1 && ranked[idx + 1].gross === p.gross;
 
-      let points = Number(positionPoints[String(rank)] || 0);
+      let points = Number(positionPoints[String(rank)] || 0) + Number(participationPoints || 0);
       let wins = 0, losses = 0, ties = 0;
       if (tiedWithPrev || tiedWithNext) {
         points += tiePoints;
@@ -87,6 +88,14 @@ export async function recomputeLeagueStandings(leagueId: string) {
     });
   });
 
+  // Preserve manually tracked prize money across recomputes
+  const { data: existing } = await (supabase as any)
+    .from("league_standings")
+    .select("member_id, prize_money_cents")
+    .eq("league_id", leagueId);
+  const prizeByMember: Record<string, number> = {};
+  (existing || []).forEach((e: any) => { prizeByMember[e.member_id] = e.prize_money_cents || 0; });
+
   // Clear then upsert
   await (supabase as any).from("league_standings").delete().eq("league_id", leagueId);
   const rows = Object.entries(perMember).map(([memberId, r]) => ({
@@ -100,6 +109,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
     ties: r.ties,
     total_gross: r.totalGross,
     total_net: r.totalNet,
+    prize_money_cents: prizeByMember[memberId] || 0,
   }));
   if (rows.length) {
     await (supabase as any).from("league_standings").insert(rows);

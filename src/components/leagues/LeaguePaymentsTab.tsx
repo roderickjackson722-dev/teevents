@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { RefreshCw, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { listLeaguePayments, syncLeaguePaymentStatus } from "@/lib/leaguePayments.functions";
+import { supabase } from "@/integrations/supabase/client";
 
 type PaymentRow = {
   id: string;
@@ -30,6 +31,18 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
   const [rows, setRows] = useState<PaymentRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const [passFees, setPassFees] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await (supabase as any)
+        .from("golf_leagues")
+        .select("pass_platform_fee_to_members")
+        .eq("id", leagueId)
+        .maybeSingle();
+      if (data) setPassFees(data.pass_platform_fee_to_members !== false);
+    })();
+  }, [leagueId]);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -67,10 +80,12 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
   const paid = rows.filter((r) => r.status === "paid");
   const collected = paid.reduce((s, r) => s + (r.amount_cents || 0), 0);
   const fees = paid.reduce((s, r) => s + (r.platform_fee_cents || 0), 0);
+  // When fees are passed to registrants, the organizer nets the full amount collected.
+  const net = passFees ? collected : collected - fees;
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-4">
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Collected</CardTitle></CardHeader>
           <CardContent className="text-2xl font-bold">{money(collected)}</CardContent>
@@ -82,6 +97,13 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Platform fees</CardTitle></CardHeader>
           <CardContent className="text-2xl font-bold">{money(fees)}</CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2"><CardTitle className="text-sm font-medium text-muted-foreground">Net to you</CardTitle></CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{money(net)}</div>
+            <p className="text-[10px] text-muted-foreground">{passFees ? "fees paid by registrants" : "fees deducted"}</p>
+          </CardContent>
         </Card>
       </div>
 
@@ -113,6 +135,7 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
                     <th className="py-2 pr-4 font-medium">For</th>
                     <th className="py-2 pr-4 font-medium">Date</th>
                     <th className="py-2 pr-4 font-medium">Amount</th>
+                    <th className="py-2 pr-4 font-medium">Net</th>
                     <th className="py-2 pr-4 font-medium">Status</th>
                   </tr>
                 </thead>
@@ -135,6 +158,9 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
                         {new Date(r.created_at).toLocaleString()}
                       </td>
                       <td className="py-2 pr-4 whitespace-nowrap">{money(r.amount_cents)}</td>
+                      <td className="py-2 pr-4 whitespace-nowrap font-medium">
+                        {money(passFees ? r.amount_cents || 0 : (r.amount_cents || 0) - (r.platform_fee_cents || 0))}
+                      </td>
                       <td className="py-2 pr-4">
                         {r.status === "paid" ? (
                           <Badge className="bg-green-100 text-green-800 hover:bg-green-100">Paid</Badge>

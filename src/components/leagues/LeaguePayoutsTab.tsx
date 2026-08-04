@@ -27,6 +27,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [memberCount, setMemberCount] = useState(0);
+  const [passFees, setPassFees] = useState(false);
   const [settings, setSettings] = useState<{ flights_enabled: boolean; flight_method: FlightMethod; flight_based_on: FlightBasis }>({
     flights_enabled: false,
     flight_method: "half",
@@ -48,13 +49,14 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
           .eq("league_id", leagueId),
         (supabase as any)
           .from("golf_leagues")
-          .select("flights_enabled, flight_method, flight_based_on")
+          .select("flights_enabled, flight_method, flight_based_on, pass_platform_fee_to_members")
           .eq("id", leagueId)
           .maybeSingle(),
       ]);
       setRows((pRes.data as Row[]) || []);
       setMemberCount(mRes.count || 0);
       if (lRes.data) {
+        setPassFees(lRes.data.pass_platform_fee_to_members !== false);
         setSettings({
           flights_enabled: !!lRes.data.flights_enabled,
           flight_method: (lRes.data.flight_method as FlightMethod) || "half",
@@ -71,13 +73,16 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
     setSettings(s);
   };
 
+  /** When fees are passed to registrants, the organizer nets the full listed amount. */
+  const netOf = (grossCents: number, feeCents: number) => (passFees ? grossCents : grossCents - feeCents);
 
   const paid = useMemo(() => rows.filter((r) => r.status === "paid"), [rows]);
   const totals = useMemo(() => {
     const gross = paid.reduce((s, r) => s + (r.amount_cents || 0), 0);
     const fee = paid.reduce((s, r) => s + (r.platform_fee_cents || 0), 0);
-    return { gross, fee, net: gross - fee, count: paid.length };
-  }, [paid]);
+    return { gross, fee, net: passFees ? gross : gross - fee, count: paid.length };
+  }, [paid, passFees]);
+
 
   const byEvent = useMemo(() => {
     const map = new Map<string, { name: string; date: string; count: number; gross: number; fee: number }>();
@@ -128,8 +133,13 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
         </CardContent></Card>
         <Card><CardContent className="p-4 flex items-center gap-3">
           <Wallet className="h-5 w-5 text-primary" />
-          <div><p className="text-xs text-muted-foreground">Your net</p><p className="text-2xl font-bold">{fmt(totals.net)}</p></div>
+          <div>
+            <p className="text-xs text-muted-foreground">Your net</p>
+            <p className="text-2xl font-bold">{fmt(totals.net)}</p>
+            <p className="text-[10px] text-muted-foreground">{passFees ? "fees paid by registrants" : "fees deducted"}</p>
+          </div>
         </CardContent></Card>
+
       </div>
 
       <Card>
@@ -157,7 +167,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
                     <TableCell className="text-right">{e.count}</TableCell>
                     <TableCell className="text-right">{fmt(e.gross)}</TableCell>
                     <TableCell className="text-right text-amber-700">{fmt(e.fee)}</TableCell>
-                    <TableCell className="text-right font-semibold">{fmt(e.gross - e.fee)}</TableCell>
+                    <TableCell className="text-right font-semibold">{fmt(netOf(e.gross, e.fee))}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -170,6 +180,10 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
         <CardContent className="p-5">
           <h3 className="font-semibold mb-3">Recent charges</h3>
           <p className="text-xs text-muted-foreground mb-3">
+            {passFees
+              ? "Fees are passed to registrants, so your net is the full registration amount. "
+              : "Your league absorbs the platform + processing fees, so they are deducted from your net. "}
+
             Only completed (paid) charges are shown. Abandoned or unpaid checkouts are excluded.
           </p>
           {paid.length === 0 ? (
@@ -199,7 +213,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
                       <TableCell>{r.event?.event_name || "—"}</TableCell>
                       <TableCell className="text-right">{fmt(r.amount_cents)}</TableCell>
                       <TableCell className="text-right text-amber-700">{fmt(r.platform_fee_cents)}</TableCell>
-                      <TableCell className="text-right font-medium">{fmt((r.amount_cents || 0) - (r.platform_fee_cents || 0))}</TableCell>
+                      <TableCell className="text-right font-medium">{fmt(netOf(r.amount_cents || 0, r.platform_fee_cents || 0))}</TableCell>
                       <TableCell>
                         <Badge variant={r.status === "paid" ? "default" : "secondary"}>{r.status}</Badge>
                       </TableCell>

@@ -39,6 +39,8 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
   const [pairings, setPairings] = useState<Pairing[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const sendLeaderboardLink = useServerFn(sendLeagueLeaderboardLink);
+
   const [teamName, setTeamName] = useState("");
   const [selected, setSelected] = useState<string[]>([]);
   const [holes, setHoles] = useState<number>(18);

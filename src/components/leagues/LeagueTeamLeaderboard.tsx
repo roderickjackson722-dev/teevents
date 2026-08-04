@@ -92,6 +92,9 @@ export default function LeagueTeamLeaderboard({ eventId, editable = false }: Pro
     load();
   };
 
+  const showGross = payload?.show_gross !== false;
+  const showNet = payload?.show_net !== false;
+
   if (loading) {
     return <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>;
   }
@@ -114,8 +117,8 @@ export default function LeagueTeamLeaderboard({ eventId, editable = false }: Pro
             <TableRow>
               <TableHead className="w-12">Pos</TableHead>
               <TableHead>Team</TableHead>
-              <TableHead className="text-right">Gross</TableHead>
-              <TableHead className="text-right">Net</TableHead>
+              {showGross && <TableHead className="text-right">Gross</TableHead>}
+              {showNet && <TableHead className="text-right">Net</TableHead>}
               <TableHead className="text-right">Thru</TableHead>
               {editable && <TableHead className="text-right">Edit</TableHead>}
             </TableRow>
@@ -128,8 +131,8 @@ export default function LeagueTeamLeaderboard({ eventId, editable = false }: Pro
                   {r.team_name}
                   {r.players && <span className="block text-xs text-muted-foreground">{r.players}</span>}
                 </TableCell>
-                <TableCell className="text-right">{r.thru > 0 ? formatToPar(r.toParGross) : "—"}</TableCell>
-                <TableCell className="text-right">{r.thru > 0 ? formatToPar(r.toParNet) : "—"}</TableCell>
+                {showGross && <TableCell className="text-right">{r.thru > 0 ? formatToPar(r.toParGross) : "—"}</TableCell>}
+                {showNet && <TableCell className="text-right">{r.thru > 0 ? formatToPar(r.toParNet) : "—"}</TableCell>}
                 <TableCell className="text-right">{r.thru}</TableCell>
                 {editable && (
                   <TableCell className="text-right">

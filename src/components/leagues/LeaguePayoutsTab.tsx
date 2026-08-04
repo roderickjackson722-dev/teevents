@@ -180,6 +180,10 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
         <CardContent className="p-5">
           <h3 className="font-semibold mb-3">Recent charges</h3>
           <p className="text-xs text-muted-foreground mb-3">
+            {passFees
+              ? "Fees are passed to registrants, so your net is the full registration amount. "
+              : "Your league absorbs the platform + processing fees, so they are deducted from your net. "}
+
             Only completed (paid) charges are shown. Abandoned or unpaid checkouts are excluded.
           </p>
           {paid.length === 0 ? (

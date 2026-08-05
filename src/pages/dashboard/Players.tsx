@@ -1176,19 +1176,24 @@ const Players = () => {
     const next = { ...holeTeeTimes };
     const v = value.trim();
     if (v) {
-      // Prevent duplicate tee times within the same day (for tee_times format)
+      // Same time is allowed on different starting holes (8:00 off #1 and #10).
+      // Only warn when another group has the same time on the SAME hole.
       if (dayCfg.startFormat === "tee_times") {
-        const conflict = Object.entries(holeTeeTimes).find(([h, t]) => Number(h) !== num && t === v);
+        const thisHole = startHoleOf(num);
+        const conflict = Object.entries(holeTeeTimes).find(
+          ([h, t]) => Number(h) !== num && t === v && startHoleOf(Number(h)) === thisHole,
+        );
         if (conflict) {
           toast({
             title: "Duplicate tee time",
-            description: `Hole ${conflict[0]} is already at ${fmtTee12(v)} on ${tournamentDays[activeDay] || "this day"}. Choose a different time.`,
+            description: `Another group is already at ${fmtTee12(v)} on hole #${thisHole}. Use a different time or a different starting hole.`,
             variant: "destructive",
           });
           return;
         }
       }
       next[num] = v;
+
     } else {
       delete next[num];
     }

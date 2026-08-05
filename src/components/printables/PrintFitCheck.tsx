@@ -5,10 +5,12 @@ import {
   runFitCheck,
   printDialogHint,
   browserLabel,
+  sizeLabel,
   type FitResult,
   type PrintTarget,
   type PrintFitOptions,
 } from "./printLayout";
+
 
 interface Props {
   /** Built lazily so we only serialize the printable when the check runs */

@@ -20,6 +20,9 @@ interface Player {
   handicap_index: number | null;
   pairing_group?: number | null;
   alloc: ReturnType<typeof buildAllocation>;
+  /** Team pairing this member plays in (2-person scramble etc.), if any */
+  pairing_id?: string | null;
+  team_name?: string | null;
 }
 
 export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
@@ -110,27 +113,56 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       .select("member_id, pairing_group, league_members!inner(member_name, handicap_index)")
       .eq("event_id", eventId);
 
-    const list: Player[] = (regs || [])
-      .map((r: any) => ({
-        member_id: r.member_id,
-        member_name: r.league_members.member_name,
-        handicap_index: r.league_members.handicap_index,
-        pairing_group: r.pairing_group,
-        alloc: buildAllocation(r.league_members.handicap_index, courseData),
-      }))
-      .sort((a: Player, b: Player) => (a.pairing_group ?? 99) - (b.pairing_group ?? 99));
+    // Team pairings (2-person scramble etc.) — players enter one score per team
+    const { data: pairings } = await (supabase as any)
+      .from("league_team_pairings")
+      .select("id, team_name, player1_id, player2_id, p1:league_members!league_team_pairings_player1_id_fkey(member_name, handicap_index), p2:league_members!league_team_pairings_player2_id_fkey(member_name, handicap_index)")
+      .eq("event_id", eventId);
+
+    const pairingByMember: Record<string, { id: string; team_name: string }> = {};
+    (pairings || []).forEach((p: any) => {
+      [p.player1_id, p.player2_id].forEach((mid: string | null) => {
+        if (mid) pairingByMember[mid] = { id: p.id, team_name: p.team_name };
+      });
+    });
+
+    const list: Player[] = (regs || []).map((r: any) => ({
+      member_id: r.member_id,
+      member_name: r.league_members.member_name,
+      handicap_index: r.league_members.handicap_index,
+      pairing_group: r.pairing_group,
+      alloc: buildAllocation(r.league_members.handicap_index, courseData),
+      pairing_id: pairingByMember[r.member_id]?.id ?? null,
+      team_name: pairingByMember[r.member_id]?.team_name ?? null,
+    }));
+
+    // Include paired players who never registered so their team scores stay visible
+    const seen = new Set(list.map((p) => p.member_id));
+    (pairings || []).forEach((p: any) => {
+      ([[p.player1_id, p.p1], [p.player2_id, p.p2]] as [string | null, any][]).forEach(([mid, m]) => {
+        if (!mid || seen.has(mid) || !m) return;
+        seen.add(mid);
+        list.push({
+          member_id: mid,
+          member_name: m.member_name,
+          handicap_index: m.handicap_index,
+          pairing_group: null,
+          alloc: buildAllocation(m.handicap_index, courseData),
+          pairing_id: p.id,
+          team_name: p.team_name,
+        });
+      });
+    });
+
+    list.sort(
+      (a, b) =>
+        (a.pairing_group ?? 99) - (b.pairing_group ?? 99) ||
+        (a.team_name || "").localeCompare(b.team_name || "") ||
+        a.member_name.localeCompare(b.member_name),
+    );
     setPlayers(list);
 
-    const { data: existing } = await (supabase as any)
-      .from("league_event_scores")
-      .select("member_id, hole_number, gross_score")
-      .eq("event_id", eventId);
-    const map: Record<string, Record<number, string>> = {};
-    (existing || []).forEach((s: any) => {
-      if (!map[s.member_id]) map[s.member_id] = {};
-      map[s.member_id][s.hole_number] = String(s.gross_score ?? "");
-    });
-    setScores(map);
+    await refreshScores(list);
 
     if (ev?.skins_enabled) {
       const { data: sk } = await (supabase as any)
@@ -147,23 +179,44 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     setLoading(false);
   };
 
+  // Pulls both individual and team scores into the per-player grid
+  const refreshScores = async (list?: Player[]) => {
+    if (!eventId) return;
+    const roster = list ?? players;
+    const map: Record<string, Record<number, string>> = {};
+
+    const { data: existing } = await (supabase as any)
+      .from("league_event_scores")
+      .select("member_id, hole_number, gross_score")
+      .eq("event_id", eventId);
+    (existing || []).forEach((s: any) => {
+      if (!map[s.member_id]) map[s.member_id] = {};
+      map[s.member_id][s.hole_number] = String(s.gross_score ?? "");
+    });
+
+    const { data: teamScores } = await (supabase as any)
+      .from("league_team_scores")
+      .select("pairing_id, hole_number, gross_score")
+      .eq("event_id", eventId);
+    const byPairing: Record<string, Record<number, string>> = {};
+    (teamScores || []).forEach((s: any) => {
+      (byPairing[s.pairing_id] ||= {})[s.hole_number] = String(s.gross_score ?? "");
+    });
+    roster.forEach((p) => {
+      if (!p.pairing_id) return;
+      const holes = byPairing[p.pairing_id];
+      if (!holes) return;
+      map[p.member_id] = { ...holes, ...(map[p.member_id] || {}) };
+    });
+
+    setScores(map);
+  };
+
   useEffect(() => { load(); }, [eventId, events]);
 
-  // Live sync: pull in scores as players enter them (player scoring pages, portal, etc.)
+  // Live sync: pull in scores as players enter them (team scoring pages, portal, etc.)
   useEffect(() => {
     if (!eventId) return;
-    const refreshScores = async () => {
-      const { data: existing } = await (supabase as any)
-        .from("league_event_scores")
-        .select("member_id, hole_number, gross_score")
-        .eq("event_id", eventId);
-      const map: Record<string, Record<number, string>> = {};
-      (existing || []).forEach((s: any) => {
-        if (!map[s.member_id]) map[s.member_id] = {};
-        map[s.member_id][s.hole_number] = String(s.gross_score ?? "");
-      });
-      setScores(map);
-    };
     const channel = (supabase as any)
       .channel(`league-event-scores-${eventId}`)
       .on(
@@ -171,9 +224,15 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
         { event: "*", schema: "public", table: "league_event_scores", filter: `event_id=eq.${eventId}` },
         () => refreshScores(),
       )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "league_team_scores", filter: `event_id=eq.${eventId}` },
+        () => refreshScores(),
+      )
       .subscribe();
     return () => { (supabase as any).removeChannel(channel); };
-  }, [eventId]);
+  }, [eventId, players]);
+
 
   const setGross = (mid: string, hole: number, val: string) => {
     setScores((prev) => ({ ...prev, [mid]: { ...(prev[mid] || {}), [hole]: val } }));
@@ -182,12 +241,31 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   const save = async () => {
     if (!eventId) return;
     setSaving(true);
+    const holeCount = event?.holes === 9 ? 9 : 18;
     const rows: any[] = [];
+    // Team-format players write one shared row per pairing so the team
+    // leaderboard's hole-by-hole view stays in sync with this grid.
+    const teamRows: Record<string, any> = {};
+    const teamClears: Record<string, number[]> = {};
     for (const p of players) {
       const holes = scores[p.member_id] || {};
-      for (let h = 1; h <= 18; h++) {
+      for (let h = 1; h <= holeCount; h++) {
         const g = holes[h];
-        if (g !== "" && g != null && !isNaN(Number(g))) {
+        const hasVal = g !== "" && g != null && !isNaN(Number(g));
+        if (p.pairing_id) {
+          if (hasVal) {
+            teamRows[`${p.pairing_id}:${h}`] = {
+              event_id: eventId,
+              pairing_id: p.pairing_id,
+              hole_number: h,
+              gross_score: Number(g),
+            };
+          } else if (!teamRows[`${p.pairing_id}:${h}`]) {
+            (teamClears[p.pairing_id] ||= []).push(h);
+          }
+          continue;
+        }
+        if (hasVal) {
           const grossRaw = Number(g);
           const capped = capNetDoubleBogey(grossRaw, h - 1, p.alloc);
           const net = netForHole(grossRaw, h - 1, p.alloc);
@@ -204,8 +282,9 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     // Blanked cells clear the stored score for that player/hole
     const clears: { member_id: string; hole_number: number }[] = [];
     for (const p of players) {
+      if (p.pairing_id) continue;
       const holes = scores[p.member_id] || {};
-      for (let h = 1; h <= 18; h++) {
+      for (let h = 1; h <= holeCount; h++) {
         const g = holes[h];
         if (g === "" || g == null) clears.push({ member_id: p.member_id, hole_number: h });
       }
@@ -222,19 +301,45 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
           .in("hole_number", hs);
       }
     }
-    if (rows.length === 0) {
-      toast({ title: clears.length ? "Cleared blank scores" : "No scores to save" });
+
+    const teamUpserts = Object.values(teamRows);
+    if (teamUpserts.length > 0) {
+      const { error: teamErr } = await (supabase as any)
+        .from("league_team_scores")
+        .upsert(teamUpserts, { onConflict: "pairing_id,hole_number" });
+      if (teamErr) {
+        toast({ title: "Save failed", description: teamErr.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+    }
+    for (const [pid, hs] of Object.entries(teamClears)) {
+      const stillSet = hs.filter((h) => !teamRows[`${pid}:${h}`]);
+      if (stillSet.length === 0) continue;
+      await (supabase as any)
+        .from("league_team_scores")
+        .delete()
+        .eq("pairing_id", pid)
+        .in("hole_number", stillSet);
+    }
+
+    if (rows.length === 0 && teamUpserts.length === 0) {
+      toast({ title: clears.length || Object.keys(teamClears).length ? "Cleared blank scores" : "No scores to save" });
       setSaving(false);
+      await refreshScores();
       return;
     }
-    const { error } = await (supabase as any)
-      .from("league_event_scores")
-      .upsert(rows, { onConflict: "event_id,member_id,hole_number" });
-    if (error) {
-      toast({ title: "Save failed", description: error.message, variant: "destructive" });
-      setSaving(false);
-      return;
+    if (rows.length > 0) {
+      const { error } = await (supabase as any)
+        .from("league_event_scores")
+        .upsert(rows, { onConflict: "event_id,member_id,hole_number" });
+      if (error) {
+        toast({ title: "Save failed", description: error.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
     }
+
 
     // Auto-run skins when enabled for this event
     if (event?.skins_enabled) {
@@ -257,12 +362,16 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       }
     }
 
-    toast({ title: `Saved ${rows.length} scores${event?.skins_enabled ? " · skins updated" : ""}` });
+    const total = rows.length + Object.keys(teamRows).length;
+    toast({ title: `Saved ${total} scores${event?.skins_enabled ? " · skins updated" : ""}` });
     setSaving(false);
+    await refreshScores();
   };
 
-  const holes = Array.from({ length: 18 }, (_, i) => i + 1);
+  const holeCount = event?.holes === 9 ? 9 : 18;
+  const holes = Array.from({ length: holeCount }, (_, i) => i + 1);
   const parRow = course?.hole_pars && course.hole_pars.length === 18 ? course.hole_pars : null;
+
   const skinsOn = !!event?.skins_enabled;
 
   return (

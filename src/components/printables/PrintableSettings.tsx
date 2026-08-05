@@ -26,6 +26,8 @@ interface Props {
   tournamentId?: string;
   logoUrl?: string | null;
   onLogoChange?: (url: string) => void;
+  /** Which printable the preview should represent */
+  variant?: "scorecard" | "cartsign";
 }
 
 export function getDefaultOptions(tournament: { printable_font?: string | null; printable_layout?: string | null } | null): PrintableOptions {

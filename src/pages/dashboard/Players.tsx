@@ -2194,20 +2194,29 @@ const Players = () => {
                 <div className="flex flex-wrap items-end gap-4">
                   <div>
                     <Label className="text-xs text-muted-foreground">Starting Hole</Label>
-                    <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">
-                      {[1, 10].map((h) => (
-                        <button
-                          key={h}
-                          type="button"
-                          disabled={startFormat === "shotgun"}
-                          className={`px-3 py-1.5 text-sm ${firstTeeHole === h ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${h === 10 ? "border-l border-border" : ""}`}
-                          onClick={() => persistStartFormat({ firstTeeHole: h })}
-                        >
-                          #{h}
-                        </button>
-                      ))}
-                    </div>
+                    <Select
+                      value={String(firstTeeHole)}
+                      onValueChange={(v) => persistStartFormat({ firstTeeHole: Number(v) })}
+                    >
+                      <SelectTrigger className="mt-1 h-9 w-24" disabled={startFormat === "shotgun"}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 18 }, (_, i) => i + 1).map((h) => (
+                          <SelectItem key={h} value={String(h)}>#{h}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <label className="flex items-center gap-2 pb-2 text-xs text-muted-foreground">
+                    <Checkbox
+                      checked={!!dayCfg.sameStartHole}
+                      disabled={startFormat === "shotgun"}
+                      onCheckedChange={(v) => persistStartFormat({ sameStartHole: !!v })}
+                    />
+                    All groups start on hole #{firstTeeHole}
+                  </label>
+
                   <div>
                     <Label htmlFor="first-tee-time" className="text-xs text-muted-foreground">First Tee Time</Label>
                     <Input

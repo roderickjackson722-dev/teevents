@@ -104,7 +104,7 @@ export default function LeagueSkinsTab({ leagueId }: { leagueId: string }) {
         {loading ? (
           <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : skins.length === 0 ? (
-          <p className="text-muted-foreground text-sm py-6 text-center">No skins yet. Set the value and click <b>Compute Skins</b>.</p>
+          <p className="text-muted-foreground text-sm py-6 text-center">No prize money yet. Set the value and click <b>Compute Skins</b>.</p>
         ) : (
           <>
             <div className="text-sm text-muted-foreground">Total paid: <b className="text-foreground">${(totalPot / 100).toFixed(2)}</b> across {skins.length} skins</div>

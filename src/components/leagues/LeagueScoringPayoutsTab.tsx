@@ -25,7 +25,7 @@ export default function LeagueScoringPayoutsTab({ leagueId }: { leagueId: string
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <LeaguePayoutsTab leagueId={leagueId} />
+          <LeaguePayoutsTab leagueId={leagueId} showRecentCharges={false} />
         </CardContent>
       </Card>
     </div>

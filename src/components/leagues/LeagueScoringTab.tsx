@@ -20,6 +20,9 @@ interface Player {
   handicap_index: number | null;
   pairing_group?: number | null;
   alloc: ReturnType<typeof buildAllocation>;
+  /** Team pairing this member plays in (2-person scramble etc.), if any */
+  pairing_id?: string | null;
+  team_name?: string | null;
 }
 
 export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {

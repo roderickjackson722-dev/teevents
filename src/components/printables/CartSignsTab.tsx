@@ -161,10 +161,10 @@ export default function CartSignsTab({ tournament, registrations, loading, group
         </p>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.cartsign} fitOptions={fitOptions} />
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, CART_SIGN_PAGE_CSS)}>
+          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, CART_SIGN_PAGE_CSS)}>
+          <Button onClick={() => openPrintWindow(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Printer className="h-4 w-4 mr-2" /> Generate Cart Signs
           </Button>
         </div>

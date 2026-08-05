@@ -263,7 +263,10 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
                   </div>
                 ))}
                 <div>
-                  <Label>Participation</Label>
+                  <Label>Participation Points</Label>
+                  <p className="text-[11px] text-muted-foreground mb-1">
+                    Points every member earns for playing an event (not a headcount).
+                  </p>
                   <Input
                     type="number"
                     value={pts.participation_points ?? 0}

@@ -26,22 +26,58 @@ export async function recomputeLeagueStandings(leagueId: string) {
     .select("id, season_id")
     .eq("league_id", leagueId);
 
+  const eventIds = (events || []).map((e: any) => e.id);
+
   const { data: scores } = await (supabase as any)
     .from("league_event_scores")
     .select("event_id, member_id, gross_score, net_score")
-    .in("event_id", (events || []).map((e: any) => e.id));
+    .in("event_id", eventIds);
 
   // Aggregate scores per event per player
   type Agg = { totalGross: number; totalNet: number; holes: number };
   const perEvent: Record<string, Record<string, Agg>> = {};
-  (scores || []).forEach((s: any) => {
-    if (!perEvent[s.event_id]) perEvent[s.event_id] = {};
-    if (!perEvent[s.event_id][s.member_id]) perEvent[s.event_id][s.member_id] = { totalGross: 0, totalNet: 0, holes: 0 };
-    const a = perEvent[s.event_id][s.member_id];
-    a.totalGross += Number(s.gross_score) || 0;
-    a.totalNet += Number(s.net_score ?? s.gross_score) || 0;
+  const addScore = (eventId: string, memberId: string, gross: number, net: number) => {
+    if (!perEvent[eventId]) perEvent[eventId] = {};
+    if (!perEvent[eventId][memberId]) perEvent[eventId][memberId] = { totalGross: 0, totalNet: 0, holes: 0 };
+    const a = perEvent[eventId][memberId];
+    a.totalGross += gross;
+    a.totalNet += net;
     a.holes += 1;
+  };
+  (scores || []).forEach((s: any) => {
+    addScore(
+      s.event_id,
+      s.member_id,
+      Number(s.gross_score) || 0,
+      Number(s.net_score ?? s.gross_score) || 0,
+    );
   });
+
+  // Team formats (e.g. 2-person scramble) store scores per pairing — credit both players
+  if (eventIds.length > 0) {
+    const { data: pairings } = await (supabase as any)
+      .from("league_team_pairings")
+      .select("id, event_id, player1_id, player2_id")
+      .in("event_id", eventIds);
+    const pairingIds = (pairings || []).map((p: any) => p.id);
+    if (pairingIds.length > 0) {
+      const { data: teamScores } = await (supabase as any)
+        .from("league_team_scores")
+        .select("pairing_id, hole_number, gross_score")
+        .in("pairing_id", pairingIds);
+      const byPairing: Record<string, any> = {};
+      (pairings || []).forEach((p: any) => { byPairing[p.id] = p; });
+      (teamScores || []).forEach((s: any) => {
+        const p = byPairing[s.pairing_id];
+        if (!p) return;
+        const g = Number(s.gross_score) || 0;
+        [p.player1_id, p.player2_id].forEach((mid: string | null) => {
+          if (mid) addScore(p.event_id, mid, g, g);
+        });
+      });
+    }
+  }
+
 
   // Standings per member across all events in the league
   type Row = { points: number; wins: number; losses: number; ties: number; matches: number; totalGross: number; totalNet: number; seasonId: string | null };

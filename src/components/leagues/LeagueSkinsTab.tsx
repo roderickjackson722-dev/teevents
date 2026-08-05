@@ -63,7 +63,7 @@ export default function LeagueSkinsTab({ leagueId }: { leagueId: string }) {
       <CardContent className="pt-6 space-y-4">
         <div className="flex items-center gap-2">
           <Coins className="h-5 w-5" />
-          <h2 className="text-lg font-semibold">Skins</h2>
+          <h2 className="text-lg font-semibold">Prize Money</h2>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">

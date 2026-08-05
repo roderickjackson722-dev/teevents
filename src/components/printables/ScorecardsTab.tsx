@@ -218,6 +218,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
             numHoles={numHoles}
             opts={opts}
             courseData={courseData}
+            slug={slug}
           />
         </>
       ) : (

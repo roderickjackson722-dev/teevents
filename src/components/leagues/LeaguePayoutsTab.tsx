@@ -185,12 +185,13 @@ export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }:
         </CardContent>
       </Card>
 
+      {showRecentCharges && (
       <Card>
         <CardContent className="p-5">
           <h3 className="font-semibold mb-3">Recent charges</h3>
           <p className="text-xs text-muted-foreground mb-3">
             {passFees
-              ? "Fees are passed to registrants, so your net is the full registration amount. "
+              ? "Fees are passed to registrants — gross is what the participant paid (registration + fees) and your net is the full registration amount. "
               : "Your league absorbs the platform + processing fees, so they are deducted from your net. "}
 
             Only completed (paid) charges are shown. Abandoned or unpaid checkouts are excluded.
@@ -220,7 +221,7 @@ export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }:
                       <TableCell className="capitalize">{r.kind}</TableCell>
                       <TableCell>{r.member?.member_name || r.payer_email || "—"}</TableCell>
                       <TableCell>{r.event?.event_name || "—"}</TableCell>
-                      <TableCell className="text-right">{fmt(r.amount_cents)}</TableCell>
+                      <TableCell className="text-right">{fmt(grossOf(r.amount_cents || 0, r.platform_fee_cents || 0))}</TableCell>
                       <TableCell className="text-right text-amber-700">{fmt(r.platform_fee_cents)}</TableCell>
                       <TableCell className="text-right font-medium">{fmt(netOf(r.amount_cents || 0, r.platform_fee_cents || 0))}</TableCell>
                       <TableCell>
@@ -235,6 +236,7 @@ export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }:
           )}
         </CardContent>
       </Card>
+      )}
       <p className="text-xs text-muted-foreground">
         Charges go directly to your connected Stripe account. TeeVents keeps a 5% application fee per transaction — payouts follow your Stripe schedule.
       </p>

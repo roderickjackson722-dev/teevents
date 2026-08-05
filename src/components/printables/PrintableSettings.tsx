@@ -41,7 +41,7 @@ export function getDefaultOptions(tournament: { printable_font?: string | null; 
   };
 }
 
-export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange }: Props) {
+export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange, variant = "scorecard" }: Props) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
 

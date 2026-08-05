@@ -843,10 +843,20 @@ const Players = () => {
 
   // Merge empty groups that have no players yet
   const allGroupNumbers = [...new Set([...groupNumbers, ...emptyGroups])].sort((a, b) => a - b);
-  const groups = allGroupNumbers.map((num) => {
+  const groupsBase = allGroupNumbers.map((num) => {
     const existing = groupsFromPlayers.find((g) => g.number === num);
-    return existing || { number: num, players: [] };
+    return existing || { number: num, players: [] as Registration[] };
   });
+
+  // Division shown on each pairing card (derived from the player's Division / Tier)
+  const divisionOfGroup = (list: Registration[]): string => {
+    const names = [...new Set(list.map((p) => (p.tier_id ? tierName(p.tier_id) : "")).filter((n) => n && n !== "—"))];
+    if (names.length === 0) return "";
+    if (names.length === 1) return names[0];
+    return "Mixed";
+  };
+  const [pairSort, setPairSort] = useState<"group" | "division" | "teetime">("group");
+
 
   const nextGroupNumber = allGroupNumbers.length > 0 ? Math.max(...allGroupNumbers) + 1 : 1;
 

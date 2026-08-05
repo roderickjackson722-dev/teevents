@@ -164,7 +164,11 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
           )}
 
           {/* Live Preview */}
-          <ScorecardMiniPreview options={options} showCourseName={showCourseName} logoUrl={logoUrl} />
+          {variant === "cartsign" ? (
+            <CartSignMiniPreview options={options} logoUrl={logoUrl} />
+          ) : (
+            <ScorecardMiniPreview options={options} showCourseName={showCourseName} logoUrl={logoUrl} />
+          )}
         </div>
       </CollapsibleContent>
     </Collapsible>

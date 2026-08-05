@@ -245,7 +245,19 @@ export default function LeagueEventRegister() {
               </div>
             )}
 
-            {alreadyRegistered ? (
+            {!alreadyRegistered && eventClosed ? (
+              <div className="space-y-3">
+                <div className="rounded-md border bg-muted/50 p-4 text-sm">
+                  <p className="font-semibold mb-1">Registration is closed</p>
+                  <p className="text-muted-foreground">
+                    This event {event.is_completed ? "has been completed" : `took place on ${event.event_date}`}, so registration is no longer available.
+                  </p>
+                </div>
+                <Button asChild variant="outline" className="w-full h-12">
+                  <Link to={`/league/${slug}`}>Back to {league.league_name}</Link>
+                </Button>
+              </div>
+            ) : alreadyRegistered ? (
               <div className="space-y-3">
                 <div className="rounded-md border border-emerald-300 bg-emerald-50 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-emerald-800">

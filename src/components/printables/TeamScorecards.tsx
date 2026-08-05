@@ -142,9 +142,10 @@ function teamScorecardHtml(
     </div>`;
 }
 
-export default function TeamScorecards({ tournament, registrations, groups = [], numHoles, opts, courseData }: Props) {
+export default function TeamScorecards({ tournament, registrations, groups = [], numHoles, opts, courseData, slug }: Props) {
   const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
   const [edits, setEdits] = useState<Record<string, TeamEdit>>({});
+  const [perPage, setPerPage] = useState<1 | 2 | 3>(2);
 
   useEffect(() => {
     const next: Record<string, TeamEdit> = {};
@@ -158,11 +159,22 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   const fontImport = getFontImport(opts.font);
   const fitOptions = { scale: opts.printScale, marginIn: opts.printMarginIn };
   const pageCss = scorecardCss(fitOptions);
-  const allHtml = teams
-    .map((t, i) => {
-      const e = edits[t.key] || { teamName: t.teamName, playersLine: "" };
-      const html = teamScorecardHtml(e, t.scoringCode, t.groupNumber, tournament, numHoles, opts, courseData);
-      return `<div class="print-page" style="page-break-after:${i < teams.length - 1 ? "always" : "auto"};">${html}</div>`;
+
+  const chunks: typeof teams[] = [];
+  for (let i = 0; i < teams.length; i += perPage) chunks.push(teams.slice(i, i + perPage));
+
+  const allHtml = chunks
+    .map((chunk, ci) => {
+      const cards = chunk
+        .map((t) => {
+          const e = edits[t.key] || { teamName: t.teamName, playersLine: "" };
+          return teamScorecardHtml(
+            e, t.scoringCode, t.groupNumber, tournament, numHoles, opts, courseData,
+            scoringUrlFor(slug, t.scoringCode),
+          );
+        })
+        .join("");
+      return `<div class="print-page" style="page-break-after:${ci < chunks.length - 1 ? "always" : "auto"};"><div style="display:flex;flex-direction:column;gap:0.14in;">${cards}</div></div>`;
     })
     .join("");
 
@@ -176,9 +188,19 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   return (
     <>
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
-        <p className="text-xs text-muted-foreground">
-          One scorecard per team with a single team score line &bull; prints landscape at {sizeLabel(PRINT_TARGETS.scorecard)} &bull; all {numHoles} holes on one line
-        </p>
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            {perPage} scorecard{perPage > 1 ? "s" : ""} per sheet &bull; prints landscape at {sizeLabel(PRINT_TARGETS.scorecard)} &bull; all {numHoles} holes on one line
+          </p>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">Per sheet:</span>
+            {([1, 2, 3] as const).map((n) => (
+              <Button key={n} size="sm" variant={perPage === n ? "default" : "outline"} className="h-7 px-2.5 text-xs" onClick={() => setPerPage(n)}>
+                {n}
+              </Button>
+            ))}
+          </div>
+        </div>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.scorecard} fitOptions={fitOptions} />
           <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>

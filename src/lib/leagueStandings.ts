@@ -156,6 +156,8 @@ export async function recomputeLeagueStandings(leagueId: string) {
     total_gross: r.totalGross,
     total_net: r.totalNet,
     prize_money_cents: prizeByMember[memberId] || 0,
+    wins_override: winsOverrideByMember[memberId] ?? null,
+
   }));
   if (rows.length) {
     await (supabase as any).from("league_standings").insert(rows);

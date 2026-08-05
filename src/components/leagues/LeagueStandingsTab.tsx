@@ -92,7 +92,7 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
                     <TableHead>Player</TableHead>
                     <TableHead>HCP</TableHead>
                     <TableHead className="text-right">Matches</TableHead>
-                    <TableHead className="text-right">W-L-T</TableHead>
+                    
                     <TableHead className="text-right">Gross</TableHead>
                     <TableHead className="text-right">Net</TableHead>
                     <TableHead className="text-right">Prize $</TableHead>
@@ -106,7 +106,7 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
                       <TableCell className="font-medium">{r.league_members.member_name}</TableCell>
                       <TableCell>{r.league_members.handicap_index ?? "—"}</TableCell>
                       <TableCell className="text-right">{r.matches_played}</TableCell>
-                      <TableCell className="text-right">{r.wins}-{r.losses}-{r.ties}</TableCell>
+                      
                       <TableCell className="text-right">{r.total_gross}</TableCell>
                       <TableCell className="text-right">{r.total_net}</TableCell>
                       <TableCell className="text-right">{formatCents(r.prize_money_cents || 0)}</TableCell>

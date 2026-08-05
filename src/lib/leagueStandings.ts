@@ -93,7 +93,9 @@ export async function recomputeLeagueStandings(leagueId: string) {
     const seasonId = events?.find((e: any) => e.id === eventId)?.season_id || null;
 
     ranked.forEach((p, idx) => {
-      const rank = idx + 1;
+      // Competition ranking: identical scores share the same rank, so teammates
+      // (and any tied players) earn identical position points.
+      const rank = ranked.findIndex((r) => r.gross === p.gross) + 1;
       const tiedWithPrev = idx > 0 && ranked[idx - 1].gross === p.gross;
       const tiedWithNext = idx < ranked.length - 1 && ranked[idx + 1].gross === p.gross;
 

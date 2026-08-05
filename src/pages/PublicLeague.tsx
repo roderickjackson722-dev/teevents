@@ -254,8 +254,8 @@ export default function PublicLeague() {
                       <TableHead className="w-12">#</TableHead>
                       <TableHead>Player</TableHead>
                       <TableHead className="text-right">Matches</TableHead>
-                      <TableHead className="text-right">W-L-T</TableHead>
-                      <TableHead className="text-right">Skins</TableHead>
+                      <TableHead className="text-right">Wins</TableHead>
+                      <TableHead className="text-right">Prize Money</TableHead>
                       <TableHead className="text-right font-bold">Points</TableHead>
                     </TableRow>
                   </TableHeader>

@@ -215,10 +215,11 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
             <p className="text-[10px] text-muted-foreground">
               Page size stays fixed at{" "}
               {variant === "cartsign"
-                ? `${PRINT_TARGETS.cartsign.widthIn}" × ${PRINT_TARGETS.cartsign.heightIn}"`
-                : `${PRINT_TARGETS.scorecard.widthIn}" × ${PRINT_TARGETS.scorecard.heightIn}"`}
+                ? sizeLabel(PRINT_TARGETS.cartsign)
+                : `${sizeLabel(PRINT_TARGETS.scorecard)} (landscape)`}
               . Lower the scale if the print preview shows content spilling onto a second page.
             </p>
+
           </div>
 
           {/* Live Preview */}

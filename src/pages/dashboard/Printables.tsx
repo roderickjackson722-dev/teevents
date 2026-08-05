@@ -16,6 +16,7 @@ import NameBadgesTab from "@/components/printables/NameBadgesTab";
 import QRCodesTab, { type PrintableAddon } from "@/components/printables/QRCodesTab";
 import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions } from "@/components/printables/PrintablesOptionsCard";
 import { rosterForPrintables } from "@/components/printables/rosterSource";
+import type { RegistrationGroupRow } from "@/components/printables/teamGrouping";
 
 
 interface TournamentWithSlug extends Tournament {
@@ -34,12 +35,22 @@ const Printables = () => {
   const [options, setOptions] = useState<PrintableOptions>(DEFAULT_PRINTABLE_OPTIONS);
   const [savedOptions, setSavedOptions] = useState<PrintableOptions>(DEFAULT_PRINTABLE_OPTIONS);
   const [savingOptions, setSavingOptions] = useState(false);
+  const [groups, setGroups] = useState<RegistrationGroupRow[]>([]);
+  const [groupsRefresh, setGroupsRefresh] = useState(0);
+
+  useEffect(() => {
+    if (!selectedTournament) { setGroups([]); return; }
+    (supabase.from("registration_groups") as any)
+      .select("id, group_number, team_name, cart_sign_names")
+      .eq("tournament_id", selectedTournament)
+      .then(({ data }: any) => setGroups((data || []) as RegistrationGroupRow[]));
+  }, [selectedTournament, groupsRefresh]);
 
   useEffect(() => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, site_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options")
+      .select("id, title, site_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options, scoring_format, date")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -204,10 +215,16 @@ const Printables = () => {
         </TabsContent>
 
         <TabsContent value="cart-signs">
-          <CartSignsTab tournament={tournament} registrations={printRegistrations} loading={loading} />
+          <CartSignsTab
+            tournament={tournament}
+            registrations={printRegistrations}
+            loading={loading}
+            groups={groups}
+            onGroupsChanged={() => setGroupsRefresh((n) => n + 1)}
+          />
         </TabsContent>
         <TabsContent value="scorecards">
-          <ScorecardsTab tournament={tournament} registrations={printRegistrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} />
+          <ScorecardsTab tournament={tournament} registrations={printRegistrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} groups={groups} scoringFormat={(tournament as any)?.scoring_format} />
         </TabsContent>
         <TabsContent value="name-badges">
           <NameBadgesTab tournament={tournament} registrations={printRegistrations} loading={loading} />

@@ -27,6 +27,19 @@ interface Props {
   numHoles: 9 | 18;
   opts: PrintableOptions;
   courseData?: CourseDataProp | null;
+  /** Public tournament slug, used to build the score-entry QR link */
+  slug?: string;
+}
+
+/** Link to the score-entry page (code pre-filled when the team has one). */
+function scoringUrlFor(slug: string | undefined, scoringCode: string | null | undefined): string {
+  if (!slug || typeof window === "undefined") return "";
+  const base = `${window.location.origin}/t/${slug}/scoring`;
+  return scoringCode ? `${base}?code=${scoringCode}` : base;
+}
+
+function qrHtml(url: string, size = 88) {
+  return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size * 2}x${size * 2}&margin=0&data=${encodeURIComponent(url)}" alt="Scan to enter scores" style="width:${size}px;height:${size}px;display:block;" />`;
 }
 
 const FONT_MAP: Record<string, string> = {

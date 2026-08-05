@@ -362,12 +362,16 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       }
     }
 
-    toast({ title: `Saved ${rows.length} scores${event?.skins_enabled ? " · skins updated" : ""}` });
+    const total = rows.length + Object.keys(teamRows).length;
+    toast({ title: `Saved ${total} scores${event?.skins_enabled ? " · skins updated" : ""}` });
     setSaving(false);
+    await refreshScores();
   };
 
-  const holes = Array.from({ length: 18 }, (_, i) => i + 1);
+  const holeCount = event?.holes === 9 ? 9 : 18;
+  const holes = Array.from({ length: holeCount }, (_, i) => i + 1);
   const parRow = course?.hole_pars && course.hole_pars.length === 18 ? course.hole_pars : null;
+
   const skinsOn = !!event?.skins_enabled;
 
   return (

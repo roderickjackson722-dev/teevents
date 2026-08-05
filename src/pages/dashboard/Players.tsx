@@ -2168,7 +2168,45 @@ const Players = () => {
                 <span className="text-[11px] text-muted-foreground ml-1">Each day has its own start format and tee times.</span>
               </div>
             )}
+            <div className="mb-3 flex flex-wrap items-end gap-4 border-b border-border pb-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">
+                  Round {activeDay + 1} Format
+                </Label>
+                <Select
+                  value={dayCfg.roundFormat || "inherit"}
+                  onValueChange={(v) => persistStartFormat({ roundFormat: v === "inherit" ? "" : v })}
+                >
+                  <SelectTrigger className="mt-1 h-9 w-56"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inherit">Use tournament format</SelectItem>
+                    {SCORING_FORMATS.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Holes</Label>
+                <Select
+                  value={String(dayCfg.roundHoles || 18)}
+                  onValueChange={(v) => persistStartFormat({ roundHoles: Number(v) })}
+                >
+                  <SelectTrigger className="mt-1 h-9 w-24"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="9">9</SelectItem>
+                    <SelectItem value="18">18</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-[11px] text-muted-foreground pb-2">
+                {numDays > 1
+                  ? "Each round can use its own format, hole count, and start type."
+                  : "Set the format and hole count for this round."}
+              </p>
+            </div>
             <div className="flex flex-wrap items-end gap-4">
+
               <div>
                 <Label className="text-xs text-muted-foreground">Start Format</Label>
                 <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">

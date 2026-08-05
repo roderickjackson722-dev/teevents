@@ -2444,6 +2444,7 @@ const Players = () => {
                             </div>
                           );
                         })()}
+                        </div>
                       </div>
 
 

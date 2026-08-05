@@ -94,7 +94,7 @@ function teamScorecardHtml(
     : nineTable(0, 9, "Out");
 
   return `
-    <div style="width:7.5in;height:5.5in;page-break-inside:avoid;border:${border};border-radius:8px;padding:0.18in;font-family:${font};display:flex;flex-direction:column;">
+    <div style="width:100%;height:100%;page-break-inside:avoid;border:${border};border-radius:8px;padding:0.18in;font-family:${font};display:flex;flex-direction:column;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:8px;">
         <div>
           <div style="font-size:14px;font-weight:bold;color:#1a1a1a;">${opts.showTournamentTitle ? `${tournament?.title ?? ""} &ndash; ` : ""}${edit.teamName}</div>
@@ -130,7 +130,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
     .map((t, i) => {
       const e = edits[t.key] || { teamName: t.teamName, playersLine: "" };
       const html = teamScorecardHtml(e, t.scoringCode, t.groupNumber, tournament, numHoles, opts, courseData);
-      return `<div style="page-break-after:${i < teams.length - 1 ? "always" : "auto"};">${html}</div>`;
+      return `<div class="print-page" style="page-break-after:${i < teams.length - 1 ? "always" : "auto"};">${html}</div>`;
     })
     .join("");
 
@@ -175,10 +175,17 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
               </div>
 
               <div className="rounded-lg border-2 border-primary/30 p-3 bg-muted/20 overflow-x-auto">
-                <p className="text-sm font-display font-bold text-foreground">
-                  {opts.showTournamentTitle && tournament?.title ? `${tournament.title} – ` : ""}{e.teamName}
-                </p>
-                <p className="text-[11px] text-muted-foreground mb-2">Players: {e.playersLine}</p>
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-display font-bold text-foreground">
+                      {opts.showTournamentTitle && tournament?.title ? `${tournament.title} – ` : ""}{e.teamName}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mb-2">Players: {e.playersLine}</p>
+                  </div>
+                  {opts.showLogo && getPrintLogo(tournament) && (
+                    <img src={getPrintLogo(tournament)!} alt="" className="h-10 object-contain shrink-0" />
+                  )}
+                </div>
                 <table className="w-full text-[11px] border-collapse">
                   <tbody>
                     <tr className="bg-muted/50">

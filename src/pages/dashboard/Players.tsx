@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Settings2 } from "lucide-react";
+import { Settings2, Lock, LockOpen, AlertTriangle, ShieldCheck } from "lucide-react";
 import {
   Users,
   Trophy,

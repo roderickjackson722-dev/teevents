@@ -48,15 +48,15 @@ function cartSignHtml(
   const accentColor = layout === "bold" ? "rgba(255,255,255,0.9)" : color;
 
   const nameLines = names
-    .map((n) => `<div style="font-size:110px;line-height:1.15;font-weight:bold;color:${nameColor};">${n}</div>`)
+    .map((n) => `<div style="font-size:150px;line-height:1.15;font-weight:bold;color:${nameColor};">${n}</div>`)
     .join("");
 
   return `
-    <div style="width:35.5in;height:7.5in;display:flex;flex-direction:column;align-items:center;justify-content:center;border:${borderStyle};border-radius:16px;padding:0.3in;text-align:center;font-family:${font};${bgStyle}">
-      ${opts.showLogo && logo ? `<img src="${logo}" alt="" style="height:1.1in;object-fit:contain;margin-bottom:0.15in;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
-      ${opts.showTournamentTitle ? `<div style="font-size:36px;font-weight:600;color:${subtitleColor};letter-spacing:6px;text-transform:uppercase;margin-bottom:0.1in;">${tournament?.title ?? ""}</div>` : ""}
+    <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:${borderStyle};border-radius:16px;padding:0.3in;text-align:center;font-family:${font};${bgStyle}">
+      ${opts.showLogo && logo ? `<img src="${logo}" alt="" style="height:1.3in;object-fit:contain;margin-bottom:0.15in;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
+      ${opts.showTournamentTitle ? `<div style="font-size:44px;font-weight:600;color:${subtitleColor};letter-spacing:6px;text-transform:uppercase;margin-bottom:0.1in;">${tournament?.title ?? ""}</div>` : ""}
       ${nameLines}
-      ${opts.showStartingHole && groupNumber != null ? `<div style="font-size:40px;color:${accentColor};font-weight:600;margin-top:0.12in;">Starting Hole: ${groupNumber}</div>` : ""}
+      ${opts.showStartingHole && groupNumber != null ? `<div style="font-size:48px;color:${accentColor};font-weight:600;margin-top:0.12in;">Starting Hole: ${groupNumber}</div>` : ""}
     </div>`;
 }
 
@@ -96,7 +96,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
 
   const allHtml = teams
     .flatMap((t) => cartsFor(t.key).map((c) => cartSignHtml(c.names, tournament, opts, t.groupNumber)))
-    .map((html, i, arr) => `<div style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
+    .map((html, i, arr) => `<div class="print-page" style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
     .join("");
 
   const saveNames = async (key: string) => {

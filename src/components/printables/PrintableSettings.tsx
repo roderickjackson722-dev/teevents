@@ -197,7 +197,7 @@ function ScorecardMiniPreview({ options, showCourseName, logoUrl }: { options: P
     <div className="space-y-2 pt-2 border-t border-border">
       <Label className="text-xs font-medium text-muted-foreground">Live Preview</Label>
       <div
-        className="rounded-md overflow-hidden bg-card max-w-md"
+        className="rounded-md overflow-hidden bg-card max-w-2xl"
         style={{ border: borderStyle, fontFamily: font }}
       >
         <div

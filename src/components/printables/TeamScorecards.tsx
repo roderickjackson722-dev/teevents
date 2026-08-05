@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Printer, Download, Loader2 } from "lucide-react";
+import { Printer, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, SCORECARD_PAGE_CSS } from "./printUtils";
 import type { Tournament, Registration } from "./types";

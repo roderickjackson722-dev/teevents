@@ -524,7 +524,7 @@ const Players = () => {
 
   const handleExportCSV = () => {
     const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Division / Tier", "Shirt Size", "Hole", "Payment", "Scoring Code"];
-    const rows = players.map((p) => [
+    const rowFor = (p: any) => [
       p.first_name,
       p.last_name,
       p.email,
@@ -535,16 +535,50 @@ const Players = () => {
       p.group_number?.toString() || "Unassigned",
       p.payment_status,
       codeOf(p),
-    ]);
-    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+    ];
+
+    // Mirror the dashboard layout: one block per pairing group, separated by a blank
+    // line, with a group header showing hole, tee time, team name and scoring code.
+    const nums = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))].sort((a, b) => a - b);
+    const rows: string[][] = [];
+    nums.forEach((num) => {
+      const members = players.filter((p) => p.group_number === num);
+      const code = members.map((p) => codeOf(p)).find(Boolean) || "Not assigned";
+      const tee = holeTeeTimes[num] ? fmtTee12(holeTeeTimes[num]) : "";
+      const team = teamNamesByHole[num] || "";
+      const label = [
+        `Hole ${num}`,
+        team ? `Team: ${team}` : "",
+        tee ? `Tee Time: ${tee}` : "",
+        `Scoring Code: ${code}`,
+        `${members.length} player${members.length === 1 ? "" : "s"}`,
+      ].filter(Boolean).join(" | ");
+      rows.push([label]);
+      rows.push(headers);
+      members.forEach((p) => rows.push(rowFor(p)));
+      rows.push([]);
+    });
+    const solo = players.filter((p) => p.group_number === null);
+    if (solo.length > 0) {
+      rows.push([`Unassigned | ${solo.length} player${solo.length === 1 ? "" : "s"}`]);
+      rows.push(headers);
+      solo.forEach((p) => rows.push(rowFor(p)));
+    }
+    if (rows.length === 0) {
+      rows.push(headers);
+      players.forEach((p) => rows.push(rowFor(p)));
+    }
+
+    const csv = rows.map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = "players.csv";
+    a.download = "pairings.csv";
     a.click();
     URL.revokeObjectURL(url);
   };
+
 
   const handleAddPlayer = async () => {
     if (demoGuard()) return;

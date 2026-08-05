@@ -1213,8 +1213,8 @@ const Players = () => {
 
   const applyStartTimesToHoles = () => {
     if (lockGuard()) return;
-    const groupNums = [...new Set([...Object.keys(holeLabels).map(Number), ...emptyGroups])]
-      .concat(players.map(p => p.group_number).filter((n): n is number => n != null))
+    const groupNums = groupsBase
+      .map((group) => group.number)
       .filter((n, i, arr) => arr.indexOf(n) === i)
       .sort((a, b) => a - b);
     if (groupNums.length === 0) {
@@ -1244,8 +1244,7 @@ const Players = () => {
         ordered = groupNums;
         const nextLabels = { ...holeLabels };
         groupNums.forEach((n) => { nextLabels[n] = String(firstTeeHole); });
-        setHoleLabels(nextLabels);
-        try { if (labelsStorageKey) localStorage.setItem(labelsStorageKey, JSON.stringify(nextLabels)); } catch { /* noop */ }
+        saveLabels(nextLabels);
       } else {
         const first = groupNums.filter(n => n >= firstTeeHole);
         const rest = groupNums.filter(n => n < firstTeeHole);
@@ -1304,6 +1303,15 @@ const Players = () => {
       return;
     }
     if (allGroupNumbers.includes(newNum)) {
+      if (startFormat === "tee_times") {
+        const next = { ...holeLabels, [oldNum]: String(newNum) };
+        saveLabels(next);
+        toast({
+          title: `Starting hole set to Hole ${newNum}`,
+          description: "Tee-time groups may share the same starting hole. The pairing group remains separate.",
+        });
+        return;
+      }
       toast({ title: "Hole already exists", description: `Hole ${newNum} is already in use.`, variant: "destructive" });
       return;
     }
@@ -2470,7 +2478,7 @@ const Players = () => {
               )}
 
               <Button onClick={applyStartTimesToHoles} size="sm" className="ml-auto">
-                {startFormat === "tee_times" ? "Apply Tee Times to Holes" : "Apply Shotgun Time"}
+                {startFormat === "tee_times" ? `Apply Hole ${firstTeeHole} & Tee Times` : "Apply Shotgun Time"}
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">

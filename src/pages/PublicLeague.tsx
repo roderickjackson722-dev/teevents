@@ -217,7 +217,7 @@ export default function PublicLeague() {
                         <TableCell>{e.course_name || "—"}</TableCell>
                         <TableCell className="capitalize">{String(e.format_type || "").replace(/_/g, " ")}</TableCell>
                         <TableCell className="text-right">
-                          {e.is_completed ? (
+                          {e.is_completed || (e.event_date && String(e.event_date) < new Date().toLocaleDateString("en-CA")) ? (
                             <Badge variant="secondary">Completed</Badge>
                           ) : showRegister ? (
                             <Button

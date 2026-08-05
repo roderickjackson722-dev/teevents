@@ -2357,6 +2357,7 @@ const Players = () => {
                         </div>
 
                         <div className="flex items-center gap-3 flex-nowrap overflow-x-auto pb-0.5">
+                        {editingLocationNum === group.number ? (
 
                           <div className="flex items-center gap-1">
                             <Input

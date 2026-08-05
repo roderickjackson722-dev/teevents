@@ -1,13 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Printer, Download, Loader2, Save, Car } from "lucide-react";
+import { Printer, Download, Loader2, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, CART_SIGN_PAGE_CSS } from "./printUtils";
 import type { Tournament, Registration } from "./types";
-import { getPrimaryColor } from "./types";
+import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import { buildTeams, splitCarts, type RegistrationGroupRow } from "./teamGrouping";
 
@@ -29,11 +29,9 @@ const FONT_MAP: Record<string, string> = {
   courier: "'Courier New', Courier, monospace",
 };
 
-/** One 36" x 8" landscape cart sign */
+/** One cart sign — classic centered layout with the two cart players stacked */
 function cartSignHtml(
   names: string[],
-  cartLabel: string,
-  teamName: string,
   tournament: Tournament | null,
   opts: PrintableOptions,
   groupNumber: number | null,
@@ -41,30 +39,24 @@ function cartSignHtml(
   const color = getPrimaryColor(tournament);
   const font = FONT_MAP[opts.font] || FONT_MAP.georgia;
   const layout = opts.layout;
+  const logo = getPrintLogo(tournament);
 
-  const borderStyle = layout === "bold" ? `6px solid ${color}` : layout === "modern" ? `2px solid #e0e0e0` : `4px solid ${color}`;
+  const borderStyle = layout === "bold" ? `3px solid ${color}` : layout === "modern" ? `1px solid #e0e0e0` : `2px solid ${color}`;
   const bgStyle = layout === "bold" ? `background:${color};` : "";
   const nameColor = layout === "bold" ? "#fff" : "#1a1a1a";
-  const subtitleColor = layout === "bold" ? "rgba(255,255,255,0.8)" : "#666";
-  const accentColor = layout === "bold" ? "rgba(255,255,255,0.95)" : color;
+  const subtitleColor = layout === "bold" ? "rgba(255,255,255,0.7)" : "#666";
+  const accentColor = layout === "bold" ? "rgba(255,255,255,0.9)" : color;
 
-  const nameBlocks = names
-    .map((n) => `<div style="flex:1;font-size:${names.length > 1 ? "120px" : "150px"};line-height:1.05;font-weight:bold;color:${nameColor};text-align:center;">${n}</div>`)
-    .join(`<div style="width:4px;height:60%;background:${accentColor};opacity:0.35;"></div>`);
+  const nameLines = names
+    .map((n) => `<div style="font-size:110px;line-height:1.15;font-weight:bold;color:${nameColor};">${n}</div>`)
+    .join("");
 
   return `
-    <div style="width:35.5in;height:7.5in;display:flex;flex-direction:column;border:${borderStyle};border-radius:24px;padding:0.4in 0.6in;font-family:${font};${bgStyle}">
-      <div style="display:flex;align-items:center;justify-content:space-between;gap:24px;">
-        <div style="text-align:left;">
-          ${opts.showTournamentTitle ? `<div style="font-size:34px;font-weight:600;color:${subtitleColor};letter-spacing:4px;text-transform:uppercase;">${tournament?.title ?? ""}</div>` : ""}
-          <div style="font-size:40px;font-weight:700;color:${accentColor};">${teamName} &bull; ${cartLabel}</div>
-        </div>
-        ${opts.showLogo && tournament?.site_logo_url ? `<img src="${tournament.site_logo_url}" alt="" style="height:1.1in;object-fit:contain;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
-      </div>
-      <div style="flex:1;display:flex;align-items:center;justify-content:space-around;gap:0.5in;">
-        ${nameBlocks}
-      </div>
-      ${opts.showStartingHole && groupNumber != null ? `<div style="font-size:38px;color:${accentColor};font-weight:700;text-align:center;">Starting Hole: ${groupNumber}</div>` : ""}
+    <div style="width:35.5in;height:7.5in;display:flex;flex-direction:column;align-items:center;justify-content:center;border:${borderStyle};border-radius:16px;padding:0.3in;text-align:center;font-family:${font};${bgStyle}">
+      ${opts.showLogo && logo ? `<img src="${logo}" alt="" style="height:1.1in;object-fit:contain;margin-bottom:0.15in;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
+      ${opts.showTournamentTitle ? `<div style="font-size:36px;font-weight:600;color:${subtitleColor};letter-spacing:6px;text-transform:uppercase;margin-bottom:0.1in;">${tournament?.title ?? ""}</div>` : ""}
+      ${nameLines}
+      ${opts.showStartingHole && groupNumber != null ? `<div style="font-size:40px;color:${accentColor};font-weight:600;margin-top:0.12in;">Starting Hole: ${groupNumber}</div>` : ""}
     </div>`;
 }
 
@@ -103,7 +95,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   };
 
   const allHtml = teams
-    .flatMap((t) => cartsFor(t.key).map((c) => cartSignHtml(c.names, c.label, t.teamName, tournament, opts, t.groupNumber)))
+    .flatMap((t) => cartsFor(t.key).map((c) => cartSignHtml(c.names, tournament, opts, t.groupNumber)))
     .map((html, i, arr) => `<div style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
     .join("");
 
@@ -150,7 +142,13 @@ export default function CartSignsTab({ tournament, registrations, loading, group
 
   return (
     <>
-      <PrintableSettings options={opts} onChange={setOpts} />
+      <PrintableSettings
+        options={opts}
+        onChange={setOpts}
+        variant="cartsign"
+        tournamentId={tournament?.id}
+        logoUrl={getPrintLogo(tournament)}
+      />
 
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <p className="text-xs text-muted-foreground">
@@ -170,6 +168,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
         {teams.map((t) => {
           const e = edits[t.key] || { cart1: ["", ""], cart2: ["", ""] };
           const carts = cartsFor(t.key);
+          const logo = getPrintLogo(tournament);
           return (
             <motion.div key={t.key} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
               className="bg-card border border-border rounded-xl p-4 space-y-4">
@@ -187,36 +186,34 @@ export default function CartSignsTab({ tournament, registrations, loading, group
                 <div key={cart} className="space-y-1">
                   <p className="text-xs font-medium text-muted-foreground">Cart {ci + 1}:</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <Input value={e[cart][0] ?? ""} onChange={(ev) => updateName(t.key, cart, 0, ev.target.value)} placeholder="Player name" className="text-sm" />
-                    <Input value={e[cart][1] ?? ""} onChange={(ev) => updateName(t.key, cart, 1, ev.target.value)} placeholder="Player name" className="text-sm" />
+                    <Input value={e[cart][0] ?? ""} onChange={(ev) => updateName(t.key, cart, 0, ev.target.value)} placeholder="Player 1 name" className="text-sm" />
+                    <Input value={e[cart][1] ?? ""} onChange={(ev) => updateName(t.key, cart, 1, ev.target.value)} placeholder="Player 2 name" className="text-sm" />
                   </div>
                 </div>
               ))}
 
-              {/* Preview */}
-              <div className="rounded-lg border-2 border-primary/30 p-4 bg-muted/20">
-                <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground mb-2 flex items-center gap-1">
-                  <Car className="h-3.5 w-3.5" /> Cart Sign Preview
-                </p>
-                <p className="text-lg font-display font-bold text-foreground">{t.teamName}</p>
-                {carts.length === 0 ? (
-                  <p className="text-xs text-muted-foreground mt-2">Add at least one name to generate a cart sign.</p>
-                ) : (
-                  carts.map((c) => (
-                    <div key={c.label} className="mt-3">
-                      <p className="text-xs font-medium text-primary">{c.label}:</p>
-                      <div className="flex flex-wrap gap-x-8 gap-y-1">
-                        {c.names.map((n, i) => (
-                          <span key={i} className="text-base font-semibold text-foreground">{n}</span>
-                        ))}
-                      </div>
+              {/* Previews — one per cart, matching the printed classic layout */}
+              {carts.length === 0 ? (
+                <p className="text-xs text-muted-foreground">Add at least one name to generate a cart sign.</p>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-4">
+                  {carts.map((c) => (
+                    <div key={c.label} className="bg-card border-2 border-primary/30 rounded-xl p-6 flex flex-col items-center text-center gap-2">
+                      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{c.label}</p>
+                      {opts.showLogo && logo && <img src={logo} alt="" className="h-10 object-contain" />}
+                      {opts.showTournamentTitle && (
+                        <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">{tournament?.title}</p>
+                      )}
+                      {c.names.map((n, i) => (
+                        <p key={i} className="text-xl font-display font-bold text-foreground leading-tight">{n}</p>
+                      ))}
+                      {opts.showStartingHole && t.groupNumber != null && (
+                        <p className="text-sm font-semibold text-primary">Starting Hole: {t.groupNumber}</p>
+                      )}
                     </div>
-                  ))
-                )}
-                {opts.showStartingHole && t.groupNumber != null && (
-                  <p className="text-xs text-primary mt-3">Starting Hole: {t.groupNumber}</p>
-                )}
-              </div>
+                  ))}
+                </div>
+              )}
             </motion.div>
           );
         })}

@@ -57,14 +57,15 @@ export default function PrintFitCheck({ getBodyHtml, target, fitOptions }: Props
               <AlertTriangle className="h-4 w-4 text-destructive" />
             )}
             {result.ok
-              ? `${result.target.label} fits the ${result.target.widthIn}in × ${result.target.heightIn}in page`
+              ? `${result.target.label} fits the ${sizeLabel(result.target)} page`
               : `${result.target.label} layout needs attention`}
           </div>
           <ul className="text-muted-foreground space-y-0.5">
             <li>
-              Page box measured: {result.measuredWidthIn}in × {result.measuredHeightIn}in (target{" "}
-              {result.target.widthIn}in × {result.target.heightIn}in)
+              Page box measured: {result.measuredHeightIn}in H × {result.measuredWidthIn}in W (target{" "}
+              {sizeLabel(result.target)})
             </li>
+
             <li>
               Content on paper: {result.contentWidthIn}in × {result.contentHeightIn}in at {Math.round(result.scale * 100)}% scale,{" "}
               {result.marginIn}in margins

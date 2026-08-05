@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Printer, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, scorecardCss, printLogoHtml } from "./printUtils";
-import { PRINT_TARGETS } from "./printLayout";
+import { PRINT_TARGETS, sizeLabel } from "./printLayout";
 import PrintFitCheck from "./PrintFitCheck";
 import PrintLogo from "./PrintLogo";
 import type { Tournament, Registration } from "./types";

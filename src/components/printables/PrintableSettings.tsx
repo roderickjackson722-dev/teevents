@@ -281,36 +281,46 @@ function ScorecardMiniPreview({ options, showCourseName, logoUrl }: { options: P
           )}
         </div>
         <div className="p-2 space-y-1.5">
-          {([
-            { holes: [1, 2, 3, 4, 5, 6, 7, 8, 9], pars: [4, 4, 3, 5, 4, 4, 3, 5, 4], label: "OUT", total: 36 },
-            { holes: [10, 11, 12, 13, 14, 15, 16, 17, 18], pars: [4, 3, 4, 5, 4, 4, 3, 5, 4], label: "IN", total: 36 },
-          ]).map((nine) => (
-            <table key={nine.label} className="w-full border-collapse text-[9px] table-fixed">
-              <tbody>
-                <tr className="bg-muted/50">
-                  <td className="border border-border px-1 py-0.5 font-bold w-14">Hole</td>
-                  {nine.holes.map((h) => (
-                    <td key={h} className="border border-border px-0.5 py-0.5 text-center font-semibold">{h}</td>
-                  ))}
-                  <td className="border border-border px-0.5 py-0.5 text-center font-bold bg-muted">{nine.label}</td>
-                </tr>
-                <tr>
-                  <td className="border border-border px-1 py-0.5 font-semibold text-muted-foreground">Par</td>
-                  {nine.pars.map((p, i) => (
-                    <td key={i} className="border border-border px-0.5 py-0.5 text-center text-muted-foreground">{p}</td>
-                  ))}
-                  <td className="border border-border px-0.5 py-0.5 text-center font-semibold">{nine.total}</td>
-                </tr>
-                <tr>
-                  <td className="border border-border px-1 py-1.5 font-semibold" style={{ color: accent }}>Score</td>
-                  {nine.holes.map((h) => (
-                    <td key={h} className="border border-border px-0.5 py-1.5">&nbsp;</td>
-                  ))}
-                  <td className="border border-border px-0.5 py-1.5">&nbsp;</td>
-                </tr>
-              </tbody>
-            </table>
-          ))}
+          {(() => {
+            const pars = [4, 4, 3, 5, 4, 4, 3, 5, 4, 4, 3, 4, 5, 4, 4, 3, 5, 4];
+            const holes = Array.from({ length: 18 }, (_, i) => i + 1);
+            const out = pars.slice(0, 9).reduce((a, b) => a + b, 0);
+            const inn = pars.slice(9).reduce((a, b) => a + b, 0);
+            return (
+              <table className="w-full border-collapse text-[8px] table-fixed">
+                <tbody>
+                  <tr className="bg-muted/50">
+                    <td className="border border-border px-1 py-0.5 font-bold w-12">Hole</td>
+                    {holes.map((h) => (
+                      <td key={h} className="border border-border py-0.5 text-center font-semibold">{h}</td>
+                    ))}
+                    <td className="border border-border py-0.5 text-center font-bold bg-muted">OUT</td>
+                    <td className="border border-border py-0.5 text-center font-bold bg-muted">IN</td>
+                    <td className="border border-border py-0.5 text-center font-bold bg-muted">TOT</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-1 py-0.5 font-semibold text-muted-foreground">Par</td>
+                    {pars.map((p, i) => (
+                      <td key={i} className="border border-border py-0.5 text-center text-muted-foreground">{p}</td>
+                    ))}
+                    <td className="border border-border py-0.5 text-center font-semibold">{out}</td>
+                    <td className="border border-border py-0.5 text-center font-semibold">{inn}</td>
+                    <td className="border border-border py-0.5 text-center font-semibold">{out + inn}</td>
+                  </tr>
+                  <tr>
+                    <td className="border border-border px-1 py-1.5 font-semibold" style={{ color: accent }}>Score</td>
+                    {holes.map((h) => (
+                      <td key={h} className="border border-border py-1.5">&nbsp;</td>
+                    ))}
+                    <td className="border border-border py-1.5">&nbsp;</td>
+                    <td className="border border-border py-1.5">&nbsp;</td>
+                    <td className="border border-border py-1.5">&nbsp;</td>
+                  </tr>
+                </tbody>
+              </table>
+            );
+          })()}
+
           <div className="flex items-center justify-between text-[10px]" style={{ color: accent }}>
             <span>Total Par 72 &bull; 18 Holes</span>
             {options.showStartingHole && <span>Starting Hole: 4</span>}

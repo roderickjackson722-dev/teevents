@@ -309,7 +309,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                     )}
                   </div>
                 )}
-                {!isEditing && opts.showLogo && getPrintLogo(tournament) && <img src={getPrintLogo(tournament)} alt="" className="h-8 object-contain" />}
+                {!isEditing && opts.showLogo && getPrintLogo(tournament) && <img src={getPrintLogo(tournament) || undefined} alt="" className="h-8 object-contain" />}
               </div>
 
               <div className="overflow-x-auto">

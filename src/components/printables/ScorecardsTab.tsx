@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport } from "./printUtils";
 import type { Tournament, Registration } from "./types";
-import { getPrimaryColor } from "./types";
+import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import TeamScorecards from "./TeamScorecards";
 import { isTeamScoringFormat, type RegistrationGroupRow } from "./teamGrouping";
@@ -186,7 +186,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
 
   return (
     <>
-      <PrintableSettings options={opts} onChange={setOpts} showCourseName />
+      <PrintableSettings options={opts} onChange={setOpts} showCourseName tournamentId={tournament?.id} logoUrl={getPrintLogo(tournament)} />
 
       <div className="flex items-center gap-2 mb-4 p-3 rounded-lg border border-border bg-muted/30">
         <Switch checked={teamMode} onCheckedChange={setTeamMode} id="toggle-team-scorecards" />

@@ -5,7 +5,7 @@ import { Printer, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, SCORECARD_PAGE_CSS } from "./printUtils";
 import type { Tournament, Registration } from "./types";
-import { getPrimaryColor } from "./types";
+import { getPrimaryColor, getPrintLogo } from "./types";
 import type { PrintableOptions } from "./PrintableSettings";
 import { buildTeams, playerName, type RegistrationGroupRow } from "./teamGrouping";
 

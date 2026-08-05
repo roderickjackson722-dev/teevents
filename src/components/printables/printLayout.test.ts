@@ -35,14 +35,15 @@ describe("buildPageCss", () => {
       const css = buildPageCss(card, { scale });
       expect(css).toContain("@page { size: 8in 6in; margin: 0; }");
       expect(css).toContain("width: 8in;\n    height: 6in;");
+      expect(css).toContain("!important");
     }
   });
 
   it("sizes content as (page - margins) / scale so scaling never grows the page", () => {
     const css = buildPageCss(cart, { scale: 0.5, marginIn: 0.25 });
     // (36 - 0.5) / 0.5 = 71, (8 - 0.5) / 0.5 = 15
-    expect(css).toContain("width: 71in;");
-    expect(css).toContain("height: 15in;");
+    expect(css).toContain("width: 71in !important;");
+    expect(css).toContain("height: 15in !important;");
     expect(css).toContain("transform: scale(0.5);");
   });
 

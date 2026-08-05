@@ -80,8 +80,10 @@ export function buildPageCss(target: PrintTarget, options: PrintFitOptions = {})
     position: relative;
   }
   .print-page > * {
-    width: ${contentW}in;
-    height: ${contentH}in;
+    /* !important so inline width:100%/height:100% on the printable card does not
+       defeat the scale layout box */
+    width: ${contentW}in !important;
+    height: ${contentH}in !important;
     box-sizing: border-box;
     transform: scale(${scale});
     transform-origin: top left;

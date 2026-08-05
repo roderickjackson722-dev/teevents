@@ -23,7 +23,7 @@ type Row = {
 
 const fmt = (c: number) => `$${((c || 0) / 100).toFixed(2)}`;
 
-export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
+export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }: { leagueId: string; showRecentCharges?: boolean }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [memberCount, setMemberCount] = useState(0);

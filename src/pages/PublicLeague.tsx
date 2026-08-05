@@ -267,7 +267,7 @@ export default function PublicLeague() {
                           <TableCell className="font-bold">{i + 1}</TableCell>
                           <TableCell className="font-medium">{s.league_members.member_name}</TableCell>
                           <TableCell className="text-right">{s.matches_played}</TableCell>
-                          <TableCell className="text-right">{s.wins}-{s.losses}-{s.ties}</TableCell>
+                          <TableCell className="text-right">{s.wins ?? 0}</TableCell>
                           <TableCell className="text-right">
                             {skin ? (
                               <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 bg-yellow-100 text-yellow-900 border border-yellow-300 font-medium">

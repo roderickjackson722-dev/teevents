@@ -50,7 +50,7 @@ const Printables = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, site_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options, scoring_format, date")
+      .select("id, title, site_logo_url, printable_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options, scoring_format, date")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {

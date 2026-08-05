@@ -5,7 +5,7 @@ import { Printer, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, SCORECARD_PAGE_CSS } from "./printUtils";
 import type { Tournament, Registration } from "./types";
-import { getPrimaryColor } from "./types";
+import { getPrimaryColor, getPrintLogo } from "./types";
 import type { PrintableOptions } from "./PrintableSettings";
 import { buildTeams, playerName, type RegistrationGroupRow } from "./teamGrouping";
 
@@ -102,7 +102,7 @@ function teamScorecardHtml(
           ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:10px;color:#666;">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""}</div>` : ""}
           <div style="font-size:10px;color:#444;">Players: ${edit.playersLine}</div>
         </div>
-        ${opts.showLogo && tournament?.site_logo_url ? `<img src="${tournament.site_logo_url}" alt="" style="height:0.5in;object-fit:contain;" />` : ""}
+        ${opts.showLogo && getPrintLogo(tournament) ? `<img src="${getPrintLogo(tournament)}" alt="" style="height:0.5in;object-fit:contain;" />` : ""}
       </div>
       <div style="flex:1;">${tables}</div>
       <div style="display:flex;justify-content:space-between;font-size:10px;color:${color};font-weight:600;">

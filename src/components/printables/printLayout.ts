@@ -18,8 +18,15 @@ export interface PrintTarget {
 
 export const PRINT_TARGETS: Record<PrintTargetId, PrintTarget> = {
   cartsign: { id: "cartsign", label: "Cart sign", widthIn: 36, heightIn: 8 },
-  scorecard: { id: "scorecard", label: "Scorecard", widthIn: 8, heightIn: 6 },
+  // Landscape letter so all 18 holes fit on a single line
+  scorecard: { id: "scorecard", label: "Scorecard", widthIn: 11, heightIn: 8.5 },
 };
+
+/** Human size label, always stated as height x width to match print shops. */
+export function sizeLabel(target: PrintTarget): string {
+  return `${target.heightIn}in H × ${target.widthIn}in W`;
+}
+
 
 /** CSS pixels per inch used by print engines for absolute units. */
 export const CSS_DPI = 96;

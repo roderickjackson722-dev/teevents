@@ -11,6 +11,8 @@ import {
   PRINT_MARGIN_CHOICES,
   PRINT_SCALE_CHOICES,
   PRINT_TARGETS,
+  sizeLabel,
+
 } from "./printLayout";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";

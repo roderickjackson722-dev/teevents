@@ -151,7 +151,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
     <>
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <p className="text-xs text-muted-foreground">
-          One scorecard per team with a single team score line &bull; prints at 6&quot; H &times; 8&quot; W
+          One scorecard per team with a single team score line &bull; prints landscape at {sizeLabel(PRINT_TARGETS.scorecard)} &bull; all {numHoles} holes on one line
         </p>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.scorecard} fitOptions={fitOptions} />

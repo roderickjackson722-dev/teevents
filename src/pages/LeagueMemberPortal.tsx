@@ -178,7 +178,7 @@ export default function LeagueMemberPortal() {
             {standing && (
               <div className="text-right">
                 <div className="text-2xl font-bold flex items-center gap-2 justify-end"><Trophy className="h-5 w-5 text-primary" /> {standing.points} pts</div>
-                <p className="text-xs text-muted-foreground">{standing.matches_played} matches · {standing.wins}-{standing.losses}-{standing.ties}</p>
+                <p className="text-xs text-muted-foreground">{standing.matches_played} matches · {standing.wins ?? 0} wins</p>
               </div>
             )}
           </CardContent>

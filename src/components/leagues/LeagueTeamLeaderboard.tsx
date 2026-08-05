@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Pencil, RefreshCw } from "lucide-react";
+import { Loader2, Pencil, RefreshCw, ListOrdered } from "lucide-react";
 import {
   buildLeaderboardRows,
   formatToPar,
@@ -27,6 +27,7 @@ export default function LeagueTeamLeaderboard({ eventId, editable = false }: Pro
   const [editing, setEditing] = useState<LeaderboardRow | null>(null);
   const [draft, setDraft] = useState<Record<number, string>>({});
   const [saving, setSaving] = useState(false);
+  const [viewing, setViewing] = useState<LeaderboardRow | null>(null);
 
   const load = useCallback(async () => {
     if (!eventId) return;
@@ -120,6 +121,7 @@ export default function LeagueTeamLeaderboard({ eventId, editable = false }: Pro
               {showGross && <TableHead className="text-right">Gross</TableHead>}
               {showNet && <TableHead className="text-right">Net</TableHead>}
               <TableHead className="text-right">Thru</TableHead>
+              <TableHead className="text-right">Scores</TableHead>
               {editable && <TableHead className="text-right">Edit</TableHead>}
             </TableRow>
           </TableHeader>
@@ -134,6 +136,11 @@ export default function LeagueTeamLeaderboard({ eventId, editable = false }: Pro
                 {showGross && <TableCell className="text-right">{r.thru > 0 ? formatToPar(r.toParGross) : "—"}</TableCell>}
                 {showNet && <TableCell className="text-right">{r.thru > 0 ? formatToPar(r.toParNet) : "—"}</TableCell>}
                 <TableCell className="text-right">{r.thru}</TableCell>
+                <TableCell className="text-right">
+                  <Button size="sm" variant="outline" onClick={() => setViewing(r)}>
+                    <ListOrdered className="h-3.5 w-3.5 mr-1" /> Hole-by-Hole
+                  </Button>
+                </TableCell>
                 {editable && (
                   <TableCell className="text-right">
                     <Button size="sm" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-3.5 w-3.5" /></Button>
@@ -144,6 +151,44 @@ export default function LeagueTeamLeaderboard({ eventId, editable = false }: Pro
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader><DialogTitle>Hole-by-Hole Scores — {viewing?.team_name}</DialogTitle></DialogHeader>
+          {viewing && (
+            <div className="max-h-[60vh] overflow-y-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Hole</TableHead>
+                    <TableHead className="text-right">Par</TableHead>
+                    <TableHead className="text-right">Score</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {Array.from({ length: viewing.holes }, (_, i) => i + 1).map((h) => {
+                    const par = Array.isArray(payload?.hole_pars) ? Number(payload!.hole_pars![h - 1]) : null;
+                    const sc = viewing.scores[h];
+                    return (
+                      <TableRow key={h}>
+                        <TableCell>{h}</TableCell>
+                        <TableCell className="text-right">{par ?? "—"}</TableCell>
+                        <TableCell className="text-right font-medium">{sc != null ? sc : "—"}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+              <p className="text-sm font-semibold mt-3">
+                Total: {viewing.gross || "—"} {viewing.thru > 0 ? `(thru ${viewing.thru})` : ""}
+              </p>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewing(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={!!editing} onOpenChange={(o) => !o && setEditing(null)}>
         <DialogContent className="max-w-lg">

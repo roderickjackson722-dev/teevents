@@ -156,7 +156,7 @@ export default function LeagueManage() {
           <TabsTrigger value="courses">Courses</TabsTrigger>
           <TabsTrigger value="pairings">Pairings</TabsTrigger>
           <TabsTrigger value="teams">Teams &amp; Codes</TabsTrigger>
-          <TabsTrigger value="scoring">Scoring</TabsTrigger>
+          <TabsTrigger value="scoring">Event Scoring</TabsTrigger>
           <TabsTrigger value="standings">Season Standings</TabsTrigger>
           <TabsTrigger value="skins">Skins</TabsTrigger>
           <TabsTrigger value="messages">Messages</TabsTrigger>

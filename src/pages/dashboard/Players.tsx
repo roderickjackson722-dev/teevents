@@ -894,19 +894,54 @@ const Players = () => {
   const [activeDay, setActiveDay] = useState<number>(0);
   useEffect(() => { if (activeDay >= numDays) setActiveDay(0); }, [numDays, activeDay]);
 
-  type DayCfg = { startFormat: "tee_times" | "shotgun"; firstTeeHole: number; firstTeeTime: string; teeInterval: number; shotgunTime: string };
-  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00" });
+  type DayCfg = {
+    startFormat: "tee_times" | "shotgun";
+    firstTeeHole: number;
+    firstTeeTime: string;
+    teeInterval: number;
+    shotgunTime: string;
+    roundFormat?: string;
+    roundHoles?: number;
+    sameStartHole?: boolean;
+  };
+  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00", roundFormat: "", roundHoles: 18, sameStartHole: false });
 
   const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
   const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
 
   const holeTeeTimes: Record<number, string> = holeTeeTimesByDay[activeDay] || {};
-  const dayCfg: DayCfg = startFormatByDay[activeDay] || defaultDayCfg();
+  const dayCfg: DayCfg = { ...defaultDayCfg(), ...(startFormatByDay[activeDay] || {}) };
   const startFormat = dayCfg.startFormat;
   const firstTeeHole = dayCfg.firstTeeHole;
   const firstTeeTime = dayCfg.firstTeeTime;
   const teeInterval = dayCfg.teeInterval;
   const shotgunTime = dayCfg.shotgunTime;
+
+  // Pairing card ordering (Group / Division / Tee Time)
+  const groups = [...groupsBase].sort((a, b) => {
+    if (pairSort === "division") {
+      const da = divisionOfGroup(a.players);
+      const db = divisionOfGroup(b.players);
+      if (da !== db) {
+        if (!da) return 1;
+        if (!db) return -1;
+        return da.localeCompare(db);
+      }
+      return a.number - b.number;
+    }
+    if (pairSort === "teetime") {
+      const ta = holeTeeTimes[a.number] || "";
+      const tb = holeTeeTimes[b.number] || "";
+      if (ta !== tb) {
+        if (!ta) return 1;
+        if (!tb) return -1;
+        return ta.localeCompare(tb);
+      }
+      return a.number - b.number;
+    }
+    return a.number - b.number;
+  });
+
 
   useEffect(() => {
     if (!locStorageKey) return;

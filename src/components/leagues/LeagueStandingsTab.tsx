@@ -104,6 +104,8 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
                     <TableHead>Player</TableHead>
                     <TableHead>HCP</TableHead>
                     <TableHead className="text-right">Matches</TableHead>
+                    <TableHead className="text-right w-24">Wins</TableHead>
+
                     
                     <TableHead className="text-right">Gross</TableHead>
                     <TableHead className="text-right">Net</TableHead>

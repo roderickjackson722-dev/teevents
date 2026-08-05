@@ -5,9 +5,7 @@ import { Printer, Download, Loader2, Pencil, Check, X, QrCode } from "lucide-rea
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, scorecardCss } from "./printUtils";
-import { PRINT_TARGETS } from "./printLayout";
-import PrintFitCheck from "./PrintFitCheck";
+import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml } from "./printUtils";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";

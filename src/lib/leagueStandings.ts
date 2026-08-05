@@ -101,16 +101,19 @@ export async function recomputeLeagueStandings(leagueId: string) {
 
       let points = Number(positionPoints[String(rank)] || 0) + Number(participationPoints || 0);
       let wins = 0, losses = 0, ties = 0;
-      if (tiedWithPrev || tiedWithNext) {
+      // First place is a win — including shared first place (teammates or tied players)
+      if (rank === 1) {
+        wins = 1;
+        points += tiedWithNext || tiedWithPrev ? tiePoints : winPoints;
+        if (tiedWithNext || tiedWithPrev) ties = 1;
+      } else if (tiedWithPrev || tiedWithNext) {
         points += tiePoints;
         ties = 1;
-      } else if (rank === 1) {
-        points += winPoints;
-        wins = 1;
       } else {
         points += lossPoints;
         losses = 1;
       }
+
 
       if (!perMember[p.memberId]) {
         perMember[p.memberId] = { points: 0, wins: 0, losses: 0, ties: 0, matches: 0, totalGross: 0, totalNet: 0, seasonId };

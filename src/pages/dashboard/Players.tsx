@@ -2649,7 +2649,13 @@ const Players = () => {
                                     <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary">
                                       {groupInfoById[p.group_id].name}
                                     </span>
+                                  {p.tier_id && (
+                                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-secondary/15 text-secondary-foreground border border-secondary/40">
+                                      {tierName(p.tier_id)}
+                                    </span>
                                   )}
+
+
 
 
                                   {p.handicap !== null && (

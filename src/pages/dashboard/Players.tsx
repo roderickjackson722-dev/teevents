@@ -966,22 +966,24 @@ const Players = () => {
     if (!filled.length) return issues;
 
     if (dayCfg.startFormat === "tee_times") {
-      const byTime = new Map<string, number[]>();
+      // Same tee time is fine on DIFFERENT starting holes (e.g. 8:00 off #1 and
+      // 8:00 off #10). Only flag groups sharing the same hole AND the same time.
+      const byHoleTime = new Map<string, number[]>();
       filled.forEach((g) => {
         const t = holeTeeTimes[g.number];
         if (!t) return;
-        byTime.set(t, [...(byTime.get(t) || []), g.number]);
+        const key = `${startHoleOf(g.number)}@${t}`;
+        byHoleTime.set(key, [...(byHoleTime.get(key) || []), g.number]);
       });
-      byTime.forEach((nums, t) => {
-        if (nums.length > 1) issues.push(`${nums.length} groups share the ${fmtTee12(t)} tee time (holes ${nums.join(", ")}).`);
+      byHoleTime.forEach((nums, key) => {
+        const [h, t] = key.split("@");
+        if (nums.length > 1)
+          issues.push(`${nums.length} groups share the ${fmtTee12(t)} tee time on hole #${h} (groups ${nums.join(", ")}).`);
       });
-      // Shared starting holes are expected for tee-time starts. Groups commonly
-      // begin on hole 1 or 10 (or another organizer-selected hole) at intervals.
-      // Only duplicate tee TIMES are conflicts in this mode; duplicate starting
-      // holes remain conflicts for shotgun starts below.
       const missing = filled.filter((g) => !holeTeeTimes[g.number]).map((g) => g.number);
       if (missing.length) issues.push(`No tee time set for ${missing.length} group(s): ${missing.join(", ")}.`);
     } else {
+
       const times = [...new Set(filled.map((g) => holeTeeTimes[g.number]).filter(Boolean))];
       if (times.length > 1) issues.push(`Shotgun start, but ${times.length} different start times are assigned. Re-apply the shotgun time.`);
       const byHole = new Map<string, number[]>();
@@ -1174,19 +1176,24 @@ const Players = () => {
     const next = { ...holeTeeTimes };
     const v = value.trim();
     if (v) {
-      // Prevent duplicate tee times within the same day (for tee_times format)
+      // Same time is allowed on different starting holes (8:00 off #1 and #10).
+      // Only warn when another group has the same time on the SAME hole.
       if (dayCfg.startFormat === "tee_times") {
-        const conflict = Object.entries(holeTeeTimes).find(([h, t]) => Number(h) !== num && t === v);
+        const thisHole = startHoleOf(num);
+        const conflict = Object.entries(holeTeeTimes).find(
+          ([h, t]) => Number(h) !== num && t === v && startHoleOf(Number(h)) === thisHole,
+        );
         if (conflict) {
           toast({
             title: "Duplicate tee time",
-            description: `Hole ${conflict[0]} is already at ${fmtTee12(v)} on ${tournamentDays[activeDay] || "this day"}. Choose a different time.`,
+            description: `Another group is already at ${fmtTee12(v)} on hole #${thisHole}. Use a different time or a different starting hole.`,
             variant: "destructive",
           });
           return;
         }
       }
       next[num] = v;
+
     } else {
       delete next[num];
     }

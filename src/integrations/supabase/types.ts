@@ -4269,6 +4269,7 @@ export type Database = {
           total_net: number
           updated_at: string
           wins: number
+          wins_override: number | null
         }
         Insert: {
           handicap_differential?: number | null
@@ -4285,6 +4286,7 @@ export type Database = {
           total_net?: number
           updated_at?: string
           wins?: number
+          wins_override?: number | null
         }
         Update: {
           handicap_differential?: number | null
@@ -4301,6 +4303,7 @@ export type Database = {
           total_net?: number
           updated_at?: string
           wins?: number
+          wins_override?: number | null
         }
         Relationships: [
           {

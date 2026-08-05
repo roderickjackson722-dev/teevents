@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
 import { Loader2, RefreshCw, Trophy } from "lucide-react";
@@ -52,6 +54,18 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
     setComputing(false);
   };
 
+  const saveWins = async (row: any, value: string) => {
+    const trimmed = value.trim();
+    const override = trimmed === "" ? null : Math.max(0, Number(trimmed) || 0);
+    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, wins_override: override } : r)));
+    const { error } = await (supabase as any)
+      .from("league_standings")
+      .update({ wins_override: override })
+      .eq("id", row.id);
+    if (error) toast({ title: "Could not save wins", description: error.message, variant: "destructive" });
+  };
+
+
   const groups: { label: string; rows: any[] }[] = (() => {
     if (!flightCfg.enabled || rows.length === 0) return [{ label: "", rows }];
     const n = flightsForMethod(flightCfg.method, 2);
@@ -92,6 +106,8 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
                     <TableHead>Player</TableHead>
                     <TableHead>HCP</TableHead>
                     <TableHead className="text-right">Matches</TableHead>
+                    <TableHead className="text-right w-24">Wins</TableHead>
+
                     
                     <TableHead className="text-right">Gross</TableHead>
                     <TableHead className="text-right">Net</TableHead>
@@ -106,6 +122,17 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
                       <TableCell className="font-medium">{r.league_members.member_name}</TableCell>
                       <TableCell>{r.league_members.handicap_index ?? "—"}</TableCell>
                       <TableCell className="text-right">{r.matches_played}</TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          type="number"
+                          min={0}
+                          className="h-8 w-16 ml-auto text-right"
+                          value={String(r.wins_override ?? r.wins ?? 0)}
+                          onChange={(e) => setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, wins_override: e.target.value === "" ? null : Number(e.target.value) } : x)))}
+                          onBlur={(e) => saveWins(r, e.target.value)}
+                        />
+                      </TableCell>
+
                       
                       <TableCell className="text-right">{r.total_gross}</TableCell>
                       <TableCell className="text-right">{r.total_net}</TableCell>

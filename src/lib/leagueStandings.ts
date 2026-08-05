@@ -101,16 +101,19 @@ export async function recomputeLeagueStandings(leagueId: string) {
 
       let points = Number(positionPoints[String(rank)] || 0) + Number(participationPoints || 0);
       let wins = 0, losses = 0, ties = 0;
-      if (tiedWithPrev || tiedWithNext) {
+      // First place is a win — including shared first place (teammates or tied players)
+      if (rank === 1) {
+        wins = 1;
+        points += tiedWithNext || tiedWithPrev ? tiePoints : winPoints;
+        if (tiedWithNext || tiedWithPrev) ties = 1;
+      } else if (tiedWithPrev || tiedWithNext) {
         points += tiePoints;
         ties = 1;
-      } else if (rank === 1) {
-        points += winPoints;
-        wins = 1;
       } else {
         points += lossPoints;
         losses = 1;
       }
+
 
       if (!perMember[p.memberId]) {
         perMember[p.memberId] = { points: 0, wins: 0, losses: 0, ties: 0, matches: 0, totalGross: 0, totalNet: 0, seasonId };
@@ -126,13 +129,18 @@ export async function recomputeLeagueStandings(leagueId: string) {
     });
   });
 
-  // Preserve manually tracked prize money across recomputes
+  // Preserve manually tracked prize money and manual win overrides across recomputes
   const { data: existing } = await (supabase as any)
     .from("league_standings")
-    .select("member_id, prize_money_cents")
+    .select("member_id, prize_money_cents, wins_override")
     .eq("league_id", leagueId);
   const prizeByMember: Record<string, number> = {};
-  (existing || []).forEach((e: any) => { prizeByMember[e.member_id] = e.prize_money_cents || 0; });
+  const winsOverrideByMember: Record<string, number | null> = {};
+  (existing || []).forEach((e: any) => {
+    prizeByMember[e.member_id] = e.prize_money_cents || 0;
+    winsOverrideByMember[e.member_id] = e.wins_override ?? null;
+  });
+
 
   // Clear then upsert
   await (supabase as any).from("league_standings").delete().eq("league_id", leagueId);
@@ -148,6 +156,8 @@ export async function recomputeLeagueStandings(leagueId: string) {
     total_gross: r.totalGross,
     total_net: r.totalNet,
     prize_money_cents: prizeByMember[memberId] || 0,
+    wins_override: winsOverrideByMember[memberId] ?? null,
+
   }));
   if (rows.length) {
     await (supabase as any).from("league_standings").insert(rows);

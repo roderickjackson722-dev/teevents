@@ -23,7 +23,7 @@ type Row = {
 
 const fmt = (c: number) => `$${((c || 0) / 100).toFixed(2)}`;
 
-export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
+export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }: { leagueId: string; showRecentCharges?: boolean }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
   const [memberCount, setMemberCount] = useState(0);
@@ -73,14 +73,23 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
     setSettings(s);
   };
 
-  /** When fees are passed to registrants, the organizer nets the full listed amount. */
-  const netOf = (grossCents: number, feeCents: number) => (passFees ? grossCents : grossCents - feeCents);
+  /**
+   * Gross = everything the participant paid (registration + fees when fees are passed on).
+   * Net  = what the organizer keeps after the platform fee.
+   */
+  const grossOf = (amountCents: number, feeCents: number) => (passFees ? amountCents + feeCents : amountCents);
+  const netOf = (amountCents: number, feeCents: number) => (passFees ? amountCents : amountCents - feeCents);
 
   const paid = useMemo(() => rows.filter((r) => r.status === "paid"), [rows]);
   const totals = useMemo(() => {
-    const gross = paid.reduce((s, r) => s + (r.amount_cents || 0), 0);
+    const amount = paid.reduce((s, r) => s + (r.amount_cents || 0), 0);
     const fee = paid.reduce((s, r) => s + (r.platform_fee_cents || 0), 0);
-    return { gross, fee, net: passFees ? gross : gross - fee, count: paid.length };
+    return {
+      gross: passFees ? amount + fee : amount,
+      fee,
+      net: passFees ? amount : amount - fee,
+      count: paid.length,
+    };
   }, [paid, passFees]);
 
 
@@ -165,7 +174,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
                     <TableCell className="font-medium">{e.name}</TableCell>
                     <TableCell>{e.date || "—"}</TableCell>
                     <TableCell className="text-right">{e.count}</TableCell>
-                    <TableCell className="text-right">{fmt(e.gross)}</TableCell>
+                    <TableCell className="text-right">{fmt(grossOf(e.gross, e.fee))}</TableCell>
                     <TableCell className="text-right text-amber-700">{fmt(e.fee)}</TableCell>
                     <TableCell className="text-right font-semibold">{fmt(netOf(e.gross, e.fee))}</TableCell>
                   </TableRow>
@@ -176,12 +185,13 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
         </CardContent>
       </Card>
 
+      {showRecentCharges && (
       <Card>
         <CardContent className="p-5">
           <h3 className="font-semibold mb-3">Recent charges</h3>
           <p className="text-xs text-muted-foreground mb-3">
             {passFees
-              ? "Fees are passed to registrants, so your net is the full registration amount. "
+              ? "Fees are passed to registrants — gross is what the participant paid (registration + fees) and your net is the full registration amount. "
               : "Your league absorbs the platform + processing fees, so they are deducted from your net. "}
 
             Only completed (paid) charges are shown. Abandoned or unpaid checkouts are excluded.
@@ -211,7 +221,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
                       <TableCell className="capitalize">{r.kind}</TableCell>
                       <TableCell>{r.member?.member_name || r.payer_email || "—"}</TableCell>
                       <TableCell>{r.event?.event_name || "—"}</TableCell>
-                      <TableCell className="text-right">{fmt(r.amount_cents)}</TableCell>
+                      <TableCell className="text-right">{fmt(grossOf(r.amount_cents || 0, r.platform_fee_cents || 0))}</TableCell>
                       <TableCell className="text-right text-amber-700">{fmt(r.platform_fee_cents)}</TableCell>
                       <TableCell className="text-right font-medium">{fmt(netOf(r.amount_cents || 0, r.platform_fee_cents || 0))}</TableCell>
                       <TableCell>
@@ -226,6 +236,7 @@ export default function LeaguePayoutsTab({ leagueId }: { leagueId: string }) {
           )}
         </CardContent>
       </Card>
+      )}
       <p className="text-xs text-muted-foreground">
         Charges go directly to your connected Stripe account. TeeVents keeps a 5% application fee per transaction — payouts follow your Stripe schedule.
       </p>

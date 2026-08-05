@@ -185,6 +185,9 @@ export default function LeagueEventRegister() {
   const activeFeeCents = hasTiers ? (selectedTier?.amount_cents ?? 0) : baseFeeCents;
   const feeDollars = activeFeeCents / 100;
   const alreadyRegistered = registration && (registration.registration_fee_paid || registration.fee_paid);
+  // Registration closes once the event date has passed (or the manager marked it complete).
+  const todayStr = new Date().toLocaleDateString("en-CA");
+  const eventClosed = !!event.is_completed || (!!event.event_date && String(event.event_date) < todayStr);
 
   return (
     <div className="min-h-screen bg-background">
@@ -219,7 +222,7 @@ export default function LeagueEventRegister() {
               </div>
             )}
 
-            {!alreadyRegistered && hasTiers && (
+            {!alreadyRegistered && !eventClosed && hasTiers && (
               <div className="rounded-md border p-3 space-y-2">
                 <p className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4" /> Choose your registration option</p>
                 <div className="space-y-2">
@@ -242,7 +245,19 @@ export default function LeagueEventRegister() {
               </div>
             )}
 
-            {alreadyRegistered ? (
+            {!alreadyRegistered && eventClosed ? (
+              <div className="space-y-3">
+                <div className="rounded-md border bg-muted/50 p-4 text-sm">
+                  <p className="font-semibold mb-1">Registration is closed</p>
+                  <p className="text-muted-foreground">
+                    This event {event.is_completed ? "has been completed" : `took place on ${event.event_date}`}, so registration is no longer available.
+                  </p>
+                </div>
+                <Button asChild variant="outline" className="w-full h-12">
+                  <Link to={`/league/${slug}`}>Back to {league.league_name}</Link>
+                </Button>
+              </div>
+            ) : alreadyRegistered ? (
               <div className="space-y-3">
                 <div className="rounded-md border border-emerald-300 bg-emerald-50 p-4 space-y-2">
                   <div className="flex items-center gap-2 text-emerald-800">

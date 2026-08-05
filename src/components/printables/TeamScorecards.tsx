@@ -237,9 +237,25 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
                     </p>
                     <p className="text-[11px] text-muted-foreground mb-2">Players: {e.playersLine}</p>
                   </div>
-                  {opts.showLogo && (
-                    <PrintLogo src={getPrintLogo(tournament)} placeholderWhenMissing className="h-10 shrink-0" />
-                  )}
+                  <div className="flex items-center gap-3 shrink-0">
+                    {scoringUrlFor(slug, t.scoringCode) && (
+                      <div className="flex items-center gap-2 border border-primary rounded-md p-1.5">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=124x124&margin=0&data=${encodeURIComponent(scoringUrlFor(slug, t.scoringCode))}`}
+                          alt="Scan to enter scores"
+                          className="h-14 w-14"
+                          loading="lazy"
+                        />
+                        <div className="leading-tight">
+                          <p className="text-[9px] font-bold uppercase tracking-wide text-primary">Scan to Enter Scores</p>
+                          <p className="text-[11px] font-bold text-foreground">{t.scoringCode ? `Code: ${t.scoringCode}` : "Enter your scoring code"}</p>
+                        </div>
+                      </div>
+                    )}
+                    {opts.showLogo && (
+                      <PrintLogo src={getPrintLogo(tournament)} placeholderWhenMissing className="h-10 shrink-0" />
+                    )}
+                  </div>
                 </div>
                 <table className="w-full text-[11px] border-collapse">
                   <tbody>

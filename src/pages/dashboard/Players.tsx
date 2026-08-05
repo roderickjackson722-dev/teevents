@@ -2344,8 +2344,19 @@ const Players = () => {
                             <Pencil className="h-2.5 w-2.5 opacity-70" />
                           </button>
                         )}
+                        {(() => {
+                          const div = divisionOfGroup(group.players);
+                          if (!div) return null;
+                          return (
+                            <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-secondary/15 text-secondary-foreground border border-secondary/40 whitespace-nowrap">
+                              Division: {div}
+                            </span>
+                          );
+                        })()}
+                        </div>
 
-                        {editingLocationNum === group.number ? (
+                        <div className="flex items-center gap-3 flex-nowrap overflow-x-auto pb-0.5">
+
                           <div className="flex items-center gap-1">
                             <Input
                               className="h-7 w-40 text-xs"

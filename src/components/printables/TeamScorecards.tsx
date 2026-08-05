@@ -70,6 +70,7 @@ function teamScorecardHtml(
   numHoles: number,
   opts: PrintableOptions,
   courseData?: CourseDataProp | null,
+  scoringUrl?: string,
 ) {
   const color = getPrimaryColor(tournament);
   const font = FONT_MAP[opts.font] || FONT_MAP.georgia;
@@ -83,7 +84,7 @@ function teamScorecardHtml(
 
   // Single line of holes (all 18 across) with OUT / IN / TOT summary columns
   const cell = (c: string, extra = "") =>
-    `<td style="border:1px solid #999;padding:3px 2px;text-align:center;font-size:10px;${extra}">${c}</td>`;
+    `<td style="border:1px solid #999;padding:2px 2px;text-align:center;font-size:10px;${extra}">${c}</td>`;
   const idx = Array.from({ length: numHoles }, (_, i) => i);
   const out = pars.slice(0, 9).reduce((s, p) => s + (p || 0), 0);
   const inn = numHoles === 18 ? pars.slice(9, 18).reduce((s, p) => s + (p || 0), 0) : 0;
@@ -104,25 +105,37 @@ function teamScorecardHtml(
         </tr>
         <tr>
           ${cell("Team Score", `font-weight:700;text-align:left;color:${color};font-size:9px;`)}
-          ${idx.map(() => cell("&nbsp;", "height:0.45in;")).join("")}
+          ${idx.map(() => cell("&nbsp;", "height:0.38in;")).join("")}
           ${totals.map(() => cell("&nbsp;", "background:#fafafa;")).join("")}
         </tr>
       </table>`;
 
+  const qrBox = scoringUrl
+    ? `<div style="display:flex;align-items:center;gap:8px;border:1px solid ${color};border-radius:6px;padding:4px 6px;">
+         ${qrHtml(scoringUrl, 62)}
+         <div style="line-height:1.3;">
+           <div style="font-size:9px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.5px;">Scan to Enter Scores</div>
+           ${scoringCode ? `<div style="font-size:11px;font-weight:700;color:#1a1a1a;">Code: ${scoringCode}</div>` : `<div style="font-size:9px;color:#666;">Enter your scoring code</div>`}
+         </div>
+       </div>`
+    : "";
 
   return `
-    <div style="width:100%;height:100%;page-break-inside:avoid;border:${border};border-radius:8px;padding:0.18in;font-family:${font};display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:8px;">
+    <div style="page-break-inside:avoid;border:${border};border-radius:8px;padding:0.14in;font-family:${font};display:flex;flex-direction:column;flex:1;min-height:0;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid #ddd;padding-bottom:5px;margin-bottom:6px;">
         <div>
-          <div style="font-size:14px;font-weight:bold;color:#1a1a1a;">${opts.showTournamentTitle ? `${tournament?.title ?? ""} &ndash; ` : ""}${edit.teamName}</div>
-          ${dateStr ? `<div style="font-size:10px;color:#666;">Date: ${dateStr}</div>` : ""}
-          ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:10px;color:#666;">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""}</div>` : ""}
-          <div style="font-size:10px;color:#444;">Players: ${edit.playersLine}</div>
+          <div style="font-size:13px;font-weight:bold;color:#1a1a1a;">${opts.showTournamentTitle ? `${tournament?.title ?? ""} &ndash; ` : ""}${edit.teamName}</div>
+          ${dateStr ? `<div style="font-size:9px;color:#666;">Date: ${dateStr}</div>` : ""}
+          ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:9px;color:#666;">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""}</div>` : ""}
+          <div style="font-size:9px;color:#444;">Players: ${edit.playersLine}</div>
         </div>
-        ${opts.showLogo ? printLogoHtml(getPrintLogo(tournament), { heightCss: "0.5in", color: "#999" }) : ""}
+        <div style="display:flex;align-items:center;gap:10px;">
+          ${qrBox}
+          ${opts.showLogo ? printLogoHtml(getPrintLogo(tournament), { heightCss: "0.42in", color: "#999" }) : ""}
+        </div>
       </div>
-      <div style="flex:1;">${tables}</div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:${color};font-weight:600;">
+      <div style="flex:1;min-height:0;">${tables}</div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:${color};font-weight:600;margin-top:4px;">
         <span>${scoringCode ? `Scoring Code: ${scoringCode}` : ""}</span>
         <span>${opts.showStartingHole && groupNumber != null ? `Starting Hole: ${groupNumber}` : ""}</span>
       </div>

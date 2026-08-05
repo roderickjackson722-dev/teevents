@@ -2796,10 +2796,10 @@ const Players = () => {
                         <span className="text-xs text-muted-foreground mr-1">
                           {group.players.length}/{maxGroupSize}
                         </span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0 || pairSort !== "group"} onClick={() => handleMoveGroup(group.number, -1)} title={pairSort === "group" ? "Move up" : "Switch to Sort by Group to reorder"}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0 || pairSort !== "group" || divFilter !== "all" || pairingsLocked} onClick={() => handleMoveGroup(group.number, -1)} title={pairSort === "group" ? "Move up" : "Switch to Sort by Group to reorder"}>
                           <ChevronUp className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === groups.length - 1 || pairSort !== "group"} onClick={() => handleMoveGroup(group.number, 1)} title={pairSort === "group" ? "Move down" : "Switch to Sort by Group to reorder"}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === visibleGroups.length - 1 || pairSort !== "group" || divFilter !== "all" || pairingsLocked} onClick={() => handleMoveGroup(group.number, 1)} title={pairSort === "group" ? "Move down" : "Switch to Sort by Group to reorder"}>
                           <ChevronDown className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
@@ -2880,7 +2880,7 @@ const Players = () => {
                     </Droppable>
                   </div>
                 ))}
-                {groups.length === 0 && (
+                {visibleGroups.length === 0 && (
                   <div className="text-center py-8 bg-card rounded-lg border border-dashed border-border">
                     <p className="text-sm text-muted-foreground">
                       No holes yet. Click "Auto-Assign All" or "New Hole" to start.

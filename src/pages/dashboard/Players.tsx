@@ -2520,7 +2520,7 @@ const Players = () => {
                         </p>
                       )}
                       {unassigned.map((p, index) => (
-                        <Draggable key={p.id} draggableId={p.id} index={index}>
+                        <Draggable key={p.id} draggableId={p.id} index={index} isDragDisabled={pairingsLocked}>
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
@@ -2837,7 +2837,7 @@ const Players = () => {
                           }`}
                         >
                           {group.players.map((p, index) => (
-                            <Draggable key={p.id} draggableId={p.id} index={index}>
+                            <Draggable key={p.id} draggableId={p.id} index={index} isDragDisabled={pairingsLocked}>
                               {(provided, snapshot) => (
                                 <div
                                   ref={provided.innerRef}

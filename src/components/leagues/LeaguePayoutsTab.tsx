@@ -73,14 +73,23 @@ export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }:
     setSettings(s);
   };
 
-  /** When fees are passed to registrants, the organizer nets the full listed amount. */
-  const netOf = (grossCents: number, feeCents: number) => (passFees ? grossCents : grossCents - feeCents);
+  /**
+   * Gross = everything the participant paid (registration + fees when fees are passed on).
+   * Net  = what the organizer keeps after the platform fee.
+   */
+  const grossOf = (amountCents: number, feeCents: number) => (passFees ? amountCents + feeCents : amountCents);
+  const netOf = (amountCents: number, feeCents: number) => (passFees ? amountCents : amountCents - feeCents);
 
   const paid = useMemo(() => rows.filter((r) => r.status === "paid"), [rows]);
   const totals = useMemo(() => {
-    const gross = paid.reduce((s, r) => s + (r.amount_cents || 0), 0);
+    const amount = paid.reduce((s, r) => s + (r.amount_cents || 0), 0);
     const fee = paid.reduce((s, r) => s + (r.platform_fee_cents || 0), 0);
-    return { gross, fee, net: passFees ? gross : gross - fee, count: paid.length };
+    return {
+      gross: passFees ? amount + fee : amount,
+      fee,
+      net: passFees ? amount : amount - fee,
+      count: paid.length,
+    };
   }, [paid, passFees]);
 
 

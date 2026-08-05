@@ -1131,11 +1131,23 @@ const Players = () => {
         toast({ title: "Invalid interval", description: "Interval must be at least 1 minute to avoid duplicate tee times.", variant: "destructive" });
         return;
       }
-      // Reorder so firstTeeHole comes first (e.g., 10, 11, ...18, 1, 2, ...9)
-      const first = groupNums.filter(n => n >= firstTeeHole);
-      const rest = groupNums.filter(n => n < firstTeeHole);
-      const ordered = [...first, ...rest];
+      // Tee-time start: hole numbers are independent of the time order. When
+      // "all groups start on the same hole" is on, every group keeps the chosen
+      // starting hole and only the tee times step forward.
+      let ordered: number[];
+      if (dayCfg.sameStartHole) {
+        ordered = groupNums;
+        const nextLabels = { ...holeLabels };
+        groupNums.forEach((n) => { nextLabels[n] = String(firstTeeHole); });
+        setHoleLabels(nextLabels);
+        try { if (labelsStorageKey) localStorage.setItem(labelsStorageKey, JSON.stringify(nextLabels)); } catch { /* noop */ }
+      } else {
+        const first = groupNums.filter(n => n >= firstTeeHole);
+        const rest = groupNums.filter(n => n < firstTeeHole);
+        ordered = [...first, ...rest];
+      }
       ordered.forEach((n, idx) => { next[n] = addMinutes(firstTeeTime, idx * teeInterval); });
+
       // Guard: ensure no two holes ended up with the same computed time
       const seen = new Map<string, number>();
       for (const [holeStr, t] of Object.entries(next)) {

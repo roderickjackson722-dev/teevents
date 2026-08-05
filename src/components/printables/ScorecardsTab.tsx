@@ -24,6 +24,8 @@ interface Props {
   loading: boolean;
   slug?: string;
   courseData?: CourseDataProp | null;
+  groups?: RegistrationGroupRow[];
+  scoringFormat?: string | null;
 }
 
 interface EditableReg extends Registration {

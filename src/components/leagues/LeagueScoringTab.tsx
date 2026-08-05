@@ -11,6 +11,8 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2, Save, PenLine, Sparkles, Trophy, ExternalLink } from "lucide-react";
 import { buildAllocation, netForHole, capNetDoubleBogey, type CourseSnapshot } from "@/lib/leagueHandicap";
 import { computeEventSkins } from "@/lib/leagueSkins";
+import { recomputeLeagueStandings } from "@/lib/leagueStandings";
+import { CheckCircle2, RefreshCw } from "lucide-react";
 
 interface Player {
   member_id: string;
@@ -31,12 +33,53 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   const [skinWinners, setSkinWinners] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [statusBusy, setStatusBusy] = useState(false);
+
+  const roundStatus: string = event?.round_status || "not_started";
+
+  const setRoundStatus = async (status: "in_progress" | "completed") => {
+    if (!eventId) return;
+    setStatusBusy(true);
+    const { error } = await (supabase as any)
+      .from("league_events")
+      .update({ round_status: status })
+      .eq("id", eventId);
+    if (error) {
+      toast({ title: "Update failed", description: error.message, variant: "destructive" });
+      setStatusBusy(false);
+      return;
+    }
+    setEvent((prev: any) => (prev ? { ...prev, round_status: status } : prev));
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, round_status: status } : e)));
+    if (status === "completed") {
+      try {
+        const n = await recomputeLeagueStandings(leagueId);
+        toast({ title: "Round completed", description: `Points & payouts computed — ${n} players ranked.` });
+      } catch (e: any) {
+        toast({ title: "Round completed, recompute failed", description: e.message, variant: "destructive" });
+      }
+    } else {
+      toast({ title: "Round reopened" });
+    }
+    setStatusBusy(false);
+  };
+
+  const recompute = async () => {
+    setStatusBusy(true);
+    try {
+      const n = await recomputeLeagueStandings(leagueId);
+      toast({ title: `Points & payouts recomputed — ${n} players ranked` });
+    } catch (e: any) {
+      toast({ title: "Recompute failed", description: e.message, variant: "destructive" });
+    }
+    setStatusBusy(false);
+  };
 
   useEffect(() => {
     (async () => {
       const { data } = await (supabase as any)
         .from("league_events")
-        .select("id, event_name, event_date, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents")
+        .select("id, event_name, event_date, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents, round_status, completed_at")
         .eq("league_id", leagueId)
         .order("event_date");
       setEvents(data || []);
@@ -335,6 +378,40 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
         )}
       </CardContent>
     </Card>
+
+    {eventId && (
+      <Card>
+        <CardContent className="pt-6 space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h3 className="font-semibold">Round Status</h3>
+            <Badge variant={roundStatus === "completed" ? "default" : "secondary"}>
+              {roundStatus === "completed" ? "Completed" : roundStatus === "in_progress" ? "In Progress" : "Not Started"}
+            </Badge>
+          </div>
+          {roundStatus === "completed" ? (
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button onClick={recompute} disabled={statusBusy}>
+                {statusBusy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
+                Recompute Points &amp; Payouts
+              </Button>
+              <Button variant="outline" onClick={() => setRoundStatus("in_progress")} disabled={statusBusy}>
+                Reopen Round
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button onClick={() => setRoundStatus("completed")} disabled={statusBusy}>
+                {statusBusy ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
+                Complete Round
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Once completed, scores are finalized and points/payouts are computed. Partial scores are still counted.
+              </p>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    )}
 
     {eventId && (
       <Card>

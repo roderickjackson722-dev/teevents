@@ -9,6 +9,8 @@ import { openPrintWindow, downloadHtmlAsPdf, getFontImport } from "./printUtils"
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
+import TeamScorecards from "./TeamScorecards";
+import { isTeamScoringFormat, type RegistrationGroupRow } from "./teamGrouping";
 
 interface CourseDataProp {
   hole_pars: number[] | null;
@@ -136,7 +138,9 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
     </div>`;
 }
 
-export default function ScorecardsTab({ tournament, registrations, loading, slug, courseData }: Props) {
+export default function ScorecardsTab({ tournament, registrations, loading, slug, courseData, groups = [], scoringFormat }: Props) {
+  const teamFormat = isTeamScoringFormat(scoringFormat);
+  const [teamMode, setTeamMode] = useState(teamFormat);
   const [numHoles, setNumHoles] = useState<9 | 18>(18);
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
   const [edits, setEdits] = useState<Record<string, EditableReg>>({});
@@ -184,6 +188,39 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
     <>
       <PrintableSettings options={opts} onChange={setOpts} showCourseName />
 
+      <div className="flex items-center gap-2 mb-4 p-3 rounded-lg border border-border bg-muted/30">
+        <Switch checked={teamMode} onCheckedChange={setTeamMode} id="toggle-team-scorecards" />
+        <Label htmlFor="toggle-team-scorecards" className="text-xs cursor-pointer">
+          Team scorecards &mdash; one team score line per group{teamFormat ? " (recommended for this format)" : ""}
+        </Label>
+      </div>
+
+      {teamMode ? (
+        <>
+          <div className="flex items-center gap-2 mb-4">
+            <span className="text-sm font-medium text-foreground">Holes:</span>
+            <div className="inline-flex rounded-lg border border-border overflow-hidden">
+              <button onClick={() => setNumHoles(9)}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${numHoles === 9 ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}>
+                9 Holes
+              </button>
+              <button onClick={() => setNumHoles(18)}
+                className={`px-3 py-1.5 text-sm font-medium transition-colors ${numHoles === 18 ? "bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-muted"}`}>
+                18 Holes
+              </button>
+            </div>
+          </div>
+          <TeamScorecards
+            tournament={tournament}
+            registrations={registrations}
+            groups={groups}
+            numHoles={numHoles}
+            opts={opts}
+            courseData={courseData}
+          />
+        </>
+      ) : (
+      <>
       <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -344,6 +381,8 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           );
         })}
       </div>
+      </>
+      )}
     </>
   );
 }

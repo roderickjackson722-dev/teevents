@@ -1,0 +1,1 @@
+ALTER TABLE public.registration_groups ADD COLUMN IF NOT EXISTS cart_sign_names JSONB;

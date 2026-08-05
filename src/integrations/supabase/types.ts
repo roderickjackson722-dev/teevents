@@ -6566,6 +6566,7 @@ export type Database = {
       }
       registration_groups: {
         Row: {
+          cart_sign_names: Json | null
           created_at: string
           group_name: string | null
           group_number: number | null
@@ -6577,6 +6578,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          cart_sign_names?: Json | null
           created_at?: string
           group_name?: string | null
           group_number?: number | null
@@ -6588,6 +6590,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          cart_sign_names?: Json | null
           created_at?: string
           group_name?: string | null
           group_number?: number | null

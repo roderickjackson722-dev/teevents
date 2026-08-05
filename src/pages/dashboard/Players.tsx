@@ -2559,7 +2559,7 @@ const Players = () => {
               <div className="space-y-4">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                    Holes ({groups.length})
+                    Holes ({visibleGroups.length}{hiddenGroupCount > 0 ? ` of ${groups.length}` : ""})
                   </h3>
                   <div className="ml-auto inline-flex rounded-md border border-border overflow-hidden">
                     {([
@@ -2579,7 +2579,36 @@ const Players = () => {
                   </div>
                 </div>
 
-                {groups.map((group, gIdx) => (
+                {divisionOptions.length > 0 && (
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground">Division:</span>
+                    <button
+                      type="button"
+                      className={`rounded-full border px-2.5 py-1 text-xs ${divFilter === "all" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:bg-muted"}`}
+                      onClick={() => setDivFilter("all")}
+                    >
+                      All
+                    </button>
+                    {divisionOptions.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        className={`rounded-full border px-2.5 py-1 text-xs ${divFilter === d ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:bg-muted"}`}
+                        onClick={() => setDivFilter(d)}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                    {hiddenGroupCount > 0 && (
+                      <span className="text-[11px] text-muted-foreground">
+                        {hiddenGroupCount} group{hiddenGroupCount === 1 ? "" : "s"} hidden by this filter
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {visibleGroups.map((group, gIdx) => (
+
                   <div key={group.number}>
                     <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                       <div className="flex flex-col gap-1.5 flex-1 min-w-0">

@@ -174,7 +174,7 @@ export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }:
                     <TableCell className="font-medium">{e.name}</TableCell>
                     <TableCell>{e.date || "—"}</TableCell>
                     <TableCell className="text-right">{e.count}</TableCell>
-                    <TableCell className="text-right">{fmt(e.gross)}</TableCell>
+                    <TableCell className="text-right">{fmt(grossOf(e.gross, e.fee))}</TableCell>
                     <TableCell className="text-right text-amber-700">{fmt(e.fee)}</TableCell>
                     <TableCell className="text-right font-semibold">{fmt(netOf(e.gross, e.fee))}</TableCell>
                   </TableRow>

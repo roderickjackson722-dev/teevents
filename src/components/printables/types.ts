@@ -2,6 +2,7 @@ export interface Tournament {
   id: string;
   title: string;
   site_logo_url: string | null;
+  printable_logo_url?: string | null;
   course_name: string | null;
   course_par: number | null;
   site_primary_color: string | null;
@@ -9,6 +10,11 @@ export interface Tournament {
   printable_font: string | null;
   printable_layout: string | null;
   hole_pars: number[] | null;
+}
+
+/** Logo used on printables: the dedicated printable logo, else the site logo */
+export function getPrintLogo(t: Tournament | null): string | null {
+  return t?.printable_logo_url || t?.site_logo_url || null;
 }
 
 export interface Registration {

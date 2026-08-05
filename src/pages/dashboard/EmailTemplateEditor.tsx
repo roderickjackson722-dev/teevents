@@ -24,6 +24,7 @@ import {
 import { formatTournamentDate } from "@/lib/formatDate";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
+import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
 
 interface EmailConfig {
   subject: string;
@@ -81,7 +82,7 @@ const DAY_BEFORE_SECTIONS: { id: string; label: string; hint: string }[] = [
 ];
 const DEFAULT_SECTION_ORDER = DAY_BEFORE_SECTIONS.map((s) => s.id);
 
-type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before";
+type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of";
 
 
 const DEFAULT_CONFIG: EmailConfig = {
@@ -173,12 +174,27 @@ const DEFAULT_DAY_BEFORE_CONFIG: EmailConfig = {
 };
 
 
+const DEFAULT_SPONSOR_DAY_OF_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "{{event_name}} – Sponsor Event Day Details",
+  header_title: "Sponsor Event Day Details",
+  greeting: "Hello {{sponsor_name}},",
+  body_text:
+    "Thank you for sponsoring {{event_name}}! We are excited to have you on board.\n\nHere are the details for event day:\n\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🕒 Check-in Time: {{checkin_time}}\n🏌️ Hole Assignment: Hole {{hole_number}}\n🅿️ Parking: {{parking_info}}\n📞 Event Contact: {{contact_name}} – {{contact_phone}}\n\nSpecial Notes:\n{{custom_notes}}",
+  closing_text:
+    "Important:\n• Please arrive at least 30 minutes before your assigned time to set up.\n• A table and two chairs will be provided at your hole.\n• If you need additional space or have special requests, please let us know in advance.\n\nIf you have any questions, contact us at info@teevents.golf.",
+  footer_text: "We look forward to seeing you there!",
+  show_event_details: false,
+  show_button: false,
+};
+
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
   sponsor: "Sponsor Confirmation",
   vendor: "Vendor Confirmation",
   post_event: "Post-Event Thank You",
   day_before: "Day Before Event Reminder",
+  sponsor_day_of: "Sponsor Event Day Details",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
@@ -187,6 +203,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
   day_before: "Your Tournament Is Almost Here!",
+  sponsor_day_of: "Sponsor Event Day Details",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -195,6 +212,7 @@ const CONFIG_KEY: Record<TemplateKind, string> = {
   vendor: "vendor_email_config",
   post_event: "post_event_email_config",
   day_before: "day_before_email_config",
+  sponsor_day_of: "sponsor_day_of_email_config",
 };
 
 const FONT_OPTIONS = [
@@ -221,6 +239,13 @@ const VARIABLE_TAGS = [
   { label: "Scoring Link", value: "{{scoring_link}}" },
   { label: "Leaderboard Link", value: "{{leaderboard_link}}" },
   { label: "Event Homepage", value: "{{event_homepage}}" },
+  { label: "Sponsor Name", value: "{{sponsor_name}}" },
+  { label: "Sponsor Tier", value: "{{sponsor_tier}}" },
+  { label: "Check-in Time", value: "{{checkin_time}}" },
+  { label: "Parking Info", value: "{{parking_info}}" },
+  { label: "Custom Notes", value: "{{custom_notes}}" },
+  { label: "Contact Name", value: "{{contact_name}}" },
+  { label: "Contact Phone", value: "{{contact_phone}}" },
 ];
 
 export default function EmailTemplateEditor() {
@@ -230,7 +255,7 @@ export default function EmailTemplateEditor() {
   const initialTemplate: TemplateKind = (() => {
     if (typeof window === "undefined") return "confirmation";
     const q = new URLSearchParams(window.location.search).get("template");
-    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor"
+    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of"
       ? (q as TemplateKind)
       : "confirmation";
   })();
@@ -246,7 +271,9 @@ export default function EmailTemplateEditor() {
           ? DEFAULT_SPONSOR_CONFIG
           : initialTemplate === "vendor"
             ? DEFAULT_VENDOR_CONFIG
-            : DEFAULT_CONFIG,
+            : initialTemplate === "sponsor_day_of"
+              ? DEFAULT_SPONSOR_DAY_OF_CONFIG
+              : DEFAULT_CONFIG,
   );
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -315,6 +342,7 @@ export default function EmailTemplateEditor() {
     if (k === "day_before") return DEFAULT_DAY_BEFORE_CONFIG;
     if (k === "sponsor") return DEFAULT_SPONSOR_CONFIG;
     if (k === "vendor") return DEFAULT_VENDOR_CONFIG;
+    if (k === "sponsor_day_of") return DEFAULT_SPONSOR_DAY_OF_CONFIG;
     return DEFAULT_CONFIG;
   };
 
@@ -359,7 +387,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url")
+        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -505,6 +533,13 @@ export default function EmailTemplateEditor() {
       event_homepage: homepage,
       tee_time: "TBD",
       hole_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
+      contact_name: t?.day_of_director_name || t?.contact_name || "Tournament Organizer",
+      contact_phone: t?.day_of_director_phone || t?.contact_phone || "",
+      checkin_time: "TBD",
+      parking_info: "",
+      custom_notes: "",
+      sponsor_name: "Your Sponsor",
+      sponsor_tier: "Sponsor",
     };
     if (courseAddress) vars.course_address = courseAddress;
     else if (location) vars.course_address = location;
@@ -725,6 +760,7 @@ export default function EmailTemplateEditor() {
               <SelectItem value="vendor">{TEMPLATE_LABELS.vendor}</SelectItem>
               <SelectItem value="post_event">{TEMPLATE_LABELS.post_event}</SelectItem>
               <SelectItem value="day_before">{TEMPLATE_LABELS.day_before}</SelectItem>
+              <SelectItem value="sponsor_day_of">{TEMPLATE_LABELS.sponsor_day_of}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -782,7 +818,9 @@ export default function EmailTemplateEditor() {
         <strong>{TEMPLATE_LABELS[templateKind]}:</strong>{" "}
         {templateKind === "post_event"
           ? "Sent after the tournament to thank players and invite them to your next event. Use the call-to-action button to link a sign-up form, mailing list, or your next event's registration page."
-          : templateKind === "day_before"
+          : templateKind === "sponsor_day_of"
+            ? "Send event-day details to your sponsors — pick sponsors, add parking info and custom notes, preview, then send from the Send tab."
+            : templateKind === "day_before"
             ? "This reminder is NOT sent on registration. Choose a send date and time below, or send it now — nothing goes out until you schedule or send it."
             : "Sent automatically when a player registers for this tournament."}
       </div>
@@ -1322,12 +1360,27 @@ export default function EmailTemplateEditor() {
 
         {/* Send Tab */}
         <TabsContent value="send" className="space-y-4">
+          {templateKind === "sponsor_day_of" && selectedTournament && org && (
+            <SponsorDayOfSender
+              tournamentId={selectedTournament}
+              organizationId={org.orgId}
+              subjectTemplate={config.subject}
+              baseVars={previewVars}
+              renderHtml={(vars) =>
+                renderEmailHtml(
+                  config,
+                  { ...previewVars, ...vars },
+                  config.header_title || TEMPLATE_HEADERS.sponsor_day_of,
+                )
+              }
+            />
+          )}
           {(templateKind === "sponsor" || templateKind === "vendor") && (
             <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-4 text-sm">
               <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and will apply automatically to future {templateKind} confirmations. Bulk resend from this screen currently supports registrants only — use the {templateKind === "sponsor" ? "Sponsors" : "Vendors"} page to manage individual {templateKind} records.
             </div>
           )}
-          {templateKind !== "sponsor" && templateKind !== "vendor" && (
+          {templateKind !== "sponsor" && templateKind !== "vendor" && templateKind !== "sponsor_day_of" && (
           <>
           <div className="bg-card rounded-lg border p-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">

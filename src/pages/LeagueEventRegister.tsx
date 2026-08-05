@@ -222,7 +222,7 @@ export default function LeagueEventRegister() {
               </div>
             )}
 
-            {!alreadyRegistered && hasTiers && (
+            {!alreadyRegistered && !eventClosed && hasTiers && (
               <div className="rounded-md border p-3 space-y-2">
                 <p className="text-sm font-semibold flex items-center gap-2"><DollarSign className="h-4 w-4" /> Choose your registration option</p>
                 <div className="space-y-2">

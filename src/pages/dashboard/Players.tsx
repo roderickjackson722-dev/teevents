@@ -781,18 +781,22 @@ const Players = () => {
 
 
   // Assign / regenerate the shared scoring code for one pairing group.
+  // Works for partial groups (1, 2 or 3 players) — the only requirement is that
+  // the players sit on a hole. We match on tournament + hole so every teammate
+  // ends up with the exact same code, even rows hidden by the current filters.
   const setGroupCode = async (groupNumber: number, code: string | null) => {
-    const ids = allPlayers.filter((p) => p.group_number === groupNumber).map((p) => p.id);
-    if (ids.length === 0) return { error: { message: "No players in this group yet." } as any };
+    if (!selectedTournament) return { error: { message: "Select a tournament first." } as any };
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ group_scoring_code: code, scoring_code: code })
-      .in("id", ids);
+      .eq("tournament_id", selectedTournament)
+      .eq("group_number", groupNumber);
     if (!error) {
       setAllPlayers((prev) => prev.map((p) => p.group_number === groupNumber ? { ...p, group_scoring_code: code, scoring_code: code } : p));
     }
     return { error };
   };
+
 
   const handleAssignGroupCode = async (groupNumber: number) => {
     if (demoGuard()) return;

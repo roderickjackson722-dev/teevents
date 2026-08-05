@@ -9911,6 +9911,8 @@ export type Database = {
           org_contact_phone: string | null
           organization_id: string
           paid_features: Json
+          pairings_locked: boolean
+          pairings_locked_at: string | null
           pass_fees_to_participants: boolean
           pass_fees_to_registrants: boolean
           payment_method_override: string
@@ -10187,6 +10189,8 @@ export type Database = {
           org_contact_phone?: string | null
           organization_id: string
           paid_features?: Json
+          pairings_locked?: boolean
+          pairings_locked_at?: string | null
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
           payment_method_override?: string
@@ -10463,6 +10467,8 @@ export type Database = {
           org_contact_phone?: string | null
           organization_id?: string
           paid_features?: Json
+          pairings_locked?: boolean
+          pairings_locked_at?: string | null
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
           payment_method_override?: string

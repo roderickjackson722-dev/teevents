@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Settings2 } from "lucide-react";
+import { Settings2, Lock, LockOpen, AlertTriangle, ShieldCheck } from "lucide-react";
 import {
   Users,
   Trophy,
@@ -268,7 +268,7 @@ const Players = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, max_players, allow_cash_registration, registration_fee_cents")
+      .select("id, title, max_players, allow_cash_registration, registration_fee_cents, pairings_locked, pairings_locked_at")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -800,6 +800,7 @@ const Players = () => {
 
 
   const handleAssignGroupCode = async (groupNumber: number) => {
+    if (lockGuard()) return;
     if (demoGuard()) return;
     const used = new Set(allPlayers.map((p) => codeOf(p)).filter(Boolean));
     let code = newScoringCode();
@@ -810,6 +811,7 @@ const Players = () => {
   };
 
   const handleRegenerateAllCodes = async () => {
+    if (lockGuard()) return;
     if (demoGuard()) return;
     const nums = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))];
     if (nums.length === 0) {
@@ -943,6 +945,111 @@ const Players = () => {
     return a.number - b.number;
   });
 
+  // ---- Division filter (Pro / Senior / Amateur / …) ----
+  const [divFilter, setDivFilter] = useState<string>("all");
+  const divisionOptions = [...new Set(
+    players.map((p) => (p.tier_id ? tierName(p.tier_id) : "")).filter((n) => n && n !== "—")
+  )].sort((a, b) => a.localeCompare(b));
+  useEffect(() => {
+    if (divFilter !== "all" && !divisionOptions.includes(divFilter)) setDivFilter("all");
+  }, [divisionOptions.join("|"), divFilter]);
+  const groupMatchesDivision = (list: Registration[]) =>
+    divFilter === "all" || list.some((p) => p.tier_id && tierName(p.tier_id) === divFilter);
+  const visibleGroups = groups.filter((g) => groupMatchesDivision(g.players));
+  const hiddenGroupCount = groups.length - visibleGroups.length;
+
+  // ---- Pairing conflict validation (tee times / starting holes) ----
+  const startHoleOf = (num: number) => String(holeLabels[num] ?? num).trim();
+  const pairingConflicts: string[] = useMemo(() => {
+    const issues: string[] = [];
+    const filled = groupsBase.filter((g) => g.players.length > 0);
+    if (!filled.length) return issues;
+
+    if (dayCfg.startFormat === "tee_times") {
+      const byTime = new Map<string, number[]>();
+      filled.forEach((g) => {
+        const t = holeTeeTimes[g.number];
+        if (!t) return;
+        byTime.set(t, [...(byTime.get(t) || []), g.number]);
+      });
+      byTime.forEach((nums, t) => {
+        if (nums.length > 1) issues.push(`${nums.length} groups share the ${fmtTee12(t)} tee time (holes ${nums.join(", ")}).`);
+      });
+      if (!dayCfg.sameStartHole) {
+        const byHole = new Map<string, number[]>();
+        filled.forEach((g) => {
+          const h = startHoleOf(g.number);
+          byHole.set(h, [...(byHole.get(h) || []), g.number]);
+        });
+        byHole.forEach((nums, h) => {
+          if (nums.length > 1) issues.push(`Starting hole #${h} is assigned to ${nums.length} groups (${nums.join(", ")}).`);
+        });
+      }
+      const missing = filled.filter((g) => !holeTeeTimes[g.number]).map((g) => g.number);
+      if (missing.length) issues.push(`No tee time set for ${missing.length} group(s): ${missing.join(", ")}.`);
+    } else {
+      const times = [...new Set(filled.map((g) => holeTeeTimes[g.number]).filter(Boolean))];
+      if (times.length > 1) issues.push(`Shotgun start, but ${times.length} different start times are assigned. Re-apply the shotgun time.`);
+      const byHole = new Map<string, number[]>();
+      filled.forEach((g) => {
+        const h = startHoleOf(g.number);
+        byHole.set(h, [...(byHole.get(h) || []), g.number]);
+      });
+      byHole.forEach((nums, h) => {
+        if (nums.length > 1) issues.push(`Shotgun hole #${h} is assigned to ${nums.length} groups (${nums.join(", ")}).`);
+      });
+    }
+    const oversized = filled.filter((g) => g.players.length > maxGroupSize).map((g) => g.number);
+    if (oversized.length) issues.push(`Group(s) ${oversized.join(", ")} have more than ${maxGroupSize} players.`);
+    return issues;
+  }, [groupsBase.map((g) => `${g.number}:${g.players.length}`).join("|"), JSON.stringify(holeTeeTimes), JSON.stringify(holeLabels), dayCfg.startFormat, dayCfg.sameStartHole, activeDay]);
+
+  // ---- Lock / publish pairings ----
+  const pairingsLocked = !!currentTournamentObj?.pairings_locked;
+  const [lockSaving, setLockSaving] = useState(false);
+  const lockGuard = () => {
+    if (!pairingsLocked) return false;
+    toast({
+      title: "Pairings are locked",
+      description: "Unlock pairings at the top of this section to make changes.",
+      variant: "destructive",
+    });
+    return true;
+  };
+  const setPairingsLocked = async (locked: boolean) => {
+    if (!selectedTournament || demoGuard()) return;
+    if (locked && pairingConflicts.length) {
+      toast({
+        title: "Resolve conflicts first",
+        description: pairingConflicts[0],
+        variant: "destructive",
+      });
+      return;
+    }
+    setLockSaving(true);
+    const lockedAt = locked ? new Date().toISOString() : null;
+    const { error } = await (supabase as any)
+      .from("tournaments")
+      .update({ pairings_locked: locked, pairings_locked_at: lockedAt })
+      .eq("id", selectedTournament);
+    setLockSaving(false);
+    if (error) {
+      toast({ title: "Could not update lock", description: error.message, variant: "destructive" });
+      return;
+    }
+    setTournaments((list: any[]) => list.map((t: any) => (
+      t.id === selectedTournament ? { ...t, pairings_locked: locked, pairings_locked_at: lockedAt } : t
+    )));
+    toast({
+      title: locked ? "Pairings locked" : "Pairings unlocked",
+      description: locked
+        ? "Assignments, tee times, and scoring codes are now read-only."
+        : "You can edit assignments again.",
+    });
+  };
+
+
+
 
   useEffect(() => {
     if (!locStorageKey) return;
@@ -1057,7 +1164,7 @@ const Players = () => {
     try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(nextAll)); } catch { /* noop */ }
     void persistTeeTimesToDb(nextForDay, activeDay);
   };
-  const fmtTee12 = (t?: string) => {
+  function fmtTee12(t?: string) {
     if (!t) return "";
     const m = /^(\d{1,2}):(\d{2})/.exec(t);
     if (!m) return t;
@@ -1066,8 +1173,10 @@ const Players = () => {
     const ap = h >= 12 ? "PM" : "AM";
     h = h % 12 || 12;
     return `${h}:${mm} ${ap}`;
-  };
+  }
+
   const saveHoleTeeTime = (num: number, value: string) => {
+    if (lockGuard()) return;
     const next = { ...holeTeeTimes };
     const v = value.trim();
     if (v) {
@@ -1109,6 +1218,7 @@ const Players = () => {
   };
 
   const applyStartTimesToHoles = () => {
+    if (lockGuard()) return;
     const groupNums = [...new Set([...Object.keys(holeLabels).map(Number), ...emptyGroups])]
       .concat(players.map(p => p.group_number).filter((n): n is number => n != null))
       .filter((n, i, arr) => arr.indexOf(n) === i)
@@ -1170,11 +1280,13 @@ const Players = () => {
 
 
   const handleAddGroup = () => {
+    if (lockGuard()) return;
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);
     toast({ title: `Hole ${nextGroupNumber} created` });
   };
 
   const handleRenameGroup = async (oldNum: number, rawInput: string) => {
+    if (lockGuard()) return;
     setEditingGroupNum(null);
     const trimmed = rawInput.trim();
     if (!trimmed) return;
@@ -1235,6 +1347,7 @@ const Players = () => {
 
 
   const handleDeleteGroup = async (num: number) => {
+    if (lockGuard()) return;
     if (demoGuard()) return;
     const ids = players.filter((p) => p.group_number === num).map((p) => p.id);
     if (ids.length > 0) {
@@ -1255,6 +1368,7 @@ const Players = () => {
   };
 
   const handleMoveGroup = async (num: number, dir: -1 | 1) => {
+    if (lockGuard()) return;
     const idx = allGroupNumbers.indexOf(num);
     const swapIdx = idx + dir;
     if (idx < 0 || swapIdx < 0 || swapIdx >= allGroupNumbers.length) return;
@@ -1288,6 +1402,7 @@ const Players = () => {
   };
 
   const handleAssignPlayer = async (playerId: string, groupNum: number, position: number) => {
+    if (lockGuard()) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ group_number: groupNum, group_position: position })
@@ -1303,6 +1418,7 @@ const Players = () => {
   };
 
   const handleUnassignPlayer = async (playerId: string) => {
+    if (lockGuard()) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ group_number: null, group_position: null })
@@ -1318,6 +1434,7 @@ const Players = () => {
   };
 
   const handleAutoAssign = async () => {
+    if (lockGuard()) return;
     const unassignedPlayers = players.filter((p) => p.group_number === null);
     if (unassignedPlayers.length === 0) return;
 
@@ -1383,6 +1500,7 @@ const Players = () => {
 
 
   const onDragEnd = async (result: DropResult) => {
+    if (lockGuard()) return;
     const { draggableId, source, destination } = result;
     if (!destination) return;
 
@@ -2145,6 +2263,65 @@ const Players = () => {
       ) : (
         /* Pairings View */
         <div>
+          {/* Lock / publish pairings */}
+          <div className={`mb-4 rounded-lg border p-4 ${pairingsLocked ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}>
+            <div className="flex flex-wrap items-center gap-3">
+              {pairingsLocked ? <Lock className="h-5 w-5 text-primary" /> : <LockOpen className="h-5 w-5 text-muted-foreground" />}
+              <div className="min-w-[14rem] flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  {pairingsLocked ? "Pairings locked (final)" : "Pairings unlocked (editable)"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {pairingsLocked
+                    ? `Assignments, tee times, team names, and scoring codes are read-only${currentTournamentObj?.pairings_locked_at ? ` · locked ${new Date(currentTournamentObj.pairings_locked_at).toLocaleString()}` : ""}.`
+                    : "Lock pairings once assignments are final to prevent accidental edits."}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant={pairingsLocked ? "outline" : "default"}
+                disabled={lockSaving}
+                onClick={() => setPairingsLocked(!pairingsLocked)}
+              >
+                {pairingsLocked ? (
+                  <><LockOpen className="h-4 w-4 mr-1" /> Unlock Pairings</>
+                ) : (
+                  <><Lock className="h-4 w-4 mr-1" /> Lock &amp; Publish Pairings</>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Conflict validation */}
+          {pairingConflicts.length > 0 ? (
+            <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-destructive">
+                    {pairingConflicts.length} scheduling conflict{pairingConflicts.length === 1 ? "" : "s"} to review
+                    {numDays > 1 ? ` (Day ${activeDay + 1})` : ""}
+                  </p>
+                  <ul className="mt-1 list-disc pl-5 text-xs text-foreground space-y-0.5">
+                    {pairingConflicts.map((c, i) => <li key={i}>{c}</li>)}
+                  </ul>
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    Fix these before locking pairings — locking is blocked while conflicts exist.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            groupsBase.some((g) => g.players.length > 0) && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <p className="text-xs text-muted-foreground">
+                  No tee time or starting-hole conflicts detected{numDays > 1 ? ` for Day ${activeDay + 1}` : ""}.
+                </p>
+              </div>
+            )
+          )}
+
           {/* Start Format Controls */}
           <div className="mb-4 rounded-lg border border-border bg-card p-4">
             {numDays > 1 && (
@@ -2343,7 +2520,7 @@ const Players = () => {
                         </p>
                       )}
                       {unassigned.map((p, index) => (
-                        <Draggable key={p.id} draggableId={p.id} index={index}>
+                        <Draggable key={p.id} draggableId={p.id} index={index} isDragDisabled={pairingsLocked}>
                           {(provided, snapshot) => (
                             <div
                               ref={provided.innerRef}
@@ -2382,7 +2559,7 @@ const Players = () => {
               <div className="space-y-4">
                 <div className="mb-3 flex flex-wrap items-center gap-2">
                   <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
-                    Holes ({groups.length})
+                    Holes ({visibleGroups.length}{hiddenGroupCount > 0 ? ` of ${groups.length}` : ""})
                   </h3>
                   <div className="ml-auto inline-flex rounded-md border border-border overflow-hidden">
                     {([
@@ -2402,7 +2579,36 @@ const Players = () => {
                   </div>
                 </div>
 
-                {groups.map((group, gIdx) => (
+                {divisionOptions.length > 0 && (
+                  <div className="mb-3 flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-medium text-muted-foreground">Division:</span>
+                    <button
+                      type="button"
+                      className={`rounded-full border px-2.5 py-1 text-xs ${divFilter === "all" ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:bg-muted"}`}
+                      onClick={() => setDivFilter("all")}
+                    >
+                      All
+                    </button>
+                    {divisionOptions.map((d) => (
+                      <button
+                        key={d}
+                        type="button"
+                        className={`rounded-full border px-2.5 py-1 text-xs ${divFilter === d ? "border-primary bg-primary text-primary-foreground" : "border-border bg-background text-foreground hover:bg-muted"}`}
+                        onClick={() => setDivFilter(d)}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                    {hiddenGroupCount > 0 && (
+                      <span className="text-[11px] text-muted-foreground">
+                        {hiddenGroupCount} group{hiddenGroupCount === 1 ? "" : "s"} hidden by this filter
+                      </span>
+                    )}
+                  </div>
+                )}
+
+                {visibleGroups.map((group, gIdx) => (
+
                   <div key={group.number}>
                     <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
                       <div className="flex flex-col gap-1.5 flex-1 min-w-0">
@@ -2590,10 +2796,10 @@ const Players = () => {
                         <span className="text-xs text-muted-foreground mr-1">
                           {group.players.length}/{maxGroupSize}
                         </span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0 || pairSort !== "group"} onClick={() => handleMoveGroup(group.number, -1)} title={pairSort === "group" ? "Move up" : "Switch to Sort by Group to reorder"}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0 || pairSort !== "group" || divFilter !== "all" || pairingsLocked} onClick={() => handleMoveGroup(group.number, -1)} title={pairSort === "group" ? "Move up" : "Switch to Sort by Group to reorder"}>
                           <ChevronUp className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === groups.length - 1 || pairSort !== "group"} onClick={() => handleMoveGroup(group.number, 1)} title={pairSort === "group" ? "Move down" : "Switch to Sort by Group to reorder"}>
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === visibleGroups.length - 1 || pairSort !== "group" || divFilter !== "all" || pairingsLocked} onClick={() => handleMoveGroup(group.number, 1)} title={pairSort === "group" ? "Move down" : "Switch to Sort by Group to reorder"}>
                           <ChevronDown className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
@@ -2631,7 +2837,7 @@ const Players = () => {
                           }`}
                         >
                           {group.players.map((p, index) => (
-                            <Draggable key={p.id} draggableId={p.id} index={index}>
+                            <Draggable key={p.id} draggableId={p.id} index={index} isDragDisabled={pairingsLocked}>
                               {(provided, snapshot) => (
                                 <div
                                   ref={provided.innerRef}
@@ -2674,7 +2880,7 @@ const Players = () => {
                     </Droppable>
                   </div>
                 ))}
-                {groups.length === 0 && (
+                {visibleGroups.length === 0 && (
                   <div className="text-center py-8 bg-card rounded-lg border border-dashed border-border">
                     <p className="text-sm text-muted-foreground">
                       No holes yet. Click "Auto-Assign All" or "New Hole" to start.

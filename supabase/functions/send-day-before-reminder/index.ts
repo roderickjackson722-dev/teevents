@@ -466,6 +466,8 @@ Deno.serve(async (req) => {
         body: JSON.stringify({
           from: SENDER,
           to: [to],
+          // Always copy the TeeVents admin inbox on day-before reminders
+          bcc: ["info@teevents.golf"],
           subject,
           html: buildHtml(config, vars, homepage, addons || [], homepage),
         }),

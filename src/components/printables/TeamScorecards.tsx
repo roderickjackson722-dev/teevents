@@ -27,6 +27,19 @@ interface Props {
   numHoles: 9 | 18;
   opts: PrintableOptions;
   courseData?: CourseDataProp | null;
+  /** Public tournament slug, used to build the score-entry QR link */
+  slug?: string;
+}
+
+/** Link to the score-entry page (code pre-filled when the team has one). */
+function scoringUrlFor(slug: string | undefined, scoringCode: string | null | undefined): string {
+  if (!slug || typeof window === "undefined") return "";
+  const base = `${window.location.origin}/t/${slug}/scoring`;
+  return scoringCode ? `${base}?code=${scoringCode}` : base;
+}
+
+function qrHtml(url: string, size = 88) {
+  return `<img src="https://api.qrserver.com/v1/create-qr-code/?size=${size * 2}x${size * 2}&margin=0&data=${encodeURIComponent(url)}" alt="Scan to enter scores" style="width:${size}px;height:${size}px;display:block;" />`;
 }
 
 const FONT_MAP: Record<string, string> = {
@@ -57,6 +70,7 @@ function teamScorecardHtml(
   numHoles: number,
   opts: PrintableOptions,
   courseData?: CourseDataProp | null,
+  scoringUrl?: string,
 ) {
   const color = getPrimaryColor(tournament);
   const font = FONT_MAP[opts.font] || FONT_MAP.georgia;
@@ -70,7 +84,7 @@ function teamScorecardHtml(
 
   // Single line of holes (all 18 across) with OUT / IN / TOT summary columns
   const cell = (c: string, extra = "") =>
-    `<td style="border:1px solid #999;padding:3px 2px;text-align:center;font-size:10px;${extra}">${c}</td>`;
+    `<td style="border:1px solid #999;padding:2px 2px;text-align:center;font-size:10px;${extra}">${c}</td>`;
   const idx = Array.from({ length: numHoles }, (_, i) => i);
   const out = pars.slice(0, 9).reduce((s, p) => s + (p || 0), 0);
   const inn = numHoles === 18 ? pars.slice(9, 18).reduce((s, p) => s + (p || 0), 0) : 0;
@@ -91,34 +105,47 @@ function teamScorecardHtml(
         </tr>
         <tr>
           ${cell("Team Score", `font-weight:700;text-align:left;color:${color};font-size:9px;`)}
-          ${idx.map(() => cell("&nbsp;", "height:0.45in;")).join("")}
+          ${idx.map(() => cell("&nbsp;", "height:0.38in;")).join("")}
           ${totals.map(() => cell("&nbsp;", "background:#fafafa;")).join("")}
         </tr>
       </table>`;
 
+  const qrBox = scoringUrl
+    ? `<div style="display:flex;align-items:center;gap:8px;border:1px solid ${color};border-radius:6px;padding:4px 6px;">
+         ${qrHtml(scoringUrl, 62)}
+         <div style="line-height:1.3;">
+           <div style="font-size:9px;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:0.5px;">Scan to Enter Scores</div>
+           ${scoringCode ? `<div style="font-size:11px;font-weight:700;color:#1a1a1a;">Code: ${scoringCode}</div>` : `<div style="font-size:9px;color:#666;">Enter your scoring code</div>`}
+         </div>
+       </div>`
+    : "";
 
   return `
-    <div style="width:100%;height:100%;page-break-inside:avoid;border:${border};border-radius:8px;padding:0.18in;font-family:${font};display:flex;flex-direction:column;">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid #ddd;padding-bottom:6px;margin-bottom:8px;">
+    <div style="page-break-inside:avoid;border:${border};border-radius:8px;padding:0.14in;font-family:${font};display:flex;flex-direction:column;flex:1;min-height:0;">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;border-bottom:1px solid #ddd;padding-bottom:5px;margin-bottom:6px;">
         <div>
-          <div style="font-size:14px;font-weight:bold;color:#1a1a1a;">${opts.showTournamentTitle ? `${tournament?.title ?? ""} &ndash; ` : ""}${edit.teamName}</div>
-          ${dateStr ? `<div style="font-size:10px;color:#666;">Date: ${dateStr}</div>` : ""}
-          ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:10px;color:#666;">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""}</div>` : ""}
-          <div style="font-size:10px;color:#444;">Players: ${edit.playersLine}</div>
+          <div style="font-size:13px;font-weight:bold;color:#1a1a1a;">${opts.showTournamentTitle ? `${tournament?.title ?? ""} &ndash; ` : ""}${edit.teamName}</div>
+          ${dateStr ? `<div style="font-size:9px;color:#666;">Date: ${dateStr}</div>` : ""}
+          ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:9px;color:#666;">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""}</div>` : ""}
+          <div style="font-size:9px;color:#444;">Players: ${edit.playersLine}</div>
         </div>
-        ${opts.showLogo ? printLogoHtml(getPrintLogo(tournament), { heightCss: "0.5in", color: "#999" }) : ""}
+        <div style="display:flex;align-items:center;gap:10px;">
+          ${qrBox}
+          ${opts.showLogo ? printLogoHtml(getPrintLogo(tournament), { heightCss: "0.42in", color: "#999" }) : ""}
+        </div>
       </div>
-      <div style="flex:1;">${tables}</div>
-      <div style="display:flex;justify-content:space-between;font-size:10px;color:${color};font-weight:600;">
+      <div style="flex:1;min-height:0;">${tables}</div>
+      <div style="display:flex;justify-content:space-between;font-size:9px;color:${color};font-weight:600;margin-top:4px;">
         <span>${scoringCode ? `Scoring Code: ${scoringCode}` : ""}</span>
         <span>${opts.showStartingHole && groupNumber != null ? `Starting Hole: ${groupNumber}` : ""}</span>
       </div>
     </div>`;
 }
 
-export default function TeamScorecards({ tournament, registrations, groups = [], numHoles, opts, courseData }: Props) {
+export default function TeamScorecards({ tournament, registrations, groups = [], numHoles, opts, courseData, slug }: Props) {
   const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
   const [edits, setEdits] = useState<Record<string, TeamEdit>>({});
+  const [perPage, setPerPage] = useState<1 | 2 | 3>(2);
 
   useEffect(() => {
     const next: Record<string, TeamEdit> = {};
@@ -132,11 +159,22 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   const fontImport = getFontImport(opts.font);
   const fitOptions = { scale: opts.printScale, marginIn: opts.printMarginIn };
   const pageCss = scorecardCss(fitOptions);
-  const allHtml = teams
-    .map((t, i) => {
-      const e = edits[t.key] || { teamName: t.teamName, playersLine: "" };
-      const html = teamScorecardHtml(e, t.scoringCode, t.groupNumber, tournament, numHoles, opts, courseData);
-      return `<div class="print-page" style="page-break-after:${i < teams.length - 1 ? "always" : "auto"};">${html}</div>`;
+
+  const chunks: typeof teams[] = [];
+  for (let i = 0; i < teams.length; i += perPage) chunks.push(teams.slice(i, i + perPage));
+
+  const allHtml = chunks
+    .map((chunk, ci) => {
+      const cards = chunk
+        .map((t) => {
+          const e = edits[t.key] || { teamName: t.teamName, playersLine: "" };
+          return teamScorecardHtml(
+            e, t.scoringCode, t.groupNumber, tournament, numHoles, opts, courseData,
+            scoringUrlFor(slug, t.scoringCode),
+          );
+        })
+        .join("");
+      return `<div class="print-page" style="page-break-after:${ci < chunks.length - 1 ? "always" : "auto"};"><div style="display:flex;flex-direction:column;gap:0.14in;">${cards}</div></div>`;
     })
     .join("");
 
@@ -150,9 +188,19 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   return (
     <>
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
-        <p className="text-xs text-muted-foreground">
-          One scorecard per team with a single team score line &bull; prints landscape at {sizeLabel(PRINT_TARGETS.scorecard)} &bull; all {numHoles} holes on one line
-        </p>
+        <div className="space-y-2">
+          <p className="text-xs text-muted-foreground">
+            {perPage} scorecard{perPage > 1 ? "s" : ""} per sheet &bull; prints landscape at {sizeLabel(PRINT_TARGETS.scorecard)} &bull; all {numHoles} holes on one line
+          </p>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs text-muted-foreground">Per sheet:</span>
+            {([1, 2, 3] as const).map((n) => (
+              <Button key={n} size="sm" variant={perPage === n ? "default" : "outline"} className="h-7 px-2.5 text-xs" onClick={() => setPerPage(n)}>
+                {n}
+              </Button>
+            ))}
+          </div>
+        </div>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.scorecard} fitOptions={fitOptions} />
           <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
@@ -189,9 +237,25 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
                     </p>
                     <p className="text-[11px] text-muted-foreground mb-2">Players: {e.playersLine}</p>
                   </div>
-                  {opts.showLogo && (
-                    <PrintLogo src={getPrintLogo(tournament)} placeholderWhenMissing className="h-10 shrink-0" />
-                  )}
+                  <div className="flex items-center gap-3 shrink-0">
+                    {scoringUrlFor(slug, t.scoringCode) && (
+                      <div className="flex items-center gap-2 border border-primary rounded-md p-1.5">
+                        <img
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=124x124&margin=0&data=${encodeURIComponent(scoringUrlFor(slug, t.scoringCode))}`}
+                          alt="Scan to enter scores"
+                          className="h-14 w-14"
+                          loading="lazy"
+                        />
+                        <div className="leading-tight">
+                          <p className="text-[9px] font-bold uppercase tracking-wide text-primary">Scan to Enter Scores</p>
+                          <p className="text-[11px] font-bold text-foreground">{t.scoringCode ? `Code: ${t.scoringCode}` : "Enter your scoring code"}</p>
+                        </div>
+                      </div>
+                    )}
+                    {opts.showLogo && (
+                      <PrintLogo src={getPrintLogo(tournament)} placeholderWhenMissing className="h-10 shrink-0" />
+                    )}
+                  </div>
                 </div>
                 <table className="w-full text-[11px] border-collapse">
                   <tbody>

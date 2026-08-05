@@ -185,6 +185,9 @@ export default function LeagueEventRegister() {
   const activeFeeCents = hasTiers ? (selectedTier?.amount_cents ?? 0) : baseFeeCents;
   const feeDollars = activeFeeCents / 100;
   const alreadyRegistered = registration && (registration.registration_fee_paid || registration.fee_paid);
+  // Registration closes once the event date has passed (or the manager marked it complete).
+  const todayStr = new Date().toLocaleDateString("en-CA");
+  const eventClosed = !!event.is_completed || (!!event.event_date && String(event.event_date) < todayStr);
 
   return (
     <div className="min-h-screen bg-background">

@@ -8,7 +8,7 @@ import LeagueTeamLeaderboard from "@/components/leagues/LeagueTeamLeaderboard";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Loader2, Save, PenLine, Sparkles, Trophy } from "lucide-react";
+import { Loader2, Save, PenLine, Sparkles, Trophy, ExternalLink } from "lucide-react";
 import { buildAllocation, netForHole, capNetDoubleBogey, type CourseSnapshot } from "@/lib/leagueHandicap";
 import { computeEventSkins } from "@/lib/leagueSkins";
 
@@ -247,6 +247,13 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
             <Button onClick={save} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
               Save Scores
+            </Button>
+          )}
+          {eventId && (
+            <Button variant="outline" asChild>
+              <a href={`/league-leaderboard/${eventId}`} target="_blank" rel="noreferrer">
+                <ExternalLink className="h-4 w-4 mr-2" /> Live Leaderboard
+              </a>
             </Button>
           )}
         </div>

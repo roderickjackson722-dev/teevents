@@ -9,7 +9,7 @@ export default function LeagueScoringPayoutsTab({ leagueId }: { leagueId: string
       <Card>
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Coins className="h-5 w-5 text-primary" /> Skins per Event
+            <Coins className="h-5 w-5 text-primary" /> Prize Money per Event
           </CardTitle>
         </CardHeader>
         <CardContent>

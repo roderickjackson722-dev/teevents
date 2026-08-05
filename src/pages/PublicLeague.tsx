@@ -254,8 +254,8 @@ export default function PublicLeague() {
                       <TableHead className="w-12">#</TableHead>
                       <TableHead>Player</TableHead>
                       <TableHead className="text-right">Matches</TableHead>
-                      <TableHead className="text-right">W-L-T</TableHead>
-                      <TableHead className="text-right">Skins</TableHead>
+                      <TableHead className="text-right">Wins</TableHead>
+                      <TableHead className="text-right">Prize Money</TableHead>
                       <TableHead className="text-right font-bold">Points</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -267,12 +267,11 @@ export default function PublicLeague() {
                           <TableCell className="font-bold">{i + 1}</TableCell>
                           <TableCell className="font-medium">{s.league_members.member_name}</TableCell>
                           <TableCell className="text-right">{s.matches_played}</TableCell>
-                          <TableCell className="text-right">{s.wins}-{s.losses}-{s.ties}</TableCell>
+                          <TableCell className="text-right">{s.wins ?? 0}</TableCell>
                           <TableCell className="text-right">
-                            {skin ? (
+                            {skin && skin.cents > 0 ? (
                               <span className="inline-flex items-center gap-1 rounded px-2 py-0.5 bg-yellow-100 text-yellow-900 border border-yellow-300 font-medium">
-                                <Sparkles className="h-3 w-3" /> {skin.count}
-                                {skin.cents > 0 && <span className="ml-1 text-xs">${(skin.cents / 100).toFixed(0)}</span>}
+                                <Sparkles className="h-3 w-3" /> ${(skin.cents / 100).toFixed(2)}
                               </span>
                             ) : (
                               <span className="text-muted-foreground">—</span>

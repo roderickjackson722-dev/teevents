@@ -249,6 +249,13 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
               Save Scores
             </Button>
           )}
+          {eventId && (
+            <Button variant="outline" asChild>
+              <a href={`/league-leaderboard/${eventId}`} target="_blank" rel="noreferrer">
+                <ExternalLink className="h-4 w-4 mr-2" /> Live Leaderboard
+              </a>
+            </Button>
+          )}
         </div>
 
         {!eventId ? (

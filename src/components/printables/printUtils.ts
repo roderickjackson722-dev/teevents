@@ -33,10 +33,12 @@ export function downloadHtmlAsPdf(title: string, bodyHtml: string, fontImport?: 
         ${fontImport ? `<link href="${fontImport}" rel="stylesheet" />` : ""}
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
-          body { font-family: 'Georgia', serif; color: #1a1a1a; padding: 40px; }
+          html, body { font-family: 'Georgia', serif; color: #1a1a1a; padding: 0; margin: 0; }
+          .pdf-body { padding: 40px; }
           ${pageCss || ""}
           @media print {
-            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .pdf-body { padding: 0; }
             .pdf-hint { display: none; }
           }
           .pdf-hint {
@@ -47,10 +49,12 @@ export function downloadHtmlAsPdf(title: string, bodyHtml: string, fontImport?: 
         </style>
       </head>
       <body>
-        <div class="pdf-hint">
-          <strong>💡 Save as PDF:</strong> In the print dialog, change the destination to <strong>"Save as PDF"</strong> to download a digital copy.
+        <div class="pdf-body">
+          <div class="pdf-hint">
+            <strong>💡 Save as PDF:</strong> In the print dialog, change the destination to <strong>"Save as PDF"</strong> to download a digital copy.
+          </div>
+          ${bodyHtml}
         </div>
-        ${bodyHtml}
       </body>
     </html>
   `);
@@ -59,11 +63,23 @@ export function downloadHtmlAsPdf(title: string, bodyHtml: string, fontImport?: 
   setTimeout(() => { w.print(); w.close(); }, 300);
 }
 
-/** Page CSS for oversized landscape cart signs: 8in tall x 36in wide */
-export const CART_SIGN_PAGE_CSS = `@page { size: 36in 8in landscape; margin: 0.25in; }`;
+/**
+ * Page CSS for oversized landscape cart signs: 36in wide x 8in tall.
+ * Note: no `landscape` keyword — combining it with explicit dimensions makes
+ * Chrome swap/inflate the page box, which broke the print preview.
+ */
+export const CART_SIGN_PAGE_CSS = `
+  @page { size: 36in 8in; margin: 0; }
+  html, body { width: 36in; margin: 0; padding: 0; }
+  .print-page { width: 36in; height: 8in; overflow: hidden; padding: 0.25in; box-sizing: border-box; }
+`;
 
 /** Page CSS for team scorecards: 8in wide x 6in tall */
-export const SCORECARD_PAGE_CSS = `@page { size: 8in 6in; margin: 0.25in; }`;
+export const SCORECARD_PAGE_CSS = `
+  @page { size: 8in 6in; margin: 0; }
+  html, body { width: 8in; margin: 0; padding: 0; }
+  .print-page { width: 8in; height: 6in; overflow: hidden; padding: 0.25in; box-sizing: border-box; }
+`;
 
 /** Google Fonts import URL for non-system fonts */
 export function getFontImport(fontId: string | null): string | undefined {

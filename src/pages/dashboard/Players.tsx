@@ -268,7 +268,7 @@ const Players = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, max_players, allow_cash_registration, registration_fee_cents")
+      .select("id, title, max_players, allow_cash_registration, registration_fee_cents, pairings_locked, pairings_locked_at")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {

@@ -943,6 +943,111 @@ const Players = () => {
     return a.number - b.number;
   });
 
+  // ---- Division filter (Pro / Senior / Amateur / …) ----
+  const [divFilter, setDivFilter] = useState<string>("all");
+  const divisionOptions = [...new Set(
+    players.map((p) => (p.tier_id ? tierName(p.tier_id) : "")).filter((n) => n && n !== "—")
+  )].sort((a, b) => a.localeCompare(b));
+  useEffect(() => {
+    if (divFilter !== "all" && !divisionOptions.includes(divFilter)) setDivFilter("all");
+  }, [divisionOptions.join("|"), divFilter]);
+  const groupMatchesDivision = (list: Registration[]) =>
+    divFilter === "all" || list.some((p) => p.tier_id && tierName(p.tier_id) === divFilter);
+  const visibleGroups = groups.filter((g) => groupMatchesDivision(g.players));
+  const hiddenGroupCount = groups.length - visibleGroups.length;
+
+  // ---- Pairing conflict validation (tee times / starting holes) ----
+  const startHoleOf = (num: number) => String(holeLabels[num] ?? num).trim();
+  const pairingConflicts: string[] = useMemo(() => {
+    const issues: string[] = [];
+    const filled = groupsBase.filter((g) => g.players.length > 0);
+    if (!filled.length) return issues;
+
+    if (dayCfg.startFormat === "tee_times") {
+      const byTime = new Map<string, number[]>();
+      filled.forEach((g) => {
+        const t = holeTeeTimes[g.number];
+        if (!t) return;
+        byTime.set(t, [...(byTime.get(t) || []), g.number]);
+      });
+      byTime.forEach((nums, t) => {
+        if (nums.length > 1) issues.push(`${nums.length} groups share the ${fmtTee12(t)} tee time (holes ${nums.join(", ")}).`);
+      });
+      if (!dayCfg.sameStartHole) {
+        const byHole = new Map<string, number[]>();
+        filled.forEach((g) => {
+          const h = startHoleOf(g.number);
+          byHole.set(h, [...(byHole.get(h) || []), g.number]);
+        });
+        byHole.forEach((nums, h) => {
+          if (nums.length > 1) issues.push(`Starting hole #${h} is assigned to ${nums.length} groups (${nums.join(", ")}).`);
+        });
+      }
+      const missing = filled.filter((g) => !holeTeeTimes[g.number]).map((g) => g.number);
+      if (missing.length) issues.push(`No tee time set for ${missing.length} group(s): ${missing.join(", ")}.`);
+    } else {
+      const times = [...new Set(filled.map((g) => holeTeeTimes[g.number]).filter(Boolean))];
+      if (times.length > 1) issues.push(`Shotgun start, but ${times.length} different start times are assigned. Re-apply the shotgun time.`);
+      const byHole = new Map<string, number[]>();
+      filled.forEach((g) => {
+        const h = startHoleOf(g.number);
+        byHole.set(h, [...(byHole.get(h) || []), g.number]);
+      });
+      byHole.forEach((nums, h) => {
+        if (nums.length > 1) issues.push(`Shotgun hole #${h} is assigned to ${nums.length} groups (${nums.join(", ")}).`);
+      });
+    }
+    const oversized = filled.filter((g) => g.players.length > maxGroupSize).map((g) => g.number);
+    if (oversized.length) issues.push(`Group(s) ${oversized.join(", ")} have more than ${maxGroupSize} players.`);
+    return issues;
+  }, [groupsBase.map((g) => `${g.number}:${g.players.length}`).join("|"), JSON.stringify(holeTeeTimes), JSON.stringify(holeLabels), dayCfg.startFormat, dayCfg.sameStartHole, activeDay]);
+
+  // ---- Lock / publish pairings ----
+  const pairingsLocked = !!currentTournamentObj?.pairings_locked;
+  const [lockSaving, setLockSaving] = useState(false);
+  const lockGuard = () => {
+    if (!pairingsLocked) return false;
+    toast({
+      title: "Pairings are locked",
+      description: "Unlock pairings at the top of this section to make changes.",
+      variant: "destructive",
+    });
+    return true;
+  };
+  const setPairingsLocked = async (locked: boolean) => {
+    if (!selectedTournament || demoGuard()) return;
+    if (locked && pairingConflicts.length) {
+      toast({
+        title: "Resolve conflicts first",
+        description: pairingConflicts[0],
+        variant: "destructive",
+      });
+      return;
+    }
+    setLockSaving(true);
+    const lockedAt = locked ? new Date().toISOString() : null;
+    const { error } = await (supabase as any)
+      .from("tournaments")
+      .update({ pairings_locked: locked, pairings_locked_at: lockedAt })
+      .eq("id", selectedTournament);
+    setLockSaving(false);
+    if (error) {
+      toast({ title: "Could not update lock", description: error.message, variant: "destructive" });
+      return;
+    }
+    setTournaments((list: any[]) => list.map((t: any) => (
+      t.id === selectedTournament ? { ...t, pairings_locked: locked, pairings_locked_at: lockedAt } : t
+    )));
+    toast({
+      title: locked ? "Pairings locked" : "Pairings unlocked",
+      description: locked
+        ? "Assignments, tee times, and scoring codes are now read-only."
+        : "You can edit assignments again.",
+    });
+  };
+
+
+
 
   useEffect(() => {
     if (!locStorageKey) return;

@@ -19,7 +19,7 @@ const page = (inner: string) => `<div class="print-page">${inner}</div>`;
 describe("print targets", () => {
   it("uses the required physical dimensions", () => {
     expect(cart).toMatchObject({ widthIn: 36, heightIn: 8 });
-    expect(card).toMatchObject({ widthIn: 8, heightIn: 6 });
+    expect(card).toMatchObject({ widthIn: 11, heightIn: 8.5 });
   });
 });
 
@@ -33,8 +33,8 @@ describe("buildPageCss", () => {
   it("locks the page box to the target size regardless of scale", () => {
     for (const scale of [1, 0.8, 0.5]) {
       const css = buildPageCss(card, { scale });
-      expect(css).toContain("@page { size: 8in 6in; margin: 0; }");
-      expect(css).toContain("width: 8in;\n    height: 6in;");
+      expect(css).toContain("@page { size: 11in 8.5in; margin: 0; }");
+      expect(css).toContain("width: 11in;\n    height: 8.5in;");
       expect(css).toContain("!important");
     }
   });
@@ -52,7 +52,7 @@ describe("buildPageCss", () => {
     expect(clampScale(0.1)).toBe(0.5);
     expect(clampScale(undefined)).toBe(1);
     expect(clampMargin(-3, cart)).toBe(0);
-    expect(clampMargin(99, card)).toBe(1.5);
+    expect(clampMargin(99, card)).toBe(2.125);
   });
 });
 
@@ -116,7 +116,7 @@ describe("evaluateFit", () => {
 
 describe("printDialogHint", () => {
   it("gives browser-specific guidance with the target size", () => {
-    expect(printDialogHint(cart, "Chrome")).toContain("36in × 8in");
+    expect(printDialogHint(cart, "Chrome")).toContain("8in H × 36in W");
     expect(printDialogHint(card, "Safari")).toContain("Manage Custom Sizes");
     expect(printDialogHint(card, "Firefox")).toContain("Margins to None");
   });

@@ -143,7 +143,7 @@ test.describe("printables PDF export layout", () => {
     }
   });
 
-  test("team scorecards export at 8in x 6in, one card per team", async ({ browser }) => {
+  test("team scorecards export at 11in x 8.5in (landscape), one card per team", async ({ browser }) => {
     const target = PRINT_TARGETS.scorecard;
     const body = ["Team Eagle", "Team Birdie", "Team Bogey"].map(teamScorecard).join("");
     expect(countPrintPages(body)).toBe(3);

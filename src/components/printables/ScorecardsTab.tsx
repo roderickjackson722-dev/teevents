@@ -5,7 +5,7 @@ import { Printer, Download, Loader2, Pencil, Check, X, QrCode } from "lucide-rea
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml } from "./printUtils";
+import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, scorecardCss } from "./printUtils";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
@@ -150,6 +150,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
 
   const totalPar = getTotalPar(tournament, numHoles);
   const fontImport = getFontImport(opts.font);
+  const indivPageCss = scorecardCss({ scale: opts.printScale, marginIn: opts.printMarginIn });
 
   const getEditableReg = (r: Registration): EditableReg => edits[r.id] || r;
 
@@ -244,10 +245,10 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Scorecards - ${tournament?.title}`, allHtml, fontImport)}>
+          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Scorecards - ${tournament?.title}`, allHtml, fontImport, indivPageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Scorecards - ${tournament?.title}`, allHtml, fontImport)}>
+          <Button onClick={() => openPrintWindow(`Scorecards - ${tournament?.title}`, allHtml, fontImport, indivPageCss)}>
             <Printer className="h-4 w-4 mr-2" /> Print Scorecards
           </Button>
         </div>

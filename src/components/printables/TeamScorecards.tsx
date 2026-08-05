@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Printer, Download } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, scorecardCss, printLogoHtml } from "./printUtils";
-import { PRINT_TARGETS } from "./printLayout";
+import { PRINT_TARGETS, sizeLabel } from "./printLayout";
 import PrintFitCheck from "./PrintFitCheck";
 import PrintLogo from "./PrintLogo";
 import type { Tournament, Registration } from "./types";
@@ -68,33 +68,34 @@ function teamScorecardHtml(
     ? new Date(`${(tournament as any).date}T12:00:00`).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
     : "";
 
-  const nineTable = (start: number, count: number, label: string) => {
-    const idx = Array.from({ length: count }, (_, i) => start + i);
-    const sum = idx.reduce((s, i) => s + (pars[i] || 0), 0);
-    const cell = (c: string, extra = "") => `<td style="border:1px solid #999;padding:3px 4px;text-align:center;font-size:9px;${extra}">${c}</td>`;
-    return `
-      <table style="border-collapse:collapse;width:100%;margin-bottom:6px;">
+  // Single line of holes (all 18 across) with OUT / IN / TOT summary columns
+  const cell = (c: string, extra = "") =>
+    `<td style="border:1px solid #999;padding:3px 2px;text-align:center;font-size:10px;${extra}">${c}</td>`;
+  const idx = Array.from({ length: numHoles }, (_, i) => i);
+  const out = pars.slice(0, 9).reduce((s, p) => s + (p || 0), 0);
+  const inn = numHoles === 18 ? pars.slice(9, 18).reduce((s, p) => s + (p || 0), 0) : 0;
+  const totals: Array<[string, number]> =
+    numHoles === 18 ? [["OUT", out], ["IN", inn], ["TOT", out + inn]] : [["OUT", out]];
+
+  const tables = `
+      <table style="border-collapse:collapse;width:100%;table-layout:fixed;">
         <tr style="background:#f0f0f0;">
-          ${cell("Hole", "font-weight:700;text-align:left;width:70px;")}
+          ${cell("Hole", "font-weight:700;text-align:left;width:0.7in;")}
           ${idx.map((i) => cell(String(i + 1), "font-weight:700;")).join("")}
-          ${cell(label, "font-weight:700;background:#e4e4e4;")}
+          ${totals.map(([l]) => cell(l, "font-weight:700;background:#e4e4e4;")).join("")}
         </tr>
         <tr>
           ${cell("Par", "font-weight:600;text-align:left;color:#555;")}
           ${idx.map((i) => cell(String(pars[i] ?? ""), "color:#555;")).join("")}
-          ${cell(String(sum), "font-weight:600;color:#555;")}
+          ${totals.map(([, v]) => cell(String(v), "font-weight:600;color:#555;")).join("")}
         </tr>
         <tr>
-          ${cell("Team Score", `font-weight:700;text-align:left;color:${color};`)}
-          ${idx.map(() => cell("&nbsp;", "height:26px;")).join("")}
-          ${cell("&nbsp;", "background:#fafafa;")}
+          ${cell("Team Score", `font-weight:700;text-align:left;color:${color};font-size:9px;`)}
+          ${idx.map(() => cell("&nbsp;", "height:0.45in;")).join("")}
+          ${totals.map(() => cell("&nbsp;", "background:#fafafa;")).join("")}
         </tr>
       </table>`;
-  };
 
-  const tables = numHoles === 18
-    ? nineTable(0, 9, "Out") + nineTable(9, 9, "In")
-    : nineTable(0, 9, "Out");
 
   return `
     <div style="width:100%;height:100%;page-break-inside:avoid;border:${border};border-radius:8px;padding:0.18in;font-family:${font};display:flex;flex-direction:column;">
@@ -150,7 +151,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
     <>
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <p className="text-xs text-muted-foreground">
-          One scorecard per team with a single team score line &bull; prints at 6&quot; H &times; 8&quot; W
+          One scorecard per team with a single team score line &bull; prints landscape at {sizeLabel(PRINT_TARGETS.scorecard)} &bull; all {numHoles} holes on one line
         </p>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.scorecard} fitOptions={fitOptions} />

@@ -18,8 +18,15 @@ export interface PrintTarget {
 
 export const PRINT_TARGETS: Record<PrintTargetId, PrintTarget> = {
   cartsign: { id: "cartsign", label: "Cart sign", widthIn: 36, heightIn: 8 },
-  scorecard: { id: "scorecard", label: "Scorecard", widthIn: 8, heightIn: 6 },
+  // Landscape letter so all 18 holes fit on a single line
+  scorecard: { id: "scorecard", label: "Scorecard", widthIn: 11, heightIn: 8.5 },
 };
+
+/** Human size label, always stated as height x width to match print shops. */
+export function sizeLabel(target: PrintTarget): string {
+  return `${target.heightIn}in H × ${target.widthIn}in W`;
+}
+
 
 /** CSS pixels per inch used by print engines for absolute units. */
 export const CSS_DPI = 96;
@@ -274,7 +281,7 @@ export function browserLabel(ua: string = typeof navigator !== "undefined" ? nav
 
 /** Browser-specific print guidance so organizers get the right dialog settings. */
 export function printDialogHint(target: PrintTarget, browser: string = browserLabel()): string {
-  const size = `${target.widthIn}in × ${target.heightIn}in`;
+  const size = sizeLabel(target);
   switch (browser) {
     case "Firefox":
       return `Firefox: in the print dialog set Scale to 100% and Margins to None, and confirm the paper size reads ${size}.`;
@@ -284,3 +291,4 @@ export function printDialogHint(target: PrintTarget, browser: string = browserLa
       return `${browser}: set Destination to "Save as PDF", Paper size to the ${size} custom size (or "Fit to printable area" off), Margins to None and Scale to 100%.`;
   }
 }
+

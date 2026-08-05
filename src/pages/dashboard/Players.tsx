@@ -2380,9 +2380,28 @@ const Players = () => {
 
               {/* Groups */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Holes ({groups.length})
-                </h3>
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    Holes ({groups.length})
+                  </h3>
+                  <div className="ml-auto inline-flex rounded-md border border-border overflow-hidden">
+                    {([
+                      { key: "group", label: "Sort by Group" },
+                      { key: "division", label: "Sort by Division" },
+                      { key: "teetime", label: "Sort by Tee Time" },
+                    ] as const).map((opt, i) => (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        className={`px-2.5 py-1 text-xs ${pairSort === opt.key ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${i > 0 ? "border-l border-border" : ""}`}
+                        onClick={() => setPairSort(opt.key)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {groups.map((group, gIdx) => (
                   <div key={group.number}>
                     <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">

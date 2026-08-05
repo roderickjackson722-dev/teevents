@@ -53,6 +53,7 @@ import {
 import PlayerImport from "@/components/PlayerImport";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
 import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
+import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -843,10 +844,20 @@ const Players = () => {
 
   // Merge empty groups that have no players yet
   const allGroupNumbers = [...new Set([...groupNumbers, ...emptyGroups])].sort((a, b) => a - b);
-  const groups = allGroupNumbers.map((num) => {
+  const groupsBase = allGroupNumbers.map((num) => {
     const existing = groupsFromPlayers.find((g) => g.number === num);
-    return existing || { number: num, players: [] };
+    return existing || { number: num, players: [] as Registration[] };
   });
+
+  // Division shown on each pairing card (derived from the player's Division / Tier)
+  const divisionOfGroup = (list: Registration[]): string => {
+    const names = [...new Set(list.map((p) => (p.tier_id ? tierName(p.tier_id) : "")).filter((n) => n && n !== "—"))];
+    if (names.length === 0) return "";
+    if (names.length === 1) return names[0];
+    return "Mixed";
+  };
+  const [pairSort, setPairSort] = useState<"group" | "division" | "teetime">("group");
+
 
   const nextGroupNumber = allGroupNumbers.length > 0 ? Math.max(...allGroupNumbers) + 1 : 1;
 
@@ -884,19 +895,54 @@ const Players = () => {
   const [activeDay, setActiveDay] = useState<number>(0);
   useEffect(() => { if (activeDay >= numDays) setActiveDay(0); }, [numDays, activeDay]);
 
-  type DayCfg = { startFormat: "tee_times" | "shotgun"; firstTeeHole: number; firstTeeTime: string; teeInterval: number; shotgunTime: string };
-  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00" });
+  type DayCfg = {
+    startFormat: "tee_times" | "shotgun";
+    firstTeeHole: number;
+    firstTeeTime: string;
+    teeInterval: number;
+    shotgunTime: string;
+    roundFormat?: string;
+    roundHoles?: number;
+    sameStartHole?: boolean;
+  };
+  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00", roundFormat: "", roundHoles: 18, sameStartHole: false });
 
   const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
   const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
 
   const holeTeeTimes: Record<number, string> = holeTeeTimesByDay[activeDay] || {};
-  const dayCfg: DayCfg = startFormatByDay[activeDay] || defaultDayCfg();
+  const dayCfg: DayCfg = { ...defaultDayCfg(), ...(startFormatByDay[activeDay] || {}) };
   const startFormat = dayCfg.startFormat;
   const firstTeeHole = dayCfg.firstTeeHole;
   const firstTeeTime = dayCfg.firstTeeTime;
   const teeInterval = dayCfg.teeInterval;
   const shotgunTime = dayCfg.shotgunTime;
+
+  // Pairing card ordering (Group / Division / Tee Time)
+  const groups = [...groupsBase].sort((a, b) => {
+    if (pairSort === "division") {
+      const da = divisionOfGroup(a.players);
+      const db = divisionOfGroup(b.players);
+      if (da !== db) {
+        if (!da) return 1;
+        if (!db) return -1;
+        return da.localeCompare(db);
+      }
+      return a.number - b.number;
+    }
+    if (pairSort === "teetime") {
+      const ta = holeTeeTimes[a.number] || "";
+      const tb = holeTeeTimes[b.number] || "";
+      if (ta !== tb) {
+        if (!ta) return 1;
+        if (!tb) return -1;
+        return ta.localeCompare(tb);
+      }
+      return a.number - b.number;
+    }
+    return a.number - b.number;
+  });
+
 
   useEffect(() => {
     if (!locStorageKey) return;
@@ -1086,11 +1132,23 @@ const Players = () => {
         toast({ title: "Invalid interval", description: "Interval must be at least 1 minute to avoid duplicate tee times.", variant: "destructive" });
         return;
       }
-      // Reorder so firstTeeHole comes first (e.g., 10, 11, ...18, 1, 2, ...9)
-      const first = groupNums.filter(n => n >= firstTeeHole);
-      const rest = groupNums.filter(n => n < firstTeeHole);
-      const ordered = [...first, ...rest];
+      // Tee-time start: hole numbers are independent of the time order. When
+      // "all groups start on the same hole" is on, every group keeps the chosen
+      // starting hole and only the tee times step forward.
+      let ordered: number[];
+      if (dayCfg.sameStartHole) {
+        ordered = groupNums;
+        const nextLabels = { ...holeLabels };
+        groupNums.forEach((n) => { nextLabels[n] = String(firstTeeHole); });
+        setHoleLabels(nextLabels);
+        try { if (labelsStorageKey) localStorage.setItem(labelsStorageKey, JSON.stringify(nextLabels)); } catch { /* noop */ }
+      } else {
+        const first = groupNums.filter(n => n >= firstTeeHole);
+        const rest = groupNums.filter(n => n < firstTeeHole);
+        ordered = [...first, ...rest];
+      }
       ordered.forEach((n, idx) => { next[n] = addMinutes(firstTeeTime, idx * teeInterval); });
+
       // Guard: ensure no two holes ended up with the same computed time
       const seen = new Map<string, number>();
       for (const [holeStr, t] of Object.entries(next)) {
@@ -2111,7 +2169,45 @@ const Players = () => {
                 <span className="text-[11px] text-muted-foreground ml-1">Each day has its own start format and tee times.</span>
               </div>
             )}
+            <div className="mb-3 flex flex-wrap items-end gap-4 border-b border-border pb-3">
+              <div>
+                <Label className="text-xs text-muted-foreground">
+                  Round {activeDay + 1} Format
+                </Label>
+                <Select
+                  value={dayCfg.roundFormat || "inherit"}
+                  onValueChange={(v) => persistStartFormat({ roundFormat: v === "inherit" ? "" : v })}
+                >
+                  <SelectTrigger className="mt-1 h-9 w-56"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="inherit">Use tournament format</SelectItem>
+                    {SCORING_FORMATS.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Holes</Label>
+                <Select
+                  value={String(dayCfg.roundHoles || 18)}
+                  onValueChange={(v) => persistStartFormat({ roundHoles: Number(v) })}
+                >
+                  <SelectTrigger className="mt-1 h-9 w-24"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="9">9</SelectItem>
+                    <SelectItem value="18">18</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <p className="text-[11px] text-muted-foreground pb-2">
+                {numDays > 1
+                  ? "Each round can use its own format, hole count, and start type."
+                  : "Set the format and hole count for this round."}
+              </p>
+            </div>
             <div className="flex flex-wrap items-end gap-4">
+
               <div>
                 <Label className="text-xs text-muted-foreground">Start Format</Label>
                 <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">
@@ -2137,20 +2233,29 @@ const Players = () => {
                 <div className="flex flex-wrap items-end gap-4">
                   <div>
                     <Label className="text-xs text-muted-foreground">Starting Hole</Label>
-                    <div className="mt-1 inline-flex rounded-md border border-border overflow-hidden">
-                      {[1, 10].map((h) => (
-                        <button
-                          key={h}
-                          type="button"
-                          disabled={startFormat === "shotgun"}
-                          className={`px-3 py-1.5 text-sm ${firstTeeHole === h ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${h === 10 ? "border-l border-border" : ""}`}
-                          onClick={() => persistStartFormat({ firstTeeHole: h })}
-                        >
-                          #{h}
-                        </button>
-                      ))}
-                    </div>
+                    <Select
+                      value={String(firstTeeHole)}
+                      onValueChange={(v) => persistStartFormat({ firstTeeHole: Number(v) })}
+                    >
+                      <SelectTrigger className="mt-1 h-9 w-24" disabled={startFormat === "shotgun"}>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 18 }, (_, i) => i + 1).map((h) => (
+                          <SelectItem key={h} value={String(h)}>#{h}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
+                  <label className="flex items-center gap-2 pb-2 text-xs text-muted-foreground">
+                    <Checkbox
+                      checked={!!dayCfg.sameStartHole}
+                      disabled={startFormat === "shotgun"}
+                      onCheckedChange={(v) => persistStartFormat({ sameStartHole: !!v })}
+                    />
+                    All groups start on hole #{firstTeeHole}
+                  </label>
+
                   <div>
                     <Label htmlFor="first-tee-time" className="text-xs text-muted-foreground">First Tee Time</Label>
                     <Input
@@ -2275,13 +2380,33 @@ const Players = () => {
 
               {/* Groups */}
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Holes ({groups.length})
-                </h3>
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    Holes ({groups.length})
+                  </h3>
+                  <div className="ml-auto inline-flex rounded-md border border-border overflow-hidden">
+                    {([
+                      { key: "group", label: "Sort by Group" },
+                      { key: "division", label: "Sort by Division" },
+                      { key: "teetime", label: "Sort by Tee Time" },
+                    ] as const).map((opt, i) => (
+                      <button
+                        key={opt.key}
+                        type="button"
+                        className={`px-2.5 py-1 text-xs ${pairSort === opt.key ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${i > 0 ? "border-l border-border" : ""}`}
+                        onClick={() => setPairSort(opt.key)}
+                      >
+                        {opt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 {groups.map((group, gIdx) => (
                   <div key={group.number}>
                     <div className="flex items-center justify-between mb-2 gap-2 flex-wrap">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <div className="flex flex-col gap-1.5 flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
                         {editingGroupNum === group.number ? (
                           <div className="flex items-center gap-1">
                             <Input
@@ -2344,8 +2469,20 @@ const Players = () => {
                             <Pencil className="h-2.5 w-2.5 opacity-70" />
                           </button>
                         )}
+                        {(() => {
+                          const div = divisionOfGroup(group.players);
+                          if (!div) return null;
+                          return (
+                            <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-secondary/15 text-secondary-foreground border border-secondary/40 whitespace-nowrap">
+                              Division: {div}
+                            </span>
+                          );
+                        })()}
+                        </div>
 
+                        <div className="flex items-center gap-3 flex-nowrap overflow-x-auto pb-0.5">
                         {editingLocationNum === group.number ? (
+
                           <div className="flex items-center gap-1">
                             <Input
                               className="h-7 w-40 text-xs"
@@ -2444,6 +2581,7 @@ const Players = () => {
                             </div>
                           );
                         })()}
+                        </div>
                       </div>
 
 
@@ -2452,10 +2590,10 @@ const Players = () => {
                         <span className="text-xs text-muted-foreground mr-1">
                           {group.players.length}/{maxGroupSize}
                         </span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0} onClick={() => handleMoveGroup(group.number, -1)} title="Move up">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0 || pairSort !== "group"} onClick={() => handleMoveGroup(group.number, -1)} title={pairSort === "group" ? "Move up" : "Switch to Sort by Group to reorder"}>
                           <ChevronUp className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === groups.length - 1} onClick={() => handleMoveGroup(group.number, 1)} title="Move down">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === groups.length - 1 || pairSort !== "group"} onClick={() => handleMoveGroup(group.number, 1)} title={pairSort === "group" ? "Move down" : "Switch to Sort by Group to reorder"}>
                           <ChevronDown className="h-4 w-4" />
                         </Button>
                         <AlertDialog>
@@ -2512,6 +2650,13 @@ const Players = () => {
                                       {groupInfoById[p.group_id].name}
                                     </span>
                                   )}
+                                  {p.tier_id && (
+                                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-secondary/15 text-secondary-foreground border border-secondary/40">
+                                      {tierName(p.tier_id)}
+                                    </span>
+                                  )}
+
+
 
 
                                   {p.handicap !== null && (

@@ -1,0 +1,3 @@
+ALTER TABLE public.tournament_registrations
+  DROP CONSTRAINT IF EXISTS tournament_registrations_scoring_code_key;
+DROP INDEX IF EXISTS public.tournament_registrations_scoring_code_key;

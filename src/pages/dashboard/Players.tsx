@@ -2590,10 +2590,10 @@ const Players = () => {
                         <span className="text-xs text-muted-foreground mr-1">
                           {group.players.length}/{maxGroupSize}
                         </span>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0} onClick={() => handleMoveGroup(group.number, -1)} title="Move up">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === 0 || pairSort !== "group"} onClick={() => handleMoveGroup(group.number, -1)} title={pairSort === "group" ? "Move up" : "Switch to Sort by Group to reorder"}>
                           <ChevronUp className="h-4 w-4" />
                         </Button>
-                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === groups.length - 1} onClick={() => handleMoveGroup(group.number, 1)} title="Move down">
+                        <Button size="icon" variant="ghost" className="h-7 w-7" disabled={gIdx === groups.length - 1 || pairSort !== "group"} onClick={() => handleMoveGroup(group.number, 1)} title={pairSort === "group" ? "Move down" : "Switch to Sort by Group to reorder"}>
                           <ChevronDown className="h-4 w-4" />
                         </Button>
                         <AlertDialog>

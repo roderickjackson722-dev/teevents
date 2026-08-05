@@ -241,12 +241,31 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   const save = async () => {
     if (!eventId) return;
     setSaving(true);
+    const holeCount = event?.holes === 9 ? 9 : 18;
     const rows: any[] = [];
+    // Team-format players write one shared row per pairing so the team
+    // leaderboard's hole-by-hole view stays in sync with this grid.
+    const teamRows: Record<string, any> = {};
+    const teamClears: Record<string, number[]> = {};
     for (const p of players) {
       const holes = scores[p.member_id] || {};
-      for (let h = 1; h <= 18; h++) {
+      for (let h = 1; h <= holeCount; h++) {
         const g = holes[h];
-        if (g !== "" && g != null && !isNaN(Number(g))) {
+        const hasVal = g !== "" && g != null && !isNaN(Number(g));
+        if (p.pairing_id) {
+          if (hasVal) {
+            teamRows[`${p.pairing_id}:${h}`] = {
+              event_id: eventId,
+              pairing_id: p.pairing_id,
+              hole_number: h,
+              gross_score: Number(g),
+            };
+          } else if (!teamRows[`${p.pairing_id}:${h}`]) {
+            (teamClears[p.pairing_id] ||= []).push(h);
+          }
+          continue;
+        }
+        if (hasVal) {
           const grossRaw = Number(g);
           const capped = capNetDoubleBogey(grossRaw, h - 1, p.alloc);
           const net = netForHole(grossRaw, h - 1, p.alloc);
@@ -263,8 +282,9 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     // Blanked cells clear the stored score for that player/hole
     const clears: { member_id: string; hole_number: number }[] = [];
     for (const p of players) {
+      if (p.pairing_id) continue;
       const holes = scores[p.member_id] || {};
-      for (let h = 1; h <= 18; h++) {
+      for (let h = 1; h <= holeCount; h++) {
         const g = holes[h];
         if (g === "" || g == null) clears.push({ member_id: p.member_id, hole_number: h });
       }
@@ -281,19 +301,45 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
           .in("hole_number", hs);
       }
     }
-    if (rows.length === 0) {
-      toast({ title: clears.length ? "Cleared blank scores" : "No scores to save" });
+
+    const teamUpserts = Object.values(teamRows);
+    if (teamUpserts.length > 0) {
+      const { error: teamErr } = await (supabase as any)
+        .from("league_team_scores")
+        .upsert(teamUpserts, { onConflict: "pairing_id,hole_number" });
+      if (teamErr) {
+        toast({ title: "Save failed", description: teamErr.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
+    }
+    for (const [pid, hs] of Object.entries(teamClears)) {
+      const stillSet = hs.filter((h) => !teamRows[`${pid}:${h}`]);
+      if (stillSet.length === 0) continue;
+      await (supabase as any)
+        .from("league_team_scores")
+        .delete()
+        .eq("pairing_id", pid)
+        .in("hole_number", stillSet);
+    }
+
+    if (rows.length === 0 && teamUpserts.length === 0) {
+      toast({ title: clears.length || Object.keys(teamClears).length ? "Cleared blank scores" : "No scores to save" });
       setSaving(false);
+      await refreshScores();
       return;
     }
-    const { error } = await (supabase as any)
-      .from("league_event_scores")
-      .upsert(rows, { onConflict: "event_id,member_id,hole_number" });
-    if (error) {
-      toast({ title: "Save failed", description: error.message, variant: "destructive" });
-      setSaving(false);
-      return;
+    if (rows.length > 0) {
+      const { error } = await (supabase as any)
+        .from("league_event_scores")
+        .upsert(rows, { onConflict: "event_id,member_id,hole_number" });
+      if (error) {
+        toast({ title: "Save failed", description: error.message, variant: "destructive" });
+        setSaving(false);
+        return;
+      }
     }
+
 
     // Auto-run skins when enabled for this event
     if (event?.skins_enabled) {

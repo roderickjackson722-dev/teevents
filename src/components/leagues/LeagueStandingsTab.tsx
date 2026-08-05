@@ -52,6 +52,18 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
     setComputing(false);
   };
 
+  const saveWins = async (row: any, value: string) => {
+    const trimmed = value.trim();
+    const override = trimmed === "" ? null : Math.max(0, Number(trimmed) || 0);
+    setRows((prev) => prev.map((r) => (r.id === row.id ? { ...r, wins_override: override } : r)));
+    const { error } = await (supabase as any)
+      .from("league_standings")
+      .update({ wins_override: override })
+      .eq("id", row.id);
+    if (error) toast({ title: "Could not save wins", description: error.message, variant: "destructive" });
+  };
+
+
   const groups: { label: string; rows: any[] }[] = (() => {
     if (!flightCfg.enabled || rows.length === 0) return [{ label: "", rows }];
     const n = flightsForMethod(flightCfg.method, 2);

@@ -4,6 +4,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Settings2, Upload } from "lucide-react";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "./types";
+import PrintLogo from "./PrintLogo";
+import {
+  DEFAULT_PRINT_MARGIN_IN,
+  DEFAULT_PRINT_SCALE,
+  PRINT_MARGIN_CHOICES,
+  PRINT_SCALE_CHOICES,
+  PRINT_TARGETS,
+} from "./printLayout";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
@@ -17,6 +25,10 @@ export interface PrintableOptions {
   showTournamentTitle: boolean;
   showStartingHole: boolean;
   showCourseName: boolean;
+  /** PDF/print content scale (0.5 – 1) */
+  printScale: number;
+  /** PDF/print page margin in inches */
+  printMarginIn: number;
 }
 
 interface Props {
@@ -38,6 +50,8 @@ export function getDefaultOptions(tournament: { printable_font?: string | null; 
     showTournamentTitle: true,
     showStartingHole: true,
     showCourseName: true,
+    printScale: DEFAULT_PRINT_SCALE,
+    printMarginIn: DEFAULT_PRINT_MARGIN_IN,
   };
 }
 
@@ -142,7 +156,7 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
               <Label className="text-xs font-medium">Printable Logo</Label>
               <div className="flex items-center gap-3">
                 {logoUrl ? (
-                  <img src={logoUrl} alt="Logo" className="h-12 w-12 object-contain border rounded bg-white" />
+                  <PrintLogo src={logoUrl} className="h-12 w-12 border rounded bg-white" />
                 ) : (
                   <div className="h-12 w-12 border border-dashed rounded flex items-center justify-center text-muted-foreground">
                     <Upload className="h-4 w-4" />
@@ -162,6 +176,50 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
               <p className="text-[10px] text-muted-foreground">Appears on scorecards, cart signs, and other printables.</p>
             </div>
           )}
+
+          {/* PDF scaling & margins */}
+          <div className="space-y-2 pt-2 border-t border-border">
+            <Label className="text-xs font-medium">PDF Scaling &amp; Margins</Label>
+            <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-[11px] text-muted-foreground">Content scale</Label>
+                <Select
+                  value={String(options.printScale ?? DEFAULT_PRINT_SCALE)}
+                  onValueChange={(v) => update({ printScale: Number(v) })}
+                >
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PRINT_SCALE_CHOICES.map((sc) => (
+                      <SelectItem key={sc} value={String(sc)}>
+                        {Math.round(sc * 100)}%{sc === 1 ? " (actual size)" : ""}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-1.5">
+                <Label className="text-[11px] text-muted-foreground">Page margin</Label>
+                <Select
+                  value={String(options.printMarginIn ?? DEFAULT_PRINT_MARGIN_IN)}
+                  onValueChange={(v) => update({ printMarginIn: Number(v) })}
+                >
+                  <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PRINT_MARGIN_CHOICES.map((m) => (
+                      <SelectItem key={m} value={String(m)}>{m === 0 ? "None" : `${m}"`}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <p className="text-[10px] text-muted-foreground">
+              Page size stays fixed at{" "}
+              {variant === "cartsign"
+                ? `${PRINT_TARGETS.cartsign.widthIn}" × ${PRINT_TARGETS.cartsign.heightIn}"`
+                : `${PRINT_TARGETS.scorecard.widthIn}" × ${PRINT_TARGETS.scorecard.heightIn}"`}
+              . Lower the scale if the print preview shows content spilling onto a second page.
+            </p>
+          </div>
 
           {/* Live Preview */}
           {variant === "cartsign" ? (
@@ -216,16 +274,7 @@ function ScorecardMiniPreview({ options, showCourseName, logoUrl }: { options: P
             )}
           </div>
           {options.showLogo && (
-            logoUrl ? (
-              <img src={logoUrl} alt="Logo" className="h-10 max-w-[80px] object-contain bg-white rounded p-0.5" />
-            ) : (
-              <div
-                className="text-[9px] font-bold border px-1.5 py-0.5 rounded"
-                style={{ borderColor: layout === "bold" ? "hsl(var(--primary-foreground))" : accent, color: layout === "bold" ? "hsl(var(--primary-foreground))" : accent }}
-              >
-                LOGO
-              </div>
-            )
+            <PrintLogo src={logoUrl} placeholderWhenMissing className="h-10 max-w-[80px] bg-white rounded p-0.5 shrink-0" />
           )}
         </div>
         <div className="p-2 space-y-1.5">
@@ -298,11 +347,7 @@ function CartSignMiniPreview({ options, logoUrl }: { options: PrintableOptions; 
         }}
       >
         {options.showLogo && (
-          logoUrl ? (
-            <img src={logoUrl} alt="Logo" className="h-10 max-w-[100px] object-contain bg-white rounded p-0.5" />
-          ) : (
-            <div className="text-[9px] font-bold border px-1.5 py-0.5 rounded" style={{ borderColor: "currentColor" }}>LOGO</div>
-          )
+          <PrintLogo src={logoUrl} placeholderWhenMissing className="h-10 max-w-[100px] bg-white rounded p-0.5" />
         )}
         {options.showTournamentTitle && (
           <div className="text-[9px] font-semibold tracking-widest uppercase opacity-70">Spring Charity Classic</div>

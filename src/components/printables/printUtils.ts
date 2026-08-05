@@ -1,3 +1,5 @@
+import { cartSignPageCss, scorecardPageCss, type PrintFitOptions } from "./printLayout";
+
 export function openPrintWindow(title: string, bodyHtml: string, fontImport?: string, pageCss?: string) {
   const w = window.open("", "_blank");
   if (!w) return;
@@ -51,7 +53,7 @@ export function downloadHtmlAsPdf(title: string, bodyHtml: string, fontImport?: 
       <body>
         <div class="pdf-body">
           <div class="pdf-hint">
-            <strong>💡 Save as PDF:</strong> In the print dialog, change the destination to <strong>"Save as PDF"</strong> to download a digital copy.
+            <strong>💡 Save as PDF:</strong> In the print dialog, change the destination to <strong>"Save as PDF"</strong>, set margins to <strong>None</strong> and scale to <strong>100%</strong>.
           </div>
           ${bodyHtml}
         </div>
@@ -63,23 +65,31 @@ export function downloadHtmlAsPdf(title: string, bodyHtml: string, fontImport?: 
   setTimeout(() => { w.print(); w.close(); }, 300);
 }
 
-/**
- * Page CSS for oversized landscape cart signs: 36in wide x 8in tall.
- * Note: no `landscape` keyword — combining it with explicit dimensions makes
- * Chrome swap/inflate the page box, which broke the print preview.
- */
-export const CART_SIGN_PAGE_CSS = `
-  @page { size: 36in 8in; margin: 0; }
-  html, body { width: 36in; margin: 0; padding: 0; }
-  .print-page { width: 36in; height: 8in; overflow: hidden; padding: 0.25in; box-sizing: border-box; }
-`;
+/** Page CSS for oversized cart signs: 36in wide x 8in tall (default scale/margin) */
+export const CART_SIGN_PAGE_CSS = cartSignPageCss();
 
-/** Page CSS for team scorecards: 8in wide x 6in tall */
-export const SCORECARD_PAGE_CSS = `
-  @page { size: 8in 6in; margin: 0; }
-  html, body { width: 8in; margin: 0; padding: 0; }
-  .print-page { width: 8in; height: 6in; overflow: hidden; padding: 0.25in; box-sizing: border-box; }
-`;
+/** Page CSS for team scorecards: 8in wide x 6in tall (default scale/margin) */
+export const SCORECARD_PAGE_CSS = scorecardPageCss();
+
+/** Cart sign page CSS honoring the organizer's PDF scale / margin settings */
+export const cartSignCss = (options?: PrintFitOptions) => cartSignPageCss(options);
+/** Scorecard page CSS honoring the organizer's PDF scale / margin settings */
+export const scorecardCss = (options?: PrintFitOptions) => scorecardPageCss(options);
+
+/**
+ * Logo <img> for print HTML with a graceful fallback: if the image fails to
+ * load we reveal a bordered "LOGO UNAVAILABLE" placeholder in its place.
+ */
+export function printLogoHtml(logo: string | null | undefined, opts: { heightCss: string; invert?: boolean; color?: string }): string {
+  if (!logo) return "";
+  const invert = opts.invert ? "filter:brightness(0) invert(1);" : "";
+  const color = opts.color || "#999";
+  return `<span style="display:inline-flex;align-items:center;">
+    <img src="${logo}" alt="" style="height:${opts.heightCss};object-fit:contain;${invert}"
+      onerror="this.style.display='none';var p=this.nextElementSibling;if(p)p.style.display='inline-flex';" />
+    <span style="display:none;align-items:center;justify-content:center;height:${opts.heightCss};padding:0 0.08in;border:1px dashed ${color};border-radius:6px;color:${color};font-size:0.14in;letter-spacing:1px;text-transform:uppercase;">Logo unavailable</span>
+  </span>`;
+}
 
 /** Google Fonts import URL for non-system fonts */
 export function getFontImport(fontId: string | null): string | undefined {

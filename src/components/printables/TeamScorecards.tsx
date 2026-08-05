@@ -3,7 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Printer, Download } from "lucide-react";
 import { motion } from "framer-motion";
-import { openPrintWindow, downloadHtmlAsPdf, getFontImport, SCORECARD_PAGE_CSS } from "./printUtils";
+import { openPrintWindow, downloadHtmlAsPdf, getFontImport, scorecardCss, printLogoHtml } from "./printUtils";
+import { PRINT_TARGETS } from "./printLayout";
+import PrintFitCheck from "./PrintFitCheck";
+import PrintLogo from "./PrintLogo";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import type { PrintableOptions } from "./PrintableSettings";
@@ -102,7 +105,7 @@ function teamScorecardHtml(
           ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:10px;color:#666;">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""}</div>` : ""}
           <div style="font-size:10px;color:#444;">Players: ${edit.playersLine}</div>
         </div>
-        ${opts.showLogo && getPrintLogo(tournament) ? `<img src="${getPrintLogo(tournament)}" alt="" style="height:0.5in;object-fit:contain;" />` : ""}
+        ${opts.showLogo ? printLogoHtml(getPrintLogo(tournament), { heightCss: "0.5in", color: "#999" }) : ""}
       </div>
       <div style="flex:1;">${tables}</div>
       <div style="display:flex;justify-content:space-between;font-size:10px;color:${color};font-weight:600;">
@@ -126,6 +129,8 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   }, [JSON.stringify(teams.map((t) => `${t.key}:${t.teamName}:${t.players.map((p) => p.id).join(",")}`))]);
 
   const fontImport = getFontImport(opts.font);
+  const fitOptions = { scale: opts.printScale, marginIn: opts.printMarginIn };
+  const pageCss = scorecardCss(fitOptions);
   const allHtml = teams
     .map((t, i) => {
       const e = edits[t.key] || { teamName: t.teamName, playersLine: "" };
@@ -147,11 +152,12 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
         <p className="text-xs text-muted-foreground">
           One scorecard per team with a single team score line &bull; prints at 6&quot; H &times; 8&quot; W
         </p>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, SCORECARD_PAGE_CSS)}>
+        <div className="flex gap-2 items-start">
+          <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.scorecard} fitOptions={fitOptions} />
+          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, SCORECARD_PAGE_CSS)}>
+          <Button onClick={() => openPrintWindow(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Printer className="h-4 w-4 mr-2" /> Generate Scorecards
           </Button>
         </div>
@@ -182,8 +188,8 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
                     </p>
                     <p className="text-[11px] text-muted-foreground mb-2">Players: {e.playersLine}</p>
                   </div>
-                  {opts.showLogo && getPrintLogo(tournament) && (
-                    <img src={getPrintLogo(tournament)!} alt="" className="h-10 object-contain shrink-0" />
+                  {opts.showLogo && (
+                    <PrintLogo src={getPrintLogo(tournament)} placeholderWhenMissing className="h-10 shrink-0" />
                   )}
                 </div>
                 <table className="w-full text-[11px] border-collapse">

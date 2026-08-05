@@ -5,7 +5,10 @@ import { Printer, Download, Loader2, Save } from "lucide-react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { openPrintWindow, downloadHtmlAsPdf, getFontImport, CART_SIGN_PAGE_CSS } from "./printUtils";
+import { openPrintWindow, downloadHtmlAsPdf, getFontImport, cartSignCss, printLogoHtml } from "./printUtils";
+import { PRINT_TARGETS } from "./printLayout";
+import PrintFitCheck from "./PrintFitCheck";
+import PrintLogo from "./PrintLogo";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
@@ -53,7 +56,7 @@ function cartSignHtml(
 
   return `
     <div style="width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:${borderStyle};border-radius:16px;padding:0.3in;text-align:center;font-family:${font};${bgStyle}">
-      ${opts.showLogo && logo ? `<img src="${logo}" alt="" style="height:1.3in;object-fit:contain;margin-bottom:0.15in;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
+      ${opts.showLogo ? `<div style="margin-bottom:0.15in;">${printLogoHtml(logo, { heightCss: "1.3in", invert: layout === "bold", color: subtitleColor })}</div>` : ""}
       ${opts.showTournamentTitle ? `<div style="font-size:44px;font-weight:600;color:${subtitleColor};letter-spacing:6px;text-transform:uppercase;margin-bottom:0.1in;">${tournament?.title ?? ""}</div>` : ""}
       ${nameLines}
       ${opts.showStartingHole && groupNumber != null ? `<div style="font-size:48px;color:${accentColor};font-weight:600;margin-top:0.12in;">Starting Hole: ${groupNumber}</div>` : ""}
@@ -83,6 +86,8 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   }, [JSON.stringify(teams.map((t) => t.key)), JSON.stringify(groups)]);
 
   const fontImport = getFontImport(opts.font);
+  const fitOptions = { scale: opts.printScale, marginIn: opts.printMarginIn };
+  const pageCss = cartSignCss(fitOptions);
 
   const cartsFor = (key: string): { label: string; names: string[] }[] => {
     const e = edits[key] || { cart1: ["", ""], cart2: ["", ""] };
@@ -152,9 +157,10 @@ export default function CartSignsTab({ tournament, registrations, loading, group
 
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <p className="text-xs text-muted-foreground">
-          Two players per cart &bull; prints at 8&quot; H &times; 36&quot; W (landscape)
+          Two players per cart &bull; prints at 8&quot; H &times; 36&quot; W (landscape) &bull; scale {Math.round((opts.printScale ?? 1) * 100)}% &bull; {opts.printMarginIn ?? 0.25}&quot; margins
         </p>
-        <div className="flex gap-2">
+        <div className="flex gap-2 items-start">
+          <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.cartsign} fitOptions={fitOptions} />
           <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, CART_SIGN_PAGE_CSS)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
@@ -200,7 +206,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
                   {carts.map((c) => (
                     <div key={c.label} className="bg-card border-2 border-primary/30 rounded-xl p-6 flex flex-col items-center text-center gap-2">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{c.label}</p>
-                      {opts.showLogo && logo && <img src={logo} alt="" className="h-10 object-contain" />}
+                      {opts.showLogo && <PrintLogo src={logo} placeholderWhenMissing className="h-10" />}
                       {opts.showTournamentTitle && (
                         <p className="text-xs font-semibold tracking-widest uppercase text-muted-foreground">{tournament?.title}</p>
                       )}

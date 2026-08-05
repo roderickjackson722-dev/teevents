@@ -5,7 +5,9 @@ import { Printer, Download, Loader2, Pencil, Check, X, QrCode } from "lucide-rea
 import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { openPrintWindow, downloadHtmlAsPdf, getFontImport } from "./printUtils";
+import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, scorecardCss } from "./printUtils";
+import { PRINT_TARGETS } from "./printLayout";
+import PrintFitCheck from "./PrintFitCheck";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
@@ -122,7 +124,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
           <div style="font-size:18px;font-weight:bold;">${firstName} ${lastName}</div>
           ${opts.showCourseName && (courseData?.name || tournament?.course_name) ? `<div style="font-size:12px;${layout === "bold" ? "color:rgba(255,255,255,0.7)" : "color:#666"};">${courseData?.name || tournament?.course_name}${courseData?.tee_name ? ` &bull; ${courseData.tee_name} Tees` : ""} &bull; Par ${totalPar} &bull; ${numHoles} Holes</div>` : ""}
         </div>
-        ${opts.showLogo && getPrintLogo(tournament) ? `<img src="${getPrintLogo(tournament)}" style="height:40px;object-fit:contain;${layout === "bold" ? "filter:brightness(0) invert(1);" : ""}" />` : ""}
+        ${opts.showLogo ? printLogoHtml(getPrintLogo(tournament), { heightCss: "40px", invert: layout === "bold", color: layout === "bold" ? "rgba(255,255,255,0.8)" : "#999" }) : ""}
       </div>
       <div style="padding:0 16px 16px;overflow-x:auto;">
         <table style="border-collapse:collapse;width:100%;">

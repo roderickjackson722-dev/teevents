@@ -53,6 +53,7 @@ import {
 import PlayerImport from "@/components/PlayerImport";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
 import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
+import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import {
   AlertDialog,
   AlertDialogAction,

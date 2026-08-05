@@ -57,7 +57,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
   if (eventIds.length > 0) {
     const { data: pairings } = await (supabase as any)
       .from("league_team_pairings")
-      .select("id, event_id, player1_member_id, player2_member_id")
+      .select("id, event_id, player1_id, player2_id")
       .in("event_id", eventIds);
     const pairingIds = (pairings || []).map((p: any) => p.id);
     if (pairingIds.length > 0) {
@@ -71,7 +71,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
         const p = byPairing[s.pairing_id];
         if (!p) return;
         const g = Number(s.gross_score) || 0;
-        [p.player1_member_id, p.player2_member_id].forEach((mid: string | null) => {
+        [p.player1_id, p.player2_id].forEach((mid: string | null) => {
           if (mid) addScore(p.event_id, mid, g, g);
         });
       });

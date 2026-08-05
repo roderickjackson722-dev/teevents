@@ -7570,12 +7570,14 @@ export type Database = {
           additional_notes: string | null
           address: string | null
           amount_cents: number
+          checkin_time: string | null
           company_name: string
           contact_email: string
           contact_name: string
           contact_phone: string | null
           created_at: string
           description: string | null
+          hole_number: string | null
           id: string
           is_title_sponsor: boolean
           logo_url: string | null
@@ -7594,12 +7596,14 @@ export type Database = {
           additional_notes?: string | null
           address?: string | null
           amount_cents: number
+          checkin_time?: string | null
           company_name: string
           contact_email: string
           contact_name: string
           contact_phone?: string | null
           created_at?: string
           description?: string | null
+          hole_number?: string | null
           id?: string
           is_title_sponsor?: boolean
           logo_url?: string | null
@@ -7618,12 +7622,14 @@ export type Database = {
           additional_notes?: string | null
           address?: string | null
           amount_cents?: number
+          checkin_time?: string | null
           company_name?: string
           contact_email?: string
           contact_name?: string
           contact_phone?: string | null
           created_at?: string
           description?: string | null
+          hole_number?: string | null
           id?: string
           is_title_sponsor?: boolean
           logo_url?: string | null
@@ -9988,9 +9994,12 @@ export type Database = {
           skins_entry_fee_cents: number
           skins_mode: string
           slug: string | null
+          sponsor_custom_notes: string | null
+          sponsor_day_of_email_config: Json | null
           sponsor_email_config: Json | null
           sponsor_form_config: Json
           sponsor_logo_display_size: string
+          sponsor_parking_info: string | null
           state: string | null
           status: string
           store_section_title: string | null
@@ -10261,9 +10270,12 @@ export type Database = {
           skins_entry_fee_cents?: number
           skins_mode?: string
           slug?: string | null
+          sponsor_custom_notes?: string | null
+          sponsor_day_of_email_config?: Json | null
           sponsor_email_config?: Json | null
           sponsor_form_config?: Json
           sponsor_logo_display_size?: string
+          sponsor_parking_info?: string | null
           state?: string | null
           status?: string
           store_section_title?: string | null
@@ -10534,9 +10546,12 @@ export type Database = {
           skins_entry_fee_cents?: number
           skins_mode?: string
           slug?: string | null
+          sponsor_custom_notes?: string | null
+          sponsor_day_of_email_config?: Json | null
           sponsor_email_config?: Json | null
           sponsor_form_config?: Json
           sponsor_logo_display_size?: string
+          sponsor_parking_info?: string | null
           state?: string | null
           status?: string
           store_section_title?: string | null

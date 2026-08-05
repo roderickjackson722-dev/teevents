@@ -1162,7 +1162,7 @@ const Players = () => {
     try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(nextAll)); } catch { /* noop */ }
     void persistTeeTimesToDb(nextForDay, activeDay);
   };
-  const fmtTee12 = (t?: string) => {
+  function fmtTee12(t?: string) {
     if (!t) return "";
     const m = /^(\d{1,2}):(\d{2})/.exec(t);
     if (!m) return t;
@@ -1171,7 +1171,8 @@ const Players = () => {
     const ap = h >= 12 ? "PM" : "AM";
     h = h % 12 || 12;
     return `${h}:${mm} ${ap}`;
-  };
+  }
+
   const saveHoleTeeTime = (num: number, value: string) => {
     const next = { ...holeTeeTimes };
     const v = value.trim();

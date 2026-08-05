@@ -800,6 +800,7 @@ const Players = () => {
 
 
   const handleAssignGroupCode = async (groupNumber: number) => {
+    if (lockGuard()) return;
     if (demoGuard()) return;
     const used = new Set(allPlayers.map((p) => codeOf(p)).filter(Boolean));
     let code = newScoringCode();
@@ -810,6 +811,7 @@ const Players = () => {
   };
 
   const handleRegenerateAllCodes = async () => {
+    if (lockGuard()) return;
     if (demoGuard()) return;
     const nums = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))];
     if (nums.length === 0) {
@@ -1174,6 +1176,7 @@ const Players = () => {
   }
 
   const saveHoleTeeTime = (num: number, value: string) => {
+    if (lockGuard()) return;
     const next = { ...holeTeeTimes };
     const v = value.trim();
     if (v) {
@@ -1215,6 +1218,7 @@ const Players = () => {
   };
 
   const applyStartTimesToHoles = () => {
+    if (lockGuard()) return;
     const groupNums = [...new Set([...Object.keys(holeLabels).map(Number), ...emptyGroups])]
       .concat(players.map(p => p.group_number).filter((n): n is number => n != null))
       .filter((n, i, arr) => arr.indexOf(n) === i)
@@ -1276,11 +1280,13 @@ const Players = () => {
 
 
   const handleAddGroup = () => {
+    if (lockGuard()) return;
     setEmptyGroups((prev) => [...prev, nextGroupNumber]);
     toast({ title: `Hole ${nextGroupNumber} created` });
   };
 
   const handleRenameGroup = async (oldNum: number, rawInput: string) => {
+    if (lockGuard()) return;
     setEditingGroupNum(null);
     const trimmed = rawInput.trim();
     if (!trimmed) return;
@@ -1341,6 +1347,7 @@ const Players = () => {
 
 
   const handleDeleteGroup = async (num: number) => {
+    if (lockGuard()) return;
     if (demoGuard()) return;
     const ids = players.filter((p) => p.group_number === num).map((p) => p.id);
     if (ids.length > 0) {
@@ -1361,6 +1368,7 @@ const Players = () => {
   };
 
   const handleMoveGroup = async (num: number, dir: -1 | 1) => {
+    if (lockGuard()) return;
     const idx = allGroupNumbers.indexOf(num);
     const swapIdx = idx + dir;
     if (idx < 0 || swapIdx < 0 || swapIdx >= allGroupNumbers.length) return;
@@ -1394,6 +1402,7 @@ const Players = () => {
   };
 
   const handleAssignPlayer = async (playerId: string, groupNum: number, position: number) => {
+    if (lockGuard()) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ group_number: groupNum, group_position: position })
@@ -1409,6 +1418,7 @@ const Players = () => {
   };
 
   const handleUnassignPlayer = async (playerId: string) => {
+    if (lockGuard()) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ group_number: null, group_position: null })
@@ -1424,6 +1434,7 @@ const Players = () => {
   };
 
   const handleAutoAssign = async () => {
+    if (lockGuard()) return;
     const unassignedPlayers = players.filter((p) => p.group_number === null);
     if (unassignedPlayers.length === 0) return;
 
@@ -1489,6 +1500,7 @@ const Players = () => {
 
 
   const onDragEnd = async (result: DropResult) => {
+    if (lockGuard()) return;
     const { draggableId, source, destination } = result;
     if (!destination) return;
 

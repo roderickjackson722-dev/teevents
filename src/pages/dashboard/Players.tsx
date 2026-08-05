@@ -907,7 +907,7 @@ const Players = () => {
     roundHoles?: number;
     sameStartHole?: boolean;
   };
-  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00", roundFormat: "", roundHoles: 18, sameStartHole: false });
+  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00", roundFormat: "", roundHoles: 18, sameStartHole: true });
 
   const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
   const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
@@ -975,16 +975,10 @@ const Players = () => {
       byTime.forEach((nums, t) => {
         if (nums.length > 1) issues.push(`${nums.length} groups share the ${fmtTee12(t)} tee time (holes ${nums.join(", ")}).`);
       });
-      if (!dayCfg.sameStartHole) {
-        const byHole = new Map<string, number[]>();
-        filled.forEach((g) => {
-          const h = startHoleOf(g.number);
-          byHole.set(h, [...(byHole.get(h) || []), g.number]);
-        });
-        byHole.forEach((nums, h) => {
-          if (nums.length > 1) issues.push(`Starting hole #${h} is assigned to ${nums.length} groups (${nums.join(", ")}).`);
-        });
-      }
+      // Shared starting holes are expected for tee-time starts. Groups commonly
+      // begin on hole 1 or 10 (or another organizer-selected hole) at intervals.
+      // Only duplicate tee TIMES are conflicts in this mode; duplicate starting
+      // holes remain conflicts for shotgun starts below.
       const missing = filled.filter((g) => !holeTeeTimes[g.number]).map((g) => g.number);
       if (missing.length) issues.push(`No tee time set for ${missing.length} group(s): ${missing.join(", ")}.`);
     } else {
@@ -1002,7 +996,7 @@ const Players = () => {
     const oversized = filled.filter((g) => g.players.length > maxGroupSize).map((g) => g.number);
     if (oversized.length) issues.push(`Group(s) ${oversized.join(", ")} have more than ${maxGroupSize} players.`);
     return issues;
-  }, [groupsBase.map((g) => `${g.number}:${g.players.length}`).join("|"), JSON.stringify(holeTeeTimes), JSON.stringify(holeLabels), dayCfg.startFormat, dayCfg.sameStartHole, activeDay]);
+  }, [groupsBase.map((g) => `${g.number}:${g.players.length}`).join("|"), JSON.stringify(holeTeeTimes), JSON.stringify(holeLabels), dayCfg.startFormat, activeDay]);
 
   // ---- Lock / publish pairings ----
   const pairingsLocked = !!currentTournamentObj?.pairings_locked;
@@ -2419,7 +2413,9 @@ const Players = () => {
                       </SelectTrigger>
                       <SelectContent>
                         {Array.from({ length: 18 }, (_, i) => i + 1).map((h) => (
-                          <SelectItem key={h} value={String(h)}>#{h}</SelectItem>
+                          <SelectItem key={h} value={String(h)}>
+                            {h === 1 ? "Hole 1 (standard)" : h === 10 ? "Hole 10 (standard)" : `Hole ${h} (custom)`}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -2430,7 +2426,7 @@ const Players = () => {
                       disabled={startFormat === "shotgun"}
                       onCheckedChange={(v) => persistStartFormat({ sameStartHole: !!v })}
                     />
-                    All groups start on hole #{firstTeeHole}
+                    Apply hole #{firstTeeHole} to all groups
                   </label>
 
                   <div>
@@ -2479,7 +2475,7 @@ const Players = () => {
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               {startFormat === "tee_times"
-                ? `Sequential tee times starting at hole #${firstTeeHole}, every ${teeInterval} minutes${numDays > 1 ? ` for Day ${activeDay + 1}` : ""}. Duplicates are blocked; edit individual hole times below to override.`
+                ? `Sequential tee times starting at hole #${firstTeeHole}, every ${teeInterval} minutes${numDays > 1 ? ` for Day ${activeDay + 1}` : ""}. Multiple groups may share a starting hole; duplicate tee times are still blocked.`
                 : `All holes tee off at ${fmtTee12(shotgunTime)}${numDays > 1 ? ` on Day ${activeDay + 1}` : ""}. Individual hole overrides still apply below.`}
             </p>
           </div>

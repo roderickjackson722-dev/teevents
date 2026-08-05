@@ -260,3 +260,51 @@ function ScorecardMiniPreview({ options, showCourseName, logoUrl }: { options: P
     </div>
   );
 }
+
+/** Live mini-preview of a cart sign (two players per cart, stacked names). */
+function CartSignMiniPreview({ options, logoUrl }: { options: PrintableOptions; logoUrl?: string | null }) {
+  const fontMap: Record<string, string> = {
+    georgia: "'Georgia', serif",
+    helvetica: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+    playfair: "'Playfair Display', Georgia, serif",
+    roboto: "'Roboto', 'Helvetica Neue', sans-serif",
+    courier: "'Courier New', Courier, monospace",
+  };
+  const font = fontMap[options.font] || fontMap.georgia;
+  const layout = options.layout;
+  const accent = "hsl(var(--primary))";
+  const isBold = layout === "bold";
+  const borderStyle = isBold ? `3px solid ${accent}` : layout === "modern" ? `1px solid hsl(var(--border))` : `2px solid ${accent}`;
+
+  return (
+    <div className="space-y-2 pt-2 border-t border-border">
+      <Label className="text-xs font-medium text-muted-foreground">Live Preview</Label>
+      <div
+        className="rounded-md overflow-hidden max-w-md flex flex-col items-center justify-center text-center gap-1.5 px-4 py-5"
+        style={{
+          border: borderStyle,
+          fontFamily: font,
+          background: isBold ? accent : "hsl(var(--card))",
+          color: isBold ? "hsl(var(--primary-foreground))" : "hsl(var(--foreground))",
+        }}
+      >
+        {options.showLogo && (
+          logoUrl ? (
+            <img src={logoUrl} alt="Logo" className="h-10 max-w-[100px] object-contain bg-white rounded p-0.5" />
+          ) : (
+            <div className="text-[9px] font-bold border px-1.5 py-0.5 rounded" style={{ borderColor: "currentColor" }}>LOGO</div>
+          )
+        )}
+        {options.showTournamentTitle && (
+          <div className="text-[9px] font-semibold tracking-widest uppercase opacity-70">Spring Charity Classic</div>
+        )}
+        <div className="text-lg font-bold leading-tight">John Smith</div>
+        <div className="text-lg font-bold leading-tight">Mike Davis</div>
+        {options.showStartingHole && (
+          <div className="text-[11px] font-semibold" style={{ color: isBold ? "currentColor" : accent }}>Starting Hole: 4</div>
+        )}
+      </div>
+      <p className="text-[10px] text-muted-foreground">Updates instantly as you change font, layout, or toggles.</p>
+    </div>
+  );
+}

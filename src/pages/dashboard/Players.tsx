@@ -2263,6 +2263,65 @@ const Players = () => {
       ) : (
         /* Pairings View */
         <div>
+          {/* Lock / publish pairings */}
+          <div className={`mb-4 rounded-lg border p-4 ${pairingsLocked ? "border-primary/40 bg-primary/5" : "border-border bg-card"}`}>
+            <div className="flex flex-wrap items-center gap-3">
+              {pairingsLocked ? <Lock className="h-5 w-5 text-primary" /> : <LockOpen className="h-5 w-5 text-muted-foreground" />}
+              <div className="min-w-[14rem] flex-1">
+                <p className="text-sm font-semibold text-foreground">
+                  {pairingsLocked ? "Pairings locked (final)" : "Pairings unlocked (editable)"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {pairingsLocked
+                    ? `Assignments, tee times, team names, and scoring codes are read-only${currentTournamentObj?.pairings_locked_at ? ` · locked ${new Date(currentTournamentObj.pairings_locked_at).toLocaleString()}` : ""}.`
+                    : "Lock pairings once assignments are final to prevent accidental edits."}
+                </p>
+              </div>
+              <Button
+                size="sm"
+                variant={pairingsLocked ? "outline" : "default"}
+                disabled={lockSaving}
+                onClick={() => setPairingsLocked(!pairingsLocked)}
+              >
+                {pairingsLocked ? (
+                  <><LockOpen className="h-4 w-4 mr-1" /> Unlock Pairings</>
+                ) : (
+                  <><Lock className="h-4 w-4 mr-1" /> Lock &amp; Publish Pairings</>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Conflict validation */}
+          {pairingConflicts.length > 0 ? (
+            <div className="mb-4 rounded-lg border border-destructive/40 bg-destructive/5 p-4">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 text-destructive flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-semibold text-destructive">
+                    {pairingConflicts.length} scheduling conflict{pairingConflicts.length === 1 ? "" : "s"} to review
+                    {numDays > 1 ? ` (Day ${activeDay + 1})` : ""}
+                  </p>
+                  <ul className="mt-1 list-disc pl-5 text-xs text-foreground space-y-0.5">
+                    {pairingConflicts.map((c, i) => <li key={i}>{c}</li>)}
+                  </ul>
+                  <p className="mt-2 text-[11px] text-muted-foreground">
+                    Fix these before locking pairings — locking is blocked while conflicts exist.
+                  </p>
+                </div>
+              </div>
+            </div>
+          ) : (
+            groupsBase.some((g) => g.players.length > 0) && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5">
+                <ShieldCheck className="h-4 w-4 text-primary" />
+                <p className="text-xs text-muted-foreground">
+                  No tee time or starting-hole conflicts detected{numDays > 1 ? ` for Day ${activeDay + 1}` : ""}.
+                </p>
+              </div>
+            )
+          )}
+
           {/* Start Format Controls */}
           <div className="mb-4 rounded-lg border border-border bg-card p-4">
             {numDays > 1 && (

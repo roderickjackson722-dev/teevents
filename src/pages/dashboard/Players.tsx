@@ -1185,8 +1185,8 @@ const Players = () => {
         );
         if (conflict) {
           toast({
-            title: "Duplicate tee time",
-            description: `Another group is already at ${fmtTee12(v)} on hole #${thisHole}. Use a different time or a different starting hole.`,
+            title: "Duplicate Tee Time on Same Hole",
+            description: `A group is already assigned to ${fmtTee12(v)} on Hole ${thisHole}. Please choose a different tee time or a different starting hole.`,
             variant: "destructive",
           });
           return;
@@ -1259,18 +1259,22 @@ const Players = () => {
       }
       ordered.forEach((n, idx) => { next[n] = addMinutes(firstTeeTime, idx * teeInterval); });
 
-      // Guard: ensure no two holes ended up with the same computed time
+      // The same tee time may be used on different starting holes. Only block
+      // an exact duplicate of both starting hole and tee time.
       const seen = new Map<string, number>();
-      for (const [holeStr, t] of Object.entries(next)) {
-        if (seen.has(t)) {
+      for (const [groupStr, t] of Object.entries(next)) {
+        const groupNumber = Number(groupStr);
+        const startingHole = startHoleOf(groupNumber);
+        const key = `${startingHole}@${t}`;
+        if (seen.has(key)) {
           toast({
-            title: "Duplicate tee times detected",
-            description: `Holes ${seen.get(t)} and ${holeStr} would both start at ${fmtTee12(t)}. Increase the interval or reduce holes.`,
+            title: "Duplicate Tee Time on Same Hole",
+            description: `Groups ${seen.get(key)} and ${groupNumber} would both start at ${fmtTee12(t)} on Hole ${startingHole}. Please choose a different tee time or a different starting hole.`,
             variant: "destructive",
           });
           return;
         }
-        seen.set(t, Number(holeStr));
+        seen.set(key, groupNumber);
       }
       saveTeeTimes(next);
       toast({ title: "Tee times applied", description: `${ordered.length} holes on ${dayLabel} starting at hole ${firstTeeHole}, ${fmtTee12(firstTeeTime)}, every ${teeInterval} min.` });

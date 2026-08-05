@@ -3624,6 +3624,7 @@ export type Database = {
       }
       league_events: {
         Row: {
+          completed_at: string | null
           course_id: string | null
           course_name: string | null
           created_at: string
@@ -3645,6 +3646,7 @@ export type Database = {
           recurrence_rule: Json | null
           registration_deadline: string | null
           registration_fee_cents: number
+          round_status: string
           season_id: string | null
           skins_carryover: boolean
           skins_enabled: boolean
@@ -3656,6 +3658,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          completed_at?: string | null
           course_id?: string | null
           course_name?: string | null
           created_at?: string
@@ -3677,6 +3680,7 @@ export type Database = {
           recurrence_rule?: Json | null
           registration_deadline?: string | null
           registration_fee_cents?: number
+          round_status?: string
           season_id?: string | null
           skins_carryover?: boolean
           skins_enabled?: boolean
@@ -3688,6 +3692,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          completed_at?: string | null
           course_id?: string | null
           course_name?: string | null
           created_at?: string
@@ -3709,6 +3714,7 @@ export type Database = {
           recurrence_rule?: Json | null
           registration_deadline?: string | null
           registration_fee_cents?: number
+          round_status?: string
           season_id?: string | null
           skins_carryover?: boolean
           skins_enabled?: boolean

@@ -120,6 +120,17 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
                       <TableCell className="font-medium">{r.league_members.member_name}</TableCell>
                       <TableCell>{r.league_members.handicap_index ?? "—"}</TableCell>
                       <TableCell className="text-right">{r.matches_played}</TableCell>
+                      <TableCell className="text-right">
+                        <Input
+                          type="number"
+                          min={0}
+                          className="h-8 w-16 ml-auto text-right"
+                          value={String(r.wins_override ?? r.wins ?? 0)}
+                          onChange={(e) => setRows((prev) => prev.map((x) => (x.id === r.id ? { ...x, wins_override: e.target.value === "" ? null : Number(e.target.value) } : x)))}
+                          onBlur={(e) => saveWins(r, e.target.value)}
+                        />
+                      </TableCell>
+
                       
                       <TableCell className="text-right">{r.total_gross}</TableCell>
                       <TableCell className="text-right">{r.total_net}</TableCell>

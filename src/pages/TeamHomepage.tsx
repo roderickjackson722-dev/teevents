@@ -198,14 +198,22 @@ export default function TeamHomepage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-8">
-        {tournament.day_of_welcome_message && (
+        {hq.intro_note && (
+          <p className="text-sm text-foreground bg-primary/5 border border-primary/20 rounded-lg p-3 whitespace-pre-line">
+            {hq.intro_note}
+          </p>
+        )}
+
+        {hq.show_welcome && tournament.day_of_welcome_message && (
           <p className="text-sm text-muted-foreground bg-muted/40 border border-border rounded-lg p-3">
             {tournament.day_of_welcome_message}
           </p>
         )}
 
+        {hq.show_quick_links && quickLinks.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold text-foreground mb-3">Quick Links</h2>
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {quickLinks.map(({ label, icon: Icon, href, external }) => (
               <a

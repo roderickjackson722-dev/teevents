@@ -46,6 +46,7 @@ export default function SponsorDayOfSender({
   renderHtml,
   subjectTemplate,
   baseVars,
+  allowTaxReceipt = false,
 }: Props) {
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -55,6 +56,13 @@ export default function SponsorDayOfSender({
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [sending, setSending] = useState(false);
+  const [attachReceipt, setAttachReceipt] = useState(false);
+  const [orgInfo, setOrgInfo] = useState<{
+    name: string;
+    mailing_address: string | null;
+    ein: string | null;
+    nonprofit_name: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!tournamentId) return;
@@ -64,7 +72,9 @@ export default function SponsorDayOfSender({
       const [{ data: sps }, { data: t }] = await Promise.all([
         supabase
           .from("sponsor_registrations")
-          .select("id, company_name, contact_name, contact_email, hole_number, checkin_time, sponsorship_tiers(name)")
+          .select(
+            "id, company_name, contact_name, contact_email, hole_number, checkin_time, address, amount_cents, receipt_number, receipt_sent, sponsorship_tiers(name)",
+          )
           .eq("tournament_id", tournamentId)
           .order("created_at", { ascending: true }),
         supabase
@@ -84,6 +94,23 @@ export default function SponsorDayOfSender({
       active = false;
     };
   }, [tournamentId]);
+
+  useEffect(() => {
+    if (!allowTaxReceipt || !organizationId) return;
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from("organizations")
+        .select("name, mailing_address, ein, nonprofit_name")
+        .eq("id", organizationId)
+        .maybeSingle();
+      if (active) setOrgInfo((data as any) || null);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [allowTaxReceipt, organizationId]);
+
 
   const withEmail = sponsors.filter((s) => s.contact_email);
   const allSelected = withEmail.length > 0 && selected.length === withEmail.length;

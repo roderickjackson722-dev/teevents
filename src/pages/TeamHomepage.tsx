@@ -328,8 +328,11 @@ export default function TeamHomepage() {
             ))}
           </div>
         </section>
+        )}
 
+        {hq.show_contact && (
         <section id="contact" className="scroll-mt-4">
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Phone className="h-4 w-4 text-primary" /> Contact Info
           </h2>

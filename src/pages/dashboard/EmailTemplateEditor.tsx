@@ -1733,10 +1733,14 @@ function renderEmailHtml(
   const footer = replaceVariables(config.footer_text, vars);
 
 
-  const eventDetailsHtml = config.show_event_details && (vars.event_date || vars.event_location)
+  const detailsDate = (config.event_details_date_override ?? "").trim() || vars.event_date;
+  const detailsLocation = (config.event_details_location_override ?? "").trim() || vars.event_location;
+  const detailsDateLabel = config.event_details_date_label ?? "Date:";
+  const detailsLocationLabel = config.event_details_location_label ?? "Location:";
+  const eventDetailsHtml = config.show_event_details && (detailsDate || detailsLocation)
     ? `<div style="margin:16px 0;">
-        ${vars.event_date ? `<p style="margin:0 0 6px;color:${config.text_color};font-size:15px;">📅 <strong>Date:</strong> ${vars.event_date}</p>` : ""}
-        ${vars.event_location ? `<p style="margin:0;color:${config.text_color};font-size:15px;">📍 <strong>Location:</strong> ${vars.event_location}</p>` : ""}
+        ${detailsDate ? `<p style="margin:0 0 6px;color:${config.text_color};font-size:15px;">📅 <strong>${escapeHtml(detailsDateLabel)}</strong> ${detailsDate}</p>` : ""}
+        ${detailsLocation ? `<p style="margin:0;color:${config.text_color};font-size:15px;">📍 <strong>${escapeHtml(detailsLocationLabel)}</strong> ${detailsLocation}</p>` : ""}
        </div>`
     : "";
 

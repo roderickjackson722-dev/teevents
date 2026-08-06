@@ -11485,6 +11485,18 @@ export type Database = {
           website_url: string
         }[]
       }
+      get_public_team_roster: {
+        Args: { _tournament_id: string }
+        Returns: {
+          first_name: string
+          group_number: number
+          group_position: number
+          last_name: string
+          registration_id: string
+          team_name: string
+          tee_time: string
+        }[]
+      }
       get_public_vendor_registrations: {
         Args: { _tournament_id: string }
         Returns: {

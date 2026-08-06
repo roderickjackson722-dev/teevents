@@ -288,6 +288,28 @@ export default function SponsorDayOfSender({
         )}
       </div>
 
+      {allowTaxReceipt && (
+        <div className="bg-card rounded-lg border p-5">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              className="rounded mt-1"
+              checked={attachReceipt}
+              onChange={(e) => setAttachReceipt(e.target.checked)}
+            />
+            <span>
+              <span className="text-sm font-medium text-foreground">Attach tax donation receipt</span>
+              <span className="block text-xs text-muted-foreground mt-1">
+                The receipt is generated from each sponsor&rsquo;s information and sent as a PDF attachment.
+                {orgInfo && !orgInfo.ein ? " Add your organization's EIN in Organization Info for a complete receipt." : ""}
+              </span>
+            </span>
+          </label>
+        </div>
+      )}
+
+
+
       <div className="bg-card rounded-lg border p-5 space-y-3">
         <div>
           <Label className="text-sm">Parking Information</Label>

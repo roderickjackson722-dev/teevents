@@ -13,6 +13,8 @@ import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import { buildTeams, splitCarts, type RegistrationGroupRow } from "./teamGrouping";
+import ScorecardSelector from "./ScorecardSelector";
+
 
 interface Props {
   tournament: Tournament | null;

@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import { DEFAULT_TEAM_HQ_SETTINGS, parseTeamHqSettings, type TeamHqSettings } from "@/lib/teamHqSettings";
+
 
 interface TeamTournament {
   id: string;

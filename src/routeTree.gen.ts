@@ -14,6 +14,7 @@ import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
 import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as TSlugRouteImport } from './routes/t/$slug'
+import { Route as TeamSlugRouteImport } from './routes/team/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
 import { Route as ApiPublicLeagueLoginInstructionsRouteImport } from './routes/api/public/league-login-instructions'
@@ -44,6 +45,11 @@ const TSlugRoute = TSlugRouteImport.update({
   path: '/t/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamSlugRoute = TeamSlugRouteImport.update({
+  id: '/team/$slug',
+  path: '/team/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TournamentSlugRoute = TournamentSlugRouteImport.update({
   id: '/tournament/$slug',
   path: '/tournament/$slug',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/college/$slug': typeof CollegeSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
+  '/team/$slug': typeof TeamSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/college/$slug': typeof CollegeSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
+  '/team/$slug': typeof TeamSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/college/$slug': typeof CollegeSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
+  '/team/$slug': typeof TeamSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -108,6 +117,7 @@ export interface FileRouteTypes {
     | '/college/$slug'
     | '/s/$slug'
     | '/t/$slug'
+    | '/team/$slug'
     | '/tournament/$slug'
     | '/college/'
     | '/api/public/league-event-confirmation'
@@ -119,6 +129,7 @@ export interface FileRouteTypes {
     | '/college/$slug'
     | '/s/$slug'
     | '/t/$slug'
+    | '/team/$slug'
     | '/tournament/$slug'
     | '/college'
     | '/api/public/league-event-confirmation'
@@ -130,6 +141,7 @@ export interface FileRouteTypes {
     | '/college/$slug'
     | '/s/$slug'
     | '/t/$slug'
+    | '/team/$slug'
     | '/tournament/$slug'
     | '/college/'
     | '/api/public/league-event-confirmation'
@@ -142,6 +154,7 @@ export interface RootRouteChildren {
   CollegeSlugRoute: typeof CollegeSlugRoute
   SSlugRoute: typeof SSlugRoute
   TSlugRoute: typeof TSlugRoute
+  TeamSlugRoute: typeof TeamSlugRoute
   TournamentSlugRoute: typeof TournamentSlugRoute
   CollegeIndexRoute: typeof CollegeIndexRoute
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
@@ -186,6 +199,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team/$slug': {
+      id: '/team/$slug'
+      path: '/team/$slug'
+      fullPath: '/team/$slug'
+      preLoaderRoute: typeof TeamSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tournament/$slug': {
       id: '/tournament/$slug'
       path: '/tournament/$slug'
@@ -222,6 +242,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollegeSlugRoute: CollegeSlugRoute,
   SSlugRoute: SSlugRoute,
   TSlugRoute: TSlugRoute,
+  TeamSlugRoute: TeamSlugRoute,
   TournamentSlugRoute: TournamentSlugRoute,
   CollegeIndexRoute: CollegeIndexRoute,
   ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,

@@ -373,7 +373,7 @@ export default function TeamHomepage() {
         </section>
       </main>
 
-      <TeeventsFooter />
+      <TeeventsFooter tournament={tournament as any} />
     </div>
   );
 }

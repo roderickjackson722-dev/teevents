@@ -10015,6 +10015,7 @@ export type Database = {
           state: string | null
           status: string
           store_section_title: string | null
+          team_hq_settings: Json
           template: string | null
           test_mode_enabled: boolean | null
           title: string
@@ -10294,6 +10295,7 @@ export type Database = {
           state?: string | null
           status?: string
           store_section_title?: string | null
+          team_hq_settings?: Json
           template?: string | null
           test_mode_enabled?: boolean | null
           title: string
@@ -10573,6 +10575,7 @@ export type Database = {
           state?: string | null
           status?: string
           store_section_title?: string | null
+          team_hq_settings?: Json
           template?: string | null
           test_mode_enabled?: boolean | null
           title?: string

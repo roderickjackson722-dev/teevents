@@ -13,6 +13,8 @@ import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import { buildTeams, splitCarts, type RegistrationGroupRow } from "./teamGrouping";
+import ScorecardSelector from "./ScorecardSelector";
+
 
 interface Props {
   tournament: Tournament | null;
@@ -67,6 +69,8 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
   const [edits, setEdits] = useState<Record<string, CartNames>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [selectedSigns, setSelectedSigns] = useState<string[]>([]);
+
 
   const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
 
@@ -99,10 +103,33 @@ export default function CartSignsTab({ tournament, registrations, loading, group
     return out;
   };
 
-  const allHtml = teams
-    .flatMap((t) => cartsFor(t.key).map((c) => cartSignHtml(c.names, tournament, opts, t.groupNumber)))
-    .map((html, i, arr) => `<div class="print-page" style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
-    .join("");
+  /** Flat list of every printable cart sign (hole + cart + names) */
+  const allSigns = teams.flatMap((t) =>
+    cartsFor(t.key).map((c) => ({
+      key: `${t.key}|${c.label}`,
+      hole: t.groupNumber,
+      label: `${t.groupNumber != null ? `Hole ${t.groupNumber}` : "Unassigned"} – ${c.label}: ${c.names.join(" & ")}`,
+      names: c.names,
+      groupNumber: t.groupNumber,
+    })),
+  );
+
+  const signKeysJson = JSON.stringify(allSigns.map((s) => s.key));
+  useEffect(() => {
+    setSelectedSigns(JSON.parse(signKeysJson) as string[]);
+  }, [signKeysJson]);
+
+  const selectedSignSet = new Set(selectedSigns);
+  const printSigns = allSigns.filter((s) => selectedSignSet.has(s.key));
+
+  const buildHtml = (signs: typeof allSigns) =>
+    signs
+      .map((s) => cartSignHtml(s.names, tournament, opts, s.groupNumber))
+      .map((html, i, arr) => `<div class="print-page" style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
+      .join("");
+
+  const allHtml = buildHtml(printSigns);
+
 
   const saveNames = async (key: string) => {
     const team = teams.find((t) => t.key === key);
@@ -155,20 +182,28 @@ export default function CartSignsTab({ tournament, registrations, loading, group
         logoUrl={getPrintLogo(tournament)}
       />
 
+      <ScorecardSelector
+        title="Print Cart Signs"
+        items={allSigns.map((s) => ({ key: s.key, label: s.label, hole: s.hole }))}
+        selected={selectedSigns}
+        onChange={setSelectedSigns}
+      />
+
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <p className="text-xs text-muted-foreground">
-          Two players per cart &bull; prints at 8&quot; H &times; 36&quot; W (landscape) &bull; scale {Math.round((opts.printScale ?? 1) * 100)}% &bull; {opts.printMarginIn ?? 0.25}&quot; margins
+          {printSigns.length} of {allSigns.length} cart signs selected &bull; two players per cart &bull; prints at 8&quot; H &times; 36&quot; W (landscape) &bull; scale {Math.round((opts.printScale ?? 1) * 100)}% &bull; {opts.printMarginIn ?? 0.25}&quot; margins
         </p>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.cartsign} fitOptions={fitOptions} />
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
+          <Button variant="outline" disabled={printSigns.length === 0} onClick={() => downloadHtmlAsPdf(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
-            <Printer className="h-4 w-4 mr-2" /> Generate Cart Signs
+          <Button disabled={printSigns.length === 0} onClick={() => openPrintWindow(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
+            <Printer className="h-4 w-4 mr-2" /> Print Selected Cart Signs
           </Button>
         </div>
       </div>
+
 
       <div className="space-y-4">
         {teams.map((t) => {

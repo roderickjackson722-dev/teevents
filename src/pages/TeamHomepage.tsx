@@ -9,6 +9,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import { DEFAULT_TEAM_HQ_SETTINGS, parseTeamHqSettings, type TeamHqSettings } from "@/lib/teamHqSettings";
+
 
 interface TeamTournament {
   id: string;
@@ -61,6 +63,7 @@ export default function TeamHomepage() {
   const [roster, setRoster] = useState<RosterRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [hq, setHq] = useState<TeamHqSettings>(DEFAULT_TEAM_HQ_SETTINGS);
 
   useEffect(() => {
     if (!slug) return;
@@ -76,14 +79,19 @@ export default function TeamHomepage() {
       const [tRes, rRes] = await Promise.all([
         supabase
           .from("tournaments")
-          .select("id, title, slug, date, course_name, site_logo_url, site_primary_color, contact_name, contact_email, contact_phone, day_of_director_name, day_of_director_email, day_of_director_phone, day_of_emergency_contact, day_of_welcome_message, day_of_announcements, day_of_announcements_list")
+          .select("id, title, slug, date, course_name, site_logo_url, site_primary_color, contact_name, contact_email, contact_phone, day_of_director_name, day_of_director_email, day_of_director_phone, day_of_emergency_contact, day_of_welcome_message, day_of_announcements, day_of_announcements_list, team_hq_settings")
           .eq("id", row.id)
           .maybeSingle(),
         (supabase as any).rpc("get_public_team_roster", { _tournament_id: row.id }),
       ]);
       if (cancelled) return;
-      setTournament((tRes.data as any) ?? null);
+      const tData: any = tRes.data ?? null;
+      const parsed = parseTeamHqSettings(tData?.team_hq_settings);
+      setHq(parsed);
+      if (tData && !parsed.enabled) { setNotFound(true); setLoading(false); return; }
+      setTournament(tData);
       setRoster(((rRes as any).data || []) as RosterRow[]);
+
       setLoading(false);
     })();
     return () => { cancelled = true; };
@@ -160,16 +168,17 @@ export default function TeamHomepage() {
     ? new Date(`${tournament.date}T12:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
     : null;
 
-  const quickLinks: Array<{ label: string; icon: typeof ListOrdered; href: string; external?: boolean }> = [
-    { label: "Alpha List", icon: ListOrdered, href: "#alpha-list" },
-    { label: "Hole Assignments", icon: Flag, href: "#hole-assignments" },
-    { label: "Live Leaderboard", icon: BarChart3, href: liveUrl, external: true },
-    { label: "Scoring Entry", icon: PencilLine, href: scoringUrl, external: true },
-    { label: "QR Codes", icon: QrCode, href: "#qr-codes" },
-    { label: "Pairings & Tee Times", icon: Users, href: "#hole-assignments" },
-    { label: "Announcements", icon: Megaphone, href: "#announcements" },
-    { label: "Contact Info", icon: Phone, href: "#contact" },
-  ];
+  const quickLinks: Array<{ label: string; icon: typeof ListOrdered; href: string; external?: boolean; show: boolean }> = [
+    { label: "Alpha List", icon: ListOrdered, href: "#alpha-list", show: hq.show_alpha_list },
+    { label: "Hole Assignments", icon: Flag, href: "#hole-assignments", show: hq.show_hole_assignments },
+    { label: "Live Leaderboard", icon: BarChart3, href: liveUrl, external: true, show: hq.show_leaderboard },
+    { label: "Scoring Entry", icon: PencilLine, href: scoringUrl, external: true, show: hq.show_scoring },
+    { label: "QR Codes", icon: QrCode, href: "#qr-codes", show: hq.show_qr_codes },
+    { label: "Pairings & Tee Times", icon: Users, href: "#hole-assignments", show: hq.show_hole_assignments },
+    { label: "Announcements", icon: Megaphone, href: "#announcements", show: hq.show_announcements },
+    { label: "Contact Info", icon: Phone, href: "#contact", show: hq.show_contact },
+  ].filter((l) => l.show);
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -189,14 +198,22 @@ export default function TeamHomepage() {
       </header>
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-8">
-        {tournament.day_of_welcome_message && (
+        {hq.intro_note && (
+          <p className="text-sm text-foreground bg-primary/5 border border-primary/20 rounded-lg p-3 whitespace-pre-line">
+            {hq.intro_note}
+          </p>
+        )}
+
+        {hq.show_welcome && tournament.day_of_welcome_message && (
           <p className="text-sm text-muted-foreground bg-muted/40 border border-border rounded-lg p-3">
             {tournament.day_of_welcome_message}
           </p>
         )}
 
+        {hq.show_quick_links && quickLinks.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold text-foreground mb-3">Quick Links</h2>
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {quickLinks.map(({ label, icon: Icon, href, external }) => (
               <a
@@ -211,8 +228,11 @@ export default function TeamHomepage() {
             ))}
           </div>
         </section>
+        )}
 
+        {hq.show_alpha_list && (
         <section id="alpha-list" className="scroll-mt-4">
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <ListOrdered className="h-4 w-4 text-primary" /> Alpha List (All Players)
           </h2>
@@ -231,8 +251,11 @@ export default function TeamHomepage() {
             ))}
           </div>
         </section>
+        )}
 
+        {hq.show_hole_assignments && (
         <section id="hole-assignments" className="scroll-mt-4">
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Flag className="h-4 w-4 text-primary" /> Hole Assignments, Pairings &amp; Tee Times
           </h2>
@@ -244,7 +267,7 @@ export default function TeamHomepage() {
               <div key={g.hole} className="rounded-xl border border-border bg-card p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-foreground">Hole {g.hole}: {g.teamName}</p>
-                  {g.teeTime && <span className="text-xs text-muted-foreground">{g.teeTime}</span>}
+                  {hq.show_tee_times && g.teeTime && <span className="text-xs text-muted-foreground">{g.teeTime}</span>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {g.players.map((p) => `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim()).join(" • ")}
@@ -253,36 +276,48 @@ export default function TeamHomepage() {
             ))}
           </div>
         </section>
+        )}
 
+        {(hq.show_leaderboard || hq.show_scoring) && (
         <section>
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-primary" /> Live Leaderboard &amp; Scoring
           </h2>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button asChild className="flex-1">
-              <a href={liveUrl} target="_blank" rel="noreferrer">Open Live Leaderboard</a>
-            </Button>
-            <Button asChild variant="outline" className="flex-1">
-              <a href={scoringUrl} target="_blank" rel="noreferrer">Open Scoring Entry</a>
-            </Button>
+            {hq.show_leaderboard && (
+              <Button asChild className="flex-1">
+                <a href={liveUrl} target="_blank" rel="noreferrer">Open Live Leaderboard</a>
+              </Button>
+            )}
+            {hq.show_scoring && (
+              <Button asChild variant="outline" className="flex-1">
+                <a href={scoringUrl} target="_blank" rel="noreferrer">Open Scoring Entry</a>
+              </Button>
+            )}
           </div>
         </section>
+        )}
 
+        {hq.show_qr_codes && (
         <section id="qr-codes" className="scroll-mt-4">
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <QrCode className="h-4 w-4 text-primary" /> QR Codes
           </h2>
           <div className="grid grid-cols-2 gap-2">
-            <QrCard label="Live Leaderboard" url={liveUrl} />
-            <QrCard label="Scoring Entry" url={scoringUrl} />
+            {hq.show_leaderboard && <QrCard label="Live Leaderboard" url={liveUrl} />}
+            {hq.show_scoring && <QrCard label="Scoring Entry" url={scoringUrl} />}
             <QrCard label="Team Homepage" url={teamUrl} />
-            <QrCard label="Alpha List" url={`${teamUrl}#alpha-list`} />
-            <QrCard label="Hole Assignments" url={`${teamUrl}#hole-assignments`} />
+            {hq.show_alpha_list && <QrCard label="Alpha List" url={`${teamUrl}#alpha-list`} />}
+            {hq.show_hole_assignments && <QrCard label="Hole Assignments" url={`${teamUrl}#hole-assignments`} />}
             <QrCard label="Tournament Page" url={tournamentUrl} />
           </div>
         </section>
+        )}
 
+        {hq.show_announcements && (
         <section id="announcements" className="scroll-mt-4">
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Megaphone className="h-4 w-4 text-primary" /> Announcements
           </h2>
@@ -293,8 +328,11 @@ export default function TeamHomepage() {
             ))}
           </div>
         </section>
+        )}
 
+        {hq.show_contact && (
         <section id="contact" className="scroll-mt-4">
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Phone className="h-4 w-4 text-primary" /> Contact Info
           </h2>
@@ -322,8 +360,11 @@ export default function TeamHomepage() {
             )}
           </div>
         </section>
+        )}
 
+        {hq.show_share && (
         <section>
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Share2 className="h-4 w-4 text-primary" /> Share Team Homepage
           </h2>
@@ -371,6 +412,8 @@ export default function TeamHomepage() {
             </div>
           </div>
         </section>
+        )}
+
       </main>
 
       <TeeventsFooter tournament={tournament as any} />

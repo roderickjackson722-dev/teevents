@@ -272,6 +272,8 @@ const App = () => (
           <Route path="/dashboard/raffles" element={<DashboardLayout><PlanGate feature="auction"><Raffles /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/media" element={<DashboardLayout><MediaClips /></DashboardLayout>} />
           <Route path="/dashboard/day-of" element={<DashboardLayout><DayOfSettings /></DashboardLayout>} />
+          <Route path="/dashboard/team-hq" element={<DashboardLayout><TeamHQ /></DashboardLayout>} />
+
           <Route path="/dashboard/stress-test" element={<DashboardLayout><StressTest /></DashboardLayout>} />
           <Route path="/dashboard/event-day-sales" element={<DashboardLayout><EventDaySales /></DashboardLayout>} />
           <Route path="/day-of/:slug/:code" element={<DayOf />} />

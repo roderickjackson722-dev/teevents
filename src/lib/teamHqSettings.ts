@@ -50,8 +50,20 @@ export const DEFAULT_TEAM_HQ_SETTINGS: TeamHqSettings = {
 /** Merge stored jsonb with defaults so older tournaments keep working. */
 export function parseTeamHqSettings(raw: unknown): TeamHqSettings {
   if (!raw || typeof raw !== "object") return { ...DEFAULT_TEAM_HQ_SETTINGS };
-  return { ...DEFAULT_TEAM_HQ_SETTINGS, ...(raw as Partial<TeamHqSettings>) };
+  const merged = { ...DEFAULT_TEAM_HQ_SETTINGS, ...(raw as Partial<TeamHqSettings>) };
+  merged.custom_boxes = Array.isArray(merged.custom_boxes)
+    ? merged.custom_boxes.filter((b) => b && typeof b === "object").map((b) => ({
+        id: String(b.id ?? Math.random().toString(36).slice(2)),
+        title: String(b.title ?? ""),
+        body: String(b.body ?? ""),
+        link_url: b.link_url ? String(b.link_url) : "",
+        link_label: b.link_label ? String(b.link_label) : "",
+        enabled: b.enabled !== false,
+      }))
+    : [];
+  return merged;
 }
+
 
 export const TEAM_HQ_SECTION_LABELS: Array<{ key: keyof TeamHqSettings; label: string; help: string }> = [
   { key: "show_welcome", label: "Welcome message", help: "Shows the day-of welcome message at the top." },

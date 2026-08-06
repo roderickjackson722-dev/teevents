@@ -251,8 +251,11 @@ export default function TeamHomepage() {
             ))}
           </div>
         </section>
+        )}
 
+        {hq.show_hole_assignments && (
         <section id="hole-assignments" className="scroll-mt-4">
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Flag className="h-4 w-4 text-primary" /> Hole Assignments, Pairings &amp; Tee Times
           </h2>

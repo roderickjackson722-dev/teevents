@@ -188,6 +188,20 @@ const DEFAULT_SPONSOR_DAY_OF_CONFIG: EmailConfig = {
   show_button: false,
 };
 
+const DEFAULT_SPONSORSHIP_DAY_OF_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "{{event_name}} – Your Hole Sponsor Details",
+  header_title: "Thank You for Your Sponsorship!",
+  greeting: "Dear {{sponsor_name}},",
+  body_text:
+    "Thank you for your generous support of {{event_name}}! We truly appreciate your partnership and are excited to have you as a Hole Sponsor.\n\nWe wanted to share a few quick details about your sponsorship:\n\n• Your company logo will be displayed on a hole sign at the tee box – your support will be visible to all players throughout the day.\n\n• Your logo will also be featured on our live scoring page and leaderboard – giving you additional exposure during and after the event.\n\nNo further action is needed on your part. We'll take care of everything to ensure your brand is recognized.",
+  closing_text:
+    "Thank you again for helping make this tournament a success. We look forward to seeing you on event day!\n\nBest regards,\n{{contact_name}}\n{{organization_name}}\n{{contact_phone}}\n{{contact_email}}",
+  footer_text: "Thank you for your support! ⛳",
+  show_event_details: false,
+  show_button: false,
+};
+
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
   sponsor: "Sponsor Confirmation",
@@ -195,6 +209,7 @@ const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   post_event: "Post-Event Thank You",
   day_before: "Day Before Event Reminder",
   sponsor_day_of: "Sponsor Event Day Details",
+  sponsorship_day_of: "Day of Event Sponsorship Email",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
@@ -204,6 +219,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   post_event: "Thanks for Playing!",
   day_before: "Your Tournament Is Almost Here!",
   sponsor_day_of: "Sponsor Event Day Details",
+  sponsorship_day_of: "Thank You for Your Sponsorship!",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -213,7 +229,9 @@ const CONFIG_KEY: Record<TemplateKind, string> = {
   post_event: "post_event_email_config",
   day_before: "day_before_email_config",
   sponsor_day_of: "sponsor_day_of_email_config",
+  sponsorship_day_of: "sponsorship_day_of_email_config",
 };
+
 
 const FONT_OPTIONS = [
   { label: "Arial", value: "Arial, sans-serif" },

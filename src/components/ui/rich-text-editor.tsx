@@ -35,6 +35,36 @@ const FONTS = [
 
 const SIZES = ["12", "14", "16", "18", "20", "24", "32"];
 
+/** Image widths offered when an image is selected (email-safe pixel widths). */
+const IMAGE_WIDTHS = [
+  { label: "Small (120px)", value: "120" },
+  { label: "Medium (240px)", value: "240" },
+  { label: "Large (400px)", value: "400" },
+  { label: "Full width (600px)", value: "600" },
+];
+
+/**
+ * Image node with a persisted width so organizers can resize inserted images.
+ * Width is written as both the `width` attribute and an inline style so email
+ * clients (which ignore CSS classes) honour the size.
+ */
+const ResizableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("width") || (el as HTMLElement).style.width || null,
+        renderHTML: (attrs) => {
+          if (!attrs.width) return {};
+          const w = String(attrs.width).replace("px", "");
+          return { width: w, style: `width:${w}px;max-width:100%;height:auto;` };
+        },
+      },
+    };
+  },
+});
+
 interface Props {
   value: string;
   onChange: (html: string) => void;

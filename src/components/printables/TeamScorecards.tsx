@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, scorecardCss, printLogoHtml } from "./printUtils";
 import { PRINT_TARGETS, sizeLabel } from "./printLayout";
 import PrintFitCheck from "./PrintFitCheck";
+import ScorecardSelector from "./ScorecardSelector";
 import PrintLogo from "./PrintLogo";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
@@ -146,6 +147,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
   const [edits, setEdits] = useState<Record<string, TeamEdit>>({});
   const [perPage, setPerPage] = useState<1 | 2 | 3>(2);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   useEffect(() => {
     const next: Record<string, TeamEdit> = {};
@@ -153,6 +155,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
       next[t.key] = { teamName: t.teamName, playersLine: t.players.map(playerName).join(", ") };
     });
     setEdits(next);
+    setSelectedKeys(teams.map((t) => t.key));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(teams.map((t) => `${t.key}:${t.teamName}:${t.players.map((p) => p.id).join(",")}`))]);
 
@@ -160,8 +163,17 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   const fitOptions = { scale: opts.printScale, marginIn: opts.printMarginIn };
   const pageCss = scorecardCss(fitOptions);
 
+  const selectedSet = new Set(selectedKeys);
+  const printTeams = teams.filter((t) => selectedSet.has(t.key));
+
+  const selectorItems = teams.map((t, i) => ({
+    key: t.key,
+    label: `${t.groupNumber != null ? `Group ${i + 1} – ` : ""}${t.teamName}${t.groupNumber != null ? ` (Hole ${t.groupNumber})` : ""}`,
+    hole: t.groupNumber,
+  }));
+
   const chunks: typeof teams[] = [];
-  for (let i = 0; i < teams.length; i += perPage) chunks.push(teams.slice(i, i + perPage));
+  for (let i = 0; i < printTeams.length; i += perPage) chunks.push(printTeams.slice(i, i + perPage));
 
   const allHtml = chunks
     .map((chunk, ci) => {
@@ -178,6 +190,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
     })
     .join("");
 
+
   const update = (key: string, patch: Partial<TeamEdit>) =>
     setEdits((prev) => ({ ...prev, [key]: { ...(prev[key] || { teamName: "", playersLine: "" }), ...patch } }));
 
@@ -187,6 +200,13 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
 
   return (
     <>
+      <ScorecardSelector
+        items={selectorItems}
+        selected={selectedKeys}
+        onChange={setSelectedKeys}
+        title="Print Scorecards"
+      />
+
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
@@ -203,14 +223,15 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
         </div>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.scorecard} fitOptions={fitOptions} />
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
+          <Button variant="outline" disabled={printTeams.length === 0} onClick={() => downloadHtmlAsPdf(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
-            <Printer className="h-4 w-4 mr-2" /> Generate Scorecards
+          <Button disabled={printTeams.length === 0} onClick={() => openPrintWindow(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
+            <Printer className="h-4 w-4 mr-2" /> Print Selected Scorecards ({printTeams.length})
           </Button>
         </div>
       </div>
+
 
       <div className="space-y-4">
         {teams.map((t) => {

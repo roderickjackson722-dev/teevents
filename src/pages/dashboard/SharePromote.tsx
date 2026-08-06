@@ -44,6 +44,8 @@ const SharePromote = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<ClickStats>({ total: 0, qr_code: 0, short_link: 0, social: 0, email: 0, mobile: 0, desktop: 0, tablet: 0 });
   const qrRef = useRef<HTMLDivElement>(null);
+  const teamQrRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     if (!org) return;
@@ -83,6 +85,34 @@ const SharePromote = () => {
 
   const registrationUrl = tournament?.slug ? `https://${DOMAIN}/t/${tournament.slug}` : "";
   const qrUrl = registrationUrl ? `${registrationUrl}?ref=qr` : "";
+  const teamHomepageUrl = tournament?.slug ? `https://${DOMAIN}/team/${tournament.slug}` : "";
+
+  const downloadTeamQR = () => {
+    const svg = teamQrRef.current?.querySelector("svg");
+    if (!svg) return;
+    const canvas = document.createElement("canvas");
+    const size = 900;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+    const img = new Image();
+    const svgBlob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
+    img.onload = () => {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${tournament?.slug || "tournament"}-team-qr.png`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }, "image/png");
+    };
+    img.src = URL.createObjectURL(svgBlob);
+  };
+
 
   const downloadQR = (format: "png" | "svg") => {
     if (!qrRef.current) return;
@@ -233,6 +263,34 @@ const SharePromote = () => {
                 </div>
               </CardContent>
             </Card>
+
+            <Card>
+              <CardHeader><CardTitle className="font-display">Team Homepage (Players)</CardTitle></CardHeader>
+              <CardContent className="flex flex-col items-center gap-4">
+                <p className="text-xs text-muted-foreground text-center">
+                  Mobile page for your players with the alpha list, hole assignments, tee times,
+                  live leaderboard, scoring entry and contact info.
+                </p>
+                <div ref={teamQrRef} className="bg-white p-4 rounded-lg border border-border">
+                  <QRCodeSVG value={teamHomepageUrl} size={220} level="H" includeMargin fgColor="#1a5c38" />
+                </div>
+                <p className="text-xs text-muted-foreground break-all text-center">{teamHomepageUrl}</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Button size="sm" onClick={downloadTeamQR}>
+                    <Download className="h-3.5 w-3.5 mr-1.5" /> Download QR (PNG)
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => copyToClipboard(teamHomepageUrl, "Team homepage link")}>
+                    <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Link
+                  </Button>
+                  <Button size="sm" variant="ghost" asChild>
+                    <a href={teamHomepageUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Preview
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
 
             <Card>
               <CardHeader><CardTitle className="font-display">Share Links</CardTitle></CardHeader>

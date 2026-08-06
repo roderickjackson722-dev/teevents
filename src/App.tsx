@@ -172,6 +172,7 @@ import SideEvents from "./pages/dashboard/SideEvents";
 import TeamPerformance from "./pages/dashboard/TeamPerformance";
 import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
+import TeamHomepage from "./pages/TeamHomepage";
 import ScoreLogin from "./pages/ScoreLogin";
 import GroupScoring from "./pages/GroupScoring";
 import LeagueTeamScoring from "./pages/LeagueTeamScoring";
@@ -302,6 +303,7 @@ const App = () => (
           <Route path="/t/:slug/scoring" element={<LiveScoring />} />
           <Route path="/player/:slug/:token" element={<PlayerHub />} />
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
+          <Route path="/team/:slug" element={<TeamHomepage />} />
           <Route path="/league-score" element={<LeagueTeamScoring />} />
           <Route path="/league-score/:code" element={<LeagueTeamScoring />} />
           <Route path="/league-leaderboard/:eventId" element={<LeagueEventLeaderboard />} />

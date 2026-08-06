@@ -264,6 +264,8 @@ const VARIABLE_TAGS = [
   { label: "Custom Notes", value: "{{custom_notes}}" },
   { label: "Contact Name", value: "{{contact_name}}" },
   { label: "Contact Phone", value: "{{contact_phone}}" },
+  { label: "Contact Email", value: "{{contact_email}}" },
+  { label: "Organization Name", value: "{{organization_name}}" },
 ];
 
 export default function EmailTemplateEditor() {
@@ -408,7 +410,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url")
+        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -561,6 +563,8 @@ export default function EmailTemplateEditor() {
       custom_notes: "",
       sponsor_name: "Your Sponsor",
       sponsor_tier: "Sponsor",
+      organization_name: org?.orgName || "",
+      contact_email: t?.contact_email || t?.org_contact_email || "",
     };
     if (courseAddress) vars.course_address = courseAddress;
     else if (location) vars.course_address = location;

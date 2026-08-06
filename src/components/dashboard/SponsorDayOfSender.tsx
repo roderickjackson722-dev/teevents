@@ -16,6 +16,10 @@ interface Sponsor {
   contact_email: string | null;
   hole_number: string | null;
   checkin_time: string | null;
+  address?: string | null;
+  amount_cents?: number | null;
+  receipt_number?: string | null;
+  receipt_sent?: boolean | null;
   sponsorship_tiers?: { name: string | null } | null;
 }
 
@@ -28,7 +32,10 @@ interface Props {
   subjectTemplate: string;
   /** Base variables (event name, date, course, contact, etc.). */
   baseVars: Record<string, string>;
+  /** Show the optional "Attach tax donation receipt" control. */
+  allowTaxReceipt?: boolean;
 }
+
 
 const fill = (tpl: string, vars: Record<string, string>) =>
   tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, k) => vars[k] ?? "");

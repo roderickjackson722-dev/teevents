@@ -267,7 +267,7 @@ export default function TeamHomepage() {
               <div key={g.hole} className="rounded-xl border border-border bg-card p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-foreground">Hole {g.hole}: {g.teamName}</p>
-                  {g.teeTime && <span className="text-xs text-muted-foreground">{g.teeTime}</span>}
+                  {hq.show_tee_times && g.teeTime && <span className="text-xs text-muted-foreground">{g.teeTime}</span>}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1">
                   {g.players.map((p) => `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim()).join(" • ")}

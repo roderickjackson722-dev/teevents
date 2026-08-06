@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Copy, ExternalLink } from "lucide-react";
+import { Copy, ExternalLink, Plus, X, ArrowUp, ArrowDown } from "lucide-react";
 import {
   DEFAULT_TEAM_HQ_SETTINGS,
   TEAM_HQ_SECTION_LABELS,
@@ -129,6 +129,94 @@ export default function TeamHQ() {
         </div>
 
         <div className="space-y-3">
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <Label className="text-sm font-semibold">Custom info boxes</Label>
+              <p className="text-xs text-muted-foreground">Add any extra info your players need — rules, parking, meals, raffle details.</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setSettings({
+                  ...settings,
+                  custom_boxes: [
+                    ...settings.custom_boxes,
+                    { id: Math.random().toString(36).slice(2), title: "", body: "", link_url: "", link_label: "", enabled: true },
+                  ],
+                })
+              }
+            >
+              <Plus className="h-4 w-4 mr-1" /> Add box
+            </Button>
+          </div>
+
+          {settings.custom_boxes.map((box, i) => {
+            const update = (patch: Partial<typeof box>) => {
+              const next = [...settings.custom_boxes];
+              next[i] = { ...box, ...patch };
+              setSettings({ ...settings, custom_boxes: next });
+            };
+            const move = (dir: -1 | 1) => {
+              const next = [...settings.custom_boxes];
+              const j = i + dir;
+              if (j < 0 || j >= next.length) return;
+              [next[i], next[j]] = [next[j], next[i]];
+              setSettings({ ...settings, custom_boxes: next });
+            };
+            return (
+              <div key={box.id} className="rounded-lg border border-border p-3 space-y-2">
+                <div className="flex items-center gap-2">
+                  <Input
+                    value={box.title}
+                    onChange={(e) => update({ title: e.target.value })}
+                    placeholder="Box title (e.g. Parking & Check-in)"
+                    maxLength={80}
+                  />
+                  <Switch checked={box.enabled} onCheckedChange={(v) => update({ enabled: v })} />
+                  <Button type="button" variant="ghost" size="icon" onClick={() => move(-1)} title="Move up">
+                    <ArrowUp className="h-4 w-4" />
+                  </Button>
+                  <Button type="button" variant="ghost" size="icon" onClick={() => move(1)} title="Move down">
+                    <ArrowDown className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    className="text-muted-foreground hover:text-destructive"
+                    onClick={() => setSettings({ ...settings, custom_boxes: settings.custom_boxes.filter((b) => b.id !== box.id) })}
+                    title="Remove box"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+                <Textarea
+                  rows={3}
+                  value={box.body}
+                  onChange={(e) => update({ body: e.target.value })}
+                  placeholder="Details players should know…"
+                />
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <Input
+                    value={box.link_url || ""}
+                    onChange={(e) => update({ link_url: e.target.value })}
+                    placeholder="Optional link (https://…)"
+                  />
+                  <Input
+                    value={box.link_label || ""}
+                    onChange={(e) => update({ link_label: e.target.value })}
+                    placeholder="Link button label"
+                    maxLength={40}
+                  />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="space-y-3">
           <Label className="text-sm font-semibold">Sections</Label>
           {TEAM_HQ_SECTION_LABELS.map(({ key, label, help }) => (
             <div key={key} className="flex items-center justify-between gap-3 border-t border-border pt-3">
@@ -143,6 +231,7 @@ export default function TeamHQ() {
             </div>
           ))}
         </div>
+
 
         <Button onClick={save} disabled={saving || !tournamentId}>
           {saving ? "Saving…" : "Save Team HQ Settings"}

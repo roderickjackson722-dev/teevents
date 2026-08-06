@@ -3,6 +3,15 @@
  * Stored on `tournaments.team_hq_settings` (jsonb) so organizers control
  * exactly which resources players see.
  */
+export interface TeamHqCustomBox {
+  id: string;
+  title: string;
+  body: string;
+  link_url?: string;
+  link_label?: string;
+  enabled: boolean;
+}
+
 export interface TeamHqSettings {
   enabled: boolean;
   show_welcome: boolean;
@@ -17,6 +26,7 @@ export interface TeamHqSettings {
   show_contact: boolean;
   show_share: boolean;
   intro_note: string;
+  custom_boxes: TeamHqCustomBox[];
 }
 
 export const DEFAULT_TEAM_HQ_SETTINGS: TeamHqSettings = {
@@ -33,13 +43,27 @@ export const DEFAULT_TEAM_HQ_SETTINGS: TeamHqSettings = {
   show_contact: true,
   show_share: true,
   intro_note: "",
+  custom_boxes: [],
 };
+
 
 /** Merge stored jsonb with defaults so older tournaments keep working. */
 export function parseTeamHqSettings(raw: unknown): TeamHqSettings {
   if (!raw || typeof raw !== "object") return { ...DEFAULT_TEAM_HQ_SETTINGS };
-  return { ...DEFAULT_TEAM_HQ_SETTINGS, ...(raw as Partial<TeamHqSettings>) };
+  const merged = { ...DEFAULT_TEAM_HQ_SETTINGS, ...(raw as Partial<TeamHqSettings>) };
+  merged.custom_boxes = Array.isArray(merged.custom_boxes)
+    ? merged.custom_boxes.filter((b) => b && typeof b === "object").map((b) => ({
+        id: String(b.id ?? Math.random().toString(36).slice(2)),
+        title: String(b.title ?? ""),
+        body: String(b.body ?? ""),
+        link_url: b.link_url ? String(b.link_url) : "",
+        link_label: b.link_label ? String(b.link_label) : "",
+        enabled: b.enabled !== false,
+      }))
+    : [];
+  return merged;
 }
+
 
 export const TEAM_HQ_SECTION_LABELS: Array<{ key: keyof TeamHqSettings; label: string; help: string }> = [
   { key: "show_welcome", label: "Welcome message", help: "Shows the day-of welcome message at the top." },

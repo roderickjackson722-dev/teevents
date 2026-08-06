@@ -67,6 +67,8 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
   const [edits, setEdits] = useState<Record<string, CartNames>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [selectedSigns, setSelectedSigns] = useState<string[]>([]);
+
 
   const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
 

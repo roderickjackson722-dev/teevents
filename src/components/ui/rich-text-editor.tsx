@@ -35,6 +35,36 @@ const FONTS = [
 
 const SIZES = ["12", "14", "16", "18", "20", "24", "32"];
 
+/** Image widths offered when an image is selected (email-safe pixel widths). */
+const IMAGE_WIDTHS = [
+  { label: "Small (120px)", value: "120" },
+  { label: "Medium (240px)", value: "240" },
+  { label: "Large (400px)", value: "400" },
+  { label: "Full width (600px)", value: "600" },
+];
+
+/**
+ * Image node with a persisted width so organizers can resize inserted images.
+ * Width is written as both the `width` attribute and an inline style so email
+ * clients (which ignore CSS classes) honour the size.
+ */
+const ResizableImage = Image.extend({
+  addAttributes() {
+    return {
+      ...this.parent?.(),
+      width: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("width") || (el as HTMLElement).style.width || null,
+        renderHTML: (attrs) => {
+          if (!attrs.width) return {};
+          const w = String(attrs.width).replace("px", "");
+          return { width: w, style: `width:${w}px;max-width:100%;height:auto;` };
+        },
+      },
+    };
+  },
+});
+
 interface Props {
   value: string;
   onChange: (html: string) => void;
@@ -55,7 +85,7 @@ export function RichTextEditor({ value, onChange, placeholder, className, onImag
       Link.configure({ openOnClick: false, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight.configure({ multicolor: true }),
-      Image.configure({ HTMLAttributes: { class: "max-w-full rounded-md my-2" } }),
+      ResizableImage.configure({ HTMLAttributes: { class: "max-w-full rounded-md my-2" } }),
     ],
     content: value || "",
     editorProps: {
@@ -104,13 +134,13 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload?: (f
   const handleImage = async (file: File) => {
     if (!onImageUpload) {
       const reader = new FileReader();
-      reader.onload = () => editor.chain().focus().setImage({ src: reader.result as string }).run();
+      reader.onload = () => editor.chain().focus().setImage({ src: reader.result as string, width: "400" } as any).run();
       reader.readAsDataURL(file);
       return;
     }
     try {
       const url = await onImageUpload(file);
-      editor.chain().focus().setImage({ src: url }).run();
+      editor.chain().focus().setImage({ src: url, width: "400" } as any).run();
     } catch (e) {
       console.error("image upload failed", e);
     }
@@ -183,6 +213,17 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload?: (f
       <div className="w-px h-6 bg-border mx-1" />
       <Btn title="Insert link" active={editor.isActive("link")} onClick={insertLink}><LinkIcon className="h-4 w-4" /></Btn>
       <Btn title="Insert image" onClick={() => fileInputRef.current?.click()}><ImageIcon className="h-4 w-4" /></Btn>
+      {editor.isActive("image") && (
+        <Select
+          value={String(editor.getAttributes("image").width || "")}
+          onValueChange={(v) => editor.chain().focus().updateAttributes("image", { width: v }).run()}
+        >
+          <SelectTrigger className="h-8 w-[150px] text-xs" title="Image size"><SelectValue placeholder="Image size" /></SelectTrigger>
+          <SelectContent>
+            {IMAGE_WIDTHS.map((w) => <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      )}
       <input
         ref={fileInputRef}
         type="file"

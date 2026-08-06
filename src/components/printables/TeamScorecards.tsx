@@ -146,6 +146,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
   const [edits, setEdits] = useState<Record<string, TeamEdit>>({});
   const [perPage, setPerPage] = useState<1 | 2 | 3>(2);
+  const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
   useEffect(() => {
     const next: Record<string, TeamEdit> = {};
@@ -153,6 +154,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
       next[t.key] = { teamName: t.teamName, playersLine: t.players.map(playerName).join(", ") };
     });
     setEdits(next);
+    setSelectedKeys(teams.map((t) => t.key));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(teams.map((t) => `${t.key}:${t.teamName}:${t.players.map((p) => p.id).join(",")}`))]);
 
@@ -160,8 +162,17 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   const fitOptions = { scale: opts.printScale, marginIn: opts.printMarginIn };
   const pageCss = scorecardCss(fitOptions);
 
+  const selectedSet = new Set(selectedKeys);
+  const printTeams = teams.filter((t) => selectedSet.has(t.key));
+
+  const selectorItems = teams.map((t, i) => ({
+    key: t.key,
+    label: `${t.groupNumber != null ? `Group ${i + 1} – ` : ""}${t.teamName}${t.groupNumber != null ? ` (Hole ${t.groupNumber})` : ""}`,
+    hole: t.groupNumber,
+  }));
+
   const chunks: typeof teams[] = [];
-  for (let i = 0; i < teams.length; i += perPage) chunks.push(teams.slice(i, i + perPage));
+  for (let i = 0; i < printTeams.length; i += perPage) chunks.push(printTeams.slice(i, i + perPage));
 
   const allHtml = chunks
     .map((chunk, ci) => {
@@ -177,6 +188,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
       return `<div class="print-page" style="page-break-after:${ci < chunks.length - 1 ? "always" : "auto"};"><div style="display:flex;flex-direction:column;gap:0.14in;">${cards}</div></div>`;
     })
     .join("");
+
 
   const update = (key: string, patch: Partial<TeamEdit>) =>
     setEdits((prev) => ({ ...prev, [key]: { ...(prev[key] || { teamName: "", playersLine: "" }), ...patch } }));

@@ -210,6 +210,32 @@ export default function TeamHomepage() {
           </p>
         )}
 
+        {hq.custom_boxes.filter((b) => b.enabled && (b.title || b.body)).length > 0 && (
+          <section className="space-y-3">
+            {hq.custom_boxes
+              .filter((b) => b.enabled && (b.title || b.body))
+              .map((box) => (
+                <div key={box.id} className="rounded-xl border border-border bg-card p-4">
+                  {box.title && <h2 className="text-sm font-semibold text-foreground mb-1">{box.title}</h2>}
+                  {box.body && (
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">{box.body}</p>
+                  )}
+                  {box.link_url && (
+                    <a
+                      href={box.link_url}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex mt-2 text-sm font-medium text-primary underline"
+                    >
+                      {box.link_label || "Learn more"}
+                    </a>
+                  )}
+                </div>
+              ))}
+          </section>
+        )}
+
+
         {hq.show_quick_links && quickLinks.length > 0 && (
         <section>
           <h2 className="text-sm font-semibold text-foreground mb-3">Quick Links</h2>

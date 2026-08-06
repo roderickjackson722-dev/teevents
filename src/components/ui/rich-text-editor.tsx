@@ -85,7 +85,7 @@ export function RichTextEditor({ value, onChange, placeholder, className, onImag
       Link.configure({ openOnClick: false, HTMLAttributes: { target: "_blank", rel: "noopener noreferrer" } }),
       TextAlign.configure({ types: ["heading", "paragraph"] }),
       Highlight.configure({ multicolor: true }),
-      Image.configure({ HTMLAttributes: { class: "max-w-full rounded-md my-2" } }),
+      ResizableImage.configure({ HTMLAttributes: { class: "max-w-full rounded-md my-2" } }),
     ],
     content: value || "",
     editorProps: {
@@ -213,6 +213,17 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload?: (f
       <div className="w-px h-6 bg-border mx-1" />
       <Btn title="Insert link" active={editor.isActive("link")} onClick={insertLink}><LinkIcon className="h-4 w-4" /></Btn>
       <Btn title="Insert image" onClick={() => fileInputRef.current?.click()}><ImageIcon className="h-4 w-4" /></Btn>
+      {editor.isActive("image") && (
+        <Select
+          value={String(editor.getAttributes("image").width || "")}
+          onValueChange={(v) => editor.chain().focus().updateAttributes("image", { width: v }).run()}
+        >
+          <SelectTrigger className="h-8 w-[150px] text-xs" title="Image size"><SelectValue placeholder="Image size" /></SelectTrigger>
+          <SelectContent>
+            {IMAGE_WIDTHS.map((w) => <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      )}
       <input
         ref={fileInputRef}
         type="file"

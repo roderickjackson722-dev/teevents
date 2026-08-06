@@ -63,6 +63,7 @@ export default function TeamHomepage() {
   const [roster, setRoster] = useState<RosterRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [hq, setHq] = useState<TeamHqSettings>(DEFAULT_TEAM_HQ_SETTINGS);
 
   useEffect(() => {
     if (!slug) return;
@@ -78,14 +79,19 @@ export default function TeamHomepage() {
       const [tRes, rRes] = await Promise.all([
         supabase
           .from("tournaments")
-          .select("id, title, slug, date, course_name, site_logo_url, site_primary_color, contact_name, contact_email, contact_phone, day_of_director_name, day_of_director_email, day_of_director_phone, day_of_emergency_contact, day_of_welcome_message, day_of_announcements, day_of_announcements_list")
+          .select("id, title, slug, date, course_name, site_logo_url, site_primary_color, contact_name, contact_email, contact_phone, day_of_director_name, day_of_director_email, day_of_director_phone, day_of_emergency_contact, day_of_welcome_message, day_of_announcements, day_of_announcements_list, team_hq_settings")
           .eq("id", row.id)
           .maybeSingle(),
         (supabase as any).rpc("get_public_team_roster", { _tournament_id: row.id }),
       ]);
       if (cancelled) return;
-      setTournament((tRes.data as any) ?? null);
+      const tData: any = tRes.data ?? null;
+      const parsed = parseTeamHqSettings(tData?.team_hq_settings);
+      setHq(parsed);
+      if (tData && !parsed.enabled) { setNotFound(true); setLoading(false); return; }
+      setTournament(tData);
       setRoster(((rRes as any).data || []) as RosterRow[]);
+
       setLoading(false);
     })();
     return () => { cancelled = true; };

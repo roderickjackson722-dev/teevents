@@ -62,7 +62,22 @@ export const NonprofitSettings = ({ orgId }: NonprofitSettingsProps) => {
         body: { ein: cleanEin, organization_id: orgId },
       });
 
-      if (error) throw error;
+      if (error) {
+        // Surface the function's real message instead of "non-2xx status code"
+        let detail = "";
+        try {
+          const ctx = (error as any)?.context;
+          if (ctx && typeof ctx.json === "function") {
+            const payload = await ctx.json();
+            detail = payload?.error || "";
+          }
+        } catch {
+          /* ignore parse failures */
+        }
+        throw new Error(detail || error.message || "Could not save your EIN. Please try again.");
+      }
+      if ((data as any)?.error) throw new Error((data as any).error);
+
 
       setIsNonprofit(true);
       setNonprofitVerified(data.verified);

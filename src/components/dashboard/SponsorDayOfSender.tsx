@@ -167,16 +167,39 @@ export default function SponsorDayOfSender({
     try {
       const emails = recipients.map((s) => {
         const vars = varsFor(s);
-        return {
+        const item: Record<string, unknown> = {
           sponsor_id: s.id,
           subject: fill(subjectTemplate, vars),
           html: renderHtml(vars),
         };
+        if (allowTaxReceipt && attachReceipt) {
+          const receiptNumber = s.receipt_number || buildReceiptNumber(s.id);
+          const sponsorName = s.company_name || s.contact_name || "Sponsor";
+          item.receipt_number = receiptNumber;
+          item.attachment = {
+            filename: `tax-receipt-${receiptNumber}.pdf`,
+            content: renderTaxReceiptBase64({
+              orgName: orgInfo?.nonprofit_name || orgInfo?.name || baseVars.organization_name || "Organization",
+              orgAddress: orgInfo?.mailing_address || "",
+              orgEin: orgInfo?.ein || "",
+              receiptDate: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+              receiptNumber,
+              sponsorName,
+              sponsorAddress: s.address || "",
+              amount: `$${((s.amount_cents || 0) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              tournamentName: baseVars.event_name || "",
+              signatureName: baseVars.contact_name || "",
+              signatureTitle: "Tournament Organizer",
+            }),
+          };
+        }
+        return item;
       });
       const { data, error } = await supabase.functions.invoke("send-sponsor-day-of-email", {
         body: { tournament_id: tournamentId, organization_id: organizationId, emails },
       });
       if (error) throw error;
+
       const sent = (data as any)?.sent ?? 0;
       toast.success(`Sponsor email sent to ${sent} sponsor${sent === 1 ? "" : "s"}`);
       setConfirmOpen(false);

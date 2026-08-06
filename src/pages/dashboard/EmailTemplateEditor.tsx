@@ -1352,6 +1352,63 @@ export default function EmailTemplateEditor() {
                 focused field.
               </p>
             </div>
+
+            {/* Auto-inserted Date & Location block — editable here so it matches your setup */}
+            <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <Label className="text-sm">Date &amp; Location Block</Label>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    An automatic block inserted right after your body text. Turn it off if you already list the date and
+                    location in your body or closing text.
+                  </p>
+                </div>
+                <Switch
+                  checked={config.show_event_details}
+                  onCheckedChange={(v) => setConfig(p => ({ ...p, show_event_details: v }))}
+                  aria-label="Show Date & Location block"
+                />
+              </div>
+              {config.show_event_details && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Date Label</Label>
+                    <Input
+                      value={config.event_details_date_label ?? "Date:"}
+                      onChange={e => setConfig(p => ({ ...p, event_details_date_label: e.target.value }))}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Date Text (blank = event date from setup)</Label>
+                    <Input
+                      value={config.event_details_date_override ?? ""}
+                      onChange={e => setConfig(p => ({ ...p, event_details_date_override: e.target.value }))}
+                      placeholder={previewVars.event_date || "{{event_date}}"}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Location Label</Label>
+                    <Input
+                      value={config.event_details_location_label ?? "Location:"}
+                      onChange={e => setConfig(p => ({ ...p, event_details_location_label: e.target.value }))}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-xs text-muted-foreground">Location Text (blank = location from setup)</Label>
+                    <Input
+                      value={config.event_details_location_override ?? ""}
+                      onChange={e => setConfig(p => ({ ...p, event_details_location_override: e.target.value }))}
+                      placeholder={previewVars.event_location || "{{event_location}}"}
+                      className="mt-1"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             {templateKind === "day_before" && (
               <div data-field="schedule_override" onFocusCapture={() => setLastRichField("schedule_override")}>
                 <Label>Event Schedule (used for {"{{event_schedule}}"})</Label>

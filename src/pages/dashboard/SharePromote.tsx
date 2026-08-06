@@ -44,6 +44,8 @@ const SharePromote = () => {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<ClickStats>({ total: 0, qr_code: 0, short_link: 0, social: 0, email: 0, mobile: 0, desktop: 0, tablet: 0 });
   const qrRef = useRef<HTMLDivElement>(null);
+  const teamQrRef = useRef<HTMLDivElement>(null);
+
 
   useEffect(() => {
     if (!org) return;

@@ -134,13 +134,13 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload?: (f
   const handleImage = async (file: File) => {
     if (!onImageUpload) {
       const reader = new FileReader();
-      reader.onload = () => editor.chain().focus().setImage({ src: reader.result as string }).run();
+      reader.onload = () => editor.chain().focus().setImage({ src: reader.result as string, width: "400" } as any).run();
       reader.readAsDataURL(file);
       return;
     }
     try {
       const url = await onImageUpload(file);
-      editor.chain().focus().setImage({ src: url }).run();
+      editor.chain().focus().setImage({ src: url, width: "400" } as any).run();
     } catch (e) {
       console.error("image upload failed", e);
     }

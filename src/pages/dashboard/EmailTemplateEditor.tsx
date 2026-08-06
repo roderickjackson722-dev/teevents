@@ -40,6 +40,8 @@ interface EmailConfig {
   show_logo: boolean;
   logo_url: string;
   logo_alignment: "left" | "center" | "right";
+  /** Max rendered height of the header logo in the email, in px. */
+  logo_max_height?: number;
   button_text: string;
   button_url: string;
   show_button: boolean;
@@ -99,6 +101,7 @@ const DEFAULT_CONFIG: EmailConfig = {
   show_logo: false,
   logo_url: "",
   logo_alignment: "center",
+  logo_max_height: 60,
   button_text: "View Event Details",
   button_url: "",
   show_button: false,
@@ -143,6 +146,7 @@ const DEFAULT_POST_EVENT_CONFIG: EmailConfig = {
   show_logo: false,
   logo_url: "",
   logo_alignment: "center",
+  logo_max_height: 60,
   button_text: "Sign Up for the Next Event",
   button_url: "",
   show_button: true,
@@ -804,6 +808,7 @@ export default function EmailTemplateEditor() {
                 font_family: config.font_family,
                 show_logo: config.show_logo,
                 logo_url: config.logo_url,
+                logo_max_height: config.logo_max_height,
               };
               const t: any = tournaments.find(x => x.id === selectedTournament) || {};
               const merge = (existing: any, fallback: EmailConfig) => ({ ...fallback, ...(existing || {}), ...shared });
@@ -1228,6 +1233,33 @@ export default function EmailTemplateEditor() {
                           setConfig((p) => ({ ...p, logo_url: data.publicUrl }));
                           toast.success("Logo uploaded");
                         }}
+                      />
+                    </div>
+                    {(() => {
+                      const t = tournaments.find((x: any) => x.id === selectedTournament);
+                      return t?.site_logo_url && t.site_logo_url !== config.logo_url ? (
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setConfig((p) => ({ ...p, logo_url: t.site_logo_url }))}
+                        >
+                          Use my organization logo
+                        </Button>
+                      ) : null;
+                    })()}
+                    <div>
+                      <Label className="text-xs text-muted-foreground">
+                        Logo Size — {config.logo_max_height || 60}px tall
+                      </Label>
+                      <input
+                        type="range"
+                        min={30}
+                        max={200}
+                        step={5}
+                        value={config.logo_max_height || 60}
+                        onChange={(e) => setConfig((p) => ({ ...p, logo_max_height: Number(e.target.value) }))}
+                        className="w-full mt-2 accent-primary"
                       />
                     </div>
                     <div>
@@ -1705,7 +1737,7 @@ function renderEmailHtml(
 
   const align = config.logo_alignment || "center";
   const logoHtml = config.show_logo && config.logo_url
-    ? `<div style="text-align:${align};margin-bottom:12px;"><img src="${config.logo_url}" alt="Logo" style="max-height:60px;display:inline-block;" /></div>`
+    ? `<div style="text-align:${align};margin-bottom:12px;"><img src="${config.logo_url}" alt="Logo" height="${config.logo_max_height || 60}" style="max-height:${config.logo_max_height || 60}px;max-width:100%;height:auto;display:inline-block;" /></div>`
     : "";
 
   const buttonHtml = config.show_button && config.button_text

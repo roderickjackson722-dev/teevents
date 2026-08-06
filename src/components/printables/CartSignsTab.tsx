@@ -99,10 +99,33 @@ export default function CartSignsTab({ tournament, registrations, loading, group
     return out;
   };
 
-  const allHtml = teams
-    .flatMap((t) => cartsFor(t.key).map((c) => cartSignHtml(c.names, tournament, opts, t.groupNumber)))
-    .map((html, i, arr) => `<div class="print-page" style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
-    .join("");
+  /** Flat list of every printable cart sign (hole + cart + names) */
+  const allSigns = teams.flatMap((t) =>
+    cartsFor(t.key).map((c) => ({
+      key: `${t.key}|${c.label}`,
+      hole: t.groupNumber,
+      label: `${t.groupNumber != null ? `Hole ${t.groupNumber}` : "Unassigned"} – ${c.label}: ${c.names.join(" & ")}`,
+      names: c.names,
+      groupNumber: t.groupNumber,
+    })),
+  );
+
+  const signKeysJson = JSON.stringify(allSigns.map((s) => s.key));
+  useEffect(() => {
+    setSelectedSigns(JSON.parse(signKeysJson) as string[]);
+  }, [signKeysJson]);
+
+  const selectedSignSet = new Set(selectedSigns);
+  const printSigns = allSigns.filter((s) => selectedSignSet.has(s.key));
+
+  const buildHtml = (signs: typeof allSigns) =>
+    signs
+      .map((s) => cartSignHtml(s.names, tournament, opts, s.groupNumber))
+      .map((html, i, arr) => `<div class="print-page" style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
+      .join("");
+
+  const allHtml = buildHtml(printSigns);
+
 
   const saveNames = async (key: string) => {
     const team = teams.find((t) => t.key === key);

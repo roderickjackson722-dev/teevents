@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { buildReceiptNumber, renderTaxReceiptBase64 } from "@/lib/sponsorTaxReceipt";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +18,10 @@ interface Sponsor {
   contact_email: string | null;
   hole_number: string | null;
   checkin_time: string | null;
+  address?: string | null;
+  amount_cents?: number | null;
+  receipt_number?: string | null;
+  receipt_sent?: boolean | null;
   sponsorship_tiers?: { name: string | null } | null;
 }
 
@@ -28,7 +34,10 @@ interface Props {
   subjectTemplate: string;
   /** Base variables (event name, date, course, contact, etc.). */
   baseVars: Record<string, string>;
+  /** Show the optional "Attach tax donation receipt" control. */
+  allowTaxReceipt?: boolean;
 }
+
 
 const fill = (tpl: string, vars: Record<string, string>) =>
   tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (_m, k) => vars[k] ?? "");
@@ -39,6 +48,7 @@ export default function SponsorDayOfSender({
   renderHtml,
   subjectTemplate,
   baseVars,
+  allowTaxReceipt = false,
 }: Props) {
   const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
@@ -48,6 +58,13 @@ export default function SponsorDayOfSender({
   const [loading, setLoading] = useState(true);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [sending, setSending] = useState(false);
+  const [attachReceipt, setAttachReceipt] = useState(false);
+  const [orgInfo, setOrgInfo] = useState<{
+    name: string;
+    mailing_address: string | null;
+    ein: string | null;
+    nonprofit_name: string | null;
+  } | null>(null);
 
   useEffect(() => {
     if (!tournamentId) return;
@@ -57,7 +74,9 @@ export default function SponsorDayOfSender({
       const [{ data: sps }, { data: t }] = await Promise.all([
         supabase
           .from("sponsor_registrations")
-          .select("id, company_name, contact_name, contact_email, hole_number, checkin_time, sponsorship_tiers(name)")
+          .select(
+            "id, company_name, contact_name, contact_email, hole_number, checkin_time, address, amount_cents, receipt_number, receipt_sent, sponsorship_tiers(name)",
+          )
           .eq("tournament_id", tournamentId)
           .order("created_at", { ascending: true }),
         supabase
@@ -77,6 +96,23 @@ export default function SponsorDayOfSender({
       active = false;
     };
   }, [tournamentId]);
+
+  useEffect(() => {
+    if (!allowTaxReceipt || !organizationId) return;
+    let active = true;
+    (async () => {
+      const { data } = await supabase
+        .from("organizations")
+        .select("name, mailing_address, ein, nonprofit_name")
+        .eq("id", organizationId)
+        .maybeSingle();
+      if (active) setOrgInfo((data as any) || null);
+    })();
+    return () => {
+      active = false;
+    };
+  }, [allowTaxReceipt, organizationId]);
+
 
   const withEmail = sponsors.filter((s) => s.contact_email);
   const allSelected = withEmail.length > 0 && selected.length === withEmail.length;
@@ -133,16 +169,39 @@ export default function SponsorDayOfSender({
     try {
       const emails = recipients.map((s) => {
         const vars = varsFor(s);
-        return {
+        const item: Record<string, unknown> = {
           sponsor_id: s.id,
           subject: fill(subjectTemplate, vars),
           html: renderHtml(vars),
         };
+        if (allowTaxReceipt && attachReceipt) {
+          const receiptNumber = s.receipt_number || buildReceiptNumber(s.id);
+          const sponsorName = s.company_name || s.contact_name || "Sponsor";
+          item.receipt_number = receiptNumber;
+          item.attachment = {
+            filename: `tax-receipt-${receiptNumber}.pdf`,
+            content: renderTaxReceiptBase64({
+              orgName: orgInfo?.nonprofit_name || orgInfo?.name || baseVars.organization_name || "Organization",
+              orgAddress: orgInfo?.mailing_address || "",
+              orgEin: orgInfo?.ein || "",
+              receiptDate: new Date().toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }),
+              receiptNumber,
+              sponsorName,
+              sponsorAddress: s.address || "",
+              amount: `$${((s.amount_cents || 0) / 100).toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              tournamentName: baseVars.event_name || "",
+              signatureName: baseVars.contact_name || "",
+              signatureTitle: "Tournament Organizer",
+            }),
+          };
+        }
+        return item;
       });
       const { data, error } = await supabase.functions.invoke("send-sponsor-day-of-email", {
         body: { tournament_id: tournamentId, organization_id: organizationId, emails },
       });
       if (error) throw error;
+
       const sent = (data as any)?.sent ?? 0;
       toast.success(`Sponsor email sent to ${sent} sponsor${sent === 1 ? "" : "s"}`);
       setConfirmOpen(false);
@@ -228,6 +287,28 @@ export default function SponsorDayOfSender({
           </div>
         )}
       </div>
+
+      {allowTaxReceipt && (
+        <div className="bg-card rounded-lg border p-5">
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              className="rounded mt-1"
+              checked={attachReceipt}
+              onChange={(e) => setAttachReceipt(e.target.checked)}
+            />
+            <span>
+              <span className="text-sm font-medium text-foreground">Attach tax donation receipt</span>
+              <span className="block text-xs text-muted-foreground mt-1">
+                The receipt is generated from each sponsor&rsquo;s information and sent as a PDF attachment.
+                {orgInfo && !orgInfo.ein ? " Add your organization's EIN in Organization Info for a complete receipt." : ""}
+              </span>
+            </span>
+          </label>
+        </div>
+      )}
+
+
 
       <div className="bg-card rounded-lg border p-5 space-y-3">
         <div>

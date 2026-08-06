@@ -13,11 +13,22 @@ const corsHeaders = {
 const SENDER_EMAIL = "info@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
 
+interface EmailItem {
+  sponsor_id: string;
+  subject: string;
+  html: string;
+  /** Optional PDF attachment (base64, no data: prefix) — e.g. tax donation receipt. */
+  attachment?: { filename: string; content: string } | null;
+  /** Receipt number to record on the sponsor row when a receipt is attached. */
+  receipt_number?: string | null;
+}
+
 interface Body {
   tournament_id: string;
   organization_id: string;
-  emails: { sponsor_id: string; subject: string; html: string }[];
+  emails: EmailItem[];
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -80,21 +91,37 @@ Deno.serve(async (req) => {
         continue;
       }
       try {
+        const payload: Record<string, unknown> = {
+          from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+          to: [sponsor.contact_email],
+          subject: e.subject || "Sponsor Event Day Details",
+          html: e.html,
+        };
+        if (e.attachment?.content) {
+          payload.attachments = [{ filename: e.attachment.filename || "tax-receipt.pdf", content: e.attachment.content }];
+        }
         const r = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
-          body: JSON.stringify({
-            from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
-            to: [sponsor.contact_email],
-            subject: e.subject || "Sponsor Event Day Details",
-            html: e.html,
-          }),
+          body: JSON.stringify(payload),
         });
-        if (r.ok) sent++;
-        else errors.push(`${sponsor.contact_email}: ${r.status} ${await r.text()}`);
+        if (r.ok) {
+          sent++;
+          if (e.attachment?.content) {
+            await supabaseAdmin
+              .from("sponsor_registrations")
+              .update({
+                receipt_number: e.receipt_number || null,
+                receipt_sent: true,
+                receipt_sent_at: new Date().toISOString(),
+              })
+              .eq("id", e.sponsor_id);
+          }
+        } else errors.push(`${sponsor.contact_email}: ${r.status} ${await r.text()}`);
       } catch (err) {
         errors.push(`${sponsor.contact_email}: ${(err as Error).message}`);
       }
+
     }
 
     return json({ sent, total: emails.length, errors });

@@ -7584,6 +7584,9 @@ export type Database = {
           manually_approved: boolean
           paid_at: string | null
           payment_status: string
+          receipt_number: string | null
+          receipt_sent: boolean
+          receipt_sent_at: string | null
           show_on_leaderboard: boolean
           show_on_public: boolean
           stripe_payment_intent_id: string | null
@@ -7610,6 +7613,9 @@ export type Database = {
           manually_approved?: boolean
           paid_at?: string | null
           payment_status?: string
+          receipt_number?: string | null
+          receipt_sent?: boolean
+          receipt_sent_at?: string | null
           show_on_leaderboard?: boolean
           show_on_public?: boolean
           stripe_payment_intent_id?: string | null
@@ -7636,6 +7642,9 @@ export type Database = {
           manually_approved?: boolean
           paid_at?: string | null
           payment_status?: string
+          receipt_number?: string | null
+          receipt_sent?: boolean
+          receipt_sent_at?: string | null
           show_on_leaderboard?: boolean
           show_on_public?: boolean
           stripe_payment_intent_id?: string | null
@@ -10002,6 +10011,7 @@ export type Database = {
           sponsor_form_config: Json
           sponsor_logo_display_size: string
           sponsor_parking_info: string | null
+          sponsorship_day_of_email_config: Json | null
           state: string | null
           status: string
           store_section_title: string | null
@@ -10280,6 +10290,7 @@ export type Database = {
           sponsor_form_config?: Json
           sponsor_logo_display_size?: string
           sponsor_parking_info?: string | null
+          sponsorship_day_of_email_config?: Json | null
           state?: string | null
           status?: string
           store_section_title?: string | null
@@ -10558,6 +10569,7 @@ export type Database = {
           sponsor_form_config?: Json
           sponsor_logo_display_size?: string
           sponsor_parking_info?: string | null
+          sponsorship_day_of_email_config?: Json | null
           state?: string | null
           status?: string
           store_section_title?: string | null

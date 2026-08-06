@@ -276,8 +276,11 @@ export default function TeamHomepage() {
             ))}
           </div>
         </section>
+        )}
 
+        {(hq.show_leaderboard || hq.show_scoring) && (
         <section>
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-primary" /> Live Leaderboard &amp; Scoring
           </h2>

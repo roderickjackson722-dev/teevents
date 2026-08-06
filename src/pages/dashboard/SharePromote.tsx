@@ -83,6 +83,34 @@ const SharePromote = () => {
 
   const registrationUrl = tournament?.slug ? `https://${DOMAIN}/t/${tournament.slug}` : "";
   const qrUrl = registrationUrl ? `${registrationUrl}?ref=qr` : "";
+  const teamHomepageUrl = tournament?.slug ? `https://${DOMAIN}/team/${tournament.slug}` : "";
+
+  const downloadTeamQR = () => {
+    const svg = teamQrRef.current?.querySelector("svg");
+    if (!svg) return;
+    const canvas = document.createElement("canvas");
+    const size = 900;
+    canvas.width = size;
+    canvas.height = size;
+    const ctx = canvas.getContext("2d")!;
+    const img = new Image();
+    const svgBlob = new Blob([new XMLSerializer().serializeToString(svg)], { type: "image/svg+xml" });
+    img.onload = () => {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${tournament?.slug || "tournament"}-team-qr.png`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+      }, "image/png");
+    };
+    img.src = URL.createObjectURL(svgBlob);
+  };
+
 
   const downloadQR = (format: "png" | "svg") => {
     if (!qrRef.current) return;

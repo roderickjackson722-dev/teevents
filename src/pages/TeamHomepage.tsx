@@ -285,30 +285,39 @@ export default function TeamHomepage() {
             <BarChart3 className="h-4 w-4 text-primary" /> Live Leaderboard &amp; Scoring
           </h2>
           <div className="flex flex-col sm:flex-row gap-2">
-            <Button asChild className="flex-1">
-              <a href={liveUrl} target="_blank" rel="noreferrer">Open Live Leaderboard</a>
-            </Button>
-            <Button asChild variant="outline" className="flex-1">
-              <a href={scoringUrl} target="_blank" rel="noreferrer">Open Scoring Entry</a>
-            </Button>
+            {hq.show_leaderboard && (
+              <Button asChild className="flex-1">
+                <a href={liveUrl} target="_blank" rel="noreferrer">Open Live Leaderboard</a>
+              </Button>
+            )}
+            {hq.show_scoring && (
+              <Button asChild variant="outline" className="flex-1">
+                <a href={scoringUrl} target="_blank" rel="noreferrer">Open Scoring Entry</a>
+              </Button>
+            )}
           </div>
         </section>
+        )}
 
+        {hq.show_qr_codes && (
         <section id="qr-codes" className="scroll-mt-4">
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <QrCode className="h-4 w-4 text-primary" /> QR Codes
           </h2>
           <div className="grid grid-cols-2 gap-2">
-            <QrCard label="Live Leaderboard" url={liveUrl} />
-            <QrCard label="Scoring Entry" url={scoringUrl} />
+            {hq.show_leaderboard && <QrCard label="Live Leaderboard" url={liveUrl} />}
+            {hq.show_scoring && <QrCard label="Scoring Entry" url={scoringUrl} />}
             <QrCard label="Team Homepage" url={teamUrl} />
-            <QrCard label="Alpha List" url={`${teamUrl}#alpha-list`} />
-            <QrCard label="Hole Assignments" url={`${teamUrl}#hole-assignments`} />
+            {hq.show_alpha_list && <QrCard label="Alpha List" url={`${teamUrl}#alpha-list`} />}
+            {hq.show_hole_assignments && <QrCard label="Hole Assignments" url={`${teamUrl}#hole-assignments`} />}
             <QrCard label="Tournament Page" url={tournamentUrl} />
           </div>
         </section>
+        )}
 
+        {hq.show_announcements && (
         <section id="announcements" className="scroll-mt-4">
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Megaphone className="h-4 w-4 text-primary" /> Announcements
           </h2>

@@ -13,11 +13,22 @@ const corsHeaders = {
 const SENDER_EMAIL = "info@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
 
+interface EmailItem {
+  sponsor_id: string;
+  subject: string;
+  html: string;
+  /** Optional PDF attachment (base64, no data: prefix) — e.g. tax donation receipt. */
+  attachment?: { filename: string; content: string } | null;
+  /** Receipt number to record on the sponsor row when a receipt is attached. */
+  receipt_number?: string | null;
+}
+
 interface Body {
   tournament_id: string;
   organization_id: string;
-  emails: { sponsor_id: string; subject: string; html: string }[];
+  emails: EmailItem[];
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

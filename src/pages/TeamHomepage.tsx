@@ -168,16 +168,17 @@ export default function TeamHomepage() {
     ? new Date(`${tournament.date}T12:00:00`).toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" })
     : null;
 
-  const quickLinks: Array<{ label: string; icon: typeof ListOrdered; href: string; external?: boolean }> = [
-    { label: "Alpha List", icon: ListOrdered, href: "#alpha-list" },
-    { label: "Hole Assignments", icon: Flag, href: "#hole-assignments" },
-    { label: "Live Leaderboard", icon: BarChart3, href: liveUrl, external: true },
-    { label: "Scoring Entry", icon: PencilLine, href: scoringUrl, external: true },
-    { label: "QR Codes", icon: QrCode, href: "#qr-codes" },
-    { label: "Pairings & Tee Times", icon: Users, href: "#hole-assignments" },
-    { label: "Announcements", icon: Megaphone, href: "#announcements" },
-    { label: "Contact Info", icon: Phone, href: "#contact" },
-  ];
+  const quickLinks: Array<{ label: string; icon: typeof ListOrdered; href: string; external?: boolean; show: boolean }> = [
+    { label: "Alpha List", icon: ListOrdered, href: "#alpha-list", show: hq.show_alpha_list },
+    { label: "Hole Assignments", icon: Flag, href: "#hole-assignments", show: hq.show_hole_assignments },
+    { label: "Live Leaderboard", icon: BarChart3, href: liveUrl, external: true, show: hq.show_leaderboard },
+    { label: "Scoring Entry", icon: PencilLine, href: scoringUrl, external: true, show: hq.show_scoring },
+    { label: "QR Codes", icon: QrCode, href: "#qr-codes", show: hq.show_qr_codes },
+    { label: "Pairings & Tee Times", icon: Users, href: "#hole-assignments", show: hq.show_hole_assignments },
+    { label: "Announcements", icon: Megaphone, href: "#announcements", show: hq.show_announcements },
+    { label: "Contact Info", icon: Phone, href: "#contact", show: hq.show_contact },
+  ].filter((l) => l.show);
+
 
   return (
     <div className="min-h-screen bg-background">

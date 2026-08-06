@@ -235,6 +235,34 @@ const SharePromote = () => {
             </Card>
 
             <Card>
+              <CardHeader><CardTitle className="font-display">Team Homepage (Players)</CardTitle></CardHeader>
+              <CardContent className="flex flex-col items-center gap-4">
+                <p className="text-xs text-muted-foreground text-center">
+                  Mobile page for your players with the alpha list, hole assignments, tee times,
+                  live leaderboard, scoring entry and contact info.
+                </p>
+                <div ref={teamQrRef} className="bg-white p-4 rounded-lg border border-border">
+                  <QRCodeSVG value={teamHomepageUrl} size={220} level="H" includeMargin fgColor="#1a5c38" />
+                </div>
+                <p className="text-xs text-muted-foreground break-all text-center">{teamHomepageUrl}</p>
+                <div className="flex flex-wrap gap-2 justify-center">
+                  <Button size="sm" onClick={downloadTeamQR}>
+                    <Download className="h-3.5 w-3.5 mr-1.5" /> Download QR (PNG)
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => copyToClipboard(teamHomepageUrl, "Team homepage link")}>
+                    <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Link
+                  </Button>
+                  <Button size="sm" variant="ghost" asChild>
+                    <a href={teamHomepageUrl} target="_blank" rel="noopener noreferrer">
+                      <ExternalLink className="h-3.5 w-3.5 mr-1.5" /> Preview
+                    </a>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+
+            <Card>
               <CardHeader><CardTitle className="font-display">Share Links</CardTitle></CardHeader>
               <CardContent className="space-y-4">
                 <div className="rounded-lg border border-primary/30 bg-primary/5 p-3">

@@ -182,20 +182,28 @@ export default function CartSignsTab({ tournament, registrations, loading, group
         logoUrl={getPrintLogo(tournament)}
       />
 
+      <ScorecardSelector
+        title="Print Cart Signs"
+        items={allSigns.map((s) => ({ key: s.key, label: s.label, hole: s.hole }))}
+        selected={selectedSigns}
+        onChange={setSelectedSigns}
+      />
+
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <p className="text-xs text-muted-foreground">
-          Two players per cart &bull; prints at 8&quot; H &times; 36&quot; W (landscape) &bull; scale {Math.round((opts.printScale ?? 1) * 100)}% &bull; {opts.printMarginIn ?? 0.25}&quot; margins
+          {printSigns.length} of {allSigns.length} cart signs selected &bull; two players per cart &bull; prints at 8&quot; H &times; 36&quot; W (landscape) &bull; scale {Math.round((opts.printScale ?? 1) * 100)}% &bull; {opts.printMarginIn ?? 0.25}&quot; margins
         </p>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.cartsign} fitOptions={fitOptions} />
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
+          <Button variant="outline" disabled={printSigns.length === 0} onClick={() => downloadHtmlAsPdf(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
-            <Printer className="h-4 w-4 mr-2" /> Generate Cart Signs
+          <Button disabled={printSigns.length === 0} onClick={() => openPrintWindow(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
+            <Printer className="h-4 w-4 mr-2" /> Print Selected Cart Signs
           </Button>
         </div>
       </div>
+
 
       <div className="space-y-4">
         {teams.map((t) => {

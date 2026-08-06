@@ -3,6 +3,15 @@
  * Stored on `tournaments.team_hq_settings` (jsonb) so organizers control
  * exactly which resources players see.
  */
+export interface TeamHqCustomBox {
+  id: string;
+  title: string;
+  body: string;
+  link_url?: string;
+  link_label?: string;
+  enabled: boolean;
+}
+
 export interface TeamHqSettings {
   enabled: boolean;
   show_welcome: boolean;
@@ -17,6 +26,7 @@ export interface TeamHqSettings {
   show_contact: boolean;
   show_share: boolean;
   intro_note: string;
+  custom_boxes: TeamHqCustomBox[];
 }
 
 export const DEFAULT_TEAM_HQ_SETTINGS: TeamHqSettings = {
@@ -33,7 +43,9 @@ export const DEFAULT_TEAM_HQ_SETTINGS: TeamHqSettings = {
   show_contact: true,
   show_share: true,
   intro_note: "",
+  custom_boxes: [],
 };
+
 
 /** Merge stored jsonb with defaults so older tournaments keep working. */
 export function parseTeamHqSettings(raw: unknown): TeamHqSettings {

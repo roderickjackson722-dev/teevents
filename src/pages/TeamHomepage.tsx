@@ -412,6 +412,8 @@ export default function TeamHomepage() {
             </div>
           </div>
         </section>
+        )}
+
       </main>
 
       <TeeventsFooter tournament={tournament as any} />

@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, scorecardCss, printLogoHtml } from "./printUtils";
 import { PRINT_TARGETS, sizeLabel } from "./printLayout";
 import PrintFitCheck from "./PrintFitCheck";
+import ScorecardSelector from "./ScorecardSelector";
 import PrintLogo from "./PrintLogo";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";

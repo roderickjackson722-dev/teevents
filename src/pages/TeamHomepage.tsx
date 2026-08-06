@@ -228,8 +228,11 @@ export default function TeamHomepage() {
             ))}
           </div>
         </section>
+        )}
 
+        {hq.show_alpha_list && (
         <section id="alpha-list" className="scroll-mt-4">
+
           <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <ListOrdered className="h-4 w-4 text-primary" /> Alpha List (All Players)
           </h2>

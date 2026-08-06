@@ -199,6 +199,13 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
 
   return (
     <>
+      <ScorecardSelector
+        items={selectorItems}
+        selected={selectedKeys}
+        onChange={setSelectedKeys}
+        title="Print Scorecards"
+      />
+
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <div className="space-y-2">
           <p className="text-xs text-muted-foreground">
@@ -215,14 +222,15 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
         </div>
         <div className="flex gap-2 items-start">
           <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.scorecard} fitOptions={fitOptions} />
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
+          <Button variant="outline" disabled={printTeams.length === 0} onClick={() => downloadHtmlAsPdf(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
-            <Printer className="h-4 w-4 mr-2" /> Generate Scorecards
+          <Button disabled={printTeams.length === 0} onClick={() => openPrintWindow(`Team Scorecards - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
+            <Printer className="h-4 w-4 mr-2" /> Print Selected Scorecards ({printTeams.length})
           </Button>
         </div>
       </div>
+
 
       <div className="space-y-4">
         {teams.map((t) => {

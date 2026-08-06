@@ -55,6 +55,8 @@ import Auctions from "./pages/dashboard/Auctions";
 import Raffles from "./pages/dashboard/Raffles";
 import MediaClips from "./pages/dashboard/MediaClips";
 import DayOfSettings from "./pages/dashboard/DayOfSettings";
+import TeamHQ from "./pages/dashboard/TeamHQ";
+
 import DayOf from "./pages/DayOf";
 import Gallery from "./pages/dashboard/Gallery";
 import Volunteers from "./pages/dashboard/Volunteers";

@@ -10,6 +10,7 @@ import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import TeamScorecards from "./TeamScorecards";
+import ScorecardSelector from "./ScorecardSelector";
 import { isTeamScoringFormat, type RegistrationGroupRow } from "./teamGrouping";
 
 interface CourseDataProp {
@@ -147,6 +148,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ firstName: "", lastName: "", groupNumber: "" });
   const [showScoringQR, setShowScoringQR] = useState(false);
+  const [selectedIds, setSelectedIds] = useState<string[] | null>(null);
 
   const totalPar = getTotalPar(tournament, numHoles);
   const fontImport = getFontImport(opts.font);
@@ -179,8 +181,19 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
 
   const cancelEdit = () => setEditingId(null);
 
-  const editableRegs = registrations.map(getEditableReg);
-  const allHtml = editableRegs.map((r) => scorecardHtml(r, tournament, numHoles, opts, showScoringQR, slug, courseData)).join("");
+  const selectedIdList = selectedIds ?? registrations.map((r) => r.id);
+  const selectedIdSet = new Set(selectedIdList);
+  const selectorItems = registrations.map((r) => {
+    const er = getEditableReg(r);
+    const hole = er.customGroupNumber !== undefined ? er.customGroupNumber : er.group_number;
+    return {
+      key: r.id,
+      label: `${er.customFirstName ?? er.first_name} ${er.customLastName ?? er.last_name}${hole != null ? ` (Hole ${hole})` : ""}`,
+      hole: hole ?? null,
+    };
+  });
+  const printRegs = registrations.filter((r) => selectedIdSet.has(r.id)).map(getEditableReg);
+  const allHtml = printRegs.map((r) => scorecardHtml(r, tournament, numHoles, opts, showScoringQR, slug, courseData)).join("");
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
   if (registrations.length === 0) return <div className="text-center py-12 bg-card rounded-lg border border-border"><p className="text-muted-foreground">No registered players yet.</p></div>;
@@ -223,6 +236,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
         </>
       ) : (
       <>
+      <ScorecardSelector items={selectorItems} selected={selectedIdList} onChange={setSelectedIds} />
       <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
@@ -246,11 +260,11 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => downloadHtmlAsPdf(`Scorecards - ${tournament?.title}`, allHtml, fontImport, indivPageCss)}>
+          <Button variant="outline" disabled={printRegs.length === 0} onClick={() => downloadHtmlAsPdf(`Scorecards - ${tournament?.title}`, allHtml, fontImport, indivPageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
-          <Button onClick={() => openPrintWindow(`Scorecards - ${tournament?.title}`, allHtml, fontImport, indivPageCss)}>
-            <Printer className="h-4 w-4 mr-2" /> Print Scorecards
+          <Button disabled={printRegs.length === 0} onClick={() => openPrintWindow(`Scorecards - ${tournament?.title}`, allHtml, fontImport, indivPageCss)}>
+            <Printer className="h-4 w-4 mr-2" /> Print Selected Scorecards ({printRegs.length})
           </Button>
         </div>
       </div>

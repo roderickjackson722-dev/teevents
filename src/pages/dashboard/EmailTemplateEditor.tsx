@@ -69,6 +69,11 @@ interface EmailConfig {
   homepage_link_label?: string;
   /** Day-before reminder: order of the body sections, top to bottom. */
   section_order?: string[];
+  /** Auto "Date & Location" block: labels and optional text overrides. */
+  event_details_date_label?: string;
+  event_details_location_label?: string;
+  event_details_date_override?: string;
+  event_details_location_override?: string;
 }
 
 /** Every movable block in the Day Before reminder, in default order. */

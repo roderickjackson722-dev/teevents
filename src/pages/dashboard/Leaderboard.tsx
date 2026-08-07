@@ -892,11 +892,11 @@ export default function Leaderboard() {
             ) : playerScores.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No registered players yet.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scoring-table-wrap">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="sticky left-0 bg-card z-10 min-w-[150px]">Player</TableHead>
+                      <TableHead className="sticky-col left-0 min-w-[150px]">Player</TableHead>
                       {isTeamFormat && <TableHead className="text-center w-14">Grp</TableHead>}
                       {holes.map((h) => (
                         <TableHead key={h} className="text-center w-12 min-w-[48px]">{h}</TableHead>
@@ -906,8 +906,9 @@ export default function Leaderboard() {
                     </TableRow>
                     {/* Par row */}
                     {holePars && (
-                      <TableRow className="bg-muted/30">
-                        <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground font-semibold">Par</TableHead>
+                      <TableRow className="bg-muted/30 par-row">
+                        <TableHead className="sticky-col left-0 text-xs text-muted-foreground font-semibold">Par</TableHead>
+
                         {isTeamFormat && <TableHead />}
                         {holes.map((h) => (
                           <TableHead key={h} className="text-center text-xs text-muted-foreground">{getHolePar(h)}</TableHead>

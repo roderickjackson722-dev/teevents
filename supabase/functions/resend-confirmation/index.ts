@@ -20,7 +20,9 @@ const TEMPLATE_HEADERS: Record<string, string> = {
   vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
   day_before: "Your Tournament Is Almost Here!",
+  pairings_update: "Updated Hole Assignments",
 };
+
 
 
 const BASE_DEFAULT = {

@@ -398,6 +398,8 @@ export default function EmailTemplateEditor() {
     if (k === "vendor") return DEFAULT_VENDOR_CONFIG;
     if (k === "sponsor_day_of") return DEFAULT_SPONSOR_DAY_OF_CONFIG;
     if (k === "sponsorship_day_of") return DEFAULT_SPONSORSHIP_DAY_OF_CONFIG;
+    if (k === "pairings_update") return DEFAULT_PAIRINGS_UPDATE_CONFIG;
+
     return DEFAULT_CONFIG;
   };
 

@@ -324,7 +324,10 @@ export default function EmailTemplateEditor() {
               ? DEFAULT_SPONSOR_DAY_OF_CONFIG
               : initialTemplate === "sponsorship_day_of"
               ? DEFAULT_SPONSORSHIP_DAY_OF_CONFIG
+              : initialTemplate === "pairings_update"
+              ? DEFAULT_PAIRINGS_UPDATE_CONFIG
               : DEFAULT_CONFIG,
+
   );
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);

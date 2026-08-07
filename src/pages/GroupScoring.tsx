@@ -13,6 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Reg {
   id: string;
@@ -236,6 +237,55 @@ export default function GroupScoring() {
     setDraft({});
     toast({ title: "Saved" });
     if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
+  };
+
+  const holesArr = Array.from({ length: NUM_HOLES }, (_, i) => i + 1);
+  const parForHole = (h: number) => {
+    if (!tournament) return 4;
+    if (tournament.hole_pars && tournament.hole_pars[h - 1]) return tournament.hole_pars[h - 1];
+    return Math.round((tournament.course_par || 72) / 18);
+  };
+
+  const [editTarget, setEditTarget] = useState<{ pid: string; hole: number } | null>(null);
+  const [editVal, setEditVal] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEdit = (pid: string, hole: number) => {
+    const existing = isScramble ? teamScoreForHole(hole) : scores[pid]?.[hole];
+    setEditVal(existing != null ? String(existing) : "");
+    setEditTarget({ pid, hole });
+  };
+
+  const saveEdit = async () => {
+    if (!editTarget || !tournament || !code) return;
+    const n = parseInt(editVal, 10);
+    if (isNaN(n) || n < 1 || n > 20) {
+      toast({ title: "Enter a score between 1 and 20", variant: "destructive" });
+      return;
+    }
+    setSavingEdit(true);
+    const rows = isScramble
+      ? players.map((p) => ({ registration_id: p.id, hole_number: editTarget.hole, strokes: n }))
+      : [{ registration_id: editTarget.pid, hole_number: editTarget.hole, strokes: n }];
+    const { error } = await supabase.rpc("save_group_scores", {
+      _tournament_id: tournament.id,
+      _code: code,
+      _scores: rows,
+    });
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setScores((prev) => {
+      const next = { ...prev };
+      rows.forEach((r) => {
+        next[r.registration_id] = { ...(next[r.registration_id] || {}), [r.hole_number]: r.strokes };
+      });
+      return next;
+    });
+    setEditTarget(null);
+    toast({ title: "Score saved" });
   };
 
   const handleSave = () => {

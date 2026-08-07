@@ -724,12 +724,12 @@ export default function Leaderboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scoring-table-wrap">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10 text-center">#</TableHead>
-                    <TableHead className="min-w-[180px]">Team</TableHead>
+                    <TableHead className="w-10 text-center sticky-col left-0">#</TableHead>
+                    <TableHead className="min-w-[180px] sticky-col left-10">Team</TableHead>
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-10 min-w-[40px] text-xs">{h}</TableHead>
                     ))}
@@ -739,8 +739,9 @@ export default function Leaderboard() {
                 <TableBody>
                   {teamScores.map((team, i) => (
                     <TableRow key={team.key}>
-                      <TableCell className="text-center font-bold text-muted-foreground">{i + 1}</TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
+                      <TableCell className="font-medium sticky-col left-10">
+
                         <div className="font-semibold flex items-center gap-2">
                           {team.label}
                           {team.isUnassigned && (
@@ -810,12 +811,12 @@ export default function Leaderboard() {
               <span>Bogey = 1pt</span>
               <span>Double+ = 0pt</span>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scoring-table-wrap">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10 text-center">#</TableHead>
-                    <TableHead className="sticky left-0 bg-card z-10 min-w-[150px]">Player</TableHead>
+                    <TableHead className="w-10 text-center sticky-col left-0">#</TableHead>
+                    <TableHead className="sticky-col left-10 min-w-[150px]">Player</TableHead>
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
                     ))}
@@ -825,8 +826,9 @@ export default function Leaderboard() {
                 <TableBody>
                   {stablefordScores.map((ps, i) => (
                     <TableRow key={ps.registration_id}>
-                      <TableCell className="text-center font-bold text-muted-foreground">{i + 1}</TableCell>
-                      <TableCell className="sticky left-0 bg-card z-10 font-medium">
+                      <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
+                      <TableCell className="sticky-col left-10 font-medium">
+
                         {ps.first_name} {ps.last_name}
                         {ps.handicap !== null && (
                           <span className="text-xs text-muted-foreground ml-1">({ps.handicap})</span>
@@ -890,11 +892,11 @@ export default function Leaderboard() {
             ) : playerScores.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No registered players yet.</p>
             ) : (
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto scoring-table-wrap">
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead className="sticky left-0 bg-card z-10 min-w-[150px]">Player</TableHead>
+                      <TableHead className="sticky-col left-0 min-w-[150px]">Player</TableHead>
                       {isTeamFormat && <TableHead className="text-center w-14">Grp</TableHead>}
                       {holes.map((h) => (
                         <TableHead key={h} className="text-center w-12 min-w-[48px]">{h}</TableHead>
@@ -904,8 +906,9 @@ export default function Leaderboard() {
                     </TableRow>
                     {/* Par row */}
                     {holePars && (
-                      <TableRow className="bg-muted/30">
-                        <TableHead className="sticky left-0 bg-muted/30 z-10 text-xs text-muted-foreground font-semibold">Par</TableHead>
+                      <TableRow className="bg-muted/30 par-row">
+                        <TableHead className="sticky-col left-0 text-xs text-muted-foreground font-semibold">Par</TableHead>
+
                         {isTeamFormat && <TableHead />}
                         {holes.map((h) => (
                           <TableHead key={h} className="text-center text-xs text-muted-foreground">{getHolePar(h)}</TableHead>
@@ -930,7 +933,7 @@ export default function Leaderboard() {
                         : grossTotal;
                       return (
                         <TableRow key={ps.registration_id}>
-                          <TableCell className="sticky left-0 bg-card z-10 font-medium">
+                          <TableCell className="sticky-col left-0 font-medium">
                             {ps.first_name} {ps.last_name}
                             {handicapEnabled && ps.playing_handicap != null ? (
                               <span className="text-xs text-muted-foreground ml-1">({ps.playing_handicap})</span>

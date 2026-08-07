@@ -13,6 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 interface Reg {
   id: string;
@@ -236,6 +237,55 @@ export default function GroupScoring() {
     setDraft({});
     toast({ title: "Saved" });
     if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
+  };
+
+  const holesArr = Array.from({ length: NUM_HOLES }, (_, i) => i + 1);
+  const parForHole = (h: number) => {
+    if (!tournament) return 4;
+    if (tournament.hole_pars && tournament.hole_pars[h - 1]) return tournament.hole_pars[h - 1];
+    return Math.round((tournament.course_par || 72) / 18);
+  };
+
+  const [editTarget, setEditTarget] = useState<{ pid: string; hole: number } | null>(null);
+  const [editVal, setEditVal] = useState("");
+  const [savingEdit, setSavingEdit] = useState(false);
+
+  const openEdit = (pid: string, hole: number) => {
+    const existing = isScramble ? teamScoreForHole(hole) : scores[pid]?.[hole];
+    setEditVal(existing != null ? String(existing) : "");
+    setEditTarget({ pid, hole });
+  };
+
+  const saveEdit = async () => {
+    if (!editTarget || !tournament || !code) return;
+    const n = parseInt(editVal, 10);
+    if (isNaN(n) || n < 1 || n > 20) {
+      toast({ title: "Enter a score between 1 and 20", variant: "destructive" });
+      return;
+    }
+    setSavingEdit(true);
+    const rows = isScramble
+      ? players.map((p) => ({ registration_id: p.id, hole_number: editTarget.hole, strokes: n }))
+      : [{ registration_id: editTarget.pid, hole_number: editTarget.hole, strokes: n }];
+    const { error } = await supabase.rpc("save_group_scores", {
+      _tournament_id: tournament.id,
+      _code: code,
+      _scores: rows,
+    });
+    setSavingEdit(false);
+    if (error) {
+      toast({ title: "Save failed", description: error.message, variant: "destructive" });
+      return;
+    }
+    setScores((prev) => {
+      const next = { ...prev };
+      rows.forEach((r) => {
+        next[r.registration_id] = { ...(next[r.registration_id] || {}), [r.hole_number]: r.strokes };
+      });
+      return next;
+    });
+    setEditTarget(null);
+    toast({ title: "Score saved" });
   };
 
   const handleSave = () => {
@@ -495,6 +545,76 @@ export default function GroupScoring() {
             })}
           </CardContent>
         </Card>
+
+        {/* Full scorecard — tap a hole to view / edit */}
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm flex items-center justify-between gap-2">
+              <span>Scorecard</span>
+              <span className="text-xs font-normal text-muted-foreground">Tap a score to edit</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            <div className="scoring-table-wrap border-t border-border">
+              <table className="text-xs border-collapse w-full">
+                <thead>
+                  <tr>
+                    <th className="sticky-col left-0 p-2 text-left min-w-[110px] border-b border-border">Hole</th>
+                    {holesArr.map((h) => (
+                      <th
+                        key={h}
+                        onClick={() => setCurrentHole(h)}
+                        className={`p-2 text-center min-w-[34px] border-b border-border cursor-pointer ${h === currentHole ? "text-primary font-bold" : ""}`}
+                      >
+                        {h}
+                      </th>
+                    ))}
+                    <th className="p-2 text-center min-w-[44px] border-b border-border">Tot</th>
+                  </tr>
+                  <tr className="par-row">
+                    <th className="sticky-col left-0 p-2 text-left text-muted-foreground font-semibold border-b border-border">Par</th>
+                    {holesArr.map((h) => (
+                      <th key={h} className="p-2 text-center text-muted-foreground border-b border-border">{parForHole(h)}</th>
+                    ))}
+                    <th className="p-2 text-center text-muted-foreground border-b border-border">
+                      {holesArr.reduce((s, h) => s + parForHole(h), 0)}
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(isScramble ? [players[0]] : players).filter(Boolean).map((p) => {
+                    const label = isScramble ? `Team ${code}` : `${p.first_name} ${p.last_name?.[0] ?? ""}.`;
+                    const total = holesArr.reduce((sum, h) => sum + (scores[p.id]?.[h] ?? 0), 0);
+                    return (
+                      <tr key={p.id}>
+                        <td className="sticky-col left-0 p-2 font-medium border-b border-border truncate max-w-[110px]">{label}</td>
+                        {holesArr.map((h) => {
+                          const v = isScramble ? teamScoreForHole(h) : scores[p.id]?.[h];
+                          const par = parForHole(h);
+                          return (
+                            <td key={h} className="p-0 text-center border-b border-border">
+                              <button
+                                type="button"
+                                onClick={() => { setCurrentHole(h); openEdit(p.id, h); }}
+                                className={`w-full h-9 text-center ${h === currentHole ? "bg-primary/10" : ""} ${
+                                  v != null && v < par ? "text-primary font-bold" : v != null && v > par ? "text-destructive" : ""
+                                }`}
+                                aria-label={`Edit ${label} hole ${h}`}
+                              >
+                                {v ?? "—"}
+                              </button>
+                            </td>
+                          );
+                        })}
+                        <td className="p-2 text-center font-bold border-b border-border">{total > 0 ? total : "—"}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </CardContent>
+        </Card>
       </main>
 
       {/* Sticky Save bar */}
@@ -512,6 +632,56 @@ export default function GroupScoring() {
           </Button>
         </div>
       </div>
+
+      <Dialog open={!!editTarget} onOpenChange={(o) => !o && setEditTarget(null)}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Edit Score — Hole {editTarget?.hole}</DialogTitle>
+          </DialogHeader>
+          {editTarget && (
+            <div className="space-y-2 text-sm">
+              <p>
+                <span className="text-muted-foreground">{isScramble ? "Team:" : "Player:"}</span>{" "}
+                <span className="font-medium">
+                  {isScramble
+                    ? `Team ${code}`
+                    : (() => {
+                        const p = players.find((x) => x.id === editTarget.pid);
+                        return p ? `${p.first_name} ${p.last_name}` : "";
+                      })()}
+                </span>
+              </p>
+              <p>
+                <span className="text-muted-foreground">Hole:</span>{" "}
+                {editTarget.hole} (Par {parForHole(editTarget.hole)})
+              </p>
+              <p>
+                <span className="text-muted-foreground">Current Score:</span>{" "}
+                {(isScramble ? teamScoreForHole(editTarget.hole) : scores[editTarget.pid]?.[editTarget.hole]) ?? "—"}
+              </p>
+              <div className="space-y-1 pt-1">
+                <label className="text-xs text-muted-foreground" htmlFor="new-score">New Score</label>
+                <Input
+                  id="new-score"
+                  type="number"
+                  inputMode="numeric"
+                  min={1}
+                  max={20}
+                  value={editVal}
+                  onChange={(e) => setEditVal(e.target.value)}
+                  autoFocus
+                />
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTarget(null)}>Cancel</Button>
+            <Button onClick={saveEdit} disabled={savingEdit} style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
+              {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
         <AlertDialogContent>

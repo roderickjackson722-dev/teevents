@@ -296,7 +296,9 @@ Deno.serve(async (req) => {
       day_before: "day_before_email_config",
       sponsor: "sponsor_email_config",
       vendor: "vendor_email_config",
+      pairings_update: "pairings_update_email_config",
     };
+
     const configColumn = CONFIG_COLUMN[kind] || "confirmation_email_config";
     const stored = (tournament as any)[configColumn] as any;
     // Fall back to the built-in defaults FOR THE SELECTED TEMPLATE — never to the

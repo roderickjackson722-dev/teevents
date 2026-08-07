@@ -211,6 +211,22 @@ const DEFAULT_SPONSORSHIP_DAY_OF_CONFIG: EmailConfig = {
   show_button: false,
 };
 
+/** Updated pairings / hole assignments announcement. Pulls the live values from Players & Pairings. */
+const DEFAULT_PAIRINGS_UPDATE_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "{{event_name}} – Updated Hole Assignments",
+  header_title: "Updated Hole Assignments",
+  greeting: "Hello {{first_name}},",
+  body_text:
+    "We've updated the pairings for {{event_name}}. Please review your current assignment below — it may be different from your original confirmation email.\n\n🏌️ Starting Hole: {{hole_number}}\n👥 Team / Group: {{team_name}}\n⏰ Tee Time: {{tee_time}}\n🔑 Your Scoring Code: {{scoring_code}}",
+  closing_text:
+    "Please plan to check in 30 minutes before your tee time and report directly to your starting hole.\n\nQuestions? Reply to this email or contact {{contact_name}} at {{contact_phone}}.",
+  footer_text: "See you on the course! ⛳",
+  button_text: "View Event Homepage",
+  show_event_details: true,
+  show_button: true,
+};
+
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
   sponsor: "Sponsor Confirmation",
@@ -219,6 +235,7 @@ const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   day_before: "Day Before Event Reminder",
   sponsor_day_of: "Sponsor Event Day Details",
   sponsorship_day_of: "Day of Event Sponsorship Email",
+  pairings_update: "Updated Hole Assignments / Pairings",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
@@ -229,6 +246,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   day_before: "Your Tournament Is Almost Here!",
   sponsor_day_of: "Sponsor Event Day Details",
   sponsorship_day_of: "Thank You for Your Sponsorship!",
+  pairings_update: "Updated Hole Assignments",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -239,7 +257,9 @@ const CONFIG_KEY: Record<TemplateKind, string> = {
   day_before: "day_before_email_config",
   sponsor_day_of: "sponsor_day_of_email_config",
   sponsorship_day_of: "sponsorship_day_of_email_config",
+  pairings_update: "pairings_update_email_config",
 };
+
 
 
 const FONT_OPTIONS = [

@@ -376,6 +376,8 @@ Deno.serve(async (req) => {
             event_schedule: schedule,
             tee_time: teeTimeFor(reg as any),
             hole_number: (reg as any).group_number != null ? String((reg as any).group_number) : "TBD",
+            team_name: teamNameFor(reg as any),
+
             scoring_code: codeFor(reg as any)
               || "Scoring code will be assigned when pairings are finalized",
             group_number: (reg as any).group_number != null ? String((reg as any).group_number) : "",

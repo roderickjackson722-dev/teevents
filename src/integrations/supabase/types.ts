@@ -9922,6 +9922,7 @@ export type Database = {
           paid_features: Json
           pairings_locked: boolean
           pairings_locked_at: string | null
+          pairings_update_email_config: Json | null
           pass_fees_to_participants: boolean
           pass_fees_to_registrants: boolean
           payment_method_override: string
@@ -10202,6 +10203,7 @@ export type Database = {
           paid_features?: Json
           pairings_locked?: boolean
           pairings_locked_at?: string | null
+          pairings_update_email_config?: Json | null
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
           payment_method_override?: string
@@ -10482,6 +10484,7 @@ export type Database = {
           paid_features?: Json
           pairings_locked?: boolean
           pairings_locked_at?: string | null
+          pairings_update_email_config?: Json | null
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
           payment_method_override?: string

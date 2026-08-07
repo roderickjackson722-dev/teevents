@@ -20,7 +20,9 @@ const TEMPLATE_HEADERS: Record<string, string> = {
   vendor: "Vendor Registration Confirmed!",
   post_event: "Thanks for Playing!",
   day_before: "Your Tournament Is Almost Here!",
+  pairings_update: "Updated Hole Assignments",
 };
+
 
 
 const BASE_DEFAULT = {
@@ -71,7 +73,19 @@ const DEFAULT_CONFIGS: Record<string, any> = {
     button_text: "View Event Homepage",
     show_event_details: false,
   },
+  pairings_update: {
+    ...BASE_DEFAULT,
+    subject: "{{event_name}} – Updated Hole Assignments",
+    greeting: "Hello {{first_name}},",
+    header_title: "Updated Hole Assignments",
+    body_text: "We've updated the pairings for {{event_name}}. Here are your current assignments:\n\n🏌️ Starting Hole: {{hole_number}}\n👥 Team / Group: {{team_name}}\n⏰ Tee Time: {{tee_time}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    closing_text: "Please double-check your starting hole before you arrive — assignments have changed since your original confirmation. Plan to check in 30 minutes before your tee time.",
+    footer_text: "See you on the course! ⛳",
+    button_text: "View Event Homepage",
+    show_event_details: true,
+  },
 };
+
 
 
 /** True when organizer content was authored with the rich-text toolbar. */
@@ -237,15 +251,22 @@ Deno.serve(async (req) => {
     // Tee times are finalized in Players & Pairings at the GROUP level; prefer those.
     const { data: pairGroups } = await supabaseAdmin
       .from("registration_groups")
-      .select("group_number, tee_time")
+      .select("group_number, tee_time, team_name, group_name")
       .eq("tournament_id", tId);
     const groupTeeTimes = new Map<number, string>();
+    const groupNames = new Map<number, string>();
     for (const g of (pairGroups || []) as any[]) {
       if (g.group_number != null && g.tee_time) groupTeeTimes.set(g.group_number, String(g.tee_time));
+      const name = g.team_name || g.group_name;
+      if (g.group_number != null && name) groupNames.set(g.group_number, String(name));
     }
     const teeTimeFor = (r: any) =>
       (r.group_number != null ? groupTeeTimes.get(r.group_number) : undefined)
       || r.tee_time || "TBD";
+    const teamNameFor = (r: any) =>
+      (r.group_number != null ? groupNames.get(r.group_number) : undefined)
+      || (r.group_number != null ? `Hole ${r.group_number}` : "To be assigned");
+
 
     const codeFor = (r: any) =>
       r.group_scoring_code || r.scoring_code
@@ -256,7 +277,7 @@ Deno.serve(async (req) => {
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, schedule_info, schedule_info_html, slug")
+      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, schedule_info, schedule_info_html, slug")
       .eq("id", tournamentId)
       .single();
 
@@ -275,7 +296,9 @@ Deno.serve(async (req) => {
       day_before: "day_before_email_config",
       sponsor: "sponsor_email_config",
       vendor: "vendor_email_config",
+      pairings_update: "pairings_update_email_config",
     };
+
     const configColumn = CONFIG_COLUMN[kind] || "confirmation_email_config";
     const stored = (tournament as any)[configColumn] as any;
     // Fall back to the built-in defaults FOR THE SELECTED TEMPLATE — never to the
@@ -353,6 +376,8 @@ Deno.serve(async (req) => {
             event_schedule: schedule,
             tee_time: teeTimeFor(reg as any),
             hole_number: (reg as any).group_number != null ? String((reg as any).group_number) : "TBD",
+            team_name: teamNameFor(reg as any),
+
             scoring_code: codeFor(reg as any)
               || "Scoring code will be assigned when pairings are finalized",
             group_number: (reg as any).group_number != null ? String((reg as any).group_number) : "",

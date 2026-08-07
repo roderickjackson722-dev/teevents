@@ -724,12 +724,12 @@ export default function Leaderboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scoring-table-wrap">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10 text-center">#</TableHead>
-                    <TableHead className="min-w-[180px]">Team</TableHead>
+                    <TableHead className="w-10 text-center sticky-col left-0">#</TableHead>
+                    <TableHead className="min-w-[180px] sticky-col left-10">Team</TableHead>
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-10 min-w-[40px] text-xs">{h}</TableHead>
                     ))}
@@ -739,8 +739,9 @@ export default function Leaderboard() {
                 <TableBody>
                   {teamScores.map((team, i) => (
                     <TableRow key={team.key}>
-                      <TableCell className="text-center font-bold text-muted-foreground">{i + 1}</TableCell>
-                      <TableCell className="font-medium">
+                      <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
+                      <TableCell className="font-medium sticky-col left-10">
+
                         <div className="font-semibold flex items-center gap-2">
                           {team.label}
                           {team.isUnassigned && (

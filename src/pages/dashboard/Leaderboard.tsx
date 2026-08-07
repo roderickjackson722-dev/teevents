@@ -811,12 +811,12 @@ export default function Leaderboard() {
               <span>Bogey = 1pt</span>
               <span>Double+ = 0pt</span>
             </div>
-            <div className="overflow-x-auto">
+            <div className="overflow-x-auto scoring-table-wrap">
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-10 text-center">#</TableHead>
-                    <TableHead className="sticky left-0 bg-card z-10 min-w-[150px]">Player</TableHead>
+                    <TableHead className="w-10 text-center sticky-col left-0">#</TableHead>
+                    <TableHead className="sticky-col left-10 min-w-[150px]">Player</TableHead>
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
                     ))}
@@ -826,8 +826,9 @@ export default function Leaderboard() {
                 <TableBody>
                   {stablefordScores.map((ps, i) => (
                     <TableRow key={ps.registration_id}>
-                      <TableCell className="text-center font-bold text-muted-foreground">{i + 1}</TableCell>
-                      <TableCell className="sticky left-0 bg-card z-10 font-medium">
+                      <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
+                      <TableCell className="sticky-col left-10 font-medium">
+
                         {ps.first_name} {ps.last_name}
                         {ps.handicap !== null && (
                           <span className="text-xs text-muted-foreground ml-1">({ps.handicap})</span>

@@ -40,6 +40,7 @@ interface RosterRow {
   group_position: number | null;
   team_name: string | null;
   tee_time: string | null;
+  scoring_code: string | null;
 }
 
 const qrUrl = (url: string, size = 180) =>
@@ -270,8 +271,13 @@ export default function TeamHomepage() {
                   <span className="text-muted-foreground mr-2">{i + 1}.</span>
                   {r.last_name}, {r.first_name}
                 </span>
-                <span className="text-xs text-muted-foreground shrink-0">
-                  {r.group_number != null ? `Hole ${r.group_number}` : "—"}
+                <span className="flex items-center gap-2 shrink-0">
+                  <span className="text-xs text-muted-foreground">
+                    {r.group_number != null ? `Hole ${r.group_number}` : "—"}
+                  </span>
+                  <span className="text-xs font-mono tracking-wider text-foreground">
+                    {r.scoring_code || <span className="font-sans tracking-normal text-muted-foreground">—</span>}
+                  </span>
                 </span>
               </div>
             ))}

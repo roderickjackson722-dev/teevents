@@ -933,7 +933,7 @@ export default function Leaderboard() {
                         : grossTotal;
                       return (
                         <TableRow key={ps.registration_id}>
-                          <TableCell className="sticky left-0 bg-card z-10 font-medium">
+                          <TableCell className="sticky-col left-0 font-medium">
                             {ps.first_name} {ps.last_name}
                             {handicapEnabled && ps.playing_handicap != null ? (
                               <span className="text-xs text-muted-foreground ml-1">({ps.playing_handicap})</span>

@@ -283,6 +283,7 @@ const VARIABLE_TAGS = [
   { label: "Starting Hole", value: "{{hole_number}}" },
   { label: "Scoring Code", value: "{{scoring_code}}" },
   { label: "Group Number", value: "{{group_number}}" },
+  { label: "Team / Group Name", value: "{{team_name}}" },
   { label: "Scoring Link", value: "{{scoring_link}}" },
   { label: "Leaderboard Link", value: "{{leaderboard_link}}" },
   { label: "Event Homepage", value: "{{event_homepage}}" },
@@ -590,6 +591,7 @@ export default function EmailTemplateEditor() {
       event_homepage: homepage,
       tee_time: "TBD",
       hole_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
+      team_name: sampleReg?.team_name || (sampleReg?.group_number != null ? `Hole ${sampleReg.group_number}` : "To be assigned"),
       contact_name: t?.day_of_director_name || t?.contact_name || "Tournament Organizer",
       contact_phone: t?.day_of_director_phone || t?.contact_phone || "",
       checkin_time: "TBD",
@@ -821,6 +823,7 @@ export default function EmailTemplateEditor() {
               <SelectItem value="day_before">{TEMPLATE_LABELS.day_before}</SelectItem>
               <SelectItem value="sponsor_day_of">{TEMPLATE_LABELS.sponsor_day_of}</SelectItem>
               <SelectItem value="sponsorship_day_of">{TEMPLATE_LABELS.sponsorship_day_of}</SelectItem>
+              <SelectItem value="pairings_update">{TEMPLATE_LABELS.pairings_update}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -1702,6 +1705,7 @@ const SAMPLE_VARS: Record<string, string> = {
   event_schedule: "7:30 AM — Check-in & breakfast\n9:00 AM — Shotgun start\n2:00 PM — Lunch & awards",
   tee_time: "8:30 AM",
   hole_number: "5",
+  team_name: "Team Birdie",
   scoring_code: "ABC123",
   scoring_link: "https://www.teevents.golf/t/sample/scoring",
   leaderboard_link: "https://www.teevents.golf/live/sample",

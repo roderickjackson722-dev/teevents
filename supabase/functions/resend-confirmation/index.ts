@@ -73,7 +73,19 @@ const DEFAULT_CONFIGS: Record<string, any> = {
     button_text: "View Event Homepage",
     show_event_details: false,
   },
+  pairings_update: {
+    ...BASE_DEFAULT,
+    subject: "{{event_name}} – Updated Hole Assignments",
+    greeting: "Hello {{first_name}},",
+    header_title: "Updated Hole Assignments",
+    body_text: "We've updated the pairings for {{event_name}}. Here are your current assignments:\n\n🏌️ Starting Hole: {{hole_number}}\n👥 Team / Group: {{team_name}}\n⏰ Tee Time: {{tee_time}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    closing_text: "Please double-check your starting hole before you arrive — assignments have changed since your original confirmation. Plan to check in 30 minutes before your tee time.",
+    footer_text: "See you on the course! ⛳",
+    button_text: "View Event Homepage",
+    show_event_details: true,
+  },
 };
+
 
 
 /** True when organizer content was authored with the rich-text toolbar. */

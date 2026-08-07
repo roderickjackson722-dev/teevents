@@ -11496,6 +11496,7 @@ export type Database = {
           group_position: number
           last_name: string
           registration_id: string
+          scoring_code: string
           team_name: string
           tee_time: string
         }[]

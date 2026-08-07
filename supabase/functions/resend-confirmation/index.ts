@@ -251,15 +251,22 @@ Deno.serve(async (req) => {
     // Tee times are finalized in Players & Pairings at the GROUP level; prefer those.
     const { data: pairGroups } = await supabaseAdmin
       .from("registration_groups")
-      .select("group_number, tee_time")
+      .select("group_number, tee_time, team_name, group_name")
       .eq("tournament_id", tId);
     const groupTeeTimes = new Map<number, string>();
+    const groupNames = new Map<number, string>();
     for (const g of (pairGroups || []) as any[]) {
       if (g.group_number != null && g.tee_time) groupTeeTimes.set(g.group_number, String(g.tee_time));
+      const name = g.team_name || g.group_name;
+      if (g.group_number != null && name) groupNames.set(g.group_number, String(name));
     }
     const teeTimeFor = (r: any) =>
       (r.group_number != null ? groupTeeTimes.get(r.group_number) : undefined)
       || r.tee_time || "TBD";
+    const teamNameFor = (r: any) =>
+      (r.group_number != null ? groupNames.get(r.group_number) : undefined)
+      || (r.group_number != null ? `Hole ${r.group_number}` : "To be assigned");
+
 
     const codeFor = (r: any) =>
       r.group_scoring_code || r.scoring_code

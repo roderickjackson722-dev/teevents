@@ -138,14 +138,17 @@ function InlineHoleEditor({
       </div>
       <Button
         onClick={onSaveNext}
-        disabled={disabled || saving}
+        disabled={saving || hole >= maxHole}
         style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
       >
-        {saving ? "Saving…" : "Save & Next Hole →"}
+        {saving ? "Saving…" : disabled ? "Next Hole →" : "Save & Next Hole →"}
       </Button>
       <p className="text-xs text-muted-foreground w-full">
-        Saving will automatically advance to the next hole. Existing scores for other holes are untouched.
+        {disabled
+          ? "View-only: this button just moves to the next hole — no scores are changed."
+          : "Saving will automatically advance to the next hole. Existing scores for other holes are untouched."}
       </p>
+
     </div>
   );
 }

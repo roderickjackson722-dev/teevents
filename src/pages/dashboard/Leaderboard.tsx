@@ -565,6 +565,64 @@ export default function Leaderboard() {
 
   const hasErrors = Object.keys(scoreErrors).length > 0;
 
+  // ---- Filter by player or team name (a player match shows the whole team) ----
+  const searchTerm = scoreSearch.trim().toLowerCase();
+  const matchesPlayer = (ps: PlayerScore) =>
+    `${ps.first_name} ${ps.last_name}`.toLowerCase().includes(searchTerm);
+
+  const visibleTeamScores = useMemo(() => {
+    if (!searchTerm) return teamScores;
+    return teamScores.filter(
+      (t) => t.label.toLowerCase().includes(searchTerm) || t.players.some(matchesPlayer)
+    );
+  }, [teamScores, searchTerm]);
+
+  const visiblePlayerScores = useMemo(() => {
+    if (!searchTerm) return playerScores;
+    return playerScores.filter(matchesPlayer);
+  }, [playerScores, searchTerm]);
+
+  const visibleStablefordScores = useMemo(() => {
+    if (!searchTerm) return stablefordScores;
+    return stablefordScores.filter(matchesPlayer);
+  }, [stablefordScores, searchTerm]);
+
+  // ---- Progress: which hole entries are still missing a score? ----
+  const progress = useMemo(() => {
+    const missing: { label: string; hole: number }[] = [];
+    let total = 0;
+    if (isTeamFormat) {
+      teamScores.forEach((t) => {
+        holes.forEach((h) => {
+          total++;
+          const v = editedScores[t.players[0]?.registration_id]?.[h] ?? t.holeScores[h];
+          if (v == null) missing.push({ label: t.label, hole: h });
+        });
+      });
+    } else {
+      playerScores.forEach((ps) => {
+        holes.forEach((h) => {
+          total++;
+          const v = editedScores[ps.registration_id]?.[h] ?? ps.scores[h];
+          if (v == null) missing.push({ label: `${ps.first_name} ${ps.last_name}`, hole: h });
+        });
+      });
+    }
+    return { total, missing };
+  }, [isTeamFormat, teamScores, playerScores, holes, editedScores]);
+
+  /** Save pending edits, then advance the inline editor to the next hole. */
+  const saveAndNext = async () => {
+    try {
+      if (hasEdits) await saveMutation.mutateAsync();
+      setEditHole((h) => Math.min(holes.length, h + 1));
+    } catch {
+      /* mutation surfaces its own toast */
+    }
+  };
+
+
+
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
 

@@ -1,4 +1,5 @@
-import { useEffect, useState, useMemo, Fragment } from "react";
+import { useEffect, useState, useMemo, useRef, Fragment } from "react";
+import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -138,14 +139,17 @@ function InlineHoleEditor({
       </div>
       <Button
         onClick={onSaveNext}
-        disabled={disabled || saving}
+        disabled={saving || hole >= maxHole}
         style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
       >
-        {saving ? "Saving…" : "Save & Next Hole →"}
+        {saving ? "Saving…" : disabled ? "Next Hole →" : "Save & Next Hole →"}
       </Button>
       <p className="text-xs text-muted-foreground w-full">
-        Saving will automatically advance to the next hole. Existing scores for other holes are untouched.
+        {disabled
+          ? "View-only: this button just moves to the next hole — no scores are changed."
+          : "Saving will automatically advance to the next hole. Existing scores for other holes are untouched."}
       </p>
+
     </div>
   );
 }
@@ -652,38 +656,59 @@ export default function Leaderboard() {
   }, [stablefordScores, searchTerm]);
 
   // ---- Progress: which hole entries are still missing a score? ----
+  // Uses the shared, unit-tested helper so the yellow highlight and this
+  // summary always agree, and both react instantly to unsaved edits.
   const progress = useMemo(() => {
-    const missing: { label: string; hole: number }[] = [];
-    let total = 0;
-    if (isTeamFormat) {
-      teamScores.forEach((t) => {
-        holes.forEach((h) => {
-          total++;
-          const v = editedScores[t.players[0]?.registration_id]?.[h] ?? t.holeScores[h];
-          if (v == null) missing.push({ label: t.label, hole: h });
-        });
-      });
-    } else {
-      playerScores.forEach((ps) => {
-        holes.forEach((h) => {
-          total++;
-          const v = editedScores[ps.registration_id]?.[h] ?? ps.scores[h];
-          if (v == null) missing.push({ label: `${ps.first_name} ${ps.last_name}`, hole: h });
-        });
-      });
-    }
-    return { total, missing };
+    const rows: ProgressRow[] = isTeamFormat
+      ? teamScores.map((t) => ({
+          label: t.label,
+          registrationId: t.players[0]?.registration_id ?? t.key,
+          saved: t.holeScores,
+        }))
+      : playerScores.map((ps) => ({
+          label: `${ps.first_name} ${ps.last_name}`,
+          registrationId: ps.registration_id,
+          saved: ps.scores,
+        }));
+    return computeScoreProgress(rows, holes, editedScores);
   }, [isTeamFormat, teamScores, playerScores, holes, editedScores]);
 
-  /** Save pending edits, then advance the inline editor to the next hole. */
+  const allScoresEntered = progress.complete;
+
+
+  // Notify the organizer once, the moment the last missing score is filled in.
+  const completeNotifiedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedTournament) return;
+    if (allScoresEntered) {
+      if (completeNotifiedRef.current !== selectedTournament) {
+        completeNotifiedRef.current = selectedTournament;
+        toast({
+          title: "All scores entered",
+          description: "Every group has a score on every hole. The final leaderboard is ready to share.",
+        });
+      }
+    } else if (completeNotifiedRef.current === selectedTournament) {
+      // Scoring re-opened (a score was cleared) — allow the notice to fire again.
+      completeNotifiedRef.current = null;
+    }
+  }, [allScoresEntered, selectedTournament]);
+
+  /**
+   * Save pending edits (when the user may edit), then advance the inline editor
+   * to the next hole. For view-only roles or a frozen leaderboard this only
+   * changes the selected hole — it never writes scores.
+   */
   const saveAndNext = async () => {
+    const mayWrite = canEditScores && !isFrozen;
     try {
-      if (hasEdits) await saveMutation.mutateAsync();
+      if (mayWrite && hasEdits) await saveMutation.mutateAsync();
       setEditHole((h) => Math.min(holes.length, h + 1));
     } catch {
       /* mutation surfaces its own toast */
     }
   };
+
 
 
 
@@ -859,12 +884,34 @@ export default function Leaderboard() {
               <Button variant="ghost" size="sm" onClick={() => setScoreSearch("")}>Clear filter</Button>
             )}
             {selectedTournamentData?.slug && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-1.5" /> View Live Leaderboard
-                </a>
-              </Button>
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-1.5" /> View Live Leaderboard
+                  </a>
+                </Button>
+                {allScoresEntered ? (
+                  <Button size="sm" asChild style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
+                    <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
+                      <Trophy className="h-4 w-4 mr-1.5" /> View Final Leaderboard
+                    </a>
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    disabled
+                    title={
+                      progress.total === 0
+                        ? "Add players and pairings to start scoring."
+                        : `${progress.missing.length} hole ${progress.missing.length === 1 ? "entry" : "entries"} still need scores.`
+                    }
+                  >
+                    <Trophy className="h-4 w-4 mr-1.5" /> View Final Leaderboard
+                  </Button>
+                )}
+              </>
             )}
+
           </div>
 
           {progress.total > 0 && progress.missing.length > 0 && (

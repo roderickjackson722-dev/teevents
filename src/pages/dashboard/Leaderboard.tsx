@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Fragment } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -87,13 +87,83 @@ function computeTeamHoleScore(
   return null;
 }
 
+/**
+ * Expanded edit area shown inside the selected scoring row. Keeps the
+ * organizer's focus on the row they picked (no jumping to the top of the page)
+ * and offers plus/minus entry with a Save & Next Hole action.
+ */
+function InlineHoleEditor({
+  label,
+  hole,
+  par,
+  value,
+  maxHole,
+  disabled,
+  saving,
+  onHole,
+  onValue,
+  onSaveNext,
+}: {
+  label: string;
+  hole: number;
+  par: number;
+  value: number;
+  maxHole: number;
+  disabled?: boolean;
+  saving?: boolean;
+  onHole: (h: number) => void;
+  onValue: (n: number) => void;
+  onSaveNext: () => void;
+}) {
+  return (
+    <div className="rounded-md border-2 border-secondary bg-card p-3 flex flex-wrap items-center gap-4">
+      <div className="font-semibold">{label}</div>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onHole(Math.max(1, hole - 1))} disabled={hole <= 1} aria-label="Previous hole">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-sm whitespace-nowrap">Hole {hole} · Par {par}</span>
+        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onHole(Math.min(maxHole, hole + 1))} disabled={hole >= maxHole} aria-label="Next hole">
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="icon" className="h-9 w-9" disabled={disabled || value <= 0} onClick={() => onValue(Math.max(0, value - 1))} aria-label="Decrease score">
+          <Minus className="h-4 w-4" />
+        </Button>
+        <div className="w-14 h-9 rounded border flex items-center justify-center text-lg font-bold">{value}</div>
+        <Button variant="outline" size="icon" className="h-9 w-9" disabled={disabled || value >= 20} onClick={() => onValue(Math.min(20, value + 1))} aria-label="Increase score">
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      <Button
+        onClick={onSaveNext}
+        disabled={disabled || saving}
+        style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
+      >
+        {saving ? "Saving…" : "Save & Next Hole →"}
+      </Button>
+      <p className="text-xs text-muted-foreground w-full">
+        Saving will automatically advance to the next hole. Existing scores for other holes are untouched.
+      </p>
+    </div>
+  );
+}
+
 export default function Leaderboard() {
+
   const { org, loading: orgLoading } = useOrgContext();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [playerScores, setPlayerScores] = useState<PlayerScore[]>([]);
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [scoreView, setScoreView] = useState<"gross" | "net">("gross");
+  // Score-entry helpers: name/team filter, expanded row selection, and the hole
+  // targeted by the expanded inline editor.
+  const [scoreSearch, setScoreSearch] = useState("");
+  const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
+  const [editHole, setEditHole] = useState(1);
+
 
   // Detect platform admin — admins get access to ALL tournaments across every org
   const { data: isPlatformAdmin } = useQuery({
@@ -559,6 +629,64 @@ export default function Leaderboard() {
 
   const hasErrors = Object.keys(scoreErrors).length > 0;
 
+  // ---- Filter by player or team name (a player match shows the whole team) ----
+  const searchTerm = scoreSearch.trim().toLowerCase();
+  const matchesPlayer = (ps: PlayerScore) =>
+    `${ps.first_name} ${ps.last_name}`.toLowerCase().includes(searchTerm);
+
+  const visibleTeamScores = useMemo(() => {
+    if (!searchTerm) return teamScores;
+    return teamScores.filter(
+      (t) => t.label.toLowerCase().includes(searchTerm) || t.players.some(matchesPlayer)
+    );
+  }, [teamScores, searchTerm]);
+
+  const visiblePlayerScores = useMemo(() => {
+    if (!searchTerm) return playerScores;
+    return playerScores.filter(matchesPlayer);
+  }, [playerScores, searchTerm]);
+
+  const visibleStablefordScores = useMemo(() => {
+    if (!searchTerm) return stablefordScores;
+    return stablefordScores.filter(matchesPlayer);
+  }, [stablefordScores, searchTerm]);
+
+  // ---- Progress: which hole entries are still missing a score? ----
+  const progress = useMemo(() => {
+    const missing: { label: string; hole: number }[] = [];
+    let total = 0;
+    if (isTeamFormat) {
+      teamScores.forEach((t) => {
+        holes.forEach((h) => {
+          total++;
+          const v = editedScores[t.players[0]?.registration_id]?.[h] ?? t.holeScores[h];
+          if (v == null) missing.push({ label: t.label, hole: h });
+        });
+      });
+    } else {
+      playerScores.forEach((ps) => {
+        holes.forEach((h) => {
+          total++;
+          const v = editedScores[ps.registration_id]?.[h] ?? ps.scores[h];
+          if (v == null) missing.push({ label: `${ps.first_name} ${ps.last_name}`, hole: h });
+        });
+      });
+    }
+    return { total, missing };
+  }, [isTeamFormat, teamScores, playerScores, holes, editedScores]);
+
+  /** Save pending edits, then advance the inline editor to the next hole. */
+  const saveAndNext = async () => {
+    try {
+      if (hasEdits) await saveMutation.mutateAsync();
+      setEditHole((h) => Math.min(holes.length, h + 1));
+    } catch {
+      /* mutation surfaces its own toast */
+    }
+  };
+
+
+
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
 
@@ -713,8 +841,68 @@ export default function Leaderboard() {
         <SponsorBanner sponsors={leaderboardSponsors.list} intervalMs={leaderboardSponsors.interval} preserveOrder randomOrder={leaderboardSponsors.randomOrder} />
       )}
 
+      {/* ===== SEARCH + PROGRESS ===== */}
+      {selectedTournament && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative w-full sm:w-[320px]">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                className="pl-8"
+                placeholder="Search player or team name…"
+                value={scoreSearch}
+                onChange={(e) => setScoreSearch(e.target.value)}
+                aria-label="Filter scoring by player or team name"
+              />
+            </div>
+            {scoreSearch && (
+              <Button variant="ghost" size="sm" onClick={() => setScoreSearch("")}>Clear filter</Button>
+            )}
+            {selectedTournamentData?.slug && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-1.5" /> View Live Leaderboard
+                </a>
+              </Button>
+            )}
+          </div>
+
+          {progress.total > 0 && progress.missing.length > 0 && (
+            <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+              <div className="flex items-center gap-2 font-semibold">
+                <AlertTriangle className="h-4 w-4" />
+                Scores Remaining: {progress.missing.length} of {progress.total} hole entries need scores.
+              </div>
+              <ul className="mt-1.5 space-y-0.5 text-xs">
+                {progress.missing.slice(0, 8).map((m) => (
+                  <li key={`${m.label}-${m.hole}`}>• {m.label} — Hole {m.hole}</li>
+                ))}
+                {progress.missing.length > 8 && <li>• +{progress.missing.length - 8} more…</li>}
+              </ul>
+            </div>
+          )}
+
+          {progress.total > 0 && progress.missing.length === 0 && (
+            <div className="rounded-md border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
+              <div className="flex items-center gap-2 font-semibold text-primary">
+                <CheckCircle2 className="h-4 w-4" /> All Scores Entered!
+              </div>
+              <p className="text-muted-foreground mt-1">All teams have completed scoring for all holes.</p>
+              {selectedTournamentData?.slug && (
+                <Button size="sm" className="mt-2" asChild>
+                  <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
+                    View Final Leaderboard
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ===== TEAM LEADERBOARD ===== */}
       {selectedTournament && isTeamFormat && teamScores.length > 0 && (
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 flex-wrap">
@@ -737,26 +925,36 @@ export default function Leaderboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teamScores.map((team, i) => (
-                    <TableRow key={team.key}>
+                  {visibleTeamScores.map((team, i) => {
+                    const isSelected = selectedRowKey === team.key;
+                    return (
+                    <Fragment key={team.key}>
+                    <TableRow
+                      className={isSelected ? "bg-secondary/10 outline outline-2 outline-secondary" : undefined}
+                    >
                       <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
                       <TableCell className="font-medium sticky-col left-10">
 
-                        <div className="font-semibold flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="font-semibold flex items-center gap-2 text-left hover:underline"
+                          onClick={() => setSelectedRowKey(isSelected ? null : team.key)}
+                        >
                           {team.label}
                           {team.isUnassigned && (
                             <Badge variant="outline" className="text-[10px] font-normal">No pairing</Badge>
                           )}
-                        </div>
+                        </button>
                         <div className="text-xs text-muted-foreground">
                           {team.players.map((p) => `${p.first_name} ${p.last_name[0]}.`).join(", ")}
                         </div>
                       </TableCell>
                       {holes.map((h) => {
                         const val = team.holeScores[h];
+                        const missing = val == null;
                         if (canEditScores && !isFrozen) {
                           return (
-                            <TableCell key={h} className="p-1 text-center">
+                            <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
                               <ScoreInput
                                 value={Number(val ?? "")}
                                 par={getHolePar(h)}
@@ -768,7 +966,7 @@ export default function Leaderboard() {
                           );
                         }
                         return (
-                          <TableCell key={h} className="text-center text-sm p-1">
+                          <TableCell key={h} className={`text-center text-sm p-1 ${missing ? "incomplete-score" : ""}`}>
                             {val != null ? (
                               <span className={
                                 val < Math.round(holePar) ? "text-primary font-bold" :
@@ -784,7 +982,31 @@ export default function Leaderboard() {
                         {team.total > 0 ? team.total : "—"}
                       </TableCell>
                     </TableRow>
-                  ))}
+                    {isSelected && (
+                      <TableRow key={`${team.key}-edit`} className="bg-secondary/10">
+                        <TableCell colSpan={holes.length + 3} className="p-3">
+                          <InlineHoleEditor
+                            label={team.label}
+                            hole={editHole}
+                            par={getHolePar(editHole)}
+                            value={Number(
+                              editedScores[team.players[0].registration_id]?.[editHole] ??
+                              team.holeScores[editHole] ?? 0
+                            )}
+                            maxHole={holes.length}
+                            disabled={!canEditScores || isFrozen}
+                            saving={saveMutation.isPending}
+                            onHole={setEditHole}
+                            onValue={(n) => setTeamScoreValue(team.players, editHole, n)}
+                            onSaveNext={saveAndNext}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </Fragment>
+                    );
+                  })}
+
 
                 </TableBody>
               </Table>
@@ -824,7 +1046,7 @@ export default function Leaderboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {stablefordScores.map((ps, i) => (
+                  {visibleStablefordScores.map((ps, i) => (
                     <TableRow key={ps.registration_id}>
                       <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
                       <TableCell className="sticky-col left-10 font-medium">
@@ -919,7 +1141,7 @@ export default function Leaderboard() {
                     )}
                   </TableHeader>
                   <TableBody>
-                    {playerScores.map((ps) => {
+                    {visiblePlayerScores.map((ps) => {
                       const grossTotal = holes.reduce((sum, h) => {
                         const val = getScore(ps, h);
                         return sum + (typeof val === "number" ? val : 0);
@@ -931,10 +1153,21 @@ export default function Leaderboard() {
                             return sum + val - (ps.strokes_per_hole?.[h - 1] || 0);
                           }, 0)
                         : grossTotal;
+                      const rowKey = `p-${ps.registration_id}`;
+                      const isSelected = selectedRowKey === rowKey;
                       return (
-                        <TableRow key={ps.registration_id}>
+                        <Fragment key={ps.registration_id}>
+                        <TableRow
+                          className={isSelected ? "bg-secondary/10 outline outline-2 outline-secondary" : undefined}
+                        >
                           <TableCell className="sticky-col left-0 font-medium">
-                            {ps.first_name} {ps.last_name}
+                            <button
+                              type="button"
+                              className="text-left hover:underline"
+                              onClick={() => setSelectedRowKey(isSelected ? null : rowKey)}
+                            >
+                              {ps.first_name} {ps.last_name}
+                            </button>
                             {handicapEnabled && ps.playing_handicap != null ? (
                               <span className="text-xs text-muted-foreground ml-1">({ps.playing_handicap})</span>
                             ) : ps.handicap !== null ? (
@@ -953,8 +1186,9 @@ export default function Leaderboard() {
                             const scoreColorClass = typeof val === "number"
                               ? val < hp ? "text-primary font-bold" : val > hp ? "text-destructive" : ""
                               : "";
+                            const missing = typeof val !== "number";
                             return (
-                              <TableCell key={h} className="p-1 text-center">
+                              <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
                                 <ScoreInput
                                   value={Number(val)}
                                   par={hp}
@@ -978,8 +1212,28 @@ export default function Leaderboard() {
                             </TableCell>
                           )}
                         </TableRow>
+                        {isSelected && (
+                          <TableRow key={`${ps.registration_id}-edit`} className="bg-secondary/10">
+                            <TableCell colSpan={holes.length + (isTeamFormat ? 3 : 2) + (handicapEnabled ? 1 : 0)} className="p-3">
+                              <InlineHoleEditor
+                                label={`${ps.first_name} ${ps.last_name}`}
+                                hole={editHole}
+                                par={getHolePar(editHole)}
+                                value={Number(editedScores[ps.registration_id]?.[editHole] ?? ps.scores[editHole] ?? 0)}
+                                maxHole={holes.length}
+                                disabled={!canEditScores || isFrozen}
+                                saving={saveMutation.isPending}
+                                onHole={setEditHole}
+                                onValue={(n) => setScore(ps.registration_id, editHole, n)}
+                                onSaveNext={saveAndNext}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        )}
+                        </Fragment>
                       );
                     })}
+
                   </TableBody>
                 </Table>
               </div>

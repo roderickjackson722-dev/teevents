@@ -153,6 +153,11 @@ export default function LiveLeaderboard() {
   const [search] = useSearchParams();
   const isTvMode = search.get("display") === "1";
   const isPreview = search.get("preview") === "true" || search.get("preview") === "1";
+  // Players who arrive from the scoring page get a one-tap link back so they
+  // never have to re-enter their scoring code. Only same-origin paths are used.
+  const rawFrom = search.get("from") || "";
+  const returnToScoring = /^\/[A-Za-z0-9/_-]*$/.test(rawFrom) ? rawFrom : null;
+
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [design, setDesign] = useState<LeaderboardDesign>(mergeDesign(null));
   const [loading, setLoading] = useState(true);
@@ -498,6 +503,17 @@ export default function LiveLeaderboard() {
         presentedBy={presentedBy}
         topNotice={
           <>
+            {returnToScoring ? (
+              <div className="w-full bg-primary/10 border-b border-primary/20 px-4 py-2 flex justify-center">
+                <a
+                  href={returnToScoring}
+                  className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold"
+                  style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
+                >
+                  ← Return to Scoring
+                </a>
+              </div>
+            ) : null}
             {isPreview ? (
               <div className="w-full bg-secondary/90 text-secondary-foreground text-center text-xs sm:text-sm py-2 px-4 font-medium">
                 Preview Mode — this is how your leaderboard will appear to players.
@@ -506,6 +522,7 @@ export default function LiveLeaderboard() {
             {flightTabs}
           </>
         }
+
       />
       <TeeventsFooter tournament={tournament as any} />
     </>

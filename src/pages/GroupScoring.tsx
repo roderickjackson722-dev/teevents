@@ -328,9 +328,16 @@ export default function GroupScoring() {
         </div>
         {tournament.live_leaderboard_enabled && tournament.slug && (
           <Button asChild variant="outline" size="sm">
-            <Link to={`/live/${tournament.slug}`}>Leaderboard</Link>
+            <a
+              href={`/live/${tournament.slug}?from=${encodeURIComponent(`/score/${slug}/${code}`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              📊 View Live Leaderboard
+            </a>
           </Button>
         )}
+
       </header>
 
       <main className="max-w-2xl mx-auto p-4 space-y-4">

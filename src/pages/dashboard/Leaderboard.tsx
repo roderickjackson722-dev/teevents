@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useRef, Fragment } from "react";
+import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";

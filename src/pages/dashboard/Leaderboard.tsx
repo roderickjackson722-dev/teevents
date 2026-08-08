@@ -87,7 +87,71 @@ function computeTeamHoleScore(
   return null;
 }
 
+/**
+ * Expanded edit area shown inside the selected scoring row. Keeps the
+ * organizer's focus on the row they picked (no jumping to the top of the page)
+ * and offers plus/minus entry with a Save & Next Hole action.
+ */
+function InlineHoleEditor({
+  label,
+  hole,
+  par,
+  value,
+  maxHole,
+  disabled,
+  saving,
+  onHole,
+  onValue,
+  onSaveNext,
+}: {
+  label: string;
+  hole: number;
+  par: number;
+  value: number;
+  maxHole: number;
+  disabled?: boolean;
+  saving?: boolean;
+  onHole: (h: number) => void;
+  onValue: (n: number) => void;
+  onSaveNext: () => void;
+}) {
+  return (
+    <div className="rounded-md border-2 border-secondary bg-card p-3 flex flex-wrap items-center gap-4">
+      <div className="font-semibold">{label}</div>
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onHole(Math.max(1, hole - 1))} disabled={hole <= 1} aria-label="Previous hole">
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        <span className="text-sm whitespace-nowrap">Hole {hole} · Par {par}</span>
+        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onHole(Math.min(maxHole, hole + 1))} disabled={hole >= maxHole} aria-label="Next hole">
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </div>
+      <div className="flex items-center gap-1">
+        <Button variant="outline" size="icon" className="h-9 w-9" disabled={disabled || value <= 0} onClick={() => onValue(Math.max(0, value - 1))} aria-label="Decrease score">
+          <Minus className="h-4 w-4" />
+        </Button>
+        <div className="w-14 h-9 rounded border flex items-center justify-center text-lg font-bold">{value}</div>
+        <Button variant="outline" size="icon" className="h-9 w-9" disabled={disabled || value >= 20} onClick={() => onValue(Math.min(20, value + 1))} aria-label="Increase score">
+          <Plus className="h-4 w-4" />
+        </Button>
+      </div>
+      <Button
+        onClick={onSaveNext}
+        disabled={disabled || saving}
+        style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
+      >
+        {saving ? "Saving…" : "Save & Next Hole →"}
+      </Button>
+      <p className="text-xs text-muted-foreground w-full">
+        Saving will automatically advance to the next hole. Existing scores for other holes are untouched.
+      </p>
+    </div>
+  );
+}
+
 export default function Leaderboard() {
+
   const { org, loading: orgLoading } = useOrgContext();
   const queryClient = useQueryClient();
   const [selectedTournament, setSelectedTournament] = useTournamentIdParam();

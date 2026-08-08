@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, Fragment } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -928,9 +928,8 @@ export default function Leaderboard() {
                   {visibleTeamScores.map((team, i) => {
                     const isSelected = selectedRowKey === team.key;
                     return (
-                    <>
+                    <Fragment key={team.key}>
                     <TableRow
-                      key={team.key}
                       className={isSelected ? "bg-secondary/10 outline outline-2 outline-secondary" : undefined}
                     >
                       <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
@@ -1004,7 +1003,7 @@ export default function Leaderboard() {
                         </TableCell>
                       </TableRow>
                     )}
-                    </>
+                    </Fragment>
                     );
                   })}
 
@@ -1157,9 +1156,8 @@ export default function Leaderboard() {
                       const rowKey = `p-${ps.registration_id}`;
                       const isSelected = selectedRowKey === rowKey;
                       return (
-                        <>
+                        <Fragment key={ps.registration_id}>
                         <TableRow
-                          key={ps.registration_id}
                           className={isSelected ? "bg-secondary/10 outline outline-2 outline-secondary" : undefined}
                         >
                           <TableCell className="sticky-col left-0 font-medium">
@@ -1232,7 +1230,7 @@ export default function Leaderboard() {
                             </TableCell>
                           </TableRow>
                         )}
-                        </>
+                        </Fragment>
                       );
                     })}
 

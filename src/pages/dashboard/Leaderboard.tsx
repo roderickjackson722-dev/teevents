@@ -94,6 +94,12 @@ export default function Leaderboard() {
   const [playerScores, setPlayerScores] = useState<PlayerScore[]>([]);
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [scoreView, setScoreView] = useState<"gross" | "net">("gross");
+  // Score-entry helpers: name/team filter, expanded row selection, and the hole
+  // targeted by the expanded inline editor.
+  const [scoreSearch, setScoreSearch] = useState("");
+  const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
+  const [editHole, setEditHole] = useState(1);
+
 
   // Detect platform admin — admins get access to ALL tournaments across every org
   const { data: isPlatformAdmin } = useQuery({

@@ -713,8 +713,68 @@ export default function Leaderboard() {
         <SponsorBanner sponsors={leaderboardSponsors.list} intervalMs={leaderboardSponsors.interval} preserveOrder randomOrder={leaderboardSponsors.randomOrder} />
       )}
 
+      {/* ===== SEARCH + PROGRESS ===== */}
+      {selectedTournament && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <div className="relative w-full sm:w-[320px]">
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                className="pl-8"
+                placeholder="Search player or team name…"
+                value={scoreSearch}
+                onChange={(e) => setScoreSearch(e.target.value)}
+                aria-label="Filter scoring by player or team name"
+              />
+            </div>
+            {scoreSearch && (
+              <Button variant="ghost" size="sm" onClick={() => setScoreSearch("")}>Clear filter</Button>
+            )}
+            {selectedTournamentData?.slug && (
+              <Button variant="outline" size="sm" asChild>
+                <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="h-4 w-4 mr-1.5" /> View Live Leaderboard
+                </a>
+              </Button>
+            )}
+          </div>
+
+          {progress.total > 0 && progress.missing.length > 0 && (
+            <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
+              <div className="flex items-center gap-2 font-semibold">
+                <AlertTriangle className="h-4 w-4" />
+                Scores Remaining: {progress.missing.length} of {progress.total} hole entries need scores.
+              </div>
+              <ul className="mt-1.5 space-y-0.5 text-xs">
+                {progress.missing.slice(0, 8).map((m) => (
+                  <li key={`${m.label}-${m.hole}`}>• {m.label} — Hole {m.hole}</li>
+                ))}
+                {progress.missing.length > 8 && <li>• +{progress.missing.length - 8} more…</li>}
+              </ul>
+            </div>
+          )}
+
+          {progress.total > 0 && progress.missing.length === 0 && (
+            <div className="rounded-md border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
+              <div className="flex items-center gap-2 font-semibold text-primary">
+                <CheckCircle2 className="h-4 w-4" /> All Scores Entered!
+              </div>
+              <p className="text-muted-foreground mt-1">All teams have completed scoring for all holes.</p>
+              {selectedTournamentData?.slug && (
+                <Button size="sm" className="mt-2" asChild>
+                  <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
+                    View Final Leaderboard
+                  </a>
+                </Button>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ===== TEAM LEADERBOARD ===== */}
       {selectedTournament && isTeamFormat && teamScores.length > 0 && (
+
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 flex-wrap">

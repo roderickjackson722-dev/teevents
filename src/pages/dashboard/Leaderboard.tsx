@@ -675,15 +675,42 @@ export default function Leaderboard() {
     return { total, missing };
   }, [isTeamFormat, teamScores, playerScores, holes, editedScores]);
 
-  /** Save pending edits, then advance the inline editor to the next hole. */
+
+  const allScoresEntered = progress.total > 0 && progress.missing.length === 0;
+
+  // Notify the organizer once, the moment the last missing score is filled in.
+  const completeNotifiedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!selectedTournament) return;
+    if (allScoresEntered) {
+      if (completeNotifiedRef.current !== selectedTournament) {
+        completeNotifiedRef.current = selectedTournament;
+        toast({
+          title: "All scores entered",
+          description: "Every group has a score on every hole. The final leaderboard is ready to share.",
+        });
+      }
+    } else if (completeNotifiedRef.current === selectedTournament) {
+      // Scoring re-opened (a score was cleared) — allow the notice to fire again.
+      completeNotifiedRef.current = null;
+    }
+  }, [allScoresEntered, selectedTournament]);
+
+  /**
+   * Save pending edits (when the user may edit), then advance the inline editor
+   * to the next hole. For view-only roles or a frozen leaderboard this only
+   * changes the selected hole — it never writes scores.
+   */
   const saveAndNext = async () => {
+    const mayWrite = canEditScores && !isFrozen;
     try {
-      if (hasEdits) await saveMutation.mutateAsync();
+      if (mayWrite && hasEdits) await saveMutation.mutateAsync();
       setEditHole((h) => Math.min(holes.length, h + 1));
     } catch {
       /* mutation surfaces its own toast */
     }
   };
+
 
 
 

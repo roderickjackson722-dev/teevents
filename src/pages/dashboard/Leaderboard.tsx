@@ -919,7 +919,7 @@ export default function Leaderboard() {
                     )}
                   </TableHeader>
                   <TableBody>
-                    {playerScores.map((ps) => {
+                    {visiblePlayerScores.map((ps) => {
                       const grossTotal = holes.reduce((sum, h) => {
                         const val = getScore(ps, h);
                         return sum + (typeof val === "number" ? val : 0);
@@ -931,10 +931,22 @@ export default function Leaderboard() {
                             return sum + val - (ps.strokes_per_hole?.[h - 1] || 0);
                           }, 0)
                         : grossTotal;
+                      const rowKey = `p-${ps.registration_id}`;
+                      const isSelected = selectedRowKey === rowKey;
                       return (
-                        <TableRow key={ps.registration_id}>
+                        <>
+                        <TableRow
+                          key={ps.registration_id}
+                          className={isSelected ? "bg-secondary/10 outline outline-2 outline-secondary" : undefined}
+                        >
                           <TableCell className="sticky-col left-0 font-medium">
-                            {ps.first_name} {ps.last_name}
+                            <button
+                              type="button"
+                              className="text-left hover:underline"
+                              onClick={() => setSelectedRowKey(isSelected ? null : rowKey)}
+                            >
+                              {ps.first_name} {ps.last_name}
+                            </button>
                             {handicapEnabled && ps.playing_handicap != null ? (
                               <span className="text-xs text-muted-foreground ml-1">({ps.playing_handicap})</span>
                             ) : ps.handicap !== null ? (
@@ -953,8 +965,9 @@ export default function Leaderboard() {
                             const scoreColorClass = typeof val === "number"
                               ? val < hp ? "text-primary font-bold" : val > hp ? "text-destructive" : ""
                               : "";
+                            const missing = typeof val !== "number";
                             return (
-                              <TableCell key={h} className="p-1 text-center">
+                              <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
                                 <ScoreInput
                                   value={Number(val)}
                                   par={hp}
@@ -978,8 +991,28 @@ export default function Leaderboard() {
                             </TableCell>
                           )}
                         </TableRow>
+                        {isSelected && (
+                          <TableRow key={`${ps.registration_id}-edit`} className="bg-secondary/10">
+                            <TableCell colSpan={holes.length + (isTeamFormat ? 3 : 2) + (handicapEnabled ? 1 : 0)} className="p-3">
+                              <InlineHoleEditor
+                                label={`${ps.first_name} ${ps.last_name}`}
+                                hole={editHole}
+                                par={getHolePar(editHole)}
+                                value={Number(editedScores[ps.registration_id]?.[editHole] ?? ps.scores[editHole] ?? 0)}
+                                maxHole={holes.length}
+                                disabled={!canEditScores || isFrozen}
+                                saving={saveMutation.isPending}
+                                onHole={setEditHole}
+                                onValue={(n) => setScore(ps.registration_id, editHole, n)}
+                                onSaveNext={saveAndNext}
+                              />
+                            </TableCell>
+                          </TableRow>
+                        )}
+                        </>
                       );
                     })}
+
                   </TableBody>
                 </Table>
               </div>

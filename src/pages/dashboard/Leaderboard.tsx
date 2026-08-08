@@ -737,26 +737,37 @@ export default function Leaderboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teamScores.map((team, i) => (
-                    <TableRow key={team.key}>
+                  {visibleTeamScores.map((team, i) => {
+                    const isSelected = selectedRowKey === team.key;
+                    return (
+                    <>
+                    <TableRow
+                      key={team.key}
+                      className={isSelected ? "bg-secondary/10 outline outline-2 outline-secondary" : undefined}
+                    >
                       <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
                       <TableCell className="font-medium sticky-col left-10">
 
-                        <div className="font-semibold flex items-center gap-2">
+                        <button
+                          type="button"
+                          className="font-semibold flex items-center gap-2 text-left hover:underline"
+                          onClick={() => setSelectedRowKey(isSelected ? null : team.key)}
+                        >
                           {team.label}
                           {team.isUnassigned && (
                             <Badge variant="outline" className="text-[10px] font-normal">No pairing</Badge>
                           )}
-                        </div>
+                        </button>
                         <div className="text-xs text-muted-foreground">
                           {team.players.map((p) => `${p.first_name} ${p.last_name[0]}.`).join(", ")}
                         </div>
                       </TableCell>
                       {holes.map((h) => {
                         const val = team.holeScores[h];
+                        const missing = val == null;
                         if (canEditScores && !isFrozen) {
                           return (
-                            <TableCell key={h} className="p-1 text-center">
+                            <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
                               <ScoreInput
                                 value={Number(val ?? "")}
                                 par={getHolePar(h)}
@@ -768,7 +779,7 @@ export default function Leaderboard() {
                           );
                         }
                         return (
-                          <TableCell key={h} className="text-center text-sm p-1">
+                          <TableCell key={h} className={`text-center text-sm p-1 ${missing ? "incomplete-score" : ""}`}>
                             {val != null ? (
                               <span className={
                                 val < Math.round(holePar) ? "text-primary font-bold" :
@@ -784,7 +795,31 @@ export default function Leaderboard() {
                         {team.total > 0 ? team.total : "—"}
                       </TableCell>
                     </TableRow>
-                  ))}
+                    {isSelected && (
+                      <TableRow key={`${team.key}-edit`} className="bg-secondary/10">
+                        <TableCell colSpan={holes.length + 3} className="p-3">
+                          <InlineHoleEditor
+                            label={team.label}
+                            hole={editHole}
+                            par={getHolePar(editHole)}
+                            value={Number(
+                              editedScores[team.players[0].registration_id]?.[editHole] ??
+                              team.holeScores[editHole] ?? 0
+                            )}
+                            maxHole={holes.length}
+                            disabled={!canEditScores || isFrozen}
+                            saving={saveMutation.isPending}
+                            onHole={setEditHole}
+                            onValue={(n) => setTeamScoreValue(team.players, editHole, n)}
+                            onSaveNext={saveAndNext}
+                          />
+                        </TableCell>
+                      </TableRow>
+                    )}
+                    </>
+                    );
+                  })}
+
 
                 </TableBody>
               </Table>

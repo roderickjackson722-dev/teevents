@@ -859,12 +859,34 @@ export default function Leaderboard() {
               <Button variant="ghost" size="sm" onClick={() => setScoreSearch("")}>Clear filter</Button>
             )}
             {selectedTournamentData?.slug && (
-              <Button variant="outline" size="sm" asChild>
-                <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
-                  <ExternalLink className="h-4 w-4 mr-1.5" /> View Live Leaderboard
-                </a>
-              </Button>
+              <>
+                <Button variant="outline" size="sm" asChild>
+                  <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4 mr-1.5" /> View Live Leaderboard
+                  </a>
+                </Button>
+                {allScoresEntered ? (
+                  <Button size="sm" asChild style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
+                    <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
+                      <Trophy className="h-4 w-4 mr-1.5" /> View Final Leaderboard
+                    </a>
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    disabled
+                    title={
+                      progress.total === 0
+                        ? "Add players and pairings to start scoring."
+                        : `${progress.missing.length} hole ${progress.missing.length === 1 ? "entry" : "entries"} still need scores.`
+                    }
+                  >
+                    <Trophy className="h-4 w-4 mr-1.5" /> View Final Leaderboard
+                  </Button>
+                )}
+              </>
             )}
+
           </div>
 
           {progress.total > 0 && progress.missing.length > 0 && (

@@ -1047,7 +1047,7 @@ export default function Leaderboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {stablefordScores.map((ps, i) => (
+                  {visibleStablefordScores.map((ps, i) => (
                     <TableRow key={ps.registration_id}>
                       <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
                       <TableCell className="sticky-col left-10 font-medium">

@@ -655,31 +655,25 @@ export default function Leaderboard() {
   }, [stablefordScores, searchTerm]);
 
   // ---- Progress: which hole entries are still missing a score? ----
+  // Uses the shared, unit-tested helper so the yellow highlight and this
+  // summary always agree, and both react instantly to unsaved edits.
   const progress = useMemo(() => {
-    const missing: { label: string; hole: number }[] = [];
-    let total = 0;
-    if (isTeamFormat) {
-      teamScores.forEach((t) => {
-        holes.forEach((h) => {
-          total++;
-          const v = editedScores[t.players[0]?.registration_id]?.[h] ?? t.holeScores[h];
-          if (v == null) missing.push({ label: t.label, hole: h });
-        });
-      });
-    } else {
-      playerScores.forEach((ps) => {
-        holes.forEach((h) => {
-          total++;
-          const v = editedScores[ps.registration_id]?.[h] ?? ps.scores[h];
-          if (v == null) missing.push({ label: `${ps.first_name} ${ps.last_name}`, hole: h });
-        });
-      });
-    }
-    return { total, missing };
+    const rows: ProgressRow[] = isTeamFormat
+      ? teamScores.map((t) => ({
+          label: t.label,
+          registrationId: t.players[0]?.registration_id ?? t.key,
+          saved: t.holeScores,
+        }))
+      : playerScores.map((ps) => ({
+          label: `${ps.first_name} ${ps.last_name}`,
+          registrationId: ps.registration_id,
+          saved: ps.scores,
+        }));
+    return computeScoreProgress(rows, holes, editedScores);
   }, [isTeamFormat, teamScores, playerScores, holes, editedScores]);
 
+  const allScoresEntered = progress.complete;
 
-  const allScoresEntered = progress.total > 0 && progress.missing.length === 0;
 
   // Notify the organizer once, the moment the last missing score is filled in.
   const completeNotifiedRef = useRef<string | null>(null);

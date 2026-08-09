@@ -1442,6 +1442,31 @@ const Players = () => {
     toast({ title: `Hole ${nextGroupNumber} created` });
   };
 
+  /**
+   * Applies a saved pairings template: creates the empty group slots, labels each
+   * with its starting hole, and pre-fills tee times. Players are dragged in after.
+   */
+  const applyPairingsTemplate = (slots: TemplateSlot[], startType: "tee_time" | "shotgun") => {
+    if (lockGuard()) return;
+    if (!slots.length) return;
+    const nums = slots.map((_, i) => i + 1);
+    setEmptyGroups(nums);
+    const labels = { ...holeLabels };
+    const tees: Record<number, string> = {};
+    slots.forEach((s, i) => {
+      const num = i + 1;
+      const hole = Number(s.hole);
+      if (Number.isFinite(hole) && hole !== num) labels[num] = String(hole);
+      else delete labels[num];
+      if (s.tee_time) tees[num] = s.tee_time;
+    });
+    saveLabels(labels);
+    saveTeeTimes(tees);
+    persistStartFormat({ startFormat: startType === "shotgun" ? "shotgun" : "tee_times" });
+  };
+
+
+
   const handleRenameGroup = async (oldNum: number, rawInput: string) => {
     if (lockGuard()) return;
     setEditingGroupNum(null);

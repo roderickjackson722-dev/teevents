@@ -161,7 +161,7 @@ export default function Auction() {
 
       {selectedTournament && (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {items?.map((item) => (
+          {items?.map((item: any) => (
             <Card key={item.id}>
               <CardHeader className="pb-3">
                 <div className="flex items-start justify-between">

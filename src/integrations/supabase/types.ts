@@ -11310,6 +11310,26 @@ export type Database = {
         }[]
       }
       generate_league_team_scoring_code: { Args: never; Returns: string }
+      get_auction_items_for_manager: {
+        Args: { _tournament_id: string }
+        Returns: {
+          buy_now_price: number
+          created_at: string
+          current_bid: number
+          description: string
+          id: string
+          image_url: string
+          is_active: boolean
+          raffle_ticket_price: number
+          sort_order: number
+          starting_bid: number
+          title: string
+          tournament_id: string
+          type: string
+          winner_email: string
+          winner_name: string
+        }[]
+      }
       get_college_invitation_by_token: {
         Args: { _token: string; _tournament_id: string }
         Returns: {

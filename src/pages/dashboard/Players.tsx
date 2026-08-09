@@ -26,6 +26,8 @@ import {
   ageMatchesFilter,
   allAgeGroupsOn,
   allAgeGroupsOff,
+  isImplausibleAge,
+
 } from "@/lib/ageGroups";
 
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
@@ -148,6 +150,32 @@ const readReserved = (
   if (v === null || v === undefined) return "";
   return String(v);
 };
+
+type AnyReg = { custom_answers?: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> | null };
+
+/**
+ * Age can live in two places: the reserved `_age` answer written by the
+ * organizer dashboard, or a custom "Age" question on the public registration
+ * form (which uses a generated field_id). Read both so registrant ages show up.
+ */
+const rawAgeAnswer = (p: AnyReg): string => {
+  const reserved = readReserved(p, RESERVED_AGE);
+  if (reserved) return reserved;
+  const labeled = (p.custom_answers || []).find(
+    (a) => a && /(^|\s)age(\s|$)/i.test(String(a.label || "")) && !/range|group|birth/i.test(String(a.label || "")),
+  );
+  const v = labeled?.answer;
+  return v === null || v === undefined ? "" : String(v);
+};
+
+/** field_id that holds the age answer for this registration (for updates). */
+const ageFieldIdOf = (p: AnyReg): string | null => {
+  const match = (p.custom_answers || []).find(
+    (a) => a && (a.field_id === RESERVED_AGE || (/(^|\s)age(\s|$)/i.test(String(a.label || "")) && !/range|group|birth/i.test(String(a.label || "")))),
+  );
+  return match?.field_id ?? null;
+};
+
 
 const Players = () => {
   const { org } = useOrgContext();
@@ -357,9 +385,12 @@ const Players = () => {
     return code;
   };
 
-  // Player age (organizer-entered reserved custom answer)
-  const ageOf = (p: Registration): number | null => parseAge(readReserved(p as any, RESERVED_AGE));
+  // Player age — either the organizer-entered reserved field or an "Age"
+  // question answered on the public registration form.
+  const rawAgeOf = (p: Registration): string => rawAgeAnswer(p as any);
+  const ageOf = (p: Registration): number | null => parseAge(rawAgeOf(p));
   const ageVisible = (p: Registration) => ageMatchesFilter(ageOf(p), ageGroupFilters, showAllAges);
+
 
   const getSortValue = (p: Registration, key: string): string | number => {
     switch (key) {
@@ -394,7 +425,7 @@ const Players = () => {
   const ageGroupCounts = useMemo(() => {
     const counts: Record<string, number> = {};
     players.forEach((p) => {
-      const key = ageGroupKeyOf(parseAge(readReserved(p as any, RESERVED_AGE)));
+      const key = ageGroupKeyOf(parseAge(rawAgeAnswer(p as any)));
       if (key) counts[key] = (counts[key] || 0) + 1;
     });
     return counts;
@@ -477,7 +508,7 @@ const Players = () => {
       dietary_restrictions: p.dietary_restrictions || "",
       group_number: p.group_number !== null && p.group_number !== undefined ? String(p.group_number) : "",
       group_label: label,
-      age: readReserved(p, RESERVED_AGE),
+      age: rawAgeAnswer(p as any),
       city: readReserved(p, RESERVED_CITY),
       state: readReserved(p, RESERVED_STATE),
       tier_id: p.tier_id || "",
@@ -507,12 +538,21 @@ const Players = () => {
       group_label: labelRaw || null,
       tier_id: editForm.tier_id || null,
     };
-    // Merge reserved demographic answers into custom_answers, preserving other entries
+    // Merge reserved demographic answers into custom_answers, preserving other
+    // entries. A registration-form "Age" answer is updated in place so the
+    // organizer's correction replaces the bad value instead of duplicating it.
+    const formAgeFieldId = ageFieldIdOf(editingPlayer as any);
     const existing = (editingPlayer.custom_answers || []).filter(
-      (a: any) => a && a.field_id !== RESERVED_AGE && a.field_id !== RESERVED_CITY && a.field_id !== RESERVED_STATE,
+      (a: any) => a && a.field_id !== RESERVED_AGE && a.field_id !== RESERVED_CITY && a.field_id !== RESERVED_STATE
+        && a.field_id !== formAgeFieldId,
     );
     const merged = [...existing];
-    if (editForm.age.trim()) merged.push({ field_id: RESERVED_AGE, label: "Age", field_type: "number", answer: editForm.age.trim() });
+    if (editForm.age.trim()) {
+      const ageFieldId = formAgeFieldId && formAgeFieldId !== RESERVED_AGE ? formAgeFieldId : RESERVED_AGE;
+      const label = (editingPlayer.custom_answers || []).find((a: any) => a?.field_id === ageFieldId)?.label || "Age";
+      merged.push({ field_id: ageFieldId, label, field_type: "number", answer: editForm.age.trim() });
+    }
+
     if (editForm.city.trim()) merged.push({ field_id: RESERVED_CITY, label: "City", field_type: "text", answer: editForm.city.trim() });
     if (editForm.state.trim()) merged.push({ field_id: RESERVED_STATE, label: "State", field_type: "text", answer: editForm.state.trim() });
     updates.custom_answers = merged;
@@ -530,6 +570,57 @@ const Players = () => {
     toast({ title: "Player updated", description: `${updates.first_name} ${updates.last_name} saved.` });
     setEditingPlayer(null);
   };
+
+  // ---- Bulk age clean-up -------------------------------------------------
+  const [ageEditOpen, setAgeEditOpen] = useState(false);
+  const [ageDrafts, setAgeDrafts] = useState<Record<string, string>>({});
+  const [savingAges, setSavingAges] = useState(false);
+
+  const openAgeEditor = () => {
+    const drafts: Record<string, string> = {};
+    allPlayers.forEach((p) => { drafts[p.id] = rawAgeAnswer(p as any); });
+    setAgeDrafts(drafts);
+    setAgeEditOpen(true);
+  };
+
+  const withAgeAnswer = (p: Registration, value: string) => {
+    const fieldId = ageFieldIdOf(p as any);
+    const targetId = fieldId && fieldId !== RESERVED_AGE ? fieldId : RESERVED_AGE;
+    const label = (p.custom_answers || []).find((a: any) => a?.field_id === targetId)?.label || "Age";
+    const rest = (p.custom_answers || []).filter(
+      (a: any) => a && a.field_id !== RESERVED_AGE && a.field_id !== targetId,
+    );
+    return value.trim()
+      ? [...rest, { field_id: targetId, label, field_type: "number", answer: value.trim() }]
+      : rest;
+  };
+
+  const handleSaveAges = async () => {
+    if (demoGuard()) return;
+    const changed = allPlayers.filter((p) => (ageDrafts[p.id] ?? "") !== rawAgeAnswer(p as any));
+    if (changed.length === 0) { setAgeEditOpen(false); return; }
+    setSavingAges(true);
+    for (const p of changed) {
+      const custom_answers = withAgeAnswer(p, ageDrafts[p.id] ?? "");
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ custom_answers: custom_answers as any })
+        .eq("id", p.id);
+      if (error) {
+        setSavingAges(false);
+        toast({ title: "Error saving ages", description: error.message, variant: "destructive" });
+        return;
+      }
+    }
+    setAllPlayers((prev) => prev.map((p) => {
+      if (!changed.some((c) => c.id === p.id)) return p;
+      return { ...p, custom_answers: withAgeAnswer(p, ageDrafts[p.id] ?? "") as any };
+    }));
+    setSavingAges(false);
+    setAgeEditOpen(false);
+    toast({ title: "Ages updated", description: `${changed.length} player${changed.length === 1 ? "" : "s"} saved.` });
+  };
+
 
   const handleSaveScoringCode = async (playerId: string) => {
     if (demoGuard()) return;
@@ -1212,14 +1303,25 @@ const Players = () => {
 
   // Pending duplicate tee time awaiting the organizer's override decision
   const [teeConflict, setTeeConflict] = useState<{ num: number; value: string; hole: string } | null>(null);
+  // Holes whose tee time the organizer typed in by hand. "Assign Tee Times"
+  // leaves these alone unless the organizer opts to overwrite them.
+  const [manualTeeByDay, setManualTeeByDay] = useState<Record<number, number[]>>({});
+  const manualTeeNums = manualTeeByDay[activeDay] || [];
+  const [overwriteManualTees, setOverwriteManualTees] = useState(false);
 
   const commitHoleTeeTime = (num: number, value: string) => {
     const next = { ...holeTeeTimes };
     const v = value.trim();
     if (v) next[num] = v; else delete next[num];
     saveTeeTimes(next);
+    setManualTeeByDay((prev) => {
+      const cur = prev[activeDay] || [];
+      const list = v ? [...new Set([...cur, num])] : cur.filter((n) => n !== num);
+      return { ...prev, [activeDay]: list };
+    });
     setEditingTeeTimeNum(null);
   };
+
 
   const saveHoleTeeTime = (num: number, value: string) => {
     if (lockGuard()) return;
@@ -1283,21 +1385,26 @@ const Players = () => {
         toast({ title: "Invalid interval", description: "Interval must be at least 1 minute to avoid duplicate tee times.", variant: "destructive" });
         return;
       }
-      // Tee-time start: hole numbers are independent of the time order. When
-      // "all groups start on the same hole" is on, every group keeps the chosen
-      // starting hole and only the tee times step forward.
-      let ordered: number[];
+      // Tee-time start: hole numbers are NEVER auto-assigned here — groups keep
+      // whatever hole the organizer set (defaulting to the chosen starting hole
+      // when "apply hole # to all groups" is on). Only the tee times step forward.
+      const ordered = groupNums;
       if (dayCfg.sameStartHole) {
-        ordered = groupNums;
         const nextLabels = { ...holeLabels };
         groupNums.forEach((n) => { nextLabels[n] = String(firstTeeHole); });
         saveLabels(nextLabels);
-      } else {
-        const first = groupNums.filter(n => n >= firstTeeHole);
-        const rest = groupNums.filter(n => n < firstTeeHole);
-        ordered = [...first, ...rest];
       }
-      ordered.forEach((n, idx) => { next[n] = addMinutes(firstTeeTime, idx * teeInterval); });
+      let keptManual = 0;
+      ordered.forEach((n, idx) => {
+        const slot = addMinutes(firstTeeTime, idx * teeInterval);
+        if (!overwriteManualTees && manualTeeNums.includes(n) && holeTeeTimes[n]) {
+          next[n] = holeTeeTimes[n]; // preserve the organizer's manual edit
+          keptManual++;
+        } else {
+          next[n] = slot;
+        }
+      });
+
 
       // The same tee time may be used on different starting holes. Only warn on
       // an exact duplicate of both starting hole AND tee time — never block.
@@ -1320,7 +1427,7 @@ const Players = () => {
           description: `Same tee time on the same hole: ${dupes.join("; ")}. Adjust if that wasn't intended.`,
         });
       }
-      toast({ title: "Tee times applied", description: `${ordered.length} holes on ${dayLabel} starting at hole ${firstTeeHole}, ${fmtTee12(firstTeeTime)}, every ${teeInterval} min.` });
+      toast({ title: "Tee times assigned", description: `${ordered.length} holes on ${dayLabel} starting ${fmtTee12(firstTeeTime)}, every ${teeInterval} min.${keptManual ? ` ${keptManual} manually edited tee time${keptManual === 1 ? "" : "s"} kept.` : ""}` });
 
     }
   };
@@ -1970,10 +2077,59 @@ const Players = () => {
             {regenerating ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <QrCode className="h-4 w-4 mr-1.5" />}
             Regenerate Codes
           </Button>
+          <Button variant="outline" size="sm" onClick={openAgeEditor} disabled={allPlayers.length === 0}>
+            Update Ages
+          </Button>
+          <Dialog open={ageEditOpen} onOpenChange={setAgeEditOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Update Ages</DialogTitle>
+              </DialogHeader>
+              <p className="text-xs text-muted-foreground">
+                Ages outside 3–100 are treated as missing. Blank an age to clear it.
+              </p>
+              <div className="max-h-[60vh] overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-muted-foreground">
+                    <tr><th className="py-2">Name</th><th className="w-24">Current</th><th className="w-28">New Age</th></tr>
+                  </thead>
+                  <tbody>
+                    {allPlayers.map((p) => {
+                      const current = rawAgeAnswer(p as any);
+                      const bad = isImplausibleAge(current);
+                      return (
+                        <tr key={p.id} className="border-t border-border">
+                          <td className="py-1.5">{p.first_name} {p.last_name}</td>
+                          <td className={bad ? "text-destructive" : "text-muted-foreground"}>{current || "—"}</td>
+                          <td>
+                            <Input
+                              type="number"
+                              min={3}
+                              max={100}
+                              className="h-8"
+                              value={ageDrafts[p.id] ?? ""}
+                              onChange={(e) => setAgeDrafts((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setAgeEditOpen(false)}>Cancel</Button>
+                <Button onClick={handleSaveAges} disabled={savingAges}>
+                  {savingAges && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}Save Ages
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Button variant="outline" size="sm" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1.5" />
             Export CSV
           </Button>
+
         </div>
       </div>
 
@@ -2562,6 +2718,15 @@ const Players = () => {
                       onChange={(e) => { const v = parseInt(e.target.value) || 10; persistStartFormat({ teeInterval: v }); }}
                     />
                   </div>
+                  <label className="flex items-center gap-2 pb-2 text-xs text-muted-foreground">
+                    <Checkbox
+                      checked={overwriteManualTees}
+                      disabled={startFormat === "shotgun"}
+                      onCheckedChange={(v) => setOverwriteManualTees(!!v)}
+                    />
+                    Overwrite manually edited tee times
+                  </label>
+
                 </div>
               </div>
 
@@ -2579,14 +2744,15 @@ const Players = () => {
               )}
 
               <Button onClick={applyStartTimesToHoles} size="sm" className="ml-auto">
-                {startFormat === "tee_times" ? `Apply Hole ${firstTeeHole} & Tee Times` : "Apply Shotgun Time"}
+                {startFormat === "tee_times" ? "Assign Tee Times" : "Apply Shotgun Time"}
               </Button>
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               {startFormat === "tee_times"
-                ? `Sequential tee times starting at hole #${firstTeeHole}, every ${teeInterval} minutes${numDays > 1 ? ` for Day ${activeDay + 1}` : ""}. Multiple groups may share a starting hole; duplicate tee times are still blocked.`
+                ? `Click "Assign Tee Times" to auto-assign tee times in ${teeInterval}-minute intervals from ${fmtTee12(firstTeeTime)}${numDays > 1 ? ` for Day ${activeDay + 1}` : ""}. You can still manually edit any tee time afterwards — manual edits are kept and hole numbers are never auto-assigned for a tee time start.`
                 : `All holes tee off at ${fmtTee12(shotgunTime)}${numDays > 1 ? ` on Day ${activeDay + 1}` : ""}. Individual hole overrides still apply below.`}
             </p>
+
           </div>
 
 
@@ -2957,8 +3123,19 @@ const Players = () => {
                                 if (e.key === "Enter") saveHoleTeeTime(group.number, editTeeTimeValue);
                                 if (e.key === "Escape") setEditingTeeTimeNum(null);
                               }}
+                              // Commit when the organizer clicks away so a typed
+                              // time is never lost / reverted to the old value.
+                              onBlur={(e) => {
+                                if (e.currentTarget.parentElement?.contains(e.relatedTarget as Node)) return;
+                                if ((editTeeTimeValue || "") !== (holeTeeTimes[group.number] || "")) {
+                                  saveHoleTeeTime(group.number, editTeeTimeValue);
+                                } else {
+                                  setEditingTeeTimeNum(null);
+                                }
+                              }}
                               autoFocus
                             />
+
                             <Button size="sm" variant="ghost" className="h-7 px-2" onClick={() => saveHoleTeeTime(group.number, editTeeTimeValue)}>
                               <Check className="h-3.5 w-3.5" />
                             </Button>

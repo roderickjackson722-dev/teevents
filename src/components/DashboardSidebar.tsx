@@ -85,6 +85,8 @@ const categories: SidebarCategory[] = [
       { title: "Players & Pairings", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import players; manage pairings and tee times" },
       { title: "Confirmation Emails", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize the confirmation email sent to registrants, sponsors, and vendors" },
       { title: "Email Send Log", url: "/dashboard/email-log", icon: Mail, feature: null, description: "See every email sent for your events, delivery results, and resend failed reminders" },
+      { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age, request it by email, or enter it yourself" },
+
     ],
   },
   {

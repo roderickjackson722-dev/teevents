@@ -5517,6 +5517,47 @@ export type Database = {
         }
         Relationships: []
       }
+      pairings_templates: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          slots: Json
+          start_type: string
+          template_name: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          slots?: Json
+          start_type?: string
+          template_name: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          slots?: Json
+          start_type?: string
+          template_name?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pairings_templates_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_routing_logs: {
         Row: {
           application_fee_cents: number

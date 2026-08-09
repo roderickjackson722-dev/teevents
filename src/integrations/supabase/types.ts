@@ -9060,6 +9060,7 @@ export type Database = {
       }
       tournament_registrations: {
         Row: {
+          age_update_token: string | null
           cash_payment_received: boolean
           check_in_time: string | null
           checked_in: boolean | null
@@ -9106,6 +9107,7 @@ export type Database = {
           tournament_id: string
         }
         Insert: {
+          age_update_token?: string | null
           cash_payment_received?: boolean
           check_in_time?: string | null
           checked_in?: boolean | null
@@ -9152,6 +9154,7 @@ export type Database = {
           tournament_id: string
         }
         Update: {
+          age_update_token?: string | null
           cash_payment_received?: boolean
           check_in_time?: string | null
           checked_in?: boolean | null
@@ -9753,6 +9756,7 @@ export type Database = {
           add_on_display_location: string
           admin_invitation_sent_at: string | null
           admin_notes: string | null
+          age_request_email_config: Json | null
           allow_cash_registration: boolean
           allow_cover_fees: boolean
           allowed_group_sizes: number[] | null
@@ -10034,6 +10038,7 @@ export type Database = {
           add_on_display_location?: string
           admin_invitation_sent_at?: string | null
           admin_notes?: string | null
+          age_request_email_config?: Json | null
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
           allowed_group_sizes?: number[] | null
@@ -10315,6 +10320,7 @@ export type Database = {
           add_on_display_location?: string
           admin_invitation_sent_at?: string | null
           admin_notes?: string | null
+          age_request_email_config?: Json | null
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
           allowed_group_sizes?: number[] | null
@@ -11310,6 +11316,16 @@ export type Database = {
         }[]
       }
       generate_league_team_scoring_code: { Args: never; Returns: string }
+      get_age_update_target: {
+        Args: { _token: string }
+        Returns: {
+          current_age: string
+          player_name: string
+          registration_id: string
+          tournament_name: string
+          tournament_slug: string
+        }[]
+      }
       get_auction_items_for_manager: {
         Args: { _tournament_id: string }
         Returns: {
@@ -11778,6 +11794,10 @@ export type Database = {
       settle_manual_entry_liabilities: {
         Args: { _max_deduct_cents: number; _organization_id: string }
         Returns: number
+      }
+      submit_age_update: {
+        Args: { _age: number; _token: string }
+        Returns: boolean
       }
       update_college_invitation_rsvp_by_token: {
         Args: { _response: string; _token: string }

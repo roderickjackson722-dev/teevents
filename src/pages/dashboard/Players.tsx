@@ -19,6 +19,15 @@ import {
   buildAutoAssignUnits,
   teammatesAwayFromHole,
 } from "@/lib/rosterUtils";
+import {
+  AGE_GROUPS,
+  parseAge,
+  ageGroupKeyOf,
+  ageMatchesFilter,
+  allAgeGroupsOn,
+  allAgeGroupsOff,
+} from "@/lib/ageGroups";
+
 import { DragDropContext, Droppable, Draggable, DropResult } from "@hello-pangea/dnd";
 import {
   Dialog,
@@ -109,12 +118,13 @@ interface RegFieldDef {
 }
 
 // Base column keys shown in the roster
-type RosterColKey = "name" | "email" | "phone" | "hcp" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier" | "group";
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "age" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier" | "group";
 const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
   { key: "phone", label: "Phone" },
   { key: "hcp", label: "Handicap" },
+  { key: "age", label: "Age" },
   { key: "group", label: "Group / Team" },
   { key: "tier", label: "Division / Tier" },
   { key: "shirt", label: "Shirt" },
@@ -123,6 +133,7 @@ const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "code", label: "Scoring Code" },
   { key: "payment", label: "Payment" },
 ];
+
 
 // Reserved custom_answers ids for organizer-entered demographic fields
 const RESERVED_AGE = "_age";
@@ -216,8 +227,14 @@ const Players = () => {
   const rosterColsKey = selectedTournament ? `teevents_roster_cols_${selectedTournament}` : "";
   const rosterSortKey = selectedTournament ? `teevents_roster_sort_${selectedTournament}` : "";
   const [rosterCols, setRosterCols] = useState<Record<string, boolean>>({
-    name: true, email: true, phone: true, hcp: true, group: true, tier: true, shirt: true, hole: true, code: true, payment: true,
+    name: true, email: true, phone: true, hcp: true, age: true, group: true, tier: true, shirt: true, hole: true, code: true, payment: true,
   });
+  // ---- Age filter (Roster + Pairings) ----
+  const [showAllAges, setShowAllAges] = useState(true);
+  const [ageGroupFilters, setAgeGroupFilters] = useState<Record<string, boolean>>(allAgeGroupsOn());
+  const [pairMethod, setPairMethod] = useState<"handicap" | "age" | "random" | "custom">("custom");
+  const [ageBalance, setAgeBalance] = useState(false);
+
   const [tiers, setTiers] = useState<Array<{ id: string; name: string }>>([]);
   const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
   const [sortKey, setSortKey] = useState<string>("name");
@@ -340,12 +357,17 @@ const Players = () => {
     return code;
   };
 
+  // Player age (organizer-entered reserved custom answer)
+  const ageOf = (p: Registration): number | null => parseAge(readReserved(p as any, RESERVED_AGE));
+  const ageVisible = (p: Registration) => ageMatchesFilter(ageOf(p), ageGroupFilters, showAllAges);
+
   const getSortValue = (p: Registration, key: string): string | number => {
     switch (key) {
       case "name": return `${p.first_name} ${p.last_name}`.toLowerCase();
       case "email": return (p.email || "").toLowerCase();
       case "phone": return (p.phone || "").toLowerCase();
       case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
+      case "age": return ageOf(p) ?? Number.POSITIVE_INFINITY;
       case "tier": return tierName(p.tier_id).toLowerCase();
       case "group": return (p.group_id ? (groupNames[p.group_id] || "team") : "\uFFFF").toLowerCase();
       case "shirt": return (p.shirt_size || "").toLowerCase();
@@ -368,8 +390,19 @@ const Players = () => {
   // Only paid players count toward the roster, pairings, scoring and totals.
   const players = useMemo(() => allPlayers.filter(isPaid), [allPlayers]);
 
+  // How many players fall into each age group (drives the filter counts)
+  const ageGroupCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    players.forEach((p) => {
+      const key = ageGroupKeyOf(parseAge(readReserved(p as any, RESERVED_AGE)));
+      if (key) counts[key] = (counts[key] || 0) + 1;
+    });
+    return counts;
+  }, [players]);
+
   const filteredPlayers = players
 
+    .filter(ageVisible)
     .filter((p) => {
       const q = search.toLowerCase();
       if (!q) return true;
@@ -379,6 +412,7 @@ const Players = () => {
         p.email.toLowerCase().includes(q)
       );
     })
+
     .sort((a, b) => {
       const av = getSortValue(a, sortKey);
       const bv = getSortValue(b, sortKey);
@@ -835,7 +869,7 @@ const Players = () => {
 
 
   const maxGroupSize = 4;
-  const unassigned = players.filter((p) => p.group_number === null);
+  const unassigned = players.filter((p) => p.group_number === null && ageVisible(p));
   const groupNumbers = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))].sort((a, b) => a - b);
   const groupsFromPlayers = groupNumbers.map((num) => ({
     number: num,
@@ -955,8 +989,13 @@ const Players = () => {
   }, [divisionOptions.join("|"), divFilter]);
   const groupMatchesDivision = (list: Registration[]) =>
     divFilter === "all" || list.some((p) => p.tier_id && tierName(p.tier_id) === divFilter);
-  const visibleGroups = groups.filter((g) => groupMatchesDivision(g.players));
+  // A hole stays visible when at least one of its players passes the age filter
+  // (empty holes always stay visible so organizers can still drop players in).
+  const groupMatchesAge = (list: Registration[]) =>
+    showAllAges || list.length === 0 || list.some(ageVisible);
+  const visibleGroups = groups.filter((g) => groupMatchesDivision(g.players) && groupMatchesAge(g.players));
   const hiddenGroupCount = groups.length - visibleGroups.length;
+
 
   // ---- Pairing conflict validation (tee times / starting holes) ----
   const startHoleOf = (num: number) => String(holeLabels[num] ?? num).trim();
@@ -1171,35 +1210,36 @@ const Players = () => {
     return `${h}:${mm} ${ap}`;
   }
 
-  const saveHoleTeeTime = (num: number, value: string) => {
-    if (lockGuard()) return;
+  // Pending duplicate tee time awaiting the organizer's override decision
+  const [teeConflict, setTeeConflict] = useState<{ num: number; value: string; hole: string } | null>(null);
+
+  const commitHoleTeeTime = (num: number, value: string) => {
     const next = { ...holeTeeTimes };
     const v = value.trim();
-    if (v) {
-      // Same time is allowed on different starting holes (8:00 off #1 and #10).
-      // Only warn when another group has the same time on the SAME hole.
-      if (dayCfg.startFormat === "tee_times") {
-        const thisHole = startHoleOf(num);
-        const conflict = Object.entries(holeTeeTimes).find(
-          ([h, t]) => Number(h) !== num && t === v && startHoleOf(Number(h)) === thisHole,
-        );
-        if (conflict) {
-          toast({
-            title: "Duplicate Tee Time on Same Hole",
-            description: `A group is already assigned to ${fmtTee12(v)} on Hole ${thisHole}. Please choose a different tee time or a different starting hole.`,
-            variant: "destructive",
-          });
-          return;
-        }
-      }
-      next[num] = v;
-
-    } else {
-      delete next[num];
-    }
+    if (v) next[num] = v; else delete next[num];
     saveTeeTimes(next);
     setEditingTeeTimeNum(null);
   };
+
+  const saveHoleTeeTime = (num: number, value: string) => {
+    if (lockGuard()) return;
+    const v = value.trim();
+    if (v && dayCfg.startFormat === "tee_times") {
+      // Same time is allowed on different starting holes (8:00 off #1 and #10).
+      // Only flag when another group has the same time on the SAME hole — and
+      // even then, let the organizer override it.
+      const thisHole = startHoleOf(num);
+      const conflict = Object.entries(holeTeeTimes).find(
+        ([h, t]) => Number(h) !== num && t === v && startHoleOf(Number(h)) === thisHole,
+      );
+      if (conflict) {
+        setTeeConflict({ num, value: v, hole: thisHole });
+        return;
+      }
+    }
+    commitHoleTeeTime(num, value);
+  };
+
 
   const persistStartFormat = (patch: Partial<DayCfg>) => {
     const nextDay: DayCfg = { ...dayCfg, ...patch };
@@ -1259,25 +1299,29 @@ const Players = () => {
       }
       ordered.forEach((n, idx) => { next[n] = addMinutes(firstTeeTime, idx * teeInterval); });
 
-      // The same tee time may be used on different starting holes. Only block
-      // an exact duplicate of both starting hole and tee time.
+      // The same tee time may be used on different starting holes. Only warn on
+      // an exact duplicate of both starting hole AND tee time — never block.
       const seen = new Map<string, number>();
+      const dupes: string[] = [];
       for (const [groupStr, t] of Object.entries(next)) {
         const groupNumber = Number(groupStr);
         const startingHole = startHoleOf(groupNumber);
         const key = `${startingHole}@${t}`;
         if (seen.has(key)) {
-          toast({
-            title: "Duplicate Tee Time on Same Hole",
-            description: `Groups ${seen.get(key)} and ${groupNumber} would both start at ${fmtTee12(t)} on Hole ${startingHole}. Please choose a different tee time or a different starting hole.`,
-            variant: "destructive",
-          });
-          return;
+          dupes.push(`${seen.get(key)} & ${groupNumber} at ${fmtTee12(t)} on hole ${startingHole}`);
+        } else {
+          seen.set(key, groupNumber);
         }
-        seen.set(key, groupNumber);
       }
       saveTeeTimes(next);
+      if (dupes.length) {
+        toast({
+          title: "Applied with duplicate tee times",
+          description: `Same tee time on the same hole: ${dupes.join("; ")}. Adjust if that wasn't intended.`,
+        });
+      }
       toast({ title: "Tee times applied", description: `${ordered.length} holes on ${dayLabel} starting at hole ${firstTeeHole}, ${fmtTee12(firstTeeTime)}, every ${teeInterval} min.` });
+
     }
   };
 
@@ -1448,12 +1492,50 @@ const Players = () => {
 
   const handleAutoAssign = async () => {
     if (lockGuard()) return;
-    const unassignedPlayers = players.filter((p) => p.group_number === null);
+    // Respect the age filter: hidden age groups are left out of auto pairings.
+    let unassignedPlayers = players.filter((p) => p.group_number === null && ageVisible(p));
     if (unassignedPlayers.length === 0) return;
+
+    // Pairing method decides the order players are packed into holes.
+    if (pairMethod === "handicap") {
+      unassignedPlayers = [...unassignedPlayers].sort(
+        (a, b) => (a.handicap ?? 99) - (b.handicap ?? 99),
+      );
+    } else if (pairMethod === "age") {
+      const sorted = [...unassignedPlayers].sort(
+        (a, b) => (ageOf(a) ?? 999) - (ageOf(b) ?? 999),
+      );
+      if (ageBalance) {
+        // Snake the age-sorted list so every hole gets a spread of ages.
+        const buckets: Registration[][] = Array.from(
+          { length: Math.max(1, Math.ceil(sorted.length / maxGroupSize)) },
+          () => [],
+        );
+        sorted.forEach((p, i) => {
+          const row = Math.floor(i / buckets.length);
+          const col = i % buckets.length;
+          const idx = row % 2 === 0 ? col : buckets.length - 1 - col;
+          buckets[idx].push(p);
+        });
+        unassignedPlayers = buckets.flat();
+      } else {
+        unassignedPlayers = sorted; // keep similar ages together
+      }
+    } else if (pairMethod === "random") {
+      unassignedPlayers = [...unassignedPlayers].sort(() => Math.random() - 0.5);
+    }
 
     // Keep registration groups (foursomes etc.) together: build units of players
     // that signed up on the same registration, chunked to the max hole size.
-    const units = buildAutoAssignUnits(unassignedPlayers as any, maxGroupSize) as unknown as Registration[][];
+    const units = (pairMethod === "custom"
+      ? (buildAutoAssignUnits(unassignedPlayers as any, maxGroupSize) as unknown as Registration[][])
+      : unassignedPlayers.reduce<Registration[][]>((acc, p, i) => {
+          if (i % maxGroupSize === 0) acc.push([]);
+          acc[acc.length - 1].push(p);
+          return acc;
+        }, []));
+
+
 
 
     let currentGroup = nextGroupNumber;
@@ -1941,6 +2023,8 @@ const Players = () => {
                       {rosterCols.email !== false && <SortableTh colKey="email">Email</SortableTh>}
                       {rosterCols.phone !== false && <SortableTh colKey="phone">Phone</SortableTh>}
                       {rosterCols.hcp !== false && <SortableTh colKey="hcp" align="center">HCP</SortableTh>}
+                      {rosterCols.age !== false && <SortableTh colKey="age" align="center">Age</SortableTh>}
+
                       {rosterCols.group !== false && <SortableTh colKey="group">Group / Team</SortableTh>}
                       {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
                       {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
@@ -1985,6 +2069,12 @@ const Players = () => {
                         {p.handicap !== null ? p.handicap : "—"}
                       </td>
                     )}
+                    {rosterCols.age !== false && (
+                      <td className="px-4 py-3 text-center text-muted-foreground">
+                        {ageOf(p) ?? "—"}
+                      </td>
+                    )}
+
                     {rosterCols.group !== false && (
                       <td className="px-4 py-3 whitespace-nowrap">
                         <select
@@ -2500,9 +2590,77 @@ const Players = () => {
           </div>
 
 
+          {/* Age filter + pairing method */}
+          <div className="mb-4 grid gap-4 md:grid-cols-2">
+            <div className="bg-card rounded-lg border border-border p-4">
+              <div className="flex items-center justify-between gap-2 mb-3">
+                <h4 className="text-sm font-semibold text-foreground">Age Filter</h4>
+                <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Checkbox checked={showAllAges} onCheckedChange={(v) => setShowAllAges(!!v)} />
+                  Show all ages
+                </label>
+              </div>
+              <div className={`space-y-2 ${showAllAges ? "opacity-50 pointer-events-none" : ""}`}>
+                {AGE_GROUPS.map((g) => (
+                  <label key={g.key} className="flex items-center gap-2 text-xs text-foreground">
+                    <Checkbox
+                      checked={ageGroupFilters[g.key] !== false}
+                      onCheckedChange={(v) => setAgeGroupFilters((prev) => ({ ...prev, [g.key]: !!v }))}
+                    />
+                    <span className="w-20">{g.label}</span>
+                    <span className="text-muted-foreground">({ageGroupCounts[g.key] || 0} players)</span>
+                  </label>
+                ))}
+              </div>
+              <div className="mt-3 flex gap-2">
+                <Button size="sm" variant="outline" onClick={() => { setShowAllAges(false); setAgeGroupFilters(allAgeGroupsOn()); }}>
+                  Apply Filter
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => { setShowAllAges(false); setAgeGroupFilters(allAgeGroupsOff()); }}>
+                  Clear All
+                </Button>
+              </div>
+            </div>
+
+            <div className="bg-card rounded-lg border border-border p-4">
+              <h4 className="text-sm font-semibold text-foreground mb-3">Generate Pairings</h4>
+              <div className="space-y-1.5">
+                {([
+                  { key: "handicap", label: "By Handicap" },
+                  { key: "age", label: "By Age" },
+                  { key: "random", label: "Random" },
+                  { key: "custom", label: "Custom (keep registration groups together)" },
+                ] as const).map((opt) => (
+                  <label key={opt.key} className="flex items-center gap-2 text-xs text-foreground">
+                    <input
+                      type="radio"
+                      name="pair-method"
+                      checked={pairMethod === opt.key}
+                      onChange={() => setPairMethod(opt.key)}
+                    />
+                    {opt.label}
+                  </label>
+                ))}
+              </div>
+              {pairMethod === "age" && (
+                <div className="mt-3 space-y-1.5 border-t border-border pt-3">
+                  <p className="text-xs font-medium text-muted-foreground">Age Group Priority</p>
+                  <label className="flex items-center gap-2 text-xs">
+                    <Checkbox checked={!ageBalance} onCheckedChange={(v) => setAgeBalance(!v)} />
+                    Keep similar ages together
+                  </label>
+                  <label className="flex items-center gap-2 text-xs">
+                    <Checkbox checked={ageBalance} onCheckedChange={(v) => setAgeBalance(!!v)} />
+                    Balance ages across groups
+                  </label>
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="flex items-center gap-3 mb-6">
             <Button onClick={handleAutoAssign} variant="outline" size="sm">
-              Auto-Assign All
+              {pairMethod === "age" ? "Generate Pairings by Age" : pairMethod === "handicap" ? "Generate Pairings by Handicap" : pairMethod === "random" ? "Generate Random Pairings" : "Auto-Assign All"}
             </Button>
             <Button onClick={handleAddGroup} variant="outline" size="sm">
               New Hole
@@ -2511,6 +2669,31 @@ const Players = () => {
               Drag and drop players between holes
             </span>
           </div>
+
+          {/* Duplicate tee time override */}
+          <Dialog open={!!teeConflict} onOpenChange={(o) => { if (!o) setTeeConflict(null); }}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Duplicate Tee Time Detected</DialogTitle>
+              </DialogHeader>
+              <p className="text-sm text-muted-foreground">
+                A group is already assigned to {teeConflict ? fmtTee12(teeConflict.value) : ""} on Hole {teeConflict?.hole}.
+                The same tee time on a different starting hole is always allowed — you can also keep this one if it's intentional.
+              </p>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setTeeConflict(null)}>Change tee time</Button>
+                <Button
+                  onClick={() => {
+                    if (teeConflict) commitHoleTeeTime(teeConflict.num, teeConflict.value);
+                    setTeeConflict(null);
+                  }}
+                >
+                  Confirm &amp; Override
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
+
 
 
           <DragDropContext onDragEnd={onDragEnd}>
@@ -2555,11 +2738,17 @@ const Players = () => {
                                 </span>
                               )}
 
+                              {ageOf(p) !== null && (
+                                <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                  Age {ageOf(p)}
+                                </span>
+                              )}
                               {p.handicap !== null && (
                                 <span className="text-xs text-muted-foreground ml-auto">
                                   HCP {p.handicap}
                                 </span>
                               )}
+
                             </div>
                           )}
                         </Draggable>
@@ -2880,11 +3069,17 @@ const Players = () => {
 
 
 
+                                  {ageOf(p) !== null && (
+                                    <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
+                                      Age {ageOf(p)}
+                                    </span>
+                                  )}
                                   {p.handicap !== null && (
                                     <span className="text-xs text-muted-foreground ml-auto">
                                       HCP {p.handicap}
                                     </span>
                                   )}
+
                                 </div>
                               )}
                             </Draggable>

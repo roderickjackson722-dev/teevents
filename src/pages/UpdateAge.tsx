@@ -19,14 +19,25 @@ interface Target {
 export default function UpdateAge() {
   const params = useParams() as Record<string, string | undefined>;
   const token = params.token || "";
-  const [loading, setLoading] = useState(true);
-  const [target, setTarget] = useState<Target | null>(null);
+  const isPreview = token.toLowerCase() === "preview";
+  const [loading, setLoading] = useState(!isPreview);
+  const [target, setTarget] = useState<Target | null>(
+    isPreview
+      ? {
+          registration_id: "preview",
+          player_name: "Test Player",
+          tournament_name: "Sample Tournament",
+          tournament_slug: null,
+          current_age: null,
+        }
+      : null,
+  );
   const [age, setAge] = useState("");
   const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (!token) { setLoading(false); return; }
+    if (!token || isPreview) { setLoading(false); return; }
     let cancelled = false;
     (supabase as any)
       .rpc("get_age_update_target", { _token: token })
@@ -40,12 +51,17 @@ export default function UpdateAge() {
         setLoading(false);
       }, () => { if (!cancelled) setLoading(false); });
     return () => { cancelled = true; };
-  }, [token]);
+  }, [token, isPreview]);
 
   const submit = async () => {
     const n = Number(age);
     if (!Number.isFinite(n) || n < 3 || n > 100) {
       toast.error("Please enter an age between 3 and 100");
+      return;
+    }
+    if (isPreview) {
+      toast.success("Preview only — nothing was saved.");
+      setDone(true);
       return;
     }
     setSaving(true);
@@ -74,15 +90,19 @@ export default function UpdateAge() {
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="max-w-md w-full bg-card border border-border rounded-lg p-6 text-center space-y-3">
           <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-          <h1 className="text-xl font-bold text-foreground">This link isn't valid</h1>
+          <h1 className="text-xl font-bold text-foreground">This link has expired or isn't valid</h1>
           <p className="text-sm text-muted-foreground">
-            The age update link has expired or was mistyped. Please use the exact link from your email,
+            Age update links are unique to each player. Please use the exact link from your email,
             or reply to the organizer with your age.
           </p>
+          <Button asChild variant="outline" className="mt-2">
+            <a href="/">Go to TeeVents home</a>
+          </Button>
         </div>
       </div>
     );
   }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">

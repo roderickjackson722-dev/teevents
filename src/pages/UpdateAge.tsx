@@ -113,6 +113,14 @@ export default function UpdateAge() {
           </h1>
         </div>
 
+        {isPreview && (
+          <div className="bg-accent/40 border-b border-border px-6 py-3 text-xs text-muted-foreground">
+            Preview mode — this is what players see. Nothing entered here is saved.
+          </div>
+        )}
+
+
+
         {done ? (
           <div className="p-6 text-center space-y-3">
             <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />

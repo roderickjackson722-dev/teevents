@@ -65,6 +65,9 @@ import Donations from "./pages/dashboard/Donations";
 import Finances from "./pages/dashboard/Finances";
 import Transactions from "./pages/dashboard/Transactions";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
+import MissingAges from "./pages/dashboard/MissingAges";
+import UpdateAge from "./pages/UpdateAge";
+
 import EmailLog from "./pages/dashboard/EmailLog";
 import Registration from "./pages/dashboard/Registration";
 import ScoringPayouts from "./pages/dashboard/ScoringPayouts";
@@ -285,6 +288,8 @@ const App = () => (
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
           <Route path="/dashboard/transactions" element={<DashboardLayout><Transactions /></DashboardLayout>} />
           <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
+          <Route path="/dashboard/missing-ages" element={<DashboardLayout><MissingAges /></DashboardLayout>} />
+
           <Route path="/dashboard/email-log" element={<DashboardLayout><EmailLog /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/activity-log" element={<DashboardLayout><ActivityLog /></DashboardLayout>} />
@@ -321,6 +326,8 @@ const App = () => (
           <Route path="/sample/:slug/dashboard" element={<SampleDashboardPreview />} />
           <Route path="/sample/:slug/live" element={<SampleLive />} />
            <Route path="/refund/:tournamentId" element={<RefundRequest />} />
+           <Route path="/update-age/:slug/:token" element={<UpdateAge />} />
+
            <Route path="/survey/:token" element={<Survey />} />
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
           <Route path="/deck" element={<SalesDeck />} />

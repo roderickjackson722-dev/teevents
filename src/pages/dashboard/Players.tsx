@@ -2831,6 +2831,14 @@ const Players = () => {
             <Button onClick={handleAddGroup} variant="outline" size="sm">
               New Hole
             </Button>
+            {selectedTournament ? (
+              <PairingsTemplateBuilder
+                tournamentId={selectedTournament}
+                disabled={pairingsLocked}
+                onApply={applyPairingsTemplate}
+              />
+            ) : null}
+
             <span className="text-sm text-muted-foreground ml-auto">
               Drag and drop players between holes
             </span>

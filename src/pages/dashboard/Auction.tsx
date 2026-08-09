@@ -38,7 +38,9 @@ export default function Auction() {
   const { data: items } = useQuery({
     queryKey: ["auction-items", selectedTournament],
     queryFn: async () => {
-      const { data } = await supabase.from("tournament_auction_items").select("*").eq("tournament_id", selectedTournament).order("sort_order");
+      // Winner name/email are not readable through the public table grants —
+      // this org-member-scoped RPC returns them for managers only.
+      const { data } = await (supabase as any).rpc("get_auction_items_for_manager", { _tournament_id: selectedTournament });
       return data || [];
     },
     enabled: !!selectedTournament,

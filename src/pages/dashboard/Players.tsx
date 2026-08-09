@@ -2075,10 +2075,59 @@ const Players = () => {
             {regenerating ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <QrCode className="h-4 w-4 mr-1.5" />}
             Regenerate Codes
           </Button>
+          <Button variant="outline" size="sm" onClick={openAgeEditor} disabled={allPlayers.length === 0}>
+            Update Ages
+          </Button>
+          <Dialog open={ageEditOpen} onOpenChange={setAgeEditOpen}>
+            <DialogContent className="max-w-lg">
+              <DialogHeader>
+                <DialogTitle>Update Ages</DialogTitle>
+              </DialogHeader>
+              <p className="text-xs text-muted-foreground">
+                Ages outside 3–100 are treated as missing. Blank an age to clear it.
+              </p>
+              <div className="max-h-[60vh] overflow-y-auto">
+                <table className="w-full text-sm">
+                  <thead className="text-left text-muted-foreground">
+                    <tr><th className="py-2">Name</th><th className="w-24">Current</th><th className="w-28">New Age</th></tr>
+                  </thead>
+                  <tbody>
+                    {allPlayers.map((p) => {
+                      const current = rawAgeAnswer(p as any);
+                      const bad = isImplausibleAge(current);
+                      return (
+                        <tr key={p.id} className="border-t border-border">
+                          <td className="py-1.5">{p.first_name} {p.last_name}</td>
+                          <td className={bad ? "text-destructive" : "text-muted-foreground"}>{current || "—"}</td>
+                          <td>
+                            <Input
+                              type="number"
+                              min={3}
+                              max={100}
+                              className="h-8"
+                              value={ageDrafts[p.id] ?? ""}
+                              onChange={(e) => setAgeDrafts((prev) => ({ ...prev, [p.id]: e.target.value }))}
+                            />
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+              <div className="flex justify-end gap-2 pt-2">
+                <Button variant="outline" onClick={() => setAgeEditOpen(false)}>Cancel</Button>
+                <Button onClick={handleSaveAges} disabled={savingAges}>
+                  {savingAges && <Loader2 className="h-4 w-4 animate-spin mr-1.5" />}Save Ages
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog>
           <Button variant="outline" size="sm" onClick={handleExportCSV}>
             <Download className="h-4 w-4 mr-1.5" />
             Export CSV
           </Button>
+
         </div>
       </div>
 

@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
+import PairingsTemplateBuilder, { type TemplateSlot } from "@/components/dashboard/PairingsTemplateBuilder";
+
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";

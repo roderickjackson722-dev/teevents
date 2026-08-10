@@ -88,6 +88,7 @@ export function LeaderboardRenderer({
   title,
   rows,
   isStableford,
+  coursePar = 72,
   bannerSponsor,
   sidebarSponsors = [],
   footerSponsors = [],

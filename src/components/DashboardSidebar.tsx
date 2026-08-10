@@ -52,110 +52,107 @@ interface SidebarCategory {
   items: NavItem[];
 }
 
-// Phase-based navigation. Operations now sits above Promotion & Marketing.
+// Simplified, phase-based navigation. Consolidated categories (2026 reorg).
+// NOTE: no routes were removed — consolidated pages are still reachable by URL
+// and from within the pages they now live under.
 const categories: SidebarCategory[] = [
   {
-    label: "Organizer Setup",
+    label: "Event",
     color: "border-l-secondary bg-secondary/5",
     items: [
-      { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard, feature: null },
-      { title: "Planning Guide", url: "/dashboard/checklist", icon: ClipboardCheck, feature: null, description: "Helps organizers think through the event timeline" },
-      { title: "Setup Checklist", url: "/dashboard/setup-checklist", icon: ClipboardCheck, feature: null, description: "Actionable tasks to launch the tournament" },
+      { title: "Overview", url: "/dashboard", icon: LayoutDashboard, feature: null, description: "Dashboard home: planning guide, setup checklist, and event snapshot" },
+      { title: "Event Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Event info, organization details, and lodging" },
+      { title: "Course Setup", url: "/dashboard/course-details", icon: MapPin, feature: null, description: "Par, slope, rating, hole data" },
       { title: "Notes & Reminders", url: "/dashboard/notes", icon: FileText, feature: null, description: "Personal to-do list, reminders, and notes for this tournament" },
     ],
   },
   {
-    label: "Course Setup",
-    color: "border-l-sky-400 bg-sky-400/5",
-    items: [
-      { title: "Course Details", url: "/dashboard/course-details", icon: MapPin, feature: null, description: "Par, slope, rating, hole data" },
-      { title: "Handicap", url: "/dashboard/scoring?tab=handicap", icon: Sliders, feature: "leaderboard", description: "Allowances, max handicap, formats" },
-    ],
-  },
-  {
-    label: "Tournament Setup",
+    label: "Players & Pairings",
     color: "border-l-blue-400 bg-blue-400/5",
     items: [
-      { title: "Public Page Editor", url: "/dashboard/public-page-editor", icon: Trophy, feature: null, description: "Edit your public tournament page: branding, content, contact, domain" },
-      { title: "Scoring & Payouts", url: "/dashboard/scoring-payouts", icon: Trophy, feature: null, description: "Scoring format, skins, flights, and payout breakdown" },
+      { title: "Roster", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, and import players" },
+      { title: "Pairings", url: "/dashboard/players?tab=pairings", icon: Users, feature: "players", description: "Groups, tee times, and starting holes" },
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
-      { title: "Sponsorship Management", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Create sponsor levels, prices, benefits; approve logos and assets" },
-      { title: "Event Day Contests", url: "/dashboard/contests", icon: Trophy, feature: null, description: "Closest‑to‑pin, long drive" },
-      { title: "Team Management", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles" },
-      { title: "Players & Pairings", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, import players; manage pairings and tee times" },
-      { title: "Confirmation Emails", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize the confirmation email sent to registrants, sponsors, and vendors" },
-      { title: "Email Send Log", url: "/dashboard/email-log", icon: Mail, feature: null, description: "See every email sent for your events, delivery results, and resend failed reminders" },
-      { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age, request it by email, or enter it yourself" },
-
+      { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
+      { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
+      { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age and request it by email" },
     ],
   },
   {
-
-    label: "Public Webpage",
-    color: "border-l-emerald-400 bg-emerald-400/5",
-    items: [
-      // "View Live Tournament Page" injected dynamically when a tournament slug exists
-      { title: "Webpage Layout", url: "/dashboard/webpage-layout", icon: LayoutTemplate, feature: null, description: "Reorder and show/hide sections and top-nav tabs on your public page" },
-      { title: "Organization Info", url: "/dashboard/organization-info", icon: Building2, feature: null, description: "About us, mission, history, contact" },
-      { title: "Lodging", url: "/dashboard/lodging", icon: BedDouble, feature: null, description: "Hotel blocks, room rates, codes" },
-      { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Booth registration, payment, check‑in" },
-      { title: "Side Events", url: "/dashboard/side-events", icon: Ticket, feature: null, description: "Welcome party, awards dinner, clinics" },
-      { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery", description: "Upload, organize, share event photos" },
-      { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
-      { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
-      { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
-      { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
-    ],
-  },
-  {
-    label: "Event Day",
+    label: "Scoring & Leaderboard",
     color: "border-l-orange-400 bg-orange-400/5",
     items: [
       { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Design, share, and manage the live leaderboard" },
-      { title: "Day of Event Page", url: "/dashboard/day-of", icon: ScanLine, feature: null, description: "Preview and manage tournament day page" },
-      { title: "Team HQ", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
-
-      { title: "Scoring", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups" },
-      { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
-      { title: "Event Day Sales", url: "/dashboard/event-day-sales", icon: ShoppingCart, feature: null, description: "Walk‑up registrations, mulligans, contests, custom items with QR codes" },
+      { title: "Score Entry", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups" },
+      { title: "Scoring Settings", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, handicap allowances, skins, flights, and payouts" },
       { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
+      { title: "Team HQ", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
+      { title: "Event Day Sales", url: "/dashboard/event-day-sales", icon: ShoppingCart, feature: null, description: "Walk‑up registrations, mulligans, contests, custom items with QR codes" },
       { title: "Stress Test", url: "/dashboard/stress-test", icon: Gauge, feature: null, description: "Simulate 70 players to test check-in, scoring, and leaderboard load" },
     ],
   },
   {
-    label: "Operations",
+    label: "Sponsors & Fundraising",
     color: "border-l-purple-400 bg-purple-400/5",
     items: [
-      { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
-      { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
-      { title: "Team Performance", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Referral tracking, promoter leaderboard" },
-      { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
+      { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Sponsor levels, prices, benefits, logos, and vendors" },
+      { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
+      { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
+      { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
+      { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store", description: "Merchandise, mulligans, side events, extras" },
     ],
   },
-
   {
-    label: "Promotion & Marketing",
+    label: "Marketing",
     color: "border-l-green-400 bg-green-400/5",
     items: [
       { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null, description: "QR codes, short URLs, social templates" },
       { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio", description: "Canva‑integrated flyers" },
+      { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize confirmation and reminder emails and send them" },
+      { title: "Email Send Log", url: "/dashboard/email-log", icon: Mail, feature: null, description: "See every email sent, delivery results, and resend failures" },
       { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null, description: "Opt in/out of teevents.golf search" },
-      { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys", description: "Post‑event player surveys and email templates" },
     ],
   },
   {
-    label: "Finance",
+    label: "Finances",
     color: "border-l-yellow-400 bg-yellow-400/5",
     items: [
-      { title: "Finances", url: "/dashboard/finances", icon: Wallet, feature: null, description: "Transaction history, revenue, expenses" },
-      { title: "Transactions", url: "/dashboard/transactions", icon: Receipt, feature: null, description: "Full transaction list with all submission answers + CSV export" },
-      { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Stripe Connect, PayPal, check" },
+      { title: "Transactions", url: "/dashboard/finances", icon: Wallet, feature: null, description: "Transaction history, revenue, expenses" },
+      { title: "Transaction Details", url: "/dashboard/transactions", icon: Receipt, feature: null, description: "Full transaction list with all submission answers + CSV export" },
+      { title: "Payouts", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Stripe Connect, PayPal, check" },
       { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget", description: "Planned vs. actual expenses" },
-      { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store", description: "Merchandise, mulligans, extras" },
       { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null, description: "Consulting, signage, insurance" },
     ],
   },
+  {
+    label: "Team & Volunteers",
+    color: "border-l-sky-400 bg-sky-400/5",
+    items: [
+      { title: "Team Members", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles, track referral performance" },
+      { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
+      { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
+    ],
+  },
+  {
+    label: "Content & Media",
+    color: "border-l-emerald-400 bg-emerald-400/5",
+    items: [
+      // "View Live Tournament Page" injected dynamically when a tournament slug exists
+      { title: "Public Page Editor", url: "/dashboard/public-page-editor", icon: Trophy, feature: null, description: "Edit your public tournament page: branding, content, contact, domain" },
+      { title: "Webpage Layout", url: "/dashboard/webpage-layout", icon: LayoutTemplate, feature: null, description: "Reorder and show/hide sections and top-nav tabs on your public page" },
+      { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery", description: "Upload, organize, share event photos" },
+      { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
+    ],
+  },
+  {
+    label: "Post-Event",
+    color: "border-l-pink-400 bg-pink-400/5",
+    items: [
+      { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys", description: "Post‑event player surveys and email templates" },
+    ],
+  },
 ];
+
 
 const leagueCategories: SidebarCategory[] = [
   {

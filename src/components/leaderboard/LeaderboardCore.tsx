@@ -269,6 +269,9 @@ export function LeaderboardRenderer({
                       {showPos && <th className={`text-left ${padX} ${padY} w-12`}>#</th>}
                       {showPlayer && <th className={`text-left ${padX} ${padY}`}>Player / Team</th>}
                       {showThru && <th className={`text-right ${padX} ${padY} w-20`}>Thru</th>}
+                      {!isStableford && (
+                        <th className={`text-right ${padX} ${padY} w-20`}>To Par</th>
+                      )}
                       {(showGross || showNet) && (
                         <th className={`text-right ${padX} ${padY} w-24`}>{isStableford ? "Pts" : "Total"}</th>
                       )}

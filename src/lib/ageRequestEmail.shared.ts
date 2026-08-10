@@ -89,6 +89,8 @@ export function buildAgeRequestHtml(
           <div style="text-align:center;margin:26px 0;">
             <a href="${link}" style="display:inline-block;padding:14px 30px;background:#F5A623;color:#1a5c38;font-size:16px;font-weight:700;text-decoration:none;border-radius:6px;">${esc(c.button_text)}</a>
           </div>
+          ${replyBlock}
+
           <div style="margin:0 0 14px;color:${c.text_color};font-size:15px;line-height:1.7;">${replaceAgeVars(c.closing_text, vars)}</div>
           <div style="margin:0;color:${c.text_color};font-size:15px;line-height:1.7;">${replaceAgeVars(c.footer_text, vars)}</div>
           <p style="margin:18px 0 0;color:${c.text_color};font-size:14px;line-height:1.6;">

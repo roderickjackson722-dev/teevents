@@ -403,7 +403,9 @@ Deno.serve(async (req) => {
                   `• <strong>Destination:</strong> ${destinationLine}`,
                   `• <strong>Status:</strong> ${statusLine}`,
                   `• <strong>Action needed:</strong> ${actionRequired ? "YES — process this payout manually" : "No"}`,
-                ], answersHtml);
+                  ],
+                  answersHtml,
+                );
 
 
                 const adminHtml = banner + adminInner;

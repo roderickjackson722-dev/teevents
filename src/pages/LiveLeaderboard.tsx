@@ -491,6 +491,7 @@ export default function LiveLeaderboard() {
         title={displayTitle}
         rows={leaderboard.map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players }))}
         isStableford={isStableford}
+        coursePar={tournament.course_par || 72}
         bannerSponsor={bannerSponsor}
         sidebarSponsors={sidebarSponsors}
         footerSponsors={footerSponsors}

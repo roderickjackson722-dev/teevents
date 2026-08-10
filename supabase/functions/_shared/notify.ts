@@ -629,7 +629,10 @@ export async function notifyLeagueManagers(opts: {
         } catch (_e) { /* ignore */ }
       }
     }
-    if (recipients.size === 0) recipients.add(PLATFORM_ADMIN_EMAIL);
+    if (recipients.size === 0) {
+      console.warn("[notifyLeagueManagers] no manager recipients — skipping (admin is not copied on registrations)");
+      return;
+    }
 
     await sendAndLog(
       admin,
@@ -637,7 +640,6 @@ export async function notifyLeagueManagers(opts: {
       {
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: Array.from(recipients),
-        bcc: PLATFORM_ADMIN_EMAIL,
         subject: opts.subject,
         html: opts.htmlBody,
       },

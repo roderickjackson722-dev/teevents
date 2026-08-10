@@ -122,7 +122,7 @@ export async function sendNotificationEmails(
 
     const recipients = Array.from(recipientsSet);
 
-    console.log(`[Notification] Sending ${eventType} to ${recipients.join(", ")} (bcc=${PLATFORM_ADMIN_EMAIL}) from ${SENDER_EMAIL}`);
+    console.log(`[Notification] Sending ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
 
     const result = await sendAndLog(
       supabaseAdmin,
@@ -130,9 +130,8 @@ export async function sendNotificationEmails(
       {
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: recipients,
-        // BCC platform admin on every organizer notification so TeeVents receives
-        // a copy of every transaction without exposing our address to the organizer.
-        bcc: PLATFORM_ADMIN_EMAIL,
+        // Platform admin (info@teevents.golf) is intentionally NOT copied here.
+        // Admin only receives payout notices (auto-payout / manual payout required).
         subject,
         html: htmlBody,
       },

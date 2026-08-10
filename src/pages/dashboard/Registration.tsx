@@ -709,19 +709,22 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="grid grid-cols-8 w-full max-w-4xl">
-            <TabsTrigger value="settings">Settings</TabsTrigger>
-            <TabsTrigger value="tiers">Tiers</TabsTrigger>
-            <TabsTrigger value="flights">Flights</TabsTrigger>
-            <TabsTrigger value="fields">Fields</TabsTrigger>
-            <TabsTrigger value="addons">Add-ons</TabsTrigger>
-            <TabsTrigger value="promos">Promo Codes</TabsTrigger>
-            <TabsTrigger value="submissions">Submissions</TabsTrigger>
-            <TabsTrigger value="refunds" className="flex items-center gap-1">
-              <RotateCcw className="h-3.5 w-3.5" />
-              Refunds
-            </TabsTrigger>
-          </TabsList>
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <TabsList className="inline-flex w-max sm:grid sm:grid-cols-8 sm:w-full sm:max-w-4xl">
+              <TabsTrigger value="settings" className="shrink-0 whitespace-nowrap">Settings</TabsTrigger>
+              <TabsTrigger value="tiers" className="shrink-0 whitespace-nowrap">Tiers</TabsTrigger>
+              <TabsTrigger value="flights" className="shrink-0 whitespace-nowrap">Flights</TabsTrigger>
+              <TabsTrigger value="fields" className="shrink-0 whitespace-nowrap">Fields</TabsTrigger>
+              <TabsTrigger value="addons" className="shrink-0 whitespace-nowrap">Add-ons</TabsTrigger>
+              <TabsTrigger value="promos" className="shrink-0 whitespace-nowrap">Promo Codes</TabsTrigger>
+              <TabsTrigger value="submissions" className="shrink-0 whitespace-nowrap">Submissions</TabsTrigger>
+              <TabsTrigger value="refunds" className="shrink-0 whitespace-nowrap flex items-center gap-1">
+                <RotateCcw className="h-3.5 w-3.5" />
+                Refunds
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
 
           {/* ── Settings Tab ── */}
           <TabsContent value="settings">

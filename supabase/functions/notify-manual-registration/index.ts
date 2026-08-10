@@ -105,20 +105,8 @@ Deno.serve(async (req) => {
       tournament.id,
     );
 
-    // Platform-admin notification
-    await notifyPlatformAdmin({
-      supabaseAdmin,
-      type: "registration",
-      subject: `[TeeVents] Manual Add-On — ${tournament.title || "Tournament"}`,
-      htmlBody: buildNotificationHtml("Manual Registration Recorded", [
-        `🏌️ <strong>${playerName}</strong> — ${reg.email || "no email"}`,
-        `🏆 Tournament: <strong>${tournament.title || "Unknown"}</strong>`,
-        paymentLine,
-        `<em>Source: manual add-on by organizer. Payment collected manually (offline).</em>`,
-      ], answersHtml),
-      organizationId: tournament.organization_id,
-      tournamentId: tournament.id,
-    });
+    // Platform admin (info@teevents.golf) intentionally NOT notified for
+    // registration events — admin only receives payout notifications.
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

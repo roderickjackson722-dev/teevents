@@ -2794,9 +2794,31 @@ const Players = () => {
                 </div>
               )}
 
-              <Button onClick={applyStartTimesToHoles} size="sm" className="ml-auto">
-                {startFormat === "tee_times" ? "Assign Tee Times" : "Apply Shotgun Time"}
-              </Button>
+              <div className="ml-auto flex items-center gap-2">
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button size="sm" variant="outline">Reset Pairings</Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Reset all tee time pairings?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This removes every player from their current tee time / hole group and moves them
+                        back to Unassigned. The tee times themselves are kept as empty groups so you can
+                        re-assign players. This cannot be undone.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleResetAllPairings}>Reset Pairings</AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                <Button onClick={applyStartTimesToHoles} size="sm">
+                  {startFormat === "tee_times" ? "Assign Tee Times" : "Apply Shotgun Time"}
+                </Button>
+              </div>
+
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               {startFormat === "tee_times"

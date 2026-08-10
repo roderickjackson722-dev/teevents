@@ -3,7 +3,7 @@
 // platform_transactions row when the manual entry is marked paid so it shows
 // up on the Finances dashboard. Idempotent via metadata->>manual_registration_id.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendNotificationEmails, notifyPlatformAdmin, buildNotificationHtml, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
+import { sendNotificationEmails, buildNotificationHtml, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

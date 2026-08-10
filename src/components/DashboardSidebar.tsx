@@ -275,6 +275,19 @@ export function DashboardSidebar() {
       .filter(([p, q]) => p === path && q)
       .map(([, q]) => new URLSearchParams(q).get("tab") as string);
 
+  // Keep the category holding the current page expanded so the selected item
+  // is always reachable, even after the organizer collapsed other groups.
+  useEffect(() => {
+    const activeCat = activeCategories.find((c) => c.items.some((i) => isItemActive(i.url)));
+    if (activeCat) {
+      setOpenCategories((prev) =>
+        prev[activeCat.label] === false ? { ...prev, [activeCat.label]: true } : prev,
+      );
+    }
+  }, [location.pathname, currentTab, isLeagueWorkspace]);
+
+
+
   const renderItem = (item: NavItem) => {
     const locked = item.feature && !hasFeature(item.feature);
     const tier = item.feature ? requiredPlan(item.feature) : "";

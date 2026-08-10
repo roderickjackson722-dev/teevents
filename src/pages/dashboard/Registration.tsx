@@ -709,7 +709,7 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto scrollbar-none">
+          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             <TabsList className="inline-flex w-max sm:grid sm:grid-cols-8 sm:w-full sm:max-w-4xl">
               <TabsTrigger value="settings" className="shrink-0 whitespace-nowrap">Settings</TabsTrigger>
               <TabsTrigger value="tiers" className="shrink-0 whitespace-nowrap">Tiers</TabsTrigger>

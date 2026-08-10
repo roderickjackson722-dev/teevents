@@ -135,6 +135,7 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Team Members", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles, track referral performance" },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
+      { title: "Team HQ", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
       { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
     ],
   },

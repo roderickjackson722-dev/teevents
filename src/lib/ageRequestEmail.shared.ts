@@ -74,6 +74,18 @@ export function buildAgeRequestHtml(
     ? `<div style="text-align:center;margin-bottom:12px;"><img src="${c.logo_url}" alt="Logo" style="max-height:${c.logo_max_height || 60}px;display:inline-block;" /></div>`
     : "";
 
+  // Reply-by-email fallback is a structural part of this template so it always
+  // renders — in test sends and live sends — even when a tournament has an
+  // older saved body_text that predates the "Option 2" instructions.
+  const bodyHasReplyOption = /option\s*2/i.test(c.body_text || "");
+  const replyBlock = bodyHasReplyOption
+    ? ""
+    : `<div style="margin:0 0 18px;padding:14px 16px;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;color:${c.text_color};font-size:15px;line-height:1.7;">
+            <strong>Can't use the button?</strong><br/>
+            Simply <strong>reply to this email</strong> with your age (for example, &quot;Age: 45&quot;). Your reply goes directly to the tournament organizer and the TeeVents support team.
+          </div>`;
+
+
   return `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:${c.font_family};">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#f4f4f5;padding:40px 20px;">

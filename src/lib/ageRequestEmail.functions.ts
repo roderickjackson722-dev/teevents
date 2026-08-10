@@ -70,12 +70,16 @@ export const sendAgeRequestEmails = createServerFn({ method: "POST" })
       contact_email: (t as any).contact_email || "",
     };
 
+    const organizerEmail = String((t as any).contact_email || "").trim();
+    const replyTo = ["info@teevents.golf", ...(organizerEmail && organizerEmail.toLowerCase() !== "info@teevents.golf" ? [organizerEmail] : [])];
+
     const send = async (to: string, subject: string, html: string) => {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${resendKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({ from: SENDER, to, subject, html }),
+        body: JSON.stringify({ from: SENDER, to, subject, html, reply_to: replyTo }),
       });
+
       const body = await res.json().catch(() => ({}));
       const ok = res.ok;
       await supabaseAdmin.from("email_send_log").insert({

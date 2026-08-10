@@ -1558,6 +1558,30 @@ const Players = () => {
     toast({ title: `Hole ${num} deleted`, description: ids.length > 0 ? `${ids.length} player(s) moved to Unassigned.` : undefined });
   };
 
+  // Clears every player out of their tee time / hole group. The groups themselves
+  // (and their tee times) are kept as empty slots so organizers can re-assign.
+  const handleResetAllPairings = async () => {
+    if (lockGuard()) return;
+    if (demoGuard()) return;
+    const assigned = players.filter((p) => p.group_number !== null);
+    const ids = assigned.map((p) => p.id);
+    const keepNums = [...new Set(assigned.map((p) => p.group_number!))];
+    if (ids.length > 0) {
+      const { error } = await supabase
+        .from("tournament_registrations")
+        .update({ group_number: null, group_position: null })
+        .in("id", ids);
+      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
+    }
+    setAllPlayers((prev) => prev.map((p) => p.group_number !== null ? { ...p, group_number: null, group_position: null } : p));
+    setEmptyGroups((prev) => [...new Set([...prev, ...keepNums])].sort((a, b) => a - b));
+    toast({
+      title: "Tee time pairings reset",
+      description: ids.length > 0 ? `${ids.length} player(s) moved to Unassigned. Tee times kept.` : "No players were assigned.",
+    });
+  };
+
+
   const handleMoveGroup = async (num: number, dir: -1 | 1) => {
     if (lockGuard()) return;
     const idx = allGroupNumbers.indexOf(num);

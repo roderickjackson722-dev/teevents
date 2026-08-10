@@ -302,7 +302,7 @@ export function DashboardSidebar() {
 
           {activeCategories.map((cat) => {
             let items = cat.items;
-            if (cat.label === "Public Webpage" && tournamentSlug) {
+            if (cat.label === "Content & Media" && tournamentSlug) {
               items = [
                 { title: "View Live Tournament Page", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
                 ...cat.items,

@@ -23,7 +23,8 @@ export const AGE_REQUEST_DEFAULTS: AgeRequestConfig = {
   header_title: "Complete Your Registration",
   greeting: "Dear {{first_name}},",
   body_text:
-    "We hope this message finds you well.<br/><br/>During a recent system update, we noticed that age information for some registrations was not properly saved to our records. This was a technical issue on our end, and we apologize for any inconvenience.<br/><br/>To ensure your registration is complete, we kindly ask you to provide your age using the secure form below.<br/><br/>This will take less than one minute. No other information needs to be changed.",
+    "We hope this message finds you well.<br/><br/>During a recent system update, we noticed that age information for some registrations was not properly saved to our records. This was a technical issue on our end, and we apologize for any inconvenience.<br/><br/>To ensure your registration is complete, please provide your age using one of the options below:<br/><br/><strong>Option 1 &ndash; Secure Form (Recommended):</strong><br/>Use the button below. This will take less than one minute. No other information needs to be changed.<br/><br/><strong>Option 2 &ndash; Reply to this Email:</strong><br/>If you are unable to access the link, simply reply to this email with your age (e.g., &quot;Age: 45&quot;). Your reply will be sent directly to the tournament organizer and our support team.",
+
   closing_text:
     "If you have already entered this information, we appreciate your patience — this is only being requested to complete our records.",
   footer_text: "Thank you for your understanding and cooperation.",

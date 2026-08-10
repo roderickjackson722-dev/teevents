@@ -62,9 +62,11 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Overview", url: "/dashboard", icon: LayoutDashboard, feature: null, description: "Dashboard home: planning guide, setup checklist, and event snapshot" },
       { title: "Event Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Event info, organization details, and lodging" },
+      { title: "Schedule (Tee Sheet)", url: "/dashboard/players?tab=pairings", icon: Clock, feature: "players", description: "Tee sheet: groups, tee times, and starting holes" },
       { title: "Course Setup", url: "/dashboard/course-details", icon: MapPin, feature: null, description: "Par, slope, rating, hole data" },
       { title: "Notes & Reminders", url: "/dashboard/notes", icon: FileText, feature: null, description: "Personal to-do list, reminders, and notes for this tournament" },
     ],
+
   },
   {
     label: "Players & Pairings",

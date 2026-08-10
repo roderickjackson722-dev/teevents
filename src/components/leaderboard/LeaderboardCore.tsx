@@ -298,6 +298,11 @@ export function LeaderboardRenderer({
                           </td>
                         )}
                         {showThru && <td className={`${padX} ${padY} text-right opacity-80`}>{row.thru || "—"}</td>}
+                        {!isStableford && (
+                          <td className={`${padX} ${padY} text-right font-mono font-bold`} data-testid="lb-topar">
+                            {row.total ? formatToPar(row.total, coursePar) : "—"}
+                          </td>
+                        )}
                         {(showGross || showNet) && (
                           <td className={`${padX} ${padY} text-right font-mono font-bold`}>{row.total || "—"}</td>
                         )}

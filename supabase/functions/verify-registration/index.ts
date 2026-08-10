@@ -383,7 +383,11 @@ Deno.serve(async (req) => {
                        <p style="margin:0;color:#065f46;font-size:14px;font-weight:600;">✅ Automatic payout via Stripe Connect — no action needed.</p>
                      </div>`;
 
-                const adminInner = buildNotificationHtml("New Registration Transaction", [
+                // Admin (info@teevents.golf) only receives payout notifications —
+                // never plain registration confirmations.
+                const adminInner = buildNotificationHtml(
+                  actionRequired ? "Manual Payout Required" : "Auto-Payout Confirmation",
+                  [
                   `🏌️ <strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>`,
                   `🏢 <strong>Organizer:</strong> ${orgName}`,
                   `💰 <strong>Gross Registration:</strong> $${(grossAmount / 100).toFixed(2)}`,
@@ -399,7 +403,9 @@ Deno.serve(async (req) => {
                   `• <strong>Destination:</strong> ${destinationLine}`,
                   `• <strong>Status:</strong> ${statusLine}`,
                   `• <strong>Action needed:</strong> ${actionRequired ? "YES — process this payout manually" : "No"}`,
-                ], answersHtml);
+                  ],
+                  answersHtml,
+                );
 
 
                 const adminHtml = banner + adminInner;

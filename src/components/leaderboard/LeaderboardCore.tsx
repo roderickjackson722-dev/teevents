@@ -24,6 +24,13 @@ export interface LbGalleryItem {
 
 const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };
 
+/** Formats a score relative to par: -4, E, +2. */
+export function formatToPar(total: number, par: number): string {
+  const toPar = total - par;
+  if (toPar === 0) return "E";
+  return toPar < 0 ? `${toPar}` : `+${toPar}`;
+}
+
 /**
  * Always merge against DEFAULT_DESIGN so a missing or partial token never
  * causes the live leaderboard to diverge from the configured preview.
@@ -43,6 +50,8 @@ interface RendererProps {
   title: string;
   rows: LbRow[];
   isStableford?: boolean;
+  /** Course par used for the "To Par" column. Defaults to 72. */
+  coursePar?: number;
   bannerSponsor?: LbSponsor | null;
   sidebarSponsors?: LbSponsor[];
   footerSponsors?: LbSponsor[];
@@ -79,6 +88,7 @@ export function LeaderboardRenderer({
   title,
   rows,
   isStableford,
+  coursePar = 72,
   bannerSponsor,
   sidebarSponsors = [],
   footerSponsors = [],
@@ -259,6 +269,9 @@ export function LeaderboardRenderer({
                       {showPos && <th className={`text-left ${padX} ${padY} w-12`}>#</th>}
                       {showPlayer && <th className={`text-left ${padX} ${padY}`}>Player / Team</th>}
                       {showThru && <th className={`text-right ${padX} ${padY} w-20`}>Thru</th>}
+                      {!isStableford && (
+                        <th className={`text-right ${padX} ${padY} w-20`}>To Par</th>
+                      )}
                       {(showGross || showNet) && (
                         <th className={`text-right ${padX} ${padY} w-24`}>{isStableford ? "Pts" : "Total"}</th>
                       )}
@@ -285,6 +298,11 @@ export function LeaderboardRenderer({
                           </td>
                         )}
                         {showThru && <td className={`${padX} ${padY} text-right opacity-80`}>{row.thru || "—"}</td>}
+                        {!isStableford && (
+                          <td className={`${padX} ${padY} text-right font-mono font-bold`} data-testid="lb-topar">
+                            {row.total ? formatToPar(row.total, coursePar) : "—"}
+                          </td>
+                        )}
                         {(showGross || showNet) && (
                           <td className={`${padX} ${padY} text-right font-mono font-bold`}>{row.total || "—"}</td>
                         )}

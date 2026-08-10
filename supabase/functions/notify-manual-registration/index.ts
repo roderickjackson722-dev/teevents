@@ -3,7 +3,7 @@
 // platform_transactions row when the manual entry is marked paid so it shows
 // up on the Finances dashboard. Idempotent via metadata->>manual_registration_id.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendNotificationEmails, notifyPlatformAdmin, buildNotificationHtml, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
+import { sendNotificationEmails, buildNotificationHtml, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -105,20 +105,8 @@ Deno.serve(async (req) => {
       tournament.id,
     );
 
-    // Platform-admin notification
-    await notifyPlatformAdmin({
-      supabaseAdmin,
-      type: "registration",
-      subject: `[TeeVents] Manual Add-On — ${tournament.title || "Tournament"}`,
-      htmlBody: buildNotificationHtml("Manual Registration Recorded", [
-        `🏌️ <strong>${playerName}</strong> — ${reg.email || "no email"}`,
-        `🏆 Tournament: <strong>${tournament.title || "Unknown"}</strong>`,
-        paymentLine,
-        `<em>Source: manual add-on by organizer. Payment collected manually (offline).</em>`,
-      ], answersHtml),
-      organizationId: tournament.organization_id,
-      tournamentId: tournament.id,
-    });
+    // Platform admin (info@teevents.golf) intentionally NOT notified for
+    // registration events — admin only receives payout notifications.
 
     return new Response(JSON.stringify({ ok: true }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

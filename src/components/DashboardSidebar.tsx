@@ -181,7 +181,7 @@ const settingsItems: NavItem[] = [
 ];
 
 export function DashboardSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === "collapsed";
   const navigate = useNavigate();
   const location = useLocation();
@@ -191,6 +191,8 @@ export function DashboardSidebar() {
   const { org } = useOrgContext();
   const [searchParams] = useSearchParams();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
+  const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
+
 
   // Context params that identify WHICH event/org the dashboard is showing.
   // Every sidebar link must carry them, otherwise navigating a tab falls back

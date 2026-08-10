@@ -248,17 +248,48 @@ export function DashboardSidebar() {
     return permissions.includes(permKey);
   };
 
+  // ---- Active-state detection -------------------------------------------
+  // A link is active when its pathname matches AND (if the link carries a
+  // ?tab= value) the current tab matches. Overview only matches exactly.
+  const currentTab = searchParams.get("tab");
+  const isItemActive = (url: string) => {
+    if (!url.startsWith("/dashboard")) return false;
+    const [path, query] = url.split("?");
+    const linkTab = query ? new URLSearchParams(query).get("tab") : null;
+    const pathMatches =
+      path === "/dashboard"
+        ? location.pathname === "/dashboard"
+        : location.pathname === path || location.pathname.startsWith(`${path}/`);
+    if (!pathMatches) return false;
+    if (linkTab) return currentTab === linkTab;
+    // A tab-less link stays active only when no sibling tab link owns the tab
+    return !currentTab || !items_withTab(path).includes(currentTab);
+  };
+  // Tabs that other sidebar links claim for this same path
+  const items_withTab = (path: string) =>
+    activeCategories
+      .flatMap((c) => c.items)
+      .map((i) => i.url.split("?"))
+      .filter(([p, q]) => p === path && q)
+      .map(([, q]) => new URLSearchParams(q).get("tab") as string);
+
   const renderItem = (item: NavItem) => {
     const locked = item.feature && !hasFeature(item.feature);
     const tier = item.feature ? requiredPlan(item.feature) : "";
     const tierLabel = tier === "starter" ? "Starter" : tier === "premium" ? "Premium" : "";
+    const active = isItemActive(item.url);
 
     const linkContent = (
       <NavLink
         to={withContext(item.url)}
         end={item.url === "/dashboard"}
-        className="flex items-center w-full text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
-        activeClassName="bg-primary-foreground/15 text-secondary font-medium"
+        onClick={() => { if (isMobile) setOpenMobile(false); }}
+        aria-current={active ? "page" : undefined}
+        className={
+          active
+            ? "flex items-center w-full rounded-md bg-secondary/20 text-secondary font-semibold border-l-2 border-secondary pl-1.5"
+            : "flex items-center w-full rounded-md text-primary-foreground/70 hover:bg-primary-foreground/10 hover:text-primary-foreground"
+        }
       >
         <item.icon className="mr-2 h-4 w-4 flex-shrink-0" />
         {!collapsed && (
@@ -276,7 +307,7 @@ export function DashboardSidebar() {
 
     return (
       <SidebarMenuItem key={`${item.title}-${item.url}`}>
-        <SidebarMenuButton asChild>
+        <SidebarMenuButton asChild isActive={active}>
           {item.description ? (
             <Tooltip>
               <TooltipTrigger asChild>{linkContent}</TooltipTrigger>
@@ -316,19 +347,49 @@ export function DashboardSidebar() {
             const visibleItems = items.filter(isVisible);
             if (visibleItems.length === 0) return null;
 
+            const categoryActive = visibleItems.some((i) => isItemActive(i.url));
+            const bgClass = cat.color.split(" ").find((c) => c.startsWith("bg-")) ?? "";
+            const borderClass = cat.color.split(" ").find((c) => c.startsWith("border-l-")) ?? "";
+
             return (
-              <SidebarGroup key={cat.label} className={`${cat.color.split(" ").find(c => c.startsWith("bg-")) ?? ""} rounded-md mx-1`}>
-                <div className={`border-l-2 ${cat.color.split(" ").find(c => c.startsWith("border-l-")) ?? ""} ml-1 pl-2`}>
-                  <SidebarGroupLabel className="text-primary-foreground/60 text-[10px] tracking-widest uppercase font-semibold">
-                    {collapsed ? "" : cat.label}
-                  </SidebarGroupLabel>
-                </div>
-                <SidebarGroupContent>
-                  <SidebarMenu>{visibleItems.map(renderItem)}</SidebarMenu>
-                </SidebarGroupContent>
-              </SidebarGroup>
+              <Collapsible
+                key={cat.label}
+                open={openCategories[cat.label] ?? true}
+                onOpenChange={(open) =>
+                  setOpenCategories((prev) => ({ ...prev, [cat.label]: open }))
+                }
+              >
+                <SidebarGroup
+                  className={`${bgClass} rounded-md mx-1 ${categoryActive ? "ring-1 ring-secondary/40" : ""}`}
+                >
+                  <div className={`border-l-2 ${borderClass} ml-1 pl-2`}>
+                    <CollapsibleTrigger asChild>
+                      <SidebarGroupLabel
+                        className={`group/label flex w-full cursor-pointer items-center justify-between text-[10px] tracking-widest uppercase font-semibold ${
+                          categoryActive ? "text-secondary" : "text-primary-foreground/60"
+                        }`}
+                      >
+                        <span className="truncate">{collapsed ? "" : cat.label}</span>
+                        {!collapsed && (
+                          <ChevronDown
+                            className={`h-3 w-3 flex-shrink-0 transition-transform ${
+                              (openCategories[cat.label] ?? true) ? "" : "-rotate-90"
+                            }`}
+                          />
+                        )}
+                      </SidebarGroupLabel>
+                    </CollapsibleTrigger>
+                  </div>
+                  <CollapsibleContent>
+                    <SidebarGroupContent>
+                      <SidebarMenu>{visibleItems.map(renderItem)}</SidebarMenu>
+                    </SidebarGroupContent>
+                  </CollapsibleContent>
+                </SidebarGroup>
+              </Collapsible>
             );
           })}
+
 
           {showSettings && !isLeagueWorkspace && (
             <SidebarGroup>

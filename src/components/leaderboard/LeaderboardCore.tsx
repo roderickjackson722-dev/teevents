@@ -24,6 +24,13 @@ export interface LbGalleryItem {
 
 const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };
 
+/** Formats a score relative to par: -4, E, +2. */
+export function formatToPar(total: number, par: number): string {
+  const toPar = total - par;
+  if (toPar === 0) return "E";
+  return toPar < 0 ? `${toPar}` : `+${toPar}`;
+}
+
 /**
  * Always merge against DEFAULT_DESIGN so a missing or partial token never
  * causes the live leaderboard to diverge from the configured preview.

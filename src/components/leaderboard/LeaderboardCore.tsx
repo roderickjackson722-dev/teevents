@@ -50,6 +50,8 @@ interface RendererProps {
   title: string;
   rows: LbRow[];
   isStableford?: boolean;
+  /** Course par used for the "To Par" column. Defaults to 72. */
+  coursePar?: number;
   bannerSponsor?: LbSponsor | null;
   sidebarSponsors?: LbSponsor[];
   footerSponsors?: LbSponsor[];

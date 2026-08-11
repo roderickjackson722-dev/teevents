@@ -563,7 +563,7 @@ export default function LeagueRegistrationTab({ league }: { league: any }) {
       )}
 
       {/* Delete confirmation */}
-      <AlertDialog open={!!deletingResponse} onOpenChange={(o) => !o && setDeletingResponse(null)}>
+      <AlertDialog open={!!deletingResponse} onOpenChange={(o: boolean) => !o && setDeletingResponse(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Remove {deletingResponse?.name}?</AlertDialogTitle>

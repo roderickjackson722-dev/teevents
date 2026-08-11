@@ -5,6 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -120,11 +124,17 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
     load();
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Remove this member?")) return;
-    const { error } = await (supabase as any).from("league_members").delete().eq("id", id);
+  const [deleting, setDeleting] = useState<Member | null>(null);
+
+  const remove = async () => {
+    if (!deleting) return;
+    const { error } = await (supabase as any).from("league_members").delete().eq("id", deleting.id);
     if (error) toast({ title: "Remove failed", description: error.message, variant: "destructive" });
-    else load();
+    else {
+      toast({ title: `${deleting.member_name} removed from the league` });
+      load();
+    }
+    setDeleting(null);
   };
 
   const [busyId, setBusyId] = useState<string | null>(null);
@@ -338,8 +348,8 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
                       })}>
                         <Pencil className="h-3.5 w-3.5" />
                       </Button>
-                      <Button size="sm" variant="ghost" title="Remove member" onClick={() => remove(m.id)}>
-                        <Trash2 className="h-3.5 w-3.5" />
+                      <Button size="sm" variant="ghost" title="Remove member" onClick={() => setDeleting(m)}>
+                        <Trash2 className="h-3.5 w-3.5 text-destructive" />
                       </Button>
                     </TableCell>
 
@@ -419,6 +429,21 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
             </DialogContent>
           </Dialog>
         )}
+
+        <AlertDialog open={!!deleting} onOpenChange={(o: boolean) => !o && setDeleting(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Remove {deleting?.member_name}?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This removes the member from the league roster along with their login code. Past scores and payment records are kept for your history.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={remove}>Remove Member</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );

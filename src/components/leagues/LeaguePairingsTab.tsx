@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TimeField } from "@/components/ui/time-field";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -172,8 +173,8 @@ export default function LeaguePairingsTab({ leagueId }: { leagueId: string }) {
                         onChange={(e) => { const u = [...rows]; u[i] = { ...r, pairing_position: e.target.value ? Number(e.target.value) : null }; setRows(u); }} />
                     </td>
                     <td className="p-2">
-                      <Input type="time" value={r.tee_time ?? ""} disabled={!r.registered}
-                        onChange={(e) => { const u = [...rows]; u[i] = { ...r, tee_time: e.target.value || null }; setRows(u); }} />
+                      <TimeField value={r.tee_time ?? ""} disabled={!r.registered} minuteStep={1}
+                        onChange={(v) => { const u = [...rows]; u[i] = { ...r, tee_time: v || null }; setRows(u); }} />
                     </td>
                   </tr>
                 ))}

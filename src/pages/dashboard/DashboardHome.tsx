@@ -167,7 +167,9 @@ const DashboardHome = () => {
           <EventTimeline
             eventDate={latestTournament?.date ?? null}
             title={latestTournament?.title}
+            tournamentId={latestTournament?.id ?? null}
           />
+
           {latestTournament && (
             <div className="mt-6">
               <UpcomingRemindersWidget tournamentId={latestTournament.id} />

@@ -3,14 +3,14 @@ import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
-import { useAdminLink } from "@/hooks/useAdminLink";
-import { Trophy, Users, DollarSign, Eye, Clock, ScanLine, BarChart3, ClipboardList } from "lucide-react";
+import { Trophy, Users, DollarSign, Eye, Clock, ClipboardCheck, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
 import UpcomingRemindersWidget from "@/components/dashboard/UpcomingRemindersWidget";
-import ScoringPayoutsWidget from "@/components/dashboard/ScoringPayoutsWidget";
+import EventTimeline from "@/components/dashboard/EventTimeline";
 import SetupChecklist from "@/components/SetupChecklist";
 import { toast } from "sonner";
 
@@ -37,7 +37,6 @@ function getCountdown(dateStr: string | null) {
 
 const DashboardHome = () => {
   const { org } = useOrgContext();
-  const { buildLink } = useAdminLink();
   const [searchParams, setSearchParams] = useSearchParams();
   const [tournamentCount, setTournamentCount] = useState(0);
   const [latestTournament, setLatestTournament] = useState<Tournament | null>(null);
@@ -115,65 +114,67 @@ const DashboardHome = () => {
     <div>
       <div className="mb-8 bg-secondary/15 border border-secondary/30 rounded-xl p-6">
         <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-          Welcome back{explicitTournamentId && latestTournament ? `, ${latestTournament.title}` : org ? `, ${org.dashboardName || org.orgName}` : ""}
+          Event Checklist &amp; Timeline
         </h1>
         <p className="text-muted-foreground mt-1 text-base">
-          Manage your golf tournaments from one place.
+          {latestTournament
+            ? `Track tasks and key due dates for ${latestTournament.title}.`
+            : "Track tasks and key due dates for your tournament."}
         </p>
       </div>
 
-      {/* Setup Checklist - shown until dismissed. Full view with phase grouping. */}
-      {latestTournament && !latestTournament.setup_checklist_dismissed && (
-        <div className="mb-4">
-          <SetupChecklist
-            tournamentId={latestTournament.id}
-            autoRecompute
-            onDismiss={async () => {
-              const prev = latestTournament;
-              setLatestTournament({ ...prev, setup_checklist_dismissed: true });
-              const { error } = await supabase
-                .from("tournaments")
-                .update({ setup_checklist_dismissed: true })
-                .eq("id", prev.id);
-              if (error) {
-                setLatestTournament(prev);
-                toast.error("Could not hide checklist. Please try again.");
-              } else {
-                toast.success("Checklist hidden. Find it under Setup Checklist in the sidebar.");
-              }
-            }}
+      <Tabs defaultValue="checklist" className="mb-8">
+        <TabsList className="mb-6">
+          <TabsTrigger value="checklist" className="gap-2">
+            <ClipboardCheck className="h-4 w-4" /> Checklist
+          </TabsTrigger>
+          <TabsTrigger value="timeline" className="gap-2">
+            <CalendarClock className="h-4 w-4" /> Timeline
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="checklist">
+          {latestTournament ? (
+            <SetupChecklist tournamentId={latestTournament.id} autoRecompute />
+          ) : (
+            <div className="bg-card rounded-lg border border-border p-6 text-sm text-muted-foreground">
+              Create a tournament to see your setup checklist.
+            </div>
+          )}
+
+          {latestTournament?.slug && (
+            <TooltipProvider delayDuration={200}>
+              <div className="mt-6">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button asChild variant="outline">
+                      <Link to={`/t/${latestTournament.slug}`}>
+                        <Eye className="h-4 w-4 mr-2" />
+                        View Tournament
+                      </Link>
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right">
+                    <p className="text-xs">View your live tournament webpage</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+            </TooltipProvider>
+          )}
+        </TabsContent>
+
+        <TabsContent value="timeline">
+          <EventTimeline
+            eventDate={latestTournament?.date ?? null}
+            title={latestTournament?.title}
           />
-        </div>
-      )}
-
-      {/* View Tournament shortcut below Setup Checklist */}
-      {latestTournament?.slug && (
-        <TooltipProvider delayDuration={200}>
-          <div className="mb-8">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button asChild variant="outline">
-                  <Link to={`/t/${latestTournament.slug}`}>
-                    <Eye className="h-4 w-4 mr-2" />
-                    View Tournament
-                  </Link>
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="right">
-                <p className="text-xs">View your live tournament webpage</p>
-              </TooltipContent>
-            </Tooltip>
-          </div>
-        </TooltipProvider>
-      )}
-
-      {latestTournament && (
-        <ScoringPayoutsWidget tournamentId={latestTournament.id} />
-      )}
-
-      {latestTournament && (
-        <UpcomingRemindersWidget tournamentId={latestTournament.id} />
-      )}
+          {latestTournament && (
+            <div className="mt-6">
+              <UpcomingRemindersWidget tournamentId={latestTournament.id} />
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
 
       {/* Per-tournament Pro upgrade banner */}
       {latestTournament && !latestTournament.is_pro && (
@@ -240,50 +241,6 @@ const DashboardHome = () => {
           ) : null}
         </motion.div>
       )}
-
-      <div className="bg-card rounded-lg border border-border p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-display font-bold text-foreground">Quick Actions</h2>
-        </div>
-        <div className="flex flex-wrap gap-3">
-          {latestTournament && (
-            <>
-              <Button asChild>
-                <Link to={buildLink("/dashboard/players")}>
-                  <Users className="h-4 w-4 mr-2" />
-                  Players & Pairings
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link to={buildLink("/dashboard/registration")}>
-                  <ClipboardList className="h-4 w-4 mr-2" />
-                  Registration
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link to={buildLink("/dashboard/check-in")}>
-                  <ScanLine className="h-4 w-4 mr-2" />
-                  Check-In
-                </Link>
-              </Button>
-              <Button variant="outline" asChild>
-                <Link to={buildLink("/dashboard/leaderboard")}>
-                  <BarChart3 className="h-4 w-4 mr-2" />
-                  Leaderboard
-                </Link>
-              </Button>
-            </>
-          )}
-          {latestTournament && latestTournament.slug && (
-            <Button variant="outline" asChild>
-              <Link to={`/t/${latestTournament.slug}`}>
-                <Eye className="h-4 w-4 mr-2" />
-                View Tournament
-              </Link>
-            </Button>
-          )}
-        </div>
-      </div>
     </div>
   );
 };

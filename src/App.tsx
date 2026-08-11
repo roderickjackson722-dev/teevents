@@ -21,6 +21,7 @@ import DashboardLayout from "./components/DashboardLayout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import DashboardHome from "./pages/dashboard/DashboardHome";
 import Tournaments from "./pages/dashboard/Tournaments";
+import QuickActionsPage from "./pages/dashboard/QuickActions";
 import Leagues from "./pages/dashboard/Leagues";
 import LeagueManage from "./pages/dashboard/LeagueManage";
 import PublicLeague from "./pages/PublicLeague";
@@ -268,6 +269,7 @@ const App = () => (
           <Route path="/dashboard/scoring" element={<DashboardLayout><Scoring /></DashboardLayout>} />
           <Route path="/dashboard/crm" element={<DashboardLayout><CRM /></DashboardLayout>} />
           <Route path="/dashboard/course-details" element={<DashboardLayout><CourseDetails /></DashboardLayout>} />
+          <Route path="/dashboard/quick-actions" element={<DashboardLayout><QuickActionsPage /></DashboardLayout>} />
           <Route path="/dashboard/pin-sheets" element={<DashboardLayout><PinSheets /></DashboardLayout>} />
           <Route path="/dashboard/waitlist" element={<DashboardLayout><WaitlistPage /></DashboardLayout>} />
           <Route path="/dashboard/check-in" element={<DashboardLayout><CheckIn /></DashboardLayout>} />

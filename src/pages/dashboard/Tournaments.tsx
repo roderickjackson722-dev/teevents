@@ -29,6 +29,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users, Trash2, Pencil, ClipboardCheck, ArrowRight } from "lucide-react";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import EventDetailsForm from "@/components/dashboard/EventDetailsForm";
+import CourseDetails from "@/pages/dashboard/CourseDetails";
 
 interface Tournament {
   id: string;
@@ -381,6 +384,21 @@ const Tournaments = () => {
         </div>
       )}
 
+      {!loading && tournaments.length > 0 && (
+        <Tabs defaultValue="details" className="mb-10">
+          <TabsList className="mb-6">
+            <TabsTrigger value="details" className="gap-2"><Trophy className="h-4 w-4" /> Event Details</TabsTrigger>
+            <TabsTrigger value="course" className="gap-2"><MapPin className="h-4 w-4" /> Course Setup</TabsTrigger>
+          </TabsList>
+          <TabsContent value="details">
+            <EventDetailsForm tournamentId={tournaments[0].id} onSaved={fetchTournaments} />
+          </TabsContent>
+          <TabsContent value="course">
+            <CourseDetails />
+          </TabsContent>
+        </Tabs>
+      )}
+
       {loading ? (
         <div className="flex justify-center py-12">
           <Loader2 className="h-6 w-6 animate-spin text-primary" />
@@ -465,13 +483,10 @@ const Tournaments = () => {
                 ) : null;
               })()}
               <div className="mt-4 pt-3 border-t border-border flex items-center justify-between">
-                <Link
-                  to={buildLink(`/dashboard/tournaments/${t.id}/site-builder`)}
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 transition-colors"
-                >
+                <span className="text-xs text-muted-foreground inline-flex items-center gap-1.5">
                   <Globe className="h-3.5 w-3.5" />
-                  Edit Site
-                </Link>
+                  Edit above in Event Details
+                </span>
                 <button
                   onClick={() => setDeleteTarget(t)}
                   className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-destructive transition-colors"

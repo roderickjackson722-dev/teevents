@@ -67,7 +67,65 @@ function confirmationHtml(opts: {
   `;
 }
 
+const actualStripeFeeCents = (grossCents: number) =>
+  grossCents > 0 ? Math.round(grossCents * 0.029) + 30 : 0;
+
+/**
+ * Records a completed league payment's true gross/fee split and mirrors it into the
+ * TeeVents admin transaction ledger so league money shows up alongside tournaments.
+ */
+async function finalizeLeaguePayment(
+  supabaseAdmin: any,
+  paymentId: string,
+  session: any,
+  description: string,
+) {
+  const gross = Number(session.amount_total || 0);
+  const stripeFee = actualStripeFeeCents(gross);
+  const { data: payment } = await supabaseAdmin
+    .from("league_payments")
+    .update({
+      status: "paid",
+      gross_amount_cents: gross || null,
+      stripe_fee_cents: stripeFee,
+      entry_source: "online",
+      stripe_payment_intent: String(session.payment_intent || ""),
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", paymentId)
+    .select("id, league_id, platform_fee_cents, payer_email, stripe_session_id")
+    .maybeSingle();
+  if (!payment) return;
+
+  try {
+    const { data: league } = await supabaseAdmin
+      .from("golf_leagues")
+      .select("id, league_name, organization_id")
+      .eq("id", payment.league_id)
+      .maybeSingle();
+    if (!league?.organization_id) return;
+    const platformFee = payment.platform_fee_cents || 0;
+    await supabaseAdmin.from("platform_transactions").insert({
+      organization_id: league.organization_id,
+      amount_cents: gross,
+      platform_fee_cents: platformFee,
+      stripe_fee_cents: stripeFee,
+      net_amount_cents: Math.max(gross - platformFee - stripeFee, 0),
+      type: "league",
+      status: "completed",
+      stripe_session_id: payment.stripe_session_id || String(session.id),
+      stripe_payment_intent_id: String(session.payment_intent || ""),
+      golfer_email: payment.payer_email || session.customer_details?.email || null,
+      description: `${league.league_name} — ${description}`,
+      metadata: { league_id: league.id, league_payment_id: payment.id, source: "league" },
+    });
+  } catch (e) {
+    console.error("platform_transactions mirror failed:", (e as Error).message);
+  }
+}
+
 Deno.serve(async (req) => {
+
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
   const supabaseAdmin = createClient(

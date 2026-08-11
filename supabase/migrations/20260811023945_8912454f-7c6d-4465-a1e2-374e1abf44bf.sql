@@ -1,0 +1,4 @@
+ALTER TABLE public.tournaments
+  ADD COLUMN IF NOT EXISTS post_event_email_sent BOOLEAN NOT NULL DEFAULT FALSE,
+  ADD COLUMN IF NOT EXISTS post_event_email_sent_at TIMESTAMPTZ,
+  ADD COLUMN IF NOT EXISTS post_event_email_opt_out BOOLEAN NOT NULL DEFAULT FALSE;

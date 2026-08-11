@@ -118,6 +118,8 @@ Deno.serve(async (req) => {
         registration_id: regId,
         kind: "event",
         amount_cents: amountCents,
+        gross_amount_cents: chargeCents,
+
         platform_fee_cents: feeCents,
         stripe_account_id: account.stripeAccountId,
         payer_email: (member as any).email,

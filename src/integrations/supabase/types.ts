@@ -3887,7 +3887,9 @@ export type Database = {
         Row: {
           amount_cents: number
           created_at: string
+          entry_source: string
           event_id: string | null
+          gross_amount_cents: number | null
           id: string
           kind: string
           league_id: string
@@ -3897,6 +3899,7 @@ export type Database = {
           registration_id: string | null
           status: string
           stripe_account_id: string | null
+          stripe_fee_cents: number
           stripe_payment_intent: string | null
           stripe_session_id: string | null
           updated_at: string
@@ -3904,7 +3907,9 @@ export type Database = {
         Insert: {
           amount_cents: number
           created_at?: string
+          entry_source?: string
           event_id?: string | null
+          gross_amount_cents?: number | null
           id?: string
           kind: string
           league_id: string
@@ -3914,6 +3919,7 @@ export type Database = {
           registration_id?: string | null
           status?: string
           stripe_account_id?: string | null
+          stripe_fee_cents?: number
           stripe_payment_intent?: string | null
           stripe_session_id?: string | null
           updated_at?: string
@@ -3921,7 +3927,9 @@ export type Database = {
         Update: {
           amount_cents?: number
           created_at?: string
+          entry_source?: string
           event_id?: string | null
+          gross_amount_cents?: number | null
           id?: string
           kind?: string
           league_id?: string
@@ -3931,6 +3939,7 @@ export type Database = {
           registration_id?: string | null
           status?: string
           stripe_account_id?: string | null
+          stripe_fee_cents?: number
           stripe_payment_intent?: string | null
           stripe_session_id?: string | null
           updated_at?: string

@@ -63,6 +63,8 @@ Deno.serve(async (req) => {
         member_id: member.id,
         kind: "membership",
         amount_cents: amountCents,
+        gross_amount_cents: chargeCents,
+
         platform_fee_cents: feeCents,
         stripe_account_id: account.stripeAccountId,
         payer_email: (member as any).email,

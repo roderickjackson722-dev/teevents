@@ -16,6 +16,12 @@ export function estimateStripeFeeCents(preStripeTotalCents: number) {
   );
 }
 
+/** Actual Stripe cost on a charge that already totals `grossCents` (2.9% + 30c). */
+export function actualStripeFeeCents(grossCents: number) {
+  if (grossCents <= 0) return 0;
+  return Math.round(grossCents * 0.029) + 30;
+}
+
 export type FeeBreakdown = {
   gross_cents: number;
   platform_fee_cents: number;

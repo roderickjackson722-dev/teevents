@@ -11,7 +11,6 @@ import AlphaListTab from "@/components/printables/AlphaListTab";
 import HoleAssignmentsTab from "@/components/printables/HoleAssignmentsTab";
 import ScorecardsTab from "@/components/printables/ScorecardsTab";
 import CheckInRosterTab from "@/components/printables/CheckInRosterTab";
-import SponsorSignsTab from "@/components/printables/SponsorSignsTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
 import QRCodesTab, { type PrintableAddon } from "@/components/printables/QRCodesTab";
 import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions } from "@/components/printables/PrintablesOptionsCard";
@@ -228,9 +227,6 @@ const Printables = () => {
         </TabsContent>
         <TabsContent value="name-badges">
           <NameBadgesTab tournament={tournament} registrations={printRegistrations} loading={loading} />
-        </TabsContent>
-        <TabsContent value="sponsor-signs">
-          <SponsorSignsTab tournament={tournament} sponsors={sponsors} loading={loading} />
         </TabsContent>
         <TabsContent value="alpha-list">
           <AlphaListTab tournament={tournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />

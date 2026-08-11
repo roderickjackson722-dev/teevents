@@ -9975,6 +9975,9 @@ export type Database = {
           pin_sheets_enabled: boolean
           pin_sheets_notes: string | null
           post_event_email_config: Json | null
+          post_event_email_opt_out: boolean
+          post_event_email_sent: boolean
+          post_event_email_sent_at: string | null
           post_event_survey_delay_days: number
           post_event_survey_enabled: boolean
           post_event_survey_message: string | null
@@ -10257,6 +10260,9 @@ export type Database = {
           pin_sheets_enabled?: boolean
           pin_sheets_notes?: string | null
           post_event_email_config?: Json | null
+          post_event_email_opt_out?: boolean
+          post_event_email_sent?: boolean
+          post_event_email_sent_at?: string | null
           post_event_survey_delay_days?: number
           post_event_survey_enabled?: boolean
           post_event_survey_message?: string | null
@@ -10539,6 +10545,9 @@ export type Database = {
           pin_sheets_enabled?: boolean
           pin_sheets_notes?: string | null
           post_event_email_config?: Json | null
+          post_event_email_opt_out?: boolean
+          post_event_email_sent?: boolean
+          post_event_email_sent_at?: string | null
           post_event_survey_delay_days?: number
           post_event_survey_enabled?: boolean
           post_event_survey_message?: string | null

@@ -18,6 +18,7 @@ import { Route as TeamSlugRouteImport } from './routes/team/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
 import { Route as ApiPublicLeagueLoginInstructionsRouteImport } from './routes/api/public/league-login-instructions'
+import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/api/public/post-event-organizer-email'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 
 const SplatRoute = SplatRouteImport.update({
@@ -67,6 +68,12 @@ const ApiPublicLeagueLoginInstructionsRoute =
     path: '/api/public/league-login-instructions',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicPostEventOrganizerEmailRoute =
+  ApiPublicPostEventOrganizerEmailRouteImport.update({
+    id: '/api/public/post-event-organizer-email',
+    path: '/api/public/post-event-organizer-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
   id: '/s/sassurvey/share',
   path: '/s/sassurvey/share',
@@ -83,6 +90,7 @@ export interface FileRoutesByFullPath {
   '/college/': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
+  '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRoutesByTo {
@@ -95,6 +103,7 @@ export interface FileRoutesByTo {
   '/college': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
+  '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRoutesById {
@@ -108,6 +117,7 @@ export interface FileRoutesById {
   '/college/': typeof CollegeIndexRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
+  '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
 }
 export interface FileRouteTypes {
@@ -122,6 +132,7 @@ export interface FileRouteTypes {
     | '/college/'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-login-instructions'
+    | '/api/public/post-event-organizer-email'
     | '/s/sassurvey/share'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -134,6 +145,7 @@ export interface FileRouteTypes {
     | '/college'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-login-instructions'
+    | '/api/public/post-event-organizer-email'
     | '/s/sassurvey/share'
   id:
     | '__root__'
@@ -146,6 +158,7 @@ export interface FileRouteTypes {
     | '/college/'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-login-instructions'
+    | '/api/public/post-event-organizer-email'
     | '/s/sassurvey/share'
   fileRoutesById: FileRoutesById
 }
@@ -159,6 +172,7 @@ export interface RootRouteChildren {
   CollegeIndexRoute: typeof CollegeIndexRoute
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
   ApiPublicLeagueLoginInstructionsRoute: typeof ApiPublicLeagueLoginInstructionsRoute
+  ApiPublicPostEventOrganizerEmailRoute: typeof ApiPublicPostEventOrganizerEmailRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
 }
 
@@ -227,6 +241,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLeagueLoginInstructionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/post-event-organizer-email': {
+      id: '/api/public/post-event-organizer-email'
+      path: '/api/public/post-event-organizer-email'
+      fullPath: '/api/public/post-event-organizer-email'
+      preLoaderRoute: typeof ApiPublicPostEventOrganizerEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/s/sassurvey/share': {
       id: '/s/sassurvey/share'
       path: '/s/sassurvey/share'
@@ -247,6 +268,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollegeIndexRoute: CollegeIndexRoute,
   ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,
   ApiPublicLeagueLoginInstructionsRoute: ApiPublicLeagueLoginInstructionsRoute,
+  ApiPublicPostEventOrganizerEmailRoute: ApiPublicPostEventOrganizerEmailRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,
 }
 export const routeTree = rootRouteImport

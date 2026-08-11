@@ -136,6 +136,7 @@ import SalesProspecting from "./pages/admin/SalesProspecting";
 import DemoLeads from "./pages/admin/DemoLeads";
 import AdminCompetitors from "./pages/admin/Competitors";
 import AdminBrandingFooter from "./pages/admin/BrandingFooter";
+import AdminPostEventEmail from "./pages/admin/PostEventEmail";
 import CollegeHubBookings from "./pages/admin/CollegeHubBookings";
 import PlatformTournaments from "./pages/admin/PlatformTournaments";
 import LeagueInvoices from "./pages/admin/LeagueInvoices";
@@ -366,7 +367,9 @@ const App = () => (
              <Route path="/demo-prep/:token" element={<DemoPrepShare />} />
              <Route path="/admin/competitors" element={<AdminCompetitors />} />
              <Route path="/admin/branding-footer" element={<AdminBrandingFooter />} />
-            <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
+             <Route path="/admin/post-event-email" element={<AdminPostEventEmail />} />
+             <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
+
             <Route path="/admin/college-hub/surveys" element={<CollegeHubSurveys />} />
             <Route path="/s/:slug" element={<CollegeSurvey />} />
             <Route path="/admin/platform-tournaments" element={<PlatformTournaments />} />

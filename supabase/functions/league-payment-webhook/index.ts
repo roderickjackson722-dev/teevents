@@ -140,10 +140,8 @@ Deno.serve(async (req) => {
         const promo = session.metadata?.promo_code || "";
         const pi = String(session.payment_intent || "");
 
-        await supabaseAdmin
-          .from("league_payments")
-          .update({ status: "paid", stripe_payment_intent: pi })
-          .eq("id", paymentId);
+        await finalizeLeaguePayment(supabaseAdmin, paymentId, session, "League Membership");
+
         await supabaseAdmin
           .from("league_registration_responses")
           .update({ payment_status: "paid", paid_at: new Date().toISOString() })

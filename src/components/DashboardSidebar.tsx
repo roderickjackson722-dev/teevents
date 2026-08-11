@@ -6,7 +6,7 @@ import {
   CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
   Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate, Receipt, Gauge,
-  Clock, ChevronDown,
+  Clock, ChevronDown, Zap,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
@@ -63,10 +63,9 @@ const categories: SidebarCategory[] = [
     label: "Event",
     color: "border-l-secondary bg-secondary/5",
     items: [
-      { title: "Overview", url: "/dashboard", icon: LayoutDashboard, feature: null, description: "Dashboard home: planning guide, setup checklist, and event snapshot" },
-      { title: "Event Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Event info, organization details, and lodging" },
-      { title: "Schedule (Tee Sheet)", url: "/dashboard/players?tab=pairings", icon: Clock, feature: "players", description: "Tee sheet: groups, tee times, and starting holes" },
-      { title: "Course Setup", url: "/dashboard/course-details", icon: MapPin, feature: null, description: "Par, slope, rating, hole data" },
+      { title: "Event Checklist & Timeline", url: "/dashboard", icon: LayoutDashboard, feature: null, description: "Setup checklist and milestone timeline with due dates" },
+      { title: "Event Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Event info, registration fee, format, and course setup" },
+      { title: "Quick Actions", url: "/dashboard/quick-actions", icon: Zap, feature: null, description: "Pick the shortcuts you use most" },
       { title: "Notes & Reminders", url: "/dashboard/notes", icon: FileText, feature: null, description: "Personal to-do list, reminders, and notes for this tournament" },
     ],
 

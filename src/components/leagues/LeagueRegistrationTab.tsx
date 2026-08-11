@@ -465,6 +465,7 @@ export default function LeagueRegistrationTab({ league }: { league: any }) {
                     <TableHead>Login Code</TableHead>
                     <TableHead>Amount</TableHead>
                     <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -478,6 +479,29 @@ export default function LeagueRegistrationTab({ league }: { league: any }) {
                       <TableCell>
                         <Badge variant={r.payment_status === "pending" ? "secondary" : "default"}>{r.payment_status}</Badge>
                       </TableCell>
+                      <TableCell className="text-right whitespace-nowrap">
+                        <Button size="sm" variant="ghost" title="Edit registration" onClick={() => setEditingResponse({
+                          id: r.id,
+                          member_id: r.member_id,
+                          response_data: r.response_data || {},
+                          promo_code: r.promo_code || null,
+                          name: r.member?.member_name || r.response_data?.full_name || "",
+                          email: r.member?.email || r.response_data?.email || "",
+                          amount: (Number(r.amount_cents || 0) / 100).toFixed(2),
+                          payment_status: r.payment_status || "pending",
+                        })}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <Button size="sm" variant="ghost" title="Remove registration" onClick={() => setDeletingResponse({
+                          id: r.id,
+                          member_id: r.member_id,
+                          promo_code: r.promo_code || null,
+                          name: r.member?.member_name || r.response_data?.full_name || "this registration",
+                          alsoRemoveMember: false,
+                        })}>
+                          <Trash2 className="h-3.5 w-3.5 text-destructive" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -486,6 +510,77 @@ export default function LeagueRegistrationTab({ league }: { league: any }) {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit a registration / member */}
+      {editingResponse && (
+        <Dialog open onOpenChange={() => setEditingResponse(null)}>
+          <DialogContent className="max-w-md">
+            <DialogHeader><DialogTitle>Edit Registration</DialogTitle></DialogHeader>
+            <div className="space-y-3">
+              <div>
+                <Label>Full Name</Label>
+                <Input value={editingResponse.name} onChange={(e) => setEditingResponse({ ...editingResponse, name: e.target.value })} />
+              </div>
+              <div>
+                <Label>Email</Label>
+                <Input type="email" value={editingResponse.email} onChange={(e) => setEditingResponse({ ...editingResponse, email: e.target.value })} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Amount ($)</Label>
+                  <Input type="number" step="0.01" value={editingResponse.amount} onChange={(e) => setEditingResponse({ ...editingResponse, amount: e.target.value })} />
+                </div>
+                <div>
+                  <Label>Payment Status</Label>
+                  <Select value={editingResponse.payment_status} onValueChange={(v) => setEditingResponse({ ...editingResponse, payment_status: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="free">Free / Comped</SelectItem>
+                      <SelectItem value="refunded">Refunded</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              {editingResponse.member_id && (
+                <p className="text-xs text-muted-foreground">Name and email changes also update this member's league profile.</p>
+              )}
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setEditingResponse(null)}>Cancel</Button>
+              <Button onClick={saveResponse} disabled={rowBusy}>
+                {rowBusy && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Save
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Delete confirmation */}
+      <AlertDialog open={!!deletingResponse} onOpenChange={(o) => !o && setDeletingResponse(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove {deletingResponse?.name}?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This deletes the registration submission. Any promo code usage is credited back automatically.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {deletingResponse?.member_id && (
+            <label className="flex items-center gap-2 text-sm">
+              <Switch
+                checked={!!deletingResponse.alsoRemoveMember}
+                onCheckedChange={(v) => setDeletingResponse({ ...deletingResponse, alsoRemoveMember: v })}
+              />
+              Also remove this person from the league roster
+            </label>
+          )}
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteResponse} disabled={rowBusy}>Remove</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

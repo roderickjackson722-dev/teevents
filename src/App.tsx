@@ -136,6 +136,7 @@ import SalesProspecting from "./pages/admin/SalesProspecting";
 import DemoLeads from "./pages/admin/DemoLeads";
 import AdminCompetitors from "./pages/admin/Competitors";
 import AdminBrandingFooter from "./pages/admin/BrandingFooter";
+import AdminPostEventEmail from "./pages/admin/PostEventEmail";
 import CollegeHubBookings from "./pages/admin/CollegeHubBookings";
 import PlatformTournaments from "./pages/admin/PlatformTournaments";
 import LeagueInvoices from "./pages/admin/LeagueInvoices";

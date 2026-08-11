@@ -301,6 +301,66 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
           </div>
         )}
 
+        {shareEvent && (
+          <Dialog open onOpenChange={() => setShareEvent(null)}>
+            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>Send Registration Link — {shareEvent.event_name}</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Direct registration link</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input readOnly value={registrationLink(shareEvent.id)} />
+                    <Button type="button" variant="outline" onClick={() => copyRegistrationLink(shareEvent.id)}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Members open this link and enter their 6-character member login code to register.
+                  </p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Label>Email to members ({selectedMembers.length} selected)</Label>
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" variant="ghost" onClick={() => setSelectedMembers(members.filter((m) => m.email).map((m) => m.id))}>All</Button>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => setSelectedMembers([])}>None</Button>
+                    </div>
+                  </div>
+                  <div className="mt-2 border rounded max-h-64 overflow-y-auto divide-y">
+                    {members.length === 0 && <p className="p-3 text-sm text-muted-foreground">No members yet.</p>}
+                    {members.map((m) => (
+                      <label key={m.id} className={`flex items-center gap-3 p-2.5 text-sm ${m.email ? "cursor-pointer" : "opacity-50"}`}>
+                        <input
+                          type="checkbox"
+                          disabled={!m.email}
+                          checked={selectedMembers.includes(m.id)}
+                          onChange={(ev) =>
+                            setSelectedMembers((prev) =>
+                              ev.target.checked ? [...prev, m.id] : prev.filter((id) => id !== m.id),
+                            )
+                          }
+                        />
+                        <span className="flex-1">
+                          <span className="font-medium">{m.member_name}</span>
+                          <span className="block text-xs text-muted-foreground">{m.email || "no email on file"}</span>
+                        </span>
+                        {m.scoring_code && <Badge variant="outline" className="font-mono text-xs">{m.scoring_code}</Badge>}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShareEvent(null)}>Close</Button>
+                <Button onClick={sendRegistrationLink} disabled={sending}>
+                  {sending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending…</> : <><Mail className="h-4 w-4 mr-2" /> Send Link</>}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+
         {editing && (
           <Dialog open onOpenChange={() => setEditing(null)}>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">

@@ -28,6 +28,7 @@ import PublicLeague from "./pages/PublicLeague";
 import LeagueMemberLogin from "./pages/LeagueMemberLogin";
 import LeagueMemberPortal from "./pages/LeagueMemberPortal";
 import LeagueEventRegister from "./pages/LeagueEventRegister";
+import LeagueEventRegisterCode from "./pages/LeagueEventRegisterCode";
 import LeagueRegisterPublic from "./pages/LeagueRegisterPublic";
 
 import SelectWorkspace from "./pages/SelectWorkspace";
@@ -250,6 +251,7 @@ const App = () => (
           <Route path="/league/:slug/score" element={<LeagueMemberLogin />} />
           <Route path="/league/:slug/me/:code" element={<LeagueMemberPortal />} />
           <Route path="/league/:slug/register" element={<LeagueRegisterPublic />} />
+          <Route path="/league/:slug/register-code" element={<LeagueEventRegisterCode />} />
           <Route path="/league/:slug/register/:code" element={<LeagueEventRegister />} />
 
 

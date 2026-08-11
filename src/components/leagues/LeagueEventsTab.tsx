@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, Calendar, DollarSign } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, DollarSign, Link as LinkIcon, Mail, Copy } from "lucide-react";
 import { FLIGHT_METHODS, SHOOTOUT_DEFAULT_ROUNDS, THREE_MAN_SCRAMBLE_WEIGHTS } from "@/lib/flightPayouts";
 
 export const LEAGUE_FORMATS = [
@@ -82,17 +82,68 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any>(null);
+  const [leagueSlug, setLeagueSlug] = useState<string>("");
+  const [shareEvent, setShareEvent] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [sending, setSending] = useState(false);
 
   const load = async () => {
     setLoading(true);
-    const [{ data: ev }, { data: cs }] = await Promise.all([
+    const [{ data: ev }, { data: cs }, { data: lg }] = await Promise.all([
       (supabase as any).from("league_events").select("*").eq("league_id", leagueId).order("event_date"),
       (supabase as any).from("league_courses").select("id, course_name, tee_name").eq("league_id", leagueId).order("course_name"),
+      (supabase as any).from("golf_leagues").select("league_slug").eq("id", leagueId).maybeSingle(),
     ]);
     setEvents(ev || []);
     setCourses(cs || []);
+    setLeagueSlug(lg?.league_slug || "");
     setLoading(false);
   };
+
+  const registrationLink = (eventId: string) =>
+    `${typeof window !== "undefined" ? window.location.origin : "https://www.teevents.golf"}/league/${leagueSlug}/register-code?event=${eventId}`;
+
+  const copyRegistrationLink = async (eventId: string) => {
+    await navigator.clipboard.writeText(registrationLink(eventId));
+    toast({ title: "Registration link copied", description: "Members enter their login code to register." });
+  };
+
+  const openShare = async (e: any) => {
+    setShareEvent(e);
+    const { data } = await (supabase as any)
+      .from("league_members")
+      .select("id, member_name, email, scoring_code")
+      .eq("league_id", leagueId)
+      .order("member_name");
+    const list = data || [];
+    setMembers(list);
+    setSelectedMembers(list.filter((m: any) => m.email).map((m: any) => m.id));
+  };
+
+  const sendRegistrationLink = async () => {
+    if (selectedMembers.length === 0) {
+      return toast({ title: "Select at least one member", variant: "destructive" });
+    }
+    setSending(true);
+    const { data: sess } = await supabase.auth.getSession();
+    const res = await fetch("/api/public/league-event-registration-link", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sess.session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ event_id: shareEvent.id, member_ids: selectedMembers }),
+    });
+    const payload = await res.json().catch(() => ({}));
+    setSending(false);
+    if (!res.ok) {
+      return toast({ title: "Could not send", description: payload?.error || `HTTP ${res.status}`, variant: "destructive" });
+    }
+    toast({ title: `Registration link sent to ${payload.sent} member(s)` });
+    setShareEvent(null);
+  };
+
 
   useEffect(() => { load(); }, [leagueId]);
 
@@ -239,6 +290,8 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                           ? e.fee_tiers.map((t: any) => ({ id: t.id || newTierId(), label: t.label || "", amount: t.amount_cents != null ? (Number(t.amount_cents) / 100).toString() : "" }))
                           : [],
                       })}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" title="Copy registration link" onClick={() => copyRegistrationLink(e.id)}><LinkIcon className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" title="Email registration link to members" onClick={() => openShare(e)}><Mail className="h-3.5 w-3.5" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => remove(e.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </TableCell>
                   </TableRow>
@@ -247,6 +300,66 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
             </Table>
           </div>
         )}
+
+        {shareEvent && (
+          <Dialog open onOpenChange={() => setShareEvent(null)}>
+            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+              <DialogHeader><DialogTitle>Send Registration Link — {shareEvent.event_name}</DialogTitle></DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <Label>Direct registration link</Label>
+                  <div className="flex gap-2 mt-1">
+                    <Input readOnly value={registrationLink(shareEvent.id)} />
+                    <Button type="button" variant="outline" onClick={() => copyRegistrationLink(shareEvent.id)}>
+                      <Copy className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Members open this link and enter their 6-character member login code to register.
+                  </p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between">
+                    <Label>Email to members ({selectedMembers.length} selected)</Label>
+                    <div className="flex gap-2">
+                      <Button type="button" size="sm" variant="ghost" onClick={() => setSelectedMembers(members.filter((m) => m.email).map((m) => m.id))}>All</Button>
+                      <Button type="button" size="sm" variant="ghost" onClick={() => setSelectedMembers([])}>None</Button>
+                    </div>
+                  </div>
+                  <div className="mt-2 border rounded max-h-64 overflow-y-auto divide-y">
+                    {members.length === 0 && <p className="p-3 text-sm text-muted-foreground">No members yet.</p>}
+                    {members.map((m) => (
+                      <label key={m.id} className={`flex items-center gap-3 p-2.5 text-sm ${m.email ? "cursor-pointer" : "opacity-50"}`}>
+                        <input
+                          type="checkbox"
+                          disabled={!m.email}
+                          checked={selectedMembers.includes(m.id)}
+                          onChange={(ev) =>
+                            setSelectedMembers((prev) =>
+                              ev.target.checked ? [...prev, m.id] : prev.filter((id) => id !== m.id),
+                            )
+                          }
+                        />
+                        <span className="flex-1">
+                          <span className="font-medium">{m.member_name}</span>
+                          <span className="block text-xs text-muted-foreground">{m.email || "no email on file"}</span>
+                        </span>
+                        {m.scoring_code && <Badge variant="outline" className="font-mono text-xs">{m.scoring_code}</Badge>}
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setShareEvent(null)}>Close</Button>
+                <Button onClick={sendRegistrationLink} disabled={sending}>
+                  {sending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Sending…</> : <><Mail className="h-4 w-4 mr-2" /> Send Link</>}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
 
         {editing && (
           <Dialog open onOpenChange={() => setEditing(null)}>

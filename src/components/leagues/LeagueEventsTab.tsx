@@ -82,17 +82,68 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState<any>(null);
+  const [leagueSlug, setLeagueSlug] = useState<string>("");
+  const [shareEvent, setShareEvent] = useState<any>(null);
+  const [members, setMembers] = useState<any[]>([]);
+  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
+  const [sending, setSending] = useState(false);
 
   const load = async () => {
     setLoading(true);
-    const [{ data: ev }, { data: cs }] = await Promise.all([
+    const [{ data: ev }, { data: cs }, { data: lg }] = await Promise.all([
       (supabase as any).from("league_events").select("*").eq("league_id", leagueId).order("event_date"),
       (supabase as any).from("league_courses").select("id, course_name, tee_name").eq("league_id", leagueId).order("course_name"),
+      (supabase as any).from("golf_leagues").select("league_slug").eq("id", leagueId).maybeSingle(),
     ]);
     setEvents(ev || []);
     setCourses(cs || []);
+    setLeagueSlug(lg?.league_slug || "");
     setLoading(false);
   };
+
+  const registrationLink = (eventId: string) =>
+    `${typeof window !== "undefined" ? window.location.origin : "https://www.teevents.golf"}/league/${leagueSlug}/register-code?event=${eventId}`;
+
+  const copyRegistrationLink = async (eventId: string) => {
+    await navigator.clipboard.writeText(registrationLink(eventId));
+    toast({ title: "Registration link copied", description: "Members enter their login code to register." });
+  };
+
+  const openShare = async (e: any) => {
+    setShareEvent(e);
+    const { data } = await (supabase as any)
+      .from("league_members")
+      .select("id, member_name, email, scoring_code")
+      .eq("league_id", leagueId)
+      .order("member_name");
+    const list = data || [];
+    setMembers(list);
+    setSelectedMembers(list.filter((m: any) => m.email).map((m: any) => m.id));
+  };
+
+  const sendRegistrationLink = async () => {
+    if (selectedMembers.length === 0) {
+      return toast({ title: "Select at least one member", variant: "destructive" });
+    }
+    setSending(true);
+    const { data: sess } = await supabase.auth.getSession();
+    const res = await fetch("/api/public/league-event-registration-link", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${sess.session?.access_token ?? ""}`,
+      },
+      body: JSON.stringify({ event_id: shareEvent.id, member_ids: selectedMembers }),
+    });
+    const payload = await res.json().catch(() => ({}));
+    setSending(false);
+    if (!res.ok) {
+      return toast({ title: "Could not send", description: payload?.error || `HTTP ${res.status}`, variant: "destructive" });
+    }
+    toast({ title: `Registration link sent to ${payload.sent} member(s)` });
+    setShareEvent(null);
+  };
+
 
   useEffect(() => { load(); }, [leagueId]);
 

@@ -251,6 +251,7 @@ const App = () => (
           <Route path="/league/:slug/score" element={<LeagueMemberLogin />} />
           <Route path="/league/:slug/me/:code" element={<LeagueMemberPortal />} />
           <Route path="/league/:slug/register" element={<LeagueRegisterPublic />} />
+          <Route path="/league/:slug/register-code" element={<LeagueEventRegisterCode />} />
           <Route path="/league/:slug/register/:code" element={<LeagueEventRegister />} />
 
 

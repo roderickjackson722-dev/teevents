@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { TimeField } from "@/components/ui/time-field";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

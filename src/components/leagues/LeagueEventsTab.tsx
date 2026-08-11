@@ -11,7 +11,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Plus, Pencil, Trash2, Loader2, Calendar, DollarSign } from "lucide-react";
+import { Plus, Pencil, Trash2, Loader2, Calendar, DollarSign, Link as LinkIcon, Mail, Copy } from "lucide-react";
 import { FLIGHT_METHODS, SHOOTOUT_DEFAULT_ROUNDS, THREE_MAN_SCRAMBLE_WEIGHTS } from "@/lib/flightPayouts";
 
 export const LEAGUE_FORMATS = [

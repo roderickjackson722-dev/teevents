@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, Award, BadgeCheck, QrCode } from "lucide-react";
+import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, BadgeCheck, QrCode } from "lucide-react";
 import { toast } from "sonner";
 import type { Tournament, Registration, Sponsor } from "@/components/printables/types";
 import CartSignsTab from "@/components/printables/CartSignsTab";

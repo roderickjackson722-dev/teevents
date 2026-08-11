@@ -101,6 +101,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-purple-400 bg-purple-400/5",
     items: [
       { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Sponsor levels, prices, benefits, logos, and vendors" },
+      { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Vendor booths: packages, registrations, documents, and hole locations" },
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
       { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
       { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },

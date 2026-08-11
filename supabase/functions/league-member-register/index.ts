@@ -194,7 +194,9 @@ Deno.serve(async (req) => {
         league_id: league.id,
         member_id: memberId,
         kind: "registration",
-        amount_cents: chargeCents,
+        amount_cents: amountCents,
+        gross_amount_cents: chargeCents,
+
         platform_fee_cents: feeCents,
         stripe_account_id: account.stripeAccountId,
         payer_email: email,

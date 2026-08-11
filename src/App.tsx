@@ -28,6 +28,7 @@ import PublicLeague from "./pages/PublicLeague";
 import LeagueMemberLogin from "./pages/LeagueMemberLogin";
 import LeagueMemberPortal from "./pages/LeagueMemberPortal";
 import LeagueEventRegister from "./pages/LeagueEventRegister";
+import LeagueEventRegisterCode from "./pages/LeagueEventRegisterCode";
 import LeagueRegisterPublic from "./pages/LeagueRegisterPublic";
 
 import SelectWorkspace from "./pages/SelectWorkspace";

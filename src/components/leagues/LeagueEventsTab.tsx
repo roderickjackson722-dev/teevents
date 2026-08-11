@@ -290,6 +290,8 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                           ? e.fee_tiers.map((t: any) => ({ id: t.id || newTierId(), label: t.label || "", amount: t.amount_cents != null ? (Number(t.amount_cents) / 100).toString() : "" }))
                           : [],
                       })}><Pencil className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" title="Copy registration link" onClick={() => copyRegistrationLink(e.id)}><LinkIcon className="h-3.5 w-3.5" /></Button>
+                      <Button size="sm" variant="ghost" title="Email registration link to members" onClick={() => openShare(e)}><Mail className="h-3.5 w-3.5" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => remove(e.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
                     </TableCell>
                   </TableRow>

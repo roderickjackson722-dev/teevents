@@ -366,8 +366,9 @@ const App = () => (
              <Route path="/claim-demo/:token" element={<ClaimDemo />} />
              <Route path="/demo-prep/:token" element={<DemoPrepShare />} />
              <Route path="/admin/competitors" element={<AdminCompetitors />} />
-             <Route path="/admin/branding-footer" element={<AdminBrandingFooter />} />
-            <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
+             <Route path="/admin/post-event-email" element={<AdminPostEventEmail />} />
+             <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
+
             <Route path="/admin/college-hub/surveys" element={<CollegeHubSurveys />} />
             <Route path="/s/:slug" element={<CollegeSurvey />} />
             <Route path="/admin/platform-tournaments" element={<PlatformTournaments />} />

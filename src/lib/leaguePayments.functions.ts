@@ -55,14 +55,20 @@ export const syncLeaguePaymentStatus = createServerFn({ method: "POST" })
       const session: any = await resp.json();
       if (session.payment_status !== "paid") continue;
 
+      const { estimateStripeFeeCents } = await import("./leagueFees");
+      const gross = Number(session.amount_total || 0) || null;
+
       await supabaseAdmin
         .from("league_payments")
         .update({
           status: "paid",
+          gross_amount_cents: gross,
+          stripe_fee_cents: gross ? estimateStripeFeeCents(gross) : 0,
           stripe_payment_intent: typeof session.payment_intent === "string" ? session.payment_intent : null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", p.id);
+
 
       if (p.registration_id) {
         await supabaseAdmin

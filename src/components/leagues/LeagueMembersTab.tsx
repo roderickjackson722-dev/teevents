@@ -120,11 +120,17 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
     load();
   };
 
-  const remove = async (id: string) => {
-    if (!confirm("Remove this member?")) return;
-    const { error } = await (supabase as any).from("league_members").delete().eq("id", id);
+  const [deleting, setDeleting] = useState<Member | null>(null);
+
+  const remove = async () => {
+    if (!deleting) return;
+    const { error } = await (supabase as any).from("league_members").delete().eq("id", deleting.id);
     if (error) toast({ title: "Remove failed", description: error.message, variant: "destructive" });
-    else load();
+    else {
+      toast({ title: `${deleting.member_name} removed from the league` });
+      load();
+    }
+    setDeleting(null);
   };
 
   const [busyId, setBusyId] = useState<string | null>(null);

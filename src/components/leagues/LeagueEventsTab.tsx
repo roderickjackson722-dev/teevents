@@ -269,7 +269,7 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label>{editing.start_format === "tee_times" ? "First Tee Time" : "Shotgun Start Time"}</Label>
-                    <Input type="time" value={editing.start_time} onChange={(e) => setEditing({ ...editing, start_time: e.target.value })} />
+                    <TimeField value={editing.start_time} minuteStep={5} onChange={(v) => setEditing({ ...editing, start_time: v })} />
                   </div>
                   <div>
                     <Label>Course (display name)</Label>

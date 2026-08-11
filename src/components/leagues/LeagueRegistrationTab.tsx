@@ -10,8 +10,13 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import {
-  Loader2, Plus, Trash2, ArrowUp, ArrowDown, Save, Copy, Tag, ClipboardList, ExternalLink, Download,
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Loader2, Plus, Trash2, ArrowUp, ArrowDown, Save, Copy, Tag, ClipboardList, ExternalLink, Download, Pencil,
 } from "lucide-react";
 
 export interface RegField {

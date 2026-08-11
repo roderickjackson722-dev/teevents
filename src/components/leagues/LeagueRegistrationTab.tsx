@@ -160,6 +160,74 @@ export default function LeagueRegistrationTab({ league }: { league: any }) {
     load();
   };
 
+  // --- Submission editing / removal -------------------------------------
+  const [editingResponse, setEditingResponse] = useState<any>(null);
+  const [deletingResponse, setDeletingResponse] = useState<any>(null);
+  const [rowBusy, setRowBusy] = useState(false);
+
+  const saveResponse = async () => {
+    if (!editingResponse) return;
+    setRowBusy(true);
+    const name = String(editingResponse.name || "").trim();
+    const email = String(editingResponse.email || "").trim();
+    const amountCents = Math.round(Number(editingResponse.amount || 0) * 100);
+
+    const { error: rErr } = await (supabase as any)
+      .from("league_registration_responses")
+      .update({
+        payment_status: editingResponse.payment_status,
+        amount_cents: amountCents,
+        response_data: { ...(editingResponse.response_data || {}), full_name: name, email },
+      })
+      .eq("id", editingResponse.id);
+
+    let mErr: any = null;
+    if (!rErr && editingResponse.member_id) {
+      const res = await (supabase as any)
+        .from("league_members")
+        .update({ member_name: name, email })
+        .eq("id", editingResponse.member_id);
+      mErr = res.error;
+    }
+    setRowBusy(false);
+    const error = rErr || mErr;
+    if (error) return toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    toast({ title: "Registration updated" });
+    setEditingResponse(null);
+    load();
+  };
+
+  const confirmDeleteResponse = async () => {
+    if (!deletingResponse) return;
+    setRowBusy(true);
+    const { error } = await (supabase as any)
+      .from("league_registration_responses")
+      .delete()
+      .eq("id", deletingResponse.id);
+
+    if (!error && deletingResponse.alsoRemoveMember && deletingResponse.member_id) {
+      await (supabase as any).from("league_members").delete().eq("id", deletingResponse.member_id);
+    }
+    // Keep promo usage counts accurate after a removal.
+    if (!error && deletingResponse.promo_code) {
+      const { data: remaining } = await (supabase as any)
+        .from("league_registration_responses")
+        .select("id")
+        .eq("league_id", leagueId)
+        .eq("promo_code", deletingResponse.promo_code);
+      await (supabase as any)
+        .from("league_registration_promo_codes")
+        .update({ times_used: (remaining || []).length })
+        .eq("league_id", leagueId)
+        .eq("code", deletingResponse.promo_code);
+    }
+    setRowBusy(false);
+    if (error) return toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+    toast({ title: "Registration removed" });
+    setDeletingResponse(null);
+    load();
+  };
+
   const exportResponses = () => {
     const keys = fields.map(f => f.key);
     const header = ["Submitted", "Name", "Email", "Login Code", "Amount", "Status", ...fields.map(f => f.label)];

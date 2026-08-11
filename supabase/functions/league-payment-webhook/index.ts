@@ -254,14 +254,18 @@ Deno.serve(async (req) => {
         const paymentId = session.metadata!.payment_id;
         const regId = session.metadata!.registration_id;
         const pi = String(session.payment_intent || "");
-        await supabaseAdmin
-          .from("league_payments")
-          .update({ status: "paid", stripe_payment_intent: pi })
-          .eq("id", paymentId);
+        await finalizeLeaguePayment(supabaseAdmin, paymentId, session, "Event registration");
         await supabaseAdmin
           .from("league_event_registrations")
-          .update({ fee_paid: true })
+          .update({
+            fee_paid: true,
+            registration_fee_paid: true,
+            paid_at: new Date().toISOString(),
+            entry_type: "online",
+            is_manual_entry: false,
+          })
           .eq("id", regId);
+
 
         // Player confirmation + league manager + TeeVents admin copy (single
         // source of truth so the template stays editable in the dashboard).

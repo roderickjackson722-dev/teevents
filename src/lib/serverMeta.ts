@@ -42,6 +42,30 @@ export async function getCollegeHubList(): Promise<CollegeHubItem[]> {
   return rows.filter((row) => row.slug).map((row) => ({ slug: String(row.slug), title: plain(row.title) || "College Golf Tournament", tagline: plain(row.hero_tagline) }));
 }
 
+/** Public survey / info-form pages: /s/{slug} */
+export async function getSurveyMeta(slug: string, path?: string): Promise<PageMeta> {
+  const row = await query("college_surveys", new URLSearchParams({ select: "title,description,hero_image_url", slug: `eq.${slug}`, is_active: "eq.true", limit: "1" }));
+  const title = plain(row?.title) || "Survey";
+  return {
+    title: `${title} | TeeVents`,
+    description: clamp(plain(row?.description) || `Complete the ${title} form on TeeVents.`),
+    image: absolute(row?.hero_image_url),
+    url: `${SITE}${path ?? `/s/${slug}`}`,
+  };
+}
+
+/** Public golf league pages: /league/{slug} */
+export async function getLeagueMeta(slug: string): Promise<PageMeta> {
+  const row = await query("golf_leagues", new URLSearchParams({ select: "league_name,description,tagline,logo_url", league_slug: `eq.${slug}`, is_public: "eq.true", limit: "1" }));
+  const name = plain(row?.league_name) || "Golf League";
+  return {
+    title: `${name} — Golf League | TeeVents`,
+    description: clamp(plain(row?.description) || plain(row?.tagline) || `${name} standings, schedule, results and member registration.`),
+    image: absolute(row?.logo_url),
+    url: `${SITE}/league/${slug}`,
+  };
+}
+
 export async function getTournamentMeta(slug: string, route: "t" | "tournament"): Promise<PageMeta> {
   const filter = `or=(custom_slug.eq.${encodeURIComponent(slug)},slug.eq.${encodeURIComponent(slug)})`;
   const params = `select=title,date,location,course_name,description,site_hero_image_url,site_logo_url,image_url&${filter}&site_published=eq.true&limit=1`;

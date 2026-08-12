@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { DEFAULT_TEAM_HQ_SETTINGS, parseTeamHqSettings, type TeamHqSettings } from "@/lib/teamHqSettings";
+import { sharePreviewUrl } from "@/lib/shareLinks";
 
 
 interface TeamTournament {

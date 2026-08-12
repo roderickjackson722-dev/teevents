@@ -6,7 +6,7 @@ import MemberSeasonStandingsCard from "@/components/leagues/MemberSeasonStanding
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Save, User, Trophy, ArrowLeft, CreditCard, ClipboardList, Lock, Target } from "lucide-react";
 import { toast } from "@/hooks/use-toast";

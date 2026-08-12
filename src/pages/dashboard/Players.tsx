@@ -188,6 +188,8 @@ const Players = () => {
   const [allPlayers, setAllPlayers] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  // Roster payment view: paid players only (default), pending-only, or everyone.
+  const [paymentView, setPaymentView] = useState<"paid" | "pending" | "all">("all");
   const [view, setView] = useState<"roster" | "pairings">("roster");
   const [addPlayerOpen, setAddPlayerOpen] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);
@@ -433,7 +435,13 @@ const Players = () => {
     return counts;
   }, [players]);
 
-  const filteredPlayers = players
+  const pendingPlayers = useMemo(() => allPlayers.filter((p) => !isPaid(p)), [allPlayers]);
+
+  // The roster list itself respects the payment view so manually added / unpaid
+  // registrations are visible (pairings, scoring and totals still use paid only).
+  const rosterBase = paymentView === "paid" ? players : paymentView === "pending" ? pendingPlayers : allPlayers;
+
+  const filteredPlayers = rosterBase
 
     .filter(ageVisible)
     .filter((p) => {
@@ -1903,6 +1911,24 @@ const Players = () => {
         <div className="flex items-center gap-3">
           {view === "roster" && (
             <>
+              <div className="flex gap-1 bg-card rounded-lg border border-border p-1">
+                {([
+                  { key: "all", label: `All (${allPlayers.length})` },
+                  { key: "paid", label: `Paid (${players.length})` },
+                  { key: "pending", label: `Pending (${pendingPlayers.length})` },
+                ] as const).map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setPaymentView(t.key)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      paymentView === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input

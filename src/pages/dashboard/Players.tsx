@@ -1911,6 +1911,24 @@ const Players = () => {
         <div className="flex items-center gap-3">
           {view === "roster" && (
             <>
+              <div className="flex gap-1 bg-card rounded-lg border border-border p-1">
+                {([
+                  { key: "all", label: `All (${allPlayers.length})` },
+                  { key: "paid", label: `Paid (${players.length})` },
+                  { key: "pending", label: `Pending (${pendingPlayers.length})` },
+                ] as const).map((t) => (
+                  <button
+                    key={t.key}
+                    onClick={() => setPaymentView(t.key)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      paymentView === t.key ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {t.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="relative">
                 <Search className="h-4 w-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input

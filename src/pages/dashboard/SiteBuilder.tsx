@@ -47,6 +47,7 @@ import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
 import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
 import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
+import { sharePreviewUrl } from "@/lib/shareLinks";
 
 const getFunctionErrorMessage = (res: { data?: any; error?: any }, fallback: string) =>
   res.data?.message || res.data?.error || res.error?.message || fallback;
@@ -1642,7 +1643,7 @@ const SiteBuilder = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/t/${settings.slug}`);
+                        navigator.clipboard.writeText(sharePreviewUrl(`/t/${settings.slug}`));
                         toast({ title: "Copied!", description: "URL copied to clipboard." });
                       }}
                     >

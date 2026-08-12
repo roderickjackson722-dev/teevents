@@ -10,6 +10,7 @@ import {
 import { toast } from "sonner";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { DEFAULT_TEAM_HQ_SETTINGS, parseTeamHqSettings, type TeamHqSettings } from "@/lib/teamHqSettings";
+import { sharePreviewUrl } from "@/lib/shareLinks";
 
 
 interface TeamTournament {
@@ -101,6 +102,9 @@ export default function TeamHomepage() {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://teevents.golf";
   const publicSlug = tournament?.slug || slug || "";
   const teamUrl = `${origin}/team/${publicSlug}`;
+  // Shared/copied link: rendered server-side with this page's own OG tags so every
+  // app (GroupMe, iMessage, Facebook, Slack…) shows the right preview.
+  const teamShareUrl = sharePreviewUrl(`/team/${publicSlug}`);
   const liveUrl = `${origin}/live/${publicSlug}`;
   const scoringUrl = `${origin}/t/${publicSlug}/scoring`;
   const tournamentUrl = `${origin}/t/${publicSlug}`;
@@ -142,14 +146,14 @@ export default function TeamHomepage() {
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(teamUrl);
+      await navigator.clipboard.writeText(teamShareUrl);
       toast.success("Team homepage link copied");
     } catch {
       toast.error("Could not copy link");
     }
   };
 
-  const shareText = `${tournament?.title ?? "Tournament"} — Team Resources: ${teamUrl}`;
+  const shareText = `${tournament?.title ?? "Tournament"} — Team Resources: ${teamShareUrl}`;
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;

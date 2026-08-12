@@ -1643,7 +1643,7 @@ const SiteBuilder = () => {
                       variant="ghost"
                       size="sm"
                       onClick={() => {
-                        navigator.clipboard.writeText(`${window.location.origin}/t/${settings.slug}`);
+                        navigator.clipboard.writeText(sharePreviewUrl(`/t/${settings.slug}`));
                         toast({ title: "Copied!", description: "URL copied to clipboard." });
                       }}
                     >

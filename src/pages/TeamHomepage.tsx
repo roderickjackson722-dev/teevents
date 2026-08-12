@@ -146,14 +146,14 @@ export default function TeamHomepage() {
 
   const copyLink = async () => {
     try {
-      await navigator.clipboard.writeText(teamUrl);
+      await navigator.clipboard.writeText(teamShareUrl);
       toast.success("Team homepage link copied");
     } catch {
       toast.error("Could not copy link");
     }
   };
 
-  const shareText = `${tournament?.title ?? "Tournament"} — Team Resources: ${teamUrl}`;
+  const shareText = `${tournament?.title ?? "Tournament"} — Team Resources: ${teamShareUrl}`;
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;

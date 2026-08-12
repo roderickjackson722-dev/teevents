@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
+import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
 import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as TSlugRouteImport } from './routes/t/$slug'
 import { Route as TeamSlugRouteImport } from './routes/team/$slug'
@@ -35,6 +36,11 @@ const CollegeIndexRoute = CollegeIndexRouteImport.update({
 const CollegeSlugRoute = CollegeSlugRouteImport.update({
   id: '/college/$slug',
   path: '/college/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LeagueSlugRoute = LeagueSlugRouteImport.update({
+  id: '/league/$slug',
+  path: '/league/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSlugRoute = SSlugRouteImport.update({
@@ -90,6 +96,7 @@ const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/league/$slug': typeof LeagueSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
   '/team/$slug': typeof TeamSlugRoute
@@ -104,6 +111,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/league/$slug': typeof LeagueSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
   '/team/$slug': typeof TeamSlugRoute
@@ -119,6 +127,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/$': typeof SplatRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/league/$slug': typeof LeagueSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
   '/team/$slug': typeof TeamSlugRoute
@@ -135,6 +144,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/$'
     | '/college/$slug'
+    | '/league/$slug'
     | '/s/$slug'
     | '/t/$slug'
     | '/team/$slug'
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
   to:
     | '/$'
     | '/college/$slug'
+    | '/league/$slug'
     | '/s/$slug'
     | '/t/$slug'
     | '/team/$slug'
@@ -163,6 +174,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/$'
     | '/college/$slug'
+    | '/league/$slug'
     | '/s/$slug'
     | '/t/$slug'
     | '/team/$slug'
@@ -178,6 +190,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
+  LeagueSlugRoute: typeof LeagueSlugRoute
   SSlugRoute: typeof SSlugRoute
   TSlugRoute: typeof TSlugRoute
   TeamSlugRoute: typeof TeamSlugRoute
@@ -211,6 +224,13 @@ declare module '@tanstack/react-router' {
       path: '/college/$slug'
       fullPath: '/college/$slug'
       preLoaderRoute: typeof CollegeSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/league/$slug': {
+      id: '/league/$slug'
+      path: '/league/$slug'
+      fullPath: '/league/$slug'
+      preLoaderRoute: typeof LeagueSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$slug': {
@@ -282,6 +302,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   CollegeSlugRoute: CollegeSlugRoute,
+  LeagueSlugRoute: LeagueSlugRoute,
   SSlugRoute: SSlugRoute,
   TSlugRoute: TSlugRoute,
   TeamSlugRoute: TeamSlugRoute,

@@ -1,28 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import CollegeSurvey from "@/pages/CollegeSurvey";
-import sasPreview from "@/assets/sas-hbcu-invitational.png.asset.json";
-
-const SITE = "https://www.teevents.golf";
-const URL = `${SITE}/s/sassurvey/share`;
-const PREVIEW_IMAGE = `${SITE}${sasPreview.url}`;
+import { getSurveyMeta, headFromMeta } from "@/lib/serverMeta";
 
 export const Route = createFileRoute("/s/sassurvey/share")({
-  head: () => ({
-    meta: [
-      { title: "SAS Survey" },
-      { name: "description", content: "Complete the SAS Survey" },
-      { property: "og:title", content: "SAS Survey" },
-      { property: "og:description", content: "Complete the SAS Survey" },
-      { property: "og:url", content: URL },
-      { property: "og:type", content: "website" },
-      { property: "og:image", content: PREVIEW_IMAGE },
-      { property: "og:image:alt", content: "SAS HBCU Invitational" },
-      { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:title", content: "SAS Survey" },
-      { name: "twitter:description", content: "Complete the SAS Survey" },
-      { name: "twitter:image", content: PREVIEW_IMAGE },
-    ],
-    links: [{ rel: "canonical", href: URL }],
-  }),
+  loader: () => getSurveyMeta("sassurvey", "/s/sassurvey/share"),
+  head: ({ loaderData }) => headFromMeta(loaderData),
   component: () => <CollegeSurvey slugOverride="sassurvey" />,
 });

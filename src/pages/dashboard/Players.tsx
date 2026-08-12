@@ -435,7 +435,13 @@ const Players = () => {
     return counts;
   }, [players]);
 
-  const filteredPlayers = players
+  const pendingPlayers = useMemo(() => allPlayers.filter((p) => !isPaid(p)), [allPlayers]);
+
+  // The roster list itself respects the payment view so manually added / unpaid
+  // registrations are visible (pairings, scoring and totals still use paid only).
+  const rosterBase = paymentView === "paid" ? players : paymentView === "pending" ? pendingPlayers : allPlayers;
+
+  const filteredPlayers = rosterBase
 
     .filter(ageVisible)
     .filter((p) => {

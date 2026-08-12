@@ -188,6 +188,8 @@ const Players = () => {
   const [allPlayers, setAllPlayers] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  // Roster payment view: paid players only (default), pending-only, or everyone.
+  const [paymentView, setPaymentView] = useState<"paid" | "pending" | "all">("all");
   const [view, setView] = useState<"roster" | "pairings">("roster");
   const [addPlayerOpen, setAddPlayerOpen] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);

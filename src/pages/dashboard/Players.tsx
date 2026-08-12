@@ -2058,6 +2058,7 @@ const Players = () => {
                           <SelectTrigger id="ap-payment"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="paid">Paid</SelectItem>
+                            <SelectItem value="pending">Pending (not collected)</SelectItem>
                             <SelectItem value="comp">Comp</SelectItem>
                           </SelectContent>
                         </Select>

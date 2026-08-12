@@ -101,6 +101,9 @@ export default function TeamHomepage() {
   const origin = typeof window !== "undefined" ? window.location.origin : "https://teevents.golf";
   const publicSlug = tournament?.slug || slug || "";
   const teamUrl = `${origin}/team/${publicSlug}`;
+  // Shared/copied link: rendered server-side with this page's own OG tags so every
+  // app (GroupMe, iMessage, Facebook, Slack…) shows the right preview.
+  const teamShareUrl = sharePreviewUrl(`/team/${publicSlug}`);
   const liveUrl = `${origin}/live/${publicSlug}`;
   const scoringUrl = `${origin}/t/${publicSlug}/scoring`;
   const tournamentUrl = `${origin}/t/${publicSlug}`;

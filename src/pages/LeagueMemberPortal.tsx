@@ -237,15 +237,62 @@ export default function LeagueMemberPortal() {
 
         <Card>
           <CardContent className="pt-6 space-y-3">
-            <Label>Event</Label>
-            <Select value={eventId} onValueChange={setEventId}>
-              <SelectTrigger><SelectValue placeholder="Choose event" /></SelectTrigger>
-              <SelectContent>
-                {events.map(e => <SelectItem key={e.id} value={e.id}>{e.event_name} — {e.event_date}</SelectItem>)}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center justify-between gap-2">
+              <Label>Events — tap one to register or enter scores</Label>
+              <Button variant="ghost" size="sm" onClick={() => setEventsReload((n) => n + 1)}>Refresh</Button>
+            </div>
+
+            {eventsError && (
+              <p className="text-sm text-destructive">
+                {eventsError} Tap Refresh to try again.
+              </p>
+            )}
+
+            {events.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                No events on the schedule yet. If you expect events here, tap Refresh.
+              </p>
+            ) : (
+              <>
+                <div className="space-y-2">
+                  {events.map((e) => {
+                    const active = e.id === eventId;
+                    return (
+                      <button
+                        key={e.id}
+                        type="button"
+                        onClick={() => setEventId(e.id)}
+                        className={`w-full text-left rounded-lg border p-3 transition ${active ? "border-primary bg-primary/5" : "border-border"}`}
+                      >
+                        <span className="block font-medium">{e.event_name}</span>
+                        <span className="block text-xs text-muted-foreground">
+                          {e.event_date}
+                          {e.start_time ? ` · ${e.start_time}` : ""}
+                          {e.course_name ? ` · ${e.course_name}` : ""}
+                          {Number(e.registration_fee_cents || 0) > 0 ? ` · $${(e.registration_fee_cents / 100).toFixed(2)}` : ""}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Native picker fallback — always works on older mobile browsers */}
+                <select
+                  aria-label="Choose event"
+                  className="w-full h-10 rounded-md border border-input bg-background px-3 text-sm"
+                  value={eventId}
+                  onChange={(ev) => setEventId(ev.target.value)}
+                >
+                  <option value="">Choose event</option>
+                  {events.map((e) => (
+                    <option key={e.id} value={e.id}>{e.event_name} — {e.event_date}</option>
+                  ))}
+                </select>
+              </>
+            )}
           </CardContent>
         </Card>
+
 
         {selectedEvent && (() => {
           const fmt = LEAGUE_FORMATS.find(f => f.id === selectedEvent.format_type);

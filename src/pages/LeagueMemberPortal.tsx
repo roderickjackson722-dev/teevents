@@ -43,6 +43,9 @@ export default function LeagueMemberPortal() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
+  const [eventsError, setEventsError] = useState<string | null>(null);
+  const [eventsReload, setEventsReload] = useState(0);
+
   useEffect(() => {
     (async () => {
       const { data: lg } = await (supabase as any).from("golf_leagues").select("*").eq("league_slug", slug).maybeSingle();
@@ -55,17 +58,19 @@ export default function LeagueMemberPortal() {
       if (!m) { setLoading(false); return; }
       setLeague(lg); setMember(m);
 
-      const [{ data: ev }, { data: st }] = await Promise.all([
+      const [{ data: ev, error: evErr }, { data: st }] = await Promise.all([
         (supabase as any).from("league_events").select("id, event_name, event_date, registration_fee_cents, format_type, course_name, start_time, league_course_id").eq("league_id", lg.id).order("event_date"),
         (supabase as any).from("league_standings").select("*").eq("league_id", lg.id).eq("member_id", m.id).maybeSingle(),
       ]);
+      setEventsError(evErr ? (evErr.message || "Could not load the schedule.") : null);
       setEvents(ev || []);
       const initial = preEventId && ev?.find((x: any) => x.id === preEventId) ? preEventId : ev?.[0]?.id;
       if (initial) setEventId(initial);
       setStanding(st);
       setLoading(false);
     })();
-  }, [slug, code]);
+  }, [slug, code, eventsReload]);
+
 
   // Load registration + course + existing scores whenever selected event changes
   useEffect(() => {

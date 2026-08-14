@@ -194,6 +194,8 @@ import TripNew from "./pages/trips/TripNew";
 import TripDetail from "./pages/trips/TripDetail";
 import PublicTrip from "./pages/trips/PublicTrip";
 import PlayerHub from "./pages/PlayerHub";
+import SeoArticle from "./pages/seo/guides/SeoArticle";
+import { guides } from "./pages/seo/guides";
 import GolfTournamentSoftware from "./pages/seo/GolfTournamentSoftware";
 import CharityGolfTournamentPlanning from "./pages/seo/CharityGolfTournamentPlanning";
 import GolfFundraiserManagement from "./pages/seo/GolfFundraiserManagement";
@@ -433,6 +435,16 @@ const App = () => (
              <Route path="/trips/:id" element={<TripDetail />} />
              <Route path="/golf-tournament-software" element={<GolfTournamentSoftware />} />
              <Route path="/charity-golf-tournament-planning" element={<CharityGolfTournamentPlanning />} />
+             <Route path="/what-is-a-scramble" element={<SeoArticle content={guides[0]} />} />
+             <Route path="/charity-golf-tournament-guide" element={<SeoArticle content={guides[1]} />} />
+             <Route path="/golf-tournament-formats" element={<SeoArticle content={guides[2]} />} />
+             <Route path="/custom-golf-tournament-website" element={<SeoArticle content={guides[3]} />} />
+             <Route path="/golf-tournament-sponsor-management" element={<SeoArticle content={guides[4]} />} />
+             <Route path="/live-scoring-golf-tournaments" element={<SeoArticle content={guides[5]} />} />
+             <Route path="/eventbrite-vs-golf-tournament-software" element={<SeoArticle content={guides[6]} />} />
+             <Route path="/golfstatus-vs-golf-genius" element={<SeoArticle content={guides[7]} />} />
+             <Route path="/what-is-a-shotgun-start" element={<SeoArticle content={guides[8]} />} />
+             <Route path="/golf-tournament-software-pricing" element={<SeoArticle content={guides[9]} />} />
               <Route path="/golf-fundraiser-management" element={<GolfFundraiserManagement />} />
             <Route path="/:slug" element={<SlugResolver />} />
             <Route path="*" element={<NotFound />} />

@@ -14,6 +14,9 @@ const RESERVED = new Set([
   "compare","nonprofits","sales","enterprise-pricing","oauth","confirm-bank-change",
   "confirm-payout-change","force-password-change","reset-password","accept-invitation",
   "golf-tournament-software","charity-golf-tournament-planning","golf-fundraiser-management",
+  "what-is-a-scramble","charity-golf-tournament-guide","golf-tournament-formats","custom-golf-tournament-website",
+  "golf-tournament-sponsor-management","live-scoring-golf-tournaments","eventbrite-vs-golf-tournament-software",
+  "golfstatus-vs-golf-genius","what-is-a-shotgun-start","golf-tournament-software-pricing",
 ]);
 
 export default function SlugResolver() {

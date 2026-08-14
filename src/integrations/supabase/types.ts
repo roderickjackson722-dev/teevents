@@ -11431,6 +11431,21 @@ export type Database = {
         Args: { _code: string; _tournament_id: string }
         Returns: Json
       }
+      get_demo_claim_by_token: {
+        Args: { _token: string }
+        Returns: {
+          demo_conversion_discount_type: string
+          demo_conversion_discount_value: number
+          demo_conversion_is_test: boolean
+          demo_conversion_token_expires_at: string
+          demo_conversion_used_at: string
+          demo_converted_at: string
+          demo_prospect_email: string
+          demo_prospect_name: string
+          id: string
+          title: string
+        }[]
+      }
       get_demo_conversion_discount: { Args: { _token: string }; Returns: Json }
       get_demo_prep_share: { Args: { _token: string }; Returns: Json }
       get_group_scoring_roster: {

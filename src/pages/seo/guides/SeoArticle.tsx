@@ -2,7 +2,25 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
-import type { GuideContent, MockupKind } from "./types";
+import type { GuideContent, GuideLink, MockupKind } from "./types";
+
+// Full topic index shown at the bottom of every guide so visitors (and crawlers)
+// can reach any article from any article.
+const ALL_TOPICS: GuideLink[] = [
+  { to: "/what-is-a-scramble", label: "What Is a Scramble in Golf?" },
+  { to: "/golf-tournament-formats", label: "Golf Tournament Formats Explained" },
+  { to: "/what-is-a-shotgun-start", label: "What Is a Shotgun Start?" },
+  { to: "/charity-golf-tournament-guide", label: "How to Run a Charity Golf Tournament" },
+  { to: "/golf-tournament-sponsor-management", label: "Golf Tournament Sponsor Management" },
+  { to: "/live-scoring-golf-tournaments", label: "Live Scoring for Golf Tournaments" },
+  { to: "/custom-golf-tournament-website", label: "Custom Golf Tournament Websites" },
+  { to: "/golf-tournament-software-pricing", label: "Golf Tournament Software Pricing" },
+  { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs Golf Tournament Software" },
+  { to: "/golfstatus-vs-golf-genius", label: "GolfStatus vs Golf Genius" },
+  { to: "/golf-tournament-software", label: "Golf Tournament Software Overview" },
+  { to: "/charity-golf-tournament-planning", label: "Charity Golf Tournament Planning" },
+  { to: "/golf-fundraiser-management", label: "Golf Fundraiser Management" },
+];
 
 const Mockup = ({ kind }: { kind: MockupKind }) => {
   const frames: Record<MockupKind, { label: string; rows: string[] }> = {
@@ -139,6 +157,37 @@ const SeoArticle = ({ content }: { content: GuideContent }) => (
               </Link>
             </li>
           ))}
+        </ul>
+      </nav>
+
+      <nav className="mt-12 border-t border-border pt-8" aria-label="All golf tournament guides">
+        <h2 className="text-xl font-bold text-foreground">All guides &amp; resources</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Every guide in the TeeVents library, in case you didn&apos;t find what you were looking for.
+        </p>
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          {ALL_TOPICS.map((topic) => {
+            const isCurrent = topic.to === `/${content.slug}`;
+            return (
+              <li key={topic.to}>
+                {isCurrent ? (
+                  <span
+                    aria-current="page"
+                    className="block rounded-md bg-muted px-3 py-2 text-sm font-semibold text-foreground"
+                  >
+                    {topic.label}
+                  </span>
+                ) : (
+                  <Link
+                    to={topic.to}
+                    className="block rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    {topic.label}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </nav>
     </article>

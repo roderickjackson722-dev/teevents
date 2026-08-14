@@ -141,6 +141,37 @@ const SeoArticle = ({ content }: { content: GuideContent }) => (
           ))}
         </ul>
       </nav>
+
+      <nav className="mt-12 border-t border-border pt-8" aria-label="All golf tournament guides">
+        <h2 className="text-xl font-bold text-foreground">All guides &amp; resources</h2>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Every guide in the TeeVents library, in case you didn&apos;t find what you were looking for.
+        </p>
+        <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+          {ALL_TOPICS.map((topic) => {
+            const isCurrent = topic.to === `/${content.slug}`;
+            return (
+              <li key={topic.to}>
+                {isCurrent ? (
+                  <span
+                    aria-current="page"
+                    className="block rounded-md bg-muted px-3 py-2 text-sm font-semibold text-foreground"
+                  >
+                    {topic.label}
+                  </span>
+                ) : (
+                  <Link
+                    to={topic.to}
+                    className="block rounded-md px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                  >
+                    {topic.label}
+                  </Link>
+                )}
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
     </article>
   </Layout>
 );

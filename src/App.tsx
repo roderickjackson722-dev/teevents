@@ -46,8 +46,7 @@ import Players from "./pages/dashboard/Players";
 import Budget from "./pages/dashboard/Budget";
 import Sponsors from "./pages/dashboard/Sponsors";
 import Store from "./pages/dashboard/Store";
-import Leaderboard from "./pages/dashboard/Leaderboard";
-import Scoring from "./pages/dashboard/Scoring";
+import LeaderboardScoring from "./pages/dashboard/LeaderboardScoring";
 import CRM from "./pages/dashboard/CRM";
 import CourseDetails from "./pages/dashboard/CourseDetails";
 import WaitlistPage from "./pages/dashboard/Waitlist";
@@ -267,8 +266,8 @@ const App = () => (
           <Route path="/dashboard/budget" element={<DashboardLayout><PlanGate feature="budget"><Budget /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/sponsors" element={<DashboardLayout><Sponsors /></DashboardLayout>} />
           <Route path="/dashboard/store" element={<DashboardLayout><PlanGate feature="store"><Store /></PlanGate></DashboardLayout>} />
-          <Route path="/dashboard/leaderboard" element={<DashboardLayout><Leaderboard /></DashboardLayout>} />
-          <Route path="/dashboard/scoring" element={<DashboardLayout><Scoring /></DashboardLayout>} />
+          <Route path="/dashboard/leaderboard" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
+          <Route path="/dashboard/scoring" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
           <Route path="/dashboard/crm" element={<DashboardLayout><CRM /></DashboardLayout>} />
           <Route path="/dashboard/course-details" element={<DashboardLayout><CourseDetails /></DashboardLayout>} />
           <Route path="/dashboard/quick-actions" element={<DashboardLayout><QuickActionsPage /></DashboardLayout>} />

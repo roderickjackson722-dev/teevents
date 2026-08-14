@@ -79,19 +79,15 @@ const categories: SidebarCategory[] = [
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
       { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
       { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
-      { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age and request it by email" },
+      { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
     ],
   },
   {
-    label: "Scoring & Leaderboard",
+    label: "Leaderboard & Live Scoring",
     color: "border-l-orange-400 bg-orange-400/5",
     items: [
-      { title: "Live Leaderboard", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Design, share, and manage the live leaderboard" },
-      { title: "Score Entry", url: "/dashboard/scoring", icon: PenLine, feature: "leaderboard", description: "Enter scores for groups" },
+      { title: "Leaderboard & Live Scoring", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Enter scores and manage the live leaderboard" },
       { title: "Scoring Settings", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, handicap allowances, skins, flights, and payouts" },
-      { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
-      
-      { title: "Event Day Sales", url: "/dashboard/event-day-sales", icon: ShoppingCart, feature: null, description: "Walk‑up registrations, mulligans, contests, custom items with QR codes" },
       { title: "Stress Test", url: "/dashboard/stress-test", icon: Gauge, feature: null, description: "Simulate 70 players to test check-in, scoring, and leaderboard load" },
     ],
   },
@@ -104,39 +100,8 @@ const categories: SidebarCategory[] = [
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
       { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
       { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
+      { title: "Event Day Sales", url: "/dashboard/event-day-sales", icon: ShoppingCart, feature: null, description: "Walk‑up registrations, mulligans, contests, custom items with QR codes" },
       { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store", description: "Merchandise, mulligans, side events, extras" },
-    ],
-  },
-  {
-    label: "Marketing",
-    color: "border-l-green-400 bg-green-400/5",
-    items: [
-      { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null, description: "QR codes, short URLs, social templates" },
-      { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio", description: "Canva‑integrated flyers" },
-      { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize confirmation and reminder emails and send them" },
-      { title: "Email Send Log", url: "/dashboard/email-log", icon: Mail, feature: null, description: "See every email sent, delivery results, and resend failures" },
-      { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null, description: "Opt in/out of teevents.golf search" },
-    ],
-  },
-  {
-    label: "Finances",
-    color: "border-l-yellow-400 bg-yellow-400/5",
-    items: [
-      { title: "Transactions", url: "/dashboard/finances", icon: Wallet, feature: null, description: "Transaction history, revenue, expenses" },
-      { title: "Transaction Details", url: "/dashboard/transactions", icon: Receipt, feature: null, description: "Full transaction list with all submission answers + CSV export" },
-      { title: "Payouts", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Stripe Connect, PayPal, check" },
-      { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget", description: "Planned vs. actual expenses" },
-      { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null, description: "Consulting, signage, insurance" },
-    ],
-  },
-  {
-    label: "Team & Volunteers",
-    color: "border-l-sky-400 bg-sky-400/5",
-    items: [
-      { title: "Team Members", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles, track referral performance" },
-      { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
-      { title: "Team HQ", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
-      { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
     ],
   },
   {
@@ -148,6 +113,38 @@ const categories: SidebarCategory[] = [
       { title: "Webpage Layout", url: "/dashboard/webpage-layout", icon: LayoutTemplate, feature: null, description: "Reorder and show/hide sections and top-nav tabs on your public page" },
       { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery", description: "Upload, organize, share event photos" },
       { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
+    ],
+  },
+  {
+    label: "Finances",
+    color: "border-l-yellow-400 bg-yellow-400/5",
+    items: [
+      { title: "Transactions", url: "/dashboard/finances", icon: Wallet, feature: null, description: "Transaction history, revenue, expenses" },
+      { title: "Transaction Details", url: "/dashboard/transactions", icon: Receipt, feature: null, description: "Full transaction list with all submission answers + CSV export" },
+      { title: "Payouts", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Stripe Connect, PayPal, check" },
+      { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget", description: "Planned vs. actual expenses" },
+    ],
+  },
+  {
+    label: "Marketing",
+    color: "border-l-green-400 bg-green-400/5",
+    items: [
+      { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null, description: "QR codes, short URLs, social templates" },
+      { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio", description: "Canva‑integrated flyers" },
+      { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize confirmation and reminder emails and send them" },
+      { title: "Email Send Log", url: "/dashboard/email-log", icon: Mail, feature: null, description: "See every email sent, delivery results, and resend failures" },
+      { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null, description: "Opt in/out of teevents.golf search" },
+      { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null, description: "Consulting, signage, insurance" },
+    ],
+  },
+  {
+    label: "Team & Volunteers",
+    color: "border-l-sky-400 bg-sky-400/5",
+    items: [
+      { title: "Team Members", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles, track referral performance" },
+      { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
+      { title: "Team HQ", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
+      { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
     ],
   },
   {
@@ -177,6 +174,9 @@ const leagueCategories: SidebarCategory[] = [
   },
 ];
 
+// Tournament that uses the Missing Age Records report (The ATL Golf Championships).
+const AGE_REPORT_TOURNAMENT_ID = "8d241ebc-4fd3-4dcb-bfad-27f7e92e9c6a";
+
 const settingsItems: NavItem[] = [
   { title: "General Settings", url: "/dashboard/settings", icon: Settings, feature: null, description: "Branding, custom domain, public page tabs" },
 ];
@@ -192,6 +192,7 @@ export function DashboardSidebar() {
   const { org } = useOrgContext();
   const [searchParams] = useSearchParams();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
+  const [tournamentId, setTournamentId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
 
@@ -213,27 +214,33 @@ export function DashboardSidebar() {
   };
 
   useEffect(() => {
-    if (!org) { setTournamentSlug(null); return; }
+    if (!org) { setTournamentSlug(null); setTournamentId(null); return; }
     // When a specific tournament is selected, its slug drives the public page
     // link — never the org's latest tournament.
     if (selectedTournamentId) {
       supabase
         .from("tournaments")
-        .select("slug")
+        .select("id, slug")
         .eq("id", selectedTournamentId)
         .maybeSingle()
-        .then(({ data }) => setTournamentSlug((data as any)?.slug ?? null));
+        .then(({ data }) => {
+          setTournamentSlug((data as any)?.slug ?? null);
+          setTournamentId((data as any)?.id ?? null);
+        });
       return;
     }
     supabase
       .from("tournaments")
-      .select("slug")
+      .select("id, slug")
       .eq("organization_id", org.orgId)
       .not("slug", "is", null)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => setTournamentSlug((data as any)?.slug ?? null));
+      .then(({ data }) => {
+        setTournamentSlug((data as any)?.slug ?? null);
+        setTournamentId((data as any)?.id ?? null);
+      });
   }, [org, selectedTournamentId]);
 
   const isOwner = !org || org.role === "owner";
@@ -354,6 +361,14 @@ export function DashboardSidebar() {
 
           {activeCategories.map((cat) => {
             let items = cat.items;
+            // "Missing Age Records" was built for one specific event, so it is
+            // only surfaced on that tournament's dashboard.
+            if (cat.label === "Players & Pairings" && tournamentId === AGE_REPORT_TOURNAMENT_ID) {
+              items = [
+                ...cat.items,
+                { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age and request it by email" },
+              ];
+            }
             if (cat.label === "Content & Media" && tournamentSlug) {
               items = [
                 { title: "View Live Tournament Page", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },

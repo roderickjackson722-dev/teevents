@@ -174,6 +174,9 @@ const leagueCategories: SidebarCategory[] = [
   },
 ];
 
+// Tournament that uses the Missing Age Records report (The ATL Golf Championships).
+const AGE_REPORT_TOURNAMENT_ID = "8d241ebc-4fd3-4dcb-bfad-27f7e92e9c6a";
+
 const settingsItems: NavItem[] = [
   { title: "General Settings", url: "/dashboard/settings", icon: Settings, feature: null, description: "Branding, custom domain, public page tabs" },
 ];
@@ -189,6 +192,7 @@ export function DashboardSidebar() {
   const { org } = useOrgContext();
   const [searchParams] = useSearchParams();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
+  const [tournamentId, setTournamentId] = useState<string | null>(null);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
 
@@ -210,27 +214,33 @@ export function DashboardSidebar() {
   };
 
   useEffect(() => {
-    if (!org) { setTournamentSlug(null); return; }
+    if (!org) { setTournamentSlug(null); setTournamentId(null); return; }
     // When a specific tournament is selected, its slug drives the public page
     // link — never the org's latest tournament.
     if (selectedTournamentId) {
       supabase
         .from("tournaments")
-        .select("slug")
+        .select("id, slug")
         .eq("id", selectedTournamentId)
         .maybeSingle()
-        .then(({ data }) => setTournamentSlug((data as any)?.slug ?? null));
+        .then(({ data }) => {
+          setTournamentSlug((data as any)?.slug ?? null);
+          setTournamentId((data as any)?.id ?? null);
+        });
       return;
     }
     supabase
       .from("tournaments")
-      .select("slug")
+      .select("id, slug")
       .eq("organization_id", org.orgId)
       .not("slug", "is", null)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => setTournamentSlug((data as any)?.slug ?? null));
+      .then(({ data }) => {
+        setTournamentSlug((data as any)?.slug ?? null);
+        setTournamentId((data as any)?.id ?? null);
+      });
   }, [org, selectedTournamentId]);
 
   const isOwner = !org || org.role === "owner";
@@ -351,6 +361,14 @@ export function DashboardSidebar() {
 
           {activeCategories.map((cat) => {
             let items = cat.items;
+            // "Missing Age Records" was built for one specific event, so it is
+            // only surfaced on that tournament's dashboard.
+            if (cat.label === "Players & Pairings" && tournamentId === AGE_REPORT_TOURNAMENT_ID) {
+              items = [
+                ...cat.items,
+                { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age and request it by email" },
+              ];
+            }
             if (cat.label === "Content & Media" && tournamentSlug) {
               items = [
                 { title: "View Live Tournament Page", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },

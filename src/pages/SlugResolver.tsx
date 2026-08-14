@@ -17,6 +17,7 @@ const RESERVED = new Set([
   "what-is-a-scramble","charity-golf-tournament-guide","golf-tournament-formats","custom-golf-tournament-website",
   "golf-tournament-sponsor-management","live-scoring-golf-tournaments","eventbrite-vs-golf-tournament-software",
   "golfstatus-vs-golf-genius","what-is-a-shotgun-start","golf-tournament-software-pricing",
+  "eventbrite-for-golf-tournaments","golf-tournament-registration-platform","best-golf-tournament-management-software","online-golf-tournament-registration","golfstatus-alternatives","golf-genius-alternatives","perfect-golf-event-reviews","rsvpify-for-golf-tournaments","golf-tournament-pairings-management","golf-tournament-handicap-system","golf-tournament-sponsor-packages","golf-tournament-live-scoring","golf-tournament-website-builder","golf-tournament-website-design","branded-golf-event-page","golf-tournament-page-customization",
 ]);
 
 export default function SlugResolver() {

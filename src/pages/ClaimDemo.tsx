@@ -20,11 +20,9 @@ export default function ClaimDemo() {
   useEffect(() => {
     (async () => {
       if (!token) return;
-      const { data } = await supabase
-        .from("tournaments")
-        .select("id, title, demo_prospect_email, demo_prospect_name, demo_converted_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test")
-        .eq("demo_conversion_token", token)
-        .maybeSingle();
+      const { data: rows } = await supabase.rpc("get_demo_claim_by_token" as any, { _token: token });
+      const data = Array.isArray(rows) ? (rows[0] as any) : (rows as any);
+
       setT(data);
       if (data?.demo_prospect_email) setForm((f) => ({ ...f, email: data.demo_prospect_email || "", orgName: data.demo_prospect_name || "" }));
       setLoading(false);

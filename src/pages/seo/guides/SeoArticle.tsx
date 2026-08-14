@@ -2,7 +2,25 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
-import type { GuideContent, MockupKind } from "./types";
+import type { GuideContent, GuideLink, MockupKind } from "./types";
+
+// Full topic index shown at the bottom of every guide so visitors (and crawlers)
+// can reach any article from any article.
+const ALL_TOPICS: GuideLink[] = [
+  { to: "/what-is-a-scramble", label: "What Is a Scramble in Golf?" },
+  { to: "/golf-tournament-formats", label: "Golf Tournament Formats Explained" },
+  { to: "/what-is-a-shotgun-start", label: "What Is a Shotgun Start?" },
+  { to: "/charity-golf-tournament-guide", label: "How to Run a Charity Golf Tournament" },
+  { to: "/golf-tournament-sponsor-management", label: "Golf Tournament Sponsor Management" },
+  { to: "/live-scoring-golf-tournaments", label: "Live Scoring for Golf Tournaments" },
+  { to: "/custom-golf-tournament-website", label: "Custom Golf Tournament Websites" },
+  { to: "/golf-tournament-software-pricing", label: "Golf Tournament Software Pricing" },
+  { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs Golf Tournament Software" },
+  { to: "/golfstatus-vs-golf-genius", label: "GolfStatus vs Golf Genius" },
+  { to: "/golf-tournament-software", label: "Golf Tournament Software Overview" },
+  { to: "/charity-golf-tournament-planning", label: "Charity Golf Tournament Planning" },
+  { to: "/golf-fundraiser-management", label: "Golf Fundraiser Management" },
+];
 
 const Mockup = ({ kind }: { kind: MockupKind }) => {
   const frames: Record<MockupKind, { label: string; rows: string[] }> = {

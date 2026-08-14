@@ -1,4 +1,4 @@
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BarChart3, PenLine } from "lucide-react";
 import Leaderboard from "./Leaderboard";
@@ -11,7 +11,12 @@ import Scoring from "./Scoring";
  */
 const LeaderboardScoring = () => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const view = searchParams.get("view") === "scoring" ? "scoring" : "leaderboard";
+  const location = useLocation();
+  const param = searchParams.get("view");
+  const view =
+    param === "scoring" || (!param && location.pathname.endsWith("/scoring"))
+      ? "scoring"
+      : "leaderboard";
 
   const setView = (v: string) => {
     const next = new URLSearchParams(searchParams);

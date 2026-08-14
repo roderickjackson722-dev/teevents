@@ -195,7 +195,7 @@ import TripDetail from "./pages/trips/TripDetail";
 import PublicTrip from "./pages/trips/PublicTrip";
 import PlayerHub from "./pages/PlayerHub";
 import SeoArticle from "./pages/seo/guides/SeoArticle";
-import { guides } from "./pages/seo/guides";
+import { guides, guideBySlug } from "./pages/seo/guides";
 import GolfTournamentSoftware from "./pages/seo/GolfTournamentSoftware";
 import CharityGolfTournamentPlanning from "./pages/seo/CharityGolfTournamentPlanning";
 import GolfFundraiserManagement from "./pages/seo/GolfFundraiserManagement";
@@ -445,6 +445,22 @@ const App = () => (
              <Route path="/golfstatus-vs-golf-genius" element={<SeoArticle content={guides[7]} />} />
              <Route path="/what-is-a-shotgun-start" element={<SeoArticle content={guides[8]} />} />
              <Route path="/golf-tournament-software-pricing" element={<SeoArticle content={guides[9]} />} />
+             <Route path="/eventbrite-for-golf-tournaments" element={<SeoArticle content={guideBySlug["eventbrite-for-golf-tournaments"]} />} />
+             <Route path="/golf-tournament-registration-platform" element={<SeoArticle content={guideBySlug["golf-tournament-registration-platform"]} />} />
+             <Route path="/best-golf-tournament-management-software" element={<SeoArticle content={guideBySlug["best-golf-tournament-management-software"]} />} />
+             <Route path="/online-golf-tournament-registration" element={<SeoArticle content={guideBySlug["online-golf-tournament-registration"]} />} />
+             <Route path="/golfstatus-alternatives" element={<SeoArticle content={guideBySlug["golfstatus-alternatives"]} />} />
+             <Route path="/golf-genius-alternatives" element={<SeoArticle content={guideBySlug["golf-genius-alternatives"]} />} />
+             <Route path="/perfect-golf-event-reviews" element={<SeoArticle content={guideBySlug["perfect-golf-event-reviews"]} />} />
+             <Route path="/rsvpify-for-golf-tournaments" element={<SeoArticle content={guideBySlug["rsvpify-for-golf-tournaments"]} />} />
+             <Route path="/golf-tournament-pairings-management" element={<SeoArticle content={guideBySlug["golf-tournament-pairings-management"]} />} />
+             <Route path="/golf-tournament-handicap-system" element={<SeoArticle content={guideBySlug["golf-tournament-handicap-system"]} />} />
+             <Route path="/golf-tournament-sponsor-packages" element={<SeoArticle content={guideBySlug["golf-tournament-sponsor-packages"]} />} />
+             <Route path="/golf-tournament-live-scoring" element={<SeoArticle content={guideBySlug["golf-tournament-live-scoring"]} />} />
+             <Route path="/golf-tournament-website-builder" element={<SeoArticle content={guideBySlug["golf-tournament-website-builder"]} />} />
+             <Route path="/golf-tournament-website-design" element={<SeoArticle content={guideBySlug["golf-tournament-website-design"]} />} />
+             <Route path="/branded-golf-event-page" element={<SeoArticle content={guideBySlug["branded-golf-event-page"]} />} />
+             <Route path="/golf-tournament-page-customization" element={<SeoArticle content={guideBySlug["golf-tournament-page-customization"]} />} />
               <Route path="/golf-fundraiser-management" element={<GolfFundraiserManagement />} />
             <Route path="/:slug" element={<SlugResolver />} />
             <Route path="*" element={<NotFound />} />

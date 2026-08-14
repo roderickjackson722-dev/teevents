@@ -20,6 +20,22 @@ const ALL_TOPICS: GuideLink[] = [
   { to: "/golf-tournament-software", label: "Golf Tournament Software Overview" },
   { to: "/charity-golf-tournament-planning", label: "Charity Golf Tournament Planning" },
   { to: "/golf-fundraiser-management", label: "Golf Fundraiser Management" },
+  { to: "/eventbrite-for-golf-tournaments", label: "Eventbrite for Golf Tournaments" },
+  { to: "/golf-tournament-registration-platform", label: "Golf Tournament Registration Platform" },
+  { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Software" },
+  { to: "/online-golf-tournament-registration", label: "Online Golf Tournament Registration" },
+  { to: "/golfstatus-alternatives", label: "GolfStatus Alternatives" },
+  { to: "/golf-genius-alternatives", label: "Golf Genius Alternatives" },
+  { to: "/perfect-golf-event-reviews", label: "Perfect Golf Event Reviews" },
+  { to: "/rsvpify-for-golf-tournaments", label: "RSVPify for Golf Tournaments" },
+  { to: "/golf-tournament-pairings-management", label: "Managing Golf Tournament Pairings" },
+  { to: "/golf-tournament-handicap-system", label: "Golf Tournament Handicap System" },
+  { to: "/golf-tournament-sponsor-packages", label: "Golf Tournament Sponsor Packages" },
+  { to: "/golf-tournament-live-scoring", label: "Golf Tournament Live Scoring" },
+  { to: "/golf-tournament-website-builder", label: "Golf Tournament Website Builder" },
+  { to: "/golf-tournament-website-design", label: "Golf Tournament Website Design" },
+  { to: "/branded-golf-event-page", label: "Branded Golf Event Page" },
+  { to: "/golf-tournament-page-customization", label: "Golf Tournament Page Customization" },
 ];
 
 const Mockup = ({ kind }: { kind: MockupKind }) => {

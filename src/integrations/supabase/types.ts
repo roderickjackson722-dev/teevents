@@ -11614,6 +11614,7 @@ export type Database = {
           tee_time: string
         }[]
       }
+      get_public_tournament_site: { Args: { _slug: string }; Returns: Json }
       get_public_vendor_registrations: {
         Args: { _tournament_id: string }
         Returns: {

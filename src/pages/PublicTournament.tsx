@@ -403,15 +403,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   useEffect(() => {
     if (!slug) return;
-    // Look up by custom_slug OR slug (custom_slug takes precedence for matches)
-    supabase
-      .from("tournaments")
-      .select("*")
-      .or(`custom_slug.eq.${slug},slug.eq.${slug}`)
-      .eq("site_published", true)
-      .limit(1)
-      .maybeSingle()
-      .then(async ({ data, error }) => {
+    // Resolve via security-definer RPC: returns the published tournament row
+    // (custom_slug takes precedence) with internal-only fields stripped out.
+    (supabase as any)
+      .rpc("get_public_tournament_site", { _slug: slug })
+      .then(async ({ data, error }: { data: any; error: any }) => {
         if (error || !data) { setNotFound(true); setLoading(false); return; }
         const t = data as unknown as TournamentSite;
         setTournament(t);

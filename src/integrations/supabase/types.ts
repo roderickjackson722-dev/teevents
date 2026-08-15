@@ -4522,6 +4522,62 @@ export type Database = {
           },
         ]
       }
+      link_check_logs: {
+        Row: {
+          checked_at: string
+          created_at: string
+          error_message: string | null
+          expected_slug: string | null
+          id: string
+          is_error: boolean
+          resolved_slug: string | null
+          run_id: string | null
+          skipped: boolean
+          status_code: number | null
+          tournament_id: string | null
+          tournament_title: string | null
+          url: string
+        }
+        Insert: {
+          checked_at?: string
+          created_at?: string
+          error_message?: string | null
+          expected_slug?: string | null
+          id?: string
+          is_error?: boolean
+          resolved_slug?: string | null
+          run_id?: string | null
+          skipped?: boolean
+          status_code?: number | null
+          tournament_id?: string | null
+          tournament_title?: string | null
+          url: string
+        }
+        Update: {
+          checked_at?: string
+          created_at?: string
+          error_message?: string | null
+          expected_slug?: string | null
+          id?: string
+          is_error?: boolean
+          resolved_slug?: string | null
+          run_id?: string | null
+          skipped?: boolean
+          status_code?: number | null
+          tournament_id?: string | null
+          tournament_title?: string | null
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "link_check_logs_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       manual_entry_fees: {
         Row: {
           amount_cents: number

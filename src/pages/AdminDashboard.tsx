@@ -22,6 +22,7 @@ import AdminRoutingMonitor from "@/components/admin/AdminRoutingMonitor";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
 import AdminFeatureUpdateEmails from "@/components/admin/AdminFeatureUpdateEmails";
 import AdminEmailLog from "@/components/admin/AdminEmailLog";
+import AdminLinkHealth, { fetchLinkCheckFailureCount } from "@/components/admin/AdminLinkHealth";
 import AdminAuditLog from "@/components/admin/AdminAuditLog";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
@@ -57,9 +58,19 @@ const AdminDashboard = () => {
     if (t === "signups") return "signups" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "notification-center" | "password-reset">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "notification-center" | "password-reset" | "link-health">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
   const { count: unreadNotifications, refresh: refreshNotificationCount } = useAdminNotificationCount();
+  const [linkFailures, setLinkFailures] = useState(0);
+
+  // Link Health badge — number of failed checks in the most recent run.
+  useEffect(() => {
+    let cancelled = false;
+    fetchLinkCheckFailureCount()
+      .then((n) => { if (!cancelled) setLinkFailures(n); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
 
   // Prospects state
   const [adminProspects, setAdminProspects] = useState<any[]>([]);
@@ -954,6 +965,7 @@ const AdminDashboard = () => {
                   ["audit-log", "Dashboard Audit Log", ClipboardList],
                   ["transactions", "Transactions", DollarSign],
                   ["routing-monitor", "Routing Monitor", AlertTriangle],
+                  ["link-health", `Link Health${linkFailures ? ` (${linkFailures})` : ""}`, LinkIcon],
                   ["accounting", "Accounting", DollarSign],
                   ["group-trips", "Group Trips", Plane],
                    ["feature-flags", "Feature Flags", KeyRound],
@@ -2043,6 +2055,7 @@ const AdminDashboard = () => {
           {/* Transactions Tab */}
           {activeTab === "transactions" && <AdminTransactions />}
           {activeTab === "routing-monitor" && <AdminRoutingMonitor />}
+          {activeTab === "link-health" && <AdminLinkHealth />}
           {activeTab === "email-log" && <AdminEmailLog />}
           {activeTab === "audit-log" && <AdminAuditLog />}
 

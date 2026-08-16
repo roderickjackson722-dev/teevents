@@ -3409,6 +3409,15 @@ const Players = () => {
               </div>
             </div>
           </DragDropContext>
+
+          <div className="mt-6 flex items-center justify-end gap-3 border-t border-border pt-4">
+            <span className="text-xs text-muted-foreground mr-auto">
+              Tee times and pairing templates save automatically — use this to confirm everything is stored.
+            </span>
+            <Button onClick={handleSaveTeeTimesNow} size="sm" variant="secondary" disabled={savingTeeTimes}>
+              {savingTeeTimes ? "Saving…" : "Save Tee Times"}
+            </Button>
+          </div>
         </div>
       )}
 

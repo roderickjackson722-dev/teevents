@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -139,8 +139,8 @@ export default function AdminSampleRequests() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <>
-                  <tr key={r.id} className="border-t border-border align-top">
+                <Fragment key={r.id}>
+                  <tr className="border-t border-border align-top">
                     <td className="p-3 whitespace-nowrap">{new Date(r.created_at).toLocaleDateString()}</td>
                     <td className="p-3">
                       <div className="font-medium">{r.full_name}</div>
@@ -197,7 +197,7 @@ export default function AdminSampleRequests() {
                     </td>
                   </tr>
                   {expanded === r.id && (
-                    <tr key={`${r.id}-details`} className="border-t border-border bg-muted/30">
+                    <tr className="border-t border-border bg-muted/30">
                       <td colSpan={8} className="p-4 space-y-3">
                         {r.challenge && (
                           <div>
@@ -230,7 +230,7 @@ export default function AdminSampleRequests() {
                       </td>
                     </tr>
                   )}
-                </>
+                </Fragment>
               ))}
             </tbody>
           </table>

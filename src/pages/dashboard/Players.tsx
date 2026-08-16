@@ -2865,6 +2865,9 @@ const Players = () => {
                 <Button onClick={applyStartTimesToHoles} size="sm">
                   {startFormat === "tee_times" ? "Assign Tee Times" : "Apply Shotgun Time"}
                 </Button>
+                <Button onClick={handleSaveTeeTimesNow} size="sm" variant="secondary" disabled={savingTeeTimes}>
+                  {savingTeeTimes ? "Saving…" : "Save Tee Times"}
+                </Button>
               </div>
 
             </div>

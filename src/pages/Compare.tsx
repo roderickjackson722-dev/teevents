@@ -6,7 +6,7 @@ import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
-const BOOK_DEMO_URL = "/book";
+const BOOK_DEMO_URL = "/request-sample";
 
 type Status = "yes" | "no" | "warn";
 interface CompRow {

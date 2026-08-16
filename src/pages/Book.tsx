@@ -51,7 +51,7 @@ const Book = () => {
       <SEO
         title="Book a TeeVents Demo – See the Platform in Action"
         description="Schedule a 30-min demo to see how TeeVents simplifies golf tournament management."
-        path="/book"
+        path="/request-sample"
       />
 
       {/* Hero */}

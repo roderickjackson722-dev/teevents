@@ -25,6 +25,7 @@ import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/a
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes/api/public/hooks/check-tournament-links'
+import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -112,6 +113,12 @@ const ApiPublicHooksCheckTournamentLinksRoute =
     path: '/api/public/hooks/check-tournament-links',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksLeadMagnetFollowupsRoute =
+  ApiPublicHooksLeadMagnetFollowupsRouteImport.update({
+    id: '/api/public/hooks/lead-magnet-followups',
+    path: '/api/public/hooks/lead-magnet-followups',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
@@ -130,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
+  '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
@@ -148,6 +156,7 @@ export interface FileRoutesByTo {
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
+  '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -167,6 +176,7 @@ export interface FileRoutesById {
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
+  '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -187,6 +197,7 @@ export interface FileRouteTypes {
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
+    | '/api/public/hooks/lead-magnet-followups'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
+    | '/api/public/hooks/lead-magnet-followups'
   id:
     | '__root__'
     | '/$'
@@ -223,6 +235,7 @@ export interface FileRouteTypes {
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
+    | '/api/public/hooks/lead-magnet-followups'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -242,6 +255,7 @@ export interface RootRouteChildren {
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
   ApiPublicHooksCheckTournamentLinksRoute: typeof ApiPublicHooksCheckTournamentLinksRoute
+  ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -358,6 +372,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksCheckTournamentLinksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/lead-magnet-followups': {
+      id: '/api/public/hooks/lead-magnet-followups'
+      path: '/api/public/hooks/lead-magnet-followups'
+      fullPath: '/api/public/hooks/lead-magnet-followups'
+      preLoaderRoute: typeof ApiPublicHooksLeadMagnetFollowupsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -380,6 +401,8 @@ const rootRouteChildren: RootRouteChildren = {
   SSassurveyShareRoute: SSassurveyShareRoute,
   ApiPublicHooksCheckTournamentLinksRoute:
     ApiPublicHooksCheckTournamentLinksRoute,
+  ApiPublicHooksLeadMagnetFollowupsRoute:
+    ApiPublicHooksLeadMagnetFollowupsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

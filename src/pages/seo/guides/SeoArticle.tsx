@@ -155,7 +155,7 @@ const SeoArticle = ({ content }: { content: GuideContent }) => (
             <Link to="/get-started">Start Your Tournament</Link>
           </Button>
           <Button asChild size="lg" variant="secondary">
-            <Link to="/book">Book a Demo</Link>
+            <Link to="/request-sample">Request a Sample</Link>
           </Button>
         </div>
       </section>

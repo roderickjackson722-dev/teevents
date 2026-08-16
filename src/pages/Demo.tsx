@@ -167,7 +167,7 @@ const Demo = () => {
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
             >
-              Reserve a Demo
+              Request a Sample
             </a>
           </div>
         </motion.div>
@@ -445,7 +445,7 @@ const Demo = () => {
                 rel="noopener noreferrer"
                 className="inline-flex items-center justify-center gap-2 bg-primary text-primary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary/90 transition-colors"
               >
-                Reserve a Demo
+                Request a Sample
               </a>
             </div>
           </motion.div>

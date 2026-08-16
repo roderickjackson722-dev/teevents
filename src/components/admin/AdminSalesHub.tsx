@@ -582,7 +582,7 @@ function EmailTemplatesTab() {
 
 // ── Links & QR Codes Tab ──
 const SALES_LINKS = [
-  { name: "Reserve a Demo", url: "/book", useCase: "Primary demo booking landing page" },
+  { name: "Request a Sample", url: "/book", useCase: "Primary demo booking landing page" },
   { name: "Comparison Page", url: "/compare/eventbrite-vs-teevents", useCase: "Share in emails & social" },
   { name: "Get Started", url: "/get-started", useCase: "Direct signups" },
   { name: "Demo Calendly", url: "https://calendly.com/teevents/teevents-demo", useCase: "Booking link", external: true },

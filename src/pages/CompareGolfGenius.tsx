@@ -107,10 +107,10 @@ export default function CompareGolfGenius() {
             no long-term contract, and simpler pricing.
           </p>
           <Link
-            to="/book"
+            to="/request-sample"
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-lg font-medium hover:opacity-90"
           >
-            Reserve a Demo <ArrowRight className="h-4 w-4" />
+            Request a Sample <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </div>

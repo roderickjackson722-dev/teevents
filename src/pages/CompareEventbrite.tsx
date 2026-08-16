@@ -111,7 +111,7 @@ const CompareEventbrite = () => {
                 className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors"
                 style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
               >
-                <Calendar className="h-4 w-4" /> Reserve a Demo
+                <Calendar className="h-4 w-4" /> Request a Sample
               </Link>
               <Link
                 to="/get-started"
@@ -215,7 +215,7 @@ const CompareEventbrite = () => {
                 className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors"
                 style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
               >
-                <Calendar className="h-4 w-4" /> Reserve a Demo
+                <Calendar className="h-4 w-4" /> Request a Sample
               </Link>
               <Link
                 to="/get-started"

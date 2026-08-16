@@ -322,8 +322,8 @@ export default function DemoTalkTrack() {
                       Start a Tournament for Free <ArrowRight className="h-3.5 w-3.5" />
                     </a>
                     <span className="text-muted-foreground">·</span>
-                    <a href="/book" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-                      Reserve a Demo <ArrowRight className="h-3.5 w-3.5" />
+                    <a href="/request-sample" className="inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
+                      Request a Sample <ArrowRight className="h-3.5 w-3.5" />
                     </a>
                   </div>
                 </CardContent>

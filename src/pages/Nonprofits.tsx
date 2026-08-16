@@ -109,7 +109,7 @@ const Nonprofits = () => {
             </Link>
           </Button>
           <Button size="lg" variant="secondary" asChild className="text-base px-8 font-bold">
-            <Link to="/book">Reserve a Demo</Link>
+            <Link to="/request-sample">Request a Sample</Link>
           </Button>
         </div>
       </HeroSection>

@@ -17,6 +17,7 @@ import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as TSlugRouteImport } from './routes/t/$slug'
 import { Route as TeamSlugRouteImport } from './routes/team/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
+import { Route as ApiPublicLeadMagnetDownloadRouteImport } from './routes/api/public/lead-magnet-download'
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
 import { Route as ApiPublicLeagueEventRegistrationLinkRouteImport } from './routes/api/public/league-event-registration-link'
 import { Route as ApiPublicLeagueLoginInstructionsRouteImport } from './routes/api/public/league-login-instructions'
@@ -65,6 +66,12 @@ const TournamentSlugRoute = TournamentSlugRouteImport.update({
   path: '/tournament/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicLeadMagnetDownloadRoute =
+  ApiPublicLeadMagnetDownloadRouteImport.update({
+    id: '/api/public/lead-magnet-download',
+    path: '/api/public/lead-magnet-download',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicLeagueEventConfirmationRoute =
   ApiPublicLeagueEventConfirmationRouteImport.update({
     id: '/api/public/league-event-confirmation',
@@ -115,6 +122,7 @@ export interface FileRoutesByFullPath {
   '/team/$slug': typeof TeamSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
+  '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
@@ -132,6 +140,7 @@ export interface FileRoutesByTo {
   '/team/$slug': typeof TeamSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college': typeof CollegeIndexRoute
+  '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
@@ -150,6 +159,7 @@ export interface FileRoutesById {
   '/team/$slug': typeof TeamSlugRoute
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
+  '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
@@ -169,6 +179,7 @@ export interface FileRouteTypes {
     | '/team/$slug'
     | '/tournament/$slug'
     | '/college/'
+    | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
@@ -186,6 +197,7 @@ export interface FileRouteTypes {
     | '/team/$slug'
     | '/tournament/$slug'
     | '/college'
+    | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
@@ -203,6 +215,7 @@ export interface FileRouteTypes {
     | '/team/$slug'
     | '/tournament/$slug'
     | '/college/'
+    | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
@@ -221,6 +234,7 @@ export interface RootRouteChildren {
   TeamSlugRoute: typeof TeamSlugRoute
   TournamentSlugRoute: typeof TournamentSlugRoute
   CollegeIndexRoute: typeof CollegeIndexRoute
+  ApiPublicLeadMagnetDownloadRoute: typeof ApiPublicLeadMagnetDownloadRoute
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
   ApiPublicLeagueEventRegistrationLinkRoute: typeof ApiPublicLeagueEventRegistrationLinkRoute
   ApiPublicLeagueLoginInstructionsRoute: typeof ApiPublicLeagueLoginInstructionsRoute
@@ -288,6 +302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TournamentSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/lead-magnet-download': {
+      id: '/api/public/lead-magnet-download'
+      path: '/api/public/lead-magnet-download'
+      fullPath: '/api/public/lead-magnet-download'
+      preLoaderRoute: typeof ApiPublicLeadMagnetDownloadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/league-event-confirmation': {
       id: '/api/public/league-event-confirmation'
       path: '/api/public/league-event-confirmation'
@@ -349,6 +370,7 @@ const rootRouteChildren: RootRouteChildren = {
   TeamSlugRoute: TeamSlugRoute,
   TournamentSlugRoute: TournamentSlugRoute,
   CollegeIndexRoute: CollegeIndexRoute,
+  ApiPublicLeadMagnetDownloadRoute: ApiPublicLeadMagnetDownloadRoute,
   ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,
   ApiPublicLeagueEventRegistrationLinkRoute:
     ApiPublicLeagueEventRegistrationLinkRoute,

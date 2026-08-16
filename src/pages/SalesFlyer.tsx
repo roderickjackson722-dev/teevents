@@ -197,7 +197,7 @@ const SalesFlyer = () => {
             {/* CTA Button */}
             <div style={{ textAlign: "center", marginBottom: 22 }}>
               <a
-                href="https://www.teevents.golf/book"
+                href="https://www.teevents.golf/request-sample"
                 style={{
                   display: "inline-block",
                   background: "#F5A623",

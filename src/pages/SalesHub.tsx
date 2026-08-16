@@ -38,10 +38,10 @@ const FLYER_TEMPLATES = [
   { id: "eventbrite", title: "Eventbrite isn't built for golf", headline: "Eventbrite isn't built for golf", items: ["✖️ No live leaderboard", "✖️ No hole sponsors", "✖️ No volunteer check-in", "✖️ Holds your funds for weeks"], cta: "Start a Tournament for Free →" },
   { id: "cash-app", title: "Still collecting fees via Cash App?", headline: "Still collecting fees via Cash App?", items: ["✖️ No receipts for players", "✖️ No financial dashboard", "✖️ No automatic tax reporting", "✖️ No chargeback protection"], cta: "Switch to TeeVents →" },
   { id: "spreadsheets", title: "Your spreadsheet can't do this", headline: "Your spreadsheet can't do this", items: ["✅ Branded tournament website", "✅ Online registration & payment", "✅ Live leaderboard & scoring", "✅ Funds direct to your Stripe"], cta: "Start a Tournament for Free →" },
-  { id: "40-carts", title: "40+ carts. 144 golfers. One platform.", headline: "40+ carts. 144 golfers. One platform.", items: ["✅ Registration & payments", "✅ QR check-in & pairings", "✅ Live scoring & leaderboard", "✅ Sponsors & volunteers"], cta: "Reserve a Demo →" },
+  { id: "40-carts", title: "40+ carts. 144 golfers. One platform.", headline: "40+ carts. 144 golfers. One platform.", items: ["✅ Registration & payments", "✅ QR check-in & pairings", "✅ Live scoring & leaderboard", "✅ Sponsors & volunteers"], cta: "Request a Sample →" },
   { id: "nonprofit", title: "Raise more. Spend less time planning.", headline: "Raise more. Spend less time planning.", items: ["✅ 501(c)(3) donation receipts", "✅ Sponsor management", "✅ Budget tracking", "✅ Funds direct to your Stripe"], cta: "Start a Tournament for Free →" },
   { id: "fees", title: "5% platform fee + Stripe processing", headline: "5% platform fee + Stripe processing", items: ["✅ No monthly subscription", "✅ No setup fees", "✅ No hidden costs", "✅ 2.9% + $0.30 Stripe fee separate"], cta: "See pricing →" },
-  { id: "mobile", title: "Your golfers' phones are the scorecards", headline: "Your golfers' phones are the scorecards", items: ["📱 Scan QR code", "📱 Enter scores on mobile", "📱 Live leaderboard updates", "📱 No app download required"], cta: "Reserve a Demo →" },
+  { id: "mobile", title: "Your golfers' phones are the scorecards", headline: "Your golfers' phones are the scorecards", items: ["📱 Scan QR code", "📱 Enter scores on mobile", "📱 Live leaderboard updates", "📱 No app download required"], cta: "Request a Sample →" },
   { id: "checkin", title: "Check in 144 golfers in 20 minutes", headline: "Check in 144 golfers in 20 minutes", items: ["✅ QR code scanning", "✅ Name badge printing", "✅ Cart sign assignments", "✅ Real-time headcount"], cta: "Start a Tournament for Free →" },
   { id: "payout", title: "TeeVents never holds your money", headline: "TeeVents never holds your money.", items: ["💰 Funds settle directly in your Stripe account at checkout", "💰 You are the merchant of record", "💰 Complete financial dashboard", "💰 1099-K issued by Stripe"], cta: "Connect your bank →" },
   { id: "compare", title: "TeeVents vs. the old way", headline: "TeeVents vs. the old way", items: ["Old: Spreadsheets → New: Dashboard", "Old: Venmo → New: Stripe", "Old: Paper scorecards → New: Mobile", "Old: Funds held → New: Direct to you"], cta: "Upgrade your game →" },
@@ -420,7 +420,7 @@ export default function SalesHub() {
           {/* CTAs */}
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center py-8 mt-8 border-t border-border">
             <Button size="lg" onClick={() => navigate("/get-started")}>Get Started Free</Button>
-            <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com/teevents-golf/demo", "_blank")}>Reserve a Demo</Button>
+            <Button size="lg" variant="outline" onClick={() => window.open("https://calendly.com/teevents-golf/demo", "_blank")}>Request a Sample</Button>
           </div>
         </div>
       </div>

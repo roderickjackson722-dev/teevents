@@ -469,7 +469,7 @@ const Features = () => {
                 <Link to="/get-started">Start a Tournament for Free</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/book">Reserve a Demo</Link>
+                <Link to="/request-sample">Request a Sample</Link>
               </Button>
             </div>
           </header>
@@ -532,7 +532,7 @@ const Features = () => {
                 <Link to="/get-started">Start a Tournament for Free</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/book">Reserve a Demo</Link>
+                <Link to="/request-sample">Request a Sample</Link>
               </Button>
             </div>
           </div>

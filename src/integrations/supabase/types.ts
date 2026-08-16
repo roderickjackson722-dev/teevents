@@ -6948,6 +6948,69 @@ export type Database = {
           },
         ]
       }
+      sample_requests: {
+        Row: {
+          challenge: string | null
+          created_at: string
+          current_tools: string | null
+          email: string
+          expected_players: number | null
+          flyer_url: string | null
+          full_name: string
+          id: string
+          logo_url: string | null
+          notes: string | null
+          organization_name: string | null
+          phone: string | null
+          sample_created: boolean
+          sample_url: string | null
+          status: string
+          tournament_date: string | null
+          tournament_name: string
+          updated_at: string
+        }
+        Insert: {
+          challenge?: string | null
+          created_at?: string
+          current_tools?: string | null
+          email: string
+          expected_players?: number | null
+          flyer_url?: string | null
+          full_name: string
+          id?: string
+          logo_url?: string | null
+          notes?: string | null
+          organization_name?: string | null
+          phone?: string | null
+          sample_created?: boolean
+          sample_url?: string | null
+          status?: string
+          tournament_date?: string | null
+          tournament_name: string
+          updated_at?: string
+        }
+        Update: {
+          challenge?: string | null
+          created_at?: string
+          current_tools?: string | null
+          email?: string
+          expected_players?: number | null
+          flyer_url?: string | null
+          full_name?: string
+          id?: string
+          logo_url?: string | null
+          notes?: string | null
+          organization_name?: string | null
+          phone?: string | null
+          sample_created?: boolean
+          sample_url?: string | null
+          status?: string
+          tournament_date?: string | null
+          tournament_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sample_sponsors: {
         Row: {
           created_at: string

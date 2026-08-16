@@ -187,6 +187,7 @@ import LeagueEventLeaderboard from "./pages/LeagueEventLeaderboard";
 
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import Book from "./pages/Book";
+import RequestSample from "./pages/RequestSample";
 import ConfirmPayoutChange from "./pages/ConfirmPayoutChange";
 import ConfirmBankChange from "./pages/ConfirmBankChange";
 import TripsList from "./pages/trips/TripsList";
@@ -310,8 +311,9 @@ const App = () => (
           <Route path="/dashboard/flyer-studio" element={<DashboardLayout><PlanGate feature="flyer-studio"><FlyerStudio /></PlanGate></DashboardLayout>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
-          <Route path="/book" element={<Book />} />
-          <Route path="/demo" element={<Navigate to="/book" replace />} />
+          <Route path="/request-sample" element={<RequestSample />} />
+          <Route path="/book" element={<Navigate to="/request-sample" replace />} />
+          <Route path="/demo" element={<Navigate to="/request-sample" replace />} />
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="/tournament/:slug" element={<PublicTournament />} />
           <Route path="/tournaments/search" element={<TournamentSearch />} />

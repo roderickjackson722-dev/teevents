@@ -283,7 +283,7 @@ const About = () => {
               to="/contact"
               className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
             >
-              <Calendar className="h-4 w-4" /> Book a Demo
+              <Calendar className="h-4 w-4" /> Request a Sample
             </Link>
             <Link
               to="/get-started"

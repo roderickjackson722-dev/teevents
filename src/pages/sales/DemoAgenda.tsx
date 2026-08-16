@@ -421,7 +421,7 @@ export default function DemoAgenda() {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {[
                   { title: "Self-Service", desc: "Create your account and set up your first tournament today.", cta: "Start a Tournament for Free", href: "/get-started" },
-                  { title: "Guided Setup", desc: "Reserve a 15-minute setup call. We'll configure your tournament together.", cta: "Reserve a Demo", href: "https://calendly.com/teevents-golf/demo" },
+                  { title: "Guided Setup", desc: "Reserve a 15-minute setup call. We'll configure your tournament together.", cta: "Request a Sample", href: "https://calendly.com/teevents-golf/demo" },
                   { title: "Full-Service", desc: "We manage everything — sponsor acquisition, coordination, and day-of.", cta: "Coming Soon", href: null },
                 ].map((opt, i) => (
                   <div key={i} className="border rounded-lg p-4 flex flex-col">

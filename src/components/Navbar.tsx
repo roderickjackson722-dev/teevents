@@ -64,10 +64,10 @@ const Navbar = () => {
             </Link>
           ))}
           <Link
-            to="/book"
+            to="/request-sample"
             className="hidden lg:inline-flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-3 py-2 rounded-md text-sm font-semibold tracking-wider uppercase hover:bg-primary-foreground/10 transition-colors"
           >
-            Reserve a Demo
+            Request a Sample
           </Link>
 
           {user ? (
@@ -136,11 +136,11 @@ const Navbar = () => {
                 </Link>
               ))}
               <Link
-                to="/book"
+                to="/request-sample"
                 onClick={() => setMobileOpen(false)}
                 className="flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase mt-2 w-fit"
               >
-                Reserve a Demo
+                Request a Sample
               </Link>
               {user ? (
                 <>

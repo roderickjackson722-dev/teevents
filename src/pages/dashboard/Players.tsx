@@ -1300,6 +1300,27 @@ const Players = () => {
     try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(nextAll)); } catch { /* noop */ }
     void persistTeeTimesToDb(nextForDay, activeDay);
   };
+
+  // Explicit "Save Tee Times" action. Tee times save as you edit them, but this
+  // gives organizers a clear confirmation that everything (all rounds) is stored.
+  const [savingTeeTimes, setSavingTeeTimes] = useState(false);
+  const handleSaveTeeTimesNow = async () => {
+    if (demoGuard()) return;
+    setSavingTeeTimes(true);
+    try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(holeTeeTimesByDay)); } catch { /* noop */ }
+    try { if (startFormatStorageKey) localStorage.setItem(startFormatStorageKey, JSON.stringify(startFormatByDay)); } catch { /* noop */ }
+    let saved = 0;
+    for (const [dayStr, map] of Object.entries(holeTeeTimesByDay)) {
+      const forDay = (map || {}) as Record<number, string>;
+      saved += Object.keys(forDay).length;
+      await persistTeeTimesToDb(forDay, Number(dayStr));
+    }
+    setSavingTeeTimes(false);
+    toast({
+      title: "Tee times saved",
+      description: saved ? `${saved} tee time${saved === 1 ? "" : "s"} saved across all rounds.` : "No tee times to save yet.",
+    });
+  };
   function fmtTee12(t?: string) {
     if (!t) return "";
     const m = /^(\d{1,2}):(\d{2})/.exec(t);
@@ -2844,6 +2865,9 @@ const Players = () => {
                 <Button onClick={applyStartTimesToHoles} size="sm">
                   {startFormat === "tee_times" ? "Assign Tee Times" : "Apply Shotgun Time"}
                 </Button>
+                <Button onClick={handleSaveTeeTimesNow} size="sm" variant="secondary" disabled={savingTeeTimes}>
+                  {savingTeeTimes ? "Saving…" : "Save Tee Times"}
+                </Button>
               </div>
 
             </div>
@@ -3385,6 +3409,15 @@ const Players = () => {
               </div>
             </div>
           </DragDropContext>
+
+          <div className="mt-6 flex items-center justify-end gap-3 border-t border-border pt-4">
+            <span className="text-xs text-muted-foreground mr-auto">
+              Tee times and pairing templates save automatically — use this to confirm everything is stored.
+            </span>
+            <Button onClick={handleSaveTeeTimesNow} size="sm" variant="secondary" disabled={savingTeeTimes}>
+              {savingTeeTimes ? "Saving…" : "Save Tee Times"}
+            </Button>
+          </div>
         </div>
       )}
 

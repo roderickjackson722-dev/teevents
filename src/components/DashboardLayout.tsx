@@ -214,7 +214,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             )}
 
             <Link
-              to="/book"
+              to="/request-sample"
               className="inline-flex items-center gap-1 bg-amber-950/15 hover:bg-amber-950/25 px-3 py-1 rounded-md text-xs uppercase tracking-wider transition-colors"
             >
               Upgrade to Live <ArrowRight className="h-3 w-3" />

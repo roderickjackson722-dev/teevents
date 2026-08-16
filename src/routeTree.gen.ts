@@ -21,6 +21,7 @@ import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/a
 import { Route as ApiPublicLeagueEventRegistrationLinkRouteImport } from './routes/api/public/league-event-registration-link'
 import { Route as ApiPublicLeagueLoginInstructionsRouteImport } from './routes/api/public/league-login-instructions'
 import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/api/public/post-event-organizer-email'
+import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes/api/public/hooks/check-tournament-links'
 
@@ -88,6 +89,11 @@ const ApiPublicPostEventOrganizerEmailRoute =
     path: '/api/public/post-event-organizer-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicSampleRequestRoute = ApiPublicSampleRequestRouteImport.update({
+  id: '/api/public/sample-request',
+  path: '/api/public/sample-request',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
   id: '/s/sassurvey/share',
   path: '/s/sassurvey/share',
@@ -113,6 +119,7 @@ export interface FileRoutesByFullPath {
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
+  '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
 }
@@ -129,6 +136,7 @@ export interface FileRoutesByTo {
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
+  '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
 }
@@ -146,6 +154,7 @@ export interface FileRoutesById {
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
+  '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
 }
@@ -164,6 +173,7 @@ export interface FileRouteTypes {
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
     | '/api/public/post-event-organizer-email'
+    | '/api/public/sample-request'
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
   fileRoutesByTo: FileRoutesByTo
@@ -180,6 +190,7 @@ export interface FileRouteTypes {
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
     | '/api/public/post-event-organizer-email'
+    | '/api/public/sample-request'
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
   id:
@@ -196,6 +207,7 @@ export interface FileRouteTypes {
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
     | '/api/public/post-event-organizer-email'
+    | '/api/public/sample-request'
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
   fileRoutesById: FileRoutesById
@@ -213,6 +225,7 @@ export interface RootRouteChildren {
   ApiPublicLeagueEventRegistrationLinkRoute: typeof ApiPublicLeagueEventRegistrationLinkRoute
   ApiPublicLeagueLoginInstructionsRoute: typeof ApiPublicLeagueLoginInstructionsRoute
   ApiPublicPostEventOrganizerEmailRoute: typeof ApiPublicPostEventOrganizerEmailRoute
+  ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
   ApiPublicHooksCheckTournamentLinksRoute: typeof ApiPublicHooksCheckTournamentLinksRoute
 }
@@ -303,6 +316,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPostEventOrganizerEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sample-request': {
+      id: '/api/public/sample-request'
+      path: '/api/public/sample-request'
+      fullPath: '/api/public/sample-request'
+      preLoaderRoute: typeof ApiPublicSampleRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/s/sassurvey/share': {
       id: '/s/sassurvey/share'
       path: '/s/sassurvey/share'
@@ -334,6 +354,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicLeagueEventRegistrationLinkRoute,
   ApiPublicLeagueLoginInstructionsRoute: ApiPublicLeagueLoginInstructionsRoute,
   ApiPublicPostEventOrganizerEmailRoute: ApiPublicPostEventOrganizerEmailRoute,
+  ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,
   ApiPublicHooksCheckTournamentLinksRoute:
     ApiPublicHooksCheckTournamentLinksRoute,

@@ -6,7 +6,7 @@ import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
-const BOOK_DEMO_URL = "/book";
+const BOOK_DEMO_URL = "/request-sample";
 
 type Status = "yes" | "no" | "warn";
 interface CompRow {
@@ -268,7 +268,7 @@ const Compare = () => {
                 className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors"
                 style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
               >
-                <Calendar className="h-4 w-4" /> Reserve a Demo
+                <Calendar className="h-4 w-4" /> Request a Sample
               </Link>
               <Link
                 to="/get-started"
@@ -403,7 +403,7 @@ const Compare = () => {
                 className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors"
                 style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
               >
-                <Calendar className="h-4 w-4" /> Reserve a Demo
+                <Calendar className="h-4 w-4" /> Request a Sample
               </Link>
               <Link
                 to="/get-started"

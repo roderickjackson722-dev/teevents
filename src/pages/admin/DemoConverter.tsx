@@ -26,6 +26,10 @@ interface DemoTournamentRow {
   organization_id: string;
   site_hero_image_url: string | null;
   created_at: string;
+  description?: string | null;
+  registration_fee_cents?: number | null;
+  max_players?: number | null;
+  scoring_format?: string | null;
   demo_prospect_email?: string | null;
   demo_prospect_name?: string | null;
   demo_conversion_token?: string | null;
@@ -57,6 +61,24 @@ export default function DemoConverter() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [demos, setDemos] = useState<DemoTournamentRow[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // Focus mode: work on a single demo tournament at a time
+  const [focusId, setFocusId] = useState<string | null>(null);
+
+  // Inline edit of a demo tournament's public details
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<DemoTournamentRow | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    date: "",
+    location: "",
+    course_name: "",
+    registration_fee_dollars: "",
+    max_players: "",
+    description: "",
+    site_hero_image_url: "",
+  });
 
   const [form, setForm] = useState({
     tournament_name: "",
@@ -363,7 +385,7 @@ export default function DemoConverter() {
     setLoading(true);
     const { data } = await supabase
       .from("tournaments")
-      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at, demo_prospect_email, demo_prospect_name, demo_conversion_token, demo_conversion_sent_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test, demo_converted_at")
+      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at, description, registration_fee_cents, max_players, scoring_format, demo_prospect_email, demo_prospect_name, demo_conversion_token, demo_conversion_sent_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test, demo_converted_at")
       .eq("is_demo", true)
       .order("created_at", { ascending: false });
     setDemos((data as DemoTournamentRow[]) || []);
@@ -461,9 +483,69 @@ export default function DemoConverter() {
     await loadDemos();
   }
 
-  function slugOf(d: DemoTournamentRow) {
-    return d.custom_slug || d.slug || d.id;
+  // Public links always resolve by tournament id so the exact selected demo opens,
+  // even when several demos live in the same sandbox organization.
+  function publicPath(d: DemoTournamentRow) {
+    return `/tournament/${d.id}`;
   }
+  function livePath(d: DemoTournamentRow) {
+    return `/live/${d.id}`;
+  }
+
+  function openEdit(d: DemoTournamentRow) {
+    setEditTarget(d);
+    setEditForm({
+      title: d.title || "",
+      date: d.date || "",
+      location: d.location || "",
+      course_name: d.course_name || "",
+      registration_fee_dollars: d.registration_fee_cents != null ? (d.registration_fee_cents / 100).toFixed(2) : "",
+      max_players: d.max_players != null ? String(d.max_players) : "",
+      description: d.description || "",
+      site_hero_image_url: d.site_hero_image_url || "",
+    });
+    setEditOpen(true);
+  }
+
+  async function saveEdit() {
+    if (!editTarget) return;
+    if (!editForm.title.trim()) {
+      toast({ title: "Tournament name required", variant: "destructive" });
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const feeStr = editForm.registration_fee_dollars.trim();
+      const payload: Record<string, any> = {
+        title: editForm.title.trim(),
+        date: editForm.date || null,
+        location: editForm.location || null,
+        course_name: editForm.course_name || null,
+        description: editForm.description || null,
+        site_hero_image_url: editForm.site_hero_image_url || null,
+      };
+      if (feeStr) payload.registration_fee_cents = Math.round(parseFloat(feeStr) * 100);
+      if (editForm.max_players.trim()) payload.max_players = parseInt(editForm.max_players, 10);
+
+      const { error } = await supabase
+        .from("tournaments")
+        .update(payload as never)
+        .eq("id", editTarget.id)
+        .eq("is_demo", true);
+      if (error) {
+        toast({ title: "Save failed", description: error.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: "Demo updated", description: "Changes now show on the demo dashboard and public page." });
+      setEditOpen(false);
+      setFocusId(editTarget.id);
+      await loadDemos();
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+
 
   if (!authChecked) return <div className="p-8">Loading…</div>;
   if (!isAdmin) return <div className="p-8">Admin access required.</div>;
@@ -565,9 +647,25 @@ export default function DemoConverter() {
         <Card>
           <CardHeader>
             <CardTitle>Your Demo Tournaments</CardTitle>
-            <CardDescription>Click <strong>Open Dashboard</strong> to walk a prospect through every tab during a screen share.</CardDescription>
+            <CardDescription>
+              Select a tournament to focus on it, then use <strong>Edit Details</strong> to update what the prospect sees.
+            </CardDescription>
           </CardHeader>
           <CardContent>
+            {focusId && (
+              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-secondary/40 bg-secondary/10 p-3">
+                <Badge variant="secondary">Focused</Badge>
+                <span className="text-sm font-medium">
+                  {demos.find((d) => d.id === focusId)?.title || "Selected tournament"}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Only this tournament's links and conversion records are shown.
+                </span>
+                <Button size="sm" variant="outline" className="ml-auto" onClick={() => setFocusId(null)}>
+                  Show all demos
+                </Button>
+              </div>
+            )}
             {loading ? (
               <div>Loading…</div>
             ) : demos.length === 0 ? (
@@ -583,8 +681,8 @@ export default function DemoConverter() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {demos.map((d) => (
-                    <TableRow key={d.id}>
+                  {(focusId ? demos.filter((d) => d.id === focusId) : demos).map((d) => (
+                    <TableRow key={d.id} className={focusId === d.id ? "bg-secondary/5" : undefined}>
                       <TableCell>
                         {d.site_hero_image_url ? (
                           <img src={d.site_hero_image_url} alt="" className="w-16 h-10 object-cover rounded" />
@@ -593,12 +691,21 @@ export default function DemoConverter() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">{d.title}</div>
-                        <div className="text-xs text-muted-foreground">{d.course_name || d.location || ""}</div>
+                        <button
+                          type="button"
+                          className="text-left"
+                          onClick={() => setFocusId(focusId === d.id ? null : d.id)}
+                        >
+                          <div className="font-medium hover:underline">{d.title}</div>
+                          <div className="text-xs text-muted-foreground">{d.course_name || d.location || ""}</div>
+                        </button>
                       </TableCell>
                       <TableCell>{d.date || "—"}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex flex-wrap justify-end gap-1">
+                          <Button size="sm" variant="outline" onClick={() => { setFocusId(d.id); openEdit(d); }}>
+                            <Save className="h-3 w-3 mr-1" /> Edit Details
+                          </Button>
                           <Button size="sm" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold" asChild>
                             <a href={`/dashboard?admin_org=${d.organization_id}&tournament_id=${d.id}`} target="_blank" rel="noreferrer">
                               Open Dashboard <ExternalLink className="h-3 w-3 ml-1" />
@@ -609,7 +716,6 @@ export default function DemoConverter() {
                           </Button>
                           <Button size="sm" variant="secondary" onClick={() => openAccess(d)}>
                             <Eye className="h-3 w-3 mr-1" /> Manage Access
-
                           </Button>
                           <Button
                             size="sm"
@@ -621,10 +727,10 @@ export default function DemoConverter() {
                             {d.demo_converted_at ? "Claimed" : d.demo_conversion_token ? "Resend Link" : "Convert to Live"}
                           </Button>
                           <Button size="sm" variant="outline" asChild>
-                            <a href={`/tournament/${slugOf(d)}`} target="_blank" rel="noreferrer">Public Site</a>
+                            <a href={publicPath(d)} target="_blank" rel="noreferrer">Public Site</a>
                           </Button>
                           <Button size="sm" variant="outline" asChild>
-                            <a href={`/live/${slugOf(d)}`} target="_blank" rel="noreferrer">Live Leaderboard</a>
+                            <a href={livePath(d)} target="_blank" rel="noreferrer">Live Leaderboard</a>
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => deleteDemo(d.id)}>
                             <Trash2 className="h-3 w-3" />
@@ -636,6 +742,7 @@ export default function DemoConverter() {
                 </TableBody>
               </Table>
             )}
+
           </CardContent>
         </Card>
 
@@ -646,7 +753,9 @@ export default function DemoConverter() {
           </CardHeader>
           <CardContent>
             {(() => {
-              const sent = demos.filter((d) => d.demo_conversion_token || d.demo_converted_at);
+              const sent = demos
+                .filter((d) => (focusId ? d.id === focusId : true))
+                .filter((d) => d.demo_conversion_token || d.demo_converted_at);
               if (sent.length === 0) return <div className="text-sm text-muted-foreground">No conversion links sent yet.</div>;
               return (
                 <Table>
@@ -1072,6 +1181,84 @@ export default function DemoConverter() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit demo details */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Demo Details</DialogTitle>
+            <DialogDescription>
+              {editTarget?.title} — these values appear on the demo dashboard and the public tournament page.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <Label>Tournament Name</Label>
+              <Input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+            </div>
+            <div>
+              <Label>Event Date</Label>
+              <Input type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} />
+            </div>
+            <div>
+              <Label>Course Name</Label>
+              <Input value={editForm.course_name} onChange={(e) => setEditForm({ ...editForm, course_name: e.target.value })} />
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Location</Label>
+              <Input value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} />
+            </div>
+            <div>
+              <Label>Entry Fee ($)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                value={editForm.registration_fee_dollars}
+                onChange={(e) => setEditForm({ ...editForm, registration_fee_dollars: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Max Players</Label>
+              <Input
+                type="number"
+                min="0"
+                value={editForm.max_players}
+                onChange={(e) => setEditForm({ ...editForm, max_players: e.target.value })}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Hero Image URL</Label>
+              <Input
+                placeholder="https://…"
+                value={editForm.site_hero_image_url}
+                onChange={(e) => setEditForm({ ...editForm, site_hero_image_url: e.target.value })}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Description</Label>
+              <textarea
+                className="w-full min-h-[100px] rounded-md border border-input bg-background p-2 text-sm"
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            {editTarget && (
+              <Button variant="outline" asChild>
+                <a href={publicPath(editTarget)} target="_blank" rel="noreferrer">
+                  <ExternalLink className="h-3 w-3 mr-1" /> View Public Page
+                </a>
+              </Button>
+            )}
+            <Button onClick={saveEdit} disabled={savingEdit} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
+              <Save className="h-4 w-4 mr-1" /> {savingEdit ? "Saving…" : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <ImageCropperDialog
         open={cropOpen}

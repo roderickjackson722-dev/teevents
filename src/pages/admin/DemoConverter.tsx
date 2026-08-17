@@ -753,7 +753,9 @@ export default function DemoConverter() {
           </CardHeader>
           <CardContent>
             {(() => {
-              const sent = demos.filter((d) => d.demo_conversion_token || d.demo_converted_at);
+              const sent = demos
+                .filter((d) => (focusId ? d.id === focusId : true))
+                .filter((d) => d.demo_conversion_token || d.demo_converted_at);
               if (sent.length === 0) return <div className="text-sm text-muted-foreground">No conversion links sent yet.</div>;
               return (
                 <Table>

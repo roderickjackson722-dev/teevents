@@ -188,6 +188,7 @@ import LeagueEventLeaderboard from "./pages/LeagueEventLeaderboard";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import Book from "./pages/Book";
 import RequestSample from "./pages/RequestSample";
+import LeadMagnet, { LeadMagnetRead } from "./pages/LeadMagnet";
 import ConfirmPayoutChange from "./pages/ConfirmPayoutChange";
 import ConfirmBankChange from "./pages/ConfirmBankChange";
 import TripsList from "./pages/trips/TripsList";
@@ -314,6 +315,10 @@ const App = () => (
           <Route path="/request-sample" element={<RequestSample />} />
           <Route path="/book" element={<Navigate to="/request-sample" replace />} />
           <Route path="/demo" element={<Navigate to="/request-sample" replace />} />
+          <Route path="/lead-magnet/:slug" element={<LeadMagnet />} />
+          <Route path="/lead-magnet/:slug/read" element={<LeadMagnetRead />} />
+          <Route path="/resources" element={<Navigate to="/lead-magnet/tournament-planning-checklist" replace />} />
+
           <Route path="/t/:slug" element={<PublicTournament />} />
           <Route path="/tournament/:slug" element={<PublicTournament />} />
           <Route path="/tournaments/search" element={<TournamentSearch />} />

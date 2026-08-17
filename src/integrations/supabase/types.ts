@@ -3226,6 +3226,215 @@ export type Database = {
           },
         ]
       }
+      lead_magnet_article_categories: {
+        Row: {
+          article_id: string
+          category_id: string
+        }
+        Insert: {
+          article_id: string
+          category_id: string
+        }
+        Update: {
+          article_id?: string
+          category_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_magnet_article_categories_article_id_fkey"
+            columns: ["article_id"]
+            isOneToOne: false
+            referencedRelation: "lead_magnets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_magnet_article_categories_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "lead_magnet_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_magnet_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+          slug: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+          slug: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+          slug?: string
+        }
+        Relationships: []
+      }
+      lead_magnet_followups: {
+        Row: {
+          created_at: string
+          email_type: string
+          error: string | null
+          id: string
+          lead_id: string
+          scheduled_for: string | null
+          sent_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          email_type: string
+          error?: string | null
+          id?: string
+          lead_id: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          email_type?: string
+          error?: string | null
+          id?: string
+          lead_id?: string
+          scheduled_for?: string | null
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_magnet_followups_lead_id_fkey"
+            columns: ["lead_id"]
+            isOneToOne: false
+            referencedRelation: "lead_magnet_leads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_magnet_leads: {
+        Row: {
+          challenge: string | null
+          current_tools: string | null
+          downloaded_at: string
+          email: string
+          expected_players: number | null
+          full_name: string
+          id: string
+          lead_magnet_id: string | null
+          notes: string | null
+          organization_name: string | null
+          phone: string | null
+          sample_created: boolean
+          sample_request_id: string | null
+          tournament_date: string | null
+          tournament_name: string | null
+        }
+        Insert: {
+          challenge?: string | null
+          current_tools?: string | null
+          downloaded_at?: string
+          email: string
+          expected_players?: number | null
+          full_name: string
+          id?: string
+          lead_magnet_id?: string | null
+          notes?: string | null
+          organization_name?: string | null
+          phone?: string | null
+          sample_created?: boolean
+          sample_request_id?: string | null
+          tournament_date?: string | null
+          tournament_name?: string | null
+        }
+        Update: {
+          challenge?: string | null
+          current_tools?: string | null
+          downloaded_at?: string
+          email?: string
+          expected_players?: number | null
+          full_name?: string
+          id?: string
+          lead_magnet_id?: string | null
+          notes?: string | null
+          organization_name?: string | null
+          phone?: string | null
+          sample_created?: boolean
+          sample_request_id?: string | null
+          tournament_date?: string | null
+          tournament_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lead_magnet_leads_lead_magnet_id_fkey"
+            columns: ["lead_magnet_id"]
+            isOneToOne: false
+            referencedRelation: "lead_magnets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lead_magnet_leads_sample_request_id_fkey"
+            columns: ["sample_request_id"]
+            isOneToOne: false
+            referencedRelation: "sample_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lead_magnets: {
+        Row: {
+          article_type: string
+          content: string | null
+          cover_image_url: string | null
+          created_at: string
+          description: string | null
+          download_count: number
+          file_url: string | null
+          id: string
+          is_published: boolean
+          slug: string
+          title: string
+          updated_at: string
+          view_count: number
+        }
+        Insert: {
+          article_type?: string
+          content?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          file_url?: string | null
+          id?: string
+          is_published?: boolean
+          slug: string
+          title: string
+          updated_at?: string
+          view_count?: number
+        }
+        Update: {
+          article_type?: string
+          content?: string | null
+          cover_image_url?: string | null
+          created_at?: string
+          description?: string | null
+          download_count?: number
+          file_url?: string | null
+          id?: string
+          is_published?: boolean
+          slug?: string
+          title?: string
+          updated_at?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       leaderboard_gallery: {
         Row: {
           caption: string | null

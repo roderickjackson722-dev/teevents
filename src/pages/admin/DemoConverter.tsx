@@ -647,9 +647,25 @@ export default function DemoConverter() {
         <Card>
           <CardHeader>
             <CardTitle>Your Demo Tournaments</CardTitle>
-            <CardDescription>Click <strong>Open Dashboard</strong> to walk a prospect through every tab during a screen share.</CardDescription>
+            <CardDescription>
+              Select a tournament to focus on it, then use <strong>Edit Details</strong> to update what the prospect sees.
+            </CardDescription>
           </CardHeader>
           <CardContent>
+            {focusId && (
+              <div className="mb-4 flex flex-wrap items-center gap-2 rounded-lg border border-secondary/40 bg-secondary/10 p-3">
+                <Badge variant="secondary">Focused</Badge>
+                <span className="text-sm font-medium">
+                  {demos.find((d) => d.id === focusId)?.title || "Selected tournament"}
+                </span>
+                <span className="text-xs text-muted-foreground">
+                  Only this tournament's links and conversion records are shown.
+                </span>
+                <Button size="sm" variant="outline" className="ml-auto" onClick={() => setFocusId(null)}>
+                  Show all demos
+                </Button>
+              </div>
+            )}
             {loading ? (
               <div>Loading…</div>
             ) : demos.length === 0 ? (
@@ -665,8 +681,8 @@ export default function DemoConverter() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {demos.map((d) => (
-                    <TableRow key={d.id}>
+                  {(focusId ? demos.filter((d) => d.id === focusId) : demos).map((d) => (
+                    <TableRow key={d.id} className={focusId === d.id ? "bg-secondary/5" : undefined}>
                       <TableCell>
                         {d.site_hero_image_url ? (
                           <img src={d.site_hero_image_url} alt="" className="w-16 h-10 object-cover rounded" />
@@ -675,12 +691,21 @@ export default function DemoConverter() {
                         )}
                       </TableCell>
                       <TableCell>
-                        <div className="font-medium">{d.title}</div>
-                        <div className="text-xs text-muted-foreground">{d.course_name || d.location || ""}</div>
+                        <button
+                          type="button"
+                          className="text-left"
+                          onClick={() => setFocusId(focusId === d.id ? null : d.id)}
+                        >
+                          <div className="font-medium hover:underline">{d.title}</div>
+                          <div className="text-xs text-muted-foreground">{d.course_name || d.location || ""}</div>
+                        </button>
                       </TableCell>
                       <TableCell>{d.date || "—"}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex flex-wrap justify-end gap-1">
+                          <Button size="sm" variant="outline" onClick={() => { setFocusId(d.id); openEdit(d); }}>
+                            <Save className="h-3 w-3 mr-1" /> Edit Details
+                          </Button>
                           <Button size="sm" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold" asChild>
                             <a href={`/dashboard?admin_org=${d.organization_id}&tournament_id=${d.id}`} target="_blank" rel="noreferrer">
                               Open Dashboard <ExternalLink className="h-3 w-3 ml-1" />
@@ -691,7 +716,6 @@ export default function DemoConverter() {
                           </Button>
                           <Button size="sm" variant="secondary" onClick={() => openAccess(d)}>
                             <Eye className="h-3 w-3 mr-1" /> Manage Access
-
                           </Button>
                           <Button
                             size="sm"
@@ -703,10 +727,10 @@ export default function DemoConverter() {
                             {d.demo_converted_at ? "Claimed" : d.demo_conversion_token ? "Resend Link" : "Convert to Live"}
                           </Button>
                           <Button size="sm" variant="outline" asChild>
-                            <a href={`/tournament/${slugOf(d)}`} target="_blank" rel="noreferrer">Public Site</a>
+                            <a href={publicPath(d)} target="_blank" rel="noreferrer">Public Site</a>
                           </Button>
                           <Button size="sm" variant="outline" asChild>
-                            <a href={`/live/${slugOf(d)}`} target="_blank" rel="noreferrer">Live Leaderboard</a>
+                            <a href={livePath(d)} target="_blank" rel="noreferrer">Live Leaderboard</a>
                           </Button>
                           <Button size="sm" variant="ghost" onClick={() => deleteDemo(d.id)}>
                             <Trash2 className="h-3 w-3" />
@@ -718,6 +742,7 @@ export default function DemoConverter() {
                 </TableBody>
               </Table>
             )}
+
           </CardContent>
         </Card>
 

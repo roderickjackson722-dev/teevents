@@ -529,7 +529,7 @@ export default function DemoConverter() {
 
       const { error } = await supabase
         .from("tournaments")
-        .update(payload)
+        .update(payload as never)
         .eq("id", editTarget.id)
         .eq("is_demo", true);
       if (error) {

@@ -1182,6 +1182,84 @@ export default function DemoConverter() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit demo details */}
+      <Dialog open={editOpen} onOpenChange={setEditOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Edit Demo Details</DialogTitle>
+            <DialogDescription>
+              {editTarget?.title} — these values appear on the demo dashboard and the public tournament page.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="sm:col-span-2">
+              <Label>Tournament Name</Label>
+              <Input value={editForm.title} onChange={(e) => setEditForm({ ...editForm, title: e.target.value })} />
+            </div>
+            <div>
+              <Label>Event Date</Label>
+              <Input type="date" value={editForm.date} onChange={(e) => setEditForm({ ...editForm, date: e.target.value })} />
+            </div>
+            <div>
+              <Label>Course Name</Label>
+              <Input value={editForm.course_name} onChange={(e) => setEditForm({ ...editForm, course_name: e.target.value })} />
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Location</Label>
+              <Input value={editForm.location} onChange={(e) => setEditForm({ ...editForm, location: e.target.value })} />
+            </div>
+            <div>
+              <Label>Entry Fee ($)</Label>
+              <Input
+                type="number"
+                min="0"
+                step="1"
+                value={editForm.registration_fee_dollars}
+                onChange={(e) => setEditForm({ ...editForm, registration_fee_dollars: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label>Max Players</Label>
+              <Input
+                type="number"
+                min="0"
+                value={editForm.max_players}
+                onChange={(e) => setEditForm({ ...editForm, max_players: e.target.value })}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Hero Image URL</Label>
+              <Input
+                placeholder="https://…"
+                value={editForm.site_hero_image_url}
+                onChange={(e) => setEditForm({ ...editForm, site_hero_image_url: e.target.value })}
+              />
+            </div>
+            <div className="sm:col-span-2">
+              <Label>Description</Label>
+              <textarea
+                className="w-full min-h-[100px] rounded-md border border-input bg-background p-2 text-sm"
+                value={editForm.description}
+                onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            {editTarget && (
+              <Button variant="outline" asChild>
+                <a href={publicPath(editTarget)} target="_blank" rel="noreferrer">
+                  <ExternalLink className="h-3 w-3 mr-1" /> View Public Page
+                </a>
+              </Button>
+            )}
+            <Button onClick={saveEdit} disabled={savingEdit} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
+              <Save className="h-4 w-4 mr-1" /> {savingEdit ? "Saving…" : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+
       <ImageCropperDialog
         open={cropOpen}
         onOpenChange={setCropOpen}

@@ -26,6 +26,10 @@ interface DemoTournamentRow {
   organization_id: string;
   site_hero_image_url: string | null;
   created_at: string;
+  description?: string | null;
+  registration_fee_cents?: number | null;
+  max_players?: number | null;
+  scoring_format?: string | null;
   demo_prospect_email?: string | null;
   demo_prospect_name?: string | null;
   demo_conversion_token?: string | null;

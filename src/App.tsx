@@ -188,6 +188,7 @@ import LeagueEventLeaderboard from "./pages/LeagueEventLeaderboard";
 import SponsorLandingPage from "./pages/SponsorLandingPage";
 import Book from "./pages/Book";
 import RequestSample from "./pages/RequestSample";
+import { LeadMagnet, LeadMagnetRead } from "./pages/LeadMagnet";
 import ConfirmPayoutChange from "./pages/ConfirmPayoutChange";
 import ConfirmBankChange from "./pages/ConfirmBankChange";
 import TripsList from "./pages/trips/TripsList";

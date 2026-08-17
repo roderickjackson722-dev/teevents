@@ -968,6 +968,7 @@ const AdminDashboard = () => {
                   ["routing-monitor", "Routing Monitor", AlertTriangle],
                   ["link-health", `Link Health${linkFailures ? ` (${linkFailures})` : ""}`, LinkIcon],
                   ["sample-requests", "Sample Requests", FileText],
+                  ["lead-magnets", "Lead Magnets", FileText],
                   ["accounting", "Accounting", DollarSign],
                   ["group-trips", "Group Trips", Plane],
                    ["feature-flags", "Feature Flags", KeyRound],

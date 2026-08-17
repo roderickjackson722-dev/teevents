@@ -62,6 +62,24 @@ export default function DemoConverter() {
   const [demos, setDemos] = useState<DemoTournamentRow[]>([]);
   const [loading, setLoading] = useState(true);
 
+  // Focus mode: work on a single demo tournament at a time
+  const [focusId, setFocusId] = useState<string | null>(null);
+
+  // Inline edit of a demo tournament's public details
+  const [editOpen, setEditOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState<DemoTournamentRow | null>(null);
+  const [savingEdit, setSavingEdit] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: "",
+    date: "",
+    location: "",
+    course_name: "",
+    registration_fee_dollars: "",
+    max_players: "",
+    description: "",
+    site_hero_image_url: "",
+  });
+
   const [form, setForm] = useState({
     tournament_name: "",
     event_date: "",

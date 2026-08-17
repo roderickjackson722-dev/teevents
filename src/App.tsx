@@ -314,6 +314,7 @@ const App = () => (
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/request-sample" element={<RequestSample />} />
           <Route path="/book" element={<Navigate to="/request-sample" replace />} />
+          <Route path="/demo" element={<Navigate to="/request-sample" replace />} />
           <Route path="/lead-magnet/:slug" element={<LeadMagnet />} />
           <Route path="/lead-magnet/:slug/read" element={<LeadMagnetRead />} />
           <Route path="/resources" element={<Navigate to="/lead-magnet/tournament-planning-checklist" replace />} />

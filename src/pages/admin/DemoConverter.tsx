@@ -465,9 +465,69 @@ export default function DemoConverter() {
     await loadDemos();
   }
 
-  function slugOf(d: DemoTournamentRow) {
-    return d.custom_slug || d.slug || d.id;
+  // Public links always resolve by tournament id so the exact selected demo opens,
+  // even when several demos live in the same sandbox organization.
+  function publicPath(d: DemoTournamentRow) {
+    return `/tournament/${d.id}`;
   }
+  function livePath(d: DemoTournamentRow) {
+    return `/live/${d.id}`;
+  }
+
+  function openEdit(d: DemoTournamentRow) {
+    setEditTarget(d);
+    setEditForm({
+      title: d.title || "",
+      date: d.date || "",
+      location: d.location || "",
+      course_name: d.course_name || "",
+      registration_fee_dollars: d.registration_fee_cents != null ? (d.registration_fee_cents / 100).toFixed(2) : "",
+      max_players: d.max_players != null ? String(d.max_players) : "",
+      description: d.description || "",
+      site_hero_image_url: d.site_hero_image_url || "",
+    });
+    setEditOpen(true);
+  }
+
+  async function saveEdit() {
+    if (!editTarget) return;
+    if (!editForm.title.trim()) {
+      toast({ title: "Tournament name required", variant: "destructive" });
+      return;
+    }
+    setSavingEdit(true);
+    try {
+      const feeStr = editForm.registration_fee_dollars.trim();
+      const payload: Record<string, any> = {
+        title: editForm.title.trim(),
+        date: editForm.date || null,
+        location: editForm.location || null,
+        course_name: editForm.course_name || null,
+        description: editForm.description || null,
+        site_hero_image_url: editForm.site_hero_image_url || null,
+      };
+      if (feeStr) payload.registration_fee_cents = Math.round(parseFloat(feeStr) * 100);
+      if (editForm.max_players.trim()) payload.max_players = parseInt(editForm.max_players, 10);
+
+      const { error } = await supabase
+        .from("tournaments")
+        .update(payload)
+        .eq("id", editTarget.id)
+        .eq("is_demo", true);
+      if (error) {
+        toast({ title: "Save failed", description: error.message, variant: "destructive" });
+        return;
+      }
+      toast({ title: "Demo updated", description: "Changes now show on the demo dashboard and public page." });
+      setEditOpen(false);
+      setFocusId(editTarget.id);
+      await loadDemos();
+    } finally {
+      setSavingEdit(false);
+    }
+  }
+
+
 
   if (!authChecked) return <div className="p-8">Loading…</div>;
   if (!isAdmin) return <div className="p-8">Admin access required.</div>;

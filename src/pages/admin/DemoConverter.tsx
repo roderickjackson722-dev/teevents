@@ -367,7 +367,7 @@ export default function DemoConverter() {
     setLoading(true);
     const { data } = await supabase
       .from("tournaments")
-      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at, demo_prospect_email, demo_prospect_name, demo_conversion_token, demo_conversion_sent_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test, demo_converted_at")
+      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at, description, registration_fee_cents, max_players, scoring_format, demo_prospect_email, demo_prospect_name, demo_conversion_token, demo_conversion_sent_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test, demo_converted_at")
       .eq("is_demo", true)
       .order("created_at", { ascending: false });
     setDemos((data as DemoTournamentRow[]) || []);

@@ -12,7 +12,7 @@ interface HeroSectionProps {
 const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min-h-[85vh]" }: HeroSectionProps) => {
   return (
     <section
-      className={`relative min-h-[60vh] sm:${height} ${height.replace("min-h-", "sm:min-h-")} flex items-center justify-center overflow-hidden py-12 md:py-0 bg-black`}
+      className={`relative min-h-[60vh] sm:${height} flex items-center justify-center overflow-hidden py-12 md:py-0 bg-black`}
     >
       <img
         src={backgroundImage}

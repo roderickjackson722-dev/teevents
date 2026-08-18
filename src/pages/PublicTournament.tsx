@@ -408,7 +408,16 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     (supabase as any)
       .rpc("get_public_tournament_site", { _slug: slug })
       .then(async ({ data, error }: { data: any; error: any }) => {
-        if (error || !data) { setNotFound(true); setLoading(false); return; }
+        if (error || !data) {
+          // The first lookup can fail transiently (e.g. an auth token still in
+          // flight while previewing from a sample dashboard). Retry once
+          // automatically before telling the visitor anything is wrong.
+          const retry = await (supabase as any).rpc("get_public_tournament_site", { _slug: slug });
+          if (retry?.error || !retry?.data) { setNotFound(true); setLoading(false); return; }
+          setTournament(retry.data as unknown as TournamentSite);
+          setLoading(false);
+          return;
+        }
         const t = data as unknown as TournamentSite;
         setTournament(t);
 
@@ -765,11 +774,35 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
   if (notFound || !tournament) {
+    // Shown as a friendly pop-up card (not a scary "not found" page) because in
+    // sample mode the page usually loads fine after a quick reload.
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="text-center">
-          <h1 className="text-4xl font-display font-bold text-foreground mb-4">Tournament Not Found</h1>
-          <p className="text-muted-foreground">This tournament page doesn't exist or hasn't been published yet.</p>
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
+        <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-xl">
+          <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-secondary/20 text-2xl">
+            ⛳
+          </div>
+          <h1 className="mb-2 text-xl font-display font-bold text-foreground">
+            Just a moment — loading this tournament page
+          </h1>
+          <p className="mb-5 text-sm text-muted-foreground">
+            We couldn't load the page on the first try. This is common in sample mode — tap reload
+            and the live tournament page will open right up.
+          </p>
+          <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <button
+              onClick={() => window.location.reload()}
+              className="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-secondary/80"
+            >
+              Reload page
+            </button>
+            <a
+              href="/"
+              className="inline-flex items-center justify-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
+            >
+              Back to home
+            </a>
+          </div>
         </div>
       </div>
     );

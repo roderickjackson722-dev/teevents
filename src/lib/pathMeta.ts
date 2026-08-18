@@ -76,7 +76,7 @@ const HELP_TITLES: Record<string, { title: string; description: string }> = {
   "uploading-images": { title: "Troubleshooting Image Uploads", description: "Fix common problems when uploading tournament logos, flyers, and hero images." },
 };
 
-async function tournamentRow(slug: string, requirePublished: boolean) {
+async function tournamentRow(slug: string, requirePublished: boolean): Promise<Record<string, unknown> | undefined> {
   const filter = new URLSearchParams({
     select: "title,date,location,course_name,description,site_hero_image_url,site_logo_url,image_url",
     or: `(custom_slug.eq.${slug},slug.eq.${slug})`,

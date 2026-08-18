@@ -247,17 +247,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 />
                 {orgContext && (
                   <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                    <OpenDashboardButton href={dashboardHref} />
+                    <span className="hidden sm:inline text-foreground/30">|</span>
                     <span className="truncate text-base md:text-lg font-display font-bold text-foreground">
                       {displayName}
                     </span>
-                    <span className="hidden sm:inline text-foreground/30">|</span>
-                    <Link
-                      to={dashboardHref}
-                      title="Click 'Open Dashboard' to access your tournament dashboard."
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm md:text-base font-semibold text-primary shadow-sm transition-colors hover:bg-secondary/80 hover:shadow"
-                    >
-                      Open Dashboard <ArrowRight className="h-4 w-4" />
-                    </Link>
                   </div>
                 )}
               </div>

@@ -38,12 +38,21 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({} as any));
     const tournamentId = (body?.tournament_id || "").trim();
     const email = (body?.prospect_email || "").trim().toLowerCase();
+    const rawPhone = (body?.prospect_phone || "").trim();
+    const digits = rawPhone.replace(/[^0-9]/g, "");
+    const phoneE164 = digits ? (digits.length === 10 ? `+1${digits}` : `+${digits}`) : "";
     const name = (body?.prospect_name || "").trim() || null;
     const days = [7, 14, 30].includes(Number(body?.days)) ? Number(body.days) : 7;
-    const sendEmail = body?.send_email !== false;
+    const sendEmail = body?.send_email !== false && !!email;
+    const sendSms = body?.send_sms === true && !!phoneE164;
 
     if (!tournamentId) return json(400, { error: "tournament_id required" });
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json(400, { error: "Valid prospect_email required" });
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      return json(400, { error: "Valid prospect_email required" });
+    }
+    if (!email && digits.length < 10) {
+      return json(400, { error: "Provide a valid email address or mobile number" });
+    }
 
     const { data: tournament, error: tErr } = await admin
       .from("tournaments")

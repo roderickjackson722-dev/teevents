@@ -13,6 +13,8 @@ import {
   XCircle, RotateCcw, FileText, Building2, Users,
 } from "lucide-react";
 import PlatformFeesPanel from "./PlatformFeesPanel";
+import AdminLeagueFinancials from "./AdminLeagueFinancials";
+
 
 interface Transaction {
   id: string;

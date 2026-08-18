@@ -1616,15 +1616,15 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {/* ===== HERO SECTION ===== */}
       <section
         id="hero"
-        className="relative min-h-screen flex flex-col items-center justify-center pt-14"
+        className="relative min-h-[75vh] sm:min-h-screen flex flex-col items-center justify-center pt-14"
         style={{
           backgroundColor: primary,
         }}
       >
-        {/* Background image (with adjustable opacity, isolated so overlay/content stay readable) */}
+        {/* Background image — on mobile the full image is shown (contain) so it isn't cropped to the center */}
         {tournament.site_hero_image_url && (
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+            className="absolute inset-0 bg-contain bg-top sm:bg-cover sm:bg-center bg-no-repeat"
             style={{
               backgroundImage: `url(${tournament.site_hero_image_url})`,
               opacity: (tournament.site_hero_opacity ?? 100) / 100,

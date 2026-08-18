@@ -114,7 +114,29 @@ Deno.serve(async (req) => {
       if (!res.ok) console.warn("[demo-access-grant] email failed", await res.text());
     }
 
-    return json(200, { ok: true, access: row, link, emailed });
+    // Optional SMS delivery via Twilio
+    let texted = false;
+    const sid = Deno.env.get("TWILIO_ACCOUNT_SID");
+    const twToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+    const fromPhone = Deno.env.get("TWILIO_PHONE_NUMBER");
+    if (sendSms && sid && twToken && fromPhone) {
+      const smsBody =
+        `TeeVents: view the sample dashboard for ${tournament.title}. ` +
+        `Open ${link} and enter ${phoneE164} to get in. Expires in ${days} days.`;
+      const params = new URLSearchParams({ To: phoneE164, From: fromPhone, Body: smsBody });
+      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${btoa(`${sid}:${twToken}`)}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params.toString(),
+      });
+      texted = res.ok;
+      if (!res.ok) console.warn("[demo-access-grant] sms failed", await res.text());
+    }
+
+    return json(200, { ok: true, access: row, link, emailed, texted });
   } catch (e) {
     return json(500, { error: (e as Error).message });
   }

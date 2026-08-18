@@ -1294,6 +1294,33 @@ export default function DemoConverter() {
                 onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
               />
             </div>
+            <div className="sm:col-span-2 border-t pt-4 space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-sm font-medium">Show sponsorship section on the public page</div>
+                  <div className="text-xs text-muted-foreground">
+                    Lets prospects see how sponsorship packages are promoted on an event page.
+                  </div>
+                </div>
+                <Switch
+                  checked={editForm.show_sponsorships}
+                  onCheckedChange={(v) => setEditForm({ ...editForm, show_sponsorships: v })}
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                disabled={seedingSponsors}
+                onClick={seedSponsorshipContent}
+              >
+                {seedingSponsors ? "Adding…" : "Add sample sponsorship packages & sponsors"}
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Adds Title, Gold, Silver and Hole packages plus a few example sponsor logos so the
+                sponsorship tab is populated in the demo.
+              </p>
+            </div>
           </div>
           <DialogFooter className="gap-2">
             {editTarget && (

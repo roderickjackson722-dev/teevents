@@ -38,7 +38,7 @@ Deno.serve(async (req) => {
 
     const { data: access } = await admin
       .from("demo_access")
-      .select("id, tournament_id, prospect_email, prospect_name, expires_at, revoked_at, access_count")
+      .select("id, tournament_id, prospect_email, prospect_phone, prospect_name, expires_at, revoked_at, access_count")
       .eq("access_token", token)
       .maybeSingle();
 

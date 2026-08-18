@@ -357,7 +357,20 @@ const AdminAccounting = () => {
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-border bg-muted/40 font-semibold">
+                    <td className="p-3 text-sm">Totals</td>
+                    <td className="p-3 text-sm">{filteredTx.length} txns</td>
+                    <td className="p-3 hidden md:table-cell" />
+                    <td className="p-3" />
+                    <td className="p-3 text-sm text-right">${(totalGross / 100).toFixed(2)}</td>
+                    <td className="p-3 text-sm text-right hidden md:table-cell">${(totalPlatformRevenue / 100).toFixed(2)}</td>
+                    <td className="p-3 text-sm text-right text-primary">${(totalNetToOrganizers / 100).toFixed(2)}</td>
+                    <td className="p-3" />
+                  </tr>
+                </tfoot>
               </table>
+
             </div>
             {filteredTx.length > 200 && (
               <div className="p-3 text-center text-xs text-muted-foreground border-t border-border">

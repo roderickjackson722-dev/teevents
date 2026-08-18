@@ -322,9 +322,15 @@ const AdminAccounting = () => {
       <Tabs defaultValue="transactions" className="space-y-4">
         <TabsList className="bg-card border border-border">
           <TabsTrigger value="transactions"><CreditCard className="h-4 w-4 mr-1.5" />Transactions ({filteredTx.length})</TabsTrigger>
+          <TabsTrigger value="leagues"><Users className="h-4 w-4 mr-1.5" />Golf Leagues</TabsTrigger>
           <TabsTrigger value="payouts"><Banknote className="h-4 w-4 mr-1.5" />Payouts ({payouts.length})</TabsTrigger>
           <TabsTrigger value="reconciliation"><FileText className="h-4 w-4 mr-1.5" />Reconciliation</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="leagues">
+          <AdminLeagueFinancials />
+        </TabsContent>
+
 
         {/* Transactions */}
         <TabsContent value="transactions">

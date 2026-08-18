@@ -221,6 +221,25 @@ Deno.serve(async (req) => {
             .update({ times_used: (p?.times_used || 0) + 1 })
             .eq("code", promo);
         }
+        const { data: accessLeague } = await supabaseAdmin
+          .from("golf_leagues")
+          .select("league_name, organization_id")
+          .eq("id", leagueId)
+          .maybeSingle();
+        const accessGross = Number(session.amount_total || 0);
+        const accessStripeFee = actualStripeFeeCents(accessGross);
+        await notifyPlatformAdmin({
+          supabaseAdmin,
+          type: "other",
+          organizationId: accessLeague?.organization_id || null,
+          subject: `✅ League access transaction — ${accessLeague?.league_name || "Golf League"}`,
+          htmlBody: buildNotificationHtml("League Access Transaction Completed", [
+            `🏌️ <strong>League:</strong> ${accessLeague?.league_name || "Golf League"}`,
+            `💳 <strong>Customer paid:</strong> $${(accessGross / 100).toFixed(2)}`,
+            `💰 <strong>Estimated payout:</strong> $${(Math.max(accessGross - accessStripeFee, 0) / 100).toFixed(2)}`,
+            `🔖 <strong>Reference:</strong> ${String(session.payment_intent || session.id)}`,
+          ]),
+        });
       } else if (kind === "league_registration") {
         const paymentId = session.metadata!.payment_id;
         const memberId = session.metadata!.member_id;

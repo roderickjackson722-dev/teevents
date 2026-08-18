@@ -18,6 +18,7 @@ import {
   Download, Check, Printer, FileSpreadsheet, Lightbulb, ArrowRight,
   ClipboardList, PieChart,
 } from "lucide-react";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 import {
   DEFAULT_EXPENSES, DEFAULT_INCOME, DEFAULT_ESTIMATES,
   EXPENSE_CATEGORIES, INCOME_CATEGORIES,
@@ -97,7 +98,7 @@ export default function BudgetPage() {
       .then(({ data }) => {
         const list = (data || []) as Tournament[];
         setTournaments(list);
-        if (list.length) setSelectedId(list[0].id);
+        if (list.length) setSelectedId(pickTournamentId(list));
         else setLoading(false);
       });
   }, [org]);

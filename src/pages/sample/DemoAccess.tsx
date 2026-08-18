@@ -71,19 +71,21 @@ export default function DemoAccess() {
           <CardTitle className="flex items-center gap-2">
             <Eye className="h-5 w-5" /> View Sample Dashboard
           </CardTitle>
-          <CardDescription>Enter your email address to view the sample dashboard.</CardDescription>
+          <CardDescription>
+            Enter the email address or mobile number your invitation was sent to.
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <form onSubmit={submit} className="space-y-4">
             <div>
-              <Label htmlFor="demo-email">Email</Label>
+              <Label htmlFor="demo-email">Email or Mobile Number</Label>
               <Input
                 id="demo-email"
-                type="email"
+                type="text"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@example.com"
+                placeholder="you@example.com or (555) 555-1234"
               />
             </div>
             {error && (

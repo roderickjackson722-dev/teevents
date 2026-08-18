@@ -20,6 +20,7 @@ import {
   Award, Target, BarChart3, Crown,
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 type Tournament = { id: string; title: string; slug: string | null; custom_slug?: string | null };
 
@@ -117,7 +118,7 @@ export default function TeamPerformance() {
         .order("created_at", { ascending: false });
       const list = (data || []) as Tournament[];
       setTournaments(list);
-      if (list.length && !tournamentId) setTournamentId(list[0].id);
+      if (list.length) setTournamentId(pickTournamentId(list, tournamentId));
       setLoading(false);
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps

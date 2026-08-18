@@ -125,6 +125,21 @@ serve(async (req) => {
     const { error: rErr } = await admin.from("tournament_registrations").insert(regs);
     if (rErr) throw rErr;
 
+    // Seed sponsorship packages + sponsors so the demo shows how sponsorship
+    // is promoted on the public event page and dashboard.
+    await admin.from("sponsorship_tiers").insert([
+      { tournament_id: tournament.id, name: "Title Sponsor", price_cents: 500000, total_spots: 1, benefits: "Event naming rights • Logo on all signage • 2 foursomes • Podium recognition", is_active: true, published_to_public: true, display_order: 1 },
+      { tournament_id: tournament.id, name: "Gold Sponsor", price_cents: 250000, total_spots: 3, benefits: "Logo on leaderboard • 1 foursome • Social media feature", is_active: true, published_to_public: true, display_order: 2 },
+      { tournament_id: tournament.id, name: "Silver Sponsor", price_cents: 100000, total_spots: 6, benefits: "Logo on event page • Tee sign • Program listing", is_active: true, published_to_public: true, display_order: 3 },
+      { tournament_id: tournament.id, name: "Hole Sponsor", price_cents: 25000, total_spots: 18, benefits: "Branded sign on your sponsored hole", is_active: true, published_to_public: true, display_order: 4 },
+    ]);
+    await admin.from("tournament_sponsors").insert([
+      { tournament_id: tournament.id, name: "Fairway Financial Group", tier: "Title Sponsor", amount: 5000, is_paid: true, show_on_leaderboard: true, show_on_scoring_page: true, display_order: 1 },
+      { tournament_id: tournament.id, name: "Birdie Auto Group", tier: "Gold Sponsor", amount: 2500, is_paid: true, show_on_leaderboard: true, show_on_scoring_page: true, display_order: 2 },
+      { tournament_id: tournament.id, name: "Clubhouse Coffee Co.", tier: "Silver Sponsor", amount: 1000, is_paid: true, show_on_leaderboard: true, show_on_scoring_page: true, display_order: 3 },
+      { tournament_id: tournament.id, name: "Green Ridge Landscaping", tier: "Hole Sponsor", amount: 250, is_paid: true, show_on_leaderboard: true, show_on_scoring_page: true, display_order: 4 },
+    ]);
+
     return new Response(
       JSON.stringify({ tournament, organization_id: orgId }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

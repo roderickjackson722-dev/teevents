@@ -38,12 +38,21 @@ Deno.serve(async (req) => {
     const body = await req.json().catch(() => ({} as any));
     const tournamentId = (body?.tournament_id || "").trim();
     const email = (body?.prospect_email || "").trim().toLowerCase();
+    const rawPhone = (body?.prospect_phone || "").trim();
+    const digits = rawPhone.replace(/[^0-9]/g, "");
+    const phoneE164 = digits ? (digits.length === 10 ? `+1${digits}` : `+${digits}`) : "";
     const name = (body?.prospect_name || "").trim() || null;
     const days = [7, 14, 30].includes(Number(body?.days)) ? Number(body.days) : 7;
-    const sendEmail = body?.send_email !== false;
+    const sendEmail = body?.send_email !== false && !!email;
+    const sendSms = body?.send_sms === true && !!phoneE164;
 
     if (!tournamentId) return json(400, { error: "tournament_id required" });
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) return json(400, { error: "Valid prospect_email required" });
+    if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) {
+      return json(400, { error: "Valid prospect_email required" });
+    }
+    if (!email && digits.length < 10) {
+      return json(400, { error: "Provide a valid email address or mobile number" });
+    }
 
     const { data: tournament, error: tErr } = await admin
       .from("tournaments")
@@ -60,7 +69,9 @@ Deno.serve(async (req) => {
       .from("demo_access")
       .insert({
         tournament_id: tournament.id,
-        prospect_email: email,
+        prospect_email: email || null,
+        prospect_phone: phoneE164 || null,
+        delivery_method: email && phoneE164 ? "both" : email ? "email" : "sms",
         prospect_name: name,
         access_token: accessToken,
         expires_at: expiresAt,
@@ -70,7 +81,8 @@ Deno.serve(async (req) => {
     if (iErr) return json(500, { error: iErr.message });
 
     const origin = (body?.origin || "https://www.teevents.golf").replace(/\/$/, "");
-    const link = `${origin}/sample/access/${accessToken}?email=${encodeURIComponent(email)}`;
+    const identifier = email || phoneE164;
+    const link = `${origin}/sample/access/${accessToken}?email=${encodeURIComponent(identifier)}`;
 
     let emailed = false;
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
@@ -102,7 +114,29 @@ Deno.serve(async (req) => {
       if (!res.ok) console.warn("[demo-access-grant] email failed", await res.text());
     }
 
-    return json(200, { ok: true, access: row, link, emailed });
+    // Optional SMS delivery via Twilio
+    let texted = false;
+    const sid = Deno.env.get("TWILIO_ACCOUNT_SID");
+    const twToken = Deno.env.get("TWILIO_AUTH_TOKEN");
+    const fromPhone = Deno.env.get("TWILIO_PHONE_NUMBER");
+    if (sendSms && sid && twToken && fromPhone) {
+      const smsBody =
+        `TeeVents: view the sample dashboard for ${tournament.title}. ` +
+        `Open ${link} and enter ${phoneE164} to get in. Expires in ${days} days.`;
+      const params = new URLSearchParams({ To: phoneE164, From: fromPhone, Body: smsBody });
+      const res = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${sid}/Messages.json`, {
+        method: "POST",
+        headers: {
+          Authorization: `Basic ${btoa(`${sid}:${twToken}`)}`,
+          "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: params.toString(),
+      });
+      texted = res.ok;
+      if (!res.ok) console.warn("[demo-access-grant] sms failed", await res.text());
+    }
+
+    return json(200, { ok: true, access: row, link, emailed, texted });
   } catch (e) {
     return json(500, { error: (e as Error).message });
   }

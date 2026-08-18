@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { FileText, Plus, Pencil, Trash2, Search, Loader2, CalendarClock } from "lucide-react";
 import { toast } from "sonner";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 interface Note {
   id: string;
@@ -101,7 +102,7 @@ export default function OrganizerNotes() {
         .order("created_at", { ascending: false });
       const list = (data || []) as { id: string; title: string }[];
       setTournaments(list);
-      if (list.length && !tournamentId) setTournamentId(list[0].id);
+      if (list.length) setTournamentId(pickTournamentId(list, tournamentId));
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [org]);

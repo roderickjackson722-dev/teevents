@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Building2, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { toast } from "sonner";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 interface CustomSection {
   id: string;
@@ -72,7 +73,7 @@ const OrganizationInfo = () => {
       .then(({ data }) => {
         const t = ((data as unknown) as Tournament[]) || [];
         setTournaments(t);
-        if (t.length > 0) setSelected(t[0].id);
+        if (t.length > 0) setSelected(pickTournamentId(t));
         setLoading(false);
       });
   }, [org]);

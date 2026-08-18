@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { BedDouble, Loader2, Plus, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 interface RoomType {
   id: string;
@@ -67,7 +68,7 @@ const Lodging = () => {
       .then(({ data }) => {
         const t = (data as Tournament[]) || [];
         setTournaments(t);
-        if (t.length > 0) setSelectedTid(t[0].id);
+        if (t.length > 0) setSelectedTid(pickTournamentId(t));
         if (t.length === 0) setLoading(false);
       });
   }, [org]);

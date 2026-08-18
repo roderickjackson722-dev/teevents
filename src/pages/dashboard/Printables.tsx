@@ -16,6 +16,7 @@ import QRCodesTab, { type PrintableAddon } from "@/components/printables/QRCodes
 import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions } from "@/components/printables/PrintablesOptionsCard";
 import { rosterForPrintables } from "@/components/printables/rosterSource";
 import type { RegistrationGroupRow } from "@/components/printables/teamGrouping";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 
 interface TournamentWithSlug extends Tournament {
@@ -55,7 +56,7 @@ const Printables = () => {
       .then(({ data }) => {
         const list = (data || []) as TournamentWithSlug[];
         setTournaments(list);
-        if (list.length > 0) setSelectedTournament(list[0].id);
+        if (list.length > 0) setSelectedTournament(pickTournamentId(list));
         setLoading(false);
       });
   }, [org]);

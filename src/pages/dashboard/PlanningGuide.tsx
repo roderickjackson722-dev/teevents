@@ -5,6 +5,7 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ClipboardCheck, Trophy, Loader2, CheckCircle2, AlertCircle, CalendarX } from "lucide-react";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 interface ChecklistItem {
   id: string;
@@ -51,7 +52,7 @@ const PlanningGuide = () => {
       .then(({ data }) => {
         const list = data || [];
         setTournaments(list);
-        if (list.length > 0) setSelectedTournament(list[0].id);
+        if (list.length > 0) setSelectedTournament(pickTournamentId(list));
         setLoading(false);
       });
   }, [org]);

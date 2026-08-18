@@ -27,8 +27,9 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({} as any));
     const token = (body?.token || "").trim();
-    const email = (body?.email || "").trim().toLowerCase();
-    if (!/^[0-9a-f-]{36}$/i.test(token) || !email) return json(403, { error: DENIED });
+    const identifier = (body?.email || body?.identifier || "").trim().toLowerCase();
+    const identifierDigits = identifier.replace(/[^0-9]/g, "");
+    if (!/^[0-9a-f-]{36}$/i.test(token) || !identifier) return json(403, { error: DENIED });
 
     const url = Deno.env.get("SUPABASE_URL")!;
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {
@@ -37,14 +38,20 @@ Deno.serve(async (req) => {
 
     const { data: access } = await admin
       .from("demo_access")
-      .select("id, tournament_id, prospect_email, prospect_name, expires_at, revoked_at, access_count")
+      .select("id, tournament_id, prospect_email, prospect_phone, prospect_name, expires_at, revoked_at, access_count")
       .eq("access_token", token)
       .maybeSingle();
 
     if (!access) return json(403, { error: DENIED });
     if (access.revoked_at) return json(403, { error: DENIED });
     if (new Date(access.expires_at) < new Date()) return json(403, { error: DENIED });
-    if ((access.prospect_email || "").toLowerCase() !== email) return json(403, { error: DENIED });
+    const grantedEmail = (access.prospect_email || "").toLowerCase();
+    const grantedPhoneDigits = ((access as any).prospect_phone || "").replace(/[^0-9]/g, "");
+    const emailMatch = !!grantedEmail && grantedEmail === identifier;
+    const phoneMatch =
+      !!grantedPhoneDigits && identifierDigits.length >= 10 &&
+      grantedPhoneDigits.slice(-10) === identifierDigits.slice(-10);
+    if (!emailMatch && !phoneMatch) return json(403, { error: DENIED });
 
     const { data: tournament } = await admin
       .from("tournaments")

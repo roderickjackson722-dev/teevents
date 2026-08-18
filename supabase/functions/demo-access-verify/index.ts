@@ -45,7 +45,13 @@ Deno.serve(async (req) => {
     if (!access) return json(403, { error: DENIED });
     if (access.revoked_at) return json(403, { error: DENIED });
     if (new Date(access.expires_at) < new Date()) return json(403, { error: DENIED });
-    if ((access.prospect_email || "").toLowerCase() !== email) return json(403, { error: DENIED });
+    const grantedEmail = (access.prospect_email || "").toLowerCase();
+    const grantedPhoneDigits = ((access as any).prospect_phone || "").replace(/[^0-9]/g, "");
+    const emailMatch = !!grantedEmail && grantedEmail === identifier;
+    const phoneMatch =
+      !!grantedPhoneDigits && identifierDigits.length >= 10 &&
+      grantedPhoneDigits.slice(-10) === identifierDigits.slice(-10);
+    if (!emailMatch && !phoneMatch) return json(403, { error: DENIED });
 
     const { data: tournament } = await admin
       .from("tournaments")

@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardChatAssistant } from "./DashboardChatAssistant";
-import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck, Sparkles } from "lucide-react";
+import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck, Sparkles, ExternalLink } from "lucide-react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useSampleMode, setSampleModeActive } from "@/hooks/useSampleMode";
 
@@ -16,6 +16,34 @@ export interface OrgContext {
   orgId: string;
   orgName: string;
 }
+
+/**
+ * "Open Dashboard" control. On mobile the dashboard menu slides in from the
+ * left, so the button sits to the LEFT of the event title with a left-pointing
+ * arrow and opens the slide-in menu (navigating did nothing on mobile before).
+ */
+const OpenDashboardButton = ({ href }: { href: string }) => {
+  const { isMobile, setOpenMobile, setOpen } = useSidebar();
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      aria-label="Open Dashboard"
+      title="Open Dashboard"
+      onClick={() => {
+        if (isMobile) {
+          setOpenMobile(true);
+        } else {
+          setOpen(true);
+          navigate(href);
+        }
+      }}
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm md:text-base font-semibold text-primary shadow-sm transition-colors hover:bg-secondary/80 hover:shadow"
+    >
+      <ArrowLeft className="h-4 w-4" /> Open Dashboard
+    </button>
+  );
+};
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [loading, setLoading] = useState(true);
@@ -118,16 +146,20 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   // dashboard with that tournament's name instead of the organization name.
   const selectedTournamentId = searchParams.get("tournament_id");
   const [tournamentLabel, setTournamentLabel] = useState<string | null>(null);
+  const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
   useEffect(() => {
-    if (!selectedTournamentId) { setTournamentLabel(null); return; }
+    if (!selectedTournamentId) { setTournamentLabel(null); setTournamentSlug(null); return; }
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("title")
+        .select("title, slug, custom_slug")
         .eq("id", selectedTournamentId)
         .maybeSingle();
-      if (!cancelled) setTournamentLabel((data as any)?.title ?? null);
+      if (!cancelled) {
+        setTournamentLabel((data as any)?.title ?? null);
+        setTournamentSlug(((data as any)?.custom_slug || (data as any)?.slug || null));
+      }
     })();
     return () => { cancelled = true; };
   }, [selectedTournamentId]);
@@ -243,17 +275,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 />
                 {orgContext && (
                   <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+                    <OpenDashboardButton href={dashboardHref} />
+                    <span className="hidden sm:inline text-foreground/30">|</span>
                     <span className="truncate text-base md:text-lg font-display font-bold text-foreground">
                       {displayName}
                     </span>
-                    <span className="hidden sm:inline text-foreground/30">|</span>
-                    <Link
-                      to={dashboardHref}
-                      title="Click 'Open Dashboard' to access your tournament dashboard."
-                      className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm md:text-base font-semibold text-primary shadow-sm transition-colors hover:bg-secondary/80 hover:shadow"
-                    >
-                      Open Dashboard <ArrowRight className="h-4 w-4" />
-                    </Link>
                   </div>
                 )}
               </div>
@@ -268,6 +294,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </Link>
               )}
             </header>
+            {tournamentSlug && (
+              <div className="border-b bg-secondary/10 px-3 sm:px-4 py-3">
+                <a
+                  href={`/t/${tournamentSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-3 text-sm sm:text-base font-bold text-primary shadow-sm transition-colors hover:bg-secondary/80"
+                >
+                  <ExternalLink className="h-5 w-5" /> View Live Tournament Page
+                </a>
+              </div>
+            )}
             <main className="flex-1 bg-golf-cream p-3 sm:p-4 md:p-6 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
               {children}
             </main>

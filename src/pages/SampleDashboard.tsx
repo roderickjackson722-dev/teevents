@@ -243,9 +243,9 @@ const SampleDashboard = () => {
             <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="sm" className="md:hidden h-9 px-2 flex-shrink-0 gap-1.5 bg-yellow-300 hover:bg-yellow-400 text-black font-bold rounded-md animate-pulse">
-                  <Menu className="h-5 w-5" />
+                  <ArrowLeft className="h-4 w-4" />
                   <span className="text-xs leading-none">Open Dashboard</span>
-                  <ArrowLeft className="h-4 w-4 rotate-180" />
+                  <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="left" className="p-0 w-72 bg-primary text-primary-foreground border-r-0 flex flex-col">

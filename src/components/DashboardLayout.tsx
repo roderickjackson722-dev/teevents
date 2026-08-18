@@ -17,6 +17,34 @@ export interface OrgContext {
   orgName: string;
 }
 
+/**
+ * "Open Dashboard" control. On mobile the dashboard menu slides in from the
+ * left, so the button sits to the LEFT of the event title with a left-pointing
+ * arrow and opens the slide-in menu (navigating did nothing on mobile before).
+ */
+const OpenDashboardButton = ({ href }: { href: string }) => {
+  const { isMobile, setOpenMobile, setOpen } = useSidebar();
+  const navigate = useNavigate();
+  return (
+    <button
+      type="button"
+      aria-label="Open Dashboard"
+      title="Open Dashboard"
+      onClick={() => {
+        if (isMobile) {
+          setOpenMobile(true);
+        } else {
+          setOpen(true);
+          navigate(href);
+        }
+      }}
+      className="inline-flex shrink-0 items-center gap-1.5 rounded-md bg-secondary px-3 py-1.5 text-sm md:text-base font-semibold text-primary shadow-sm transition-colors hover:bg-secondary/80 hover:shadow"
+    >
+      <ArrowLeft className="h-4 w-4" /> Open Dashboard
+    </button>
+  );
+};
+
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [loading, setLoading] = useState(true);
   const [orgContext, setOrgContext] = useState<OrgContext | null>(null);

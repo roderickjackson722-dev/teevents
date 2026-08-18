@@ -13,6 +13,8 @@ import {
   XCircle, RotateCcw, FileText, Building2, Users,
 } from "lucide-react";
 import PlatformFeesPanel from "./PlatformFeesPanel";
+import AdminLeagueFinancials from "./AdminLeagueFinancials";
+
 
 interface Transaction {
   id: string;
@@ -322,9 +324,15 @@ const AdminAccounting = () => {
       <Tabs defaultValue="transactions" className="space-y-4">
         <TabsList className="bg-card border border-border">
           <TabsTrigger value="transactions"><CreditCard className="h-4 w-4 mr-1.5" />Transactions ({filteredTx.length})</TabsTrigger>
+          <TabsTrigger value="leagues"><Users className="h-4 w-4 mr-1.5" />Golf Leagues</TabsTrigger>
           <TabsTrigger value="payouts"><Banknote className="h-4 w-4 mr-1.5" />Payouts ({payouts.length})</TabsTrigger>
           <TabsTrigger value="reconciliation"><FileText className="h-4 w-4 mr-1.5" />Reconciliation</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="leagues">
+          <AdminLeagueFinancials />
+        </TabsContent>
+
 
         {/* Transactions */}
         <TabsContent value="transactions">
@@ -357,7 +365,20 @@ const AdminAccounting = () => {
                     </tr>
                   ))}
                 </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-border bg-muted/40 font-semibold">
+                    <td className="p-3 text-sm">Totals</td>
+                    <td className="p-3 text-sm">{filteredTx.length} txns</td>
+                    <td className="p-3 hidden md:table-cell" />
+                    <td className="p-3" />
+                    <td className="p-3 text-sm text-right">${(totalGross / 100).toFixed(2)}</td>
+                    <td className="p-3 text-sm text-right hidden md:table-cell">${(totalPlatformRevenue / 100).toFixed(2)}</td>
+                    <td className="p-3 text-sm text-right text-primary">${(totalNetToOrganizers / 100).toFixed(2)}</td>
+                    <td className="p-3" />
+                  </tr>
+                </tfoot>
               </table>
+
             </div>
             {filteredTx.length > 200 && (
               <div className="p-3 text-center text-xs text-muted-foreground border-t border-border">

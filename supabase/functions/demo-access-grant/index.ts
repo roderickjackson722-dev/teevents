@@ -81,7 +81,8 @@ Deno.serve(async (req) => {
     if (iErr) return json(500, { error: iErr.message });
 
     const origin = (body?.origin || "https://www.teevents.golf").replace(/\/$/, "");
-    const link = `${origin}/sample/access/${accessToken}?email=${encodeURIComponent(email)}`;
+    const identifier = email || phoneE164;
+    const link = `${origin}/sample/access/${accessToken}?email=${encodeURIComponent(identifier)}`;
 
     let emailed = false;
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");

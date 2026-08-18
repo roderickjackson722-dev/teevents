@@ -1,10 +1,10 @@
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
 import { DashboardChatAssistant } from "./DashboardChatAssistant";
-import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck, Sparkles } from "lucide-react";
+import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck, Sparkles, ExternalLink } from "lucide-react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useSampleMode, setSampleModeActive } from "@/hooks/useSampleMode";
 
@@ -294,6 +294,18 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </Link>
               )}
             </header>
+            {tournamentSlug && (
+              <div className="border-b bg-secondary/10 px-3 sm:px-4 py-3">
+                <a
+                  href={`/t/${tournamentSlug}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-3 text-sm sm:text-base font-bold text-primary shadow-sm transition-colors hover:bg-secondary/80"
+                >
+                  <ExternalLink className="h-5 w-5" /> View Live Tournament Page
+                </a>
+              </div>
+            )}
             <main className="flex-1 bg-golf-cream p-3 sm:p-4 md:p-6 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
               {children}
             </main>

@@ -141,6 +141,40 @@ async function resolveMeta(path: string): Promise<Meta> {
       }
     }
 
+    if (kind === "sample") {
+      const { data } = await admin
+        .from("sample_tournaments")
+        .select("tournament_name, event_date, location, description, hero_image_url, logo_url")
+        .eq("unique_slug", slug)
+        .maybeSingle();
+      if (data) {
+        const prefix = segments[2] === "live" ? "Live Leaderboard — " : segments[2] === "dashboard" ? "Organizer Dashboard — " : "";
+        return {
+          title: `${prefix}${data.tournament_name} | ${SITE_NAME}`,
+          description:
+            plain(data.description) ||
+            `See ${data.tournament_name} — a live example of a TeeVents tournament page with registration, sponsors, pairings and live scoring.`,
+          image: absolute(data.hero_image_url) || absolute(data.logo_url) || DEFAULT_IMAGE,
+        };
+      }
+    }
+
+    if (kind === "lead-magnet") {
+      const { data } = await admin
+        .from("lead_magnets")
+        .select("title, description, cover_image_url")
+        .eq("slug", slug)
+        .eq("is_published", true)
+        .maybeSingle();
+      if (data) {
+        return {
+          title: `${data.title} | TeeVents`,
+          description: plain(data.description) || `Download ${data.title} — a free resource from TeeVents.`,
+          image: absolute(data.cover_image_url) || DEFAULT_IMAGE,
+        };
+      }
+    }
+
     if (kind === "league") {
       const { data } = await admin
         .from("golf_leagues")
@@ -159,6 +193,7 @@ async function resolveMeta(path: string): Promise<Meta> {
         };
       }
     }
+
   } catch (err) {
     console.error("share-preview resolve error:", err);
   }

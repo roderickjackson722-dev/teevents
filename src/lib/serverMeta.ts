@@ -9,11 +9,14 @@ const decode = (value: string) => value
   .replace(/&quot;/gi, '"')
   .replace(/&lt;/gi, "<")
   .replace(/&gt;/gi, ">");
-const plain = (value: unknown) => decode(decode(String(value ?? "").replace(/<[^>]+>/g, " "))).replace(/\s+/g, " ").trim();
+export const plain = (value: unknown) => decode(decode(String(value ?? "").replace(/<[^>]+>/g, " "))).replace(/\s+/g, " ").trim();
 export const clamp = (value: string, max = 300) => (value.length <= max ? value : `${value.slice(0, max - 1).replace(/\s+\S*$/, "")}…`);
-const absolute = (value: unknown) => { const url = String(value ?? ""); return /^https?:\/\//i.test(url) ? url : url.startsWith("/") ? `${SITE}${url}` : DEFAULT_IMAGE; };
+export const absolute = (value: unknown) => { const url = String(value ?? ""); return /^https?:\/\//i.test(url) ? url : url.startsWith("/") ? `${SITE}${url}` : DEFAULT_IMAGE; };
+export const SITE_URL = SITE;
+export const SITE_DEFAULT_IMAGE = DEFAULT_IMAGE;
 
-async function query(table: string, params: URLSearchParams) {
+export async function query(table: string, params: URLSearchParams) {
+
   const base = import.meta.env.VITE_SUPABASE_URL;
   const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   if (!base || !key) return undefined;

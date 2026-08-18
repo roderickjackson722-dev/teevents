@@ -69,7 +69,9 @@ Deno.serve(async (req) => {
       .from("demo_access")
       .insert({
         tournament_id: tournament.id,
-        prospect_email: email,
+        prospect_email: email || null,
+        prospect_phone: phoneE164 || null,
+        delivery_method: email && phoneE164 ? "both" : email ? "email" : "sms",
         prospect_name: name,
         access_token: accessToken,
         expires_at: expiresAt,

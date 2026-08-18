@@ -118,16 +118,20 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   // dashboard with that tournament's name instead of the organization name.
   const selectedTournamentId = searchParams.get("tournament_id");
   const [tournamentLabel, setTournamentLabel] = useState<string | null>(null);
+  const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
   useEffect(() => {
-    if (!selectedTournamentId) { setTournamentLabel(null); return; }
+    if (!selectedTournamentId) { setTournamentLabel(null); setTournamentSlug(null); return; }
     let cancelled = false;
     (async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("title")
+        .select("title, slug, custom_slug")
         .eq("id", selectedTournamentId)
         .maybeSingle();
-      if (!cancelled) setTournamentLabel((data as any)?.title ?? null);
+      if (!cancelled) {
+        setTournamentLabel((data as any)?.title ?? null);
+        setTournamentSlug(((data as any)?.custom_slug || (data as any)?.slug || null));
+      }
     })();
     return () => { cancelled = true; };
   }, [selectedTournamentId]);

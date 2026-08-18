@@ -570,6 +570,82 @@ export default function DemoConverter() {
     }
   }
 
+  const DEMO_TIERS = [
+    { name: "Title Sponsor", price_cents: 500000, total_spots: 1, benefits: "Event naming rights • Logo on all signage • 2 foursomes • Podium recognition" },
+    { name: "Gold Sponsor", price_cents: 250000, total_spots: 3, benefits: "Logo on leaderboard • 1 foursome • Social media feature" },
+    { name: "Silver Sponsor", price_cents: 100000, total_spots: 6, benefits: "Logo on event page • Tee sign • Program listing" },
+    { name: "Hole Sponsor", price_cents: 25000, total_spots: 18, benefits: "Branded sign on your sponsored hole" },
+  ];
+  const DEMO_SPONSORS = [
+    { name: "Fairway Financial Group", tier: "Title Sponsor", amount: 5000 },
+    { name: "Birdie Auto Group", tier: "Gold Sponsor", amount: 2500 },
+    { name: "Clubhouse Coffee Co.", tier: "Silver Sponsor", amount: 1000 },
+    { name: "Green Ridge Landscaping", tier: "Hole Sponsor", amount: 250 },
+  ];
+
+  async function seedSponsorshipContent() {
+    if (!editTarget) return;
+    setSeedingSponsors(true);
+    try {
+      const tid = editTarget.id;
+      const { data: existingTiers } = await supabase
+        .from("sponsorship_tiers")
+        .select("name")
+        .eq("tournament_id", tid);
+      const haveTiers = new Set(((existingTiers as any[]) || []).map((t) => t.name));
+      const newTiers = DEMO_TIERS.filter((t) => !haveTiers.has(t.name)).map((t, i) => ({
+        tournament_id: tid,
+        name: t.name,
+        price_cents: t.price_cents,
+        total_spots: t.total_spots,
+        benefits: t.benefits,
+        is_active: true,
+        published_to_public: true,
+        display_order: i + 1,
+      }));
+      if (newTiers.length) {
+        const { error } = await supabase.from("sponsorship_tiers").insert(newTiers as never);
+        if (error) throw error;
+      }
+
+      const { data: existingSponsors } = await supabase
+        .from("tournament_sponsors")
+        .select("name")
+        .eq("tournament_id", tid);
+      const haveSponsors = new Set(((existingSponsors as any[]) || []).map((s) => s.name));
+      const newSponsors = DEMO_SPONSORS.filter((s) => !haveSponsors.has(s.name)).map((s, i) => ({
+        tournament_id: tid,
+        name: s.name,
+        tier: s.tier,
+        amount: s.amount,
+        is_paid: true,
+        show_on_leaderboard: true,
+        show_on_scoring_page: true,
+        display_order: i + 1,
+      }));
+      if (newSponsors.length) {
+        const { error } = await supabase.from("tournament_sponsors").insert(newSponsors as never);
+        if (error) throw error;
+      }
+
+      await supabase
+        .from("tournaments")
+        .update({ show_sponsorships: true } as never)
+        .eq("id", tid)
+        .eq("is_demo", true);
+      setEditForm((f) => ({ ...f, show_sponsorships: true }));
+      toast({
+        title: "Sponsorship content added",
+        description: `${newTiers.length} package(s) and ${newSponsors.length} sponsor(s) added to this demo.`,
+      });
+      await loadDemos();
+    } catch (e: any) {
+      toast({ title: "Could not add sponsorship content", description: e.message, variant: "destructive" });
+    } finally {
+      setSeedingSponsors(false);
+    }
+  }
+
 
 
   if (!authChecked) return <div className="p-8">Loading…</div>;

@@ -85,5 +85,64 @@ export const syncLeaguePaymentStatus = createServerFn({ method: "POST" })
       recovered += 1;
     }
 
-    return { checked, recovered };
+    // Reconcile every completed payment into the registration tables. This is
+    // deliberately idempotent so a delayed/missed webhook can never leave the
+    // Finances and Registrations views disagreeing.
+    const { data: paid } = await supabaseAdmin
+      .from("league_payments")
+      .select("id, member_id, registration_id, kind, amount_cents, updated_at")
+      .eq("league_id", data.leagueId)
+      .eq("status", "paid");
+
+    let reconciled = 0;
+    const confirmationIds: string[] = [];
+    for (const payment of paid || []) {
+      if (payment.registration_id) {
+        const { data: registration } = await supabaseAdmin
+          .from("league_event_registrations")
+          .update({
+            fee_paid: true,
+            registration_fee_paid: true,
+            status: "confirmed",
+            entry_type: "online",
+            is_manual_entry: false,
+            paid_at: payment.updated_at,
+          })
+          .eq("id", payment.registration_id)
+          .select("id, confirmation_email_sent_at")
+          .maybeSingle();
+        if (registration) {
+          reconciled += 1;
+          if (!registration.confirmation_email_sent_at) confirmationIds.push(registration.id);
+        }
+      }
+
+      if (["membership", "registration"].includes(payment.kind) && payment.member_id) {
+        await supabaseAdmin
+          .from("league_members")
+          .update({ membership_fee_paid: true, membership_status: "active" })
+          .eq("id", payment.member_id);
+        const { data: responses } = await supabaseAdmin
+          .from("league_registration_responses")
+          .update({ payment_status: "paid", paid_at: payment.updated_at })
+          .eq("league_id", data.leagueId)
+          .eq("member_id", payment.member_id)
+          .select("id");
+        reconciled += (responses || []).length;
+      }
+    }
+
+    for (const registrationId of [...new Set(confirmationIds)]) {
+      try {
+        await fetch("https://www.teevents.golf/api/public/league-event-confirmation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ registration_id: registrationId }),
+        });
+      } catch {
+        // Payment reconciliation must still succeed if email delivery is unavailable.
+      }
+    }
+
+    return { checked, recovered, reconciled };
   });

@@ -8,6 +8,7 @@ import {
   buildLeagueRegistrationAnswersHtml,
   notifyLeagueManagers,
   buildNotificationHtml,
+  notifyPlatformAdmin,
 } from "../_shared/notify.ts";
 
 const corsHeaders = {
@@ -95,7 +96,7 @@ async function finalizeLeaguePayment(
     .eq("id", paymentId)
     .select("id, league_id, platform_fee_cents, payer_email, stripe_session_id")
     .maybeSingle();
-  if (!payment) return;
+  if (!payment) return null;
 
   try {
     const { data: league } = await supabaseAdmin
@@ -103,14 +104,15 @@ async function finalizeLeaguePayment(
       .select("id, league_name, organization_id")
       .eq("id", payment.league_id)
       .maybeSingle();
-    if (!league?.organization_id) return;
+    if (!league?.organization_id) return null;
     const platformFee = payment.platform_fee_cents || 0;
+    const net = Math.max(gross - platformFee - stripeFee, 0);
     await supabaseAdmin.from("platform_transactions").insert({
       organization_id: league.organization_id,
       amount_cents: gross,
       platform_fee_cents: platformFee,
       stripe_fee_cents: stripeFee,
-      net_amount_cents: Math.max(gross - platformFee - stripeFee, 0),
+      net_amount_cents: net,
       type: "league",
       status: "completed",
       stripe_session_id: payment.stripe_session_id || String(session.id),
@@ -119,9 +121,37 @@ async function finalizeLeaguePayment(
       description: `${league.league_name} — ${description}`,
       metadata: { league_id: league.id, league_payment_id: payment.id, source: "league" },
     });
+    return { payment, league, gross, platformFee, stripeFee, net };
   } catch (e) {
     console.error("platform_transactions mirror failed:", (e as Error).message);
+    return null;
   }
+}
+
+async function notifyLeagueTransaction(
+  supabaseAdmin: any,
+  finalized: any,
+  label: string,
+  memberName: string | null,
+  eventName?: string | null,
+) {
+  if (!finalized) return;
+  const dollars = (cents: number) => `$${(Number(cents || 0) / 100).toFixed(2)}`;
+  await notifyPlatformAdmin({
+    supabaseAdmin,
+    type: "other",
+    organizationId: finalized.league.organization_id,
+    subject: `✅ League transaction — ${finalized.league.league_name}`,
+    htmlBody: buildNotificationHtml("League Transaction Completed", [
+      `🏌️ <strong>League:</strong> ${finalized.league.league_name}`,
+      eventName ? `⛳ <strong>Event:</strong> ${eventName}` : `🧾 <strong>Type:</strong> ${label}`,
+      memberName ? `👤 <strong>Member:</strong> ${memberName}` : "",
+      `💳 <strong>Customer paid:</strong> ${dollars(finalized.gross)}`,
+      `🏷️ <strong>Platform fee:</strong> ${dollars(finalized.platformFee)}`,
+      `💰 <strong>Organizer payout:</strong> ${dollars(finalized.net)}`,
+      `🔖 <strong>Reference:</strong> ${finalized.payment.stripe_session_id || finalized.payment.id}`,
+    ].filter(Boolean)),
+  });
 }
 
 Deno.serve(async (req) => {
@@ -191,6 +221,25 @@ Deno.serve(async (req) => {
             .update({ times_used: (p?.times_used || 0) + 1 })
             .eq("code", promo);
         }
+        const { data: accessLeague } = await supabaseAdmin
+          .from("golf_leagues")
+          .select("league_name, organization_id")
+          .eq("id", leagueId)
+          .maybeSingle();
+        const accessGross = Number(session.amount_total || 0);
+        const accessStripeFee = actualStripeFeeCents(accessGross);
+        await notifyPlatformAdmin({
+          supabaseAdmin,
+          type: "other",
+          organizationId: accessLeague?.organization_id || null,
+          subject: `✅ League access transaction — ${accessLeague?.league_name || "Golf League"}`,
+          htmlBody: buildNotificationHtml("League Access Transaction Completed", [
+            `🏌️ <strong>League:</strong> ${accessLeague?.league_name || "Golf League"}`,
+            `💳 <strong>Customer paid:</strong> $${(accessGross / 100).toFixed(2)}`,
+            `💰 <strong>Estimated payout:</strong> $${(Math.max(accessGross - accessStripeFee, 0) / 100).toFixed(2)}`,
+            `🔖 <strong>Reference:</strong> ${String(session.payment_intent || session.id)}`,
+          ]),
+        });
       } else if (kind === "league_registration") {
         const paymentId = session.metadata!.payment_id;
         const memberId = session.metadata!.member_id;
@@ -198,7 +247,7 @@ Deno.serve(async (req) => {
         const promo = session.metadata?.promo_code || "";
         const pi = String(session.payment_intent || "");
 
-        await finalizeLeaguePayment(supabaseAdmin, paymentId, session, "League Membership");
+        const finalized = await finalizeLeaguePayment(supabaseAdmin, paymentId, session, "League Membership");
 
         await supabaseAdmin
           .from("league_registration_responses")
@@ -229,6 +278,12 @@ Deno.serve(async (req) => {
           .select("member_name, email, scoring_code, league:golf_leagues(league_name, league_slug)")
           .eq("id", memberId)
           .maybeSingle();
+        await notifyLeagueTransaction(
+          supabaseAdmin,
+          finalized,
+          "League Membership",
+          member?.member_name || null,
+        );
         if (member?.email) {
           const slug = (member as any).league?.league_slug;
           await sendConfirmationEmail({
@@ -273,13 +328,10 @@ Deno.serve(async (req) => {
         }
 
       } else if (kind === "league_membership") {
-
+        const paymentId = session.metadata!.payment_id;
         const memberId = session.metadata!.member_id;
         const pi = String(session.payment_intent || "");
-        await supabaseAdmin
-          .from("league_payments")
-          .update({ status: "paid", stripe_payment_intent: pi })
-          .eq("id", paymentId);
+        const finalized = await finalizeLeaguePayment(supabaseAdmin, paymentId, session, "League Membership");
         await supabaseAdmin
           .from("league_members")
           .update({ membership_fee_paid: true, membership_status: "active" })
@@ -290,6 +342,12 @@ Deno.serve(async (req) => {
           .select("amount_cents, payer_email, league:golf_leagues(league_name, league_slug), member:league_members(member_name)")
           .eq("id", paymentId)
           .maybeSingle();
+        await notifyLeagueTransaction(
+          supabaseAdmin,
+          finalized,
+          "League Membership",
+          (pay as any)?.member?.member_name || null,
+        );
         if (pay?.payer_email) {
           await sendConfirmationEmail({
             to: pay.payer_email,
@@ -310,17 +368,31 @@ Deno.serve(async (req) => {
         const paymentId = session.metadata!.payment_id;
         const regId = session.metadata!.registration_id;
         const pi = String(session.payment_intent || "");
-        await finalizeLeaguePayment(supabaseAdmin, paymentId, session, "Event registration");
+        const finalized = await finalizeLeaguePayment(supabaseAdmin, paymentId, session, "Event registration");
         await supabaseAdmin
           .from("league_event_registrations")
           .update({
             fee_paid: true,
             registration_fee_paid: true,
             paid_at: new Date().toISOString(),
+            status: "confirmed",
             entry_type: "online",
             is_manual_entry: false,
           })
           .eq("id", regId);
+
+        const { data: eventRegistration } = await supabaseAdmin
+          .from("league_event_registrations")
+          .select("member:league_members(member_name), event:league_events(event_name)")
+          .eq("id", regId)
+          .maybeSingle();
+        await notifyLeagueTransaction(
+          supabaseAdmin,
+          finalized,
+          "Event Registration",
+          (eventRegistration as any)?.member?.member_name || null,
+          (eventRegistration as any)?.event?.event_name || null,
+        );
 
 
         // Player confirmation + league manager + TeeVents admin copy (single

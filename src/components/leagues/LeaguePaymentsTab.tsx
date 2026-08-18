@@ -70,6 +70,8 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
       toast.success(
         res?.recovered
           ? `Found ${res.recovered} completed payment${res.recovered === 1 ? "" : "s"} in Stripe`
+          : res?.reconciled
+            ? `Updated ${res.reconciled} registration record${res.reconciled === 1 ? "" : "s"} from completed payments`
           : "Everything is already up to date with Stripe",
       );
       await load();

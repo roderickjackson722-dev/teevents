@@ -90,7 +90,7 @@ export const syncLeaguePaymentStatus = createServerFn({ method: "POST" })
     // Finances and Registrations views disagreeing.
     const { data: paid } = await supabaseAdmin
       .from("league_payments")
-      .select("id, member_id, registration_id, kind, amount_cents")
+      .select("id, member_id, registration_id, kind, amount_cents, updated_at")
       .eq("league_id", data.leagueId)
       .eq("status", "paid");
 
@@ -106,7 +106,7 @@ export const syncLeaguePaymentStatus = createServerFn({ method: "POST" })
             status: "confirmed",
             entry_type: "online",
             is_manual_entry: false,
-            paid_at: new Date().toISOString(),
+            paid_at: payment.updated_at,
           })
           .eq("id", payment.registration_id)
           .select("id, confirmation_email_sent_at")
@@ -124,7 +124,7 @@ export const syncLeaguePaymentStatus = createServerFn({ method: "POST" })
           .eq("id", payment.member_id);
         const { data: responses } = await supabaseAdmin
           .from("league_registration_responses")
-          .update({ payment_status: "paid", paid_at: new Date().toISOString() })
+          .update({ payment_status: "paid", paid_at: payment.updated_at })
           .eq("league_id", data.leagueId)
           .eq("member_id", payment.member_id)
           .select("id");

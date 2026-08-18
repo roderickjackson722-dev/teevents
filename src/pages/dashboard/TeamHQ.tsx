@@ -9,8 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Copy, ExternalLink, Plus, X, ArrowUp, ArrowDown } from "lucide-react";
-import {
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
+import {
   DEFAULT_TEAM_HQ_SETTINGS,
   TEAM_HQ_SECTION_LABELS,
   parseTeamHqSettings,

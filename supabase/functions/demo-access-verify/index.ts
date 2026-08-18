@@ -27,8 +27,9 @@ Deno.serve(async (req) => {
   try {
     const body = await req.json().catch(() => ({} as any));
     const token = (body?.token || "").trim();
-    const email = (body?.email || "").trim().toLowerCase();
-    if (!/^[0-9a-f-]{36}$/i.test(token) || !email) return json(403, { error: DENIED });
+    const identifier = (body?.email || body?.identifier || "").trim().toLowerCase();
+    const identifierDigits = identifier.replace(/[^0-9]/g, "");
+    if (!/^[0-9a-f-]{36}$/i.test(token) || !identifier) return json(403, { error: DENIED });
 
     const url = Deno.env.get("SUPABASE_URL")!;
     const admin = createClient(url, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, {

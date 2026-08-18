@@ -57,6 +57,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import SponsorshipTiersManager from "@/components/dashboard/SponsorshipTiersManager";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 
 interface Sponsor {
@@ -603,7 +604,7 @@ const Sponsors = () => {
       .then(({ data }) => {
         const list = data || [];
         setTournaments(list);
-        if (list.length > 0) setSelectedTournament(list[0].id);
+        if (list.length > 0) setSelectedTournament(pickTournamentId(list));
         setLoading(false);
       });
   }, [org]);

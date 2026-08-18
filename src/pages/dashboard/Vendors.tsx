@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import jsPDF from "jspdf";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 type Tournament = { id: string; title: string; slug: string | null };
 type FormQuestion = {
@@ -150,7 +151,7 @@ export default function Vendors() {
         .order("created_at", { ascending: false });
       const list = (data || []) as Tournament[];
       setTournaments(list);
-      if (list.length && !tournamentId) setTournamentId(list[0].id);
+      if (list.length) setTournamentId(pickTournamentId(list, tournamentId));
       setLoading(false);
     };
     if (org) load();

@@ -13,6 +13,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { Plus, Trash2, Pencil, Loader2, ShoppingCart, Printer, QrCode } from "lucide-react";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 interface Tournament { id: string; title: string; slug: string | null; }
 interface Item {
@@ -69,7 +70,7 @@ const EventDaySales = () => {
       .then(({ data }) => {
         const t = (data || []) as Tournament[];
         setTournaments(t);
-        if (t.length > 0) setSelected(t[0].id);
+        if (t.length > 0) setSelected(pickTournamentId(t));
       });
   }, [org]);
 

@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "@/hooks/use-toast";
 import { Copy, ExternalLink, Plus, X, ArrowUp, ArrowDown } from "lucide-react";
 import {
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
   DEFAULT_TEAM_HQ_SETTINGS,
   TEAM_HQ_SECTION_LABELS,
   parseTeamHqSettings,
@@ -39,7 +40,7 @@ export default function TeamHQ() {
         .in("organization_id", orgIds)
         .order("date", { ascending: false });
       setTournaments((ts as any) || []);
-      if (ts?.length) setTournamentId((ts as any)[0].id);
+      if (ts?.length) setTournamentId(pickTournamentId(ts as any));
     })();
   }, []);
 

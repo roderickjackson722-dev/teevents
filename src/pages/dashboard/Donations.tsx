@@ -19,6 +19,7 @@ import {
 import { toast } from "sonner";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
 import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 interface Donation { id: string; amount_cents: number; donor_email: string | null; status: string; created_at: string; }
 interface OfflineDonation { id: string; amount_cents: number; donor_name: string | null; received_date: string; notes: string | null; }
@@ -60,7 +61,7 @@ const Donations = () => {
       .then(({ data }) => {
         const t = (data || []) as Tournament[];
         setTournaments(t);
-        if (t.length > 0) setSelectedTournament(t[0].id);
+        if (t.length > 0) setSelectedTournament(pickTournamentId(t));
         setLoading(false);
       });
   }, [org]);

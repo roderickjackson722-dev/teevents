@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { toast } from "@/hooks/use-toast";
 import { Trash2, Pencil, Plus, Play, Upload, Image as ImageIcon, Wand2 } from "lucide-react";
 import { TabTitleInput } from "@/components/dashboard/TabTitleInput";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 interface Clip {
   id: string;
@@ -99,8 +100,10 @@ export default function MediaClipsPage() {
       const { data: ts } = await supabase.from("tournaments").select("id, title, organization_id").in("organization_id", orgIds).order("date", { ascending: false });
       setTournaments((ts as any) || []);
       if (ts && ts.length) {
-        setTournamentId(ts[0].id);
-        setOrgId((ts[0] as any).organization_id);
+        const pickedId = pickTournamentId(ts as any);
+        const picked = (ts as any[]).find((t) => t.id === pickedId) || (ts as any[])[0];
+        setTournamentId(picked.id);
+        setOrgId(picked.organization_id);
       }
     })();
   }, []);

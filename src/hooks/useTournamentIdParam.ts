@@ -67,3 +67,25 @@ export function useTournamentIdParam(): [string, (id: string) => void] {
 
   return [selected, set];
 }
+
+/** The tournament the user is currently working on: URL param first, then last selection. */
+export function getPreferredTournamentId(): string {
+  try {
+    const fromUrl = new URLSearchParams(window.location.search).get("tournament_id");
+    if (fromUrl) return fromUrl;
+  } catch {
+    /* ignore */
+  }
+  return readStored();
+}
+
+/**
+ * Choose which tournament a dashboard page should show. Never silently jumps to
+ * "first in list" when the user has an explicit tournament in context.
+ */
+export function pickTournamentId<T extends { id: string }>(list: T[], current?: string | null): string {
+  if (current && list.some((t) => t.id === current)) return current;
+  const preferred = getPreferredTournamentId();
+  if (preferred && list.some((t) => t.id === preferred)) return preferred;
+  return list[0]?.id || "";
+}

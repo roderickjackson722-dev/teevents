@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
 
@@ -189,7 +190,7 @@ const Finances = () => {
       .then(({ data }) => {
         const list = (data || []) as Tournament[];
         setTournaments(list);
-        if (list.length > 0) setSelectedTournament(list[0].id);
+        if (list.length > 0) setSelectedTournament(pickTournamentId(list));
         setLoading(false);
       });
 

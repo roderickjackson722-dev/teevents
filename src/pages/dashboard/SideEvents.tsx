@@ -17,6 +17,7 @@ import { Plus, Pencil, Trash2, Ticket, Tag, GripVertical } from "lucide-react";
 import { toast } from "sonner";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
 import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 type CustomQuestion = {
   id: string;
@@ -97,7 +98,7 @@ export default function SideEvents() {
         .eq("organization_id", org!.orgId)
         .order("date", { ascending: false });
       if (error) throw error;
-      if (data && data.length && !tournamentId) setTournamentId(data[0].id);
+      if (data && data.length) setTournamentId(pickTournamentId(data as any, tournamentId));
       return data;
     },
     enabled: !!org,

@@ -20,6 +20,7 @@ import {
 import { type Product, type Tournament, categoryLabel, fmt } from "@/components/store/types";
 import ProductFormDialog from "@/components/store/ProductFormDialog";
 import TemplateLibrary from "@/components/store/TemplateLibrary";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 
 const Store = () => {
@@ -45,7 +46,7 @@ const Store = () => {
       .then(({ data }) => {
         const list = data || [];
         setTournaments(list);
-        if (list.length > 0) setSelectedTournament(list[0].id);
+        if (list.length > 0) setSelectedTournament(pickTournamentId(list));
         setLoading(false);
       });
   }, [org]);

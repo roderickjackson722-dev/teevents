@@ -15,6 +15,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Upload, ExternalLink, MapPin, Plus, X, RotateCcw } from "lucide-react";
 import DayOfLivePreview from "@/components/dashboard/DayOfLivePreview";
 import { ParticipantEmailSender } from "@/components/dashboard/ParticipantEmailSender";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 
 export const DEFAULT_WELCOME_TITLE = "Welcome to [Tournament Name]!";
@@ -89,7 +90,7 @@ export default function DayOfSettings() {
       const orgIds = (orgs || []).map((o: any) => o.organization_id);
       const { data: ts } = await supabase.from("tournaments").select("id, title, organization_id").in("organization_id", orgIds).order("date", { ascending: false });
       setTournaments((ts as any) || []);
-      if (ts && ts.length) setTournamentId(ts[0].id);
+      if (ts && ts.length) setTournamentId(pickTournamentId(ts as any));
     })();
   }, []);
 

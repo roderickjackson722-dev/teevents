@@ -40,6 +40,7 @@ interface DemoTournamentRow {
   demo_conversion_discount_value?: number | null;
   demo_conversion_is_test?: boolean | null;
   demo_converted_at?: string | null;
+  show_sponsorships?: boolean | null;
 }
 
 type DiscountType = "none" | "free_pro" | "percentage" | "fixed";
@@ -78,7 +79,9 @@ export default function DemoConverter() {
     max_players: "",
     description: "",
     site_hero_image_url: "",
+    show_sponsorships: true,
   });
+  const [seedingSponsors, setSeedingSponsors] = useState(false);
 
   const [form, setForm] = useState({
     tournament_name: "",
@@ -112,7 +115,9 @@ export default function DemoConverter() {
   type AccessRow = {
     id: string;
     tournament_id: string | null;
-    prospect_email: string;
+    prospect_email: string | null;
+    prospect_phone?: string | null;
+    delivery_method?: string | null;
     prospect_name: string | null;
     access_token: string;
     expires_at: string;
@@ -124,12 +129,15 @@ export default function DemoConverter() {
   const [accessRows, setAccessRows] = useState<AccessRow[]>([]);
   const [accessOpen, setAccessOpen] = useState(false);
   const [accessTarget, setAccessTarget] = useState<DemoTournamentRow | null>(null);
-  const [accessForm, setAccessForm] = useState({
+  const EMPTY_ACCESS_FORM = {
     prospect_email: "",
+    prospect_phone: "",
     prospect_name: "",
     days: "7",
     send_email: true,
-  });
+    send_sms: false,
+  };
+  const [accessForm, setAccessForm] = useState(EMPTY_ACCESS_FORM);
   const [granting, setGranting] = useState(false);
 
 
@@ -274,26 +282,33 @@ export default function DemoConverter() {
   async function loadAccess() {
     const { data } = await supabase
       .from("demo_access")
-      .select("id, tournament_id, prospect_email, prospect_name, access_token, expires_at, last_accessed_at, access_count, revoked_at, created_at")
+      .select("id, tournament_id, prospect_email, prospect_phone, delivery_method, prospect_name, access_token, expires_at, last_accessed_at, access_count, revoked_at, created_at")
       .order("created_at", { ascending: false });
     setAccessRows((data as AccessRow[]) || []);
   }
 
   function accessLinkFor(a: AccessRow) {
-    return `${window.location.origin}/sample/access/${a.access_token}?email=${encodeURIComponent(a.prospect_email)}`;
+    const id = a.prospect_email || a.prospect_phone || "";
+    return `${window.location.origin}/sample/access/${a.access_token}?email=${encodeURIComponent(id)}`;
   }
 
   function openAccess(d: DemoTournamentRow) {
     setAccessTarget(d);
-    setAccessForm({ prospect_email: "", prospect_name: "", days: "7", send_email: true });
+    setAccessForm({ ...EMPTY_ACCESS_FORM });
     setAccessOpen(true);
     loadAccess();
   }
 
   async function grantAccess() {
     if (!accessTarget) return;
-    if (!accessForm.prospect_email.trim()) {
-      toast({ title: "Prospect email required", variant: "destructive" });
+    const email = accessForm.prospect_email.trim();
+    const phone = accessForm.prospect_phone.trim();
+    if (!email && !phone) {
+      toast({ title: "Enter an email address or a mobile number", variant: "destructive" });
+      return;
+    }
+    if (accessForm.send_sms && !phone) {
+      toast({ title: "Mobile number required to text the link", variant: "destructive" });
       return;
     }
     setGranting(true);
@@ -301,10 +316,12 @@ export default function DemoConverter() {
       const { data, error } = await supabase.functions.invoke("demo-access-grant", {
         body: {
           tournament_id: accessTarget.id,
-          prospect_email: accessForm.prospect_email.trim(),
+          prospect_email: email || null,
+          prospect_phone: phone || null,
           prospect_name: accessForm.prospect_name.trim() || null,
           days: Number(accessForm.days) || 7,
-          send_email: accessForm.send_email,
+          send_email: accessForm.send_email && !!email,
+          send_sms: accessForm.send_sms && !!phone,
           origin: window.location.origin,
         },
       });
@@ -314,11 +331,15 @@ export default function DemoConverter() {
       }
       const link = (data as any)?.link as string;
       if (link) await navigator.clipboard.writeText(link).catch(() => null);
+      const sent = [
+        (data as any)?.emailed ? "email" : null,
+        (data as any)?.texted ? "text" : null,
+      ].filter(Boolean).join(" and ");
       toast({
         title: "Access granted",
-        description: `${(data as any)?.emailed ? "Email sent and link" : "Link"} copied to clipboard.`,
+        description: sent ? `Sent by ${sent}; link also copied to your clipboard.` : "Link copied to clipboard.",
       });
-      setAccessForm({ prospect_email: "", prospect_name: "", days: "7", send_email: true });
+      setAccessForm({ ...EMPTY_ACCESS_FORM });
       await loadAccess();
     } finally {
       setGranting(false);
@@ -326,7 +347,7 @@ export default function DemoConverter() {
   }
 
   async function revokeAccess(a: AccessRow) {
-    if (!confirm(`Revoke demo access for ${a.prospect_email}?`)) return;
+    if (!confirm(`Revoke demo access for ${a.prospect_email || a.prospect_phone}?`)) return;
     const { error } = await supabase
       .from("demo_access")
       .update({ revoked_at: new Date().toISOString() })
@@ -343,10 +364,12 @@ export default function DemoConverter() {
     const demo = demos.find((d) => d.id === a.tournament_id);
     if (!demo) return;
     setAccessForm({
-      prospect_email: a.prospect_email,
+      ...EMPTY_ACCESS_FORM,
+      prospect_email: a.prospect_email || "",
+      prospect_phone: a.prospect_phone || "",
       prospect_name: a.prospect_name || "",
-      days: "7",
-      send_email: true,
+      send_email: !!a.prospect_email,
+      send_sms: !a.prospect_email && !!a.prospect_phone,
     });
     setAccessTarget(demo);
     toast({ title: "Ready to resend", description: "Confirm the duration, then click Grant Access to issue a fresh link." });
@@ -385,7 +408,7 @@ export default function DemoConverter() {
     setLoading(true);
     const { data } = await supabase
       .from("tournaments")
-      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at, description, registration_fee_cents, max_players, scoring_format, demo_prospect_email, demo_prospect_name, demo_conversion_token, demo_conversion_sent_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test, demo_converted_at")
+      .select("id, title, date, location, course_name, slug, custom_slug, organization_id, site_hero_image_url, created_at, description, registration_fee_cents, max_players, scoring_format, demo_prospect_email, demo_prospect_name, demo_conversion_token, demo_conversion_sent_at, demo_conversion_token_expires_at, demo_conversion_used_at, demo_conversion_discount_type, demo_conversion_discount_value, demo_conversion_is_test, demo_converted_at, show_sponsorships")
       .eq("is_demo", true)
       .order("created_at", { ascending: false });
     setDemos((data as DemoTournamentRow[]) || []);
@@ -503,6 +526,7 @@ export default function DemoConverter() {
       max_players: d.max_players != null ? String(d.max_players) : "",
       description: d.description || "",
       site_hero_image_url: d.site_hero_image_url || "",
+      show_sponsorships: d.show_sponsorships ?? true,
     });
     setEditOpen(true);
   }
@@ -523,6 +547,7 @@ export default function DemoConverter() {
         course_name: editForm.course_name || null,
         description: editForm.description || null,
         site_hero_image_url: editForm.site_hero_image_url || null,
+        show_sponsorships: editForm.show_sponsorships,
       };
       if (feeStr) payload.registration_fee_cents = Math.round(parseFloat(feeStr) * 100);
       if (editForm.max_players.trim()) payload.max_players = parseInt(editForm.max_players, 10);
@@ -961,6 +986,15 @@ export default function DemoConverter() {
                   />
                 </div>
                 <div>
+                  <Label>Mobile Number</Label>
+                  <Input
+                    type="tel"
+                    value={accessForm.prospect_phone}
+                    onChange={(e) => setAccessForm({ ...accessForm, prospect_phone: e.target.value })}
+                    placeholder="(555) 555-1234"
+                  />
+                </div>
+                <div className="md:col-span-2">
                   <Label>Prospect Name</Label>
                   <Input
                     value={accessForm.prospect_name}
@@ -968,6 +1002,9 @@ export default function DemoConverter() {
                   />
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Email, mobile number, or both. Whichever you provide is what the prospect enters to open the sample.
+              </p>
               <div className="max-w-xs">
                 <Label>Access Duration</Label>
                 <Select
@@ -994,6 +1031,18 @@ export default function DemoConverter() {
                   onCheckedChange={(v) => setAccessForm({ ...accessForm, send_email: v })}
                 />
               </div>
+              <div className="flex items-center justify-between border-t pt-3">
+                <div>
+                  <div className="text-sm font-medium">Text the access link to the prospect</div>
+                  <div className="text-xs text-muted-foreground">
+                    Sends an SMS to the mobile number above.
+                  </div>
+                </div>
+                <Switch
+                  checked={accessForm.send_sms}
+                  onCheckedChange={(v) => setAccessForm({ ...accessForm, send_sms: v })}
+                />
+              </div>
               <Button
                 onClick={grantAccess}
                 disabled={granting}
@@ -1016,6 +1065,7 @@ export default function DemoConverter() {
                       <TableRow>
                         <TableHead>Name</TableHead>
                         <TableHead>Email</TableHead>
+                        <TableHead>Mobile</TableHead>
                         <TableHead>Expires</TableHead>
                         <TableHead>Views</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
@@ -1027,7 +1077,8 @@ export default function DemoConverter() {
                         return (
                           <TableRow key={a.id}>
                             <TableCell>{a.prospect_name || "—"}</TableCell>
-                            <TableCell className="text-sm">{a.prospect_email}</TableCell>
+                            <TableCell className="text-sm">{a.prospect_email || "—"}</TableCell>
+                            <TableCell className="text-sm">{a.prospect_phone || "—"}</TableCell>
                             <TableCell className="text-xs">
                               {new Date(a.expires_at).toLocaleDateString()}
                               {a.revoked_at ? (

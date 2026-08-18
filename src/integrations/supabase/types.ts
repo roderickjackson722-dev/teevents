@@ -1825,12 +1825,14 @@ export type Database = {
           access_count: number
           access_token: string
           created_at: string
+          delivery_method: string
           demo_tournament_id: string | null
           expires_at: string
           id: string
           last_accessed_at: string | null
-          prospect_email: string
+          prospect_email: string | null
           prospect_name: string | null
+          prospect_phone: string | null
           revoked_at: string | null
           tournament_id: string | null
         }
@@ -1838,12 +1840,14 @@ export type Database = {
           access_count?: number
           access_token: string
           created_at?: string
+          delivery_method?: string
           demo_tournament_id?: string | null
           expires_at?: string
           id?: string
           last_accessed_at?: string | null
-          prospect_email: string
+          prospect_email?: string | null
           prospect_name?: string | null
+          prospect_phone?: string | null
           revoked_at?: string | null
           tournament_id?: string | null
         }
@@ -1851,12 +1855,14 @@ export type Database = {
           access_count?: number
           access_token?: string
           created_at?: string
+          delivery_method?: string
           demo_tournament_id?: string | null
           expires_at?: string
           id?: string
           last_accessed_at?: string | null
-          prospect_email?: string
+          prospect_email?: string | null
           prospect_name?: string | null
+          prospect_phone?: string | null
           revoked_at?: string | null
           tournament_id?: string | null
         }

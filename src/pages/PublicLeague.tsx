@@ -116,7 +116,7 @@ export default function PublicLeague() {
       </div>
       {league.banner_url ? (
         <div className="relative">
-          <img src={league.banner_url} alt="" className="w-full h-56 md:h-72 object-cover" />
+          <img src={league.banner_url} alt="" className="w-full h-auto max-h-56 object-contain sm:h-56 sm:object-cover md:h-72" />
           <div className="absolute inset-0 flex items-center justify-center" style={{ background: `linear-gradient(0deg, ${primary}CC, ${primary}66)`, color: fontColor }}>
             <div className="text-center px-4 flex flex-col items-center gap-3">
               {league.logo_url && (

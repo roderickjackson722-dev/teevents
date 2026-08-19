@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Registration } from "./types";
+import { startingHoleOf } from "./types";
 
 type Reg = Registration & {
   scoring_code?: string | null;
@@ -49,7 +50,7 @@ function buildHtml(
           ${opts.showDetails ? `
             <div style="margin-top:8px;font-size:${detailSize};color:#444;line-height:1.6;">
               ${r.group_label ? `<div><strong>Team:</strong> ${escapeHtml(r.group_label)}</div>` : ""}
-              <div><strong>Starting Hole:</strong> ${r.group_number ?? "—"}${r.group_position ? ` · Pos ${r.group_position}` : ""}</div>
+              <div><strong>Starting Hole:</strong> ${startingHoleOf(r as any) ?? "—"}${r.group_position ? ` · Pos ${r.group_position}` : ""}</div>
               ${r.email ? `<div style="color:#666;">${escapeHtml(r.email)}</div>` : ""}
             </div>
           ` : ""}
@@ -100,7 +101,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
 
   const holes = useMemo(() => {
     const s = new Set<number>();
-    registrations.forEach((r) => r.group_number != null && s.add(r.group_number));
+    registrations.forEach((r) => { const h = startingHoleOf(r as any); if (h != null) s.add(h); });
     return Array.from(s).sort((a, b) => a - b);
   }, [registrations]);
 
@@ -112,7 +113,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
 
   const filtered = useMemo(() => {
     let list = [...registrations];
-    if (filterMode === "hole" && filterValue !== "all") list = list.filter((r) => String(r.group_number) === filterValue);
+    if (filterMode === "hole" && filterValue !== "all") list = list.filter((r) => String(startingHoleOf(r as any)) === filterValue);
     if (filterMode === "group" && filterValue !== "all") list = list.filter((r) => r.group_label === filterValue);
 
     list.sort((a, b) => {
@@ -123,7 +124,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
           return (a.group_label || "").localeCompare(b.group_label || "") || a.last_name.localeCompare(b.last_name);
         case "hole":
         case "tee":
-          return (a.group_number ?? 999) - (b.group_number ?? 999) || (a.group_position ?? 0) - (b.group_position ?? 0);
+          return (startingHoleOf(a as any) ?? 999) - (startingHoleOf(b as any) ?? 999) || (a.group_position ?? 0) - (b.group_position ?? 0);
         case "alpha":
         default:
           return a.last_name.localeCompare(b.last_name) || a.first_name.localeCompare(b.first_name);
@@ -235,7 +236,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
                   <div className="font-bold text-sm truncate">{r.last_name}, {r.first_name}</div>
                   {showDetails && (
                     <div className="text-xs text-muted-foreground">
-                      Hole {r.group_number ?? "—"}{r.group_label ? ` · ${r.group_label}` : ""}
+                      Hole {startingHoleOf(r as any) ?? "—"}{r.group_number != null ? ` · Group ${r.group_number}` : ""}
                     </div>
                   )}
                   {showStatus && (

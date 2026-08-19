@@ -5,12 +5,16 @@ export interface RegistrationGroupRow {
   group_number: number | null;
   team_name: string | null;
   tee_time?: string | null;
+  /** Starting hole assigned on the Pairings tab */
+  starting_hole?: number | null;
   cart_sign_names?: { cart1?: string[]; cart2?: string[] } | null;
 }
 
 export interface PrintTeam {
   key: string;
   groupNumber: number | null;
+  /** Starting hole from pairings (falls back to the group number) */
+  startingHole: number | null;
   groupId?: string;
   teamName: string;
   /** Tee time for this group, as saved on the pairings page (display string) */
@@ -56,8 +60,9 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
     teams.push({
       key: `g-${num}`,
       groupNumber: num,
+      startingHole: g?.starting_hole ?? (players.map((p) => (p as any).starting_hole).find((v) => v != null) ?? num),
       groupId: g?.id,
-      teamName: g?.team_name || `Hole ${num}`,
+      teamName: g?.team_name || `Group ${num}`,
       teeTime: g?.tee_time ?? (players.map((p) => (p as any).tee_time).find(Boolean) || null),
       players,
       scoringCode: players.map((p) => (p as any).group_scoring_code || (p as any).scoring_code).find(Boolean) || null,
@@ -69,6 +74,7 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
     teams.push({
       key: `s-${p.id}`,
       groupNumber: null,
+      startingHole: (p as any).starting_hole ?? null,
       teamName: playerName(p),
       teeTime: (p as any).tee_time || null,
       players: [p],

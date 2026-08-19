@@ -6,6 +6,7 @@ import { Printer, Download, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Registration } from "./types";
+import { startingHoleOf } from "./types";
 
 interface Props {
   tournament: Tournament | null;
@@ -23,7 +24,7 @@ export default function HoleAssignmentsTab({ tournament, registrations, loading,
   const [editingHole, setEditingHole] = useState<{ id: string; value: string } | null>(null);
 
   const holeGroups = registrations.reduce((acc, r) => {
-    const hole = r.group_number ?? 0;
+    const hole = startingHoleOf(r as any) ?? 0;
     if (!acc[hole]) acc[hole] = [];
     acc[hole].push(r);
     return acc;
@@ -96,7 +97,7 @@ export default function HoleAssignmentsTab({ tournament, registrations, loading,
                     </div>
                   ) : (
                     <button onClick={() => setEditingHole({ id: r.id, value: String(r.group_number ?? "") })} className="text-xs text-primary hover:underline">
-                      {r.group_number != null ? `Hole ${r.group_number}` : "Assign"}
+                      {r.group_number != null ? `Group ${r.group_number}` : "Assign group"}
                     </button>
                   )}
                 </div>

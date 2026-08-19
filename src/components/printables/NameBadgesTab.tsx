@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport } from "./printUtils";
 import { formatTeeTime } from "./CartSignsTab";
 import type { Tournament, Registration } from "./types";
-import { getPrimaryColor, getFontFamily } from "./types";
+import { getPrimaryColor, getFontFamily, startingHoleOf } from "./types";
 import type { RegistrationGroupRow } from "./teamGrouping";
 
 interface Props {
@@ -28,8 +28,8 @@ function badgeHtml(r: Registration, tournament: Tournament | null, groups: Regis
     ? tee
       ? `<div style="font-size:12px;color:${color};font-weight:700;margin-top:4px;">Tee Time ${tee}</div>`
       : ""
-    : r.group_number != null
-      ? `<div style="font-size:11px;color:${color};font-weight:600;margin-top:4px;">Hole ${r.group_number}</div>`
+    : startingHoleOf(r as any) != null
+      ? `<div style="font-size:11px;color:${color};font-weight:600;margin-top:4px;">Hole ${startingHoleOf(r as any)}</div>`
       : "";
   return `
     <div style="width:3.5in;height:2.25in;border:1px solid #ccc;border-radius:8px;padding:16px;display:inline-flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;margin:8px;page-break-inside:avoid;font-family:${font};">
@@ -78,7 +78,7 @@ export default function NameBadgesTab({ tournament, registrations, loading, grou
               <p className="text-base font-display font-bold text-foreground">{r.first_name} {r.last_name}</p>
               {teeTimeStart
                 ? tee && <p className="text-xs font-bold text-primary">Tee Time {tee}</p>
-                : r.group_number != null && <p className="text-xs font-semibold text-primary">Hole {r.group_number}</p>}
+                : startingHoleOf(r as any) != null && <p className="text-xs font-semibold text-primary">Hole {startingHoleOf(r as any)}</p>}
             </motion.div>
           );
         })}

@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, scorecardCss } from "./printUtils";
 import type { Tournament, Registration } from "./types";
-import { getPrimaryColor, getPrintLogo } from "./types";
+import { getPrimaryColor, getPrintLogo, startingHoleOf } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import TeamScorecards from "./TeamScorecards";
 import ScorecardSelector from "./ScorecardSelector";
@@ -80,7 +80,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
 
   const firstName = r.customFirstName ?? r.first_name;
   const lastName = r.customLastName ?? r.last_name;
-  const groupNum = r.customGroupNumber !== undefined ? r.customGroupNumber : r.group_number;
+  const groupNum = r.customGroupNumber !== undefined ? r.customGroupNumber : startingHoleOf(r as any);
   const scoringCode = (r as any).scoring_code;
   const scoringUrl = getScoringUrl(slug, scoringCode);
 
@@ -161,7 +161,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
     setEditForm({
       firstName: e.customFirstName ?? e.first_name,
       lastName: e.customLastName ?? e.last_name,
-      groupNumber: (e.customGroupNumber !== undefined ? e.customGroupNumber : e.group_number)?.toString() ?? "",
+      groupNumber: (e.customGroupNumber !== undefined ? e.customGroupNumber : startingHoleOf(e as any))?.toString() ?? "",
     });
     setEditingId(r.id);
   };
@@ -185,7 +185,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
   const selectedIdSet = new Set(selectedIdList);
   const selectorItems = registrations.map((r) => {
     const er = getEditableReg(r);
-    const hole = er.customGroupNumber !== undefined ? er.customGroupNumber : er.group_number;
+    const hole = er.customGroupNumber !== undefined ? er.customGroupNumber : startingHoleOf(er as any);
     return {
       key: r.id,
       label: `${er.customFirstName ?? er.first_name} ${er.customLastName ?? er.last_name}${hole != null ? ` (Hole ${hole})` : ""}`,
@@ -288,7 +288,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           const isEditing = editingId === r.id;
           const firstName = er.customFirstName ?? er.first_name;
           const lastName = er.customLastName ?? er.last_name;
-          const groupNum = er.customGroupNumber !== undefined ? er.customGroupNumber : er.group_number;
+          const groupNum = er.customGroupNumber !== undefined ? er.customGroupNumber : startingHoleOf(er as any);
           const scoringCode = (r as any).scoring_code as string | undefined;
           const scoringUrl = getScoringUrl(slug, scoringCode);
 

@@ -73,3 +73,15 @@ export const PRINTABLE_LAYOUTS = [
   { id: "modern", name: "Modern", description: "Clean minimalist design with subtle accents" },
   { id: "bold", name: "Bold", description: "High contrast with prominent color blocks" },
 ];
+
+/**
+ * Starting hole for a printable row. Group numbers are NOT holes — the starting
+ * hole comes from the Pairings tab (`starting_hole`), so shotgun and tee-time
+ * setups print exactly what the organizer assigned.
+ */
+export function startingHoleOf(r: { starting_hole?: number | null; group_number?: number | null } | null | undefined): number | null {
+  if (!r) return null;
+  const v = (r as any).starting_hole;
+  if (v != null) return Number(v);
+  return r.group_number ?? null;
+}

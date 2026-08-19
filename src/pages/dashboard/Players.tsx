@@ -1378,9 +1378,17 @@ const Players = () => {
     const nextDay: DayCfg = { ...dayCfg, ...patch };
     const nextAll = { ...startFormatByDay, [activeDay]: nextDay };
     setStartFormatByDay(nextAll);
+    // Printables, emails and the public pairings page read the start format from
+    // the tournament row, so day 1's choice is mirrored to the database.
+    if (patch.startFormat && activeDay === 0 && selectedTournament) {
+      void (supabase.from("tournaments") as any)
+        .update({ pairings_start_format: patch.startFormat })
+        .eq("id", selectedTournament);
+    }
     if (!startFormatStorageKey) return;
     try { localStorage.setItem(startFormatStorageKey, JSON.stringify({ byDay: nextAll })); } catch { /* noop */ }
   };
+
 
   const addMinutes = (hhmm: string, mins: number) => {
     const m = /^(\d{1,2}):(\d{2})/.exec(hhmm);

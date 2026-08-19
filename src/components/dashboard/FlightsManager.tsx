@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -311,7 +311,20 @@ export default function FlightsManager({ tournamentId }: Props) {
     }
   };
 
+  // Auto-sync once per tournament when the roster has divisions but flights are empty/unassigned.
+  const autoSyncedRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (loading || syncing || !tournamentId) return;
+    if (autoSyncedRef.current === tournamentId) return;
+    const needsSync = players.some((p) => p.tier_id && !p.flight_id);
+    if (!needsSync) return;
+    autoSyncedRef.current = tournamentId;
+    void syncFromRegistrationDivisions();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, syncing, tournamentId, players]);
+
   const noDivisionPlayers = players.filter((p) => !p.tier_id);
+
 
   const assign = async (playerId: string, flightId: string | null) => {
     const { error } = await (supabase as any)

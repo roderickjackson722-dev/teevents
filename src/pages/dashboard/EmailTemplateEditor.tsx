@@ -1041,7 +1041,7 @@ export default function EmailTemplateEditor() {
               </Label>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={selectAll}>
-                  {selectedRecipients.length === registrations.length && registrations.length > 0 ? "Deselect All" : "Select All"}
+                  {selectedRecipients.length === filteredRegistrations.length && filteredRegistrations.length > 0 ? "Deselect All" : "Select All"}
                 </Button>
                 <Badge variant="secondary">{selectedRecipients.length} selected</Badge>
               </div>
@@ -1049,21 +1049,21 @@ export default function EmailTemplateEditor() {
             <p className="text-xs text-muted-foreground">
               Pick one player or a hand-picked group from your registration list — only the people you check receive this reminder.
             </p>
+            <PaymentFilterToggle />
             <Input
               placeholder="Search by name or email…"
               value={recipientSearch}
               onChange={(e) => setRecipientSearch(e.target.value)}
             />
-            {registrations.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-4">No registrations found for this tournament.</p>
+            {visibleRegistrations.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-4">
+                {registrations.length === 0
+                  ? "No registrations found for this tournament."
+                  : `No ${paymentFilter === "all" ? "" : paymentFilter + " "}players match this filter.`}
+              </p>
             ) : (
               <div className="max-h-64 overflow-y-auto divide-y border rounded">
-                {registrations
-                  .filter((r) => {
-                    const q = recipientSearch.trim().toLowerCase();
-                    if (!q) return true;
-                    return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
-                  })
+                {visibleRegistrations
                   .map((r) => (
                     <div key={r.id} className="flex items-center gap-3 py-2 px-2 hover:bg-muted/50">
                       <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">

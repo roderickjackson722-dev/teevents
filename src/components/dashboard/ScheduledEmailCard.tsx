@@ -5,8 +5,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { CalendarClock, Loader2, Trash2, RefreshCw } from "lucide-react";
+import { CalendarClock, Loader2, Trash2, RefreshCw, RotateCcw, AlertTriangle } from "lucide-react";
+import { TIMEZONES, guessTimezone, zonedInputToUtc, formatInTimezone } from "@/lib/timezones";
 
 interface Props {
   tournamentId: string;
@@ -31,6 +33,7 @@ interface Job {
   failed_count: number | null;
   error: string | null;
   note: string | null;
+  timezone: string | null;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -42,7 +45,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 /**
  * Lets organizers (and platform admins) prepare an email template and have it
- * delivered automatically at a future date and time.
+ * delivered automatically at a future date and time, in a chosen time zone.
  */
 export default function ScheduledEmailCard({
   tournamentId,
@@ -53,6 +56,7 @@ export default function ScheduledEmailCard({
 }: Props) {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [sendAt, setSendAt] = useState("");
+  const [timezone, setTimezone] = useState<string>(guessTimezone());
   const [audience, setAudience] = useState<"all" | "selected">("all");
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
@@ -63,7 +67,7 @@ export default function ScheduledEmailCard({
     setLoading(true);
     const { data } = await supabase
       .from("scheduled_emails")
-      .select("id, template_kind, scheduled_for, recipient_count, recipient_ids, status, sent_at, sent_count, failed_count, error, note")
+      .select("id, template_kind, scheduled_for, recipient_count, recipient_ids, status, sent_at, sent_count, failed_count, error, note, timezone")
       .eq("tournament_id", tournamentId)
       .order("scheduled_for", { ascending: true });
     setJobs((data || []) as unknown as Job[]);
@@ -75,7 +79,7 @@ export default function ScheduledEmailCard({
   const schedule = async () => {
     if (!tournamentId) { toast.error("Select a tournament first"); return; }
     if (!sendAt) { toast.error("Choose a send date and time"); return; }
-    const when = new Date(sendAt);
+    const when = zonedInputToUtc(sendAt, timezone);
     if (Number.isNaN(when.getTime())) { toast.error("That date and time isn't valid"); return; }
     if (when.getTime() < Date.now() - 60_000) { toast.error("Pick a time in the future"); return; }
     if (audience === "selected" && selectedRecipients.length === 0) {
@@ -88,6 +92,7 @@ export default function ScheduledEmailCard({
       tournament_id: tournamentId,
       template_kind: templateKind,
       scheduled_for: when.toISOString(),
+      timezone,
       recipient_ids: audience === "selected" ? selectedRecipients : null,
       recipient_count: audience === "selected" ? selectedRecipients.length : totalRecipients,
       note: note.trim() || null,
@@ -99,7 +104,7 @@ export default function ScheduledEmailCard({
       toast.error(error.message || "Could not schedule this email");
       return;
     }
-    toast.success(`${templateLabel} scheduled for ${when.toLocaleString()}`);
+    toast.success(`${templateLabel} scheduled for ${formatInTimezone(when.toISOString(), timezone)}`);
     setSendAt("");
     setNote("");
     load();
@@ -112,6 +117,14 @@ export default function ScheduledEmailCard({
       .eq("status", "scheduled");
     if (error) toast.error("Could not cancel that send");
     else { toast.success("Scheduled send canceled"); load(); }
+  };
+
+  const retry = async (id: string) => {
+    const { error } = await (supabase.from("scheduled_emails") as any)
+      .update({ status: "scheduled", scheduled_for: new Date().toISOString(), error: null, sent_at: null })
+      .eq("id", id);
+    if (error) toast.error(error.message || "Could not queue that retry");
+    else { toast.success("Queued for another attempt — it goes out on the next processing run"); load(); }
   };
 
   const remove = async (id: string) => {
@@ -132,14 +145,28 @@ export default function ScheduledEmailCard({
       </div>
       <p className="text-xs text-muted-foreground">
         Prepare the <span className="font-medium text-foreground">{templateLabel}</span> now and have it delivered
-        automatically at the date and time you choose. Times use your device's time zone. The saved template content
-        at the moment of sending is what goes out, so later edits are included.
+        automatically at the date and time you choose, in the time zone you pick. The saved template content at the
+        moment of sending is what goes out, so later edits are included.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <Label className="text-xs text-muted-foreground">Send Date &amp; Time</Label>
           <Input type="datetime-local" value={sendAt} onChange={(e) => setSendAt(e.target.value)} className="mt-1" />
+        </div>
+        <div>
+          <Label className="text-xs text-muted-foreground">Time Zone</Label>
+          <Select value={timezone} onValueChange={setTimezone}>
+            <SelectTrigger className="mt-1"><SelectValue placeholder="Pick a time zone" /></SelectTrigger>
+            <SelectContent>
+              {TIMEZONES.some((t) => t.value === timezone) ? null : (
+                <SelectItem value={timezone}>{timezone} (your device)</SelectItem>
+              )}
+              {TIMEZONES.map((t) => (
+                <SelectItem key={t.value} value={t.value}>{t.label}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
         <div>
           <Label className="text-xs text-muted-foreground">Recipients</Label>
@@ -164,6 +191,12 @@ export default function ScheduledEmailCard({
         </div>
       </div>
 
+      {sendAt && (
+        <p className="text-xs text-muted-foreground">
+          Goes out <span className="font-medium text-foreground">{formatInTimezone(zonedInputToUtc(sendAt, timezone).toISOString(), timezone)}</span>.
+        </p>
+      )}
+
       <Button onClick={schedule} disabled={saving} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
         {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CalendarClock className="h-4 w-4 mr-1" />}
         Schedule Email
@@ -179,7 +212,7 @@ export default function ScheduledEmailCard({
               <div key={j.id} className="flex flex-wrap items-center justify-between gap-2 p-3">
                 <div className="min-w-0">
                   <p className="text-sm font-medium text-foreground">
-                    {new Date(j.scheduled_for).toLocaleString()}
+                    {formatInTimezone(j.scheduled_for, j.timezone)}
                     {j.template_kind !== templateKind && (
                       <span className="text-muted-foreground font-normal"> · {j.template_kind.replace(/_/g, " ")}</span>
                     )}
@@ -190,8 +223,13 @@ export default function ScheduledEmailCard({
                       : "Everyone registered"}
                     {j.note ? ` · ${j.note}` : ""}
                     {j.status === "sent" ? ` · sent ${j.sent_count ?? 0}${j.failed_count ? `, ${j.failed_count} failed` : ""}` : ""}
-                    {j.error ? ` · ${j.error}` : ""}
                   </p>
+                  {j.error && (
+                    <p className="text-xs text-destructive flex items-start gap-1 mt-1">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 mt-0.5" />
+                      <span className="break-words">Failed: {j.error}</span>
+                    </p>
+                  )}
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge className={`text-xs ${STATUS_STYLES[j.status] || ""}`} variant={j.status === "failed" ? "destructive" : "default"}>
@@ -199,6 +237,11 @@ export default function ScheduledEmailCard({
                   </Badge>
                   {j.status === "scheduled" && (
                     <Button variant="outline" size="sm" onClick={() => cancel(j.id)}>Cancel</Button>
+                  )}
+                  {(j.status === "failed" || j.status === "canceled" || (j.status === "sent" && (j.failed_count ?? 0) > 0)) && (
+                    <Button variant="outline" size="sm" className="gap-1" onClick={() => retry(j.id)}>
+                      <RotateCcw className="h-3.5 w-3.5" /> Retry
+                    </Button>
                   )}
                   {j.status !== "scheduled" && j.status !== "sending" && (
                     <Button variant="ghost" size="sm" onClick={() => remove(j.id)}>

@@ -317,7 +317,7 @@ const Players = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, max_players, allow_cash_registration, registration_fee_cents, pairings_locked, pairings_locked_at")
+      .select("id, title, slug, max_players, allow_cash_registration, registration_fee_cents, pairings_locked, pairings_locked_at, pairings_public")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -1142,6 +1142,31 @@ const Players = () => {
 
   // ---- Lock / publish pairings ----
   const pairingsLocked = !!currentTournamentObj?.pairings_locked;
+
+  // Publishes the read-only public tee sheet at /pairings/:slug so tee-time
+  // emails can link every player to the full field.
+  const [publicPairingsSaving, setPublicPairingsSaving] = useState(false);
+  const togglePairingsPublic = async () => {
+    if (!selectedTournament || demoGuard()) return;
+    const next = !currentTournamentObj?.pairings_public;
+    setPublicPairingsSaving(true);
+    const { error } = await (supabase as any)
+      .from("tournaments")
+      .update({ pairings_public: next })
+      .eq("id", selectedTournament);
+    setPublicPairingsSaving(false);
+    if (error) {
+      toast({ title: "Could not update tee sheet", description: error.message, variant: "destructive" });
+      return;
+    }
+    setTournaments((list: any[]) => list.map((t: any) => (
+      t.id === selectedTournament ? { ...t, pairings_public: next } : t
+    )));
+    toast({
+      title: next ? "Public tee sheet published" : "Public tee sheet hidden",
+      description: next ? "Players can now view pairings and tee times." : "The public pairings page is no longer visible.",
+    });
+  };
   const [lockSaving, setLockSaving] = useState(false);
   const lockGuard = () => {
     if (!pairingsLocked) return false;
@@ -1378,9 +1403,17 @@ const Players = () => {
     const nextDay: DayCfg = { ...dayCfg, ...patch };
     const nextAll = { ...startFormatByDay, [activeDay]: nextDay };
     setStartFormatByDay(nextAll);
+    // Printables, emails and the public pairings page read the start format from
+    // the tournament row, so day 1's choice is mirrored to the database.
+    if (patch.startFormat && activeDay === 0 && selectedTournament) {
+      void (supabase.from("tournaments") as any)
+        .update({ pairings_start_format: patch.startFormat })
+        .eq("id", selectedTournament);
+    }
     if (!startFormatStorageKey) return;
     try { localStorage.setItem(startFormatStorageKey, JSON.stringify({ byDay: nextAll })); } catch { /* noop */ }
   };
+
 
   const addMinutes = (hhmm: string, mins: number) => {
     const m = /^(\d{1,2}):(\d{2})/.exec(hhmm);
@@ -2868,6 +2901,21 @@ const Players = () => {
                 <Button onClick={handleSaveTeeTimesNow} size="sm" variant="secondary" disabled={savingTeeTimes}>
                   {savingTeeTimes ? "Saving…" : "Save Tee Times"}
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={togglePairingsPublic}
+                  disabled={publicPairingsSaving}
+                >
+                  {currentTournamentObj?.pairings_public ? "Public Tee Sheet: On" : "Public Tee Sheet: Off"}
+                </Button>
+                {currentTournamentObj?.slug && currentTournamentObj?.pairings_public && (
+                  <Button size="sm" variant="ghost" asChild>
+                    <a href={`/pairings/${currentTournamentObj.slug}`} target="_blank" rel="noreferrer">
+                      View Tee Sheet
+                    </a>
+                  </Button>
+                )}
               </div>
 
             </div>

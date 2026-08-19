@@ -69,7 +69,7 @@ export async function getLeagueMeta(slug: string): Promise<PageMeta> {
   };
 }
 
-export async function getTournamentMeta(slug: string, route: "t" | "tournament"): Promise<PageMeta> {
+export async function getTournamentMeta(slug: string, route: "t" | "tournament" | "pairings"): Promise<PageMeta> {
   const filter = `or=(custom_slug.eq.${encodeURIComponent(slug)},slug.eq.${encodeURIComponent(slug)})`;
   const params = `select=title,date,location,course_name,description,site_hero_image_url,site_logo_url,image_url&${filter}&site_published=eq.true&limit=1`;
   const base = import.meta.env.VITE_SUPABASE_URL; const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
@@ -78,6 +78,14 @@ export async function getTournamentMeta(slug: string, route: "t" | "tournament")
   const title = plain(row?.title) || "Golf Tournament";
   const date = row?.date ? new Date(`${row.date}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : "";
   const where = plain(row?.location || row?.course_name);
+  if (route === "pairings") {
+    return {
+      title: `${title} — Tee Times & Pairings | TeeVents`,
+      description: `Tee times, groups and pairings for ${title}${date ? ` on ${date}` : ""}${where ? ` at ${where}` : ""}.`,
+      image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url),
+      url: `${SITE}/pairings/${slug}`,
+    };
+  }
   return { title: `${title} | TeeVents Golf Tournaments`, description: plain(row?.description) || `Join us for ${title}${date ? ` on ${date}` : ""}${where ? ` at ${where}` : ""}. Register now!`, image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url), url: `${SITE}/${route}/${slug}` };
 }
 

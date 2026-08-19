@@ -41,7 +41,7 @@ const Printables = () => {
   useEffect(() => {
     if (!selectedTournament) { setGroups([]); return; }
     (supabase.from("registration_groups") as any)
-      .select("id, group_number, team_name, cart_sign_names")
+      .select("id, group_number, team_name, tee_time, cart_sign_names")
       .eq("tournament_id", selectedTournament)
       .then(({ data }: any) => setGroups((data || []) as RegistrationGroupRow[]));
   }, [selectedTournament, groupsRefresh]);
@@ -50,7 +50,7 @@ const Printables = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, site_logo_url, printable_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options, scoring_format, date")
+      .select("id, title, site_logo_url, printable_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options, scoring_format, date, pairings_start_format")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -78,7 +78,7 @@ const Printables = () => {
     Promise.all([
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, payment_status, group_number, group_position, group_label, scoring_code, group_scoring_code, checked_in, created_at")
+        .select("id, first_name, last_name, email, payment_status, group_number, group_position, group_label, scoring_code, group_scoring_code, checked_in, created_at, tee_time")
         .eq("tournament_id", selectedTournament)
         .order("last_name", { ascending: true }),
       supabase
@@ -227,7 +227,7 @@ const Printables = () => {
           <ScorecardsTab tournament={tournament} registrations={printRegistrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} groups={groups} scoringFormat={(tournament as any)?.scoring_format} />
         </TabsContent>
         <TabsContent value="name-badges">
-          <NameBadgesTab tournament={tournament} registrations={printRegistrations} loading={loading} />
+          <NameBadgesTab tournament={tournament} registrations={printRegistrations} loading={loading} groups={groups} />
         </TabsContent>
         <TabsContent value="alpha-list">
           <AlphaListTab tournament={tournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />

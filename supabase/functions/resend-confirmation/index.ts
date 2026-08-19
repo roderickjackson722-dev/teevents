@@ -21,6 +21,8 @@ const TEMPLATE_HEADERS: Record<string, string> = {
   post_event: "Thanks for Playing!",
   day_before: "Your Tournament Is Almost Here!",
   pairings_update: "Updated Hole Assignments",
+  tee_times: "Your Tee Time",
+
 };
 
 
@@ -84,7 +86,21 @@ const DEFAULT_CONFIGS: Record<string, any> = {
     button_text: "View Event Homepage",
     show_event_details: true,
   },
+  tee_times: {
+    ...BASE_DEFAULT,
+    subject: "{{event_name}} – Your Tee Time & Pairings",
+    greeting: "Hello {{first_name}},",
+    header_title: "Your Tee Time",
+    body_text: "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Group: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    closing_text: "Please arrive at least 30 minutes before your tee time and check in at the registration table.",
+    footer_text: "See you on the course! ⛳",
+    button_text: "View All Tee Times & Pairings",
+    show_event_details: true,
+    show_button: true,
+  },
 };
+
+
 
 
 
@@ -277,7 +293,7 @@ Deno.serve(async (req) => {
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, schedule_info, schedule_info_html, slug")
+      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, tee_times_email_config, schedule_info, schedule_info_html, slug")
       .eq("id", tournamentId)
       .single();
 
@@ -297,6 +313,8 @@ Deno.serve(async (req) => {
       sponsor: "sponsor_email_config",
       vendor: "vendor_email_config",
       pairings_update: "pairings_update_email_config",
+      tee_times: "tee_times_email_config",
+
     };
 
     const configColumn = CONFIG_COLUMN[kind] || "confirmation_email_config";
@@ -328,7 +346,12 @@ Deno.serve(async (req) => {
     const homepage = (tournament as any).slug
       ? `https://www.teevents.golf/t/${(tournament as any).slug}`
       : "https://www.teevents.golf";
-    if (!emailConfig.button_url) emailConfig.button_url = homepage;
+    const pairingsLink = (tournament as any).slug
+      ? `https://www.teevents.golf/pairings/${(tournament as any).slug}`
+      : "https://www.teevents.golf";
+    // The tee-time email's button points at the public pairings/tee sheet page.
+    if (!emailConfig.button_url) emailConfig.button_url = kind === "tee_times" ? pairingsLink : homepage;
+
 
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)
@@ -384,7 +407,9 @@ Deno.serve(async (req) => {
             scoring_link: (tournament as any).slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
             leaderboard_link: (tournament as any).slug ? `https://www.teevents.golf/live/${(tournament as any).slug}` : "https://www.teevents.golf",
             event_homepage: homepage,
+            pairings_link: pairingsLink,
           };
+
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
           regSubject = subject;
           regTeeTime = vars.tee_time;

@@ -4,6 +4,7 @@ export interface RegistrationGroupRow {
   id: string;
   group_number: number | null;
   team_name: string | null;
+  tee_time?: string | null;
   cart_sign_names?: { cart1?: string[]; cart2?: string[] } | null;
 }
 
@@ -12,9 +13,12 @@ export interface PrintTeam {
   groupNumber: number | null;
   groupId?: string;
   teamName: string;
+  /** Tee time for this group, as saved on the pairings page (display string) */
+  teeTime?: string | null;
   players: Registration[];
   scoringCode?: string | null;
 }
+
 
 const TEAM_FORMAT_HINTS = ["scramble", "best_ball", "bestball", "best ball", "foursome", "shootout", "team", "shamble", "chapman", "alternate"];
 
@@ -54,9 +58,11 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       groupNumber: num,
       groupId: g?.id,
       teamName: g?.team_name || `Hole ${num}`,
+      teeTime: g?.tee_time ?? (players.map((p) => (p as any).tee_time).find(Boolean) || null),
       players,
       scoringCode: players.map((p) => (p as any).group_scoring_code || (p as any).scoring_code).find(Boolean) || null,
     });
+
   });
 
   solo.forEach((p) => {
@@ -64,9 +70,11 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       key: `s-${p.id}`,
       groupNumber: null,
       teamName: playerName(p),
+      teeTime: (p as any).tee_time || null,
       players: [p],
       scoringCode: (p as any).group_scoring_code || (p as any).scoring_code || null,
     });
+
   });
 
   return teams;

@@ -89,7 +89,7 @@ const DAY_BEFORE_SECTIONS: { id: string; label: string; hint: string }[] = [
 ];
 const DEFAULT_SECTION_ORDER = DAY_BEFORE_SECTIONS.map((s) => s.id);
 
-type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of" | "sponsorship_day_of" | "pairings_update";
+type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of" | "sponsorship_day_of" | "pairings_update" | "tee_times";
 
 
 const DEFAULT_CONFIG: EmailConfig = {
@@ -227,6 +227,22 @@ const DEFAULT_PAIRINGS_UPDATE_CONFIG: EmailConfig = {
   show_button: true,
 };
 
+/** Individual tee-time notice with a link to the full public pairings page. */
+const DEFAULT_TEE_TIMES_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "{{event_name}} – Your Tee Time & Pairings",
+  header_title: "Your Tee Time",
+  greeting: "Hello {{first_name}},",
+  body_text:
+    "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Group: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
+  closing_text:
+    "Please arrive at least 30 minutes before your tee time and check in at the registration table.\n\nQuestions? Contact {{contact_name}} at {{contact_phone}}.",
+  footer_text: "See you on the course! ⛳",
+  button_text: "View All Tee Times & Pairings",
+  show_event_details: true,
+  show_button: true,
+};
+
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
   sponsor: "Sponsor Confirmation",
@@ -236,6 +252,7 @@ const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   sponsor_day_of: "Sponsor Event Day Details",
   sponsorship_day_of: "Day of Event Sponsorship Email",
   pairings_update: "Updated Hole Assignments / Pairings",
+  tee_times: "Tee Times & Pairings (individual players)",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
@@ -247,6 +264,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   sponsor_day_of: "Sponsor Event Day Details",
   sponsorship_day_of: "Thank You for Your Sponsorship!",
   pairings_update: "Updated Hole Assignments",
+  tee_times: "Your Tee Time",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -258,6 +276,7 @@ const CONFIG_KEY: Record<TemplateKind, string> = {
   sponsor_day_of: "sponsor_day_of_email_config",
   sponsorship_day_of: "sponsorship_day_of_email_config",
   pairings_update: "pairings_update_email_config",
+  tee_times: "tee_times_email_config",
 };
 
 
@@ -287,6 +306,7 @@ const VARIABLE_TAGS = [
   { label: "Scoring Link", value: "{{scoring_link}}" },
   { label: "Leaderboard Link", value: "{{leaderboard_link}}" },
   { label: "Event Homepage", value: "{{event_homepage}}" },
+  { label: "Pairings / Tee Sheet Link", value: "{{pairings_link}}" },
   { label: "Sponsor Name", value: "{{sponsor_name}}" },
   { label: "Sponsor Tier", value: "{{sponsor_tier}}" },
   { label: "Check-in Time", value: "{{checkin_time}}" },
@@ -305,7 +325,7 @@ export default function EmailTemplateEditor() {
   const initialTemplate: TemplateKind = (() => {
     if (typeof window === "undefined") return "confirmation";
     const q = new URLSearchParams(window.location.search).get("template");
-    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of" || q === "sponsorship_day_of" || q === "pairings_update"
+    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of" || q === "sponsorship_day_of" || q === "pairings_update" || q === "tee_times"
       ? (q as TemplateKind)
       : "confirmation";
   })();
@@ -327,6 +347,8 @@ export default function EmailTemplateEditor() {
               ? DEFAULT_SPONSORSHIP_DAY_OF_CONFIG
               : initialTemplate === "pairings_update"
               ? DEFAULT_PAIRINGS_UPDATE_CONFIG
+              : initialTemplate === "tee_times"
+              ? DEFAULT_TEE_TIMES_CONFIG
               : DEFAULT_CONFIG,
 
   );
@@ -400,6 +422,7 @@ export default function EmailTemplateEditor() {
     if (k === "sponsor_day_of") return DEFAULT_SPONSOR_DAY_OF_CONFIG;
     if (k === "sponsorship_day_of") return DEFAULT_SPONSORSHIP_DAY_OF_CONFIG;
     if (k === "pairings_update") return DEFAULT_PAIRINGS_UPDATE_CONFIG;
+    if (k === "tee_times") return DEFAULT_TEE_TIMES_CONFIG;
 
     return DEFAULT_CONFIG;
   };
@@ -445,7 +468,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, pairings_update_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url")
+        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, pairings_update_email_config, tee_times_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -589,7 +612,8 @@ export default function EmailTemplateEditor() {
       scoring_link: t?.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
       leaderboard_link: t?.slug ? `https://www.teevents.golf/live/${t.slug}` : "https://www.teevents.golf",
       event_homepage: homepage,
-      tee_time: "TBD",
+      pairings_link: t?.slug ? `https://www.teevents.golf/pairings/${t.slug}` : "https://www.teevents.golf",
+      tee_time: sampleReg?.tee_time || sampleReg?.group_tee_time || "TBD",
       hole_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
       team_name: sampleReg?.team_name || (sampleReg?.group_number != null ? `Hole ${sampleReg.group_number}` : "To be assigned"),
       contact_name: t?.day_of_director_name || t?.contact_name || "Tournament Organizer",
@@ -824,6 +848,7 @@ export default function EmailTemplateEditor() {
               <SelectItem value="sponsor_day_of">{TEMPLATE_LABELS.sponsor_day_of}</SelectItem>
               <SelectItem value="sponsorship_day_of">{TEMPLATE_LABELS.sponsorship_day_of}</SelectItem>
               <SelectItem value="pairings_update">{TEMPLATE_LABELS.pairings_update}</SelectItem>
+              <SelectItem value="tee_times">{TEMPLATE_LABELS.tee_times}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -1710,6 +1735,7 @@ const SAMPLE_VARS: Record<string, string> = {
   scoring_link: "https://www.teevents.golf/t/sample/scoring",
   leaderboard_link: "https://www.teevents.golf/live/sample",
   event_homepage: "https://www.teevents.golf/t/sample",
+  pairings_link: "https://www.teevents.golf/pairings/sample",
 };
 
 function replaceVariablesPlain(text: string, vars: Record<string, string>): string {

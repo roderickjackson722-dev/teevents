@@ -34,12 +34,25 @@ const FONT_MAP: Record<string, string> = {
   courier: "'Courier New', Courier, monospace",
 };
 
+/** Format an HH:MM (or free text) tee time for display */
+export function formatTeeTime(value?: string | null): string {
+  if (!value) return "";
+  const m = /^(\d{1,2}):(\d{2})/.exec(value.trim());
+  if (!m) return value.trim();
+  let h = parseInt(m[1], 10);
+  const mm = m[2];
+  const suffix = h >= 12 ? "PM" : "AM";
+  h = h % 12 === 0 ? 12 : h % 12;
+  return `${h}:${mm} ${suffix}`;
+}
+
 /** One cart sign — classic centered layout with the two cart players stacked */
 function cartSignHtml(
   names: string[],
   tournament: Tournament | null,
   opts: PrintableOptions,
   groupNumber: number | null,
+  teeTime?: string | null,
 ) {
   const color = getPrimaryColor(tournament);
   const font = FONT_MAP[opts.font] || FONT_MAP.georgia;
@@ -61,6 +74,7 @@ function cartSignHtml(
       ${opts.showLogo ? `<div style="margin-bottom:0.15in;">${printLogoHtml(logo, { heightCss: "1.3in", invert: layout === "bold", color: subtitleColor })}</div>` : ""}
       ${opts.showTournamentTitle ? `<div style="font-size:44px;font-weight:600;color:${subtitleColor};letter-spacing:6px;text-transform:uppercase;margin-bottom:0.1in;">${tournament?.title ?? ""}</div>` : ""}
       ${nameLines}
+      ${opts.showTeeTime && formatTeeTime(teeTime) ? `<div style="font-size:56px;color:${accentColor};font-weight:700;margin-top:0.12in;">Tee Time: ${formatTeeTime(teeTime)}</div>` : ""}
       ${opts.showStartingHole && groupNumber != null ? `<div style="font-size:48px;color:${accentColor};font-weight:600;margin-top:0.12in;">Starting Hole: ${groupNumber}</div>` : ""}
     </div>`;
 }
@@ -70,7 +84,14 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   const [edits, setEdits] = useState<Record<string, CartNames>>({});
   const [saving, setSaving] = useState<string | null>(null);
   const [selectedSigns, setSelectedSigns] = useState<string[]>([]);
+  const [teeEdits, setTeeEdits] = useState<Record<string, string>>({});
 
+
+  // Re-seed design defaults (incl. tee-time vs shotgun) when the tournament loads/changes
+  useEffect(() => {
+    setOpts(getDefaultOptions(tournament));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournament?.id, (tournament as any)?.pairings_start_format]);
 
   const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
 
@@ -86,6 +107,9 @@ export default function CartSignsTab({ tournament, registrations, loading, group
       };
     });
     setEdits(next);
+    const tee: Record<string, string> = {};
+    teams.forEach((t) => { tee[t.key] = (t.teeTime || "").slice(0, 5); });
+    setTeeEdits(tee);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [JSON.stringify(teams.map((t) => t.key)), JSON.stringify(groups)]);
 
@@ -111,6 +135,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
       label: `${t.groupNumber != null ? `Hole ${t.groupNumber}` : "Unassigned"} – ${c.label}: ${c.names.join(" & ")}`,
       names: c.names,
       groupNumber: t.groupNumber,
+      teeTime: teeEdits[t.key] ?? t.teeTime ?? null,
     })),
   );
 
@@ -124,7 +149,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
 
   const buildHtml = (signs: typeof allSigns) =>
     signs
-      .map((s) => cartSignHtml(s.names, tournament, opts, s.groupNumber))
+      .map((s) => cartSignHtml(s.names, tournament, opts, s.groupNumber, s.teeTime))
       .map((html, i, arr) => `<div class="print-page" style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
       .join("");
 
@@ -136,15 +161,17 @@ export default function CartSignsTab({ tournament, registrations, loading, group
     if (!team || !tournament) return;
     const e = edits[key];
     const payload = { cart1: e.cart1.filter((n) => n.trim()), cart2: e.cart2.filter((n) => n.trim()) };
+    const teeTime = (teeEdits[key] || "").trim() || null;
     setSaving(key);
     let error: any = null;
     if (team.groupId) {
-      ({ error } = await (supabase.from("registration_groups") as any).update({ cart_sign_names: payload }).eq("id", team.groupId));
+      ({ error } = await (supabase.from("registration_groups") as any).update({ cart_sign_names: payload, tee_time: teeTime }).eq("id", team.groupId));
     } else if (team.groupNumber != null) {
       ({ error } = await (supabase.from("registration_groups") as any).insert({
         tournament_id: tournament.id,
         group_number: team.groupNumber,
         cart_sign_names: payload,
+        tee_time: teeTime,
       }));
     } else {
       // Solo player with no pairing — keep names local only
@@ -155,7 +182,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
     setSaving(null);
     if (error) toast.error("Could not save cart sign names");
     else {
-      toast.success("Cart sign names saved");
+      toast.success("Cart sign saved");
       onGroupsChanged?.();
     }
   };
@@ -178,6 +205,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
         options={opts}
         onChange={setOpts}
         variant="cartsign"
+        showTeeTimeToggle
         tournamentId={tournament?.id}
         logoUrl={getPrintLogo(tournament)}
       />
@@ -219,9 +247,21 @@ export default function CartSignsTab({ tournament, registrations, loading, group
                   Team: {t.teamName} <span className="text-muted-foreground font-normal">({t.players.length} player{t.players.length === 1 ? "" : "s"})</span>
                 </p>
                 <Button size="sm" variant="outline" onClick={() => saveNames(t.key)} disabled={saving === t.key} className="gap-1">
-                  {saving === t.key ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save Names
+                  {saving === t.key ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Save className="h-3.5 w-3.5" />} Save Sign
                 </Button>
               </div>
+
+              {opts.showTeeTime && (
+                <div className="space-y-1">
+                  <p className="text-xs font-medium text-muted-foreground">Tee time (shown on the sign):</p>
+                  <Input
+                    type="time"
+                    value={teeEdits[t.key] ?? ""}
+                    onChange={(ev) => setTeeEdits((prev) => ({ ...prev, [t.key]: ev.target.value }))}
+                    className="text-sm w-40"
+                  />
+                </div>
+              )}
 
               {(["cart1", "cart2"] as const).map((cart, ci) => (
                 <div key={cart} className="space-y-1">
@@ -248,6 +288,9 @@ export default function CartSignsTab({ tournament, registrations, loading, group
                       {c.names.map((n, i) => (
                         <p key={i} className="text-xl font-display font-bold text-foreground leading-tight">{n}</p>
                       ))}
+                      {opts.showTeeTime && formatTeeTime(teeEdits[t.key] ?? t.teeTime) && (
+                        <p className="text-sm font-bold text-primary">Tee Time: {formatTeeTime(teeEdits[t.key] ?? t.teeTime)}</p>
+                      )}
                       {opts.showStartingHole && t.groupNumber != null && (
                         <p className="text-sm font-semibold text-primary">Starting Hole: {t.groupNumber}</p>
                       )}

@@ -237,17 +237,24 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Authenticate the calling user
+    const body = await req.json();
+    const { registration_ids, use_custom_template, update_email, template_kind, email_overrides, service_run } = body;
+
+    // Authenticate the calling user. Internal scheduled sends pass service_run
+    // with the service-role key as the bearer token instead of a user session.
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Not authenticated");
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-    ).auth.getUser(token);
-    if (!user) throw new Error("Not authenticated");
-
-    const { registration_ids, use_custom_template, update_email, template_kind, email_overrides } = await req.json();
+    const isServiceRun = service_run === true && token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    let user: { id: string } | null = null;
+    if (!isServiceRun) {
+      const { data: { user: u } } = await createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+      ).auth.getUser(token);
+      if (!u) throw new Error("Not authenticated");
+      user = u;
+    }
 
     /**
      * Optional alternate delivery addresses, keyed by registration id.
@@ -349,10 +356,12 @@ Deno.serve(async (req) => {
     const round1Date = (tournament as any)?.pairings_config?.byDay?.["0"]?.roundDate;
     if (round1Date && String(round1Date).trim()) (tournament as any).date = String(round1Date).trim();
 
-    // Verify user is org member
-    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-    const { data: isMember } = await supabaseAdmin.rpc("is_org_member", { _user_id: user.id, _org_id: tournament.organization_id });
-    if (!isAdmin && !isMember) throw new Error("Not authorized");
+    // Verify user is org member (skipped for internal scheduled sends)
+    if (!isServiceRun) {
+      const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user!.id, _role: "admin" });
+      const { data: isMember } = await supabaseAdmin.rpc("is_org_member", { _user_id: user!.id, _org_id: tournament.organization_id });
+      if (!isAdmin && !isMember) throw new Error("Not authorized");
+    }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const kind = template_kind || "confirmation";

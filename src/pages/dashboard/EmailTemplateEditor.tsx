@@ -26,6 +26,7 @@ import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { parsePairingsConfig, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
+import ScheduledEmailCard from "@/components/dashboard/ScheduledEmailCard";
 
 interface EmailConfig {
   subject: string;
@@ -1728,6 +1729,16 @@ export default function EmailTemplateEditor() {
               Send {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
             </Button>
           </div>
+
+          {selectedTournament && (
+            <ScheduledEmailCard
+              tournamentId={selectedTournament}
+              templateKind={templateKind}
+              templateLabel={TEMPLATE_LABELS[templateKind]}
+              selectedRecipients={selectedRecipients}
+              totalRecipients={registrations.filter((r: any) => r.email).length}
+            />
+          )}
           </>
           )}
         </TabsContent>

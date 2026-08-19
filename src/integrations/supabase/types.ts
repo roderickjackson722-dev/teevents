@@ -9624,6 +9624,7 @@ export type Database = {
           hole_number: number
           id: string
           registration_id: string
+          round_number: number
           strokes: number
           tournament_id: string
           updated_at: string | null
@@ -9633,6 +9634,7 @@ export type Database = {
           hole_number: number
           id?: string
           registration_id: string
+          round_number?: number
           strokes: number
           tournament_id: string
           updated_at?: string | null
@@ -9642,6 +9644,7 @@ export type Database = {
           hole_number?: number
           id?: string
           registration_id?: string
+          round_number?: number
           strokes?: number
           tournament_id?: string
           updated_at?: string | null
@@ -11905,6 +11908,7 @@ export type Database = {
           hole_number: number
           last_name: string
           registration_id: string
+          round_number: number
           strokes: number
           team_name: string
         }[]

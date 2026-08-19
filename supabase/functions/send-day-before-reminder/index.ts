@@ -284,7 +284,15 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { tournament_id, test_email, service_run, registration_ids } = payload as any;
+    const { tournament_id, test_email, service_run, registration_ids, email_overrides } = payload as any;
+    /** Send-time alternate addresses keyed by registration id; stored emails are untouched. */
+    const overrideMap = new Map<string, string>();
+    if (email_overrides && typeof email_overrides === "object") {
+      for (const [rid, addr] of Object.entries(email_overrides as Record<string, unknown>)) {
+        const v = String(addr || "").trim();
+        if (v) overrideMap.set(String(rid), v);
+      }
+    }
     const targetIds: string[] | null = Array.isArray(registration_ids) && registration_ids.length > 0
       ? registration_ids.map((x: unknown) => String(x))
       : null;
@@ -536,6 +544,8 @@ Deno.serve(async (req) => {
     let failed = 0;
     const results: any[] = [];
     for (const reg of regs || []) {
+      const alt = overrideMap.get(String(reg.id));
+      if (alt) (reg as any).email = alt;
       const name = `${reg.first_name || ""} ${reg.last_name || ""}`.trim();
       const vars = buildVars(reg);
       if (!reg.email) {

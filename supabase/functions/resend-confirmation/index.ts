@@ -237,17 +237,22 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Authenticate the calling user
+    const body = await req.json();
+    const { registration_ids, use_custom_template, update_email, template_kind, email_overrides, service_run } = body;
+
+    // Authenticate the calling user. Internal scheduled sends pass service_run
+    // with the service-role key as the bearer token instead of a user session.
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Not authenticated");
     const token = authHeader.replace("Bearer ", "");
-    const { data: { user } } = await createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_ANON_KEY")!,
-    ).auth.getUser(token);
-    if (!user) throw new Error("Not authenticated");
-
-    const { registration_ids, use_custom_template, update_email, template_kind, email_overrides } = await req.json();
+    const isServiceRun = service_run === true && token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!isServiceRun) {
+      const { data: { user } } = await createClient(
+        Deno.env.get("SUPABASE_URL")!,
+        Deno.env.get("SUPABASE_ANON_KEY")!,
+      ).auth.getUser(token);
+      if (!user) throw new Error("Not authenticated");
+    }
 
     /**
      * Optional alternate delivery addresses, keyed by registration id.

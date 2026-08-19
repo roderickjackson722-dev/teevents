@@ -84,6 +84,8 @@ import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import ManualEntryGrantsAdmin from "./pages/admin/ManualEntryGrants";
 import AdminSecurity from "./pages/admin/Security";
 import AdminEmailNotifications from "./pages/admin/EmailNotifications";
+import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
+
 import AdminUsersEvents from "./pages/admin/UsersEvents";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import TeamManagementPage from "./pages/dashboard/TeamManagementPage";

@@ -111,7 +111,7 @@ export default function PublicPairings() {
           })}
         </div>
       </div>
-      <TeeventsFooter />
+      <TeeventsFooter tournament={null} />
     </div>
   );
 }

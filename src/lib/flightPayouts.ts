@@ -84,6 +84,8 @@ export interface FlightPayoutRow {
   /** range of finishing positions in the ranked field, e.g. "1–18" */
   range: string;
   purseCents: number;
+  /** false when the organizer excluded this flight from the purse */
+  paid: boolean;
   places: { place: number; percent: number; amountCents: number }[];
 }
 
@@ -105,10 +107,16 @@ export interface PayoutPlanInput {
   flightSizes?: number[] | null;
   /** custom flight names */
   names?: string[] | null;
+  /**
+   * Per-flight opt-in to the purse. `false` excludes that flight entirely
+   * (e.g. a junior flight that plays for trophies only) and its share is
+   * redistributed across the paid flights.
+   */
+  paidFlights?: (boolean | undefined)[] | null;
 }
 
 /**
- * Flight Purse = (Players in Flight / Total Players) x Total Purse.
+ * Flight Purse = (Players in Paid Flight / Players in All Paid Flights) x Total Purse.
  */
 export function buildPayoutPlan({
   fieldSize,
@@ -117,24 +125,30 @@ export function buildPayoutPlan({
   percentsOverride,
   flightSizes,
   names,
+  paidFlights,
 }: PayoutPlanInput): PayoutPlan {
   const sizes = flightSizes && flightSizes.length ? flightSizes : splitField(fieldSize, flights);
-  const total = sizes.reduce((s, n) => s + n, 0);
+  const paid = sizes.map((_, i) => paidFlights?.[i] !== false);
+  const total = sizes.reduce((s, n, i) => s + (paid[i] ? n : 0), 0);
+  const lastPaidIndex = paid.reduce((last, p, i) => (p && sizes[i] > 0 ? i : last), -1);
 
   let cursor = 1;
   let allocated = 0;
   const rows: FlightPayoutRow[] = sizes.map((players, i) => {
-    const share = total > 0 ? Math.round((purseCents * players) / total) : 0;
-    // give any rounding drift to the last flight
-    const purse = i === sizes.length - 1 ? Math.max(0, purseCents - allocated) : share;
+    const share = paid[i] && total > 0 ? Math.round((purseCents * players) / total) : 0;
+    // give any rounding drift to the last paid flight
+    const purse = i === lastPaidIndex ? Math.max(0, purseCents - allocated) : share;
     allocated += purse;
 
     const start = cursor;
     const end = cursor + players - 1;
     cursor = end + 1;
 
-    const percents =
-      percentsOverride && percentsOverride.length ? percentsOverride : placesPaidFor(players);
+    const percents = !paid[i]
+      ? []
+      : percentsOverride && percentsOverride.length
+        ? percentsOverride
+        : placesPaidFor(players);
     const pctTotal = percents.reduce((s, p) => s + p, 0) || 100;
 
     return {
@@ -142,6 +156,7 @@ export function buildPayoutPlan({
       players,
       range: players > 0 ? (players === 1 ? `${start}` : `${start}–${end}`) : "—",
       purseCents: purse,
+      paid: paid[i],
       places: percents.map((p, idx) => ({
         place: idx + 1,
         percent: p,
@@ -157,6 +172,7 @@ export function buildPayoutPlan({
 
   return { flights: rows, totalPaidCents, remainderCents: purseCents - totalPaidCents };
 }
+
 
 /**
  * 3-Man Scramble team handicap: 20% of the lowest handicap + 15% of the middle

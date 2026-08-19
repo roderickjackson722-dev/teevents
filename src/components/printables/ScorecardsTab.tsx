@@ -325,51 +325,52 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-muted/50">
-                      {Array.from({ length: numHoles }, (_, i) => (
-                        <th key={i} className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{i + 1}</th>
-                      ))}
-                      <th className="border border-border px-1.5 py-1 text-center font-bold text-foreground bg-muted">TOT</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                {(() => {
+                  const cols = scoreColumns(numHoles);
+                  const pars = Array.from({ length: numHoles }, (_, i) => getHolePar(tournament, i, numHoles, courseData));
+                  const yards = (courseData?.hole_distances as number[] | null) ?? null;
+                  const si = (courseData?.stroke_indexes as number[] | null) ?? null;
+                  const summaryCls = "border border-border px-1.5 py-1 text-center font-bold text-primary bg-primary/5";
+                  const renderRow = (title: string, values: (number | null)[] | null, cls: string) => (
                     <tr>
-                      {Array.from({ length: numHoles }, (_, i) => (
-                        <td key={i} className="border border-border px-1.5 py-1 text-center text-muted-foreground">
-                          {getHolePar(tournament, i, numHoles, courseData)}
-                        </td>
-                      ))}
-                      <td className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{totalPar}</td>
+                      <td className="border border-border px-2 py-1 text-left font-semibold text-foreground whitespace-nowrap">{title}</td>
+                      {cols.map((c, i) =>
+                        c.kind === "hole" ? (
+                          <td key={i} className={cls}>{values?.[c.hole - 1] || ""}</td>
+                        ) : (
+                          <td key={i} className={summaryCls}>{values ? summaryValue(c, values, numHoles) || "" : ""}</td>
+                        ),
+                      )}
                     </tr>
-                    {courseData?.stroke_indexes && (
-                      <tr>
-                        {Array.from({ length: numHoles }, (_, i) => (
-                          <td key={i} className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground">
-                            {(courseData.stroke_indexes as number[])[i] || ""}
-                          </td>
-                        ))}
-                        <td className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground font-semibold">SI</td>
-                      </tr>
-                    )}
-                    {courseData?.hole_distances && (courseData.hole_distances as number[]).some((d: number) => d > 0) && (
-                      <tr>
-                        {Array.from({ length: numHoles }, (_, i) => (
-                          <td key={i} className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground">
-                            {(courseData.hole_distances as number[])[i] || ""}
-                          </td>
-                        ))}
-                        <td className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground font-semibold">Yds</td>
-                      </tr>
-                    )}
-                    <tr>
-                      {Array.from({ length: numHoles + 1 }, (_, i) => (
-                        <td key={i} className="border border-border px-1.5 py-3 text-center">&nbsp;</td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
+                  );
+                  return (
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-muted/50">
+                          <th className="border border-border px-2 py-1 text-left font-bold text-foreground">Hole</th>
+                          {cols.map((c, i) => (
+                            <th key={i} className={c.kind === "hole" ? "border border-border px-1.5 py-1 text-center font-semibold text-foreground" : summaryCls}>
+                              {c.kind === "hole" ? c.hole : c.kind === "out" ? "Out" : c.kind === "in" ? "In" : "Tot"}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {yards && yards.some((d) => (d || 0) > 0) &&
+                          renderRow("Yardage", yards, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground")}
+                        {si && si.some((d) => (d || 0) > 0) &&
+                          renderRow("Hole HCP", si, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground")}
+                        {renderRow("Par", pars, "border border-border px-1.5 py-1 text-center text-muted-foreground")}
+                        <tr>
+                          <td className="border border-border px-2 py-3 text-left font-semibold text-foreground whitespace-nowrap">Score</td>
+                          {cols.map((_, i) => (
+                            <td key={i} className="border border-border px-1.5 py-3 text-center">&nbsp;</td>
+                          ))}
+                        </tr>
+                      </tbody>
+                    </table>
+                  );
+                })()}
               </div>
               {!isEditing && opts.showStartingHole && groupNum != null && <p className="text-xs text-primary mt-2">Starting Hole: {groupNum}</p>}
               

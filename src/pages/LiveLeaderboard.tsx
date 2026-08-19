@@ -494,7 +494,9 @@ export default function LiveLeaderboard() {
       ? null
       : flights.find((f) => f.id === activeFlight)?.tier_name || null;
   const baseTitle = tournament.leaderboard_title || tournament.title;
-  const displayTitle = activeFlightName ? `${baseTitle} — ${activeFlightName}` : baseTitle;
+  const displayTitle =
+    flightMode === "grid" ? baseTitle : activeFlightName ? `${baseTitle} — ${activeFlightName}` : baseTitle;
+
 
   const subtitleParts: string[] = [];
   if (tournament.course_name) subtitleParts.push(tournament.course_name);

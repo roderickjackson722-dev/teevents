@@ -394,6 +394,9 @@ Deno.serve(async (req) => {
     let sent = 0;
     let failed = 0;
     for (const reg of registrations) {
+      // Send-time alternate address (does not modify the stored registration email)
+      const alt = overrideMap.get(String(reg.id));
+      if (alt) (reg as any).email = alt;
       const regName = `${reg.first_name || ""} ${reg.last_name || ""}`.trim();
       let regSubject = `You're Registered — ${tournament.title}`;
       let regTeeTime = "";

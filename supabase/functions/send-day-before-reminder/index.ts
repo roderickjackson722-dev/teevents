@@ -46,6 +46,33 @@ function replaceVars(text: string, vars: Record<string, string>): string {
   return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k) => vars[k] ?? "");
 }
 
+function formatTeeTime(value: unknown): string {
+  const raw = String(value || "").trim();
+  const match = /^(\d{1,2}):(\d{2})/.exec(raw);
+  if (!match) return raw;
+  const hour = Number(match[1]);
+  const minute = match[2];
+  if (!Number.isFinite(hour)) return raw;
+  return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
+}
+
+function pairingValuesFor(pairingsConfig: unknown, groupNumber: number | null | undefined) {
+  if (groupNumber == null) return { teeTime: "", startingHole: "TBD" };
+  const config = pairingsConfig && typeof pairingsConfig === "object"
+    ? pairingsConfig as Record<string, any>
+    : {};
+  const groupKey = String(groupNumber);
+  const day = config.byDay?.["0"] || {};
+  const savedLabel = String(config.labels?.[groupKey] || "").trim();
+  const configuredHole = day.startFormat === "tee_times" && day.sameStartHole !== false
+    ? String(day.firstTeeHole || 1)
+    : String(groupNumber);
+  return {
+    teeTime: formatTeeTime(config.teeTimesByDay?.["0"]?.[groupKey]),
+    startingHole: savedLabel || configuredHole,
+  };
+}
+
 
 /** True when organizer content was authored with the rich-text toolbar. */
 function isHtmlContent(s?: string): boolean {
@@ -406,7 +433,9 @@ Deno.serve(async (req) => {
       if (g.group_number != null && g.tee_time) groupTeeTimes.set(g.group_number, String(g.tee_time));
     }
 
-    const buildVars = (reg: any) => ({
+    const buildVars = (reg: any) => {
+      const pairing = pairingValuesFor((tournament as any).pairings_config, reg.group_number);
+      return ({
       first_name: reg.first_name || "",
       last_name: reg.last_name || "",
       event_name: tournament.title || "",
@@ -415,13 +444,17 @@ Deno.serve(async (req) => {
       course_name: (tournament as any).course_name || tournament.location || "",
       course_address: courseAddress,
       event_schedule: schedule,
-      tee_time: (reg.group_number != null ? groupTeeTimes.get(reg.group_number) : undefined) || reg.tee_time || "TBD",
-      hole_number: reg.group_number != null ? String(reg.group_number) : "TBD",
+      tee_time: pairing.teeTime
+        || formatTeeTime(reg.group_number != null ? groupTeeTimes.get(reg.group_number) : undefined)
+        || formatTeeTime(reg.tee_time)
+        || "TBD",
+      hole_number: pairing.startingHole,
       scoring_code: reg.group_scoring_code || reg.scoring_code || "Assigned when pairings are finalized",
       scoring_link: scoringLink,
       leaderboard_link: leaderboardLink,
       event_homepage: homepage,
-    });
+      });
+    };
 
     /** Writes one row per send attempt so organizers get an auditable log. */
     const logEmail = async (row: {

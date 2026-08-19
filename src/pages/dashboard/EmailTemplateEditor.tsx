@@ -23,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatTournamentDate } from "@/lib/formatDate";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
+import { parsePairingsConfig, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
 
@@ -468,7 +469,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, pairings_update_email_config, tee_times_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url")
+        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, pairings_update_email_config, tee_times_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url, pairings_config")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -491,7 +492,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, payment_status, scoring_code, group_scoring_code, group_number")
+        .select("id, first_name, last_name, email, payment_status, scoring_code, group_scoring_code, group_number, tee_time")
         .eq("tournament_id", selectedTournament)
         .order("created_at", { ascending: false });
       setRegistrations(data || []);
@@ -598,6 +599,9 @@ export default function EmailTemplateEditor() {
     const homepage = t?.slug ? `https://www.teevents.golf/t/${t.slug}` : "https://www.teevents.golf";
     const location = [t?.location, t?.state].filter(Boolean).join(", ");
     const sampleReg = registrations[0];
+    const pairings = parsePairingsConfig(t?.pairings_config);
+    const pairingTeeTime = teeTimeForGroup(pairings, sampleReg?.group_number, 0);
+    const pairingStartingHole = startingHoleLabelForGroup(pairings, sampleReg?.group_number, 0);
     const vars: Record<string, string> = {
       first_name: sampleReg?.first_name || "John",
       last_name: sampleReg?.last_name || "Doe",
@@ -613,9 +617,9 @@ export default function EmailTemplateEditor() {
       leaderboard_link: t?.slug ? `https://www.teevents.golf/live/${t.slug}` : "https://www.teevents.golf",
       event_homepage: homepage,
       pairings_link: t?.slug ? `https://www.teevents.golf/pairings/${t.slug}` : "https://www.teevents.golf",
-      tee_time: sampleReg?.tee_time || sampleReg?.group_tee_time || "TBD",
-      hole_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
-      team_name: sampleReg?.team_name || (sampleReg?.group_number != null ? `Hole ${sampleReg.group_number}` : "To be assigned"),
+      tee_time: pairingTeeTime || sampleReg?.tee_time || "TBD",
+      hole_number: pairingStartingHole || "TBD",
+      team_name: sampleReg?.team_name || (sampleReg?.group_number != null ? `Group ${sampleReg.group_number}` : "To be assigned"),
       contact_name: t?.day_of_director_name || t?.contact_name || "Tournament Organizer",
       contact_phone: t?.day_of_director_phone || t?.contact_phone || "",
       checkin_time: "TBD",

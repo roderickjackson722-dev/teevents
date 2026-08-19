@@ -14,6 +14,33 @@ function replaceVars(text: string, vars: Record<string, string>): string {
   return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => vars[k] ?? "");
 }
 
+function formatTeeTime(value: unknown): string {
+  const raw = String(value || "").trim();
+  const match = /^(\d{1,2}):(\d{2})/.exec(raw);
+  if (!match) return raw;
+  const hour = Number(match[1]);
+  const minute = match[2];
+  if (!Number.isFinite(hour)) return raw;
+  return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
+}
+
+function pairingValuesFor(pairingsConfig: unknown, groupNumber: number | null | undefined) {
+  if (groupNumber == null) return { teeTime: "", startingHole: "TBD" };
+  const config = pairingsConfig && typeof pairingsConfig === "object"
+    ? pairingsConfig as Record<string, any>
+    : {};
+  const groupKey = String(groupNumber);
+  const day = config.byDay?.["0"] || {};
+  const savedLabel = String(config.labels?.[groupKey] || "").trim();
+  const configuredHole = day.startFormat === "tee_times" && day.sameStartHole !== false
+    ? String(day.firstTeeHole || 1)
+    : String(groupNumber);
+  return {
+    teeTime: formatTeeTime(config.teeTimesByDay?.["0"]?.[groupKey]),
+    startingHole: savedLabel || configuredHole,
+  };
+}
+
 const TEMPLATE_HEADERS: Record<string, string> = {
   confirmation: "Registration Confirmed!",
   sponsor: "Thank You for Sponsoring!",
@@ -288,12 +315,9 @@ Deno.serve(async (req) => {
       const name = g.team_name || g.group_name;
       if (g.group_number != null && name) groupNames.set(g.group_number, String(name));
     }
-    const teeTimeFor = (r: any) =>
-      (r.group_number != null ? groupTeeTimes.get(r.group_number) : undefined)
-      || r.tee_time || "TBD";
     const teamNameFor = (r: any) =>
       (r.group_number != null ? groupNames.get(r.group_number) : undefined)
-      || (r.group_number != null ? `Hole ${r.group_number}` : "To be assigned");
+      || (r.group_number != null ? `Group ${r.group_number}` : "To be assigned");
 
 
     const codeFor = (r: any) =>
@@ -310,6 +334,16 @@ Deno.serve(async (req) => {
       .single();
 
     if (!tournament) throw new Error("Tournament not found");
+
+    const teeTimeFor = (r: any) => {
+      const pairing = pairingValuesFor((tournament as any).pairings_config, r.group_number);
+      return pairing.teeTime
+        || formatTeeTime(r.group_number != null ? groupTeeTimes.get(r.group_number) : undefined)
+        || formatTeeTime(r.tee_time)
+        || "TBD";
+    };
+    const startingHoleFor = (r: any) =>
+      pairingValuesFor((tournament as any).pairings_config, r.group_number).startingHole;
 
     // Event-day variable follows the Round 1 play date set on Players & Pairings.
     const round1Date = (tournament as any)?.pairings_config?.byDay?.["0"]?.roundDate;
@@ -417,7 +451,7 @@ Deno.serve(async (req) => {
             course_address: (course as any)?.course_address || locationFull || "See event homepage",
             event_schedule: schedule,
             tee_time: teeTimeFor(reg as any),
-            hole_number: (reg as any).group_number != null ? String((reg as any).group_number) : "TBD",
+            hole_number: startingHoleFor(reg as any),
             team_name: teamNameFor(reg as any),
 
             scoring_code: codeFor(reg as any)

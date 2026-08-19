@@ -7417,6 +7417,7 @@ export type Database = {
           sent_count: number | null
           status: string
           template_kind: string
+          timezone: string | null
           tournament_id: string
           updated_at: string
         }
@@ -7434,6 +7435,7 @@ export type Database = {
           sent_count?: number | null
           status?: string
           template_kind: string
+          timezone?: string | null
           tournament_id: string
           updated_at?: string
         }
@@ -7451,6 +7453,7 @@ export type Database = {
           sent_count?: number | null
           status?: string
           template_kind?: string
+          timezone?: string | null
           tournament_id?: string
           updated_at?: string
         }

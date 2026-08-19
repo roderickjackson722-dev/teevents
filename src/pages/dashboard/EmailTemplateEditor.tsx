@@ -1201,6 +1201,8 @@ export default function EmailTemplateEditor() {
           <TabsTrigger value="content" className="gap-1"><Type className="h-4 w-4" /> Content</TabsTrigger>
           <TabsTrigger value="preview" className="gap-1"><Eye className="h-4 w-4" /> Preview</TabsTrigger>
           <TabsTrigger value="send" className="gap-1"><Send className="h-4 w-4" /> Send</TabsTrigger>
+          <TabsTrigger value="schedule" className="gap-1"><CalendarClock className="h-4 w-4" /> Schedule</TabsTrigger>
+
         </TabsList>
 
         {/* Design Tab */}
@@ -1742,7 +1744,48 @@ export default function EmailTemplateEditor() {
           </>
           )}
         </TabsContent>
+
+        {/* Schedule Tab */}
+        <TabsContent value="schedule" className="space-y-4">
+          {!selectedTournament ? (
+            <div className="bg-card rounded-lg border p-5 text-sm text-muted-foreground">
+              Pick a tournament above to schedule this email.
+            </div>
+          ) : (
+            <>
+              <div className="bg-card rounded-lg border p-4 flex flex-col sm:flex-row items-stretch sm:items-end gap-3">
+                <div className="flex-1">
+                  <Label className="text-sm font-medium flex items-center gap-2">
+                    <Send className="h-4 w-4 text-primary" /> Send a test email first
+                  </Label>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Delivers this exact template to one address so you can check the rendered content before scheduling. No participants are contacted.
+                  </p>
+                  <Input
+                    type="email"
+                    value={testEmail}
+                    onChange={(e) => setTestEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="mt-2"
+                  />
+                </div>
+                <Button onClick={sendTestEmail} disabled={sendingTest || !testEmail.trim()} className="gap-2">
+                  {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
+                  Send Test Email
+                </Button>
+              </div>
+              <ScheduledEmailCard
+                tournamentId={selectedTournament}
+                templateKind={templateKind}
+                templateLabel={TEMPLATE_LABELS[templateKind]}
+                selectedRecipients={selectedRecipients}
+                totalRecipients={registrations.filter((r: any) => r.email).length}
+              />
+            </>
+          )}
+        </TabsContent>
       </Tabs>
+
 
       {/* Action Bar */}
       <div className="flex flex-wrap items-center gap-2 bg-card rounded-lg border p-4">

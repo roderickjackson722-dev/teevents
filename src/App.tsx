@@ -84,6 +84,8 @@ import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import ManualEntryGrantsAdmin from "./pages/admin/ManualEntryGrants";
 import AdminSecurity from "./pages/admin/Security";
 import AdminEmailNotifications from "./pages/admin/EmailNotifications";
+import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
+
 import AdminUsersEvents from "./pages/admin/UsersEvents";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
 import TeamManagementPage from "./pages/dashboard/TeamManagementPage";
@@ -405,6 +407,8 @@ const App = () => (
            <Route path="/admin/manual-entry-grants" element={<ManualEntryGrantsAdmin />} />
            <Route path="/admin/security" element={<AdminSecurity />} />
            <Route path="/admin/email-notifications" element={<AdminEmailNotifications />} />
+           <Route path="/admin/scheduled-emails" element={<AdminScheduledEmails />} />
+
            <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />
            <Route path="/help" element={<HelpCenter />} />

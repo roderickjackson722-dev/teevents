@@ -13,12 +13,14 @@ import { Scale, Info, Loader2, Save, ClipboardCheck, CheckCircle2, AlertTriangle
 import {
   FLIGHT_METHODS,
   flightsForMethod,
+  flightLabel,
   buildPayoutPlan,
   placesPaidFor,
   money,
   type FlightMethod,
   type FlightBasis,
 } from "@/lib/flightPayouts";
+
 
 interface Props {
   /** number of players/teams in the field */

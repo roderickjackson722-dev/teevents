@@ -10314,6 +10314,7 @@ export type Database = {
           pairings_config: Json
           pairings_locked: boolean
           pairings_locked_at: string | null
+          pairings_page_config: Json | null
           pairings_public: boolean
           pairings_start_format: string | null
           pairings_update_email_config: Json | null
@@ -10603,6 +10604,7 @@ export type Database = {
           pairings_config?: Json
           pairings_locked?: boolean
           pairings_locked_at?: string | null
+          pairings_page_config?: Json | null
           pairings_public?: boolean
           pairings_start_format?: string | null
           pairings_update_email_config?: Json | null
@@ -10892,6 +10894,7 @@ export type Database = {
           pairings_config?: Json
           pairings_locked?: boolean
           pairings_locked_at?: string | null
+          pairings_page_config?: Json | null
           pairings_public?: boolean
           pairings_start_format?: string | null
           pairings_update_email_config?: Json | null
@@ -11917,14 +11920,19 @@ export type Database = {
       get_public_pairings: {
         Args: { _slug: string }
         Returns: {
+          contact_email: string
           course_name: string
           event_date: string
           first_name: string
           flight_name: string
           group_number: number
           group_position: number
+          hero_image_url: string
           last_name: string
+          logo_url: string
+          page_config: Json
           start_format: string
+          starting_hole: number
           team_name: string
           tee_time: string
           title: string

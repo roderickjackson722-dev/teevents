@@ -87,6 +87,12 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   const [teeEdits, setTeeEdits] = useState<Record<string, string>>({});
 
 
+  // Re-seed design defaults (incl. tee-time vs shotgun) when the tournament loads/changes
+  useEffect(() => {
+    setOpts(getDefaultOptions(tournament));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tournament?.id, (tournament as any)?.pairings_start_format]);
+
   const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
 
   // Seed editable names from saved overrides or the roster order

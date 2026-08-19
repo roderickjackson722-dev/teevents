@@ -1674,16 +1674,17 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           {/* Subtitle */}
           {tournament.site_hero_subtitle && (
             <p
-              className="mt-4 mx-auto text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
+              className="mt-4 mx-auto text-center max-w-full sm:max-w-2xl whitespace-pre-line break-words"
               style={{
                 color: "rgba(255,255,255,0.85)",
-                fontSize: "clamp(0.75rem, 2vw, 1.25rem)",
-                lineHeight: 1.4,
+                fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
+                lineHeight: 1.45,
               }}
             >
               {tournament.site_hero_subtitle}
             </p>
           )}
+
 
           {/* Event meta badges */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">

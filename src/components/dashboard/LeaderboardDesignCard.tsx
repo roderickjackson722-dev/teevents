@@ -36,6 +36,14 @@ export interface LeaderboardDesign {
   show_ticker: boolean;
   ticker_text: string;
   ticker_speed: "slow" | "normal" | "fast";
+  /** How multiple flights are displayed on the public leaderboard. */
+  flight_display_mode: "tabs" | "grid" | "rotate";
+  /** Columns used when several flight leaderboards share one screen. */
+  flight_columns: number;
+  /** Seconds each flight stays on screen in rotate mode. */
+  flight_rotate_seconds: number;
+  /** Include a combined "Overall" board alongside the flights. */
+  flight_include_overall: boolean;
 }
 
 export const DEFAULT_DESIGN: LeaderboardDesign = {
@@ -62,7 +70,12 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   show_ticker: false,
   ticker_text: "",
   ticker_speed: "normal",
+  flight_display_mode: "tabs",
+  flight_columns: 2,
+  flight_rotate_seconds: 15,
+  flight_include_overall: true,
 };
+
 
 const FONT_OPTIONS = ["Inter", "Roboto", "Montserrat", "Open Sans", "Lato", "Poppins"];
 const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };
@@ -242,6 +255,42 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
             </>
           )}
         </section>
+
+        {/* FLIGHTS / MULTIPLE LEADERBOARDS */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Flights &amp; Multiple Leaderboards</Label>
+          <p className="text-xs text-muted-foreground">
+            If your event has flights or divisions, choose how the public leaderboard shows them.
+            Players always enter scores for their own flight only.
+          </p>
+          <RadioGroup
+            value={design.flight_display_mode}
+            onValueChange={(v) => update("flight_display_mode", v as LeaderboardDesign["flight_display_mode"])}
+            className="flex flex-col gap-2 mt-1"
+          >
+            <RadioOpt value="tabs" label="Flight tabs — viewers pick a flight" />
+            <RadioOpt value="grid" label="Multi-screen grid — all flights on one screen (big monitor / TV)" />
+            <RadioOpt value="rotate" label="Auto-rotate — cycle through flights on a timer" />
+          </RadioGroup>
+          {design.flight_display_mode === "grid" && (
+            <div>
+              <Label className="text-xs">Boards per row: {design.flight_columns}</Label>
+              <Slider min={1} max={4} step={1} value={[design.flight_columns]} onValueChange={([v]) => update("flight_columns", v)} />
+            </div>
+          )}
+          {design.flight_display_mode === "rotate" && (
+            <div>
+              <Label className="text-xs">Seconds per flight: {design.flight_rotate_seconds}s</Label>
+              <Slider min={5} max={60} step={1} value={[design.flight_rotate_seconds]} onValueChange={([v]) => update("flight_rotate_seconds", v)} />
+            </div>
+          )}
+          <Check
+            label='Include a combined "Overall" leaderboard'
+            checked={design.flight_include_overall}
+            onChange={(v) => update("flight_include_overall", v)}
+          />
+        </section>
+
 
         {/* SCROLLING TICKER */}
         <section className="space-y-3 border-t pt-5">

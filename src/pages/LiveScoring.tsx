@@ -61,7 +61,10 @@ export default function LiveScoring() {
   const [viewMode, setViewMode] = useState<"all" | "single">("single");
   const [focusHole, setFocusHole] = useState<number>(1);
   const [teamName, setTeamName] = useState<string | null>(null);
+  // Flight/division this group belongs to — used to scope the leaderboard link.
+  const [flight, setFlight] = useState<{ id: string; name: string } | null>(null);
   const [restoring, setRestoring] = useState(true);
+
 
   const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
 
@@ -252,6 +255,26 @@ export default function LiveScoring() {
     setLoginMode(false);
     persistSession(sessionCode, gNum);
   };
+
+  // Resolve the group's flight so players see (and open) their own flight board.
+  useEffect(() => {
+    if (!tournament || players.length === 0) { return; }
+    (async () => {
+      const { data: regRows } = await (supabase as any)
+        .from("tournament_registrations")
+        .select("flight_id")
+        .in("id", players.map((p) => p.id));
+      const flightId = (regRows || []).map((r: any) => r.flight_id).find((v: any) => !!v);
+      if (!flightId) { setFlight(null); return; }
+      const { data: tier } = await (supabase as any)
+        .from("tournament_tiers")
+        .select("id, tier_name")
+        .eq("id", flightId)
+        .maybeSingle();
+      setFlight(tier ? { id: tier.id, name: tier.tier_name } : null);
+    })();
+  }, [tournament?.id, players]);
+
 
 
   const handleLogin = async () => {
@@ -946,10 +969,20 @@ export default function LiveScoring() {
 
 
         {slug && (
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t space-y-2">
+            {flight && (
+              <p className="text-xs text-center text-muted-foreground">
+                You are scoring in <span className="font-semibold text-foreground">{flight.name}</span>
+              </p>
+            )}
             <Button asChild variant="outline" className="w-full h-12">
-              <a href={`/live/${slug}`} target="_blank" rel="noopener noreferrer">
-                <Trophy className="h-4 w-4 mr-2" /> View Leaderboard →
+              <a
+                href={`/live/${slug}${flight ? `?flight=${flight.id}` : ""}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Trophy className="h-4 w-4 mr-2" /> {flight ? `${flight.name} Leaderboard` : "View Leaderboard"} →
+
               </a>
             </Button>
           </div>

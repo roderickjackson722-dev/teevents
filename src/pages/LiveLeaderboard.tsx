@@ -170,7 +170,11 @@ export default function LiveLeaderboard() {
   const [galleryIdx, setGalleryIdx] = useState(0);
   const [flights, setFlights] = useState<{ id: string; tier_name: string; display_order: number }[]>([]);
   const [regFlights, setRegFlights] = useState<Record<string, string | null>>({});
+  // Players arriving from their scoring page carry ?flight=<id|name> so they
+  // land on their own flight's board.
+  const requestedFlight = (search.get("flight") || "").trim();
   const [activeFlight, setActiveFlight] = useState<string>("__overall");
+
 
   // Load tournament
   useEffect(() => {
@@ -394,6 +398,37 @@ export default function LiveLeaderboard() {
     return () => clearInterval(t);
   }, [gallery.length]);
 
+  // Honor ?flight= (id or flight name) once flights have loaded.
+  useEffect(() => {
+    if (!requestedFlight || flights.length === 0) return;
+    const match = flights.find(
+      (f) => f.id === requestedFlight || f.tier_name.toLowerCase() === requestedFlight.toLowerCase(),
+    );
+    if (match) setActiveFlight(match.id);
+  }, [requestedFlight, flights]);
+
+  const flightMode = flights.length > 1 ? design.flight_display_mode || "tabs" : "tabs";
+
+  // Auto-rotate mode: cycle flights (and Overall, when included) on a timer.
+  const rotateKeys = useMemo(() => {
+    const keys = flights.map((f) => f.id);
+    if (design.flight_include_overall !== false) keys.push("__overall");
+    return keys;
+  }, [flights, design.flight_include_overall]);
+
+  useEffect(() => {
+    if (flightMode !== "rotate" || rotateKeys.length < 2) return;
+    const seconds = Math.max(5, design.flight_rotate_seconds || 15);
+    setActiveFlight(rotateKeys[0]);
+    const t = setInterval(() => {
+      setActiveFlight((cur) => {
+        const i = rotateKeys.indexOf(cur);
+        return rotateKeys[(i + 1) % rotateKeys.length];
+      });
+    }, seconds * 1000);
+    return () => clearInterval(t);
+  }, [flightMode, rotateKeys, design.flight_rotate_seconds]);
+
   const filteredScores = useMemo(() => {
     if (flights.length === 0 || activeFlight === "__overall") return scores;
     return scores.filter((s: any) => regFlights[s.registration_id] === activeFlight);
@@ -403,6 +438,28 @@ export default function LiveLeaderboard() {
     if (!tournament) return [];
     return buildLeaderboard(filteredScores, tournament);
   }, [filteredScores, tournament]);
+
+  // Grid mode: one board per flight (plus Overall when included) on one screen.
+  const flightBoards = useMemo(() => {
+    if (!tournament || flightMode !== "grid") return undefined;
+    const boards = flights.map((f) => ({
+      key: f.id,
+      label: f.tier_name,
+      rows: buildLeaderboard(
+        scores.filter((s: any) => regFlights[s.registration_id] === f.id),
+        tournament,
+      ).map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players })),
+    }));
+    if (design.flight_include_overall !== false) {
+      boards.push({
+        key: "__overall",
+        label: "Overall",
+        rows: buildLeaderboard(scores, tournament).map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players })),
+      });
+    }
+    return boards.length > 0 ? boards : undefined;
+  }, [tournament, flightMode, flights, scores, regFlights, design.flight_include_overall]);
+
 
   if (loading) {
     return (
@@ -437,7 +494,9 @@ export default function LiveLeaderboard() {
       ? null
       : flights.find((f) => f.id === activeFlight)?.tier_name || null;
   const baseTitle = tournament.leaderboard_title || tournament.title;
-  const displayTitle = activeFlightName ? `${baseTitle} — ${activeFlightName}` : baseTitle;
+  const displayTitle =
+    flightMode === "grid" ? baseTitle : activeFlightName ? `${baseTitle} — ${activeFlightName}` : baseTitle;
+
 
   const subtitleParts: string[] = [];
   if (tournament.course_name) subtitleParts.push(tournament.course_name);
@@ -456,8 +515,13 @@ export default function LiveLeaderboard() {
       }
     : null;
 
-  const flightTabs = flights.length > 0 ? (
-    <div className="w-full bg-background/80 backdrop-blur border-b border-border/60 px-3 py-2 flex flex-wrap gap-2 justify-center">
+  const flightTabs = flights.length > 0 && flightMode !== "grid" ? (
+    <div className="w-full bg-background/80 backdrop-blur border-b border-border/60 px-3 py-2 flex flex-wrap gap-2 justify-center items-center">
+      {flightMode === "rotate" && (
+        <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mr-1">
+          Now showing
+        </span>
+      )}
       {flights.map((f) => (
         <button
           key={f.id}
@@ -471,18 +535,22 @@ export default function LiveLeaderboard() {
           {f.tier_name}
         </button>
       ))}
-      <button
-        onClick={() => setActiveFlight("__overall")}
-        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
-          activeFlight === "__overall"
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground hover:bg-muted/70"
-        }`}
-      >
-        Overall
-      </button>
+      {(flightMode !== "rotate" || design.flight_include_overall !== false) && (
+        <button
+          onClick={() => setActiveFlight("__overall")}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+            activeFlight === "__overall"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:bg-muted/70"
+          }`}
+        >
+          Overall
+        </button>
+      )}
     </div>
   ) : null;
+
+
 
   return (
     <>
@@ -501,7 +569,10 @@ export default function LiveLeaderboard() {
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         subtitle={subtitle}
+        boards={flightBoards}
+        boardColumns={design.flight_columns || 2}
         presentedBy={presentedBy}
+
         topNotice={
           <>
             {returnToScoring ? (

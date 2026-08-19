@@ -51,6 +51,10 @@ export default function GroupScoring() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // The flight (division) this scoring code belongs to. Scores are always saved
+  // for this group only, and the leaderboard link opens on this flight.
+  const [flight, setFlight] = useState<{ id: string; name: string } | null>(null);
+
 
   useEffect(() => {
     if (!slug || !code) return;
@@ -123,6 +127,25 @@ export default function GroupScoring() {
       setLoading(false);
     })();
   }, [slug, code]);
+  // Resolve which flight/division this group plays in.
+  useEffect(() => {
+    if (!tournament || players.length === 0) return;
+    (async () => {
+      const { data: regRows } = await (supabase as any)
+        .from("tournament_registrations")
+        .select("flight_id")
+        .in("id", players.map((p) => p.id));
+      const flightId = (regRows || []).map((r: any) => r.flight_id).find((v: any) => !!v);
+      if (!flightId) { setFlight(null); return; }
+      const { data: tier } = await (supabase as any)
+        .from("tournament_tiers")
+        .select("id, tier_name")
+        .eq("id", flightId)
+        .maybeSingle();
+      if (tier) setFlight({ id: tier.id, name: tier.tier_name });
+    })();
+  }, [tournament?.id, players]);
+
 
   // Realtime updates from other devices in the group
   useEffect(() => {
@@ -324,19 +347,27 @@ export default function GroupScoring() {
             <Trophy className="h-4 w-4 text-secondary shrink-0" />
             <span className="truncate">{tournament.title}</span>
           </h1>
-          <p className="text-xs text-muted-foreground">Group {code}</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-2">
+            <span>Group {code}</span>
+            {flight && (
+              <span className="inline-flex items-center rounded-full bg-secondary/15 text-secondary-foreground px-2 py-0.5 font-semibold">
+                {flight.name}
+              </span>
+            )}
+          </p>
         </div>
         {tournament.live_leaderboard_enabled && tournament.slug && (
           <Button asChild variant="outline" size="sm">
             <a
-              href={`/live/${tournament.slug}?from=${encodeURIComponent(`/score/${slug}/${code}`)}`}
+              href={`/live/${tournament.slug}?from=${encodeURIComponent(`/score/${slug}/${code}`)}${flight ? `&flight=${flight.id}` : ""}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              📊 View Live Leaderboard
+              📊 {flight ? `${flight.name} Leaderboard` : "View Live Leaderboard"}
             </a>
           </Button>
         )}
+
 
       </header>
 

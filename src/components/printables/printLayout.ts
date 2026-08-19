@@ -5,7 +5,7 @@
  * reused by the Playwright PDF regression test.
  */
 
-export type PrintTargetId = "cartsign" | "scorecard";
+export type PrintTargetId = "cartsign" | "cartsign2up" | "scorecard";
 
 export interface PrintTarget {
   id: PrintTargetId;
@@ -18,14 +18,22 @@ export interface PrintTarget {
 
 export const PRINT_TARGETS: Record<PrintTargetId, PrintTarget> = {
   cartsign: { id: "cartsign", label: "Cart sign", widthIn: 36, heightIn: 8 },
+  // Two 8in H x 36in W signs stacked on one sheet — the course cuts it in half
+  cartsign2up: { id: "cartsign2up", label: "Cart signs (2 per page)", widthIn: 36, heightIn: 16 },
   // Landscape letter so all 18 holes fit on a single line
   scorecard: { id: "scorecard", label: "Scorecard", widthIn: 11, heightIn: 8.5 },
 };
+
+/** Cart sign page target for the chosen signs-per-page setting. */
+export function cartSignTarget(signsPerPage: number | undefined): PrintTarget {
+  return (signsPerPage ?? 2) >= 2 ? PRINT_TARGETS.cartsign2up : PRINT_TARGETS.cartsign;
+}
 
 /** Human size label, always stated as height x width to match print shops. */
 export function sizeLabel(target: PrintTarget): string {
   return `${target.heightIn}in H × ${target.widthIn}in W`;
 }
+
 
 
 /** CSS pixels per inch used by print engines for absolute units. */

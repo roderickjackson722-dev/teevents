@@ -1,4 +1,4 @@
-import { cartSignPageCss, scorecardPageCss, type PrintFitOptions } from "./printLayout";
+import { buildPageCss, cartSignTarget, cartSignPageCss, scorecardPageCss, type PrintFitOptions } from "./printLayout";
 
 export function openPrintWindow(title: string, bodyHtml: string, fontImport?: string, pageCss?: string) {
   const w = window.open("", "_blank");
@@ -71,8 +71,10 @@ export const CART_SIGN_PAGE_CSS = cartSignPageCss();
 /** Page CSS for team scorecards: 8in wide x 6in tall (default scale/margin) */
 export const SCORECARD_PAGE_CSS = scorecardPageCss();
 
-/** Cart sign page CSS honoring the organizer's PDF scale / margin settings */
-export const cartSignCss = (options?: PrintFitOptions) => cartSignPageCss(options);
+/** Cart sign page CSS honoring the organizer's PDF scale / margin and signs-per-page settings */
+export const cartSignCss = (options?: PrintFitOptions, signsPerPage?: number) =>
+  buildPageCss(cartSignTarget(signsPerPage), options);
+
 /** Scorecard page CSS honoring the organizer's PDF scale / margin settings */
 export const scorecardCss = (options?: PrintFitOptions) => scorecardPageCss(options);
 

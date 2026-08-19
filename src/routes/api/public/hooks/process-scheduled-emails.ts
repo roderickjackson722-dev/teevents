@@ -44,15 +44,34 @@ async function run() {
       .select("id");
     if (!claimed || claimed.length === 0) continue;
 
-    const ids: string[] | null = Array.isArray(job.recipient_ids) && job.recipient_ids.length > 0
-      ? job.recipient_ids
+    let ids: string[] | null = Array.isArray(job.recipient_ids) && job.recipient_ids.length > 0
+      ? job.recipient_ids.map((x: unknown) => String(x))
       : null;
 
     const isDayBefore = job.template_kind === "day_before";
     const fnName = isDayBefore ? "send-day-before-reminder" : "resend-confirmation";
+
+    // Everyone: resolve the tournament's registrants (the confirmation-style
+    // function requires an explicit id list).
+    if (!ids && !isDayBefore) {
+      const { data: regs } = await admin
+        .from("tournament_registrations")
+        .select("id, email")
+        .eq("tournament_id", job.tournament_id);
+      ids = ((regs ?? []) as any[]).filter((r) => r.email).map((r) => r.id);
+      if (ids.length === 0) {
+        await admin
+          .from("scheduled_emails")
+          .update({ status: "failed", error: "No registrants with an email address" })
+          .eq("id", job.id);
+        results.push({ id: job.id, status: "failed", error: "No recipients" });
+        continue;
+      }
+    }
+
     const body: Record<string, unknown> = isDayBefore
-      ? { tournament_id: job.tournament_id }
-      : { use_custom_template: true, template_kind: job.template_kind, tournament_id: job.tournament_id };
+      ? { tournament_id: job.tournament_id, service_run: true }
+      : { use_custom_template: true, template_kind: job.template_kind, tournament_id: job.tournament_id, service_run: true };
     if (ids) body["registration_ids"] = ids;
 
     try {

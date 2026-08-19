@@ -47,6 +47,17 @@ interface Props {
 
 const emptyDraft = { tier_name: "", tier_description: "", display_order: 0, is_active: true };
 
+const divisionKey = (name: string) => name
+  .trim()
+  .toLowerCase()
+  .replace(/\b(divisions?|flights?)\b/g, "")
+  .replace(/\bprofessionals?\b/g, "pro")
+  .replace(/\bsenior amateurs?\b/g, "senior")
+  .replace(/\bamateurs?\b/g, "amateur")
+  .replace(/\bjuniors?\b/g, "junior")
+  .replace(/\s+/g, " ")
+  .trim();
+
 
 export default function FlightsManager({ tournamentId }: Props) {
   const { toast } = useToast();
@@ -275,7 +286,8 @@ export default function FlightsManager({ tournamentId }: Props) {
       )];
       if (usedNames.length === 0) throw new Error("No registration divisions/tiers found on the roster yet");
 
-      const missing = usedNames.filter((n) => !flights.some((f) => f.tier_name === n));
+      const existingFlightKeys = new Set(flights.map((flight) => divisionKey(flight.tier_name)));
+      const missing = usedNames.filter((name) => !existingFlightKeys.has(divisionKey(name)));
       if (missing.length) {
         const { error } = await (supabase as any).from("tournament_tiers").insert(
           missing.map((n, i) => ({
@@ -293,11 +305,11 @@ export default function FlightsManager({ tournamentId }: Props) {
         .from("tournament_tiers")
         .select("id, tier_name")
         .eq("tournament_id", tournamentId);
-      const idByName = new Map<string, string>((allFlights || []).map((f: any) => [f.tier_name, f.id]));
+      const idByDivision = new Map<string, string>((allFlights || []).map((f: any) => [divisionKey(f.tier_name), f.id]));
 
       let assigned = 0;
       for (const t of regTiers) {
-        const flightId = idByName.get(t.name);
+        const flightId = idByDivision.get(divisionKey(t.name));
         const ids = players.filter((p) => p.tier_id === t.id && p.flight_id !== flightId).map((p) => p.id);
         if (!flightId || ids.length === 0) continue;
         const { error } = await (supabase as any)

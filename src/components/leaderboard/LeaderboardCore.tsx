@@ -6,7 +6,22 @@ export interface LbRow {
   total: number;
   thru: number;
   players?: string[];
+  /** Stable key used for scorecard drill-down (registration id or group key). */
+  key?: string;
+  /** Secondary line under the name (division / flight / team). */
+  subtitle?: string;
+  /** Strokes recorded in the round currently in play. */
+  today?: number | null;
+  /** Par for the holes actually played — drives an accurate multi-round To Par. */
+  parPlayed?: number | null;
+  /** Par for the holes played in the current round. */
+  parToday?: number | null;
+  /** Completed totals for each earlier round, keyed by round number. */
+  roundTotals?: Record<number, number>;
+  /** Hole-by-hole strokes per round: { 1: { 1: 4, 2: 5 } }. */
+  holesByRound?: Record<number, Record<number, number>>;
 }
+
 
 export interface LbSponsor {
   id: string;

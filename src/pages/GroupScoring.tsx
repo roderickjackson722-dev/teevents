@@ -347,19 +347,27 @@ export default function GroupScoring() {
             <Trophy className="h-4 w-4 text-secondary shrink-0" />
             <span className="truncate">{tournament.title}</span>
           </h1>
-          <p className="text-xs text-muted-foreground">Group {code}</p>
+          <p className="text-xs text-muted-foreground flex items-center gap-2">
+            <span>Group {code}</span>
+            {flight && (
+              <span className="inline-flex items-center rounded-full bg-secondary/15 text-secondary-foreground px-2 py-0.5 font-semibold">
+                {flight.name}
+              </span>
+            )}
+          </p>
         </div>
         {tournament.live_leaderboard_enabled && tournament.slug && (
           <Button asChild variant="outline" size="sm">
             <a
-              href={`/live/${tournament.slug}?from=${encodeURIComponent(`/score/${slug}/${code}`)}`}
+              href={`/live/${tournament.slug}?from=${encodeURIComponent(`/score/${slug}/${code}`)}${flight ? `&flight=${flight.id}` : ""}`}
               target="_blank"
               rel="noopener noreferrer"
             >
-              📊 View Live Leaderboard
+              📊 {flight ? `${flight.name} Leaderboard` : "View Live Leaderboard"}
             </a>
           </Button>
         )}
+
 
       </header>
 

@@ -359,7 +359,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                         {yards && yards.some((d) => (d || 0) > 0) &&
                           renderRow("Yardage", yards, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground")}
                         {si && si.some((d) => (d || 0) > 0) &&
-                          renderRow("Hole HCP", si, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground")}
+                          renderRow("Hole HCP", si, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground", true)}
                         {renderRow("Par", pars, "border border-border px-1.5 py-1 text-center text-muted-foreground")}
                         <tr>
                           <td className="border border-border px-2 py-3 text-left font-semibold text-foreground whitespace-nowrap">Score</td>

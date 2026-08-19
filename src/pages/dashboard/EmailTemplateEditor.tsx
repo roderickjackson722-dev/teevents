@@ -1643,31 +1643,31 @@ export default function EmailTemplateEditor() {
           <div className="bg-card rounded-lg border p-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" /> Players ({registrations.length})
+                <Users className="h-4 w-4 text-primary" /> Players ({filteredRegistrations.length})
               </h3>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={selectAll}>
-                  {selectedRecipients.length === registrations.length && registrations.length > 0 ? "Deselect All" : "Select All"}
+                  {selectedRecipients.length === filteredRegistrations.length && filteredRegistrations.length > 0 ? "Deselect All" : "Select All"}
                 </Button>
                 <Badge variant="secondary">{selectedRecipients.length} selected</Badge>
               </div>
             </div>
+            <div className="mb-3"><PaymentFilterToggle /></div>
             <Input
               placeholder="Search by name or email…"
               value={recipientSearch}
               onChange={(e) => setRecipientSearch(e.target.value)}
               className="mb-3"
             />
-            {registrations.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-6">No registrations found for this tournament.</p>
+            {visibleRegistrations.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-6">
+                {registrations.length === 0
+                  ? "No registrations found for this tournament."
+                  : `No ${paymentFilter === "all" ? "" : paymentFilter + " "}players match this filter.`}
+              </p>
             ) : (
               <div className="max-h-[400px] overflow-y-auto divide-y">
-                {registrations
-                  .filter((r) => {
-                    const q = recipientSearch.trim().toLowerCase();
-                    if (!q) return true;
-                    return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
-                  })
+                {visibleRegistrations
                   .map(r => (
                   <div key={r.id} className="py-1">
                   <div className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">

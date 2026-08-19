@@ -2,11 +2,27 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Settings2, Save, Loader2, QrCode, Users } from "lucide-react";
+import { Settings2, Save, Loader2, QrCode, Users, List } from "lucide-react";
 import type { PrintableAddon } from "./QRCodesTab";
 import type { PrintablesDataSource } from "./rosterSource";
 
+/** Columns an organizer can show on the printed Alpha List. */
+export const ALPHA_COLUMNS = [
+  { id: "index", label: "Row number (#)" },
+  { id: "last_name", label: "Last name" },
+  { id: "first_name", label: "First name" },
+  { id: "hole", label: "Starting hole" },
+  { id: "tee_time", label: "Tee time" },
+  { id: "group", label: "Group / team" },
+  { id: "email", label: "Email" },
+  { id: "scoring_code", label: "Scoring code" },
+  { id: "checked_in", label: "Checked in" },
+] as const;
+
+export type AlphaColumnId = (typeof ALPHA_COLUMNS)[number]["id"];
+
 export interface PrintableOptions {
+  alpha_columns: AlphaColumnId[];
   show_scoring_codes_alpha: boolean;
   show_scoring_codes_holes: boolean;
   qr_walkup: boolean;
@@ -16,6 +32,7 @@ export interface PrintableOptions {
 }
 
 export const DEFAULT_PRINTABLE_OPTIONS: PrintableOptions = {
+  alpha_columns: ["index", "last_name", "first_name", "hole", "tee_time"],
   show_scoring_codes_alpha: true,
   show_scoring_codes_holes: true,
   qr_walkup: false,
@@ -37,6 +54,16 @@ interface Props {
 export default function PrintablesOptionsCard({ options, addons, saving, dirty, onChange, onSave }: Props) {
   const set = <K extends keyof PrintableOptions>(key: K, value: PrintableOptions[K]) =>
     onChange({ ...options, [key]: value });
+
+  const toggleAlphaColumn = (id: AlphaColumnId, on: boolean) =>
+    set(
+      "alpha_columns",
+      on
+        ? (ALPHA_COLUMNS.map((c) => c.id).filter(
+            (c) => c === id || options.alpha_columns.includes(c),
+          ) as AlphaColumnId[])
+        : options.alpha_columns.filter((c) => c !== id),
+    );
 
   const toggleAddon = (id: string, on: boolean) =>
     set("qr_addon_ids", on ? [...options.qr_addon_ids, id] : options.qr_addon_ids.filter((x) => x !== id));
@@ -86,7 +113,24 @@ export default function PrintablesOptionsCard({ options, addons, saving, dirty, 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-3">
 
-          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Scoring Codes</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide flex items-center gap-1">
+            <List className="h-3.5 w-3.5" /> Alpha List Columns
+          </p>
+          <p className="text-xs text-muted-foreground">Choose exactly what prints on the alphabetical player list.</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2">
+            {ALPHA_COLUMNS.map((c) => (
+              <div key={c.id} className="flex items-center justify-between gap-2">
+                <Label htmlFor={`opt-col-${c.id}`} className="text-sm cursor-pointer font-normal">{c.label}</Label>
+                <Switch
+                  id={`opt-col-${c.id}`}
+                  checked={options.alpha_columns.includes(c.id)}
+                  onCheckedChange={(v) => toggleAlphaColumn(c.id, v)}
+                />
+              </div>
+            ))}
+          </div>
+
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide pt-2">Scoring Codes</p>
           <div className="flex items-center justify-between gap-3">
             <Label htmlFor="opt-alpha" className="text-sm cursor-pointer">Show scoring codes on Alpha List</Label>
             <Switch id="opt-alpha" checked={options.show_scoring_codes_alpha} onCheckedChange={(v) => set("show_scoring_codes_alpha", v)} />

@@ -79,6 +79,20 @@ export default function FlightPayoutPlanner({
   /** use the real, manually-assigned flights when the organizer picked "custom" */
   const useActual = method === "custom" && enabled && !!actualFlights?.length;
 
+  const flightNames = useMemo(
+    () =>
+      useActual
+        ? actualFlights!.map((f) => f.name)
+        : Array.from({ length: enabled ? flights : 1 }, (_, i) => flightLabel(i)),
+    [useActual, actualFlights, enabled, flights],
+  );
+
+  /** flight names the organizer excluded from the purse (e.g. junior flight) */
+  const [excluded, setExcluded] = useState<string[]>([]);
+  const isPaid = (name: string) => !excluded.includes(name);
+  const toggleFlightPaid = (name: string, paid: boolean) =>
+    setExcluded((prev) => (paid ? prev.filter((n) => n !== name) : prev.includes(name) ? prev : [...prev, name]));
+
   const plan = useMemo(
     () =>
       buildPayoutPlan({
@@ -87,8 +101,10 @@ export default function FlightPayoutPlanner({
         flights: enabled ? flights : 1,
         flightSizes: useActual ? actualFlights!.map((f) => f.players) : null,
         names: useActual ? actualFlights!.map((f) => f.name) : null,
+        paidFlights: flightNames.map((n) => isPaid(n)),
       }),
-    [fieldSize, totalPurseCents, flights, enabled, useActual, actualFlights],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fieldSize, totalPurseCents, flights, enabled, useActual, actualFlights, flightNames, excluded],
   );
 
   const validationIssues = useMemo(() => {
@@ -98,7 +114,10 @@ export default function FlightPayoutPlanner({
     if (assigned === 0) issues.push("No players in the field yet, so no payouts can be calculated.");
     if (unassignedCount > 0)
       issues.push(`${unassignedCount} player${unassignedCount === 1 ? " is" : "s are"} not assigned to a flight and will not be paid.`);
+    if (plan.flights.every((f) => !f.paid) && totalPurseCents > 0)
+      issues.push("Every flight is excluded from the purse — no payouts will be made.");
     plan.flights.forEach((f) => {
+      if (!f.paid) return;
       if (f.players === 0) issues.push(`${f.name} has no players — it will receive no purse.`);
       const paid = f.places.reduce((s, p) => s + p.amountCents, 0);
       if (f.players > 0 && Math.abs(paid - f.purseCents) > 5)
@@ -108,6 +127,7 @@ export default function FlightPayoutPlanner({
       issues.push(`Rounding remainder of ${money(plan.remainderCents)} will stay with the organizer.`);
     return issues;
   }, [plan, totalPurseCents, unassignedCount]);
+
 
 
   const maxPlaces = Math.max(1, ...plan.flights.map((f) => f.places.length));

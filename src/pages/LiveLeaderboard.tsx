@@ -691,9 +691,12 @@ export default function LiveLeaderboard() {
       <LeaderboardRenderer
         design={design}
         title={displayTitle}
-        rows={leaderboard.map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players }))}
+        rows={leaderboard}
         isStableford={isStableford}
         coursePar={tournament.course_par || 72}
+        rounds={rounds}
+        currentRound={currentRound}
+        onRowClick={(row) => setScorecardRow(row as LeaderboardRow)}
         bannerSponsor={bannerSponsor}
         sidebarSponsors={sidebarSponsors}
         footerSponsors={footerSponsors}
@@ -706,6 +709,7 @@ export default function LiveLeaderboard() {
         boards={flightBoards}
         boardColumns={design.flight_columns || 2}
         presentedBy={presentedBy}
+
 
         topNotice={
           <>

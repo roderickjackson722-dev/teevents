@@ -2015,7 +2015,14 @@ const Players = () => {
 
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          {currentTournamentObj?.id && (
+            <PublicPairingsPageEditor
+              tournamentId={currentTournamentObj.id}
+              slug={currentTournamentObj.slug}
+              config={(currentTournamentObj as any).pairings_page_config}
+            />
+          )}
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>
             <SelectTrigger className="w-[240px] bg-card">
               <Trophy className="h-4 w-4 mr-2 text-primary" />
@@ -2028,6 +2035,7 @@ const Players = () => {
             </SelectContent>
           </Select>
         </div>
+
       </div>
 
       {/* View Toggle + Actions */}

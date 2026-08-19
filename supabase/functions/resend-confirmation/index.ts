@@ -407,7 +407,9 @@ Deno.serve(async (req) => {
             scoring_link: (tournament as any).slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
             leaderboard_link: (tournament as any).slug ? `https://www.teevents.golf/live/${(tournament as any).slug}` : "https://www.teevents.golf",
             event_homepage: homepage,
+            pairings_link: pairingsLink,
           };
+
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
           regSubject = subject;
           regTeeTime = vars.tee_time;

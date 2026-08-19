@@ -398,11 +398,14 @@ export default function FlightPayoutPlanner({
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {plan.flights.map((f) => (
-              <div key={`v-${f.name}`} className="rounded-md border bg-muted/30 p-3 space-y-1">
+              <div key={`v-${f.name}`} className={`rounded-md border bg-muted/30 p-3 space-y-1${f.paid ? "" : " opacity-70"}`}>
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-sm">{f.name}</span>
-                  <Badge variant="outline" className="text-xs">{f.players} players</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {f.paid ? `${f.players} players` : "Excluded from purse"}
+                  </Badge>
                 </div>
+
                 <div className="text-sm">
                   <span className="text-muted-foreground">Flight purse: </span>
                   <span className="font-semibold">{money(f.purseCents)}</span>

@@ -1561,7 +1561,7 @@ const Players = () => {
       toast({ title: "No holes to assign", variant: "destructive" });
       return;
     }
-    const dayLabel = tournamentDays[activeDay] || "Day 1";
+    const dayLabel = `Round ${activeDay + 1}${roundDateOf(activeDay) ? ` (${roundDateOf(activeDay)})` : ""}`;
     const next: Record<number, string> = {};
     if (startFormat === "shotgun") {
       if (!/^\d{1,2}:\d{2}/.test(shotgunTime)) {

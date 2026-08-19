@@ -102,11 +102,16 @@ export default function PublicPairings() {
             <p className="text-sm text-muted-foreground mt-1">{info?.title}</p>
           )}
           <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-            {cfg.show_date && info?.event_date && (
-              <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4" />{new Date(`${info.event_date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
+            {cfg.show_date && (cfg.date_text?.trim() || cfg.date_override?.trim() || info?.event_date) && (
+              <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4" />{
+                cfg.date_text?.trim()
+                  ? cfg.date_text
+                  : new Date(`${cfg.date_override?.trim() || info?.event_date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+              }</span>
             )}
-            {cfg.show_course && info?.course_name && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{info.course_name}</span>}
+            {cfg.show_course && (cfg.course_override?.trim() || info?.course_name) && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{cfg.course_override?.trim() || info?.course_name}</span>}
           </div>
+
           {cfg.intro?.trim() && (
             <p className="mt-4 text-sm text-foreground/80 whitespace-pre-line">{cfg.intro}</p>
           )}
@@ -155,17 +160,18 @@ export default function PublicPairings() {
           })}
         </div>
 
-        {(cfg.footer_note?.trim() || (cfg.show_contact && info?.contact_email)) && (
+        {(cfg.footer_note?.trim() || (cfg.show_contact && (cfg.contact_override?.trim() || info?.contact_email))) && (
           <div className="mt-8 text-center text-xs text-muted-foreground space-y-1">
             {cfg.footer_note?.trim() && <p>{cfg.footer_note}</p>}
-            {cfg.show_contact && info?.contact_email && (
+            {cfg.show_contact && (cfg.contact_override?.trim() || info?.contact_email) && (
               <p className="flex items-center justify-center gap-1">
                 <Mail className="h-3 w-3" />
-                <a href={`mailto:${info.contact_email}`} className="underline">{info.contact_email}</a>
+                <a href={`mailto:${cfg.contact_override?.trim() || info?.contact_email}`} className="underline">{cfg.contact_override?.trim() || info?.contact_email}</a>
               </p>
             )}
           </div>
         )}
+
       </div>
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         <a href="/" className="hover:underline">TeeVents</a>

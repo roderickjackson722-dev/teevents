@@ -357,8 +357,13 @@ export default function FlightPayoutPlanner({
               </TableHeader>
               <TableBody>
                 {plan.flights.map((f) => (
-                  <TableRow key={f.name}>
-                    <TableCell className="font-medium">{f.name}</TableCell>
+                  <TableRow key={f.name} className={f.paid ? undefined : "opacity-60"}>
+                    <TableCell className="font-medium">
+                      {f.name}
+                      {!f.paid && (
+                        <Badge variant="outline" className="ml-2 text-[10px]">No purse</Badge>
+                      )}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{f.range}</TableCell>
                     <TableCell className="text-right">{f.players}</TableCell>
                     <TableCell className="text-right font-medium">{money(f.purseCents)}</TableCell>
@@ -369,6 +374,7 @@ export default function FlightPayoutPlanner({
                     ))}
                   </TableRow>
                 ))}
+
               </TableBody>
             </Table>
           </div>

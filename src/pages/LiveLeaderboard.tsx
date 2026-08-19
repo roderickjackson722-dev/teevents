@@ -556,10 +556,20 @@ export default function LiveLeaderboard() {
     return scores.filter((s: any) => regFlights[s.registration_id] === activeFlight);
   }, [scores, regFlights, flights.length, activeFlight]);
 
+  const holePars = (course?.hole_pars as number[] | null) || null;
+
   const leaderboard = useMemo(() => {
     if (!tournament) return [];
-    return buildLeaderboard(filteredScores, tournament);
-  }, [filteredScores, tournament]);
+    return buildLeaderboard(filteredScores, tournament, holePars);
+  }, [filteredScores, tournament, holePars]);
+
+  /** Rounds that have posted scores, and the round currently in play. */
+  const rounds = useMemo(() => {
+    const set = new Set<number>();
+    scores.forEach((s: any) => set.add(Number(s.round_number) || 1));
+    return Array.from(set).sort((a, b) => a - b);
+  }, [scores]);
+  const currentRound = rounds.length ? rounds[rounds.length - 1] : 1;
 
   // Grid mode: one board per flight (plus Overall when included) on one screen.
   const flightBoards = useMemo(() => {
@@ -570,17 +580,19 @@ export default function LiveLeaderboard() {
       rows: buildLeaderboard(
         scores.filter((s: any) => regFlights[s.registration_id] === f.id),
         tournament,
-      ).map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players })),
+        holePars,
+      ),
     }));
     if (design.flight_include_overall !== false) {
       boards.push({
         key: "__overall",
         label: "Overall",
-        rows: buildLeaderboard(scores, tournament).map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players })),
+        rows: buildLeaderboard(scores, tournament, holePars),
       });
     }
     return boards.length > 0 ? boards : undefined;
-  }, [tournament, flightMode, flights, scores, regFlights, design.flight_include_overall]);
+  }, [tournament, flightMode, flights, scores, regFlights, design.flight_include_overall, holePars]);
+
 
 
   if (loading) {

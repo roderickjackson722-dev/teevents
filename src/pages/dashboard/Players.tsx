@@ -2829,7 +2829,7 @@ const Players = () => {
                 <div>
                   <p className="text-sm font-semibold text-destructive">
                     {pairingConflicts.length} scheduling conflict{pairingConflicts.length === 1 ? "" : "s"} to review
-                    {numDays > 1 ? ` (Day ${activeDay + 1})` : ""}
+                    {numRounds > 1 ? ` (Round ${activeDay + 1})` : ""}
                   </p>
                   <ul className="mt-1 list-disc pl-5 text-xs text-foreground space-y-0.5">
                     {pairingConflicts.map((c, i) => <li key={i}>{c}</li>)}
@@ -2845,7 +2845,7 @@ const Players = () => {
               <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5">
                 <ShieldCheck className="h-4 w-4 text-primary" />
                 <p className="text-xs text-muted-foreground">
-                  No tee time or starting-hole conflicts detected{numDays > 1 ? ` for Day ${activeDay + 1}` : ""}.
+                  No tee time or starting-hole conflicts detected{numRounds > 1 ? ` for Round ${activeDay + 1}` : ""}.
                 </p>
               </div>
             )
@@ -2921,7 +2921,7 @@ const Players = () => {
                 </Select>
               </div>
               <p className="text-[11px] text-muted-foreground pb-2">
-                {numDays > 1
+                {numRounds > 1
                   ? "Each round can use its own format, hole count, and start type."
                   : "Set the format and hole count for this round."}
               </p>
@@ -3080,8 +3080,8 @@ const Players = () => {
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               {startFormat === "tee_times"
-                ? `Click "Assign Tee Times" to auto-assign tee times in ${teeInterval}-minute intervals from ${fmtTee12(firstTeeTime)}${numDays > 1 ? ` for Day ${activeDay + 1}` : ""}. You can still manually edit any tee time afterwards — manual edits are kept and hole numbers are never auto-assigned for a tee time start.`
-                : `All holes tee off at ${fmtTee12(shotgunTime)}${numDays > 1 ? ` on Day ${activeDay + 1}` : ""}. Individual hole overrides still apply below.`}
+                ? `Click "Assign Tee Times" to auto-assign tee times in ${teeInterval}-minute intervals from ${fmtTee12(firstTeeTime)}${numRounds > 1 ? ` for Round ${activeDay + 1}` : ""}. You can still manually edit any tee time afterwards — manual edits are kept and hole numbers are never auto-assigned for a tee time start.`
+                : `All holes tee off at ${fmtTee12(shotgunTime)}${numRounds > 1 ? ` on Round ${activeDay + 1}` : ""}. Individual hole overrides still apply below.`}
             </p>
 
           </div>

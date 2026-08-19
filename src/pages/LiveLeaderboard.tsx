@@ -311,6 +311,22 @@ export default function LiveLeaderboard() {
     })();
   }, [slug, isPreview]);
 
+  // Course pars / stroke indexes / yardages for To Par and the scorecard modal.
+  useEffect(() => {
+    if (!tournament) return;
+    supabase
+      .from("golf_courses")
+      .select("stroke_indexes, hole_pars, hole_distances, name, tee_name")
+      .eq("tournament_id", tournament.id)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setCourse(data as unknown as ScorecardCourseInfo);
+      });
+  }, [tournament?.id]);
+
+
+
 
 
   // Load related data

@@ -135,10 +135,12 @@ export default function PublicPairings() {
             const tee = formatTeeTime(teeTimeForGroup(pairingsCfg, g.number) || g.players[0]?.tee_time);
             const flight = g.players.map((p) => p.flight_name).find(Boolean);
             const teamName = cfg.show_team_names ? g.players[0]?.team_name : null;
-            // Starting hole comes from the organizer's Pairings setup first; never the group number.
+            // Starting hole mirrors the Pairings tab: the saved hole label, then the
+            // group's assigned starting hole — never the group number.
             const hole =
-              startingHoleLabelForGroup(pairingsCfg, g.number) ??
-              (g.players[0]?.starting_hole != null ? String(g.players[0].starting_hole) : null);
+              pairingsCfg.labels[String(g.number)] ||
+              (g.players[0]?.starting_hole != null ? String(g.players[0].starting_hole) : null) ||
+              startingHoleLabelForGroup(pairingsCfg, g.number);
             return (
               <div key={g.number} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">

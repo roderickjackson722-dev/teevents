@@ -17,7 +17,7 @@ import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions
 import { rosterForPrintables } from "@/components/printables/rosterSource";
 import type { RegistrationGroupRow } from "@/components/printables/teamGrouping";
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
-import { parsePairingsConfig, startingHoleForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
+import { parsePairingsConfig, roundDateFor, startingHoleForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 
 
 interface TournamentWithSlug extends Tournament {
@@ -38,6 +38,8 @@ const Printables = () => {
   const [savingOptions, setSavingOptions] = useState(false);
   const [groups, setGroups] = useState<RegistrationGroupRow[]>([]);
   const [groupsRefresh, setGroupsRefresh] = useState(0);
+  /** Which pairings round the printables reflect (tee times, starting holes, date). */
+  const [round, setRound] = useState(0);
 
   useEffect(() => {
     if (!selectedTournament) { setGroups([]); return; }
@@ -136,16 +138,32 @@ const Printables = () => {
     () => parsePairingsConfig((tournament as any)?.pairings_config),
     [tournament],
   );
+  const numRounds = Math.max(1, pairingsCfg.rounds);
+  useEffect(() => { if (round >= numRounds) setRound(0); }, [numRounds, round]);
+
+  /** Round play date from pairings wins over the tournament start date. */
+  const roundDate = useMemo(
+    () => roundDateFor(pairingsCfg, round, (tournament as any)?.date ?? null),
+    [pairingsCfg, round, tournament],
+  );
+
+  /** Every printable renders the selected round's date. */
+  const printTournament = useMemo(
+    () => (tournament ? ({ ...(tournament as any), date: roundDate } as TournamentWithSlug) : null),
+    [tournament, roundDate],
+  );
 
   /** Groups carry the pairings starting hole + tee time so every printable matches the tee sheet. */
   const printGroups = useMemo(
     () =>
       groups.map((g) => ({
         ...g,
-        starting_hole: g.starting_hole ?? startingHoleForGroup(pairingsCfg, g.group_number),
-        tee_time: g.tee_time || teeTimeForGroup(pairingsCfg, g.group_number),
+        starting_hole:
+          (round === 0 ? g.starting_hole : null) ?? startingHoleForGroup(pairingsCfg, g.group_number, round),
+        tee_time:
+          teeTimeForGroup(pairingsCfg, g.group_number, round) || (round === 0 ? g.tee_time : null),
       })),
-    [groups, pairingsCfg],
+    [groups, pairingsCfg, round],
   );
 
   // Printables mirror the Players & Pairings roster: paid players only, no duplicates.
@@ -155,11 +173,14 @@ const Printables = () => {
       const g = printGroups.find((x) => x.group_number != null && x.group_number === r.group_number);
       return {
         ...r,
-        starting_hole: g?.starting_hole ?? startingHoleForGroup(pairingsCfg, r.group_number ?? null),
-        tee_time: g?.tee_time || (r as any).tee_time || teeTimeForGroup(pairingsCfg, r.group_number ?? null),
+        starting_hole: g?.starting_hole ?? startingHoleForGroup(pairingsCfg, r.group_number ?? null, round),
+        tee_time:
+          g?.tee_time ||
+          teeTimeForGroup(pairingsCfg, r.group_number ?? null, round) ||
+          (round === 0 ? (r as any).tee_time : null),
       } as Registration;
     });
-  }, [registrations, options.data_source, printGroups, pairingsCfg]);
+  }, [registrations, options.data_source, printGroups, pairingsCfg, round]);
 
   const handleUpdateHole = (regId: string, newGroup: number | null) => {
     setRegistrations((prev) =>
@@ -192,6 +213,25 @@ const Printables = () => {
           <h1 className="text-3xl font-display font-bold text-foreground">Printables</h1>
           <p className="text-muted-foreground mt-1">Generate print-ready materials for your tournament.</p>
         </div>
+        <div className="flex items-center gap-2">
+        {numRounds > 1 && (
+          <Select value={String(round)} onValueChange={(v) => setRound(Number(v))}>
+            <SelectTrigger className="w-[190px] bg-card">
+              <SelectValue placeholder="Round" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: numRounds }).map((_, idx) => {
+                const d = roundDateFor(pairingsCfg, idx, (tournament as any)?.date ?? null);
+                const dt = d ? new Date(`${String(d).slice(0, 10)}T00:00:00`) : null;
+                return (
+                  <SelectItem key={idx} value={String(idx)}>
+                    Round {idx + 1}{dt ? ` · ${dt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}
+                  </SelectItem>
+                );
+              })}
+            </SelectContent>
+          </Select>
+        )}
         <Select value={selectedTournament} onValueChange={setSelectedTournament}>
           <SelectTrigger className="w-[280px] bg-card">
             <Trophy className="h-4 w-4 mr-2 text-primary" />
@@ -203,6 +243,7 @@ const Printables = () => {
             ))}
           </SelectContent>
         </Select>
+        </div>
       </div>
 
       <PrintablesOptionsCard
@@ -227,12 +268,12 @@ const Printables = () => {
         </TabsList>
 
         <TabsContent value="check-in-roster">
-          <CheckInRosterTab tournament={tournament} registrations={printRegistrations as any} loading={loading} />
+          <CheckInRosterTab tournament={printTournament} registrations={printRegistrations as any} loading={loading} />
         </TabsContent>
 
         <TabsContent value="qr-codes">
           <QRCodesTab
-            tournament={tournament}
+            tournament={printTournament}
             addons={addons}
             loading={loading}
             enabled={{ walkup: savedOptions.qr_walkup, donation: savedOptions.qr_donation, addonIds: savedOptions.qr_addon_ids }}
@@ -241,7 +282,7 @@ const Printables = () => {
 
         <TabsContent value="cart-signs">
           <CartSignsTab
-            tournament={tournament}
+            tournament={printTournament}
             registrations={printRegistrations}
             loading={loading}
             groups={printGroups}
@@ -249,16 +290,16 @@ const Printables = () => {
           />
         </TabsContent>
         <TabsContent value="scorecards">
-          <ScorecardsTab tournament={tournament} registrations={printRegistrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} groups={printGroups} scoringFormat={(tournament as any)?.scoring_format} />
+          <ScorecardsTab tournament={printTournament} registrations={printRegistrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} groups={printGroups} scoringFormat={(tournament as any)?.scoring_format} />
         </TabsContent>
         <TabsContent value="name-badges">
-          <NameBadgesTab tournament={tournament} registrations={printRegistrations} loading={loading} groups={printGroups} />
+          <NameBadgesTab tournament={printTournament} registrations={printRegistrations} loading={loading} groups={printGroups} />
         </TabsContent>
         <TabsContent value="alpha-list">
-          <AlphaListTab tournament={tournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />
+          <AlphaListTab tournament={printTournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />
         </TabsContent>
         <TabsContent value="hole-assignments">
-          <HoleAssignmentsTab tournament={tournament} registrations={printRegistrations} loading={loading} onUpdate={handleUpdateHole} showScoringCodes={savedOptions.show_scoring_codes_holes} />
+          <HoleAssignmentsTab tournament={printTournament} registrations={printRegistrations} loading={loading} onUpdate={handleUpdateHole} showScoringCodes={savedOptions.show_scoring_codes_holes} />
         </TabsContent>
       </Tabs>
     </div>

@@ -1616,21 +1616,22 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {/* ===== HERO SECTION ===== */}
       <section
         id="hero"
-        className="relative min-h-[75vh] sm:min-h-screen flex flex-col items-center justify-center pt-14"
+        className="relative min-h-[75vh] sm:min-h-screen flex flex-col items-center justify-center pt-14 pb-10 sm:pb-0"
         style={{
           backgroundColor: primary,
         }}
       >
-        {/* Background image — on mobile the full image is shown (contain) so it isn't cropped to the center */}
+        {/* Background image — on mobile the full image is shown (contain) below the fixed nav so the top isn't clipped */}
         {tournament.site_hero_image_url && (
           <div
-            className="absolute inset-0 bg-contain bg-top sm:bg-cover sm:bg-center bg-no-repeat"
+            className="absolute inset-x-0 bottom-0 top-14 sm:top-0 bg-contain bg-top sm:bg-cover sm:bg-center bg-no-repeat"
             style={{
               backgroundImage: `url(${tournament.site_hero_image_url})`,
               opacity: (tournament.site_hero_opacity ?? 100) / 100,
             }}
           />
         )}
+
         {/* Overlay */}
         <div className="absolute inset-0" style={{ background: style.heroOverlay }} />
 
@@ -1673,16 +1674,17 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           {/* Subtitle */}
           {tournament.site_hero_subtitle && (
             <p
-              className="mt-4 mx-auto text-center whitespace-nowrap overflow-hidden text-ellipsis max-w-full"
+              className="mt-4 mx-auto text-center max-w-full sm:max-w-2xl whitespace-pre-line break-words"
               style={{
                 color: "rgba(255,255,255,0.85)",
-                fontSize: "clamp(0.75rem, 2vw, 1.25rem)",
-                lineHeight: 1.4,
+                fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
+                lineHeight: 1.45,
               }}
             >
               {tournament.site_hero_subtitle}
             </p>
           )}
+
 
           {/* Event meta badges */}
           <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">

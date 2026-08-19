@@ -331,14 +331,14 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                   const yards = (courseData?.hole_distances as number[] | null) ?? null;
                   const si = (courseData?.stroke_indexes as number[] | null) ?? null;
                   const summaryCls = "border border-border px-1.5 py-1 text-center font-bold text-primary bg-primary/5";
-                  const renderRow = (title: string, values: (number | null)[] | null, cls: string) => (
+                  const renderRow = (title: string, values: (number | null)[] | null, cls: string, noSummary = false) => (
                     <tr>
-                      <td className="border border-border px-2 py-1 text-left font-semibold text-foreground whitespace-nowrap">{title}</td>
+                      <td className="border border-border px-2 py-1 text-left font-semibold text-foreground whitespace-nowrap text-[10px] w-20 min-w-20">{title}</td>
                       {cols.map((c, i) =>
                         c.kind === "hole" ? (
                           <td key={i} className={cls}>{values?.[c.hole - 1] || ""}</td>
                         ) : (
-                          <td key={i} className={summaryCls}>{values ? summaryValue(c, values, numHoles) || "" : ""}</td>
+                          <td key={i} className={summaryCls}>{noSummary ? "" : (values ? summaryValue(c, values, numHoles) || "" : "")}</td>
                         ),
                       )}
                     </tr>
@@ -359,7 +359,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                         {yards && yards.some((d) => (d || 0) > 0) &&
                           renderRow("Yardage", yards, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground")}
                         {si && si.some((d) => (d || 0) > 0) &&
-                          renderRow("Hole HCP", si, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground")}
+                          renderRow("Hole HCP", si, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground", true)}
                         {renderRow("Par", pars, "border border-border px-1.5 py-1 text-center text-muted-foreground")}
                         <tr>
                           <td className="border border-border px-2 py-3 text-left font-semibold text-foreground whitespace-nowrap">Score</td>

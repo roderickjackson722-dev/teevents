@@ -49,20 +49,22 @@ export function scorecardGridHtml(
 ): string {
   const cols = scoreColumns(data.numHoles);
   const label = (text: string, strong = false) =>
-    `<td style="border:1px solid #ccc;padding:4px 8px;font-size:11px;white-space:nowrap;font-weight:${strong ? 700 : 600};color:#333;text-align:left;">${text}</td>`;
+    `<td style="border:1px solid #ccc;padding:4px 6px;font-size:${strong ? 11 : 10}px;white-space:nowrap;font-weight:${strong ? 700 : 600};color:#333;text-align:left;width:1.15in;min-width:1.15in;">${text}</td>`;
   const cell = (text: string | number, o: { bold?: boolean; size?: number; summary?: boolean; pad?: string } = {}) =>
-    `<td style="border:1px solid #ccc;padding:${o.pad || "4px 6px"};text-align:center;font-size:${o.size || 11}px;font-weight:${o.bold ? 700 : 400};${o.summary ? `background:#eef4f1;color:${opts.color};font-weight:700;` : "color:#333;"}">${text}</td>`;
+    `<td style="border:1px solid #ccc;padding:${o.pad || "4px 5px"};text-align:center;font-size:${o.size || 11}px;font-weight:${o.bold ? 700 : 400};${o.summary ? `background:#eef4f1;color:${opts.color};font-weight:700;` : "color:#333;"}">${text}</td>`;
 
   const row = (
     title: string,
     values: (number | null | undefined)[],
-    o: { bold?: boolean; bg?: string; size?: number } = {},
+    o: { bold?: boolean; bg?: string; size?: number; noSummary?: boolean } = {},
   ) =>
     `<tr${o.bg ? ` style="background:${o.bg};"` : ""}>${label(title, o.bold)}${cols
       .map((c) =>
         c.kind === "hole"
           ? cell(values[c.hole - 1] ?? "", { bold: o.bold, size: o.size })
-          : cell(summaryValue(c, values, data.numHoles) || "", { summary: true, size: o.size }),
+          : o.noSummary
+            ? cell("&nbsp;", { summary: true, size: o.size })
+            : cell(summaryValue(c, values, data.numHoles) || "", { summary: true, size: o.size }),
       )
       .join("")}</tr>`;
 
@@ -75,7 +77,7 @@ export function scorecardGridHtml(
     .join("")}</tr>`;
 
   const yards = data.yardages && data.yardages.some((d) => (d || 0) > 0) ? row("Yardage", data.yardages, { bg: "#fafafa" }) : "";
-  const hcp = data.strokeIndexes && data.strokeIndexes.some((d) => (d || 0) > 0) ? row("Hole HCP", data.strokeIndexes, { bg: "#fff" }) : "";
+  const hcp = data.strokeIndexes && data.strokeIndexes.some((d) => (d || 0) > 0) ? row("Hole HCP", data.strokeIndexes, { bg: "#fff", noSummary: true }) : "";
   const par = row("Par", data.pars, { bold: true, bg: "#fafafa" });
 
   const blankRows = Array.from({ length: Math.max(1, opts.scoreRows || 1) }, () =>

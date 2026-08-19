@@ -341,67 +341,14 @@ export function LeaderboardRenderer({
 
       <main className={`flex-1 ${compact ? "p-2" : "px-4 sm:px-6 py-6"}`}>
         <div className={`${compact ? "" : "max-w-7xl mx-auto"} grid grid-cols-1 ${showSponsorBanner && sponsorPos === "sidebar" && !compact ? "lg:grid-cols-[1fr_280px]" : ""} gap-4`}>
-          <section className="rounded-lg overflow-hidden" style={{ backgroundColor: `${headerBg}33` }} data-testid="lb-table-section">
-            <div className={`${padX} ${padY}`} style={{ backgroundColor: headerBg }}>
-              <h2 className={`font-bold ${compact ? "text-xs" : "text-base sm:text-lg"}`} style={{ color: textColor }}>Leaderboard</h2>
+          {boards && boards.length > 0 ? (
+            <div className={`grid grid-cols-1 ${gridColsClass} gap-4`} data-testid="lb-flight-grid">
+              {boards.map((b) => renderBoard(b.key, b.label, b.rows))}
             </div>
-            {visibleRows.length === 0 ? (
-              <div className={`${compact ? "p-4" : "p-12"} text-center opacity-70`}>
-                <Trophy className={`${compact ? "h-5 w-5" : "h-10 w-10"} mx-auto mb-2 opacity-40`} />
-                <p className={compact ? "text-xs" : ""}>Scoring hasn't started yet.</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full" data-testid="lb-table">
-                  <thead style={{ backgroundColor: headerBg }}>
-                    <tr className="text-xs uppercase tracking-wider">
-                      {showPos && <th className={`text-left ${padX} ${padY} w-12`}>#</th>}
-                      {showPlayer && <th className={`text-left ${padX} ${padY}`}>Player / Team</th>}
-                      {showThru && <th className={`text-right ${padX} ${padY} w-20`}>Thru</th>}
-                      {!isStableford && (
-                        <th className={`text-right ${padX} ${padY} w-20`}>To Par</th>
-                      )}
-                      {(showGross || showNet) && (
-                        <th className={`text-right ${padX} ${padY} w-24`}>{isStableford ? "Pts" : "Total"}</th>
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visibleRows.map((row, i) => (
-                      <tr
-                        key={`${row.name}-${i}`}
-                        data-testid="lb-row"
-                        style={{ backgroundColor: design.row_stripe && i % 2 === 1 ? `${headerBg}66` : "transparent" }}
-                      >
-                        {showPos && (
-                          <td className={`${padX} ${padY} font-bold`} style={{ color: i < 3 ? accent : textColor }}>
-                            {i + 1}
-                          </td>
-                        )}
-                        {showPlayer && (
-                          <td className={`${padX} ${padY}`}>
-                            <div className="font-semibold">{row.name}</div>
-                            {row.players && row.players.length > 0 && (
-                              <div className="text-xs opacity-70 truncate max-w-[300px]">{row.players.join(", ")}</div>
-                            )}
-                          </td>
-                        )}
-                        {showThru && <td className={`${padX} ${padY} text-right opacity-80`}>{row.thru || "—"}</td>}
-                        {!isStableford && (
-                          <td className={`${padX} ${padY} text-right font-mono font-bold`} data-testid="lb-topar">
-                            {row.total ? formatToPar(row.total, coursePar) : "—"}
-                          </td>
-                        )}
-                        {(showGross || showNet) && (
-                          <td className={`${padX} ${padY} text-right font-mono font-bold`}>{row.total || "—"}</td>
-                        )}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </section>
+          ) : (
+            renderBoard("single", "Leaderboard", visibleRows)
+          )}
+
 
           {((showSponsorBanner && sponsorPos === "sidebar") || (scrollPos === "sidebar" && marqueeBase.length > 0)) && !compact && (
             <aside className="space-y-4" data-testid="lb-sidebar">

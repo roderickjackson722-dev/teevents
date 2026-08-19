@@ -691,6 +691,15 @@ export default function EmailTemplateEditor() {
   const [confirmSendOpen, setConfirmSendOpen] = useState(false);
   /** Per-recipient delivery status from the last send, keyed by registration id. */
   const [sendResults, setSendResults] = useState<Record<string, { status: string; error?: string }>>({});
+  /**
+   * Optional additional delivery address per registration id. Send-time only —
+   * the email captured at registration is never modified.
+   */
+  const [altEmails, setAltEmails] = useState<Record<string, string>>({});
+  /** "alt" = send only to the alternate address, "both" = alternate + registered address. */
+  const [altMode, setAltMode] = useState<Record<string, "alt" | "both">>({});
+  /** Which rows currently show the alternate-email input. */
+  const [altOpen, setAltOpen] = useState<Record<string, boolean>>({});
 
   /** Records queued/sent/failed status per recipient so organizers see exactly who got the email. */
   const recordResults = (targets: string[], results?: any[]) => {

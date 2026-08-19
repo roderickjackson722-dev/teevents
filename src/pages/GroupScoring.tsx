@@ -127,6 +127,25 @@ export default function GroupScoring() {
       setLoading(false);
     })();
   }, [slug, code]);
+  // Resolve which flight/division this group plays in.
+  useEffect(() => {
+    if (!tournament || players.length === 0) return;
+    (async () => {
+      const { data: regRows } = await (supabase as any)
+        .from("tournament_registrations")
+        .select("flight_id")
+        .in("id", players.map((p) => p.id));
+      const flightId = (regRows || []).map((r: any) => r.flight_id).find((v: any) => !!v);
+      if (!flightId) { setFlight(null); return; }
+      const { data: tier } = await (supabase as any)
+        .from("tournament_tiers")
+        .select("id, tier_name")
+        .eq("id", flightId)
+        .maybeSingle();
+      if (tier) setFlight({ id: tier.id, name: tier.tier_name });
+    })();
+  }, [tournament?.id, players]);
+
 
   // Realtime updates from other devices in the group
   useEffect(() => {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import PairingsTemplateBuilder, { type TemplateSlot } from "@/components/dashboard/PairingsTemplateBuilder";
+import { parsePairingsConfig } from "@/lib/pairingsConfig";
 
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { Link } from "react-router-dom";
@@ -1099,7 +1100,17 @@ const Players = () => {
 
 
   // ---- Pairing conflict validation (tee times / starting holes) ----
-  const startHoleOf = (num: number) => String(holeLabels[num] ?? num).trim();
+  /**
+   * Starting hole for a pairing group. Group numbers are NOT holes: for tee-time
+   * starts where every group goes off the same hole, the starting hole is the
+   * configured first tee hole (e.g. everyone off #1).
+   */
+  const startHoleOf = (num: number) => {
+    const label = holeLabels[num];
+    if (label != null && String(label).trim()) return String(label).trim();
+    if (dayCfg.startFormat === "tee_times" && dayCfg.sameStartHole !== false) return String(dayCfg.firstTeeHole || 1);
+    return String(num);
+  };
   const pairingConflicts: string[] = useMemo(() => {
     const issues: string[] = [];
     const filled = groupsBase.filter((g) => g.players.length > 0);
@@ -1251,13 +1262,89 @@ const Players = () => {
     } catch { setStartFormatByDay({ 0: defaultDayCfg() }); }
   }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey, startFormatStorageKey]);
 
+  // The saved pairings config on the tournament row wins over the local cache,
+  // so pairings look the same on every device (and match Printables).
+  useEffect(() => {
+    if (!selectedTournament) return;
+    let cancelled = false;
+    (supabase.from("tournaments") as any)
+      .select("pairings_config")
+      .eq("id", selectedTournament)
+      .maybeSingle()
+      .then(({ data }: any) => {
+        if (cancelled || !data?.pairings_config) return;
+        const cfg = parsePairingsConfig(data.pairings_config);
+        if (Object.keys(cfg.labels).length) {
+          setHoleLabels(
+            Object.fromEntries(
+              Object.entries(cfg.labels).map(([k, v]) => [Number(k), String(v)]),
+            ) as Record<number, string>,
+          );
+        }
+        if (Object.keys(cfg.teeTimesByDay).length) {
+          setHoleTeeTimesByDay(
+            Object.fromEntries(
+              Object.entries(cfg.teeTimesByDay).map(([day, map]) => [
+                Number(day),
+                Object.fromEntries(Object.entries(map || {}).map(([g, t]) => [Number(g), String(t)])),
+              ]),
+            ) as Record<number, Record<number, string>>,
+          );
+        }
+        if (Object.keys(cfg.byDay).length) {
+          setStartFormatByDay(
+            Object.fromEntries(
+              Object.entries(cfg.byDay).map(([day, c]) => [Number(day), { ...defaultDayCfg(), ...(c as DayCfg) }]),
+            ) as Record<number, DayCfg>,
+          );
+        }
+      });
+    return () => { cancelled = true; };
+  }, [selectedTournament]);
+
+
   const saveLocations = (next: Record<number, string>) => {
     setHoleLocations(next);
     try { if (locStorageKey) localStorage.setItem(locStorageKey, JSON.stringify(next)); } catch { /* noop */ }
   };
+
+  /**
+   * Mirror pairings setup (starting-hole labels, tee times, start format) into
+   * `tournaments.pairings_config` so Printables and emails stay in sync with
+   * whatever the organizer set here — on any device.
+   */
+  const persistPairingsConfig = (patch: {
+    labels?: Record<number, string>;
+    teeTimesByDay?: Record<number, Record<number, string>>;
+    byDay?: Record<number, unknown>;
+  }) => {
+    if (!selectedTournament) return;
+    const payload = {
+      labels: patch.labels ?? holeLabels,
+      teeTimesByDay: patch.teeTimesByDay ?? holeTeeTimesByDay,
+      byDay: patch.byDay ?? startFormatByDay,
+    };
+    void (supabase.from("tournaments") as any)
+      .update({ pairings_config: payload })
+      .eq("id", selectedTournament);
+  };
+
   const saveLabels = (next: Record<number, string>) => {
     setHoleLabels(next);
     try { if (labelsStorageKey) localStorage.setItem(labelsStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+    persistPairingsConfig({ labels: next });
+    // Keep each player's starting hole in sync for printables/roster display
+    void (async () => {
+      for (const [numStr, label] of Object.entries(next)) {
+        const num = Number(numStr);
+        const hole = /^\s*(\d{1,2})/.exec(String(label));
+        if (!hole) continue;
+        await (supabase.from("registration_groups") as any)
+          .update({ starting_hole: parseInt(hole[1], 10) })
+          .eq("tournament_id", selectedTournament)
+          .eq("group_number", num);
+      }
+    })();
   };
   const saveNotes = (next: Record<number, string>) => {
     setHoleNotes(next);
@@ -1323,6 +1410,7 @@ const Players = () => {
     const nextAll = { ...holeTeeTimesByDay, [activeDay]: nextForDay };
     setHoleTeeTimesByDay(nextAll);
     try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(nextAll)); } catch { /* noop */ }
+    persistPairingsConfig({ teeTimesByDay: nextAll });
     void persistTeeTimesToDb(nextForDay, activeDay);
   };
 
@@ -1410,6 +1498,7 @@ const Players = () => {
         .update({ pairings_start_format: patch.startFormat })
         .eq("id", selectedTournament);
     }
+    persistPairingsConfig({ byDay: nextAll });
     if (!startFormatStorageKey) return;
     try { localStorage.setItem(startFormatStorageKey, JSON.stringify({ byDay: nextAll })); } catch { /* noop */ }
   };
@@ -2403,9 +2492,12 @@ const Players = () => {
                     )}
                     {rosterCols.hole !== false && (
                       <td className="px-4 py-3 text-center">
-                        {(p.group_label || p.group_number) ? (
-                          <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full">
-                            #{p.group_label || p.group_number}
+                        {p.group_number != null ? (
+                          <span
+                            className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full"
+                            title={`Group ${p.group_number} — starting hole set in Pairings`}
+                          >
+                            #{startHoleOf(p.group_number)}
                           </span>
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
@@ -3520,7 +3612,7 @@ const Players = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Hole Assignment</p>
-                  <p className="text-sm text-foreground">{(viewingPlayer.group_label || viewingPlayer.group_number) ? `Hole #${viewingPlayer.group_label || viewingPlayer.group_number}` : "Unassigned"}</p>
+                  <p className="text-sm text-foreground">{viewingPlayer.group_number != null ? `Group ${viewingPlayer.group_number} · Hole #${startHoleOf(viewingPlayer.group_number)}` : "Unassigned"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Scoring Code</p>
@@ -3592,9 +3684,11 @@ const Players = () => {
                 </Select>
               </div>
               <div>
-                <Label htmlFor="ep-hole">Hole / Group</Label>
-                <Input id="ep-hole" type="text" placeholder="Unassigned (e.g. 1, 1A, 1B)" value={editForm.group_label} onChange={(e) => setEditForm((f) => ({ ...f, group_label: e.target.value }))} />
-                <p className="text-[10px] text-muted-foreground mt-1">Accepts numbers or split-tee labels like 1A / 1B.</p>
+                <Label htmlFor="ep-hole">Pairing group</Label>
+                <Input id="ep-hole" type="text" placeholder="Unassigned (e.g. 1, 2, 3)" value={editForm.group_label} onChange={(e) => setEditForm((f) => ({ ...f, group_label: e.target.value }))} />
+                <p className="text-[10px] text-muted-foreground mt-1">
+                  This is the pairing group, not the starting hole. Starting holes and tee times are set in the Pairings tab and flow through to printables.
+                </p>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3">

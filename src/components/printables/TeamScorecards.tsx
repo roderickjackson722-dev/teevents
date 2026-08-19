@@ -168,7 +168,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
 
   const selectorItems = teams.map((t, i) => ({
     key: t.key,
-    label: `${t.groupNumber != null ? `Group ${i + 1} – ` : ""}${t.teamName}${t.groupNumber != null ? ` (Hole ${t.groupNumber})` : ""}`,
+    label: `${t.groupNumber != null ? `Group ${t.groupNumber} – ` : ""}${t.teamName}${t.startingHole != null ? ` (Hole ${t.startingHole})` : ""}`,
     hole: t.groupNumber,
   }));
 
@@ -181,7 +181,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
         .map((t) => {
           const e = edits[t.key] || { teamName: t.teamName, playersLine: "" };
           return teamScorecardHtml(
-            e, t.scoringCode, t.groupNumber, tournament, numHoles, opts, courseData,
+            e, t.scoringCode, t.startingHole ?? t.groupNumber, tournament, numHoles, opts, courseData,
             scoringUrlFor(slug, t.scoringCode),
           );
         })
@@ -306,7 +306,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
                 </table>
                 <div className="flex justify-between text-[11px] text-primary font-semibold mt-2">
                   <span>{t.scoringCode ? `Scoring Code: ${t.scoringCode}` : ""}</span>
-                  <span>{opts.showStartingHole && t.groupNumber != null ? `Starting Hole: ${t.groupNumber}` : ""}</span>
+                  <span>{opts.showStartingHole && (t.startingHole ?? t.groupNumber) != null ? `Starting Hole: ${t.startingHole ?? t.groupNumber}` : ""}</span>
                 </div>
               </div>
             </motion.div>

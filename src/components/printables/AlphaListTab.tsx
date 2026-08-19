@@ -26,7 +26,7 @@ function buildHtml(tournament: Tournament | null, list: Registration[], showScor
         <th style="text-align:left;padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;background:#f5f5f5;font-weight:700;">Hole</th>
         ${showScoringCodes ? `<th style="text-align:left;padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;background:#f5f5f5;font-weight:700;">Scoring Code</th>` : ""}
       </tr></thead>
-      <tbody>${list.map((r, i) => `<tr><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${i + 1}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.last_name}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.first_name}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.group_number ?? "—"}</td>${showScoringCodes ? `<td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;font-family:monospace;letter-spacing:1px;">${codeOf(r) ?? "Not assigned"}</td>` : ""}</tr>`).join("")}</tbody>
+      <tbody>${list.map((r, i) => `<tr><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${i + 1}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.last_name}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${r.first_name}</td><td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;">${startingHoleOf(r as any) ?? "—"}</td>${showScoringCodes ? `<td style="padding:8px 12px;border-bottom:1px solid #ddd;font-size:14px;font-family:monospace;letter-spacing:1px;">${codeOf(r) ?? "Not assigned"}</td>` : ""}</tr>`).join("")}</tbody>
     </table>`;
 }
 
@@ -67,7 +67,7 @@ export default function AlphaListTab({ tournament, registrations, loading, showS
                 <td className="px-4 py-3 text-muted-foreground">{i + 1}</td>
                 <td className="px-4 py-3 font-medium text-foreground">{r.last_name}</td>
                 <td className="px-4 py-3 text-foreground">{r.first_name}</td>
-                <td className="px-4 py-3 text-foreground">{r.group_number ?? "—"}</td>
+                <td className="px-4 py-3 text-foreground">{startingHoleOf(r as any) ?? "—"}</td>
                 {showScoringCodes && (
                   <td className="px-4 py-3 font-mono tracking-wider text-foreground">
                     {codeOf(r) ?? <span className="text-muted-foreground font-sans tracking-normal text-xs">Not assigned</span>}

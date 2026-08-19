@@ -6901,6 +6901,7 @@ export type Database = {
           group_name: string | null
           group_number: number | null
           id: string
+          starting_hole: number | null
           team_name: string | null
           tee_time: string | null
           tee_times: Json
@@ -6913,6 +6914,7 @@ export type Database = {
           group_name?: string | null
           group_number?: number | null
           id?: string
+          starting_hole?: number | null
           team_name?: string | null
           tee_time?: string | null
           tee_times?: Json
@@ -6925,6 +6927,7 @@ export type Database = {
           group_name?: string | null
           group_number?: number | null
           id?: string
+          starting_hole?: number | null
           team_name?: string | null
           tee_time?: string | null
           tee_times?: Json
@@ -10308,6 +10311,7 @@ export type Database = {
           org_contact_phone: string | null
           organization_id: string
           paid_features: Json
+          pairings_config: Json
           pairings_locked: boolean
           pairings_locked_at: string | null
           pairings_public: boolean
@@ -10596,6 +10600,7 @@ export type Database = {
           org_contact_phone?: string | null
           organization_id: string
           paid_features?: Json
+          pairings_config?: Json
           pairings_locked?: boolean
           pairings_locked_at?: string | null
           pairings_public?: boolean
@@ -10884,6 +10889,7 @@ export type Database = {
           org_contact_phone?: string | null
           organization_id?: string
           paid_features?: Json
+          pairings_config?: Json
           pairings_locked?: boolean
           pairings_locked_at?: string | null
           pairings_public?: boolean

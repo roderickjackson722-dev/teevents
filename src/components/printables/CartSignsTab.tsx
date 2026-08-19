@@ -131,10 +131,10 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   const allSigns = teams.flatMap((t) =>
     cartsFor(t.key).map((c) => ({
       key: `${t.key}|${c.label}`,
-      hole: t.groupNumber,
-      label: `${t.groupNumber != null ? `Hole ${t.groupNumber}` : "Unassigned"} – ${c.label}: ${c.names.join(" & ")}`,
+      hole: t.startingHole ?? t.groupNumber,
+      label: `${t.startingHole != null ? `Hole ${t.startingHole}` : "Unassigned"} – ${c.label}: ${c.names.join(" & ")}`,
       names: c.names,
-      groupNumber: t.groupNumber,
+      groupNumber: t.startingHole ?? t.groupNumber,
       teeTime: teeEdits[t.key] ?? t.teeTime ?? null,
     })),
   );
@@ -291,8 +291,8 @@ export default function CartSignsTab({ tournament, registrations, loading, group
                       {opts.showTeeTime && formatTeeTime(teeEdits[t.key] ?? t.teeTime) && (
                         <p className="text-sm font-bold text-primary">Tee Time: {formatTeeTime(teeEdits[t.key] ?? t.teeTime)}</p>
                       )}
-                      {opts.showStartingHole && t.groupNumber != null && (
-                        <p className="text-sm font-semibold text-primary">Starting Hole: {t.groupNumber}</p>
+                      {opts.showStartingHole && (t.startingHole ?? t.groupNumber) != null && (
+                        <p className="text-sm font-semibold text-primary">Starting Hole: {t.startingHole ?? t.groupNumber}</p>
                       )}
                     </div>
                   ))}

@@ -1613,12 +1613,19 @@ export default function EmailTemplateEditor() {
                     return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
                   })
                   .map(r => (
-                  <div key={r.id} className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">
+                  <div key={r.id} className="py-1">
+                  <div className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">
                     <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
                       <input type="checkbox" checked={selectedRecipients.includes(r.id)} onChange={() => toggleRecipient(r.id)} className="rounded" />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-foreground truncate">{r.first_name} {r.last_name}</p>
                         <p className="text-xs text-muted-foreground truncate">{r.email || "No email on file"}</p>
+                        {(altEmails[r.id] || "").trim() && (
+                          <p className="text-xs text-primary truncate">
+                            Also/alt: <span className="font-medium">{altEmails[r.id]}</span>{" "}
+                            ({(altMode[r.id] || "alt") === "both" ? "both addresses" : "alternate only"})
+                          </p>
+                        )}
                         <p className="text-xs text-muted-foreground truncate">
                           Scoring Code:{" "}
                           <span className="font-mono font-semibold text-foreground">
@@ -1637,15 +1644,74 @@ export default function EmailTemplateEditor() {
                       variant="outline"
                       size="sm"
                       className="gap-1 h-8"
-                      disabled={sending || !r.email}
-                      title={`Send ${TEMPLATE_LABELS[templateKind]} to ${r.email || "this player"}`}
+                      disabled={sending || (!r.email && !(altEmails[r.id] || "").trim())}
+                      title={`Send ${TEMPLATE_LABELS[templateKind]} to ${(altEmails[r.id] || "").trim() || r.email || "this player"}`}
                       onClick={() => sendEmails([r.id])}
                     >
                       <Send className="h-3.5 w-3.5" /> Send
                     </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-2 text-xs"
+                      title="Add an additional email address for this player (does not change their registration email)"
+                      onClick={() => setAltOpen(prev => ({ ...prev, [r.id]: !prev[r.id] }))}
+                    >
+                      <Mail className="h-3.5 w-3.5 mr-1 text-muted-foreground" />
+                      {altOpen[r.id] ? "Hide" : "Alt email"}
+                    </Button>
                     <Button variant="ghost" size="sm" className="h-8 w-8 p-0" title="Edit email & resend" onClick={() => openEditModal(r)}>
                       <Pencil className="h-3.5 w-3.5 text-muted-foreground" />
                     </Button>
+                  </div>
+                  {altOpen[r.id] && (
+                    <div className="ml-8 mr-2 mb-2 rounded-md border bg-muted/30 p-3 space-y-2">
+                      <Label className="text-xs">Additional email address (send-time only)</Label>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <Input
+                          type="email"
+                          className="h-8 flex-1 min-w-[220px]"
+                          placeholder="second.address@example.com"
+                          value={altEmails[r.id] || ""}
+                          onChange={e => setAltEmails(prev => ({ ...prev, [r.id]: e.target.value }))}
+                        />
+                        <Select
+                          value={altMode[r.id] || "alt"}
+                          onValueChange={(v) => setAltMode(prev => ({ ...prev, [r.id]: v as "alt" | "both" }))}
+                        >
+                          <SelectTrigger className="h-8 w-[200px]">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="alt">Send to alternate only</SelectItem>
+                            <SelectItem value="both">Send to both addresses</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8"
+                          disabled={sending || !(altEmails[r.id] || "").trim()}
+                          onClick={() => sendEmails([r.id])}
+                        >
+                          <Send className="h-3.5 w-3.5 mr-1" /> Send now
+                        </Button>
+                        {(altEmails[r.id] || "").trim() && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 text-xs"
+                            onClick={() => setAltEmails(prev => { const n = { ...prev }; delete n[r.id]; return n; })}
+                          >
+                            Clear
+                          </Button>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        This does not change the email submitted at registration — it only controls where this send is delivered.
+                      </p>
+                    </div>
+                  )}
                   </div>
                 ))}
               </div>

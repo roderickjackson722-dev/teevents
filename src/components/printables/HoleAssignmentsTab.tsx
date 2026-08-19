@@ -97,7 +97,7 @@ export default function HoleAssignmentsTab({ tournament, registrations, loading,
                     </div>
                   ) : (
                     <button onClick={() => setEditingHole({ id: r.id, value: String(r.group_number ?? "") })} className="text-xs text-primary hover:underline">
-                      {r.group_number != null ? `Hole ${r.group_number}` : "Assign"}
+                      {r.group_number != null ? `Group ${r.group_number}` : "Assign group"}
                     </button>
                   )}
                 </div>

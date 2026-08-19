@@ -246,12 +246,14 @@ Deno.serve(async (req) => {
     if (!authHeader) throw new Error("Not authenticated");
     const token = authHeader.replace("Bearer ", "");
     const isServiceRun = service_run === true && token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    let user: { id: string } | null = null;
     if (!isServiceRun) {
-      const { data: { user } } = await createClient(
+      const { data: { user: u } } = await createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_ANON_KEY")!,
       ).auth.getUser(token);
-      if (!user) throw new Error("Not authenticated");
+      if (!u) throw new Error("Not authenticated");
+      user = u;
     }
 
     /**

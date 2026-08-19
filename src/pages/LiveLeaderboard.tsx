@@ -170,7 +170,11 @@ export default function LiveLeaderboard() {
   const [galleryIdx, setGalleryIdx] = useState(0);
   const [flights, setFlights] = useState<{ id: string; tier_name: string; display_order: number }[]>([]);
   const [regFlights, setRegFlights] = useState<Record<string, string | null>>({});
+  // Players arriving from their scoring page carry ?flight=<id|name> so they
+  // land on their own flight's board.
+  const requestedFlight = (search.get("flight") || "").trim();
   const [activeFlight, setActiveFlight] = useState<string>("__overall");
+
 
   // Load tournament
   useEffect(() => {

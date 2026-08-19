@@ -969,10 +969,20 @@ export default function LiveScoring() {
 
 
         {slug && (
-          <div className="pt-2 border-t">
+          <div className="pt-2 border-t space-y-2">
+            {flight && (
+              <p className="text-xs text-center text-muted-foreground">
+                You are scoring in <span className="font-semibold text-foreground">{flight.name}</span>
+              </p>
+            )}
             <Button asChild variant="outline" className="w-full h-12">
-              <a href={`/live/${slug}`} target="_blank" rel="noopener noreferrer">
-                <Trophy className="h-4 w-4 mr-2" /> View Leaderboard →
+              <a
+                href={`/live/${slug}${flight ? `?flight=${flight.id}` : ""}`}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Trophy className="h-4 w-4 mr-2" /> {flight ? `${flight.name} Leaderboard` : "View Leaderboard"} →
+
               </a>
             </Button>
           </div>

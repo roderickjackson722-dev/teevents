@@ -360,6 +360,7 @@ export default function EmailTemplateEditor() {
   const [selectedTournament, setSelectedTournament] = useState<string>("");
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [paymentFilter, setPaymentFilter] = useState<"paid" | "pending" | "all">("paid");
   const [sending, setSending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);

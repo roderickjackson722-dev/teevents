@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Clock, MapPin, CalendarDays, Flag } from "lucide-react";
+import { Loader2, Clock, MapPin, CalendarDays, Flag, Mail } from "lucide-react";
 import { formatTeeTime } from "@/components/printables/CartSignsTab";
 import TeeventsFooter from "@/components/TeeventsFooter";
+import { resolvePairingsPageConfig } from "@/lib/pairingsPageConfig";
 
 interface Row {
   tournament_id: string;
@@ -11,7 +12,12 @@ interface Row {
   event_date: string | null;
   course_name: string | null;
   start_format: string | null;
+  page_config: unknown;
+  logo_url: string | null;
+  hero_image_url: string | null;
+  contact_email: string | null;
   group_number: number | null;
+  starting_hole: number | null;
   tee_time: string | null;
   team_name: string | null;
   flight_name: string | null;
@@ -20,17 +26,30 @@ interface Row {
   group_position: number | null;
 }
 
-/** Public, read-only tee sheet / pairings page: /pairings/:slug */
+/** Public, read-only tee sheet / pairings page: /pairings/$slug */
 export default function PublicPairings() {
-  const { slug = "" } = useParams();
+  const params = useParams({ strict: false }) as { slug?: string };
+  const slug = params.slug ?? "";
   const [rows, setRows] = useState<Row[] | null>(null);
 
   useEffect(() => {
     if (!slug) return;
-    (supabase as any).rpc("get_public_pairings", { _slug: slug }).then(({ data }: any) => setRows((data || []) as Row[]));
+    let cancelled = false;
+    (supabase as any)
+      .rpc("get_public_pairings", { _slug: slug })
+      .then(({ data }: any) => {
+        if (!cancelled) setRows((data || []) as Row[]);
+      })
+      .catch(() => {
+        if (!cancelled) setRows([]);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [slug]);
 
   const info = rows?.[0];
+  const cfg = useMemo(() => resolvePairingsPageConfig(info?.page_config), [info?.page_config]);
   const teeTimeStart = (info?.start_format || "") === "tee_times";
 
   const groups = useMemo(() => {
@@ -65,39 +84,65 @@ export default function PublicPairings() {
     );
   }
 
+  const accent = cfg.accent || "#1a5c38";
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       <div className="max-w-4xl w-full mx-auto px-4 py-10 flex-1">
         <header className="mb-8">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-1">
+          {cfg.show_logo && info?.logo_url && (
+            <img src={info.logo_url} alt={`${info?.title ?? "Tournament"} logo`} className="h-16 w-auto mb-4 object-contain" />
+          )}
+          <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: accent }}>
             {teeTimeStart ? "Tee Times" : "Pairings"}
           </p>
-          <h1 className="text-3xl font-display font-bold text-foreground">{info?.title}</h1>
+          <h1 className="text-3xl font-display font-bold text-foreground">
+            {cfg.headline?.trim() || info?.title}
+          </h1>
+          {cfg.headline?.trim() && (
+            <p className="text-sm text-muted-foreground mt-1">{info?.title}</p>
+          )}
           <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-            {info?.event_date && (
+            {cfg.show_date && info?.event_date && (
               <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4" />{new Date(`${info.event_date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
             )}
-            {info?.course_name && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{info.course_name}</span>}
+            {cfg.show_course && info?.course_name && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{info.course_name}</span>}
           </div>
+          {cfg.intro?.trim() && (
+            <p className="mt-4 text-sm text-foreground/80 whitespace-pre-line">{cfg.intro}</p>
+          )}
         </header>
+
+        {cfg.notes?.trim() && (
+          <div className="mb-6 rounded-xl border border-border bg-muted/30 p-4">
+            {cfg.notes_title?.trim() && (
+              <p className="text-sm font-semibold text-foreground mb-1">{cfg.notes_title}</p>
+            )}
+            <p className="text-sm text-muted-foreground whitespace-pre-line">{cfg.notes}</p>
+          </div>
+        )}
 
         <div className="space-y-3">
           {groups.map((g) => {
             const tee = formatTeeTime(g.players[0]?.tee_time);
             const flight = g.players.map((p) => p.flight_name).find(Boolean);
-            const teamName = g.players[0]?.team_name;
+            const teamName = cfg.show_team_names ? g.players[0]?.team_name : null;
+            const hole = g.players[0]?.starting_hole ?? g.number;
             return (
               <div key={g.number} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <p className="font-semibold text-foreground">
-                    {teamName || (teeTimeStart ? `Group ${g.number}` : `Hole ${g.number}`)}
+                    {teamName || (teeTimeStart ? `Group ${g.number}` : `Hole ${hole}`)}
                   </p>
                   <div className="flex items-center gap-3 text-sm">
-                    {flight && <span className="text-muted-foreground">{flight}</span>}
-                    {teeTimeStart && tee ? (
-                      <span className="flex items-center gap-1 font-bold text-primary"><Clock className="h-4 w-4" />{tee}</span>
-                    ) : (
-                      <span className="font-semibold text-primary">Hole {g.number}</span>
+                    {cfg.show_flights && flight && <span className="text-muted-foreground">{flight}</span>}
+                    {cfg.show_tee_times && tee && (
+                      <span className="flex items-center gap-1 font-bold" style={{ color: accent }}>
+                        <Clock className="h-4 w-4" />{tee}
+                      </span>
+                    )}
+                    {cfg.show_starting_hole && (
+                      <span className="font-semibold" style={{ color: accent }}>Hole {hole}</span>
                     )}
                   </div>
                 </div>
@@ -110,6 +155,18 @@ export default function PublicPairings() {
             );
           })}
         </div>
+
+        {(cfg.footer_note?.trim() || (cfg.show_contact && info?.contact_email)) && (
+          <div className="mt-8 text-center text-xs text-muted-foreground space-y-1">
+            {cfg.footer_note?.trim() && <p>{cfg.footer_note}</p>}
+            {cfg.show_contact && info?.contact_email && (
+              <p className="flex items-center justify-center gap-1">
+                <Mail className="h-3 w-3" />
+                <a href={`mailto:${info.contact_email}`} className="underline">{info.contact_email}</a>
+              </p>
+            )}
+          </div>
+        )}
       </div>
       <TeeventsFooter tournament={null} />
     </div>

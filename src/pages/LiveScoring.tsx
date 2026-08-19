@@ -236,6 +236,8 @@ export default function LiveScoring() {
 
     const scoreMap: Record<string, Record<number, number>> = {};
     existingScores?.forEach((s: any) => {
+      // Only the round in play — earlier rounds keep their own saved cards.
+      if ((Number(s.round_number) || 1) !== roundNumber) return;
       if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });

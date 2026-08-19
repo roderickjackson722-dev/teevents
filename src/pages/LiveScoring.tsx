@@ -61,7 +61,10 @@ export default function LiveScoring() {
   const [viewMode, setViewMode] = useState<"all" | "single">("single");
   const [focusHole, setFocusHole] = useState<number>(1);
   const [teamName, setTeamName] = useState<string | null>(null);
+  // Flight/division this group belongs to — used to scope the leaderboard link.
+  const [flight, setFlight] = useState<{ id: string; name: string } | null>(null);
   const [restoring, setRestoring] = useState(true);
+
 
   const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
 

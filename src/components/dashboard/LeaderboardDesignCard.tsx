@@ -36,6 +36,14 @@ export interface LeaderboardDesign {
   show_ticker: boolean;
   ticker_text: string;
   ticker_speed: "slow" | "normal" | "fast";
+  /** How multiple flights are displayed on the public leaderboard. */
+  flight_display_mode: "tabs" | "grid" | "rotate";
+  /** Columns used when several flight leaderboards share one screen. */
+  flight_columns: number;
+  /** Seconds each flight stays on screen in rotate mode. */
+  flight_rotate_seconds: number;
+  /** Include a combined "Overall" board alongside the flights. */
+  flight_include_overall: boolean;
 }
 
 export const DEFAULT_DESIGN: LeaderboardDesign = {
@@ -62,7 +70,12 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   show_ticker: false,
   ticker_text: "",
   ticker_speed: "normal",
+  flight_display_mode: "tabs",
+  flight_columns: 2,
+  flight_rotate_seconds: 15,
+  flight_include_overall: true,
 };
+
 
 const FONT_OPTIONS = ["Inter", "Roboto", "Montserrat", "Open Sans", "Lato", "Poppins"];
 const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };

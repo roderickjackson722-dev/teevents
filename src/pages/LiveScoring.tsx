@@ -8,6 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users } from "lucide-react";
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
 import { getFormatById } from "@/lib/scoringFormats";
 
 interface Player {
@@ -53,6 +54,9 @@ export default function LiveScoring() {
   const [scoringCode, setScoringCode] = useState<string | null>(null);
   const [groupNumber, setGroupNumber] = useState<number | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
+  // Scores post to the round currently in play so multi-day events keep one
+  // card per round.
+  const [roundNumber, setRoundNumber] = useState(1);
   const [scores, setScores] = useState<Record<string, Record<number, number>>>({});
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [saving, setSaving] = useState(false);
@@ -77,11 +81,16 @@ export default function LiveScoring() {
       const match = Array.isArray(resolved) ? resolved[0] : null;
       const baseQuery = supabase
         .from("tournaments")
-        .select("id, title, course_par, scoring_format, handicap_enabled, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order");
+        .select("id, title, course_par, scoring_format, handicap_enabled, pairings_config, date, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order");
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.eq("slug", slug).eq("site_published", true).maybeSingle();
       setTournament(data as TournamentData | null);
+      if (data) {
+        setRoundNumber(
+          activeRoundNumber(parsePairingsConfig((data as any).pairings_config), (data as any).date),
+        );
+      }
       setLoading(false);
       if (data) {
 
@@ -227,6 +236,8 @@ export default function LiveScoring() {
 
     const scoreMap: Record<string, Record<number, number>> = {};
     existingScores?.forEach((s: any) => {
+      // Only the round in play — earlier rounds keep their own saved cards.
+      if ((Number(s.round_number) || 1) !== roundNumber) return;
       if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });
@@ -355,6 +366,7 @@ export default function LiveScoring() {
         _scores: upserts.map((u) => ({
           registration_id: u.registration_id,
           hole_number: u.hole_number,
+          round_number: roundNumber,
           strokes: u.strokes,
         })),
       });
@@ -429,7 +441,7 @@ export default function LiveScoring() {
     const { error } = await supabase.rpc("save_group_scores", {
       _tournament_id: tournament.id,
       _code: scoringCode,
-      _scores: upserts,
+      _scores: upserts.map((u) => ({ ...u, round_number: roundNumber })),
     });
     setSaving(false);
     if (error) {

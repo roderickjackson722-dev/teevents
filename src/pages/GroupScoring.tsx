@@ -9,6 +9,7 @@ import { Loader2, ChevronLeft, ChevronRight, Trophy, Pencil, Check, Minus, Plus,
 import { toast } from "@/hooks/use-toast";
 import { allocateStrokes } from "@/lib/handicapUtils";
 import { getFormatById } from "@/lib/scoringFormats";
+import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
@@ -54,6 +55,9 @@ export default function GroupScoring() {
   // The flight (division) this scoring code belongs to. Scores are always saved
   // for this group only, and the leaderboard link opens on this flight.
   const [flight, setFlight] = useState<{ id: string; name: string } | null>(null);
+  // Multi-day events post scores to the round currently in play so an earlier
+  // round's card is never overwritten.
+  const [roundNumber, setRoundNumber] = useState(1);
 
 
   useEffect(() => {
@@ -86,10 +90,15 @@ export default function GroupScoring() {
       // Fetch scoring_format separately (lookup RPC doesn't return it)
       const { data: tRow } = await supabase
         .from("tournaments")
-        .select("scoring_format")
+        .select("scoring_format, pairings_config, date")
         .eq("id", t.id)
         .maybeSingle();
       if (tRow?.scoring_format) t.scoring_format = tRow.scoring_format;
+      const activeRound = activeRoundNumber(
+        parsePairingsConfig((tRow as any)?.pairings_config),
+        (tRow as any)?.date,
+      );
+      setRoundNumber(activeRound);
       setTournament(t);
 
       const { data: regs } = await supabase
@@ -107,7 +116,8 @@ export default function GroupScoring() {
       const ids = (regs as Reg[]).map((r) => r.id);
       const { data: sc } = await supabase
         .from("tournament_scores")
-        .select("registration_id, hole_number, strokes")
+        .select("registration_id, hole_number, strokes, round_number")
+        .eq("round_number", activeRound)
         .in("registration_id", ids);
       const map: Record<string, Record<number, number>> = {};
       (sc || []).forEach((s: any) => {
@@ -233,11 +243,13 @@ export default function GroupScoring() {
       ? players.map((p) => ({
           registration_id: p.id,
           hole_number: currentHole,
+          round_number: roundNumber,
           strokes: teamNum as number,
         }))
       : pendingChanges.map((p) => ({
           registration_id: p.id,
           hole_number: currentHole,
+          round_number: roundNumber,
           strokes: parseInt(draft[p.id], 10),
         }));
     const { error } = await supabase.rpc("save_group_scores", {
@@ -288,8 +300,8 @@ export default function GroupScoring() {
     }
     setSavingEdit(true);
     const rows = isScramble
-      ? players.map((p) => ({ registration_id: p.id, hole_number: editTarget.hole, strokes: n }))
-      : [{ registration_id: editTarget.pid, hole_number: editTarget.hole, strokes: n }];
+      ? players.map((p) => ({ registration_id: p.id, hole_number: editTarget.hole, round_number: roundNumber, strokes: n }))
+      : [{ registration_id: editTarget.pid, hole_number: editTarget.hole, round_number: roundNumber, strokes: n }];
     const { error } = await supabase.rpc("save_group_scores", {
       _tournament_id: tournament.id,
       _code: code,

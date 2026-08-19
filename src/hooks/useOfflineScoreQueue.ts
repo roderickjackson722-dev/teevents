@@ -92,7 +92,7 @@ export function useOfflineScoreQueue(tournamentId: string | null | undefined) {
       const rows = q.map(({ queued_at, ...r }) => r);
       const { error } = await supabase
         .from("tournament_scores")
-        .upsert(rows, { onConflict: "registration_id,hole_number" });
+        .upsert(rows, { onConflict: "registration_id,round_number,hole_number" });
       if (error) {
         return { synced: 0, failed: q.length };
       }

@@ -6,7 +6,22 @@ export interface LbRow {
   total: number;
   thru: number;
   players?: string[];
+  /** Stable key used for scorecard drill-down (registration id or group key). */
+  key?: string;
+  /** Secondary line under the name (division / flight / team). */
+  subtitle?: string;
+  /** Strokes recorded in the round currently in play. */
+  today?: number | null;
+  /** Par for the holes actually played — drives an accurate multi-round To Par. */
+  parPlayed?: number | null;
+  /** Par for the holes played in the current round. */
+  parToday?: number | null;
+  /** Completed totals for each earlier round, keyed by round number. */
+  roundTotals?: Record<number, number>;
+  /** Hole-by-hole strokes per round: { 1: { 1: 4, 2: 5 } }. */
+  holesByRound?: Record<number, Record<number, number>>;
 }
+
 
 export interface LbSponsor {
   id: string;
@@ -83,7 +98,14 @@ interface RendererProps {
     name: string;
     logoUrl: string | null;
   } | null;
+  /** Rounds that already have scores — each completed round gets its own column. */
+  rounds?: number[];
+  /** Round currently in play — drives the "Today" column. */
+  currentRound?: number;
+  /** Clicking a player row opens their round-by-round scorecard. */
+  onRowClick?: (row: LbRow) => void;
 }
+
 
 
 /**
@@ -111,8 +133,12 @@ export function LeaderboardRenderer({
   boards,
   boardColumns = 2,
   presentedBy,
+  rounds = [],
+  currentRound,
+  onRowClick,
 
 }: RendererProps) {
+
   const fontSize = FONT_SIZE_PX[design.font_size] || 16;
   const bg = design.background_color;
   const headerBg = design.header_background;
@@ -182,9 +208,20 @@ export function LeaderboardRenderer({
       </div>
     ) : null;
 
+  /** Rounds that are finished (shown as their own R1/R2 column). */
+  const priorRounds = (rounds || []).filter((r) => !currentRound || r < currentRound);
+  const showToday = !isStableford && !!currentRound && (rounds || []).includes(currentRound);
+
   /** One leaderboard table — reused for the single board and each flight board. */
   const renderBoard = (key: string, label: string, boardRows: LbRow[]) => {
     const shown = boardRows.slice(0, Math.max(1, design.max_rows || 20));
+    /** Competition positions: identical totals share a T-position. */
+    const positionFor = (idx: number) => {
+      const total = shown[idx].total;
+      const first = shown.findIndex((r) => r.total === total);
+      const tied = shown.filter((r) => r.total === total).length > 1;
+      return `${tied ? "T" : ""}${first + 1}`;
+    };
     return (
       <section
         key={key}
@@ -205,46 +242,73 @@ export function LeaderboardRenderer({
             <table className="w-full" data-testid="lb-table">
               <thead style={{ backgroundColor: headerBg }}>
                 <tr className="text-xs uppercase tracking-wider">
-                  {showPos && <th className={`text-left ${padX} ${padY} w-12`}>#</th>}
+                  {showPos && <th className={`text-left ${padX} ${padY} w-14`}>Pos</th>}
                   {showPlayer && <th className={`text-left ${padX} ${padY}`}>Player / Team</th>}
-                  {showThru && <th className={`text-right ${padX} ${padY} w-20`}>Thru</th>}
-                  {!isStableford && <th className={`text-right ${padX} ${padY} w-20`}>To Par</th>}
+                  {!isStableford && <th className={`text-center ${padX} ${padY} w-20`}>To Par</th>}
+                  {showThru && <th className={`text-right ${padX} ${padY} w-16`}>Thru</th>}
+                  {priorRounds.map((r) => (
+                    <th key={`h-r${r}`} className={`text-right ${padX} ${padY} w-16`}>R{r}</th>
+                  ))}
+                  {showToday && <th className={`text-right ${padX} ${padY} w-20`}>Today</th>}
                   {(showGross || showNet) && (
                     <th className={`text-right ${padX} ${padY} w-24`}>{isStableford ? "Pts" : "Total"}</th>
                   )}
                 </tr>
               </thead>
               <tbody>
-                {shown.map((row, i) => (
+                {shown.map((row, i) => {
+                  const clickable = !!onRowClick && !!row.holesByRound;
+                  return (
                   <tr
                     key={`${row.name}-${i}`}
                     data-testid="lb-row"
+                    onClick={clickable ? () => onRowClick!(row) : undefined}
+                    className={clickable ? "cursor-pointer hover:opacity-80 transition-opacity" : undefined}
                     style={{ backgroundColor: design.row_stripe && i % 2 === 1 ? `${headerBg}66` : "transparent" }}
                   >
                     {showPos && (
                       <td className={`${padX} ${padY} font-bold`} style={{ color: i < 3 ? accent : textColor }}>
-                        {i + 1}
+                        {positionFor(i)}
                       </td>
                     )}
                     {showPlayer && (
                       <td className={`${padX} ${padY}`}>
                         <div className="font-semibold">{row.name}</div>
+                        {row.subtitle && <div className="text-xs opacity-70">{row.subtitle}</div>}
                         {row.players && row.players.length > 0 && (
                           <div className="text-xs opacity-70 truncate max-w-[300px]">{row.players.join(", ")}</div>
                         )}
                       </td>
                     )}
-                    {showThru && <td className={`${padX} ${padY} text-right opacity-80`}>{row.thru || "—"}</td>}
                     {!isStableford && (
-                      <td className={`${padX} ${padY} text-right font-mono font-bold`} data-testid="lb-topar">
-                        {row.total ? formatToPar(row.total, coursePar) : "—"}
+                      <td className={`${padX} ${padY} text-center`} data-testid="lb-topar">
+                        {row.total ? (
+                          <span
+                            className="inline-block min-w-[3rem] rounded px-2 py-1 font-mono font-bold"
+                            style={{ backgroundColor: headerBg, color: accent }}
+                          >
+                            {formatToPar(row.total, row.parPlayed ?? coursePar)}
+                          </span>
+                        ) : "—"}
+                      </td>
+                    )}
+                    {showThru && <td className={`${padX} ${padY} text-right opacity-80`}>{row.thru ? (row.thru >= 18 ? 18 : row.thru) : "—"}</td>}
+                    {priorRounds.map((r) => (
+                      <td key={`${row.name}-r${r}`} className={`${padX} ${padY} text-right font-mono opacity-90`}>
+                        {row.roundTotals?.[r] || "—"}
+                      </td>
+                    ))}
+                    {showToday && (
+                      <td className={`${padX} ${padY} text-right font-mono`}>
+                        {row.today ? formatToPar(row.today, row.parToday ?? coursePar) : "—"}
                       </td>
                     )}
                     {(showGross || showNet) && (
                       <td className={`${padX} ${padY} text-right font-mono font-bold`}>{row.total || "—"}</td>
                     )}
                   </tr>
-                ))}
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -252,6 +316,7 @@ export function LeaderboardRenderer({
       </section>
     );
   };
+
 
   const gridColsClass =
     boardColumns >= 4 ? "xl:grid-cols-4 md:grid-cols-2"

@@ -6,6 +6,8 @@ import { Trophy, Loader2 } from "lucide-react";
 import { type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 import { LeaderboardRenderer, mergeDesign } from "@/components/leaderboard/LeaderboardCore";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import { PlayerScorecardDialog, type ScorecardCourseInfo } from "@/components/leaderboard/PlayerScorecardDialog";
+
 
 
 interface Sponsor {
@@ -69,20 +71,88 @@ interface LeaderboardRow {
   isTeam?: boolean;
   players?: string[];
   points?: number;
+  /** Stable key for the scorecard drill-down. */
+  key?: string;
+  /** Strokes in the round currently in play. */
+  today?: number | null;
+  /** Par for every hole actually played (all rounds) — accurate multi-round To Par. */
+  parPlayed?: number | null;
+  /** Par for the holes played in the current round. */
+  parToday?: number | null;
+  /** Completed totals for each round. */
+  roundTotals?: Record<number, number>;
+  /** Hole-by-hole strokes per round. */
+  holesByRound?: Record<number, Record<number, number>>;
 }
 
 const tierOrder: Record<string, number> = {
   title: 0, platinum: 1, gold: 2, silver: 3, bronze: 4, hole: 5, inkind: 6,
 };
 
-function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
+/** Par for a single hole — real course pars when available, otherwise averaged. */
+function parForHole(hole: number, holePars: number[] | null | undefined, coursePar: number) {
+  const p = holePars?.[hole - 1];
+  return Number(p) > 0 ? Number(p) : Math.round(coursePar / 18);
+}
+
+/** Totals / To Par / Today for a set of per-round hole scores. */
+function summarize(
+  holesByRound: Record<number, Record<number, number>>,
+  currentRound: number,
+  holePars: number[] | null | undefined,
+  coursePar: number,
+) {
+  let total = 0;
+  let parPlayed = 0;
+  let today: number | null = null;
+  let parToday = 0;
+  let thru = 0;
+  const roundTotals: Record<number, number> = {};
+  Object.entries(holesByRound).forEach(([r, holes]) => {
+    const round = Number(r);
+    let roundTotal = 0;
+    let holesCount = 0;
+    Object.entries(holes).forEach(([h, strokes]) => {
+      roundTotal += strokes;
+      parPlayed += parForHole(Number(h), holePars, coursePar);
+      holesCount++;
+      if (round === currentRound) parToday += parForHole(Number(h), holePars, coursePar);
+    });
+    roundTotals[round] = roundTotal;
+    total += roundTotal;
+    if (round === currentRound) {
+      today = roundTotal;
+      thru = holesCount;
+    }
+  });
+  if (thru === 0) {
+    thru = Object.values(holesByRound).reduce((n, holes) => n + Object.keys(holes).length, 0);
+  }
+  return { total, parPlayed, today, parToday, thru, roundTotals };
+}
+
+function buildLeaderboard(
+  scoresData: any[],
+  t: Tournament,
+  holePars?: number[] | null,
+): LeaderboardRow[] {
   const fmt = getFormatById(t.scoring_format || "stroke_play");
   const isTeam = fmt && fmt.teamSize > 1;
   const isStableford = fmt?.scoring === "stableford";
   const cPar = t.course_par || 72;
   const holePar = Math.round(cPar / 18);
+  const currentRound = scoresData.reduce(
+    (max: number, s: any) => Math.max(max, Number(s.round_number) || 1),
+    1,
+  );
 
-  const playerData: Record<string, { name: string; group: number | null; teamName: string | null; holes: Record<number, number> }> = {};
+  const playerData: Record<string, {
+    name: string;
+    group: number | null;
+    teamName: string | null;
+    holes: Record<number, number>;
+    holesByRound: Record<number, Record<number, number>>;
+  }> = {};
   scoresData.forEach((s: any) => {
     const key = s.registration_id;
     if (!playerData[key]) {
@@ -95,58 +165,90 @@ function buildLeaderboard(scoresData: any[], t: Tournament): LeaderboardRow[] {
         group: grp,
         teamName: (reg?.team_name ?? s.team_name ?? null) || null,
         holes: {},
+        holesByRound: {},
       };
     }
+    const round = Number(s.round_number) || 1;
     playerData[key].holes[s.hole_number] = s.strokes;
+    playerData[key].holesByRound[round] = playerData[key].holesByRound[round] || {};
+    playerData[key].holesByRound[round][s.hole_number] = s.strokes;
   });
 
   if (isTeam && fmt && (fmt.scoring === "best_ball" || fmt.scoring === "scramble" || fmt.scoring === "shamble")) {
-    const groups: Record<number, typeof playerData[string][]> = {};
-    Object.values(playerData).forEach((p) => {
+    const groups: Record<number, { key: string; player: typeof playerData[string] }[]> = {};
+    Object.entries(playerData).forEach(([regId, p]) => {
       if (p.group != null) {
         if (!groups[p.group]) groups[p.group] = [];
-        groups[p.group].push(p);
+        groups[p.group].push({ key: regId, player: p });
       }
     });
     return Object.entries(groups)
-      .map(([gn, players]) => {
-        let total = 0;
-        let holesPlayed = 0;
-        for (let h = 1; h <= 18; h++) {
-          const strokes = players.map((p) => p.holes[h]).filter((v) => v != null);
-          if (strokes.length > 0) {
-            total += Math.min(...strokes);
-            holesPlayed++;
+      .map(([gn, entries]) => {
+        const players = entries.map((e) => e.player);
+        const rounds = new Set<number>();
+        players.forEach((p) => Object.keys(p.holesByRound).forEach((r) => rounds.add(Number(r))));
+        const holesByRound: Record<number, Record<number, number>> = {};
+        rounds.forEach((round) => {
+          holesByRound[round] = {};
+          for (let h = 1; h <= 18; h++) {
+            const strokes = players
+              .map((p) => p.holesByRound[round]?.[h])
+              .filter((v) => v != null) as number[];
+            if (strokes.length > 0) holesByRound[round][h] = Math.min(...strokes);
           }
-        }
-        // Prefer the organizer-entered team name; fall back to the default "Group X".
+          if (Object.keys(holesByRound[round]).length === 0) delete holesByRound[round];
+        });
+        const s = summarize(holesByRound, currentRound, holePars, cPar);
+        // Prefer the organizer-entered team name; fall back to the default "Team X".
         const teamName = players.find((p) => p.teamName)?.teamName || `Team ${gn}`;
-        return { name: teamName, total, thru: holesPlayed, isTeam: true, players: players.map((p) => p.name) };
+        return {
+          name: teamName,
+          total: s.total,
+          thru: s.thru,
+          isTeam: true,
+          players: players.map((p) => p.name),
+          key: `group-${gn}`,
+          today: s.today,
+          parPlayed: s.parPlayed,
+          parToday: s.parToday,
+          roundTotals: s.roundTotals,
+          holesByRound,
+        };
       })
       .sort((a, b) => (a.total === 0 ? 1 : b.total === 0 ? -1 : a.total - b.total));
   }
 
   if (isStableford) {
-    return Object.values(playerData)
-      .map((p) => {
+    return Object.entries(playerData)
+      .map(([regId, p]) => {
         let points = 0;
         const holesPlayed = Object.keys(p.holes).length;
         Object.values(p.holes).forEach((strokes) => {
           points += stablefordPoints(strokes, holePar);
         });
-        return { name: p.name, total: points, thru: holesPlayed, points };
+        return { name: p.name, total: points, thru: holesPlayed, points, key: regId, holesByRound: p.holesByRound };
       })
       .sort((a, b) => b.total - a.total);
   }
 
-  return Object.values(playerData)
-    .map((p) => ({
-      name: p.name,
-      total: Object.values(p.holes).reduce((sum, s) => sum + s, 0),
-      thru: Object.keys(p.holes).length,
-    }))
+  return Object.entries(playerData)
+    .map(([regId, p]) => {
+      const s = summarize(p.holesByRound, currentRound, holePars, cPar);
+      return {
+        name: p.name,
+        total: s.total,
+        thru: s.thru,
+        key: regId,
+        today: s.today,
+        parPlayed: s.parPlayed,
+        parToday: s.parToday,
+        roundTotals: s.roundTotals,
+        holesByRound: p.holesByRound,
+      };
+    })
     .sort((a, b) => (a.total === 0 ? 1 : b.total === 0 ? -1 : a.total - b.total));
 }
+
 
 export default function LiveLeaderboard() {
   const { slug } = useParams<{ slug: string }>();
@@ -174,6 +276,10 @@ export default function LiveLeaderboard() {
   // land on their own flight's board.
   const requestedFlight = (search.get("flight") || "").trim();
   const [activeFlight, setActiveFlight] = useState<string>("__overall");
+  // Course pars / SI / yardages power the To Par column and the scorecard modal.
+  const [course, setCourse] = useState<ScorecardCourseInfo | null>(null);
+  const [scorecardRow, setScorecardRow] = useState<LeaderboardRow | null>(null);
+
 
 
   // Load tournament
@@ -204,6 +310,22 @@ export default function LiveLeaderboard() {
       setLoading(false);
     })();
   }, [slug, isPreview]);
+
+  // Course pars / stroke indexes / yardages for To Par and the scorecard modal.
+  useEffect(() => {
+    if (!tournament) return;
+    supabase
+      .from("golf_courses")
+      .select("stroke_indexes, hole_pars, hole_distances, name, tee_name")
+      .eq("tournament_id", tournament.id)
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setCourse(data as unknown as ScorecardCourseInfo);
+      });
+  }, [tournament?.id]);
+
+
 
 
 
@@ -434,10 +556,20 @@ export default function LiveLeaderboard() {
     return scores.filter((s: any) => regFlights[s.registration_id] === activeFlight);
   }, [scores, regFlights, flights.length, activeFlight]);
 
+  const holePars = (course?.hole_pars as number[] | null) || null;
+
   const leaderboard = useMemo(() => {
     if (!tournament) return [];
-    return buildLeaderboard(filteredScores, tournament);
-  }, [filteredScores, tournament]);
+    return buildLeaderboard(filteredScores, tournament, holePars);
+  }, [filteredScores, tournament, holePars]);
+
+  /** Rounds that have posted scores, and the round currently in play. */
+  const rounds = useMemo(() => {
+    const set = new Set<number>();
+    scores.forEach((s: any) => set.add(Number(s.round_number) || 1));
+    return Array.from(set).sort((a, b) => a - b);
+  }, [scores]);
+  const currentRound = rounds.length ? rounds[rounds.length - 1] : 1;
 
   // Grid mode: one board per flight (plus Overall when included) on one screen.
   const flightBoards = useMemo(() => {
@@ -448,17 +580,19 @@ export default function LiveLeaderboard() {
       rows: buildLeaderboard(
         scores.filter((s: any) => regFlights[s.registration_id] === f.id),
         tournament,
-      ).map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players })),
+        holePars,
+      ),
     }));
     if (design.flight_include_overall !== false) {
       boards.push({
         key: "__overall",
         label: "Overall",
-        rows: buildLeaderboard(scores, tournament).map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players })),
+        rows: buildLeaderboard(scores, tournament, holePars),
       });
     }
     return boards.length > 0 ? boards : undefined;
-  }, [tournament, flightMode, flights, scores, regFlights, design.flight_include_overall]);
+  }, [tournament, flightMode, flights, scores, regFlights, design.flight_include_overall, holePars]);
+
 
 
   if (loading) {
@@ -557,9 +691,12 @@ export default function LiveLeaderboard() {
       <LeaderboardRenderer
         design={design}
         title={displayTitle}
-        rows={leaderboard.map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players }))}
+        rows={leaderboard}
         isStableford={isStableford}
         coursePar={tournament.course_par || 72}
+        rounds={rounds}
+        currentRound={currentRound}
+        onRowClick={(row) => setScorecardRow(row as LeaderboardRow)}
         bannerSponsor={bannerSponsor}
         sidebarSponsors={sidebarSponsors}
         footerSponsors={footerSponsors}
@@ -572,6 +709,7 @@ export default function LiveLeaderboard() {
         boards={flightBoards}
         boardColumns={design.flight_columns || 2}
         presentedBy={presentedBy}
+
 
         topNotice={
           <>
@@ -597,7 +735,17 @@ export default function LiveLeaderboard() {
 
       />
       <TeeventsFooter tournament={tournament as any} />
+      <PlayerScorecardDialog
+        open={!!scorecardRow}
+        onOpenChange={(v) => !v && setScorecardRow(null)}
+        playerName={scorecardRow?.name || ""}
+        subtitle={scorecardRow?.players?.join(", ")}
+        holesByRound={scorecardRow?.holesByRound || {}}
+        course={course}
+        coursePar={tournament.course_par || 72}
+      />
     </>
+
   );
 }
 

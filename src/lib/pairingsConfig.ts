@@ -141,3 +141,26 @@ export function roundDateFor(
 export function roundLabel(day: number): string {
   return `Round ${day + 1}`;
 }
+
+/**
+ * Round currently in play (1-based) for multi-day events.
+ *
+ * Uses each round's organizer-set date: the active round is the latest round
+ * whose date has already arrived. Single-round events always resolve to 1, so
+ * existing tournaments keep posting scores to Round 1.
+ */
+export function activeRoundNumber(
+  cfg: PairingsConfig,
+  fallbackDate?: string | null,
+  today: Date = new Date(),
+): number {
+  const rounds = Math.max(1, cfg.rounds || 1);
+  if (rounds <= 1) return 1;
+  const todayKey = today.toISOString().slice(0, 10);
+  let active = 1;
+  for (let day = 0; day < rounds; day++) {
+    const d = roundDateFor(cfg, day, day === 0 ? fallbackDate : null);
+    if (d && String(d).slice(0, 10) <= todayKey) active = day + 1;
+  }
+  return active;
+}

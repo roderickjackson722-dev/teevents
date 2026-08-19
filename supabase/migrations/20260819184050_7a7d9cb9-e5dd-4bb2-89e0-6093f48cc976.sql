@@ -1,0 +1,1 @@
+ALTER TABLE public.scheduled_emails ADD COLUMN IF NOT EXISTS timezone TEXT;

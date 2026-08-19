@@ -346,7 +346,12 @@ Deno.serve(async (req) => {
     const homepage = (tournament as any).slug
       ? `https://www.teevents.golf/t/${(tournament as any).slug}`
       : "https://www.teevents.golf";
-    if (!emailConfig.button_url) emailConfig.button_url = homepage;
+    const pairingsLink = (tournament as any).slug
+      ? `https://www.teevents.golf/pairings/${(tournament as any).slug}`
+      : "https://www.teevents.golf";
+    // The tee-time email's button points at the public pairings/tee sheet page.
+    if (!emailConfig.button_url) emailConfig.button_url = kind === "tee_times" ? pairingsLink : homepage;
+
 
     const dateStr = tournament.date
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournament.date) ? `${tournament.date}T00:00:00` : tournament.date)

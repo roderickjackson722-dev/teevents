@@ -398,6 +398,37 @@ export default function LiveLeaderboard() {
     return () => clearInterval(t);
   }, [gallery.length]);
 
+  // Honor ?flight= (id or flight name) once flights have loaded.
+  useEffect(() => {
+    if (!requestedFlight || flights.length === 0) return;
+    const match = flights.find(
+      (f) => f.id === requestedFlight || f.tier_name.toLowerCase() === requestedFlight.toLowerCase(),
+    );
+    if (match) setActiveFlight(match.id);
+  }, [requestedFlight, flights]);
+
+  const flightMode = flights.length > 1 ? design.flight_display_mode || "tabs" : "tabs";
+
+  // Auto-rotate mode: cycle flights (and Overall, when included) on a timer.
+  const rotateKeys = useMemo(() => {
+    const keys = flights.map((f) => f.id);
+    if (design.flight_include_overall !== false) keys.push("__overall");
+    return keys;
+  }, [flights, design.flight_include_overall]);
+
+  useEffect(() => {
+    if (flightMode !== "rotate" || rotateKeys.length < 2) return;
+    const seconds = Math.max(5, design.flight_rotate_seconds || 15);
+    setActiveFlight(rotateKeys[0]);
+    const t = setInterval(() => {
+      setActiveFlight((cur) => {
+        const i = rotateKeys.indexOf(cur);
+        return rotateKeys[(i + 1) % rotateKeys.length];
+      });
+    }, seconds * 1000);
+    return () => clearInterval(t);
+  }, [flightMode, rotateKeys, design.flight_rotate_seconds]);
+
   const filteredScores = useMemo(() => {
     if (flights.length === 0 || activeFlight === "__overall") return scores;
     return scores.filter((s: any) => regFlights[s.registration_id] === activeFlight);
@@ -407,6 +438,28 @@ export default function LiveLeaderboard() {
     if (!tournament) return [];
     return buildLeaderboard(filteredScores, tournament);
   }, [filteredScores, tournament]);
+
+  // Grid mode: one board per flight (plus Overall when included) on one screen.
+  const flightBoards = useMemo(() => {
+    if (!tournament || flightMode !== "grid") return undefined;
+    const boards = flights.map((f) => ({
+      key: f.id,
+      label: f.tier_name,
+      rows: buildLeaderboard(
+        scores.filter((s: any) => regFlights[s.registration_id] === f.id),
+        tournament,
+      ).map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players })),
+    }));
+    if (design.flight_include_overall !== false) {
+      boards.push({
+        key: "__overall",
+        label: "Overall",
+        rows: buildLeaderboard(scores, tournament).map((r) => ({ name: r.name, total: r.total, thru: r.thru, players: r.players })),
+      });
+    }
+    return boards.length > 0 ? boards : undefined;
+  }, [tournament, flightMode, flights, scores, regFlights, design.flight_include_overall]);
+
 
   if (loading) {
     return (

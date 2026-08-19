@@ -4,6 +4,7 @@ export interface RegistrationGroupRow {
   id: string;
   group_number: number | null;
   team_name: string | null;
+  tee_time?: string | null;
   cart_sign_names?: { cart1?: string[]; cart2?: string[] } | null;
 }
 
@@ -12,9 +13,12 @@ export interface PrintTeam {
   groupNumber: number | null;
   groupId?: string;
   teamName: string;
+  /** Tee time for this group, as saved on the pairings page (display string) */
+  teeTime?: string | null;
   players: Registration[];
   scoringCode?: string | null;
 }
+
 
 const TEAM_FORMAT_HINTS = ["scramble", "best_ball", "bestball", "best ball", "foursome", "shootout", "team", "shamble", "chapman", "alternate"];
 

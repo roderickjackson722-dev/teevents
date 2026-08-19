@@ -108,7 +108,10 @@ export function LeaderboardRenderer({
   compact = false,
   topNotice,
   subtitle,
+  boards,
+  boardColumns = 2,
   presentedBy,
+
 }: RendererProps) {
   const fontSize = FONT_SIZE_PX[design.font_size] || 16;
   const bg = design.background_color;

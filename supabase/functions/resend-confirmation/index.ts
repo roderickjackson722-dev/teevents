@@ -293,7 +293,7 @@ Deno.serve(async (req) => {
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, schedule_info, schedule_info_html, slug")
+      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, tee_times_email_config, schedule_info, schedule_info_html, slug")
       .eq("id", tournamentId)
       .single();
 

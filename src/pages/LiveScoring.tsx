@@ -256,6 +256,26 @@ export default function LiveScoring() {
     persistSession(sessionCode, gNum);
   };
 
+  // Resolve the group's flight so players see (and open) their own flight board.
+  useEffect(() => {
+    if (!tournament || players.length === 0) { return; }
+    (async () => {
+      const { data: regRows } = await (supabase as any)
+        .from("tournament_registrations")
+        .select("flight_id")
+        .in("id", players.map((p) => p.id));
+      const flightId = (regRows || []).map((r: any) => r.flight_id).find((v: any) => !!v);
+      if (!flightId) { setFlight(null); return; }
+      const { data: tier } = await (supabase as any)
+        .from("tournament_tiers")
+        .select("id, tier_name")
+        .eq("id", flightId)
+        .maybeSingle();
+      setFlight(tier ? { id: tier.id, name: tier.tier_name } : null);
+    })();
+  }, [tournament?.id, players]);
+
+
 
   const handleLogin = async () => {
     if (!tournament) return;

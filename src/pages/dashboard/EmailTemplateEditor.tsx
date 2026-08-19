@@ -799,13 +799,61 @@ export default function EmailTemplateEditor() {
     );
   };
 
+  const isPaidReg = (r: any) => (r.payment_status || "").toLowerCase() === "paid";
+  const paymentMatches = (r: any) =>
+    paymentFilter === "all" ? true : paymentFilter === "paid" ? isPaidReg(r) : !isPaidReg(r);
+
+  // Registrations that pass the paid/pending filter (before the text search).
+  const filteredRegistrations = registrations.filter(paymentMatches);
+  // What the list actually renders (payment filter + search box).
+  const visibleRegistrations = filteredRegistrations.filter((r) => {
+    const q = recipientSearch.trim().toLowerCase();
+    if (!q) return true;
+    return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
+  });
+
+  // Never keep someone selected who is filtered out of view (e.g. pending players).
+  useEffect(() => {
+    setSelectedRecipients((prev) => {
+      const allowed = new Set(filteredRegistrations.map((r) => r.id));
+      const next = prev.filter((id) => allowed.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentFilter, registrations]);
+
   const selectAll = () => {
-    if (selectedRecipients.length === registrations.length) {
+    if (selectedRecipients.length === filteredRegistrations.length && filteredRegistrations.length > 0) {
       setSelectedRecipients([]);
     } else {
-      setSelectedRecipients(registrations.map(r => r.id));
+      setSelectedRecipients(filteredRegistrations.map(r => r.id));
     }
   };
+
+  const paidCount = registrations.filter(isPaidReg).length;
+  const pendingCount = registrations.length - paidCount;
+
+  const PaymentFilterToggle = () => (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs text-muted-foreground">Show:</span>
+      {([
+        { key: "paid" as const, label: `Paid (${paidCount})` },
+        { key: "pending" as const, label: `Pending (${pendingCount})` },
+        { key: "all" as const, label: `All (${registrations.length})` },
+      ]).map((opt) => (
+        <Button
+          key={opt.key}
+          type="button"
+          size="sm"
+          variant={paymentFilter === opt.key ? "default" : "outline"}
+          className="h-7 text-xs"
+          onClick={() => setPaymentFilter(opt.key)}
+        >
+          {opt.label}
+        </Button>
+      ))}
+    </div>
+  );
 
   const insertVariable = (field: "greeting" | "body_text" | "closing_text" | "footer_text" | "subject" | "header_title" | "schedule_override", variable: string) => {
     setConfig(prev => ({ ...prev, [field]: ((prev as any)[field] || "") + " " + variable }));

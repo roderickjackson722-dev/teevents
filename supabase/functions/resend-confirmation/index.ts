@@ -21,6 +21,8 @@ const TEMPLATE_HEADERS: Record<string, string> = {
   post_event: "Thanks for Playing!",
   day_before: "Your Tournament Is Almost Here!",
   pairings_update: "Updated Hole Assignments",
+  tee_times: "Your Tee Time",
+
 };
 
 

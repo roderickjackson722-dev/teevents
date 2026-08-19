@@ -54,6 +54,9 @@ export default function LiveScoring() {
   const [scoringCode, setScoringCode] = useState<string | null>(null);
   const [groupNumber, setGroupNumber] = useState<number | null>(null);
   const [players, setPlayers] = useState<Player[]>([]);
+  // Scores post to the round currently in play so multi-day events keep one
+  // card per round.
+  const [roundNumber, setRoundNumber] = useState(1);
   const [scores, setScores] = useState<Record<string, Record<number, number>>>({});
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [saving, setSaving] = useState(false);
@@ -83,6 +86,11 @@ export default function LiveScoring() {
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.eq("slug", slug).eq("site_published", true).maybeSingle();
       setTournament(data as TournamentData | null);
+      if (data) {
+        setRoundNumber(
+          activeRoundNumber(parsePairingsConfig((data as any).pairings_config), (data as any).date),
+        );
+      }
       setLoading(false);
       if (data) {
 

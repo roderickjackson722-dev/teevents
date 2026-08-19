@@ -102,11 +102,16 @@ export default function PublicPairings() {
             <p className="text-sm text-muted-foreground mt-1">{info?.title}</p>
           )}
           <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-            {cfg.show_date && info?.event_date && (
-              <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4" />{new Date(`${info.event_date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })}</span>
+            {cfg.show_date && (cfg.date_text?.trim() || cfg.date_override?.trim() || info?.event_date) && (
+              <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4" />{
+                cfg.date_text?.trim()
+                  ? cfg.date_text
+                  : new Date(`${cfg.date_override?.trim() || info?.event_date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+              }</span>
             )}
-            {cfg.show_course && info?.course_name && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{info.course_name}</span>}
+            {cfg.show_course && (cfg.course_override?.trim() || info?.course_name) && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{cfg.course_override?.trim() || info?.course_name}</span>}
           </div>
+
           {cfg.intro?.trim() && (
             <p className="mt-4 text-sm text-foreground/80 whitespace-pre-line">{cfg.intro}</p>
           )}

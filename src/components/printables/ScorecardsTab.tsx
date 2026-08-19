@@ -14,6 +14,7 @@ import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./P
 import TeamScorecards from "./TeamScorecards";
 import ScorecardSelector from "./ScorecardSelector";
 import { isTeamScoringFormat, type RegistrationGroupRow } from "./teamGrouping";
+import { scorecardGridHtml, scoreColumns, summaryValue } from "./scorecardGrid";
 
 interface CourseDataProp {
   hole_pars: number[] | null;

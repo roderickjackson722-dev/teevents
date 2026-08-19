@@ -1031,8 +1031,15 @@ const Players = () => {
     return days.length ? days : [];
   }, [currentTournamentObj?.date, currentTournamentObj?.end_date]);
   const numDays = Math.max(1, tournamentDays.length);
+  /**
+   * Organizers can set up more rounds than the tournament date range implies
+   * (multi-event weekends often list side events on day 1), so the round count
+   * is stored with the pairings setup.
+   */
+  const [roundCount, setRoundCount] = useState<number>(1);
+  const numRounds = Math.max(numDays, roundCount);
   const [activeDay, setActiveDay] = useState<number>(0);
-  useEffect(() => { if (activeDay >= numDays) setActiveDay(0); }, [numDays, activeDay]);
+  useEffect(() => { if (activeDay >= numRounds) setActiveDay(0); }, [numRounds, activeDay]);
 
   type DayCfg = {
     startFormat: "tee_times" | "shotgun";
@@ -1043,8 +1050,10 @@ const Players = () => {
     roundFormat?: string;
     roundHoles?: number;
     sameStartHole?: boolean;
+    /** Organizer-set play date for this round ("YYYY-MM-DD") */
+    roundDate?: string;
   };
-  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00", roundFormat: "", roundHoles: 18, sameStartHole: true });
+  const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00", roundFormat: "", roundHoles: 18, sameStartHole: true, roundDate: "" });
 
   const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
   const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
@@ -1292,6 +1301,7 @@ const Players = () => {
             ) as Record<number, Record<number, string>>,
           );
         }
+        setRoundCount(Math.max(1, cfg.rounds));
         if (Object.keys(cfg.byDay).length) {
           setStartFormatByDay(
             Object.fromEntries(
@@ -1318,12 +1328,14 @@ const Players = () => {
     labels?: Record<number, string>;
     teeTimesByDay?: Record<number, Record<number, string>>;
     byDay?: Record<number, unknown>;
+    rounds?: number;
   }) => {
     if (!selectedTournament) return;
     const payload = {
       labels: patch.labels ?? holeLabels,
       teeTimesByDay: patch.teeTimesByDay ?? holeTeeTimesByDay,
       byDay: patch.byDay ?? startFormatByDay,
+      rounds: Math.max(patch.rounds ?? roundCount, numDays),
     };
     void (supabase.from("tournaments") as any)
       .update({ pairings_config: payload })
@@ -1505,6 +1517,31 @@ const Players = () => {
   };
 
 
+  /** Play date for a round: organizer override, else the matching tournament day. */
+  const roundDateOf = (idx: number) =>
+    (startFormatByDay[idx]?.roundDate || "") || tournamentDays[idx] || (currentTournamentObj?.date ? String(currentTournamentObj.date).slice(0, 10) : "");
+
+  const addRound = () => {
+    const next = numRounds + 1;
+    setRoundCount(next);
+    persistPairingsConfig({ rounds: next });
+    setActiveDay(next - 1);
+  };
+
+  const removeRound = () => {
+    if (numRounds <= 1 || numRounds <= numDays) return;
+    const next = numRounds - 1;
+    const nextAll = { ...startFormatByDay };
+    delete nextAll[numRounds - 1];
+    const nextTimes = { ...holeTeeTimesByDay };
+    delete nextTimes[numRounds - 1];
+    setStartFormatByDay(nextAll);
+    setHoleTeeTimesByDay(nextTimes);
+    setRoundCount(next);
+    setActiveDay(0);
+    persistPairingsConfig({ rounds: next, byDay: nextAll, teeTimesByDay: nextTimes });
+  };
+
   const addMinutes = (hhmm: string, mins: number) => {
     const m = /^(\d{1,2}):(\d{2})/.exec(hhmm);
     if (!m) return hhmm;
@@ -1524,7 +1561,7 @@ const Players = () => {
       toast({ title: "No holes to assign", variant: "destructive" });
       return;
     }
-    const dayLabel = tournamentDays[activeDay] || "Day 1";
+    const dayLabel = `Round ${activeDay + 1}${roundDateOf(activeDay) ? ` (${roundDateOf(activeDay)})` : ""}`;
     const next: Record<number, string> = {};
     if (startFormat === "shotgun") {
       if (!/^\d{1,2}:\d{2}/.test(shotgunTime)) {
@@ -2792,7 +2829,7 @@ const Players = () => {
                 <div>
                   <p className="text-sm font-semibold text-destructive">
                     {pairingConflicts.length} scheduling conflict{pairingConflicts.length === 1 ? "" : "s"} to review
-                    {numDays > 1 ? ` (Day ${activeDay + 1})` : ""}
+                    {numRounds > 1 ? ` (Round ${activeDay + 1})` : ""}
                   </p>
                   <ul className="mt-1 list-disc pl-5 text-xs text-foreground space-y-0.5">
                     {pairingConflicts.map((c, i) => <li key={i}>{c}</li>)}
@@ -2808,7 +2845,7 @@ const Players = () => {
               <div className="mb-4 flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2.5">
                 <ShieldCheck className="h-4 w-4 text-primary" />
                 <p className="text-xs text-muted-foreground">
-                  No tee time or starting-hole conflicts detected{numDays > 1 ? ` for Day ${activeDay + 1}` : ""}.
+                  No tee time or starting-hole conflicts detected{numRounds > 1 ? ` for Round ${activeDay + 1}` : ""}.
                 </p>
               </div>
             )
@@ -2816,28 +2853,42 @@ const Players = () => {
 
           {/* Start Format Controls */}
           <div className="mb-4 rounded-lg border border-border bg-card p-4">
-            {numDays > 1 && (
-              <div className="mb-3 flex flex-wrap items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground">Day:</span>
-                <div className="inline-flex rounded-md border border-border overflow-hidden">
-                  {tournamentDays.map((d, idx) => {
-                    const dt = new Date(d + "T00:00:00");
-                    const label = `Day ${idx + 1} · ${dt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}`;
-                    return (
-                      <button
-                        key={d}
-                        type="button"
-                        className={`px-3 py-1.5 text-xs ${activeDay === idx ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${idx > 0 ? "border-l border-border" : ""}`}
-                        onClick={() => setActiveDay(idx)}
-                      >
-                        {label}
-                      </button>
-                    );
-                  })}
-                </div>
-                <span className="text-[11px] text-muted-foreground ml-1">Each day has its own start format and tee times.</span>
+            <div className="mb-3 flex flex-wrap items-center gap-2">
+              <span className="text-xs font-medium text-muted-foreground">Round:</span>
+              <div className="inline-flex rounded-md border border-border overflow-hidden">
+                {Array.from({ length: numRounds }).map((_, idx) => {
+                  const dstr = roundDateOf(idx);
+                  const dt = dstr ? new Date(dstr + "T00:00:00") : null;
+                  const label = `Round ${idx + 1}${dt ? ` · ${dt.toLocaleDateString(undefined, { month: "short", day: "numeric" })}` : ""}`;
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className={`px-3 py-1.5 text-xs ${activeDay === idx ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${idx > 0 ? "border-l border-border" : ""}`}
+                      onClick={() => setActiveDay(idx)}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
               </div>
-            )}
+              <Button type="button" variant="outline" size="sm" className="h-7 text-xs" onClick={addRound}>+ Add Round</Button>
+              {numRounds > Math.max(1, numDays) && (
+                <Button type="button" variant="ghost" size="sm" className="h-7 text-xs" onClick={removeRound}>Remove last round</Button>
+              )}
+              <div className="flex items-center gap-2 ml-auto">
+                <Label className="text-xs text-muted-foreground whitespace-nowrap">Round {activeDay + 1} date</Label>
+                <Input
+                  type="date"
+                  className="h-8 w-[150px]"
+                  value={roundDateOf(activeDay)}
+                  onChange={(e) => persistStartFormat({ roundDate: e.target.value })}
+                />
+              </div>
+              <p className="w-full text-[11px] text-muted-foreground">
+                Each round keeps its own play date, format, start type and tee times. The round date is what printables, the public tee sheet and tee-time emails show — set it when side events start a day before the actual round.
+              </p>
+            </div>
             <div className="mb-3 flex flex-wrap items-end gap-4 border-b border-border pb-3">
               <div>
                 <Label className="text-xs text-muted-foreground">
@@ -2870,7 +2921,7 @@ const Players = () => {
                 </Select>
               </div>
               <p className="text-[11px] text-muted-foreground pb-2">
-                {numDays > 1
+                {numRounds > 1
                   ? "Each round can use its own format, hole count, and start type."
                   : "Set the format and hole count for this round."}
               </p>
@@ -3029,8 +3080,8 @@ const Players = () => {
             </div>
             <p className="mt-2 text-xs text-muted-foreground">
               {startFormat === "tee_times"
-                ? `Click "Assign Tee Times" to auto-assign tee times in ${teeInterval}-minute intervals from ${fmtTee12(firstTeeTime)}${numDays > 1 ? ` for Day ${activeDay + 1}` : ""}. You can still manually edit any tee time afterwards — manual edits are kept and hole numbers are never auto-assigned for a tee time start.`
-                : `All holes tee off at ${fmtTee12(shotgunTime)}${numDays > 1 ? ` on Day ${activeDay + 1}` : ""}. Individual hole overrides still apply below.`}
+                ? `Click "Assign Tee Times" to auto-assign tee times in ${teeInterval}-minute intervals from ${fmtTee12(firstTeeTime)}${numRounds > 1 ? ` for Round ${activeDay + 1}` : ""}. You can still manually edit any tee time afterwards — manual edits are kept and hole numbers are never auto-assigned for a tee time start.`
+                : `All holes tee off at ${fmtTee12(shotgunTime)}${numRounds > 1 ? ` on Round ${activeDay + 1}` : ""}. Individual hole overrides still apply below.`}
             </p>
 
           </div>

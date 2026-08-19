@@ -15,6 +15,8 @@ export interface PairingsDayCfg {
   roundFormat?: string;
   roundHoles?: number;
   sameStartHole?: boolean;
+  /** Actual play date for this round ("YYYY-MM-DD"). Overrides the tournament date. */
+  roundDate?: string;
 }
 
 export interface PairingsConfig {
@@ -24,6 +26,8 @@ export interface PairingsConfig {
   teeTimesByDay: Record<string, Record<string, string>>;
   /** day index → day config */
   byDay: Record<string, PairingsDayCfg>;
+  /** number of rounds the organizer set up (independent of the tournament date range) */
+  rounds: number;
 }
 
 export const defaultPairingsDayCfg = (): PairingsDayCfg => ({
@@ -35,6 +39,7 @@ export const defaultPairingsDayCfg = (): PairingsDayCfg => ({
   roundFormat: "",
   roundHoles: 18,
   sameStartHole: true,
+  roundDate: "",
 });
 
 export function parsePairingsConfig(raw: unknown): PairingsConfig {
@@ -57,7 +62,12 @@ export function parsePairingsConfig(raw: unknown): PairingsConfig {
     if (!cfg || typeof cfg !== "object") continue;
     byDay[String(day)] = { ...defaultPairingsDayCfg(), ...(cfg as PairingsDayCfg) };
   }
-  return { labels, teeTimesByDay, byDay };
+  const rounds = Math.max(
+    1,
+    Number(obj.rounds) || 0,
+    ...Object.keys(byDay).map((d) => Number(d) + 1),
+  );
+  return { labels, teeTimesByDay, byDay, rounds };
 }
 
 export function dayCfgOf(cfg: PairingsConfig, day = 0): PairingsDayCfg {
@@ -110,4 +120,24 @@ export function teeTimeForGroup(
 ): string | null {
   if (groupNumber == null) return null;
   return cfg.teeTimesByDay[String(day)]?.[String(groupNumber)] || null;
+}
+
+/**
+ * Play date for a round, using the organizer's per-round override first and
+ * only then the tournament date. Multi-event weekends often start with side
+ * events a day before the actual round, so the override is the source of truth
+ * for printables, the public tee sheet and emails.
+ */
+export function roundDateFor(
+  cfg: PairingsConfig,
+  day = 0,
+  fallback?: string | null,
+): string | null {
+  const d = dayCfgOf(cfg, day).roundDate;
+  return (d && String(d).trim()) || fallback || null;
+}
+
+/** Round label such as "Round 2" */
+export function roundLabel(day: number): string {
+  return `Round ${day + 1}`;
 }

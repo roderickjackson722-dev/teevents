@@ -313,10 +313,15 @@ Deno.serve(async (req) => {
 
     const { data: tournament } = await admin
       .from("tournaments")
-      .select("id, title, date, location, state, course_name, slug, organization_id, day_before_email_config, schedule_info, schedule_info_html")
+      .select("id, title, date, location, state, course_name, slug, organization_id, day_before_email_config, schedule_info, schedule_info_html, pairings_config")
       .eq("id", tournament_id)
       .single();
     if (!tournament) throw new Error("Tournament not found");
+
+    // Event-day variable follows the Round 1 play date set on Players & Pairings.
+    // Multi-event weekends often list side events the day before the actual round.
+    const round1Date = (tournament as any)?.pairings_config?.byDay?.["0"]?.roundDate;
+    if (round1Date && String(round1Date).trim()) (tournament as any).date = String(round1Date).trim();
 
     if (user) {
       const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });

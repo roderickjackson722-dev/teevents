@@ -305,11 +305,15 @@ Deno.serve(async (req) => {
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, tee_times_email_config, schedule_info, schedule_info_html, slug")
+      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, tee_times_email_config, schedule_info, schedule_info_html, slug, pairings_config")
       .eq("id", tournamentId)
       .single();
 
     if (!tournament) throw new Error("Tournament not found");
+
+    // Event-day variable follows the Round 1 play date set on Players & Pairings.
+    const round1Date = (tournament as any)?.pairings_config?.byDay?.["0"]?.roundDate;
+    if (round1Date && String(round1Date).trim()) (tournament as any).date = String(round1Date).trim();
 
     // Verify user is org member
     const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });

@@ -730,23 +730,40 @@ export default function EmailTemplateEditor() {
     });
     try {
       console.log("[Email Templates] Sending template:", templateKind, "subject:", config.subject, "recipients:", targets.length);
-      if (templateKind === "day_before") {
-        const { data, error } = await supabase.functions.invoke("send-day-before-reminder", {
-          body: { tournament_id: selectedTournament, registration_ids: targets },
-        });
-        if (error) throw error;
-        recordResults(targets, data?.results);
-        toast.success(`Sent ${data?.sent ?? 0} reminder(s)${data?.failed ? `, ${data.failed} failed` : ""}`);
-        if (!ids) setSelectedRecipients([]);
-        setSending(false);
-        return;
+      // Build send-time alternate addresses (never changes the registered email)
+      const overrides: Record<string, string> = {};
+      for (const id of targets) {
+        const alt = (altEmails[id] || "").trim();
+        if (alt) overrides[id] = alt;
       }
-      const { data, error } = await supabase.functions.invoke("resend-confirmation", {
-        body: { registration_ids: targets, use_custom_template: true, template_kind: templateKind },
+      // Players marked "both" also get a copy at their registered address
+      const alsoRegistered = targets.filter(id => overrides[id] && (altMode[id] || "alt") === "both");
+      const fnName = templateKind === "day_before" ? "send-day-before-reminder" : "resend-confirmation";
+      const baseBody = templateKind === "day_before"
+        ? { tournament_id: selectedTournament }
+        : { use_custom_template: true, template_kind: templateKind };
+
+      const { data, error } = await supabase.functions.invoke(fnName, {
+        body: {
+          ...baseBody,
+          registration_ids: targets,
+          ...(Object.keys(overrides).length ? { email_overrides: overrides } : {}),
+        },
       });
       if (error) throw error;
+      let sentCount = data?.sent ?? 0;
+      let failedCount = data?.failed ?? 0;
+      if (alsoRegistered.length > 0) {
+        const second = await supabase.functions.invoke(fnName, {
+          body: { ...baseBody, registration_ids: alsoRegistered },
+        });
+        if (!second.error) {
+          sentCount += second.data?.sent ?? 0;
+          failedCount += second.data?.failed ?? 0;
+        }
+      }
       recordResults(targets, data?.results);
-      toast.success(`Sent ${data.sent} email(s)${data.failed ? `, ${data.failed} failed` : ""}`);
+      toast.success(`Sent ${sentCount} email(s)${failedCount ? `, ${failedCount} failed` : ""}`);
       if (!ids) setSelectedRecipients([]);
     } catch (e: any) {
       setSendResults(prev => {

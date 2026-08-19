@@ -276,6 +276,36 @@ export default function FlightPayoutPlanner({
           </div>
         </div>
 
+        {/* Choose which flights share the purse */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <div>
+            <h4 className="font-semibold text-sm">Flights That Receive Purse Money</h4>
+            <p className="text-xs text-muted-foreground">
+              Turn a flight off to keep it out of the money (e.g. a junior flight playing for trophies only).
+              Its share is redistributed across the remaining flights.
+            </p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {plan.flights.map((f) => (
+              <div key={`pay-${f.name}`} className="flex items-center justify-between gap-3 rounded-md border bg-muted/30 px-3 py-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{f.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {f.players} player{f.players === 1 ? "" : "s"} · {f.paid ? money(f.purseCents) : "no purse"}
+                  </p>
+                </div>
+                <Switch
+                  checked={f.paid}
+                  onCheckedChange={(v) => toggleFlightPaid(f.name, v)}
+                  aria-label={`${f.name} receives purse money`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+
+
         <div className="flex flex-wrap gap-2">
           {onSaveSettings && (
             <Button size="sm" onClick={saveSettings} disabled={busy !== null}>

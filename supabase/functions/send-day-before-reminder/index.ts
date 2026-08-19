@@ -64,7 +64,7 @@ function pairingValuesFor(pairingsConfig: unknown, groupNumber: number | null | 
   const groupKey = String(groupNumber);
   const day = config.byDay?.["0"] || {};
   const savedLabel = String(config.labels?.[groupKey] || "").trim();
-  const configuredHole = day.startFormat === "tee_times" && day.sameStartHole !== false
+  const configuredHole = (day.startFormat || "tee_times") === "tee_times" && day.sameStartHole !== false
     ? String(day.firstTeeHole || 1)
     : String(groupNumber);
   return {

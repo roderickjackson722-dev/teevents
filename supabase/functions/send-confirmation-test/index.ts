@@ -10,12 +10,32 @@ const SENDER_EMAIL = "info@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
 
 function replaceVars(text: string, vars: Record<string, string>): string {
-  return (text || "")
-    .replace(/\{\{first_name\}\}/g, vars.first_name || "")
-    .replace(/\{\{last_name\}\}/g, vars.last_name || "")
-    .replace(/\{\{event_name\}\}/g, vars.event_name || "")
-    .replace(/\{\{event_date\}\}/g, vars.event_date || "")
-    .replace(/\{\{event_location\}\}/g, vars.event_location || "");
+  return (text || "").replace(/\{\{\s*(\w+)\s*\}\}/g, (_match, key: string) => vars[key] || "");
+}
+
+function formatTeeTime(value: unknown): string {
+  const raw = String(value || "").trim();
+  const match = /^(\d{1,2}):(\d{2})/.exec(raw);
+  if (!match) return raw;
+  const hour = Number(match[1]);
+  return `${hour % 12 || 12}:${match[2]} ${hour >= 12 ? "PM" : "AM"}`;
+}
+
+function pairingValuesFor(pairingsConfig: unknown, groupNumber: number | null | undefined) {
+  if (groupNumber == null) return { teeTime: "TBD", startingHole: "TBD" };
+  const config = pairingsConfig && typeof pairingsConfig === "object"
+    ? pairingsConfig as Record<string, any>
+    : {};
+  const key = String(groupNumber);
+  const day = config.byDay?.["0"] || {};
+  return {
+    teeTime: formatTeeTime(config.teeTimesByDay?.["0"]?.[key]) || "TBD",
+    startingHole: String(config.labels?.[key] || (
+      (day.startFormat || "tee_times") === "tee_times" && day.sameStartHole !== false
+        ? day.firstTeeHole || 1
+        : groupNumber
+    )),
+  };
 }
 
 function buildHtml(config: any, vars: Record<string, string>, headerText: string, opts?: { includePlayerHub?: boolean; hubUrl?: string }): string {
@@ -107,10 +127,11 @@ Deno.serve(async (req) => {
     let tournamentLocation: string | null = null;
 
     let tournamentSlug: string | null = null;
+    let pairingsConfig: unknown = {};
     if (tournament_id) {
       const { data: t } = await supabaseAdmin
         .from("tournaments")
-        .select("title, date, location, organization_id, slug")
+        .select("title, date, location, organization_id, slug, pairings_config")
         .eq("id", tournament_id)
         .maybeSingle();
       if (t) {
@@ -118,6 +139,7 @@ Deno.serve(async (req) => {
         tournamentDate = (t as any).date || null;
         tournamentLocation = (t as any).location || null;
         tournamentSlug = (t as any).slug || null;
+        pairingsConfig = (t as any).pairings_config || {};
         // Authorize: must be admin or org member
         const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
         const { data: isMember } = await supabaseAdmin.rpc("is_org_member", { _user_id: user.id, _org_id: (t as any).organization_id });
@@ -130,12 +152,31 @@ Deno.serve(async (req) => {
           .toLocaleDateString("en-US", { weekday: "long", year: "numeric", month: "long", day: "numeric" })
       : "Saturday, June 15, 2026";
 
+    let sampleRegistration: any = null;
+    if (tournament_id) {
+      const { data: registration } = await supabaseAdmin
+        .from("tournament_registrations")
+        .select("first_name, last_name, group_number, tee_time, scoring_code, group_scoring_code, qr_token")
+        .eq("tournament_id", tournament_id)
+        .not("group_number", "is", null)
+        .order("group_number")
+        .limit(1)
+        .maybeSingle();
+      sampleRegistration = registration;
+    }
+    const pairing = pairingValuesFor(pairingsConfig, sampleRegistration?.group_number);
     const vars = {
-      first_name: "Test",
-      last_name: "Recipient",
+      first_name: sampleRegistration?.first_name || "Test",
+      last_name: sampleRegistration?.last_name || "Recipient",
       event_name: tournamentTitle,
       event_date: dateStr,
       event_location: tournamentLocation || "Pine Valley Golf Club",
+      tee_time: pairing.teeTime !== "TBD" ? pairing.teeTime : formatTeeTime(sampleRegistration?.tee_time) || "TBD",
+      hole_number: pairing.startingHole,
+      group_number: sampleRegistration?.group_number != null ? String(sampleRegistration.group_number) : "TBD",
+      team_name: sampleRegistration?.group_number != null ? `Group ${sampleRegistration.group_number}` : "To be assigned",
+      scoring_code: sampleRegistration?.group_scoring_code || sampleRegistration?.scoring_code || "Assigned when pairings are finalized",
+      pairings_link: tournamentSlug ? `https://www.teevents.golf/pairings/${tournamentSlug}` : "https://www.teevents.golf",
     };
 
     const headers: Record<string, string> = {
@@ -147,17 +188,7 @@ Deno.serve(async (req) => {
     const headerText = headers[template_kind] || "Registration Confirmed!";
 
     // Use a real registrant's qr_token so the Player Hub link actually works in test emails.
-    let sampleToken: string | null = null;
-    if (tournament_id) {
-      const { data: reg } = await supabaseAdmin
-        .from("tournament_registrations")
-        .select("qr_token")
-        .eq("tournament_id", tournament_id)
-        .not("qr_token", "is", null)
-        .limit(1)
-        .maybeSingle();
-      sampleToken = (reg as any)?.qr_token || null;
-    }
+    const sampleToken: string | null = sampleRegistration?.qr_token || null;
     const hubUrl = tournamentSlug && sampleToken
       ? `https://www.teevents.golf/player/${tournamentSlug}/${sampleToken}`
       : tournamentSlug

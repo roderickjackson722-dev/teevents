@@ -544,6 +544,8 @@ Deno.serve(async (req) => {
     let failed = 0;
     const results: any[] = [];
     for (const reg of regs || []) {
+      const alt = overrideMap.get(String(reg.id));
+      if (alt) (reg as any).email = alt;
       const name = `${reg.first_name || ""} ${reg.last_name || ""}`.trim();
       const vars = buildVars(reg);
       if (!reg.email) {

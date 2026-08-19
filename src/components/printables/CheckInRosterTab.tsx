@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Registration } from "./types";
+import { startingHoleOf } from "./types";
 
 type Reg = Registration & {
   scoring_code?: string | null;

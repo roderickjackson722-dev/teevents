@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Registration } from "./types";
+import { startingHoleOf } from "./types";
 
 interface Props {
   tournament: Tournament | null;

@@ -7,7 +7,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, scorecardCss } from "./printUtils";
 import type { Tournament, Registration } from "./types";
-import { getPrimaryColor, getPrintLogo } from "./types";
+import { getPrimaryColor, getPrintLogo, startingHoleOf } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import TeamScorecards from "./TeamScorecards";
 import ScorecardSelector from "./ScorecardSelector";

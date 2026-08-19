@@ -92,6 +92,40 @@ export default function PublicPairingsPageEditor({ tournamentId, slug, config, o
             <Textarea rows={3} value={draft.intro} onChange={(e) => set("intro", e.target.value)} />
           </div>
 
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="space-y-1">
+              <Label className="text-xs">Event date shown on the page</Label>
+              <Input type="date" value={draft.date_override} onChange={(e) => set("date_override", e.target.value)} />
+              <p className="text-xs text-muted-foreground">Leave blank to use the round date from Pairings.</p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Or custom date text</Label>
+              <Input
+                value={draft.date_text}
+                placeholder='e.g. "Saturday, August 22, 2026"'
+                onChange={(e) => set("date_text", e.target.value)}
+              />
+              <p className="text-xs text-muted-foreground">Overrides the date above when filled in.</p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Course name shown</Label>
+              <Input
+                value={draft.course_override}
+                placeholder="Leave blank to use the tournament course"
+                onChange={(e) => set("course_override", e.target.value)}
+              />
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Contact email shown</Label>
+              <Input
+                value={draft.contact_override}
+                placeholder="Leave blank to use the tournament contact"
+                onChange={(e) => set("contact_override", e.target.value)}
+              />
+            </div>
+          </div>
+
+
           <div className="grid gap-2">
             {TOGGLES.map((t) => (
               <div key={t.key} className="flex items-center justify-between rounded-md border border-border p-2.5">

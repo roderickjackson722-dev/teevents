@@ -1142,6 +1142,31 @@ const Players = () => {
 
   // ---- Lock / publish pairings ----
   const pairingsLocked = !!currentTournamentObj?.pairings_locked;
+
+  // Publishes the read-only public tee sheet at /pairings/:slug so tee-time
+  // emails can link every player to the full field.
+  const [publicPairingsSaving, setPublicPairingsSaving] = useState(false);
+  const togglePairingsPublic = async () => {
+    if (!selectedTournament || demoGuard()) return;
+    const next = !currentTournamentObj?.pairings_public;
+    setPublicPairingsSaving(true);
+    const { error } = await (supabase as any)
+      .from("tournaments")
+      .update({ pairings_public: next })
+      .eq("id", selectedTournament);
+    setPublicPairingsSaving(false);
+    if (error) {
+      toast({ title: "Could not update tee sheet", description: error.message, variant: "destructive" });
+      return;
+    }
+    setTournaments((list: any[]) => list.map((t: any) => (
+      t.id === selectedTournament ? { ...t, pairings_public: next } : t
+    )));
+    toast({
+      title: next ? "Public tee sheet published" : "Public tee sheet hidden",
+      description: next ? "Players can now view pairings and tee times." : "The public pairings page is no longer visible.",
+    });
+  };
   const [lockSaving, setLockSaving] = useState(false);
   const lockGuard = () => {
     if (!pairingsLocked) return false;
@@ -2882,11 +2907,11 @@ const Players = () => {
                   onClick={togglePairingsPublic}
                   disabled={publicPairingsSaving}
                 >
-                  {currentTournament?.pairings_public ? "Public Tee Sheet: On" : "Public Tee Sheet: Off"}
+                  {currentTournamentObj?.pairings_public ? "Public Tee Sheet: On" : "Public Tee Sheet: Off"}
                 </Button>
-                {currentTournament?.slug && currentTournament?.pairings_public && (
+                {currentTournamentObj?.slug && currentTournamentObj?.pairings_public && (
                   <Button size="sm" variant="ghost" asChild>
-                    <a href={`/pairings/${currentTournament.slug}`} target="_blank" rel="noreferrer">
+                    <a href={`/pairings/${currentTournamentObj.slug}`} target="_blank" rel="noreferrer">
                       View Tee Sheet
                     </a>
                   </Button>

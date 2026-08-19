@@ -4,6 +4,32 @@ import logoBlack from "@/assets/logo-black.png";
 const Footer = () => {
   return (
     <footer className="bg-golf-green-dark text-primary-foreground">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            "@id": "https://www.teevents.golf/#organization",
+            name: "TeeVents Golf",
+            alternateName: "TeeVents Golf Management",
+            url: "https://www.teevents.golf/",
+            logo: "https://www.teevents.golf/logo.png",
+            email: "info@teevents.golf",
+            description: "Golf tournament management platform for organizers.",
+            address: { "@type": "PostalAddress", addressCountry: "US" },
+            contactPoint: [
+              {
+                "@type": "ContactPoint",
+                contactType: "customer support",
+                email: "info@teevents.golf",
+                areaServed: "US",
+                availableLanguage: "English",
+              },
+            ],
+          }),
+        }}
+      />
       <div className="container mx-auto px-4 py-12">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="flex items-center gap-3">

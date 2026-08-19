@@ -70,9 +70,11 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       key: `s-${p.id}`,
       groupNumber: null,
       teamName: playerName(p),
+      teeTime: (p as any).tee_time || null,
       players: [p],
       scoringCode: (p as any).group_scoring_code || (p as any).scoring_code || null,
     });
+
   });
 
   return teams;

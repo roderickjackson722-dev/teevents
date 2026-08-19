@@ -317,7 +317,7 @@ const Players = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, max_players, allow_cash_registration, registration_fee_cents, pairings_locked, pairings_locked_at")
+      .select("id, title, slug, max_players, allow_cash_registration, registration_fee_cents, pairings_locked, pairings_locked_at, pairings_public")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -2876,6 +2876,21 @@ const Players = () => {
                 <Button onClick={handleSaveTeeTimesNow} size="sm" variant="secondary" disabled={savingTeeTimes}>
                   {savingTeeTimes ? "Saving…" : "Save Tee Times"}
                 </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={togglePairingsPublic}
+                  disabled={publicPairingsSaving}
+                >
+                  {currentTournament?.pairings_public ? "Public Tee Sheet: On" : "Public Tee Sheet: Off"}
+                </Button>
+                {currentTournament?.slug && currentTournament?.pairings_public && (
+                  <Button size="sm" variant="ghost" asChild>
+                    <a href={`/pairings/${currentTournament.slug}`} target="_blank" rel="noreferrer">
+                      View Tee Sheet
+                    </a>
+                  </Button>
+                )}
               </div>
 
             </div>

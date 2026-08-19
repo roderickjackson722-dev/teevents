@@ -10,6 +10,8 @@ export interface Tournament {
   printable_font: string | null;
   printable_layout: string | null;
   hole_pars: number[] | null;
+  /** "tee_times" | "shotgun" — set on the Players & Pairings page */
+  pairings_start_format?: string | null;
 }
 
 /** Logo used on printables: the dedicated printable logo, else the site logo */

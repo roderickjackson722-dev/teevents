@@ -33,6 +33,7 @@ interface Player {
   handicap: number | null;
   amount_paid_cents?: number | null;
   group_number?: number | null;
+  tier_id?: string | null;
 }
 
 interface Props {
@@ -59,11 +60,13 @@ export default function FlightsManager({ tournamentId }: Props) {
   const [scoreTotals, setScoreTotals] = useState<Map<string, number>>(new Map());
   const [scoringFormat, setScoringFormat] = useState<string>("");
   const [teamHcpSaving, setTeamHcpSaving] = useState(false);
+  const [regTiers, setRegTiers] = useState<{ id: string; name: string }[]>([]);
+  const [syncing, setSyncing] = useState(false);
 
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [fRes, pRes, tRes, sRes] = await Promise.all([
+    const [fRes, pRes, tRes, sRes, rtRes] = await Promise.all([
       (supabase as any)
         .from("tournament_tiers")
         .select("*")
@@ -71,7 +74,7 @@ export default function FlightsManager({ tournamentId }: Props) {
         .order("display_order", { ascending: true }),
       (supabase as any)
         .from("tournament_registrations")
-        .select("id, first_name, last_name, flight_id, handicap, amount_paid_cents, group_number")
+        .select("id, first_name, last_name, flight_id, handicap, amount_paid_cents, group_number, tier_id")
         .eq("tournament_id", tournamentId)
         .order("last_name", { ascending: true }),
       (supabase as any)
@@ -83,7 +86,13 @@ export default function FlightsManager({ tournamentId }: Props) {
         .from("tournament_scores")
         .select("registration_id, strokes")
         .eq("tournament_id", tournamentId),
+      (supabase as any)
+        .from("tournament_registration_tiers")
+        .select("id, name")
+        .eq("tournament_id", tournamentId)
+        .order("sort_order", { ascending: true }),
     ]);
+    setRegTiers((rtRes.data || []) as { id: string; name: string }[]);
     setFlights(fRes.data || []);
     const rows: Player[] = pRes.data || [];
     setPlayers(rows);
@@ -244,6 +253,66 @@ export default function FlightsManager({ tournamentId }: Props) {
   };
 
 
+  /**
+   * Pulls the divisions/tiers players picked at registration into tournament
+   * flights and assigns every matching player, so the flighted leaderboards
+   * stay in sync with Registration Management.
+   */
+  const syncFromRegistrationDivisions = async () => {
+    setSyncing(true);
+    try {
+      const nameById = new Map(regTiers.map((t) => [t.id, t.name]));
+      const usedNames = [...new Set(
+        players.map((p) => (p.tier_id ? nameById.get(p.tier_id) : null)).filter((n): n is string => !!n),
+      )];
+      if (usedNames.length === 0) throw new Error("No registration divisions/tiers found on the roster yet");
+
+      const missing = usedNames.filter((n) => !flights.some((f) => f.tier_name === n));
+      if (missing.length) {
+        const { error } = await (supabase as any).from("tournament_tiers").insert(
+          missing.map((n, i) => ({
+            tournament_id: tournamentId,
+            tier_name: n,
+            display_order: flights.length + i,
+            is_active: true,
+            tier_description: "Synced from registration divisions",
+          })),
+        );
+        if (error) throw error;
+      }
+
+      const { data: allFlights } = await (supabase as any)
+        .from("tournament_tiers")
+        .select("id, tier_name")
+        .eq("tournament_id", tournamentId);
+      const idByName = new Map<string, string>((allFlights || []).map((f: any) => [f.tier_name, f.id]));
+
+      let assigned = 0;
+      for (const t of regTiers) {
+        const flightId = idByName.get(t.name);
+        const ids = players.filter((p) => p.tier_id === t.id && p.flight_id !== flightId).map((p) => p.id);
+        if (!flightId || ids.length === 0) continue;
+        const { error } = await (supabase as any)
+          .from("tournament_registrations")
+          .update({ flight_id: flightId })
+          .in("id", ids);
+        if (error) throw error;
+        assigned += ids.length;
+      }
+      toast({
+        title: "Flights synced",
+        description: `${usedNames.length} division${usedNames.length === 1 ? "" : "s"} mapped, ${assigned} player${assigned === 1 ? "" : "s"} assigned.`,
+      });
+      await load();
+    } catch (e: any) {
+      toast({ title: "Sync failed", description: e.message, variant: "destructive" });
+    } finally {
+      setSyncing(false);
+    }
+  };
+
+  const noDivisionPlayers = players.filter((p) => !p.tier_id);
+
   const assign = async (playerId: string, flightId: string | null) => {
     const { error } = await (supabase as any)
       .from("tournament_registrations")
@@ -296,6 +365,32 @@ export default function FlightsManager({ tournamentId }: Props) {
 
 
 
+      <div className="rounded-lg border p-4 space-y-3 bg-card">
+        <div>
+          <h3 className="text-lg font-semibold">Sync Flights with Registration Divisions</h3>
+          <p className="text-sm text-muted-foreground">
+            Pulls the divisions/tiers players selected when they registered, creates a matching flight for each one, and
+            assigns every player. Run this any time new registrations come in.
+          </p>
+        </div>
+        <div className="flex flex-wrap items-center gap-2">
+          <Button size="sm" onClick={syncFromRegistrationDivisions} disabled={syncing}>
+            {syncing ? "Syncing…" : "Sync from registration divisions"}
+          </Button>
+          <Badge variant="outline" className="text-xs">
+            {players.filter((p) => p.flight_id).length} of {players.length} players in a flight
+          </Badge>
+        </div>
+        {noDivisionPlayers.length > 0 && (
+          <div className="text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">{noDivisionPlayers.length} player{noDivisionPlayers.length === 1 ? "" : "s"}</span>{" "}
+            registered without a division — assign them below in the Custom Flight Editor:{" "}
+            {noDivisionPlayers.slice(0, 8).map((p) => `${p.first_name} ${p.last_name}`).join(", ")}
+            {noDivisionPlayers.length > 8 ? `, +${noDivisionPlayers.length - 8} more` : ""}
+          </div>
+        )}
+      </div>
+
       <div>
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -341,7 +436,7 @@ export default function FlightsManager({ tournamentId }: Props) {
         )}
       </div>
 
-      {flights.length > 0 && players.length > 0 && (
+      {players.length > 0 && (
         <div>
           <h3 className="text-lg font-semibold mb-1">Custom Flight Editor</h3>
           <p className="text-sm text-muted-foreground mb-4">

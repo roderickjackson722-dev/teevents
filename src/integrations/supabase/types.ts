@@ -10310,6 +10310,8 @@ export type Database = {
           paid_features: Json
           pairings_locked: boolean
           pairings_locked_at: string | null
+          pairings_public: boolean
+          pairings_start_format: string | null
           pairings_update_email_config: Json | null
           pass_fees_to_participants: boolean
           pass_fees_to_registrants: boolean
@@ -10408,6 +10410,7 @@ export type Database = {
           status: string
           store_section_title: string | null
           team_hq_settings: Json
+          tee_times_email_config: Json | null
           template: string | null
           test_mode_enabled: boolean | null
           title: string
@@ -10595,6 +10598,8 @@ export type Database = {
           paid_features?: Json
           pairings_locked?: boolean
           pairings_locked_at?: string | null
+          pairings_public?: boolean
+          pairings_start_format?: string | null
           pairings_update_email_config?: Json | null
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
@@ -10693,6 +10698,7 @@ export type Database = {
           status?: string
           store_section_title?: string | null
           team_hq_settings?: Json
+          tee_times_email_config?: Json | null
           template?: string | null
           test_mode_enabled?: boolean | null
           title: string
@@ -10880,6 +10886,8 @@ export type Database = {
           paid_features?: Json
           pairings_locked?: boolean
           pairings_locked_at?: string | null
+          pairings_public?: boolean
+          pairings_start_format?: string | null
           pairings_update_email_config?: Json | null
           pass_fees_to_participants?: boolean
           pass_fees_to_registrants?: boolean
@@ -10978,6 +10986,7 @@ export type Database = {
           status?: string
           store_section_title?: string | null
           team_hq_settings?: Json
+          tee_times_email_config?: Json | null
           template?: string | null
           test_mode_enabled?: boolean | null
           title?: string
@@ -11897,6 +11906,23 @@ export type Database = {
           handicap_index: number
           id: string
           member_name: string
+        }[]
+      }
+      get_public_pairings: {
+        Args: { _slug: string }
+        Returns: {
+          course_name: string
+          event_date: string
+          first_name: string
+          flight_name: string
+          group_number: number
+          group_position: number
+          last_name: string
+          start_format: string
+          team_name: string
+          tee_time: string
+          title: string
+          tournament_id: string
         }[]
       }
       get_public_raffles: {

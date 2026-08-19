@@ -313,6 +313,8 @@ Deno.serve(async (req) => {
       sponsor: "sponsor_email_config",
       vendor: "vendor_email_config",
       pairings_update: "pairings_update_email_config",
+      tee_times: "tee_times_email_config",
+
     };
 
     const configColumn = CONFIG_COLUMN[kind] || "confirmation_email_config";

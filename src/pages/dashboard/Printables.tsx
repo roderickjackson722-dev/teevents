@@ -17,6 +17,7 @@ import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions
 import { rosterForPrintables } from "@/components/printables/rosterSource";
 import type { RegistrationGroupRow } from "@/components/printables/teamGrouping";
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
+import { parsePairingsConfig, startingHoleForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 
 
 interface TournamentWithSlug extends Tournament {
@@ -41,7 +42,7 @@ const Printables = () => {
   useEffect(() => {
     if (!selectedTournament) { setGroups([]); return; }
     (supabase.from("registration_groups") as any)
-      .select("id, group_number, team_name, tee_time, cart_sign_names")
+      .select("id, group_number, team_name, tee_time, cart_sign_names, starting_hole")
       .eq("tournament_id", selectedTournament)
       .then(({ data }: any) => setGroups((data || []) as RegistrationGroupRow[]));
   }, [selectedTournament, groupsRefresh]);
@@ -50,7 +51,7 @@ const Printables = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, site_logo_url, printable_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options, scoring_format, date, pairings_start_format")
+      .select("id, title, site_logo_url, printable_logo_url, course_name, course_par, site_primary_color, site_secondary_color, printable_font, printable_layout, hole_pars, slug, printable_options, scoring_format, date, pairings_start_format, pairings_config")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -130,11 +131,35 @@ const Printables = () => {
     setSavingOptions(false);
   };
 
-  // Printables mirror the Players & Pairings roster: paid players only, no duplicates.
-  const printRegistrations = useMemo(
-    () => rosterForPrintables(registrations as any, options.data_source) as Registration[],
-    [registrations, options.data_source],
+  /** Pairings setup (start format, starting holes, tee times) as saved on Players & Pairings. */
+  const pairingsCfg = useMemo(
+    () => parsePairingsConfig((tournament as any)?.pairings_config),
+    [tournament],
   );
+
+  /** Groups carry the pairings starting hole + tee time so every printable matches the tee sheet. */
+  const printGroups = useMemo(
+    () =>
+      groups.map((g) => ({
+        ...g,
+        starting_hole: g.starting_hole ?? startingHoleForGroup(pairingsCfg, g.group_number),
+        tee_time: g.tee_time || teeTimeForGroup(pairingsCfg, g.group_number),
+      })),
+    [groups, pairingsCfg],
+  );
+
+  // Printables mirror the Players & Pairings roster: paid players only, no duplicates.
+  const printRegistrations = useMemo(() => {
+    const roster = rosterForPrintables(registrations as any, options.data_source) as Registration[];
+    return roster.map((r) => {
+      const g = printGroups.find((x) => x.group_number != null && x.group_number === r.group_number);
+      return {
+        ...r,
+        starting_hole: g?.starting_hole ?? startingHoleForGroup(pairingsCfg, r.group_number ?? null),
+        tee_time: g?.tee_time || (r as any).tee_time || teeTimeForGroup(pairingsCfg, r.group_number ?? null),
+      } as Registration;
+    });
+  }, [registrations, options.data_source, printGroups, pairingsCfg]);
 
   const handleUpdateHole = (regId: string, newGroup: number | null) => {
     setRegistrations((prev) =>
@@ -219,15 +244,15 @@ const Printables = () => {
             tournament={tournament}
             registrations={printRegistrations}
             loading={loading}
-            groups={groups}
+            groups={printGroups}
             onGroupsChanged={() => setGroupsRefresh((n) => n + 1)}
           />
         </TabsContent>
         <TabsContent value="scorecards">
-          <ScorecardsTab tournament={tournament} registrations={printRegistrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} groups={groups} scoringFormat={(tournament as any)?.scoring_format} />
+          <ScorecardsTab tournament={tournament} registrations={printRegistrations} loading={loading} slug={tournament?.slug || undefined} courseData={courseData} groups={printGroups} scoringFormat={(tournament as any)?.scoring_format} />
         </TabsContent>
         <TabsContent value="name-badges">
-          <NameBadgesTab tournament={tournament} registrations={printRegistrations} loading={loading} groups={groups} />
+          <NameBadgesTab tournament={tournament} registrations={printRegistrations} loading={loading} groups={printGroups} />
         </TabsContent>
         <TabsContent value="alpha-list">
           <AlphaListTab tournament={tournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />

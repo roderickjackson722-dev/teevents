@@ -1,71 +1,80 @@
-# Golf League Management — Full Build
+# Tee-Time Aware Printables, Tee Time Emails & Flight Sync
 
-Builds on existing tables (`golf_leagues`, `league_members`, `league_events`, `league_event_scores`, `league_event_registrations`, `league_skins`, `league_standings`, `league_point_systems`, `league_seasons`, `league_payments`, `league_subscriptions`). No duplicate tables.
+Four connected pieces, all scoped to tournament management (no league or unrelated changes).
 
-## Part 1 — Role Selector on Login
+## 1. Printables reflect the start format (shotgun vs tee times)
 
-- New route `/select-workspace` shown after login when a user has BOTH tournament access and at least one league (or always, if user prefers).
-- Two large cards: **Manage Tournaments** → `/dashboard`, **Manage Leagues** → `/leagues`.
-- Add a persistent "Switch workspace" item in both sidebars (`DashboardSidebar`, league dashboard sidebar) that returns here.
-- `Login.tsx` redirects here on success instead of straight to `/dashboard`.
+Cart signs and name badges currently only ever print "Starting Hole: N". They will
+become format-aware, reading the same tee time data the pairings page writes
+(`registration_groups.tee_time` / `tournament_registrations.tee_time`) and the
+tournament's saved start format.
 
-## Part 2 — League Manager Dashboard
+Cart signs
+- Load each group's tee time alongside the group/team data on the Printables page.
+- When the tournament uses tee-time starts, the sign prints the tee time as the
+  primary start line (e.g. "Tee Time: 8:20 AM · Hole 1"); with shotgun starts it
+  keeps today's "Starting Hole" line.
+- New toggles in Customize Design: show tee time, show starting hole, show course
+  name, plus an editable tee time field per sign so an organizer can override what
+  prints without touching pairings. Overrides save with the existing cart sign
+  name overrides on `registration_groups`.
+- Logo, font, layout, scale and margin controls stay exactly as they are.
 
-New route tree under `/leagues/:leagueId/manage/*` with a dedicated `LeagueDashboardLayout`:
+Name badges
+- Badge template gains the start line (tee time when tee-time format, starting
+  hole when shotgun) plus team name, and honors the same show/hide toggles and
+  logo choice as cart signs.
 
-### 2.1 Events & Matches (`LeagueEventsTab` enhancements)
-- Create single-day / multi-day / recurring events (weekly cadence stored as `recurrence_rule` JSON on `league_events`).
-- Format dropdown: stroke, match, 2-scramble, 2-shamble, 4-best-ball, stableford, quota, team_points, ryder_cup, round_robin.
-- RSVP + waitlist via existing `league_event_registrations` (add `status: rsvp|waitlisted|confirmed`, `registration_deadline`).
-- Substitutes + late pairings edits.
-- **Skins toggle** per event (`skins_enabled boolean`, `skins_mode gross|net|both`, `skins_carryover boolean`, `skins_value_cents`).
+## 2. Tee Time email to individual players (with pairings link)
 
-### 2.2 Player Management (`LeagueMembersTab` enhancements)
-- CSV import (reuse `PlayerImport` pattern).
-- Handicap Index field per member (already present).
-- Compute Course Handicap = `index × slope/113 + (rating − par)` using `handicapUtils`.
-- Apply stroke pops per hole via `allocateStrokes` when net scores are computed.
-- Net Double Bogey cap on hole entry for handicap-adjusted score.
+- Add a "Tee Times & Pairings" template to the Email Templates page, using the
+  existing editor, section ordering, preview and per-player recipient selection.
+- Personalized variables per recipient: `{{tee_time}}`, `{{hole_number}}`,
+  `{{team_name}}`, `{{group_members}}`, `{{scoring_code}}` — tee time is pulled
+  from the pairings assignment, matching the existing single source of truth.
+- Buttons in the email: "View Full Pairings & Tee Sheet" and "Live Leaderboard".
+- New public, read-only pairings/tee sheet page at `/pairings/:slug` showing every
+  group with team name, tee time or starting hole, and player names, grouped by
+  flight when flights exist. Organizer can hide it; the email link points here.
 
-### 2.3 Live Scoring & Public Leaderboard
-- Public per-player scoring link: `/league/:slug/score/:code` (6-char code stored on `league_members.scoring_code`).
-- Hole-by-hole mobile entry, no auth, no app.
-- Realtime channel on `league_event_scores` → leaderboard updates instantly.
-- Manager override editor in dashboard (full edit like tournament).
-- Skins column highlighted yellow when `skins_enabled`; uses existing `computeEventSkins`.
+## 3. Flights sync with Registration Management divisions/tiers
 
-### 2.4 Settings
-- Points vs payout standings (extend `league_point_systems` with `standings_mode: points|payout`).
-- Communication hub: reuse existing tournament messaging pattern → new `league_messages` sent as email to members.
-- Print materials: scorecards, cart signs, standings PDF (reuse printables patterns).
+Root cause of "no players in tournament flights": registrations store the
+division a player signed up under in `tier_id` (registration tiers), while the
+flight leaderboards read `flight_id` (`tournament_tiers`). Nothing links them.
 
-## Part 3 — Public League Homepage
+- Flights Manager gains a "Sync from registration divisions" action that reads the
+  distinct registration tiers/divisions actually used by the roster, creates a
+  matching flight for each one that does not exist yet, and assigns every player's
+  `flight_id` from their registered division.
+- Sync runs automatically when the Flights tab loads and finds unassigned players
+  with a division, so the tab is never empty when the data exists.
+- Players with no division are listed in an "Unassigned / Needs Division" pool with
+  inline division and flight pickers, so organizers can place them from the same
+  screen instead of hunting through the roster.
+- Flight cards show live counts sourced from the roster, and the manual Custom
+  Flight Editor keeps full override control.
 
-Enhance `PublicLeague.tsx`:
-- Hero, schedule, live season standings, past results (per event), Register CTA per upcoming event.
-- Reuse existing sponsor/branding blocks.
+## 4. Everything in sync for leaderboards
 
-## Part 4 — Payments
+- The public live leaderboard already renders one tab per flight; it will now be
+  populated because `flight_id` is filled by the sync above.
+- Flight names, order and active/inactive state flow from Flights Manager to the
+  public leaderboard tabs and to the flighted preview inside the dashboard.
+- The pairings page division filter, printables, the tee time email and the public
+  pairings page all read the same division/tee time values, so one edit updates
+  every surface.
 
-- Reuse `create-league-subscription` pattern for **event registration** via new edge function `create-league-event-checkout`:
-  - Direct charge on organizer's connected Stripe account.
-  - `application_fee_amount = 5%`.
-  - Toggle `pass_platform_fee_to_player` on `league_events`.
-- Webhook already handled in `league-payment-webhook` for `kind: league_event`.
+## Technical notes
 
-## Technical Details
-
-**DB migration** (single migration):
-- `league_events`: add `recurrence_rule jsonb`, `registration_deadline timestamptz`, `skins_enabled bool`, `skins_mode text`, `skins_carryover bool`, `skins_value_cents int`, `pass_platform_fee_to_player bool`, `entry_fee_cents int`.
-- `league_event_registrations`: add `status text default 'confirmed'`, `waitlist_position int`.
-- `league_members`: add `scoring_code text unique`, trigger to auto-generate 6-char code.
-- `league_point_systems`: add `standings_mode text default 'points'`.
-- New table `league_messages` (id, league_id, subject, body, sent_at, sent_by) + GRANTs + RLS.
-
-**Files**:
-- New: `src/pages/SelectWorkspace.tsx`, `src/pages/leagues/LeagueDashboard.tsx`, `src/pages/leagues/LeagueScore.tsx` (public), `src/components/leagues/LeagueDashboardLayout.tsx`, `src/components/leagues/LeagueSkinsToggle.tsx`, `src/components/leagues/LeagueCommunicationTab.tsx`, `src/components/leagues/LeaguePrintablesTab.tsx`.
-- Edit: `src/App.tsx` (routes), `src/pages/Login.tsx` (redirect), `src/components/DashboardSidebar.tsx` (switch-workspace link), `src/components/leagues/LeagueEventsTab.tsx`, `LeagueMembersTab.tsx`, `LeagueScoringTab.tsx`, `LeagueSkinsTab.tsx`, `src/pages/PublicLeague.tsx`, `src/lib/leagueSkins.ts` (net mode uses computed net).
-- New edge fn: `supabase/functions/create-league-event-checkout/index.ts`.
-
-## Scope guard
-No changes to tournament flows, admin dashboard, or any file outside the paths listed above.
+- Data: reuse `registration_groups.tee_time` / `tee_times`, `tournaments.start_format`
+  (already persisted from pairings), `tournament_registrations.tier_id` and
+  `flight_id`, `tournament_tiers`. No schema change expected beyond storing the
+  new printable toggles inside the existing `printable_options` JSON and the new
+  email config column, plus a public SELECT policy check for the pairings page.
+- New/changed files: `src/components/printables/CartSignsTab.tsx`,
+  `NameBadgesTab.tsx`, `PrintableSettings.tsx`, `teamGrouping.ts`,
+  `src/pages/dashboard/Printables.tsx`, `src/components/dashboard/FlightsManager.tsx`,
+  `src/pages/dashboard/EmailTemplateEditor.tsx` (+ send path), new
+  `src/pages/PublicPairings.tsx` with a route.
+- Untouched: scoring engine, payouts, league mode, registration checkout.

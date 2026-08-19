@@ -569,7 +569,10 @@ export default function LiveLeaderboard() {
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         subtitle={subtitle}
+        boards={flightBoards}
+        boardColumns={design.flight_columns || 2}
         presentedBy={presentedBy}
+
         topNotice={
           <>
             {returnToScoring ? (

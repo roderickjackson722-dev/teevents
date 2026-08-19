@@ -13,12 +13,14 @@ import { Scale, Info, Loader2, Save, ClipboardCheck, CheckCircle2, AlertTriangle
 import {
   FLIGHT_METHODS,
   flightsForMethod,
+  flightLabel,
   buildPayoutPlan,
   placesPaidFor,
   money,
   type FlightMethod,
   type FlightBasis,
 } from "@/lib/flightPayouts";
+
 
 interface Props {
   /** number of players/teams in the field */
@@ -79,6 +81,20 @@ export default function FlightPayoutPlanner({
   /** use the real, manually-assigned flights when the organizer picked "custom" */
   const useActual = method === "custom" && enabled && !!actualFlights?.length;
 
+  const flightNames = useMemo(
+    () =>
+      useActual
+        ? actualFlights!.map((f) => f.name)
+        : Array.from({ length: enabled ? flights : 1 }, (_, i) => flightLabel(i)),
+    [useActual, actualFlights, enabled, flights],
+  );
+
+  /** flight names the organizer excluded from the purse (e.g. junior flight) */
+  const [excluded, setExcluded] = useState<string[]>([]);
+  const isPaid = (name: string) => !excluded.includes(name);
+  const toggleFlightPaid = (name: string, paid: boolean) =>
+    setExcluded((prev) => (paid ? prev.filter((n) => n !== name) : prev.includes(name) ? prev : [...prev, name]));
+
   const plan = useMemo(
     () =>
       buildPayoutPlan({
@@ -87,8 +103,10 @@ export default function FlightPayoutPlanner({
         flights: enabled ? flights : 1,
         flightSizes: useActual ? actualFlights!.map((f) => f.players) : null,
         names: useActual ? actualFlights!.map((f) => f.name) : null,
+        paidFlights: flightNames.map((n) => isPaid(n)),
       }),
-    [fieldSize, totalPurseCents, flights, enabled, useActual, actualFlights],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [fieldSize, totalPurseCents, flights, enabled, useActual, actualFlights, flightNames, excluded],
   );
 
   const validationIssues = useMemo(() => {
@@ -98,7 +116,10 @@ export default function FlightPayoutPlanner({
     if (assigned === 0) issues.push("No players in the field yet, so no payouts can be calculated.");
     if (unassignedCount > 0)
       issues.push(`${unassignedCount} player${unassignedCount === 1 ? " is" : "s are"} not assigned to a flight and will not be paid.`);
+    if (plan.flights.every((f) => !f.paid) && totalPurseCents > 0)
+      issues.push("Every flight is excluded from the purse — no payouts will be made.");
     plan.flights.forEach((f) => {
+      if (!f.paid) return;
       if (f.players === 0) issues.push(`${f.name} has no players — it will receive no purse.`);
       const paid = f.places.reduce((s, p) => s + p.amountCents, 0);
       if (f.players > 0 && Math.abs(paid - f.purseCents) > 5)
@@ -108,6 +129,7 @@ export default function FlightPayoutPlanner({
       issues.push(`Rounding remainder of ${money(plan.remainderCents)} will stay with the organizer.`);
     return issues;
   }, [plan, totalPurseCents, unassignedCount]);
+
 
 
   const maxPlaces = Math.max(1, ...plan.flights.map((f) => f.places.length));
@@ -254,6 +276,36 @@ export default function FlightPayoutPlanner({
           </div>
         </div>
 
+        {/* Choose which flights share the purse */}
+        <div className="rounded-lg border p-4 space-y-3">
+          <div>
+            <h4 className="font-semibold text-sm">Flights That Receive Purse Money</h4>
+            <p className="text-xs text-muted-foreground">
+              Turn a flight off to keep it out of the money (e.g. a junior flight playing for trophies only).
+              Its share is redistributed across the remaining flights.
+            </p>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+            {plan.flights.map((f) => (
+              <div key={`pay-${f.name}`} className="flex items-center justify-between gap-3 rounded-md border bg-muted/30 px-3 py-2">
+                <div className="min-w-0">
+                  <p className="text-sm font-medium truncate">{f.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {f.players} player{f.players === 1 ? "" : "s"} · {f.paid ? money(f.purseCents) : "no purse"}
+                  </p>
+                </div>
+                <Switch
+                  checked={f.paid}
+                  onCheckedChange={(v) => toggleFlightPaid(f.name, v)}
+                  aria-label={`${f.name} receives purse money`}
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+
+
+
         <div className="flex flex-wrap gap-2">
           {onSaveSettings && (
             <Button size="sm" onClick={saveSettings} disabled={busy !== null}>
@@ -305,8 +357,13 @@ export default function FlightPayoutPlanner({
               </TableHeader>
               <TableBody>
                 {plan.flights.map((f) => (
-                  <TableRow key={f.name}>
-                    <TableCell className="font-medium">{f.name}</TableCell>
+                  <TableRow key={f.name} className={f.paid ? undefined : "opacity-60"}>
+                    <TableCell className="font-medium">
+                      {f.name}
+                      {!f.paid && (
+                        <Badge variant="outline" className="ml-2 text-[10px]">No purse</Badge>
+                      )}
+                    </TableCell>
                     <TableCell className="text-muted-foreground">{f.range}</TableCell>
                     <TableCell className="text-right">{f.players}</TableCell>
                     <TableCell className="text-right font-medium">{money(f.purseCents)}</TableCell>
@@ -317,6 +374,7 @@ export default function FlightPayoutPlanner({
                     ))}
                   </TableRow>
                 ))}
+
               </TableBody>
             </Table>
           </div>
@@ -340,11 +398,14 @@ export default function FlightPayoutPlanner({
 
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {plan.flights.map((f) => (
-              <div key={`v-${f.name}`} className="rounded-md border bg-muted/30 p-3 space-y-1">
+              <div key={`v-${f.name}`} className={`rounded-md border bg-muted/30 p-3 space-y-1${f.paid ? "" : " opacity-70"}`}>
                 <div className="flex items-center justify-between">
                   <span className="font-medium text-sm">{f.name}</span>
-                  <Badge variant="outline" className="text-xs">{f.players} players</Badge>
+                  <Badge variant="outline" className="text-xs">
+                    {f.paid ? `${f.players} players` : "Excluded from purse"}
+                  </Badge>
                 </div>
+
                 <div className="text-sm">
                   <span className="text-muted-foreground">Flight purse: </span>
                   <span className="font-semibold">{money(f.purseCents)}</span>

@@ -133,8 +133,12 @@ export function LeaderboardRenderer({
   boards,
   boardColumns = 2,
   presentedBy,
+  rounds = [],
+  currentRound,
+  onRowClick,
 
 }: RendererProps) {
+
   const fontSize = FONT_SIZE_PX[design.font_size] || 16;
   const bg = design.background_color;
   const headerBg = design.header_background;

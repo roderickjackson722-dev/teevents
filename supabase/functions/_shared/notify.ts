@@ -13,12 +13,14 @@ function getAdminClient() {
 }
 
 /**
- * Send a platform-admin notification email (always goes to info@teevents.golf)
- * for every transaction type. Logs to email_send_log so deliverability is traceable.
+ * Send a platform-admin notification email. Recipients come from
+ * admin_notification_preferences (per-address, per-type toggles) configured in
+ * the admin dashboard; falls back to info@teevents.golf when nothing is set up.
+ * Logs to email_send_log so deliverability is traceable.
  */
 export async function notifyPlatformAdmin(opts: {
   supabaseAdmin?: any;
-  type: "registration" | "donation" | "sponsorship" | "vendor" | "side_event" | "store" | "auction" | "refund" | "other";
+  type: "registration" | "donation" | "sponsorship" | "vendor" | "side_event" | "store" | "auction" | "refund" | "payout" | "other";
   subject: string;
   htmlBody: string;
   organizationId?: string | null;
@@ -30,12 +32,36 @@ export async function notifyPlatformAdmin(opts: {
     return;
   }
   const client = opts.supabaseAdmin || getAdminClient();
+
+  // Resolve recipients from admin preferences
+  let recipients: string[] = [];
+  let prefsExist = false;
+  try {
+    const column = `notify_${opts.type}`;
+    const { data: prefs } = await client
+      .from("admin_notification_preferences")
+      .select("email, " + column);
+    const rows = (prefs || []) as any[];
+    prefsExist = rows.length > 0;
+    recipients = rows
+      .filter((r) => r?.[column] === true && r?.email)
+      .map((r) => String(r.email).trim().toLowerCase());
+  } catch (e) {
+    console.warn("[PlatformAdmin] preference lookup failed, using default inbox:", e);
+  }
+
+  if (!prefsExist) recipients = [PLATFORM_ADMIN_EMAIL];
+  if (recipients.length === 0) {
+    console.log(`[PlatformAdmin] ${opts.type} notifications are turned off — nothing sent`);
+    return;
+  }
+
   const res = await sendAndLog(
     client,
     RESEND_API_KEY,
     {
       from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
-      to: PLATFORM_ADMIN_EMAIL,
+      to: recipients,
       subject: opts.subject,
       html: opts.htmlBody,
     },

@@ -308,6 +308,60 @@ export type Database = {
         }
         Relationships: []
       }
+      admin_notification_preferences: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          label: string | null
+          notify_auction: boolean
+          notify_donation: boolean
+          notify_other: boolean
+          notify_payout: boolean
+          notify_refund: boolean
+          notify_registration: boolean
+          notify_side_event: boolean
+          notify_sponsorship: boolean
+          notify_store: boolean
+          notify_vendor: boolean
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          label?: string | null
+          notify_auction?: boolean
+          notify_donation?: boolean
+          notify_other?: boolean
+          notify_payout?: boolean
+          notify_refund?: boolean
+          notify_registration?: boolean
+          notify_side_event?: boolean
+          notify_sponsorship?: boolean
+          notify_store?: boolean
+          notify_vendor?: boolean
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          label?: string | null
+          notify_auction?: boolean
+          notify_donation?: boolean
+          notify_other?: boolean
+          notify_payout?: boolean
+          notify_refund?: boolean
+          notify_registration?: boolean
+          notify_side_event?: boolean
+          notify_sponsorship?: boolean
+          notify_store?: boolean
+          notify_vendor?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_notifications: {
         Row: {
           created_at: string

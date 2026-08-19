@@ -822,6 +822,12 @@ const AdminDashboard = () => {
                   <Shield className="h-4 w-4" /> Security & Monitoring
                 </button>
                 <button
+                  onClick={() => navigate("/admin/email-notifications")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Mail className="h-4 w-4" /> Email Notifications
+                </button>
+                <button
                   onClick={() => navigate("/admin/platform-tournaments")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >

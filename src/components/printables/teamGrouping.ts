@@ -58,9 +58,11 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       groupNumber: num,
       groupId: g?.id,
       teamName: g?.team_name || `Hole ${num}`,
+      teeTime: g?.tee_time ?? (players.map((p) => (p as any).tee_time).find(Boolean) || null),
       players,
       scoringCode: players.map((p) => (p as any).group_scoring_code || (p as any).scoring_code).find(Boolean) || null,
     });
+
   });
 
   solo.forEach((p) => {

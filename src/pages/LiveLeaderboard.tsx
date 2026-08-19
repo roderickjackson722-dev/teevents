@@ -274,6 +274,10 @@ export default function LiveLeaderboard() {
   // land on their own flight's board.
   const requestedFlight = (search.get("flight") || "").trim();
   const [activeFlight, setActiveFlight] = useState<string>("__overall");
+  // Course pars / SI / yardages power the To Par column and the scorecard modal.
+  const [course, setCourse] = useState<ScorecardCourseInfo | null>(null);
+  const [scorecardRow, setScorecardRow] = useState<LeaderboardRow | null>(null);
+
 
 
   // Load tournament

@@ -51,6 +51,10 @@ export default function GroupScoring() {
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
+  // The flight (division) this scoring code belongs to. Scores are always saved
+  // for this group only, and the leaderboard link opens on this flight.
+  const [flight, setFlight] = useState<{ id: string; name: string } | null>(null);
+
 
   useEffect(() => {
     if (!slug || !code) return;

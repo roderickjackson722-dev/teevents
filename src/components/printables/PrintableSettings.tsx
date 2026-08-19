@@ -66,7 +66,7 @@ export function getDefaultOptions(
 }
 
 
-export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange, variant = "scorecard" }: Props) {
+export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange, variant = "scorecard", showTeeTimeToggle = false }: Props) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -153,6 +153,12 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
               <Switch checked={options.showStartingHole} onCheckedChange={(v) => update({ showStartingHole: v })} id="toggle-hole" />
               <Label htmlFor="toggle-hole" className="text-xs cursor-pointer">Starting Hole</Label>
             </div>
+            {showTeeTimeToggle && (
+              <div className="flex items-center gap-2">
+                <Switch checked={options.showTeeTime} onCheckedChange={(v) => update({ showTeeTime: v })} id="toggle-tee-time" />
+                <Label htmlFor="toggle-tee-time" className="text-xs cursor-pointer">Tee Time</Label>
+              </div>
+            )}
             {showCourseName && (
               <div className="flex items-center gap-2">
                 <Switch checked={options.showCourseName} onCheckedChange={(v) => update({ showCourseName: v })} id="toggle-course" />
@@ -376,6 +382,9 @@ function CartSignMiniPreview({ options, logoUrl }: { options: PrintableOptions; 
         )}
         <div className="text-lg font-bold leading-tight">John Smith</div>
         <div className="text-lg font-bold leading-tight">Mike Davis</div>
+        {options.showTeeTime && (
+          <div className="text-[11px] font-semibold" style={{ color: isBold ? "currentColor" : accent }}>Tee Time: 8:20 AM</div>
+        )}
         {options.showStartingHole && (
           <div className="text-[11px] font-semibold" style={{ color: isBold ? "currentColor" : accent }}>Starting Hole: 4</div>
         )}

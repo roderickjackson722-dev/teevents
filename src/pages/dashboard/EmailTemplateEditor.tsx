@@ -1201,6 +1201,8 @@ export default function EmailTemplateEditor() {
           <TabsTrigger value="content" className="gap-1"><Type className="h-4 w-4" /> Content</TabsTrigger>
           <TabsTrigger value="preview" className="gap-1"><Eye className="h-4 w-4" /> Preview</TabsTrigger>
           <TabsTrigger value="send" className="gap-1"><Send className="h-4 w-4" /> Send</TabsTrigger>
+          <TabsTrigger value="schedule" className="gap-1"><CalendarClock className="h-4 w-4" /> Schedule</TabsTrigger>
+
         </TabsList>
 
         {/* Design Tab */}

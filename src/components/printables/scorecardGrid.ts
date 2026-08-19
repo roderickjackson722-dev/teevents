@@ -77,7 +77,7 @@ export function scorecardGridHtml(
     .join("")}</tr>`;
 
   const yards = data.yardages && data.yardages.some((d) => (d || 0) > 0) ? row("Yardage", data.yardages, { bg: "#fafafa" }) : "";
-  const hcp = data.strokeIndexes && data.strokeIndexes.some((d) => (d || 0) > 0) ? row("Hole HCP", data.strokeIndexes, { bg: "#fff" }) : "";
+  const hcp = data.strokeIndexes && data.strokeIndexes.some((d) => (d || 0) > 0) ? row("Hole HCP", data.strokeIndexes, { bg: "#fff", noSummary: true }) : "";
   const par = row("Par", data.pars, { bold: true, bg: "#fafafa" });
 
   const blankRows = Array.from({ length: Math.max(1, opts.scoreRows || 1) }, () =>

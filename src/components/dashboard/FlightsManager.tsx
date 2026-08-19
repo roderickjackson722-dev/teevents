@@ -31,9 +31,14 @@ interface Player {
   last_name: string;
   flight_id: string | null;
   handicap: number | null;
-  amount_paid_cents?: number | null;
   group_number?: number | null;
   tier_id?: string | null;
+}
+
+interface RegistrationTier {
+  id: string;
+  name: string;
+  price_cents: number | null;
 }
 
 interface Props {
@@ -41,6 +46,17 @@ interface Props {
 }
 
 const emptyDraft = { tier_name: "", tier_description: "", display_order: 0, is_active: true };
+
+const divisionKey = (name: string) => name
+  .trim()
+  .toLowerCase()
+  .replace(/\b(divisions?|flights?)\b/g, "")
+  .replace(/\bprofessionals?\b/g, "pro")
+  .replace(/\bsenior amateurs?\b/g, "senior")
+  .replace(/\bamateurs?\b/g, "amateur")
+  .replace(/\bjuniors?\b/g, "junior")
+  .replace(/\s+/g, " ")
+  .trim();
 
 
 export default function FlightsManager({ tournamentId }: Props) {
@@ -60,7 +76,7 @@ export default function FlightsManager({ tournamentId }: Props) {
   const [scoreTotals, setScoreTotals] = useState<Map<string, number>>(new Map());
   const [scoringFormat, setScoringFormat] = useState<string>("");
   const [teamHcpSaving, setTeamHcpSaving] = useState(false);
-  const [regTiers, setRegTiers] = useState<{ id: string; name: string }[]>([]);
+  const [regTiers, setRegTiers] = useState<RegistrationTier[]>([]);
   const [syncing, setSyncing] = useState(false);
 
 
@@ -74,12 +90,12 @@ export default function FlightsManager({ tournamentId }: Props) {
         .order("display_order", { ascending: true }),
       (supabase as any)
         .from("tournament_registrations")
-        .select("id, first_name, last_name, flight_id, handicap, amount_paid_cents, group_number, tier_id")
+        .select("id, first_name, last_name, flight_id, handicap, group_number, tier_id")
         .eq("tournament_id", tournamentId)
         .order("last_name", { ascending: true }),
       (supabase as any)
         .from("tournaments")
-        .select("flights_enabled, flight_method, flight_based_on, scoring_format")
+        .select("flights_enabled, flight_method, flight_based_on, scoring_format, registration_fee_cents")
         .eq("id", tournamentId)
         .maybeSingle(),
       (supabase as any)
@@ -88,15 +104,18 @@ export default function FlightsManager({ tournamentId }: Props) {
         .eq("tournament_id", tournamentId),
       (supabase as any)
         .from("tournament_registration_tiers")
-        .select("id, name")
+        .select("id, name, price_cents")
         .eq("tournament_id", tournamentId)
         .order("sort_order", { ascending: true }),
     ]);
-    setRegTiers((rtRes.data || []) as { id: string; name: string }[]);
+    const registrationTiers = (rtRes.data || []) as RegistrationTier[];
+    setRegTiers(registrationTiers);
     setFlights(fRes.data || []);
     const rows: Player[] = pRes.data || [];
     setPlayers(rows);
-    setPurseCents(rows.reduce((s, r) => s + (r.amount_paid_cents || 0), 0));
+    const tierPriceById = new Map(registrationTiers.map((tier) => [tier.id, tier.price_cents || 0]));
+    const baseFeeCents = Number(tRes.data?.registration_fee_cents || 0);
+    setPurseCents(rows.reduce((sum, row) => sum + (row.tier_id ? tierPriceById.get(row.tier_id) ?? baseFeeCents : baseFeeCents), 0));
     if (tRes.data) {
       setSettings({
         flights_enabled: !!tRes.data.flights_enabled,
@@ -267,7 +286,8 @@ export default function FlightsManager({ tournamentId }: Props) {
       )];
       if (usedNames.length === 0) throw new Error("No registration divisions/tiers found on the roster yet");
 
-      const missing = usedNames.filter((n) => !flights.some((f) => f.tier_name === n));
+      const existingFlightKeys = new Set(flights.map((flight) => divisionKey(flight.tier_name)));
+      const missing = usedNames.filter((name) => !existingFlightKeys.has(divisionKey(name)));
       if (missing.length) {
         const { error } = await (supabase as any).from("tournament_tiers").insert(
           missing.map((n, i) => ({
@@ -285,11 +305,11 @@ export default function FlightsManager({ tournamentId }: Props) {
         .from("tournament_tiers")
         .select("id, tier_name")
         .eq("tournament_id", tournamentId);
-      const idByName = new Map<string, string>((allFlights || []).map((f: any) => [f.tier_name, f.id]));
+      const idByDivision = new Map<string, string>((allFlights || []).map((f: any) => [divisionKey(f.tier_name), f.id]));
 
       let assigned = 0;
       for (const t of regTiers) {
-        const flightId = idByName.get(t.name);
+        const flightId = idByDivision.get(divisionKey(t.name));
         const ids = players.filter((p) => p.tier_id === t.id && p.flight_id !== flightId).map((p) => p.id);
         if (!flightId || ids.length === 0) continue;
         const { error } = await (supabase as any)

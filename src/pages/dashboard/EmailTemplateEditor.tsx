@@ -1728,6 +1728,16 @@ export default function EmailTemplateEditor() {
               Send {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
             </Button>
           </div>
+
+          {selectedTournament && (
+            <ScheduledEmailCard
+              tournamentId={selectedTournament}
+              templateKind={templateKind}
+              templateLabel={TEMPLATE_LABELS[templateKind]}
+              selectedRecipients={selectedRecipients}
+              totalRecipients={registrations.filter((r: any) => r.email).length}
+            />
+          )}
           </>
           )}
         </TabsContent>

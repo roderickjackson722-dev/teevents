@@ -86,27 +86,16 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   const scoringCode = (r as any).scoring_code;
   const scoringUrl = getScoringUrl(slug, scoringCode);
 
-  const holeCells = Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:600;width:36px;">${i + 1}</td>`
-  ).join("");
-
-  const parCells = Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;">${getHolePar(tournament, i, numHoles, courseData)}</td>`
-  ).join("");
-
-  const siValues = courseData?.stroke_indexes;
-  const siCells = siValues ? Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:3px 6px;text-align:center;font-size:10px;color:#999;">${siValues[i] || ""}</td>`
-  ).join("") : "";
-
-  const distValues = courseData?.hole_distances;
-  const distCells = distValues && (distValues as number[]).some((d: number) => d > 0) ? Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:3px 6px;text-align:center;font-size:10px;color:#999;">${(distValues as number[])[i] || ""}</td>`
-  ).join("") : "";
-
-  const emptyCells = Array.from({ length: numHoles }, () =>
-    `<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td>`
-  ).join("");
+  const pars = Array.from({ length: numHoles }, (_, i) => getHolePar(tournament, i, numHoles, courseData));
+  const gridHtml = scorecardGridHtml(
+    {
+      numHoles,
+      pars,
+      yardages: (courseData?.hole_distances as number[] | null) ?? null,
+      strokeIndexes: (courseData?.stroke_indexes as number[] | null) ?? null,
+    },
+    { color, scoreRowLabel: `${firstName} ${lastName}`.trim() || "Score" },
+  );
 
   const qrSection = showScoringQR && scoringUrl ? `
     <div style="display:flex;align-items:center;gap:12px;padding:0 16px 12px;">
@@ -137,14 +126,8 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
         </div>
         ${opts.showLogo ? printLogoHtml(getPrintLogo(tournament), { heightCss: "40px", invert: layout === "bold", color: layout === "bold" ? "rgba(255,255,255,0.8)" : "#999" }) : ""}
       </div>
-      <div style="padding:0 16px 16px;overflow-x:auto;">
-        <table style="border-collapse:collapse;width:100%;">
-          <tr style="background:#f5f5f5;">${holeCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:700;background:#e8e8e8;">TOT</td></tr>
-          <tr>${parCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;font-weight:600;">${totalPar}</td></tr>
-          ${siCells ? `<tr style="background:#fafafa;"><td style="border:1px solid #ccc;padding:2px 4px;text-align:left;font-size:9px;color:#999;font-weight:600;">SI</td>${siCells.substring(siCells.indexOf('>')+1)}</tr>` : ""}
-          ${distCells ? `<tr style="background:#fafafa;"><td style="border:1px solid #ccc;padding:2px 4px;text-align:left;font-size:9px;color:#999;font-weight:600;">Yds</td>${distCells.substring(distCells.indexOf('>')+1)}</tr>` : ""}
-          <tr>${emptyCells}<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td></tr>
-        </table>
+      <div style="padding:0 16px 16px;">
+        ${gridHtml}
       </div>
       ${metaLine}
       ${qrSection}

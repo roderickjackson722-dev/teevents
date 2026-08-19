@@ -515,8 +515,13 @@ export default function LiveLeaderboard() {
       }
     : null;
 
-  const flightTabs = flights.length > 0 ? (
-    <div className="w-full bg-background/80 backdrop-blur border-b border-border/60 px-3 py-2 flex flex-wrap gap-2 justify-center">
+  const flightTabs = flights.length > 0 && flightMode !== "grid" ? (
+    <div className="w-full bg-background/80 backdrop-blur border-b border-border/60 px-3 py-2 flex flex-wrap gap-2 justify-center items-center">
+      {flightMode === "rotate" && (
+        <span className="text-[10px] uppercase tracking-widest font-bold text-muted-foreground mr-1">
+          Now showing
+        </span>
+      )}
       {flights.map((f) => (
         <button
           key={f.id}
@@ -530,18 +535,22 @@ export default function LiveLeaderboard() {
           {f.tier_name}
         </button>
       ))}
-      <button
-        onClick={() => setActiveFlight("__overall")}
-        className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
-          activeFlight === "__overall"
-            ? "bg-primary text-primary-foreground"
-            : "bg-muted text-muted-foreground hover:bg-muted/70"
-        }`}
-      >
-        Overall
-      </button>
+      {(flightMode !== "rotate" || design.flight_include_overall !== false) && (
+        <button
+          onClick={() => setActiveFlight("__overall")}
+          className={`px-3 py-1.5 rounded-full text-xs font-semibold transition ${
+            activeFlight === "__overall"
+              ? "bg-primary text-primary-foreground"
+              : "bg-muted text-muted-foreground hover:bg-muted/70"
+          }`}
+        >
+          Overall
+        </button>
+      )}
     </div>
   ) : null;
+
+
 
   return (
     <>

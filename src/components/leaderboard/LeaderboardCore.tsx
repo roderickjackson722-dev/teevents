@@ -98,7 +98,14 @@ interface RendererProps {
     name: string;
     logoUrl: string | null;
   } | null;
+  /** Rounds that already have scores — each completed round gets its own column. */
+  rounds?: number[];
+  /** Round currently in play — drives the "Today" column. */
+  currentRound?: number;
+  /** Clicking a player row opens their round-by-round scorecard. */
+  onRowClick?: (row: LbRow) => void;
 }
+
 
 
 /**

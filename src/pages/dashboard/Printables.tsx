@@ -296,7 +296,7 @@ const Printables = () => {
           <NameBadgesTab tournament={printTournament} registrations={printRegistrations} loading={loading} groups={printGroups} />
         </TabsContent>
         <TabsContent value="alpha-list">
-          <AlphaListTab tournament={printTournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} />
+          <AlphaListTab tournament={printTournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} columns={savedOptions.alpha_columns} />
         </TabsContent>
         <TabsContent value="hole-assignments">
           <HoleAssignmentsTab tournament={printTournament} registrations={printRegistrations} loading={loading} onUpdate={handleUpdateHole} showScoringCodes={savedOptions.show_scoring_codes_holes} />

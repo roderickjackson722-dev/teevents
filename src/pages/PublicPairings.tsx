@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Clock, MapPin, CalendarDays, Flag, Mail } from "lucide-react";
 import { formatTeeTime } from "@/components/printables/CartSignsTab";
 import { resolvePairingsPageConfig } from "@/lib/pairingsPageConfig";
+import { parsePairingsConfig, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 
 interface Row {
   tournament_id: string;
@@ -12,6 +13,7 @@ interface Row {
   course_name: string | null;
   start_format: string | null;
   page_config: unknown;
+  pairings_config?: unknown;
   logo_url: string | null;
   hero_image_url: string | null;
   contact_email: string | null;
@@ -49,7 +51,9 @@ export default function PublicPairings() {
 
   const info = rows?.[0];
   const cfg = useMemo(() => resolvePairingsPageConfig(info?.page_config), [info?.page_config]);
-  const teeTimeStart = (info?.start_format || "") === "tee_times";
+  const pairingsCfg = useMemo(() => parsePairingsConfig(info?.pairings_config), [info?.pairings_config]);
+  const teeTimeStart =
+    (pairingsCfg.byDay["0"]?.startFormat || info?.start_format || "") === "tee_times";
 
   const groups = useMemo(() => {
     const map = new Map<number, Row[]>();
@@ -61,13 +65,13 @@ export default function PublicPairings() {
       .map(([number, players]) => ({ number, players }))
       .sort((a, b) => {
         if (teeTimeStart) {
-          const at = a.players[0]?.tee_time || "";
-          const bt = b.players[0]?.tee_time || "";
+          const at = teeTimeForGroup(pairingsCfg, a.number) || a.players[0]?.tee_time || "";
+          const bt = teeTimeForGroup(pairingsCfg, b.number) || b.players[0]?.tee_time || "";
           if (at !== bt) return at.localeCompare(bt);
         }
         return a.number - b.number;
       });
-  }, [rows, teeTimeStart]);
+  }, [rows, teeTimeStart, pairingsCfg]);
 
   if (rows === null) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -128,15 +132,20 @@ export default function PublicPairings() {
 
         <div className="space-y-3">
           {groups.map((g) => {
-            const tee = formatTeeTime(g.players[0]?.tee_time);
+            const tee = formatTeeTime(teeTimeForGroup(pairingsCfg, g.number) || g.players[0]?.tee_time);
             const flight = g.players.map((p) => p.flight_name).find(Boolean);
             const teamName = cfg.show_team_names ? g.players[0]?.team_name : null;
-            const hole = g.players[0]?.starting_hole ?? g.number;
+            // Starting hole mirrors the Pairings tab: the saved hole label, then the
+            // group's assigned starting hole — never the group number.
+            const hole =
+              pairingsCfg.labels[String(g.number)] ||
+              (g.players[0]?.starting_hole != null ? String(g.players[0].starting_hole) : null) ||
+              startingHoleLabelForGroup(pairingsCfg, g.number);
             return (
               <div key={g.number} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <p className="font-semibold text-foreground">
-                    {teamName || (teeTimeStart ? `Group ${g.number}` : `Hole ${hole}`)}
+                    {teamName || (teeTimeStart || !hole ? `Group ${g.number}` : `Hole ${hole}`)}
                   </p>
                   <div className="flex items-center gap-3 text-sm">
                     {cfg.show_flights && flight && <span className="text-muted-foreground">{flight}</span>}
@@ -145,7 +154,7 @@ export default function PublicPairings() {
                         <Clock className="h-4 w-4" />{tee}
                       </span>
                     )}
-                    {cfg.show_starting_hole && (
+                    {cfg.show_starting_hole && hole && (
                       <span className="font-semibold" style={{ color: accent }}>Hole {hole}</span>
                     )}
                   </div>

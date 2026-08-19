@@ -11931,6 +11931,7 @@ export type Database = {
           last_name: string
           logo_url: string
           page_config: Json
+          pairings_config: Json
           start_format: string
           starting_hole: number
           team_name: string

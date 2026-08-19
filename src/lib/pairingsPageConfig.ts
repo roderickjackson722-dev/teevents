@@ -43,7 +43,12 @@ export const PAIRINGS_PAGE_DEFAULTS: PairingsPageConfig = {
     "Check-in opens 45 minutes before the first start. Range balls and lunch are included with your registration.",
   footer_note: "Pairings are subject to change. Refresh this page on event day for the latest version.",
   accent: "#1a5c38",
+  date_override: "",
+  date_text: "",
+  course_override: "",
+  contact_override: "",
 };
+
 
 export function resolvePairingsPageConfig(raw: unknown): PairingsPageConfig {
   const value = (raw && typeof raw === "object" ? raw : {}) as Partial<PairingsPageConfig>;

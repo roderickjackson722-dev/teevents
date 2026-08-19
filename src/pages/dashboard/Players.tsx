@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import PublicPairingsPageEditor from "@/components/dashboard/PublicPairingsPageEditor";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import PairingsTemplateBuilder, { type TemplateSlot } from "@/components/dashboard/PairingsTemplateBuilder";
 import { parsePairingsConfig } from "@/lib/pairingsConfig";
@@ -3001,6 +3002,13 @@ const Players = () => {
                 >
                   {currentTournamentObj?.pairings_public ? "Public Tee Sheet: On" : "Public Tee Sheet: Off"}
                 </Button>
+                {currentTournamentObj?.id && (
+                  <PublicPairingsPageEditor
+                    tournamentId={currentTournamentObj.id}
+                    slug={currentTournamentObj.slug}
+                    config={(currentTournamentObj as any).pairings_page_config}
+                  />
+                )}
                 {currentTournamentObj?.slug && currentTournamentObj?.pairings_public && (
                   <Button size="sm" variant="ghost" asChild>
                     <a href={`/pairings/${currentTournamentObj.slug}`} target="_blank" rel="noreferrer">

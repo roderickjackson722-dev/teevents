@@ -3,7 +3,6 @@ import { useParams } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Clock, MapPin, CalendarDays, Flag, Mail } from "lucide-react";
 import { formatTeeTime } from "@/components/printables/CartSignsTab";
-import TeeventsFooter from "@/components/TeeventsFooter";
 import { resolvePairingsPageConfig } from "@/lib/pairingsPageConfig";
 
 interface Row {
@@ -168,7 +167,9 @@ export default function PublicPairings() {
           </div>
         )}
       </div>
-      <TeeventsFooter tournament={null} />
+      <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
+        <a href="/" className="hover:underline">TeeVents</a>
+      </footer>
     </div>
   );
 }

@@ -160,17 +160,18 @@ export default function PublicPairings() {
           })}
         </div>
 
-        {(cfg.footer_note?.trim() || (cfg.show_contact && info?.contact_email)) && (
+        {(cfg.footer_note?.trim() || (cfg.show_contact && (cfg.contact_override?.trim() || info?.contact_email))) && (
           <div className="mt-8 text-center text-xs text-muted-foreground space-y-1">
             {cfg.footer_note?.trim() && <p>{cfg.footer_note}</p>}
-            {cfg.show_contact && info?.contact_email && (
+            {cfg.show_contact && (cfg.contact_override?.trim() || info?.contact_email) && (
               <p className="flex items-center justify-center gap-1">
                 <Mail className="h-3 w-3" />
-                <a href={`mailto:${info.contact_email}`} className="underline">{info.contact_email}</a>
+                <a href={`mailto:${cfg.contact_override?.trim() || info?.contact_email}`} className="underline">{cfg.contact_override?.trim() || info?.contact_email}</a>
               </p>
             )}
           </div>
         )}
+
       </div>
       <footer className="border-t border-border py-6 text-center text-xs text-muted-foreground">
         <a href="/" className="hover:underline">TeeVents</a>

@@ -14,6 +14,7 @@ import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./P
 import TeamScorecards from "./TeamScorecards";
 import ScorecardSelector from "./ScorecardSelector";
 import { isTeamScoringFormat, type RegistrationGroupRow } from "./teamGrouping";
+import { scorecardGridHtml, scoreColumns, summaryValue } from "./scorecardGrid";
 
 interface CourseDataProp {
   hole_pars: number[] | null;
@@ -86,27 +87,16 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   const scoringCode = (r as any).scoring_code;
   const scoringUrl = getScoringUrl(slug, scoringCode);
 
-  const holeCells = Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:600;width:36px;">${i + 1}</td>`
-  ).join("");
-
-  const parCells = Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;">${getHolePar(tournament, i, numHoles, courseData)}</td>`
-  ).join("");
-
-  const siValues = courseData?.stroke_indexes;
-  const siCells = siValues ? Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:3px 6px;text-align:center;font-size:10px;color:#999;">${siValues[i] || ""}</td>`
-  ).join("") : "";
-
-  const distValues = courseData?.hole_distances;
-  const distCells = distValues && (distValues as number[]).some((d: number) => d > 0) ? Array.from({ length: numHoles }, (_, i) =>
-    `<td style="border:1px solid #ccc;padding:3px 6px;text-align:center;font-size:10px;color:#999;">${(distValues as number[])[i] || ""}</td>`
-  ).join("") : "";
-
-  const emptyCells = Array.from({ length: numHoles }, () =>
-    `<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td>`
-  ).join("");
+  const pars = Array.from({ length: numHoles }, (_, i) => getHolePar(tournament, i, numHoles, courseData));
+  const gridHtml = scorecardGridHtml(
+    {
+      numHoles,
+      pars,
+      yardages: (courseData?.hole_distances as number[] | null) ?? null,
+      strokeIndexes: (courseData?.stroke_indexes as number[] | null) ?? null,
+    },
+    { color, scoreRowLabel: `${firstName} ${lastName}`.trim() || "Score" },
+  );
 
   const qrSection = showScoringQR && scoringUrl ? `
     <div style="display:flex;align-items:center;gap:12px;padding:0 16px 12px;">
@@ -137,14 +127,8 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
         </div>
         ${opts.showLogo ? printLogoHtml(getPrintLogo(tournament), { heightCss: "40px", invert: layout === "bold", color: layout === "bold" ? "rgba(255,255,255,0.8)" : "#999" }) : ""}
       </div>
-      <div style="padding:0 16px 16px;overflow-x:auto;">
-        <table style="border-collapse:collapse;width:100%;">
-          <tr style="background:#f5f5f5;">${holeCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:12px;font-weight:700;background:#e8e8e8;">TOT</td></tr>
-          <tr>${parCells}<td style="border:1px solid #ccc;padding:4px 6px;text-align:center;font-size:11px;color:#666;font-weight:600;">${totalPar}</td></tr>
-          ${siCells ? `<tr style="background:#fafafa;"><td style="border:1px solid #ccc;padding:2px 4px;text-align:left;font-size:9px;color:#999;font-weight:600;">SI</td>${siCells.substring(siCells.indexOf('>')+1)}</tr>` : ""}
-          ${distCells ? `<tr style="background:#fafafa;"><td style="border:1px solid #ccc;padding:2px 4px;text-align:left;font-size:9px;color:#999;font-weight:600;">Yds</td>${distCells.substring(distCells.indexOf('>')+1)}</tr>` : ""}
-          <tr>${emptyCells}<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td></tr>
-        </table>
+      <div style="padding:0 16px 16px;">
+        ${gridHtml}
       </div>
       ${metaLine}
       ${qrSection}
@@ -341,51 +325,52 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
               </div>
 
               <div className="overflow-x-auto">
-                <table className="w-full text-xs border-collapse">
-                  <thead>
-                    <tr className="bg-muted/50">
-                      {Array.from({ length: numHoles }, (_, i) => (
-                        <th key={i} className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{i + 1}</th>
-                      ))}
-                      <th className="border border-border px-1.5 py-1 text-center font-bold text-foreground bg-muted">TOT</th>
-                    </tr>
-                  </thead>
-                  <tbody>
+                {(() => {
+                  const cols = scoreColumns(numHoles);
+                  const pars = Array.from({ length: numHoles }, (_, i) => getHolePar(tournament, i, numHoles, courseData));
+                  const yards = (courseData?.hole_distances as number[] | null) ?? null;
+                  const si = (courseData?.stroke_indexes as number[] | null) ?? null;
+                  const summaryCls = "border border-border px-1.5 py-1 text-center font-bold text-primary bg-primary/5";
+                  const renderRow = (title: string, values: (number | null)[] | null, cls: string) => (
                     <tr>
-                      {Array.from({ length: numHoles }, (_, i) => (
-                        <td key={i} className="border border-border px-1.5 py-1 text-center text-muted-foreground">
-                          {getHolePar(tournament, i, numHoles, courseData)}
-                        </td>
-                      ))}
-                      <td className="border border-border px-1.5 py-1 text-center font-semibold text-foreground">{totalPar}</td>
+                      <td className="border border-border px-2 py-1 text-left font-semibold text-foreground whitespace-nowrap">{title}</td>
+                      {cols.map((c, i) =>
+                        c.kind === "hole" ? (
+                          <td key={i} className={cls}>{values?.[c.hole - 1] || ""}</td>
+                        ) : (
+                          <td key={i} className={summaryCls}>{values ? summaryValue(c, values, numHoles) || "" : ""}</td>
+                        ),
+                      )}
                     </tr>
-                    {courseData?.stroke_indexes && (
-                      <tr>
-                        {Array.from({ length: numHoles }, (_, i) => (
-                          <td key={i} className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground">
-                            {(courseData.stroke_indexes as number[])[i] || ""}
-                          </td>
-                        ))}
-                        <td className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground font-semibold">SI</td>
-                      </tr>
-                    )}
-                    {courseData?.hole_distances && (courseData.hole_distances as number[]).some((d: number) => d > 0) && (
-                      <tr>
-                        {Array.from({ length: numHoles }, (_, i) => (
-                          <td key={i} className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground">
-                            {(courseData.hole_distances as number[])[i] || ""}
-                          </td>
-                        ))}
-                        <td className="border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground font-semibold">Yds</td>
-                      </tr>
-                    )}
-                    <tr>
-                      {Array.from({ length: numHoles + 1 }, (_, i) => (
-                        <td key={i} className="border border-border px-1.5 py-3 text-center">&nbsp;</td>
-                      ))}
-                    </tr>
-                  </tbody>
-                </table>
+                  );
+                  return (
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-muted/50">
+                          <th className="border border-border px-2 py-1 text-left font-bold text-foreground">Hole</th>
+                          {cols.map((c, i) => (
+                            <th key={i} className={c.kind === "hole" ? "border border-border px-1.5 py-1 text-center font-semibold text-foreground" : summaryCls}>
+                              {c.kind === "hole" ? c.hole : c.kind === "out" ? "Out" : c.kind === "in" ? "In" : "Tot"}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {yards && yards.some((d) => (d || 0) > 0) &&
+                          renderRow("Yardage", yards, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground")}
+                        {si && si.some((d) => (d || 0) > 0) &&
+                          renderRow("Hole HCP", si, "border border-border px-1 py-0.5 text-center text-[10px] text-muted-foreground")}
+                        {renderRow("Par", pars, "border border-border px-1.5 py-1 text-center text-muted-foreground")}
+                        <tr>
+                          <td className="border border-border px-2 py-3 text-left font-semibold text-foreground whitespace-nowrap">Score</td>
+                          {cols.map((_, i) => (
+                            <td key={i} className="border border-border px-1.5 py-3 text-center">&nbsp;</td>
+                          ))}
+                        </tr>
+                      </tbody>
+                    </table>
+                  );
+                })()}
               </div>
               {!isEditing && opts.showStartingHole && groupNum != null && <p className="text-xs text-primary mt-2">Starting Hole: {groupNum}</p>}
               

@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, BadgeCheck, QrCode } from "lucide-react";
+import { Trophy, Printer, Loader2, Car, List, MapPin, ClipboardList, BadgeCheck, QrCode, Users } from "lucide-react";
 import { toast } from "sonner";
 import type { Tournament, Registration, Sponsor } from "@/components/printables/types";
 import CartSignsTab from "@/components/printables/CartSignsTab";
@@ -13,6 +13,7 @@ import ScorecardsTab from "@/components/printables/ScorecardsTab";
 import CheckInRosterTab from "@/components/printables/CheckInRosterTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
 import QRCodesTab, { type PrintableAddon } from "@/components/printables/QRCodesTab";
+import PairingsTab from "@/components/printables/PairingsTab";
 import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions } from "@/components/printables/PrintablesOptionsCard";
 import { rosterForPrintables } from "@/components/printables/rosterSource";
 import type { RegistrationGroupRow } from "@/components/printables/teamGrouping";
@@ -275,6 +276,7 @@ const Printables = () => {
           <TabsTrigger value="scorecards" className="gap-2"><ClipboardList className="h-4 w-4" /> Scorecards</TabsTrigger>
           <TabsTrigger value="name-badges" className="gap-2"><BadgeCheck className="h-4 w-4" /> Name Badges</TabsTrigger>
           
+          <TabsTrigger value="pairings" className="gap-2"><Users className="h-4 w-4" /> Pairings</TabsTrigger>
           <TabsTrigger value="alpha-list" className="gap-2"><List className="h-4 w-4" /> Alpha List</TabsTrigger>
           <TabsTrigger value="hole-assignments" className="gap-2"><MapPin className="h-4 w-4" /> Hole Assignments</TabsTrigger>
           <TabsTrigger value="check-in-roster" className="gap-2"><QrCode className="h-4 w-4" /> Check-In Roster</TabsTrigger>
@@ -308,6 +310,9 @@ const Printables = () => {
         </TabsContent>
         <TabsContent value="name-badges">
           <NameBadgesTab tournament={printTournament} registrations={printRegistrations} loading={loading} groups={printGroups} />
+        </TabsContent>
+        <TabsContent value="pairings">
+          <PairingsTab tournament={printTournament} registrations={printRegistrations} loading={loading} groups={printGroups} />
         </TabsContent>
         <TabsContent value="alpha-list">
           <AlphaListTab tournament={printTournament} registrations={printRegistrations} loading={loading} showScoringCodes={savedOptions.show_scoring_codes_alpha} columns={savedOptions.alpha_columns} />

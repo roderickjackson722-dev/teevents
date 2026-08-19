@@ -28,6 +28,7 @@ import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes/api/public/hooks/check-tournament-links'
 import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
+import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -131,6 +132,12 @@ const ApiPublicHooksLeadMagnetFollowupsRoute =
     path: '/api/public/hooks/lead-magnet-followups',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksProcessScheduledEmailsRoute =
+  ApiPublicHooksProcessScheduledEmailsRouteImport.update({
+    id: '/api/public/hooks/process-scheduled-emails',
+    path: '/api/public/hooks/process-scheduled-emails',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
@@ -152,6 +159,7 @@ export interface FileRoutesByFullPath {
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
+  '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
@@ -173,6 +181,7 @@ export interface FileRoutesByTo {
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
+  '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -195,6 +204,7 @@ export interface FileRoutesById {
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
+  '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -218,6 +228,7 @@ export interface FileRouteTypes {
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
+    | '/api/public/hooks/process-scheduled-emails'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
@@ -239,6 +250,7 @@ export interface FileRouteTypes {
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
+    | '/api/public/hooks/process-scheduled-emails'
   id:
     | '__root__'
     | '/$'
@@ -260,6 +272,7 @@ export interface FileRouteTypes {
     | '/s/sassurvey/share'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
+    | '/api/public/hooks/process-scheduled-emails'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -282,6 +295,7 @@ export interface RootRouteChildren {
   SSassurveyShareRoute: typeof SSassurveyShareRoute
   ApiPublicHooksCheckTournamentLinksRoute: typeof ApiPublicHooksCheckTournamentLinksRoute
   ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
+  ApiPublicHooksProcessScheduledEmailsRoute: typeof ApiPublicHooksProcessScheduledEmailsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -419,6 +433,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksLeadMagnetFollowupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-scheduled-emails': {
+      id: '/api/public/hooks/process-scheduled-emails'
+      path: '/api/public/hooks/process-scheduled-emails'
+      fullPath: '/api/public/hooks/process-scheduled-emails'
+      preLoaderRoute: typeof ApiPublicHooksProcessScheduledEmailsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -445,6 +466,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksCheckTournamentLinksRoute,
   ApiPublicHooksLeadMagnetFollowupsRoute:
     ApiPublicHooksLeadMagnetFollowupsRoute,
+  ApiPublicHooksProcessScheduledEmailsRoute:
+    ApiPublicHooksProcessScheduledEmailsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

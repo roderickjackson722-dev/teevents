@@ -27,6 +27,8 @@ export interface PrintableOptions {
   showTournamentTitle: boolean;
   showStartingHole: boolean;
   showCourseName: boolean;
+  /** Show each group's tee time (tee-time starts) */
+  showTeeTime: boolean;
   /** PDF/print content scale (0.5 – 1) */
   printScale: number;
   /** PDF/print page margin in inches */
@@ -42,20 +44,27 @@ interface Props {
   onLogoChange?: (url: string) => void;
   /** Which printable the preview should represent */
   variant?: "scorecard" | "cartsign";
+  /** Show the tee time toggle (tee-time start formats) */
+  showTeeTimeToggle?: boolean;
 }
 
-export function getDefaultOptions(tournament: { printable_font?: string | null; printable_layout?: string | null } | null): PrintableOptions {
+export function getDefaultOptions(
+  tournament: { printable_font?: string | null; printable_layout?: string | null; pairings_start_format?: string | null } | null,
+): PrintableOptions {
+  const teeTimes = (tournament?.pairings_start_format || "") === "tee_times";
   return {
     font: tournament?.printable_font || "georgia",
     layout: tournament?.printable_layout || "classic",
     showLogo: true,
     showTournamentTitle: true,
-    showStartingHole: true,
+    showStartingHole: !teeTimes,
     showCourseName: true,
+    showTeeTime: teeTimes,
     printScale: DEFAULT_PRINT_SCALE,
     printMarginIn: DEFAULT_PRINT_MARGIN_IN,
   };
 }
+
 
 export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange, variant = "scorecard" }: Props) {
   const [open, setOpen] = useState(false);

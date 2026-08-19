@@ -6,7 +6,9 @@ import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, scorecardCss } from "./printUtils";
+import { formatTeeTime } from "./CartSignsTab";
 import type { Tournament, Registration } from "./types";
+
 import { getPrimaryColor, getPrintLogo, startingHoleOf } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import TeamScorecards from "./TeamScorecards";

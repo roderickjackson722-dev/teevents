@@ -23,8 +23,8 @@ export function scoreColumns(numHoles: number): ScoreCol[] {
   return cols;
 }
 
-const sum = (vals: (number | null | undefined)[]) =>
-  vals.reduce((acc, v) => acc + (Number(v) || 0), 0);
+const sum = (vals: (number | null | undefined)[]): number =>
+  vals.reduce<number>((acc, v) => acc + (Number(v) || 0), 0);
 
 /** Value for a summary column given per-hole values */
 export function summaryValue(col: ScoreCol, values: (number | null | undefined)[], numHoles: number): number {

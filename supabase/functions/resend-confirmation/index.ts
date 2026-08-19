@@ -220,7 +220,19 @@ Deno.serve(async (req) => {
     ).auth.getUser(token);
     if (!user) throw new Error("Not authenticated");
 
-    const { registration_ids, use_custom_template, update_email, template_kind } = await req.json();
+    const { registration_ids, use_custom_template, update_email, template_kind, email_overrides } = await req.json();
+
+    /**
+     * Optional alternate delivery addresses, keyed by registration id.
+     * These are send-time only: the registration's own email is NEVER changed.
+     */
+    const overrideMap = new Map<string, string>();
+    if (email_overrides && typeof email_overrides === "object") {
+      for (const [rid, addr] of Object.entries(email_overrides as Record<string, unknown>)) {
+        const v = String(addr || "").trim();
+        if (v) overrideMap.set(String(rid), v);
+      }
+    }
 
     // Optional: update a registrant's email before resending
     if (update_email && update_email.registration_id && update_email.new_email) {

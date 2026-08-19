@@ -86,7 +86,21 @@ const DEFAULT_CONFIGS: Record<string, any> = {
     button_text: "View Event Homepage",
     show_event_details: true,
   },
+  tee_times: {
+    ...BASE_DEFAULT,
+    subject: "{{event_name}} – Your Tee Time & Pairings",
+    greeting: "Hello {{first_name}},",
+    header_title: "Your Tee Time",
+    body_text: "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Group: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    closing_text: "Please arrive at least 30 minutes before your tee time and check in at the registration table.",
+    footer_text: "See you on the course! ⛳",
+    button_text: "View All Tee Times & Pairings",
+    show_event_details: true,
+    show_button: true,
+  },
 };
+
+
 
 
 

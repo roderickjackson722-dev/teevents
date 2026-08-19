@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
 import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
@@ -31,6 +32,11 @@ import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollegeIndexRoute = CollegeIndexRouteImport.update({
@@ -128,6 +134,7 @@ const ApiPublicHooksLeadMagnetFollowupsRoute =
 
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -148,6 +155,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -169,6 +177,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/$': typeof SplatRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -191,6 +200,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/$'
+    | '/sitemap.xml'
     | '/college/$slug'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -211,6 +221,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
+    | '/sitemap.xml'
     | '/college/$slug'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -231,6 +242,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/$'
+    | '/sitemap.xml'
     | '/college/$slug'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -252,6 +264,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   SplatRoute: typeof SplatRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
   LeagueSlugRoute: typeof LeagueSlugRoute
   PairingsSlugRoute: typeof PairingsSlugRoute
@@ -278,6 +291,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/college/': {
@@ -404,6 +424,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   CollegeSlugRoute: CollegeSlugRoute,
   LeagueSlugRoute: LeagueSlugRoute,
   PairingsSlugRoute: PairingsSlugRoute,

@@ -22,6 +22,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "google-site-verification", content: "lVx5yK6iW1eaOArW9w44DZM7ty_0NEdHKF6el_86-Zw" },
       { title: "TeeVents Golf Tournaments" },
       { name: "description", content: "Golf tournament management for registration, payments, live scoring, sponsors, and pairings." },
       { property: "og:type", content: "website" },

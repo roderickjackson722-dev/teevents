@@ -11,6 +11,8 @@ import {
   PRINT_MARGIN_CHOICES,
   PRINT_SCALE_CHOICES,
   PRINT_TARGETS,
+  cartSignTarget,
+
   sizeLabel,
 
 } from "./printLayout";
@@ -29,6 +31,10 @@ export interface PrintableOptions {
   showCourseName: boolean;
   /** Show each group's tee time (tee-time starts) */
   showTeeTime: boolean;
+  /** Show the player's assigned flight / division */
+  showFlight: boolean;
+  /** How many cart signs print on one sheet (courses cut the sheet in half) */
+  signsPerPage: number;
   /** PDF/print content scale (0.5 – 1) */
   printScale: number;
   /** PDF/print page margin in inches */
@@ -43,9 +49,13 @@ interface Props {
   logoUrl?: string | null;
   onLogoChange?: (url: string) => void;
   /** Which printable the preview should represent */
-  variant?: "scorecard" | "cartsign";
+  variant?: "scorecard" | "cartsign" | "badge";
   /** Show the tee time toggle (tee-time start formats) */
   showTeeTimeToggle?: boolean;
+  /** Show the flight / division toggle */
+  showFlightToggle?: boolean;
+  /** Show the cart-signs-per-page selector */
+  showSignsPerPage?: boolean;
 }
 
 export function getDefaultOptions(
@@ -60,13 +70,16 @@ export function getDefaultOptions(
     showStartingHole: !teeTimes,
     showCourseName: true,
     showTeeTime: teeTimes,
+    showFlight: false,
+    signsPerPage: 2,
     printScale: DEFAULT_PRINT_SCALE,
     printMarginIn: DEFAULT_PRINT_MARGIN_IN,
   };
 }
 
 
-export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange, variant = "scorecard", showTeeTimeToggle = false }: Props) {
+
+export default function PrintableSettings({ options, onChange, showCourseName = false, tournamentId, logoUrl, onLogoChange, variant = "scorecard", showTeeTimeToggle = false, showFlightToggle = false, showSignsPerPage = false }: Props) {
   const [open, setOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
 
@@ -159,6 +172,12 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
                 <Label htmlFor="toggle-tee-time" className="text-xs cursor-pointer">Tee Time</Label>
               </div>
             )}
+            {showFlightToggle && (
+              <div className="flex items-center gap-2">
+                <Switch checked={options.showFlight} onCheckedChange={(v) => update({ showFlight: v })} id="toggle-flight" />
+                <Label htmlFor="toggle-flight" className="text-xs cursor-pointer">Flight / Division</Label>
+              </div>
+            )}
             {showCourseName && (
               <div className="flex items-center gap-2">
                 <Switch checked={options.showCourseName} onCheckedChange={(v) => update({ showCourseName: v })} id="toggle-course" />
@@ -166,6 +185,26 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
               </div>
             )}
           </div>
+
+          {showSignsPerPage && (
+            <div className="space-y-1.5 pt-2 border-t border-border max-w-xs">
+              <Label className="text-xs font-medium">Cart signs per page</Label>
+              <Select
+                value={String(options.signsPerPage ?? 2)}
+                onValueChange={(v) => update({ signsPerPage: Number(v) })}
+              >
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="2">2 per page — cut the sheet in half (recommended)</SelectItem>
+                  <SelectItem value="1">1 per page</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-[10px] text-muted-foreground">
+                Two signs print stacked on a {sizeLabel(PRINT_TARGETS.cartsign2up)} sheet with a cut line between them.
+              </p>
+            </div>
+          )}
+
 
           {/* Logo upload */}
           {options.showLogo && tournamentId && (
@@ -232,19 +271,22 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
             <p className="text-[10px] text-muted-foreground">
               Page size stays fixed at{" "}
               {variant === "cartsign"
-                ? sizeLabel(PRINT_TARGETS.cartsign)
-                : `${sizeLabel(PRINT_TARGETS.scorecard)} (landscape)`}
+                ? sizeLabel(cartSignTarget(options.signsPerPage))
+                : variant === "badge"
+                  ? "3.5in × 2.25in badges"
+                  : `${sizeLabel(PRINT_TARGETS.scorecard)} (landscape)`}
               . Lower the scale if the print preview shows content spilling onto a second page.
             </p>
 
           </div>
 
           {/* Live Preview */}
-          {variant === "cartsign" ? (
-            <CartSignMiniPreview options={options} logoUrl={logoUrl} />
-          ) : (
+          {variant === "scorecard" ? (
             <ScorecardMiniPreview options={options} showCourseName={showCourseName} logoUrl={logoUrl} />
+          ) : (
+            <CartSignMiniPreview options={options} logoUrl={logoUrl} />
           )}
+
         </div>
       </CollapsibleContent>
     </Collapsible>

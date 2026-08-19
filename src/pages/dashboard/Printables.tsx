@@ -81,7 +81,8 @@ const Printables = () => {
     Promise.all([
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, payment_status, group_number, group_position, group_label, scoring_code, group_scoring_code, checked_in, created_at, tee_time")
+        .select("id, first_name, last_name, email, payment_status, group_number, group_position, group_label, scoring_code, group_scoring_code, checked_in, created_at, tee_time, flight_id")
+
         .eq("tournament_id", selectedTournament)
         .order("last_name", { ascending: true }),
       supabase
@@ -101,13 +102,26 @@ const Printables = () => {
         .eq("tournament_id", selectedTournament)
         .limit(1)
         .maybeSingle(),
-    ]).then(([regRes, sponsorRes, addonRes, courseRes]) => {
+      (supabase as any)
+        .from("tournament_tiers")
+        .select("id, tier_name")
+        .eq("tournament_id", selectedTournament),
+    ]).then(([regRes, sponsorRes, addonRes, courseRes, flightRes]: any[]) => {
       setAddons((addonRes.data || []) as PrintableAddon[]);
       const opts = { ...DEFAULT_PRINTABLE_OPTIONS, ...(((t as any)?.printable_options as Partial<PrintableOptions>) || {}) };
       setOptions(opts);
       setSavedOptions(opts);
-      setRegistrations((regRes.data || []) as Registration[]);
+      const flightNames = new Map<string, string>(
+        ((flightRes?.data || []) as any[]).map((f) => [f.id as string, f.tier_name as string]),
+      );
+      setRegistrations(
+        ((regRes.data || []) as Registration[]).map((r) => ({
+          ...r,
+          flight_name: r.flight_id ? flightNames.get(r.flight_id) ?? null : null,
+        })),
+      );
       setSponsors((sponsorRes.data || []) as Sponsor[]);
+
       setCourseData(courseRes.data ? {
         hole_pars: courseRes.data.hole_pars as number[] | null,
         stroke_indexes: courseRes.data.stroke_indexes as number[] | null,

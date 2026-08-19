@@ -27,7 +27,12 @@ export interface Registration {
   payment_status?: string | null;
   group_number: number | null;
   group_position: number | null;
+  /** Flight / division id (tournament_tiers) */
+  flight_id?: string | null;
+  /** Resolved flight / division name for printables */
+  flight_name?: string | null;
 }
+
 
 
 export interface Sponsor {

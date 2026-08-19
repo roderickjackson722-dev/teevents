@@ -6,7 +6,9 @@ import { motion } from "framer-motion";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, scorecardCss } from "./printUtils";
+import { formatTeeTime } from "./CartSignsTab";
 import type { Tournament, Registration } from "./types";
+
 import { getPrimaryColor, getPrintLogo, startingHoleOf } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import TeamScorecards from "./TeamScorecards";
@@ -115,6 +117,16 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
       </div>
     </div>` : "";
 
+  const teeTimeText = formatTeeTime((r as any).tee_time);
+  const metaParts = [
+    opts.showStartingHole && groupNum != null ? `Starting Hole: ${groupNum}` : "",
+    opts.showTeeTime && teeTimeText ? `Tee Time: ${teeTimeText}` : "",
+    opts.showFlight && r.flight_name ? r.flight_name : "",
+  ].filter(Boolean);
+  const metaLine = metaParts.length
+    ? `<div style="padding:0 16px ${showScoringQR ? "8px" : "12px"};font-size:11px;color:${color};">${metaParts.join(" &bull; ")}</div>`
+    : "";
+
   return `
     <div style="page-break-inside:avoid;margin-bottom:24px;border:${borderStyle};border-radius:8px;overflow:hidden;font-family:${font};">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:16px;background:${headerBg};color:${headerColor};">
@@ -134,7 +146,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
           <tr>${emptyCells}<td style="border:1px solid #ccc;padding:10px 6px;text-align:center;">&nbsp;</td></tr>
         </table>
       </div>
-      ${opts.showStartingHole && groupNum != null ? `<div style="padding:0 16px ${showScoringQR ? '8px' : '12px'};font-size:11px;color:${color};">Starting Hole: ${groupNum}</div>` : ""}
+      ${metaLine}
       ${qrSection}
     </div>`;
 }
@@ -200,7 +212,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
 
   return (
     <>
-      <PrintableSettings options={opts} onChange={setOpts} showCourseName tournamentId={tournament?.id} logoUrl={getPrintLogo(tournament)} />
+      <PrintableSettings options={opts} onChange={setOpts} showCourseName showTeeTimeToggle showFlightToggle tournamentId={tournament?.id} logoUrl={getPrintLogo(tournament)} />
 
       <div className="flex items-center gap-2 mb-4 p-3 rounded-lg border border-border bg-muted/30">
         <Switch checked={teamMode} onCheckedChange={setTeamMode} id="toggle-team-scorecards" />

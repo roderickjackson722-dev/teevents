@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { openPrintWindow, downloadHtmlAsPdf, getFontImport, cartSignCss, printLogoHtml } from "./printUtils";
-import { PRINT_TARGETS } from "./printLayout";
+import { cartSignTarget, sizeLabel } from "./printLayout";
 import PrintFitCheck from "./PrintFitCheck";
 import PrintLogo from "./PrintLogo";
 import type { Tournament, Registration } from "./types";
@@ -53,6 +53,7 @@ function cartSignHtml(
   opts: PrintableOptions,
   groupNumber: number | null,
   teeTime?: string | null,
+  flight?: string | null,
 ) {
   const color = getPrimaryColor(tournament);
   const font = FONT_MAP[opts.font] || FONT_MAP.georgia;
@@ -76,8 +77,29 @@ function cartSignHtml(
       ${nameLines}
       ${opts.showTeeTime && formatTeeTime(teeTime) ? `<div style="font-size:56px;color:${accentColor};font-weight:700;margin-top:0.12in;">Tee Time: ${formatTeeTime(teeTime)}</div>` : ""}
       ${opts.showStartingHole && groupNumber != null ? `<div style="font-size:48px;color:${accentColor};font-weight:600;margin-top:0.12in;">Starting Hole: ${groupNumber}</div>` : ""}
+      ${opts.showFlight && flight ? `<div style="font-size:44px;color:${accentColor};font-weight:600;margin-top:0.12in;">${flight}</div>` : ""}
     </div>`;
 }
+
+/** Wrap signs into pages, stacking `perPage` signs per sheet with a cut line. */
+function paginateSigns(signHtml: string[], perPage: number): string {
+  const size = Math.max(1, perPage);
+  const pages: string[][] = [];
+  for (let i = 0; i < signHtml.length; i += size) pages.push(signHtml.slice(i, i + size));
+  return pages
+    .map((page, pageIndex) => {
+      const cells = Array.from({ length: size }, (_, i) => {
+        const inner = page[i] ?? "";
+        const cut = size > 1 && i < size - 1 ? "border-bottom:2px dashed #999;" : "";
+        return `<div style="flex:1 1 0;min-height:0;overflow:hidden;padding:${size > 1 ? "0.06in 0" : "0"};${cut}">${inner}</div>`;
+      }).join("");
+      return `<div class="print-page" style="page-break-after:${pageIndex < pages.length - 1 ? "always" : "auto"};">
+        <div style="display:flex;flex-direction:column;">${cells}</div>
+      </div>`;
+    })
+    .join("");
+}
+
 
 export default function CartSignsTab({ tournament, registrations, loading, groups = [], onGroupsChanged }: Props) {
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
@@ -115,7 +137,9 @@ export default function CartSignsTab({ tournament, registrations, loading, group
 
   const fontImport = getFontImport(opts.font);
   const fitOptions = { scale: opts.printScale, marginIn: opts.printMarginIn };
-  const pageCss = cartSignCss(fitOptions);
+  const signsPerPage = opts.signsPerPage ?? 2;
+  const pageCss = cartSignCss(fitOptions, signsPerPage);
+  const printTarget = cartSignTarget(signsPerPage);
 
   const cartsFor = (key: string): { label: string; names: string[] }[] => {
     const e = edits[key] || { cart1: ["", ""], cart2: ["", ""] };
@@ -128,16 +152,18 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   };
 
   /** Flat list of every printable cart sign (hole + cart + names) */
-  const allSigns = teams.flatMap((t) =>
-    cartsFor(t.key).map((c) => ({
+  const allSigns = teams.flatMap((t) => {
+    const flight = t.players.map((p) => p.flight_name).find(Boolean) || null;
+    return cartsFor(t.key).map((c) => ({
       key: `${t.key}|${c.label}`,
       hole: t.startingHole ?? t.groupNumber,
       label: `${t.startingHole != null ? `Hole ${t.startingHole}` : "Unassigned"} – ${c.label}: ${c.names.join(" & ")}`,
       names: c.names,
       groupNumber: t.startingHole ?? t.groupNumber,
       teeTime: teeEdits[t.key] ?? t.teeTime ?? null,
-    })),
-  );
+      flight,
+    }));
+  });
 
   const signKeysJson = JSON.stringify(allSigns.map((s) => s.key));
   useEffect(() => {
@@ -148,12 +174,13 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   const printSigns = allSigns.filter((s) => selectedSignSet.has(s.key));
 
   const buildHtml = (signs: typeof allSigns) =>
-    signs
-      .map((s) => cartSignHtml(s.names, tournament, opts, s.groupNumber, s.teeTime))
-      .map((html, i, arr) => `<div class="print-page" style="page-break-after:${i < arr.length - 1 ? "always" : "auto"};">${html}</div>`)
-      .join("");
+    paginateSigns(
+      signs.map((s) => cartSignHtml(s.names, tournament, opts, s.groupNumber, s.teeTime, s.flight)),
+      signsPerPage,
+    );
 
   const allHtml = buildHtml(printSigns);
+
 
 
   const saveNames = async (key: string) => {
@@ -206,6 +233,8 @@ export default function CartSignsTab({ tournament, registrations, loading, group
         onChange={setOpts}
         variant="cartsign"
         showTeeTimeToggle
+        showFlightToggle
+        showSignsPerPage
         tournamentId={tournament?.id}
         logoUrl={getPrintLogo(tournament)}
       />
@@ -219,10 +248,12 @@ export default function CartSignsTab({ tournament, registrations, loading, group
 
       <div className="flex items-center justify-between gap-2 mb-4 flex-wrap">
         <p className="text-xs text-muted-foreground">
-          {printSigns.length} of {allSigns.length} cart signs selected &bull; two players per cart &bull; prints at 8&quot; H &times; 36&quot; W (landscape) &bull; scale {Math.round((opts.printScale ?? 1) * 100)}% &bull; {opts.printMarginIn ?? 0.25}&quot; margins
+          {printSigns.length} of {allSigns.length} cart signs selected &bull; two players per cart &bull; {signsPerPage} per page ({sizeLabel(printTarget)}
+          {signsPerPage > 1 ? ", cut in half" : ""}) &bull; scale {Math.round((opts.printScale ?? 1) * 100)}% &bull; {opts.printMarginIn ?? 0.25}&quot; margins
         </p>
         <div className="flex gap-2 items-start">
-          <PrintFitCheck getBodyHtml={() => allHtml} target={PRINT_TARGETS.cartsign} fitOptions={fitOptions} />
+          <PrintFitCheck getBodyHtml={() => allHtml} target={printTarget} fitOptions={fitOptions} />
+
           <Button variant="outline" disabled={printSigns.length === 0} onClick={() => downloadHtmlAsPdf(`Cart Signs - ${tournament?.title}`, allHtml, fontImport, pageCss)}>
             <Download className="h-4 w-4 mr-2" /> Save as PDF
           </Button>
@@ -294,6 +325,10 @@ export default function CartSignsTab({ tournament, registrations, loading, group
                       {opts.showStartingHole && (t.startingHole ?? t.groupNumber) != null && (
                         <p className="text-sm font-semibold text-primary">Starting Hole: {t.startingHole ?? t.groupNumber}</p>
                       )}
+                      {opts.showFlight && t.players.map((p) => p.flight_name).find(Boolean) && (
+                        <p className="text-sm font-semibold text-primary">{t.players.map((p) => p.flight_name).find(Boolean)}</p>
+                      )}
+
                     </div>
                   ))}
                 </div>

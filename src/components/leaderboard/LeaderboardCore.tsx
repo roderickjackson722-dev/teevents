@@ -70,6 +70,13 @@ interface RendererProps {
   topNotice?: React.ReactNode;
   /** Optional subtitle under title (date · course). */
   subtitle?: string;
+  /**
+   * Multiple named boards (eg. one per flight) rendered side by side in a grid.
+   * When provided, these replace the single `rows` table.
+   */
+  boards?: { key: string; label: string; rows: LbRow[] }[];
+  /** Columns used for the multi-board grid. */
+  boardColumns?: number;
   /** "Presented by" headline sponsor for the leaderboard. */
   presentedBy?: {
     label: string;
@@ -77,6 +84,7 @@ interface RendererProps {
     logoUrl: string | null;
   } | null;
 }
+
 
 /**
  * Single source of truth for rendering the leaderboard. Used by both the

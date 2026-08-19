@@ -612,7 +612,8 @@ export default function EmailTemplateEditor() {
       scoring_link: t?.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
       leaderboard_link: t?.slug ? `https://www.teevents.golf/live/${t.slug}` : "https://www.teevents.golf",
       event_homepage: homepage,
-      tee_time: "TBD",
+      pairings_link: t?.slug ? `https://www.teevents.golf/pairings/${t.slug}` : "https://www.teevents.golf",
+      tee_time: sampleReg?.tee_time || sampleReg?.group_tee_time || "TBD",
       hole_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
       team_name: sampleReg?.team_name || (sampleReg?.group_number != null ? `Hole ${sampleReg.group_number}` : "To be assigned"),
       contact_name: t?.day_of_director_name || t?.contact_name || "Tournament Organizer",
@@ -1734,6 +1735,7 @@ const SAMPLE_VARS: Record<string, string> = {
   scoring_link: "https://www.teevents.golf/t/sample/scoring",
   leaderboard_link: "https://www.teevents.golf/live/sample",
   event_homepage: "https://www.teevents.golf/t/sample",
+  pairings_link: "https://www.teevents.golf/pairings/sample",
 };
 
 function replaceVariablesPlain(text: string, vars: Record<string, string>): string {

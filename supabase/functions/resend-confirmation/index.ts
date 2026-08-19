@@ -356,10 +356,12 @@ Deno.serve(async (req) => {
     const round1Date = (tournament as any)?.pairings_config?.byDay?.["0"]?.roundDate;
     if (round1Date && String(round1Date).trim()) (tournament as any).date = String(round1Date).trim();
 
-    // Verify user is org member
-    const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
-    const { data: isMember } = await supabaseAdmin.rpc("is_org_member", { _user_id: user.id, _org_id: tournament.organization_id });
-    if (!isAdmin && !isMember) throw new Error("Not authorized");
+    // Verify user is org member (skipped for internal scheduled sends)
+    if (!isServiceRun) {
+      const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user!.id, _role: "admin" });
+      const { data: isMember } = await supabaseAdmin.rpc("is_org_member", { _user_id: user!.id, _org_id: tournament.organization_id });
+      if (!isAdmin && !isMember) throw new Error("Not authorized");
+    }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const kind = template_kind || "confirmation";

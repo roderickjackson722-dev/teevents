@@ -360,6 +360,7 @@ export default function EmailTemplateEditor() {
   const [selectedTournament, setSelectedTournament] = useState<string>("");
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
+  const [paymentFilter, setPaymentFilter] = useState<"paid" | "pending" | "all">("paid");
   const [sending, setSending] = useState(false);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -798,13 +799,61 @@ export default function EmailTemplateEditor() {
     );
   };
 
+  const isPaidReg = (r: any) => (r.payment_status || "").toLowerCase() === "paid";
+  const paymentMatches = (r: any) =>
+    paymentFilter === "all" ? true : paymentFilter === "paid" ? isPaidReg(r) : !isPaidReg(r);
+
+  // Registrations that pass the paid/pending filter (before the text search).
+  const filteredRegistrations = registrations.filter(paymentMatches);
+  // What the list actually renders (payment filter + search box).
+  const visibleRegistrations = filteredRegistrations.filter((r) => {
+    const q = recipientSearch.trim().toLowerCase();
+    if (!q) return true;
+    return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
+  });
+
+  // Never keep someone selected who is filtered out of view (e.g. pending players).
+  useEffect(() => {
+    setSelectedRecipients((prev) => {
+      const allowed = new Set(filteredRegistrations.map((r) => r.id));
+      const next = prev.filter((id) => allowed.has(id));
+      return next.length === prev.length ? prev : next;
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paymentFilter, registrations]);
+
   const selectAll = () => {
-    if (selectedRecipients.length === registrations.length) {
+    if (selectedRecipients.length === filteredRegistrations.length && filteredRegistrations.length > 0) {
       setSelectedRecipients([]);
     } else {
-      setSelectedRecipients(registrations.map(r => r.id));
+      setSelectedRecipients(filteredRegistrations.map(r => r.id));
     }
   };
+
+  const paidCount = registrations.filter(isPaidReg).length;
+  const pendingCount = registrations.length - paidCount;
+
+  const PaymentFilterToggle = () => (
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="text-xs text-muted-foreground">Show:</span>
+      {([
+        { key: "paid" as const, label: `Paid (${paidCount})` },
+        { key: "pending" as const, label: `Pending (${pendingCount})` },
+        { key: "all" as const, label: `All (${registrations.length})` },
+      ]).map((opt) => (
+        <Button
+          key={opt.key}
+          type="button"
+          size="sm"
+          variant={paymentFilter === opt.key ? "default" : "outline"}
+          className="h-7 text-xs"
+          onClick={() => setPaymentFilter(opt.key)}
+        >
+          {opt.label}
+        </Button>
+      ))}
+    </div>
+  );
 
   const insertVariable = (field: "greeting" | "body_text" | "closing_text" | "footer_text" | "subject" | "header_title" | "schedule_override", variable: string) => {
     setConfig(prev => ({ ...prev, [field]: ((prev as any)[field] || "") + " " + variable }));
@@ -992,7 +1041,7 @@ export default function EmailTemplateEditor() {
               </Label>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={selectAll}>
-                  {selectedRecipients.length === registrations.length && registrations.length > 0 ? "Deselect All" : "Select All"}
+                  {selectedRecipients.length === filteredRegistrations.length && filteredRegistrations.length > 0 ? "Deselect All" : "Select All"}
                 </Button>
                 <Badge variant="secondary">{selectedRecipients.length} selected</Badge>
               </div>
@@ -1000,21 +1049,21 @@ export default function EmailTemplateEditor() {
             <p className="text-xs text-muted-foreground">
               Pick one player or a hand-picked group from your registration list — only the people you check receive this reminder.
             </p>
+            <PaymentFilterToggle />
             <Input
               placeholder="Search by name or email…"
               value={recipientSearch}
               onChange={(e) => setRecipientSearch(e.target.value)}
             />
-            {registrations.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-4">No registrations found for this tournament.</p>
+            {visibleRegistrations.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-4">
+                {registrations.length === 0
+                  ? "No registrations found for this tournament."
+                  : `No ${paymentFilter === "all" ? "" : paymentFilter + " "}players match this filter.`}
+              </p>
             ) : (
               <div className="max-h-64 overflow-y-auto divide-y border rounded">
-                {registrations
-                  .filter((r) => {
-                    const q = recipientSearch.trim().toLowerCase();
-                    if (!q) return true;
-                    return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
-                  })
+                {visibleRegistrations
                   .map((r) => (
                     <div key={r.id} className="flex items-center gap-3 py-2 px-2 hover:bg-muted/50">
                       <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
@@ -1594,31 +1643,31 @@ export default function EmailTemplateEditor() {
           <div className="bg-card rounded-lg border p-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
-                <Users className="h-4 w-4 text-primary" /> Players ({registrations.length})
+                <Users className="h-4 w-4 text-primary" /> Players ({filteredRegistrations.length})
               </h3>
               <div className="flex items-center gap-2">
                 <Button variant="outline" size="sm" onClick={selectAll}>
-                  {selectedRecipients.length === registrations.length && registrations.length > 0 ? "Deselect All" : "Select All"}
+                  {selectedRecipients.length === filteredRegistrations.length && filteredRegistrations.length > 0 ? "Deselect All" : "Select All"}
                 </Button>
                 <Badge variant="secondary">{selectedRecipients.length} selected</Badge>
               </div>
             </div>
+            <div className="mb-3"><PaymentFilterToggle /></div>
             <Input
               placeholder="Search by name or email…"
               value={recipientSearch}
               onChange={(e) => setRecipientSearch(e.target.value)}
               className="mb-3"
             />
-            {registrations.length === 0 ? (
-              <p className="text-muted-foreground text-sm text-center py-6">No registrations found for this tournament.</p>
+            {visibleRegistrations.length === 0 ? (
+              <p className="text-muted-foreground text-sm text-center py-6">
+                {registrations.length === 0
+                  ? "No registrations found for this tournament."
+                  : `No ${paymentFilter === "all" ? "" : paymentFilter + " "}players match this filter.`}
+              </p>
             ) : (
               <div className="max-h-[400px] overflow-y-auto divide-y">
-                {registrations
-                  .filter((r) => {
-                    const q = recipientSearch.trim().toLowerCase();
-                    if (!q) return true;
-                    return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
-                  })
+                {visibleRegistrations
                   .map(r => (
                   <div key={r.id} className="py-1">
                   <div className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">

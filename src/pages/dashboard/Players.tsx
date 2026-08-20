@@ -423,7 +423,6 @@ const Players = () => {
         if (!label) return;
         const key = norm(label);
         if (seen.has(key) || ANSWER_LABELS_COVERED_BY_BASE_COLS.includes(key)) return;
-        if (["city", "state"].includes(key) && rosterCols["citystate"] === false) return;
         seen.add(key);
         cols.push({ key: `answer_${key}`, label, fieldId: null });
       });

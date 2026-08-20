@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Users } from "lucide-react";
-import FlightPayoutPlanner from "@/components/payouts/FlightPayoutPlanner";
+import SimpleFlightPayouts from "@/components/payouts/SimpleFlightPayouts";
 import MinimumDrivesTracker from "@/components/dashboard/MinimumDrivesTracker";
 import ShootoutRoundsEditor from "@/components/dashboard/ShootoutRoundsEditor";
 import { assignFlights, threeManScrambleHandicap, THREE_MAN_SCRAMBLE_WEIGHTS, type FlightBasis, type FlightMethod } from "@/lib/flightPayouts";
@@ -369,7 +369,7 @@ export default function FlightsManager({ tournamentId }: Props) {
         flights={flights.map((f) => ({ id: f.id, name: f.tier_name, players: countByFlight(f.id) }))}
         defaultPurseCents={purseCents}
         flightMethod={settings.flight_method}
-        onSaveMethod={(m) => saveFlightSettings({ ...settings, flights_enabled: true, flight_method: m })}
+        onSaveMethod={(m: FlightMethod) => saveFlightSettings({ ...settings, flights_enabled: true, flight_method: m })}
         unassignedNames={players.filter((p) => !p.flight_id).map((p) => `${p.first_name} ${p.last_name}`)}
         assignedCount={players.filter((p) => p.flight_id).length}
         totalPlayers={players.length}

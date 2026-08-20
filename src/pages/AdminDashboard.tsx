@@ -24,7 +24,7 @@ import AdminFeatureUpdateEmails from "@/components/admin/AdminFeatureUpdateEmail
 import AdminEmailLog from "@/components/admin/AdminEmailLog";
 import AdminLinkHealth, { fetchLinkCheckFailureCount } from "@/components/admin/AdminLinkHealth";
 import AdminSampleRequests from "@/components/admin/AdminSampleRequests";
-import AdminLeadMagnets from "@/components/admin/AdminLeadMagnets";
+import AdminContentHub from "@/components/admin/AdminContentHub";
 import AdminAuditLog from "@/components/admin/AdminAuditLog";
 import AdminSalesHub from "@/components/admin/AdminSalesHub";
 import AdminSponsorshipPages from "@/components/admin/AdminSponsorshipPages";
@@ -982,7 +982,7 @@ const AdminDashboard = () => {
                   ["routing-monitor", "Routing Monitor", AlertTriangle],
                   ["link-health", `Link Health${linkFailures ? ` (${linkFailures})` : ""}`, LinkIcon],
                   ["sample-requests", "Sample Requests", FileText],
-                  ["lead-magnets", "Lead Magnets", FileText],
+                  ["lead-magnets", "Content Hub", BookOpen],
                   ["accounting", "Accounting", DollarSign],
                   ["group-trips", "Group Trips", Plane],
                    ["feature-flags", "Feature Flags", KeyRound],
@@ -2074,7 +2074,7 @@ const AdminDashboard = () => {
           {activeTab === "routing-monitor" && <AdminRoutingMonitor />}
           {activeTab === "link-health" && <AdminLinkHealth />}
           {activeTab === "sample-requests" && <AdminSampleRequests />}
-          {activeTab === "lead-magnets" && <AdminLeadMagnets />}
+          {activeTab === "lead-magnets" && <AdminContentHub />}
           {activeTab === "email-log" && <AdminEmailLog />}
           {activeTab === "audit-log" && <AdminAuditLog />}
 

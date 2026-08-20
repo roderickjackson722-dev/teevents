@@ -385,19 +385,68 @@ const Players = () => {
     setRegFeeCents(Number(t?.registration_fee_cents || 0));
   }, [selectedTournament, tournaments]);
 
-  // Custom field columns exposed in the roster (organizer-added registration questions)
-  const customFieldCols = regFieldDefs
-    .filter((f) => !f.is_default && f.is_enabled)
-    .sort((a, b) => a.sort_order - b.sort_order);
-
-  const getCustomAnswer = (p: Registration, fieldId: string): string => {
-    const match = (p.custom_answers || []).find((a) => a.field_id === fieldId);
-    const v = match?.answer;
+  const formatAnswer = (v: unknown): string => {
     if (v === null || v === undefined || v === "") return "";
     if (typeof v === "boolean") return v ? "Yes" : "No";
     if (Array.isArray(v)) return v.join(", ");
+    if (typeof v === "object") return Object.values(v as Record<string, unknown>).map(String).join(", ");
     return String(v);
   };
+
+  const getCustomAnswer = (p: Registration, fieldId: string): string => {
+    const match = (p.custom_answers || []).find((a) => a.field_id === fieldId);
+    return formatAnswer(match?.answer);
+  };
+
+  // Every question the participant could answer at registration — the organizer's
+  // own questions AND the built-in ones (Company, Skill Level, …) — plus any answer
+  // stored on a registration that no longer has a matching field definition, so no
+  // response is ever hidden from the roster.
+  const answerCols: Array<{ key: string; label: string; fieldId: string | null }> = (() => {
+    const cols: Array<{ key: string; label: string; fieldId: string | null }> = [];
+    const seen = new Set<string>();
+    const norm = (s: string) => s.trim().toLowerCase();
+
+    regFieldDefs
+      .filter((f) => f.is_enabled)
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .forEach((f) => {
+        if (ANSWER_LABELS_COVERED_BY_BASE_COLS.includes(norm(f.label))) return;
+        cols.push({ key: `custom_${f.id}`, label: f.label, fieldId: f.id });
+        seen.add(norm(f.label));
+      });
+
+    allPlayers.forEach((p) => {
+      (p.custom_answers || []).forEach((a) => {
+        const label = String(a.label || "").trim();
+        if (!label) return;
+        const key = norm(label);
+        if (seen.has(key) || ANSWER_LABELS_COVERED_BY_BASE_COLS.includes(key)) return;
+        if (["city", "state"].includes(key) && rosterCols["citystate"] === false) return;
+        seen.add(key);
+        cols.push({ key: `answer_${key}`, label, fieldId: null });
+      });
+    });
+
+    return cols;
+  })();
+
+  // Answer for a roster answer-column: matched by field id first, then by label so
+  // registrations saved before a question was re-created still line up.
+  const answerForCol = (p: Registration, col: { label: string; fieldId: string | null }): string => {
+    const norm = (s: string) => String(s || "").trim().toLowerCase();
+    const answers = p.custom_answers || [];
+    const byId = col.fieldId ? answers.find((a) => a.field_id === col.fieldId) : undefined;
+    const match = byId || answers.find((a) => norm(a.label) === norm(col.label));
+    const value = formatAnswer(match?.answer);
+    // The flight is stored as a relation on the registration, not as a text answer.
+    if (!value && norm(col.label) === "flight") return flightName(p.flight_id);
+    return value;
+  };
+
+  const visibleAnswerCols = answerCols.filter((c) => rosterCols[c.key] !== false);
+
 
   // Scoring codes live at the GROUP level and are only created once pairings are assigned.
   const codeOf = (p: Registration): string => (p.group_scoring_code || p.scoring_code || "");

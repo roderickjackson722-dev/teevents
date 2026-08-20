@@ -140,7 +140,35 @@ export default function Volunteers() {
   const totalVolunteers = volunteers?.length || 0;
   const checkedInCount = volunteers?.filter((v: any) => v.checked_in).length || 0;
 
+  const exportCsv = () => {
+    const headers = ["Name", "Email", "Phone", "Role", "Time Slot", "Status", "Checked In", "Checked In At", "Signed Up"];
+    const rows = (volunteers || []).map((v: any) => {
+      const role = roles?.find((r) => r.id === v.role_id);
+      return [
+        v.name || "",
+        v.email || "",
+        v.phone || "",
+        role?.title || "",
+        role?.time_slot || "",
+        v.status || "pending",
+        v.checked_in ? "Yes" : "No",
+        v.checked_in_at ? new Date(v.checked_in_at).toLocaleString() : "",
+        v.created_at ? new Date(v.created_at).toLocaleString() : "",
+      ];
+    });
+    const csv = [headers, ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "volunteers.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (orgLoading) return <div className="p-6">Loading...</div>;
+
 
   return (
     <div className="space-y-6">

@@ -862,6 +862,62 @@ export type Database = {
           },
         ]
       }
+      branding_audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          actor_type: string
+          amount_cents: number | null
+          created_at: string
+          details: Json
+          id: string
+          reason: string | null
+          receipt_url: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          tournament_id: string
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          actor_type?: string
+          amount_cents?: number | null
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string | null
+          receipt_url?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id: string
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          actor_type?: string
+          amount_cents?: number | null
+          created_at?: string
+          details?: Json
+          id?: string
+          reason?: string | null
+          receipt_url?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "branding_audit_log_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       budget_estimates: {
         Row: {
           budget_id: string
@@ -10270,11 +10326,17 @@ export type Database = {
           allow_cover_fees: boolean
           allowed_group_sizes: number[] | null
           auction_tab_title: string | null
+          branding_admin_override_at: string | null
           branding_footer_admin_override: boolean
           branding_footer_admin_show: boolean
           branding_footer_custom_text: string | null
           branding_override_reason: string | null
+          branding_payment_intent_id: string | null
+          branding_payment_session_id: string | null
+          branding_receipt_url: string | null
           branding_removed: boolean
+          branding_removed_at: string | null
+          branding_removed_by: string | null
           branding_removed_by_admin: boolean
           captain_label: string | null
           confirmation_email_config: Json | null
@@ -10563,11 +10625,17 @@ export type Database = {
           allow_cover_fees?: boolean
           allowed_group_sizes?: number[] | null
           auction_tab_title?: string | null
+          branding_admin_override_at?: string | null
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
           branding_footer_custom_text?: string | null
           branding_override_reason?: string | null
+          branding_payment_intent_id?: string | null
+          branding_payment_session_id?: string | null
+          branding_receipt_url?: string | null
           branding_removed?: boolean
+          branding_removed_at?: string | null
+          branding_removed_by?: string | null
           branding_removed_by_admin?: boolean
           captain_label?: string | null
           confirmation_email_config?: Json | null
@@ -10856,11 +10924,17 @@ export type Database = {
           allow_cover_fees?: boolean
           allowed_group_sizes?: number[] | null
           auction_tab_title?: string | null
+          branding_admin_override_at?: string | null
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
           branding_footer_custom_text?: string | null
           branding_override_reason?: string | null
+          branding_payment_intent_id?: string | null
+          branding_payment_session_id?: string | null
+          branding_receipt_url?: string | null
           branding_removed?: boolean
+          branding_removed_at?: string | null
+          branding_removed_by?: string | null
           branding_removed_by_admin?: boolean
           captain_label?: string | null
           confirmation_email_config?: Json | null

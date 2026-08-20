@@ -39,6 +39,13 @@ const UpgradeFeaturesPage = () => {
   const addons = useTournamentAddons(selectedTournamentId);
   const [brandingRemoved, setBrandingRemoved] = useState(false);
   const [brandingLoading, setBrandingLoading] = useState(false);
+  const [brandingStatus, setBrandingStatus] = useState<any>(null);
+  const [paymentConfirmation, setPaymentConfirmation] = useState<{
+    receiptUrl: string | null;
+    sessionId: string;
+    amountCents: number;
+  } | null>(null);
+
 
   // Verify Stripe redirect
   useEffect(() => {

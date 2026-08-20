@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/teevents-logo-final.png.asset.json";
+import logoAsset from "@/assets/teevents-logo-black.png.asset.json";
 
 export interface BrandingFooterFields {
   is_pro?: boolean | null;
@@ -8,7 +8,8 @@ export interface BrandingFooterFields {
   branding_footer_custom_text?: string | null;
 }
 
-const DEFAULT_TEXT = "Need to run your golf tournament? Get started with TeeVents →";
+const DEFAULT_TEXT =
+  "Need to run your tournament? Get started with TeeVents - The all in one platform for golf tournaments";
 
 /**
  * "Powered by TeeVents" footer shown on public tournament pages.
@@ -49,10 +50,7 @@ export function TeeventsFooter({ tournament }: { tournament: BrandingFooterField
       >
         {text}
       </a>
-      <span className="inline-flex items-center gap-2 opacity-90">
-        <img src={logoAsset.url} alt="TeeVents" style={{ height: 24 }} className="object-contain" />
-        <span>teevents.golf</span>
-      </span>
+      <img src={logoAsset.url} alt="TeeVents Golf Management" style={{ height: 26 }} className="object-contain" />
     </footer>
   );
 }

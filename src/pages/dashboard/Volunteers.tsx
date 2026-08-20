@@ -305,6 +305,67 @@ export default function Volunteers() {
         </div>
       )}
 
+      {/* Full volunteer contact list */}
+      {selectedTournament && totalVolunteers > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base">Volunteer Contact List</CardTitle>
+              <Button variant="outline" size="sm" onClick={exportCsv}>
+                <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-muted-foreground">
+                  <th className="py-2 pr-4 font-medium">Name</th>
+                  <th className="py-2 pr-4 font-medium">Email</th>
+                  <th className="py-2 pr-4 font-medium">Phone</th>
+                  <th className="py-2 pr-4 font-medium">Role</th>
+                  <th className="py-2 pr-4 font-medium">Time Slot</th>
+                  <th className="py-2 pr-4 font-medium">Status</th>
+                  <th className="py-2 pr-4 font-medium">Checked In</th>
+                  <th className="py-2 pr-4 font-medium">Signed Up</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(volunteers || []).map((v: any) => {
+                  const role = roles?.find((r) => r.id === v.role_id);
+                  return (
+                    <tr key={v.id} className="border-b border-border/50">
+                      <td className="py-2 pr-4 font-medium">{v.name}</td>
+                      <td className="py-2 pr-4">
+                        {v.email ? <a href={`mailto:${v.email}`} className="hover:underline break-all">{v.email}</a> : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="py-2 pr-4">
+                        {v.phone ? <a href={`tel:${v.phone}`} className="hover:underline whitespace-nowrap">{v.phone}</a> : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="py-2 pr-4">{role?.title || "—"}</td>
+                      <td className="py-2 pr-4 whitespace-nowrap">{role?.time_slot || "—"}</td>
+                      <td className="py-2 pr-4">
+                        <Badge variant={v.status === "confirmed" ? "default" : "secondary"} className="text-xs capitalize">
+                          {v.status || "pending"}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-4 whitespace-nowrap">
+                        {v.checked_in ? (v.checked_in_at ? new Date(v.checked_in_at).toLocaleString() : "Yes") : "No"}
+                      </td>
+                      <td className="py-2 pr-4 whitespace-nowrap">
+                        {v.created_at ? new Date(v.created_at).toLocaleDateString() : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+
+
       {/* Assign Volunteer Dialog */}
       <Dialog open={assignDialogOpen} onOpenChange={(v) => { setAssignDialogOpen(v); if (!v) { setAssignRoleId(null); setAssignForm({ name: "", email: "", phone: "" }); } }}>
         <DialogContent>

@@ -104,6 +104,7 @@ interface Registration {
   scoring_code: string | null;
   group_scoring_code?: string | null;
   tier_id: string | null;
+  flight_id?: string | null;
   custom_answers?: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> | null;
 }
 

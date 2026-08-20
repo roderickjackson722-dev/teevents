@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
+import AutoPaymentConfirm from "@/components/leagues/AutoPaymentConfirm";
 import styles from "../styles.css?url";
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
@@ -14,7 +15,7 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 function RootDocument({ children }: { children: ReactNode }) {
-  return <html lang="en" suppressHydrationWarning><head><HeadContent /></head><body><QueryClientProvider client={Route.useRouteContext().queryClient}><TooltipProvider><Toaster /><Sonner />{children}</TooltipProvider></QueryClientProvider><Scripts /></body></html>;
+  return <html lang="en" suppressHydrationWarning><head><HeadContent /></head><body><QueryClientProvider client={Route.useRouteContext().queryClient}><TooltipProvider><Toaster /><Sonner /><AutoPaymentConfirm />{children}</TooltipProvider></QueryClientProvider><Scripts /></body></html>;
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({

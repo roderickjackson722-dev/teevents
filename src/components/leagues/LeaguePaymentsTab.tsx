@@ -59,9 +59,24 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
     }
   }, [fetchPayments, leagueId]);
 
+  // Reconciliation is automatic: Stripe is checked and confirmation emails are sent
+  // the moment a payment completes, on a background schedule, and again silently here
+  // so this tab is always current without anyone pressing a button.
   useEffect(() => {
-    void load();
-  }, [load]);
+    let active = true;
+    (async () => {
+      await load();
+      try {
+        const res: any = await syncPayments({ data: { leagueId } });
+        if (active && (res?.recovered || res?.reconciled)) await load();
+      } catch {
+        /* silent — the visible ledger already loaded */
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [load, syncPayments, leagueId]);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -71,7 +86,7 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
         res?.recovered
           ? `Found ${res.recovered} completed payment${res.recovered === 1 ? "" : "s"} in Stripe`
           : res?.reconciled
-            ? `Updated ${res.reconciled} registration record${res.reconciled === 1 ? "" : "s"} from completed payments`
+            ? `Sent ${res.reconciled} pending confirmation email${res.reconciled === 1 ? "" : "s"}`
           : "Everything is already up to date with Stripe",
       );
       await load();
@@ -81,6 +96,7 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
       setSyncing(false);
     }
   };
+
 
   return (
     <div className="space-y-4">
@@ -124,15 +140,16 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
           <div>
             <CardTitle>Completed Payments</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Every completed membership and event payment for this league. Online payments show the
-              full amount charged, the fees taken out, and your net. Manual entries were collected
-              offline (cash/check) and carry no fees.
+              Every completed membership and event payment for this league. Payments are confirmed
+              with Stripe automatically and confirmation emails go out to the payer and to you the
+              moment a payment clears — nothing here needs a manual step.
             </p>
           </div>
           <Button variant="outline" onClick={handleSync} disabled={syncing}>
             {syncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-            Reconcile with Stripe
+            Check Stripe now
           </Button>
+
         </CardHeader>
         <CardContent>
           {loading ? (

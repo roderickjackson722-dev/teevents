@@ -4211,6 +4211,7 @@ export type Database = {
       league_payments: {
         Row: {
           amount_cents: number
+          confirmation_sent_at: string | null
           created_at: string
           entry_source: string
           event_id: string | null
@@ -4231,6 +4232,7 @@ export type Database = {
         }
         Insert: {
           amount_cents: number
+          confirmation_sent_at?: string | null
           created_at?: string
           entry_source?: string
           event_id?: string | null
@@ -4251,6 +4253,7 @@ export type Database = {
         }
         Update: {
           amount_cents?: number
+          confirmation_sent_at?: string | null
           created_at?: string
           entry_source?: string
           event_id?: string | null

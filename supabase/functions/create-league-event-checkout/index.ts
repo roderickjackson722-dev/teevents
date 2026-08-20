@@ -148,7 +148,7 @@ Deno.serve(async (req) => {
           },
         ],
         ...applicationFeeBlock(account, feeCents),
-        success_url: `${return_url || origin}?pay=success`,
+        success_url: `${return_url || origin}?pay=success&session_id={CHECKOUT_SESSION_ID}`,
         cancel_url: `${return_url || origin}?pay=cancelled`,
         metadata: {
           kind: "league_event",

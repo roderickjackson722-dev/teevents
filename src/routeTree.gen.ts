@@ -23,6 +23,7 @@ import { Route as ApiPublicLeadMagnetDownloadRouteImport } from './routes/api/pu
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
 import { Route as ApiPublicLeagueEventRegistrationLinkRouteImport } from './routes/api/public/league-event-registration-link'
 import { Route as ApiPublicLeagueLoginInstructionsRouteImport } from './routes/api/public/league-login-instructions'
+import { Route as ApiPublicLeaguePaymentConfirmRouteImport } from './routes/api/public/league-payment-confirm'
 import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/api/public/post-event-organizer-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
@@ -104,6 +105,12 @@ const ApiPublicLeagueLoginInstructionsRoute =
     path: '/api/public/league-login-instructions',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicLeaguePaymentConfirmRoute =
+  ApiPublicLeaguePaymentConfirmRouteImport.update({
+    id: '/api/public/league-payment-confirm',
+    path: '/api/public/league-payment-confirm',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPostEventOrganizerEmailRoute =
   ApiPublicPostEventOrganizerEmailRouteImport.update({
     id: '/api/public/post-event-organizer-email',
@@ -154,6 +161,7 @@ export interface FileRoutesByFullPath {
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
+  '/api/public/league-payment-confirm': typeof ApiPublicLeaguePaymentConfirmRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -176,6 +184,7 @@ export interface FileRoutesByTo {
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
+  '/api/public/league-payment-confirm': typeof ApiPublicLeaguePaymentConfirmRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -199,6 +208,7 @@ export interface FileRoutesById {
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
+  '/api/public/league-payment-confirm': typeof ApiPublicLeaguePaymentConfirmRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -223,6 +233,7 @@ export interface FileRouteTypes {
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
+    | '/api/public/league-payment-confirm'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
@@ -245,6 +256,7 @@ export interface FileRouteTypes {
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
+    | '/api/public/league-payment-confirm'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
@@ -267,6 +279,7 @@ export interface FileRouteTypes {
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
     | '/api/public/league-login-instructions'
+    | '/api/public/league-payment-confirm'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
@@ -290,6 +303,7 @@ export interface RootRouteChildren {
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
   ApiPublicLeagueEventRegistrationLinkRoute: typeof ApiPublicLeagueEventRegistrationLinkRoute
   ApiPublicLeagueLoginInstructionsRoute: typeof ApiPublicLeagueLoginInstructionsRoute
+  ApiPublicLeaguePaymentConfirmRoute: typeof ApiPublicLeaguePaymentConfirmRoute
   ApiPublicPostEventOrganizerEmailRoute: typeof ApiPublicPostEventOrganizerEmailRoute
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
@@ -398,6 +412,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicLeagueLoginInstructionsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/league-payment-confirm': {
+      id: '/api/public/league-payment-confirm'
+      path: '/api/public/league-payment-confirm'
+      fullPath: '/api/public/league-payment-confirm'
+      preLoaderRoute: typeof ApiPublicLeaguePaymentConfirmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/post-event-organizer-email': {
       id: '/api/public/post-event-organizer-email'
       path: '/api/public/post-event-organizer-email'
@@ -459,6 +480,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicLeagueEventRegistrationLinkRoute:
     ApiPublicLeagueEventRegistrationLinkRoute,
   ApiPublicLeagueLoginInstructionsRoute: ApiPublicLeagueLoginInstructionsRoute,
+  ApiPublicLeaguePaymentConfirmRoute: ApiPublicLeaguePaymentConfirmRoute,
   ApiPublicPostEventOrganizerEmailRoute: ApiPublicPostEventOrganizerEmailRoute,
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,

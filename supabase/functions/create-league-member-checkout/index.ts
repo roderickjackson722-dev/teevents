@@ -93,7 +93,7 @@ Deno.serve(async (req) => {
           },
         ],
         ...applicationFeeBlock(account, feeCents),
-        success_url: `${return_url || origin}?pay=success${acctQuerySuffix(account).replace('&','&')}`,
+        success_url: `${return_url || origin}?pay=success&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(account)}`,
         cancel_url: `${return_url || origin}?pay=cancelled`,
         metadata: {
           kind: "league_membership",

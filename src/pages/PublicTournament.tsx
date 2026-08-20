@@ -1128,10 +1128,47 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return `${days}d ${hours}h ${minutes}m`;
   };
 
+  /* Scheduled registration close */
+  const regCloseAt = (tournament as any).registration_close_at as string | null;
+  const regAutoClose = !!(tournament as any).registration_auto_close_enabled;
+  const regClosedByTime = regAutoClose && !!regCloseAt && new Date(regCloseAt).getTime() <= Date.now();
+  const showClosedNotice = regAutoClose && regClosedByTime && !tournament.registration_url;
+  const closedMessage =
+    ((tournament as any).registration_closed_message as string | null)?.trim() ||
+    "Registration for this event is now closed. Thank you for your interest — we have reached our registration deadline. If you would still like to play, be added to our waitlist, or ask about sponsorship opportunities, please contact us and we will do our best to help.";
+  const closedEmail = (tournament as any).registration_closed_contact_email as string | null;
+  const closedPhone = (tournament as any).registration_closed_contact_phone as string | null;
+
   const registrationSection = (
     <>
+      {/* ===== REGISTRATION CLOSED NOTICE ===== */}
+      {showClosedNotice && (
+        <section id="register" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          <div className="max-w-xl mx-auto px-4 text-center">
+            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION CLOSED</h2>
+            <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
+            <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "#666" }}>{closedMessage}</p>
+            {(closedEmail || closedPhone) && (
+              <div className="mt-5 space-y-1 text-sm">
+                {closedEmail && (
+                  <div>
+                    <a href={`mailto:${closedEmail}`} className="font-semibold underline" style={{ color: primary }}>{closedEmail}</a>
+                  </div>
+                )}
+                {closedPhone && (
+                  <div>
+                    <a href={`tel:${closedPhone}`} className="font-semibold underline" style={{ color: primary }}>{closedPhone}</a>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      )}
+
       {/* ===== REGISTRATION ===== */}
-      {tournament.registration_open && !tournament.registration_url && (
+      {tournament.registration_open && !regClosedByTime && !tournament.registration_url && (
+
         <section id="register" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
@@ -1801,7 +1838,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         >
           <div className={`flex flex-wrap gap-3 ${flexJustify[buttonPos]}`}>
             {/* Registration button */}
-            {(tournament.registration_open || tournament.registration_url) && (
+            {((tournament.registration_open && !regClosedByTime) || tournament.registration_url || showClosedNotice) && (
               <a
                 href={tournament.registration_url || "#register"}
                 onClick={(e) => {
@@ -1817,7 +1854,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   fontSize: `${buttonSize}px`,
                 }}
               >
-                {tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
+                {showClosedNotice ? "Registration Closed" : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
               </a>
             )}
 

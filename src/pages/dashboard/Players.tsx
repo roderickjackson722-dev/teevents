@@ -2518,6 +2518,7 @@ const Players = () => {
 
                       {rosterCols.group !== false && <SortableTh colKey="group">Group / Team</SortableTh>}
                       {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
+                      {rosterCols.flight !== false && <SortableTh colKey="flight">Flight</SortableTh>}
                       {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
                       {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
                       {rosterCols.teetime !== false && <SortableTh colKey="teetime" align="center">Tee Time</SortableTh>}
@@ -2595,6 +2596,17 @@ const Players = () => {
                         {p.tier_id ? (
                           <span className="inline-flex items-center bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
                             {tierName(p.tier_id)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </td>
+                    )}
+                    {rosterCols.flight !== false && (
+                      <td className="px-4 py-3">
+                        {p.flight_id ? (
+                          <span className="inline-flex items-center bg-emerald-500/10 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            {flightName(p.flight_id)}
                           </span>
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>

@@ -164,6 +164,7 @@ export const adminSetBrandingOverride = createServerFn({ method: "POST" })
       .update({
         branding_removed_by_admin: !!data.removed,
         branding_override_reason: data.removed ? reason : null,
+        branding_admin_override_at: data.removed ? new Date().toISOString() : null,
       } as any)
       .eq("id", data.tournamentId);
     if (error) throw new Error(error.message);
@@ -176,5 +177,54 @@ export const adminSetBrandingOverride = createServerFn({ method: "POST" })
       changes: { branding_removed_by_admin: !!data.removed, reason },
     } as any);
 
+    await admin.from("branding_audit_log").insert({
+      tournament_id: data.tournamentId,
+      actor_id: context.userId,
+      actor_email: context.claims?.email ?? null,
+      actor_type: "admin",
+      action: data.removed ? "admin_override_added" : "admin_override_removed",
+      reason,
+      details: { branding: data.removed ? "disabled" : "enabled" },
+    } as any);
+
     return { ok: true };
   });
+
+/** Organizer-facing branding status + audit history for one tournament. */
+export const getBrandingStatus = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { tournamentId: string }) => {
+    if (!input?.tournamentId) throw new Error("tournamentId is required");
+    return input;
+  })
+  .handler(async ({ data, context }: any) => {
+    const { data: t, error } = await context.supabase
+      .from("tournaments")
+      .select(
+        "id, branding_removed, branding_removed_by_admin, branding_removed_at, branding_admin_override_at, branding_payment_session_id, branding_payment_intent_id, branding_receipt_url",
+      )
+      .eq("id", data.tournamentId)
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+    if (!t) throw new Error("Tournament not found");
+
+    const { data: history } = await context.supabase
+      .from("branding_audit_log")
+      .select("id, action, actor_type, actor_email, amount_cents, receipt_url, stripe_session_id, reason, created_at")
+      .eq("tournament_id", data.tournamentId)
+      .order("created_at", { ascending: false })
+      .limit(20);
+
+    const paid = !!(t as any).branding_removed;
+    const admin = !!(t as any).branding_removed_by_admin;
+    return {
+      removed: paid || admin,
+      source: paid ? "paid" : admin ? "admin" : null,
+      removedAt: paid ? (t as any).branding_removed_at : admin ? (t as any).branding_admin_override_at : null,
+      receiptUrl: (t as any).branding_receipt_url ?? null,
+      sessionId: (t as any).branding_payment_session_id ?? null,
+      paymentIntentId: (t as any).branding_payment_intent_id ?? null,
+      history: history ?? [],
+    };
+  });
+

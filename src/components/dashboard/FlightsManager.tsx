@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Users } from "lucide-react";
-import FlightPayoutPlanner from "@/components/payouts/FlightPayoutPlanner";
+import SimpleFlightPayouts from "@/components/payouts/SimpleFlightPayouts";
 import MinimumDrivesTracker from "@/components/dashboard/MinimumDrivesTracker";
 import ShootoutRoundsEditor from "@/components/dashboard/ShootoutRoundsEditor";
 import { assignFlights, threeManScrambleHandicap, THREE_MAN_SCRAMBLE_WEIGHTS, type FlightBasis, type FlightMethod } from "@/lib/flightPayouts";
@@ -364,18 +364,21 @@ export default function FlightsManager({ tournamentId }: Props) {
 
   return (
     <div className="space-y-8">
-      <FlightPayoutPlanner
-        defaultFieldSize={players.length}
+      <SimpleFlightPayouts
+        tournamentId={tournamentId}
+        flights={flights.map((f) => ({ id: f.id, name: f.tier_name, players: countByFlight(f.id) }))}
         defaultPurseCents={purseCents}
-        potSourceLabel="collected in entry fees"
-        flightsEnabled={settings.flights_enabled}
         flightMethod={settings.flight_method}
-        flightBasedOn={settings.flight_based_on}
-        onSaveSettings={saveFlightSettings}
-        onApplyFlights={applyFlights}
-        scope={{ tournament_id: tournamentId }}
-        actualFlights={flights.map((f) => ({ name: f.tier_name, players: countByFlight(f.id) }))}
-        unassignedCount={players.filter((p) => !p.flight_id).length}
+        onSaveMethod={(m: FlightMethod) => saveFlightSettings({ ...settings, flights_enabled: true, flight_method: m })}
+        unassignedNames={players.filter((p) => !p.flight_id).map((p) => `${p.first_name} ${p.last_name}`)}
+        assignedCount={players.filter((p) => p.flight_id).length}
+        totalPlayers={players.length}
+        onSync={syncFromRegistrationDivisions}
+        syncing={syncing}
+        onAddFlight={openAdd}
+        onAssignPlayers={() =>
+          document.getElementById("custom-flight-editor")?.scrollIntoView({ behavior: "smooth", block: "start" })
+        }
       />
 
       {scoringFormat === "scramble_3" && (
@@ -395,34 +398,6 @@ export default function FlightsManager({ tournamentId }: Props) {
 
       {scoringFormat === "shootout" && <ShootoutRoundsEditor tournamentId={tournamentId} />}
 
-
-
-
-      <div className="rounded-lg border p-4 space-y-3 bg-card">
-        <div>
-          <h3 className="text-lg font-semibold">Sync Flights with Registration Divisions</h3>
-          <p className="text-sm text-muted-foreground">
-            Pulls the divisions/tiers players selected when they registered, creates a matching flight for each one, and
-            assigns every player. Run this any time new registrations come in.
-          </p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Button size="sm" onClick={syncFromRegistrationDivisions} disabled={syncing}>
-            {syncing ? "Syncing…" : "Sync from registration divisions"}
-          </Button>
-          <Badge variant="outline" className="text-xs">
-            {players.filter((p) => p.flight_id).length} of {players.length} players in a flight
-          </Badge>
-        </div>
-        {noDivisionPlayers.length > 0 && (
-          <div className="text-xs text-muted-foreground">
-            <span className="font-medium text-foreground">{noDivisionPlayers.length} player{noDivisionPlayers.length === 1 ? "" : "s"}</span>{" "}
-            registered without a division — assign them below in the Custom Flight Editor:{" "}
-            {noDivisionPlayers.slice(0, 8).map((p) => `${p.first_name} ${p.last_name}`).join(", ")}
-            {noDivisionPlayers.length > 8 ? `, +${noDivisionPlayers.length - 8} more` : ""}
-          </div>
-        )}
-      </div>
 
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -470,8 +445,9 @@ export default function FlightsManager({ tournamentId }: Props) {
       </div>
 
       {players.length > 0 && (
-        <div>
+        <div id="custom-flight-editor">
           <h3 className="text-lg font-semibold mb-1">Custom Flight Editor</h3>
+
           <p className="text-sm text-muted-foreground mb-4">
             Assign any player to any flight manually. The flighted leaderboard and the payout breakdown above update
             immediately.

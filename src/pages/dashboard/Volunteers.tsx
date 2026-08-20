@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Plus, Trash2, UserCheck, UserPlus, Clock, CheckCircle2 } from "lucide-react";
+import { Users, Plus, Trash2, UserCheck, UserPlus, Clock, CheckCircle2, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Volunteers() {
@@ -140,7 +140,35 @@ export default function Volunteers() {
   const totalVolunteers = volunteers?.length || 0;
   const checkedInCount = volunteers?.filter((v: any) => v.checked_in).length || 0;
 
+  const exportCsv = () => {
+    const headers = ["Name", "Email", "Phone", "Role", "Time Slot", "Status", "Checked In", "Checked In At", "Signed Up"];
+    const rows = (volunteers || []).map((v: any) => {
+      const role = roles?.find((r) => r.id === v.role_id);
+      return [
+        v.name || "",
+        v.email || "",
+        v.phone || "",
+        role?.title || "",
+        role?.time_slot || "",
+        v.status || "pending",
+        v.checked_in ? "Yes" : "No",
+        v.checked_in_at ? new Date(v.checked_in_at).toLocaleString() : "",
+        v.created_at ? new Date(v.created_at).toLocaleString() : "",
+      ];
+    });
+    const csv = [headers, ...rows]
+      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "volunteers.csv";
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   if (orgLoading) return <div className="p-6">Loading...</div>;
+
 
   return (
     <div className="space-y-6">
@@ -246,14 +274,24 @@ export default function Volunteers() {
                   {roleVolunteers.length > 0 && (
                     <div className="space-y-2 pt-2 border-t border-border">
                       {roleVolunteers.map((v: any) => (
-                        <div key={v.id} className="flex items-center gap-2 text-sm group">
+                        <div key={v.id} className="flex items-start gap-2 text-sm group">
                           <Checkbox
+                            className="mt-1"
                             checked={v.checked_in || false}
                             onCheckedChange={(checked) => toggleCheckIn.mutate({ id: v.id, checked_in: !!checked })}
                           />
                           <div className="flex-1 min-w-0">
-                            <span className={v.checked_in ? "line-through text-muted-foreground" : ""}>{v.name}</span>
-                            <span className="text-muted-foreground ml-1 text-xs">({v.email})</span>
+                            <div className={v.checked_in ? "line-through text-muted-foreground" : "font-medium"}>{v.name}</div>
+                            {v.email && (
+                              <a href={`mailto:${v.email}`} className="block text-xs text-muted-foreground hover:underline break-all">
+                                {v.email}
+                              </a>
+                            )}
+                            {v.phone && (
+                              <a href={`tel:${v.phone}`} className="block text-xs text-muted-foreground hover:underline">
+                                {v.phone}
+                              </a>
+                            )}
                           </div>
                           <Button
                             variant="ghost"
@@ -265,6 +303,7 @@ export default function Volunteers() {
                           </Button>
                         </div>
                       ))}
+
                     </div>
                   )}
 
@@ -293,6 +332,67 @@ export default function Volunteers() {
           )}
         </div>
       )}
+
+      {/* Full volunteer contact list */}
+      {selectedTournament && totalVolunteers > 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <div className="flex items-center justify-between gap-2">
+              <CardTitle className="text-base">Volunteer Contact List</CardTitle>
+              <Button variant="outline" size="sm" onClick={exportCsv}>
+                <Download className="h-3.5 w-3.5 mr-1" /> Export CSV
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-muted-foreground">
+                  <th className="py-2 pr-4 font-medium">Name</th>
+                  <th className="py-2 pr-4 font-medium">Email</th>
+                  <th className="py-2 pr-4 font-medium">Phone</th>
+                  <th className="py-2 pr-4 font-medium">Role</th>
+                  <th className="py-2 pr-4 font-medium">Time Slot</th>
+                  <th className="py-2 pr-4 font-medium">Status</th>
+                  <th className="py-2 pr-4 font-medium">Checked In</th>
+                  <th className="py-2 pr-4 font-medium">Signed Up</th>
+                </tr>
+              </thead>
+              <tbody>
+                {(volunteers || []).map((v: any) => {
+                  const role = roles?.find((r) => r.id === v.role_id);
+                  return (
+                    <tr key={v.id} className="border-b border-border/50">
+                      <td className="py-2 pr-4 font-medium">{v.name}</td>
+                      <td className="py-2 pr-4">
+                        {v.email ? <a href={`mailto:${v.email}`} className="hover:underline break-all">{v.email}</a> : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="py-2 pr-4">
+                        {v.phone ? <a href={`tel:${v.phone}`} className="hover:underline whitespace-nowrap">{v.phone}</a> : <span className="text-muted-foreground">—</span>}
+                      </td>
+                      <td className="py-2 pr-4">{role?.title || "—"}</td>
+                      <td className="py-2 pr-4 whitespace-nowrap">{role?.time_slot || "—"}</td>
+                      <td className="py-2 pr-4">
+                        <Badge variant={v.status === "confirmed" ? "default" : "secondary"} className="text-xs capitalize">
+                          {v.status || "pending"}
+                        </Badge>
+                      </td>
+                      <td className="py-2 pr-4 whitespace-nowrap">
+                        {v.checked_in ? (v.checked_in_at ? new Date(v.checked_in_at).toLocaleString() : "Yes") : "No"}
+                      </td>
+                      <td className="py-2 pr-4 whitespace-nowrap">
+                        {v.created_at ? new Date(v.created_at).toLocaleDateString() : "—"}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </CardContent>
+        </Card>
+      )}
+
+
 
       {/* Assign Volunteer Dialog */}
       <Dialog open={assignDialogOpen} onOpenChange={(v) => { setAssignDialogOpen(v); if (!v) { setAssignRoleId(null); setAssignForm({ name: "", email: "", phone: "" }); } }}>

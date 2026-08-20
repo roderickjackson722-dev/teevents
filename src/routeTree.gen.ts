@@ -25,6 +25,7 @@ import { Route as ApiPublicLeagueEventRegistrationLinkRouteImport } from './rout
 import { Route as ApiPublicLeagueLoginInstructionsRouteImport } from './routes/api/public/league-login-instructions'
 import { Route as ApiPublicLeaguePaymentConfirmRouteImport } from './routes/api/public/league-payment-confirm'
 import { Route as ApiPublicNewsletterSendRouteImport } from './routes/api/public/newsletter-send'
+import { Route as ApiPublicNewsletterUnsubscribeRouteImport } from './routes/api/public/newsletter-unsubscribe'
 import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/api/public/post-event-organizer-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
@@ -117,6 +118,12 @@ const ApiPublicNewsletterSendRoute = ApiPublicNewsletterSendRouteImport.update({
   path: '/api/public/newsletter-send',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicNewsletterUnsubscribeRoute =
+  ApiPublicNewsletterUnsubscribeRouteImport.update({
+    id: '/api/public/newsletter-unsubscribe',
+    path: '/api/public/newsletter-unsubscribe',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicPostEventOrganizerEmailRoute =
   ApiPublicPostEventOrganizerEmailRouteImport.update({
     id: '/api/public/post-event-organizer-email',
@@ -169,6 +176,7 @@ export interface FileRoutesByFullPath {
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/api/public/league-payment-confirm': typeof ApiPublicLeaguePaymentConfirmRoute
   '/api/public/newsletter-send': typeof ApiPublicNewsletterSendRoute
+  '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -193,6 +201,7 @@ export interface FileRoutesByTo {
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/api/public/league-payment-confirm': typeof ApiPublicLeaguePaymentConfirmRoute
   '/api/public/newsletter-send': typeof ApiPublicNewsletterSendRoute
+  '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -218,6 +227,7 @@ export interface FileRoutesById {
   '/api/public/league-login-instructions': typeof ApiPublicLeagueLoginInstructionsRoute
   '/api/public/league-payment-confirm': typeof ApiPublicLeaguePaymentConfirmRoute
   '/api/public/newsletter-send': typeof ApiPublicNewsletterSendRoute
+  '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -244,6 +254,7 @@ export interface FileRouteTypes {
     | '/api/public/league-login-instructions'
     | '/api/public/league-payment-confirm'
     | '/api/public/newsletter-send'
+    | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
@@ -268,6 +279,7 @@ export interface FileRouteTypes {
     | '/api/public/league-login-instructions'
     | '/api/public/league-payment-confirm'
     | '/api/public/newsletter-send'
+    | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
@@ -292,6 +304,7 @@ export interface FileRouteTypes {
     | '/api/public/league-login-instructions'
     | '/api/public/league-payment-confirm'
     | '/api/public/newsletter-send'
+    | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
@@ -317,6 +330,7 @@ export interface RootRouteChildren {
   ApiPublicLeagueLoginInstructionsRoute: typeof ApiPublicLeagueLoginInstructionsRoute
   ApiPublicLeaguePaymentConfirmRoute: typeof ApiPublicLeaguePaymentConfirmRoute
   ApiPublicNewsletterSendRoute: typeof ApiPublicNewsletterSendRoute
+  ApiPublicNewsletterUnsubscribeRoute: typeof ApiPublicNewsletterUnsubscribeRoute
   ApiPublicPostEventOrganizerEmailRoute: typeof ApiPublicPostEventOrganizerEmailRoute
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
@@ -439,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNewsletterSendRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/newsletter-unsubscribe': {
+      id: '/api/public/newsletter-unsubscribe'
+      path: '/api/public/newsletter-unsubscribe'
+      fullPath: '/api/public/newsletter-unsubscribe'
+      preLoaderRoute: typeof ApiPublicNewsletterUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/post-event-organizer-email': {
       id: '/api/public/post-event-organizer-email'
       path: '/api/public/post-event-organizer-email'
@@ -502,6 +523,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicLeagueLoginInstructionsRoute: ApiPublicLeagueLoginInstructionsRoute,
   ApiPublicLeaguePaymentConfirmRoute: ApiPublicLeaguePaymentConfirmRoute,
   ApiPublicNewsletterSendRoute: ApiPublicNewsletterSendRoute,
+  ApiPublicNewsletterUnsubscribeRoute: ApiPublicNewsletterUnsubscribeRoute,
   ApiPublicPostEventOrganizerEmailRoute: ApiPublicPostEventOrganizerEmailRoute,
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,

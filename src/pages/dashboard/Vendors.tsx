@@ -794,7 +794,7 @@ export default function Vendors() {
                           <TableCell><Badge variant="outline" className={pb?.cls}>{pb?.label}</Badge></TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1 flex-wrap">
-                              <Button size="sm" variant="ghost" onClick={() => setViewVendor(v)} title="View answers">
+                              <Button size="sm" variant="ghost" onClick={() => setViewVendor(v)} title="Edit vendor">
                                 <Pencil className="h-4 w-4" />
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => setQrVendor(v)} title="Show QR / check-in code">
@@ -1078,43 +1078,109 @@ export default function Vendors() {
       <Dialog open={!!viewVendor} onOpenChange={(o) => !o && setViewVendor(null)}>
         <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{viewVendor?.vendor_name}</DialogTitle>
-            <DialogDescription>{viewVendor?.contact_name} — {viewVendor?.contact_email}</DialogDescription>
+            <DialogTitle>Edit Vendor</DialogTitle>
+            <DialogDescription>Update any vendor detail, including phone, contact info, booth and answers.</DialogDescription>
           </DialogHeader>
           {viewVendor && (
-            <div className="space-y-3 max-h-[60vh] overflow-y-auto">
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div><span className="text-muted-foreground">Phone: </span>{viewVendor.contact_phone || "—"}</div>
-                <div><span className="text-muted-foreground">Type: </span>{viewVendor.business_type || "—"}</div>
-                <div><span className="text-muted-foreground">Booth: </span>{viewVendor.booth_location || "—"}</div>
-                <div><span className="text-muted-foreground">Fee: </span>{fmtUsd(viewVendor.booth_fee_cents)}</div>
+            <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <Label className="text-xs">Business / Vendor name</Label>
+                  <Input className="mt-1" value={viewVendor.vendor_name || ""} onChange={(e) => setViewVendor({ ...viewVendor, vendor_name: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Contact name</Label>
+                  <Input className="mt-1" value={viewVendor.contact_name || ""} onChange={(e) => setViewVendor({ ...viewVendor, contact_name: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Contact email</Label>
+                  <Input className="mt-1" type="email" value={viewVendor.contact_email || ""} onChange={(e) => setViewVendor({ ...viewVendor, contact_email: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Contact phone</Label>
+                  <Input className="mt-1" type="tel" value={viewVendor.contact_phone || ""} onChange={(e) => setViewVendor({ ...viewVendor, contact_phone: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Business type</Label>
+                  <Input className="mt-1" value={viewVendor.business_type || ""} onChange={(e) => setViewVendor({ ...viewVendor, business_type: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Booth location</Label>
+                  <Input className="mt-1" value={viewVendor.booth_location || ""} onChange={(e) => setViewVendor({ ...viewVendor, booth_location: e.target.value })} />
+                </div>
+                <div>
+                  <Label className="text-xs">Booth fee (USD)</Label>
+                  <Input
+                    className="mt-1"
+                    type="number"
+                    min={0}
+                    step="0.01"
+                    value={viewVendor.booth_fee_cents == null ? "" : (viewVendor.booth_fee_cents / 100).toString()}
+                    onChange={(e) => setViewVendor({ ...viewVendor, booth_fee_cents: e.target.value === "" ? null : Math.round(Number(e.target.value) * 100) })}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs">Status</Label>
+                  <Select value={viewVendor.status} onValueChange={(val) => setViewVendor({ ...viewVendor, status: val })}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending_approval">Pending</SelectItem>
+                      <SelectItem value="approved">Approved</SelectItem>
+                      <SelectItem value="denied">Denied</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label className="text-xs">Payment status</Label>
+                  <Select value={viewVendor.payment_status} onValueChange={(val) => setViewVendor({ ...viewVendor, payment_status: val })}>
+                    <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="unpaid">Unpaid</SelectItem>
+                      <SelectItem value="paid">Paid</SelectItem>
+                      <SelectItem value="waived">Waived</SelectItem>
+                      <SelectItem value="refunded">Refunded</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+
               {questions.length > 0 && (
                 <div>
-                  <div className="font-medium text-sm mb-2">Custom answers</div>
-                  <div className="space-y-2">
+                  <div className="font-medium text-sm mb-2">Registration answers</div>
+                  <div className="space-y-3">
                     {questions.map((q) => {
                       const a = viewVendor.answers?.[q.id];
-                      let display: React.ReactNode;
-                      if (q.type === "file" && a && typeof a === "object" && a.path) {
-                        display = (
-                          <Button size="sm" variant="outline" onClick={() => downloadVendorFile(a.path, a.name || "document")}>
-                            <Paperclip className="h-3 w-3 mr-1" /> {a.name || "Download"}
-                          </Button>
-                        );
-                      } else if (Array.isArray(a)) display = a.join(", ");
-                      else if (a == null || a === "") display = <span className="text-muted-foreground">—</span>;
-                      else display = String(a);
+                      const setAnswer = (val: any) =>
+                        setViewVendor({ ...viewVendor, answers: { ...(viewVendor.answers || {}), [q.id]: val } });
                       return (
-                        <div key={q.id} className="border-b pb-2">
-                          <div className="text-xs text-muted-foreground">{q.label}</div>
-                          <div className="text-sm">{display}</div>
+                        <div key={q.id}>
+                          <Label className="text-xs">{q.label}</Label>
+                          {q.type === "file" ? (
+                            <div className="mt-1">
+                              {a && typeof a === "object" && a.path ? (
+                                <Button size="sm" variant="outline" onClick={() => downloadVendorFile(a.path, a.name || "document")}>
+                                  <Paperclip className="h-3 w-3 mr-1" /> {a.name || "Download"}
+                                </Button>
+                              ) : (
+                                <span className="text-sm text-muted-foreground">No file uploaded</span>
+                              )}
+                            </div>
+                          ) : q.type === "textarea" ? (
+                            <Textarea className="mt-1" value={a == null ? "" : String(a)} onChange={(e) => setAnswer(e.target.value)} />
+                          ) : (
+                            <Input
+                              className="mt-1"
+                              value={Array.isArray(a) ? a.join(", ") : a == null ? "" : String(a)}
+                              onChange={(e) => setAnswer(Array.isArray(a) ? e.target.value.split(",").map((s) => s.trim()).filter(Boolean) : e.target.value)}
+                            />
+                          )}
                         </div>
                       );
                     })}
                   </div>
                 </div>
               )}
+
               <div>
                 <Label className="text-sm">Internal notes</Label>
                 <Textarea
@@ -1122,16 +1188,42 @@ export default function Vendors() {
                   value={viewVendor.notes || ""}
                   onChange={(e) => setViewVendor({ ...viewVendor, notes: e.target.value })}
                 />
-                <Button size="sm" className="mt-2" onClick={async () => {
-                  await supabase.from("vendor_registrations").update({ notes: viewVendor.notes }).eq("id", viewVendor.id);
-                  toast({ title: "Notes saved" });
+              </div>
+
+              <div className="flex justify-end gap-2 border-t pt-3">
+                <Button variant="outline" onClick={() => setViewVendor(null)}>Cancel</Button>
+                <Button onClick={async () => {
+                  if (!viewVendor.vendor_name?.trim() || !viewVendor.contact_name?.trim() || !viewVendor.contact_email?.trim()) {
+                    toast({ title: "Business name, contact name and email are required", variant: "destructive" });
+                    return;
+                  }
+                  const { error } = await supabase.from("vendor_registrations").update({
+                    vendor_name: viewVendor.vendor_name.trim(),
+                    contact_name: viewVendor.contact_name.trim(),
+                    contact_email: viewVendor.contact_email.trim(),
+                    contact_phone: viewVendor.contact_phone?.trim() || null,
+                    business_type: viewVendor.business_type?.trim() || null,
+                    booth_location: viewVendor.booth_location?.trim() || null,
+                    booth_fee_cents: viewVendor.booth_fee_cents,
+                    status: viewVendor.status,
+                    payment_status: viewVendor.payment_status,
+                    answers: viewVendor.answers,
+                    notes: viewVendor.notes,
+                  }).eq("id", viewVendor.id);
+                  if (error) {
+                    toast({ title: "Could not save vendor", description: error.message, variant: "destructive" });
+                    return;
+                  }
+                  toast({ title: "Vendor updated" });
+                  setViewVendor(null);
                   await refreshVendors();
-                }}>Save Notes</Button>
+                }}>Save Changes</Button>
               </div>
             </div>
           )}
         </DialogContent>
       </Dialog>
+
 
       {/* === Assign booth dialog === */}
       <Dialog open={!!assignVendor} onOpenChange={(o) => !o && setAssignVendor(null)}>

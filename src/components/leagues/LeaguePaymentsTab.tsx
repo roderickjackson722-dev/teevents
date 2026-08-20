@@ -140,15 +140,16 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
           <div>
             <CardTitle>Completed Payments</CardTitle>
             <p className="text-sm text-muted-foreground mt-1">
-              Every completed membership and event payment for this league. Online payments show the
-              full amount charged, the fees taken out, and your net. Manual entries were collected
-              offline (cash/check) and carry no fees.
+              Every completed membership and event payment for this league. Payments are confirmed
+              with Stripe automatically and confirmation emails go out to the payer and to you the
+              moment a payment clears — nothing here needs a manual step.
             </p>
           </div>
           <Button variant="outline" onClick={handleSync} disabled={syncing}>
             {syncing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-            Reconcile with Stripe
+            Check Stripe now
           </Button>
+
         </CardHeader>
         <CardContent>
           {loading ? (

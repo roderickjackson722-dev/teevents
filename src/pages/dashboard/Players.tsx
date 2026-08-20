@@ -350,10 +350,12 @@ const Players = () => {
       supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("registration_groups").select("id, group_name, team_name, group_number").eq("tournament_id", selectedTournament).order("created_at"),
-    ]).then(([regsRes, fieldsRes, tiersRes, groupsRes]: any) => {
+      (supabase as any).from("tournament_tiers").select("id, tier_name, display_order").eq("tournament_id", selectedTournament).order("display_order"),
+    ]).then(([regsRes, fieldsRes, tiersRes, groupsRes, flightsRes]: any) => {
       setAllPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
       setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
+      setFlights(((flightsRes?.data as any[]) || []).map((f) => ({ id: f.id, name: String(f.tier_name || "") })));
       const rows: any[] = groupsRes?.data || [];
       const gm: Record<string, string> = {};
       const tn: Record<number, string> = {};

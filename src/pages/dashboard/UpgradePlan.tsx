@@ -9,6 +9,8 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useTournamentAddons, type AddonKey } from "@/hooks/useTournamentAddons";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { createBrandingRemovalCheckout, verifyBrandingRemoval } from "@/lib/brandingRemoval.functions";
 
 interface TournamentRow {
   id: string;
@@ -35,6 +37,8 @@ const UpgradeFeaturesPage = () => {
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const addons = useTournamentAddons(selectedTournamentId);
+  const [brandingRemoved, setBrandingRemoved] = useState(false);
+  const [brandingLoading, setBrandingLoading] = useState(false);
 
   // Verify Stripe redirect
   useEffect(() => {
@@ -56,6 +60,66 @@ const UpgradeFeaturesPage = () => {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Verify branding-removal Stripe redirect
+  useEffect(() => {
+    const sid = searchParams.get("branding_session_id");
+    if (!sid) return;
+    (async () => {
+      try {
+        const res: any = await verifyBrandingRemoval({ data: { sessionId: sid } });
+        if (res?.verified) {
+          setBrandingRemoved(true);
+          toast.success("TeeVents branding removed for this tournament!");
+        } else {
+          toast.error("Payment not confirmed yet. Please contact support.");
+        }
+      } catch {
+        toast.error("Could not verify the branding removal payment.");
+      }
+      const next = new URLSearchParams(searchParams);
+      next.delete("branding_session_id");
+      next.delete("tournament_id");
+      setSearchParams(next, { replace: true });
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (searchParams.get("branding_canceled")) {
+      toast.info("Checkout canceled");
+      const next = new URLSearchParams(searchParams);
+      next.delete("branding_canceled");
+      setSearchParams(next, { replace: true });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Current branding state for the selected tournament
+  useEffect(() => {
+    if (!selectedTournamentId) return;
+    supabase
+      .from("tournaments")
+      .select("branding_removed")
+      .eq("id", selectedTournamentId)
+      .maybeSingle()
+      .then(({ data }) => setBrandingRemoved(!!(data as any)?.branding_removed));
+  }, [selectedTournamentId]);
+
+  const handleBrandingPurchase = async () => {
+    if (!selectedTournamentId) return toast.error("Pick a tournament first");
+    setBrandingLoading(true);
+    try {
+      const res: any = await createBrandingRemovalCheckout({
+        data: { tournamentId: selectedTournamentId, origin: window.location.origin },
+      });
+      if (res?.url) window.location.href = res.url;
+    } catch (err: any) {
+      toast.error(err?.message || "Could not start checkout");
+    } finally {
+      setBrandingLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (searchParams.get("addon_canceled")) {
@@ -262,6 +326,41 @@ const UpgradeFeaturesPage = () => {
                 {loading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Sparkles className="h-4 w-4 mr-2" />}
                 Purchase Selected Features
               </Button>
+            </div>
+          </div>
+
+          {/* Branding removal */}
+          <div className="bg-card rounded-xl border border-border p-6 mb-6">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="font-semibold text-foreground">Remove TeeVents Branding — $99</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Hides the TeeVents logo and tagline from your live leaderboard and mobile scoring pages.
+                  One-time fee for this tournament.
+                </p>
+                {!brandingRemoved && (
+                  <p className="text-xs text-muted-foreground mt-2 italic">
+                    Currently showing: "TeeVents – The all-in-one platform for golf tournaments."
+                  </p>
+                )}
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <Switch
+                  checked={brandingRemoved}
+                  disabled={brandingRemoved || brandingLoading}
+                  onCheckedChange={(v) => { if (v) handleBrandingPurchase(); }}
+                />
+                {brandingRemoved ? (
+                  <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary">
+                    <Check className="h-3 w-3" /> Branding removed
+                  </span>
+                ) : (
+                  <Button size="sm" onClick={handleBrandingPurchase} disabled={brandingLoading}>
+                    {brandingLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
+                    Remove for $99
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
 

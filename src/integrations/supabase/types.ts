@@ -10273,6 +10273,9 @@ export type Database = {
           branding_footer_admin_override: boolean
           branding_footer_admin_show: boolean
           branding_footer_custom_text: string | null
+          branding_override_reason: string | null
+          branding_removed: boolean
+          branding_removed_by_admin: boolean
           captain_label: string | null
           confirmation_email_config: Json | null
           contact_email: string | null
@@ -10563,6 +10566,9 @@ export type Database = {
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
           branding_footer_custom_text?: string | null
+          branding_override_reason?: string | null
+          branding_removed?: boolean
+          branding_removed_by_admin?: boolean
           captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
@@ -10853,6 +10859,9 @@ export type Database = {
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
           branding_footer_custom_text?: string | null
+          branding_override_reason?: string | null
+          branding_removed?: boolean
+          branding_removed_by_admin?: boolean
           captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null

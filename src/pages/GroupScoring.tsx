@@ -15,6 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { BrandingTagline } from "@/components/BrandingTagline";
 
 interface Reg {
   id: string;
@@ -36,7 +37,10 @@ interface Tournament {
   live_require_confirm_save: boolean;
   live_leaderboard_enabled: boolean;
   scoring_format: string | null;
+  branding_removed?: boolean | null;
+  branding_removed_by_admin?: boolean | null;
 }
+
 
 const NUM_HOLES = 18;
 const DEFAULT_SI = Array.from({ length: 18 }, (_, i) => i + 1);
@@ -90,10 +94,12 @@ export default function GroupScoring() {
       // Fetch scoring_format separately (lookup RPC doesn't return it)
       const { data: tRow } = await supabase
         .from("tournaments")
-        .select("scoring_format, pairings_config, date")
+        .select("scoring_format, pairings_config, date, branding_removed, branding_removed_by_admin")
         .eq("id", t.id)
         .maybeSingle();
       if (tRow?.scoring_format) t.scoring_format = tRow.scoring_format;
+      t.branding_removed = (tRow as any)?.branding_removed ?? false;
+      t.branding_removed_by_admin = (tRow as any)?.branding_removed_by_admin ?? false;
       const activeRound = activeRoundNumber(
         parsePairingsConfig((tRow as any)?.pairings_config),
         (tRow as any)?.date,
@@ -750,6 +756,7 @@ export default function GroupScoring() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      <BrandingTagline tournament={tournament} />
     </div>
   );
 }

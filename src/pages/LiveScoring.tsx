@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
 import { getFormatById } from "@/lib/scoringFormats";
+import { BrandingTagline } from "@/components/BrandingTagline";
 
 interface Player {
   id: string;
@@ -81,7 +82,7 @@ export default function LiveScoring() {
       const match = Array.isArray(resolved) ? resolved[0] : null;
       const baseQuery = supabase
         .from("tournaments")
-        .select("id, title, course_par, scoring_format, handicap_enabled, pairings_config, date, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order");
+        .select("id, title, course_par, scoring_format, handicap_enabled, pairings_config, date, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order, branding_removed, branding_removed_by_admin");
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.eq("slug", slug).eq("site_published", true).maybeSingle();
@@ -1002,6 +1003,7 @@ export default function LiveScoring() {
 
 
       </div>
+      <BrandingTagline tournament={tournament as any} />
     </div>
   );
 }

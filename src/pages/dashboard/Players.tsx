@@ -3752,10 +3752,30 @@ const Players = () => {
                   </span>
                 </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Division / Tier</p>
-                <p className="text-sm text-foreground">{tierName(viewingPlayer.tier_id)}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Division / Tier</p>
+                  <p className="text-sm text-foreground">{tierName(viewingPlayer.tier_id)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Flight (selected at registration)</p>
+                  <p className="text-sm text-foreground">{flightName(viewingPlayer.flight_id)}</p>
+                </div>
               </div>
+              {answerCols.length > 0 && (
+                <div className="border-t border-border pt-3">
+                  <p className="text-xs font-semibold text-foreground mb-2">All registration responses</p>
+                  <div className="space-y-2">
+                    {answerCols.map((c) => (
+                      <div key={c.key} className="flex items-start justify-between gap-3">
+                        <p className="text-xs text-muted-foreground">{c.label}</p>
+                        <p className="text-sm text-foreground text-right break-words">{answerForCol(viewingPlayer, c) || "—"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Hole Assignment</p>

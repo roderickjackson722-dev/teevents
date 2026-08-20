@@ -9,7 +9,7 @@ export interface BrandingFooterFields {
 }
 
 const DEFAULT_TEXT =
-  "Need to run your tournament? Get started with TeeVents - The all in one platform for golf tournaments";
+  "Need to run your tournament? Get started with TeeVents - The all in one platform for golf tournaments →";
 
 /**
  * "Powered by TeeVents" footer shown on public tournament pages.
@@ -38,7 +38,7 @@ export function TeeventsFooter({ tournament }: { tournament: BrandingFooterField
 
   return (
     <footer
-      className="teevents-footer w-full flex flex-wrap items-center justify-center gap-3 px-6 py-4 text-sm text-white"
+      className="teevents-footer w-full px-6 py-4 text-sm text-white"
       style={{ backgroundColor: "#1a5c38", fontFamily: "Arial, sans-serif" }}
     >
       <a
@@ -46,11 +46,11 @@ export function TeeventsFooter({ tournament }: { tournament: BrandingFooterField
         target="_blank"
         rel="noopener noreferrer"
         style={{ color: "#F5A623", textDecoration: "none", fontWeight: 600 }}
-        className="hover:underline"
+        className="hover:underline flex flex-wrap items-center justify-center gap-2 text-center"
       >
-        {text}
+        <span>{text}</span>
+        <img src={logoAsset.url} alt="TeeVents Golf Management" style={{ height: 26 }} className="object-contain" />
       </a>
-      <img src={logoAsset.url} alt="TeeVents Golf Management" style={{ height: 26 }} className="object-contain" />
     </footer>
   );
 }

@@ -794,7 +794,7 @@ export default function Vendors() {
                           <TableCell><Badge variant="outline" className={pb?.cls}>{pb?.label}</Badge></TableCell>
                           <TableCell className="text-right">
                             <div className="flex justify-end gap-1 flex-wrap">
-                              <Button size="sm" variant="ghost" onClick={() => setViewVendor(v)} title="View answers">
+                              <Button size="sm" variant="ghost" onClick={() => setViewVendor(v)} title="Edit vendor">
                                 <Pencil className="h-4 w-4" />
                               </Button>
                               <Button size="sm" variant="ghost" onClick={() => setQrVendor(v)} title="Show QR / check-in code">

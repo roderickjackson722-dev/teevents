@@ -279,6 +279,9 @@ const Players = () => {
 
   const [tiers, setTiers] = useState<Array<{ id: string; name: string }>>([]);
   const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
+  // Flights (tournament_tiers) are what the participant selected at registration.
+  const [flights, setFlights] = useState<Array<{ id: string; name: string }>>([]);
+  const flightName = (id: string | null | undefined) => (id ? (flights.find((f) => f.id === id)?.name || "—") : "—");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});

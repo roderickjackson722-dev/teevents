@@ -125,7 +125,7 @@ interface RegFieldDef {
 }
 
 // Base column keys shown in the roster
-type RosterColKey = "name" | "email" | "phone" | "hcp" | "age" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier" | "group";
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "age" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier" | "flight" | "group";
 const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
@@ -134,12 +134,18 @@ const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "age", label: "Age" },
   { key: "group", label: "Group / Team" },
   { key: "tier", label: "Division / Tier" },
+  { key: "flight", label: "Flight" },
   { key: "shirt", label: "Shirt" },
   { key: "hole", label: "Hole" },
   { key: "teetime", label: "Tee Time" },
   { key: "code", label: "Scoring Code" },
   { key: "payment", label: "Payment" },
 ];
+
+// Registration answers that already have a dedicated roster column, so they are
+// not repeated a second time as an answer column.
+const ANSWER_LABELS_COVERED_BY_BASE_COLS = ["phone", "handicap", "shirt size", "age"];
+
 
 
 // Reserved custom_answers ids for organizer-entered demographic fields

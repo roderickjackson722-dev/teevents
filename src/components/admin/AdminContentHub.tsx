@@ -26,10 +26,10 @@ import {
 type SocialPost = {
   id: string;
   platform: string;
-  content: string;
-  scheduled_for: string | null;
+  caption: string;
+  post_date: string;
   status: string;
-  article_slug: string | null;
+  link_url: string | null;
   impressions: number | null;
   engagements: number | null;
 };
@@ -86,7 +86,7 @@ export default function AdminContentHub() {
   const load = useCallback(async () => {
     setLoading(true);
     const [p, n, s] = await Promise.all([
-      supabase.from("social_posts").select("*").order("scheduled_for", { ascending: true }),
+      supabase.from("social_posts").select("*").order("post_date", { ascending: true }),
       supabase.from("newsletters").select("*").order("created_at", { ascending: false }),
       supabase.from("newsletter_subscribers").select("*").order("created_at", { ascending: false }),
     ]);
@@ -109,10 +109,10 @@ export default function AdminContentHub() {
     if (!postDialog) return;
     const payload = {
       platform: postDialog.platform || "instagram",
-      content: postDialog.content || "",
-      scheduled_for: postDialog.scheduled_for || null,
+      caption: postDialog.caption || "",
+      post_date: postDialog.post_date || new Date().toISOString().slice(0, 10),
       status: postDialog.status || "draft",
-      article_slug: postDialog.article_slug || null,
+      link_url: postDialog.link_url || null,
     };
     const res = postDialog.id
       ? await supabase.from("social_posts").update(payload as never).eq("id", postDialog.id)
@@ -269,10 +269,10 @@ export default function AdminContentHub() {
                     {posts.map((p) => (
                       <TableRow key={p.id}>
                         <TableCell className="whitespace-nowrap text-sm">
-                          {p.scheduled_for ? new Date(p.scheduled_for).toLocaleString() : "—"}
+                          {p.post_date ? new Date(`${p.post_date}T00:00:00`).toLocaleDateString() : "—"}
                         </TableCell>
                         <TableCell className="capitalize text-sm">{p.platform}</TableCell>
-                        <TableCell className="max-w-[320px] truncate text-sm">{p.content}</TableCell>
+                        <TableCell className="max-w-[320px] truncate text-sm">{p.caption}</TableCell>
                         <TableCell><StatusBadge value={p.status} /></TableCell>
                         <TableCell className="text-right text-sm">
                           {(p.impressions ?? 0).toLocaleString()} / {(p.engagements ?? 0).toLocaleString()}
@@ -441,22 +441,20 @@ export default function AdminContentHub() {
               </Select>
             </div>
             <div>
-              <Label>Content</Label>
+              <Label>Caption</Label>
               <Textarea
                 rows={5}
-                value={postDialog?.content || ""}
-                onChange={(e) => setPostDialog((d) => ({ ...d, content: e.target.value }))}
+                value={postDialog?.caption || ""}
+                onChange={(e) => setPostDialog((d) => ({ ...d, caption: e.target.value }))}
               />
             </div>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <Label>Scheduled for</Label>
+                <Label>Post date</Label>
                 <Input
-                  type="datetime-local"
-                  value={postDialog?.scheduled_for ? String(postDialog.scheduled_for).slice(0, 16) : ""}
-                  onChange={(e) =>
-                    setPostDialog((d) => ({ ...d, scheduled_for: e.target.value ? new Date(e.target.value).toISOString() : null }))
-                  }
+                  type="date"
+                  value={postDialog?.post_date ? String(postDialog.post_date).slice(0, 10) : ""}
+                  onChange={(e) => setPostDialog((d) => ({ ...d, post_date: e.target.value }))}
                 />
               </div>
               <div>
@@ -475,11 +473,11 @@ export default function AdminContentHub() {
               </div>
             </div>
             <div>
-              <Label>Source article slug (optional)</Label>
+              <Label>Link (optional)</Label>
               <Input
-                value={postDialog?.article_slug || ""}
-                onChange={(e) => setPostDialog((d) => ({ ...d, article_slug: e.target.value }))}
-                placeholder="charity-golf-tournament-planning"
+                value={postDialog?.link_url || ""}
+                onChange={(e) => setPostDialog((d) => ({ ...d, link_url: e.target.value }))}
+                placeholder="https://www.teevents.golf/lead-magnet/..."
               />
             </div>
           </div>

@@ -50,10 +50,7 @@ export function TeeventsFooter({ tournament }: { tournament: BrandingFooterField
       >
         {text}
       </a>
-      <span className="inline-flex items-center gap-2 opacity-90">
-        <img src={logoAsset.url} alt="TeeVents" style={{ height: 24 }} className="object-contain" />
-        <span>teevents.golf</span>
-      </span>
+      <img src={logoAsset.url} alt="TeeVents Golf Management" style={{ height: 26 }} className="object-contain" />
     </footer>
   );
 }

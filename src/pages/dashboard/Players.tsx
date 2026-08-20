@@ -471,6 +471,7 @@ const Players = () => {
       case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
       case "age": return ageOf(p) ?? Number.POSITIVE_INFINITY;
       case "tier": return tierName(p.tier_id).toLowerCase();
+      case "flight": return flightName(p.flight_id).toLowerCase();
       case "group": return (p.group_id ? (groupNames[p.group_id] || "team") : "\uFFFF").toLowerCase();
       case "shirt": return (p.shirt_size || "").toLowerCase();
       case "hole": return p.group_number ?? Number.POSITIVE_INFINITY;
@@ -480,9 +481,11 @@ const Players = () => {
       }
       case "code": return codeOf(p).toLowerCase();
       case "payment": return (p.payment_status || "").toLowerCase();
-      default:
-        if (key.startsWith("custom_")) return getCustomAnswer(p, key.slice("custom_".length)).toLowerCase();
+      default: {
+        const col = answerCols.find((c) => c.key === key);
+        if (col) return answerForCol(p, col).toLowerCase();
         return "";
+      }
     }
   };
 

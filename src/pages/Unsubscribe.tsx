@@ -6,20 +6,33 @@ import { Button } from "@/components/ui/button";
 export default function Unsubscribe() {
   const [params] = useSearchParams();
   const initial = params.get("e") || "";
+  const token = params.get("t") || params.get("token") || "";
   const [email, setEmail] = useState(initial);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
 
   useEffect(() => {
-    if (initial) submit(initial);
+    if (initial || token) submit(initial);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const submit = async (e: string) => {
-    if (!e) return;
+    if (!e && !token) return;
     setStatus("loading");
+    // Newsletter list (token-based) and outreach list are separate — clear both.
     try {
-      const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/outreach-unsubscribe?e=${encodeURIComponent(e)}`;
-      await fetch(url);
+      if (token || e) {
+        await fetch("/api/public/newsletter-unsubscribe", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: token || undefined, email: e || undefined }),
+        });
+      }
+    } catch (_) { /* ignore */ }
+    try {
+      if (e) {
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/outreach-unsubscribe?e=${encodeURIComponent(e)}`;
+        await fetch(url);
+      }
     } catch (_) { /* ignore */ }
     setStatus("done");
   };

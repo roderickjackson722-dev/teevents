@@ -382,7 +382,117 @@ const UpgradeFeaturesPage = () => {
                 )}
               </div>
             </div>
+
+            {paymentConfirmation && (
+              <div className="mt-4 rounded-lg border border-primary/40 bg-primary/5 p-4">
+                <p className="text-sm font-semibold text-foreground inline-flex items-center gap-2">
+                  <Check className="h-4 w-4 text-primary" /> Payment confirmed by Stripe — branding removed
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Charged ${(paymentConfirmation.amountCents / 100).toFixed(2)}. Payment reference:{" "}
+                  <span className="font-mono">{paymentConfirmation.sessionId}</span>
+                </p>
+                {paymentConfirmation.receiptUrl && (
+                  <a
+                    href={paymentConfirmation.receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-semibold text-primary underline mt-1 inline-block"
+                  >
+                    View Stripe receipt
+                  </a>
+                )}
+              </div>
+            )}
+
+            {/* Current status */}
+            <div className="mt-4 rounded-lg border border-border bg-background/40 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Current branding status
+              </p>
+              {brandingStatus?.removed ? (
+                <>
+                  <p className="text-sm text-foreground mt-1">
+                    Branding removed ·{" "}
+                    {brandingStatus.source === "paid" ? "Paid by organizer" : "Approved by TeeVents admin (no charge)"}
+                    {brandingStatus.removedAt
+                      ? ` · ${new Date(brandingStatus.removedAt).toLocaleString()}`
+                      : ""}
+                  </p>
+                  {brandingStatus.source === "paid" && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {brandingStatus.sessionId && (
+                        <>
+                          Payment reference: <span className="font-mono">{brandingStatus.sessionId}</span>
+                        </>
+                      )}
+                      {brandingStatus.receiptUrl && (
+                        <>
+                          {" · "}
+                          <a
+                            href={brandingStatus.receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-primary underline"
+                          >
+                            Payment receipt
+                          </a>
+                        </>
+                      )}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-1">
+                  Branding is active — the TeeVents tagline shows on your live leaderboard, standings and mobile
+                  scoring pages.
+                </p>
+              )}
+
+              {brandingStatus?.history?.length > 0 && (
+                <div className="mt-3 border-t border-border pt-3">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    Branding history
+                  </p>
+                  <ul className="space-y-1">
+                    {brandingStatus.history.map((h: any) => (
+                      <li key={h.id} className="text-xs text-muted-foreground">
+                        <span className="font-medium text-foreground">
+                          {h.action === "checkout_started"
+                            ? "Checkout started"
+                            : h.action === "payment_confirmed"
+                            ? "Stripe payment confirmed — branding disabled"
+                            : h.action === "admin_override_added"
+                            ? "Admin override — branding disabled (no charge)"
+                            : h.action === "admin_override_removed"
+                            ? "Admin override removed — branding enabled"
+                            : h.action}
+                        </span>{" "}
+                        · {new Date(h.created_at).toLocaleString()}
+                        {h.actor_email ? ` · ${h.actor_email}` : ""}
+                        {h.amount_cents ? ` · $${(h.amount_cents / 100).toFixed(2)}` : ""}
+                        {h.receipt_url && (
+                          <>
+                            {" · "}
+                            <a
+                              href={h.receipt_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary underline"
+                            >
+                              receipt
+                            </a>
+                          </>
+                        )}
+                        {h.reason ? ` · ${h.reason}` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
           </div>
+
 
           <div className="bg-card rounded-xl border border-border p-6 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">

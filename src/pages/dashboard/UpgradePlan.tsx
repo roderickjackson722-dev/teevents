@@ -70,7 +70,13 @@ const UpgradeFeaturesPage = () => {
         const res: any = await verifyBrandingRemoval({ data: { sessionId: sid } });
         if (res?.verified) {
           setBrandingRemoved(true);
-          toast.success("TeeVents branding removed for this tournament!");
+          setPaymentConfirmation({
+            receiptUrl: res.receiptUrl ?? null,
+            sessionId: res.sessionId ?? sid,
+            amountCents: res.amountCents ?? 9900,
+          });
+          toast.success("Payment confirmed — TeeVents branding removed for this tournament!");
+          if (res.tournamentId) loadBrandingStatus(res.tournamentId);
         } else {
           toast.error("Payment not confirmed yet. Please contact support.");
         }
@@ -87,7 +93,7 @@ const UpgradeFeaturesPage = () => {
 
   useEffect(() => {
     if (searchParams.get("branding_canceled")) {
-      toast.info("Checkout canceled");
+      toast.info("Branding removal checkout canceled — no charge was made.");
       const next = new URLSearchParams(searchParams);
       next.delete("branding_canceled");
       setSearchParams(next, { replace: true });
@@ -95,15 +101,21 @@ const UpgradeFeaturesPage = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const loadBrandingStatus = async (tournamentId: string) => {
+    try {
+      const res: any = await getBrandingStatus({ data: { tournamentId } });
+      setBrandingStatus(res);
+      setBrandingRemoved(!!res?.removed);
+    } catch {
+      /* ignore */
+    }
+  };
+
   // Current branding state for the selected tournament
   useEffect(() => {
     if (!selectedTournamentId) return;
-    supabase
-      .from("tournaments")
-      .select("branding_removed")
-      .eq("id", selectedTournamentId)
-      .maybeSingle()
-      .then(({ data }) => setBrandingRemoved(!!(data as any)?.branding_removed));
+    loadBrandingStatus(selectedTournamentId);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedTournamentId]);
 
   const handleBrandingPurchase = async () => {
@@ -120,6 +132,7 @@ const UpgradeFeaturesPage = () => {
       setBrandingLoading(false);
     }
   };
+
 
   useEffect(() => {
     if (searchParams.get("addon_canceled")) {

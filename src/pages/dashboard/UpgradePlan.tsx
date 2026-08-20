@@ -10,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTournamentAddons, type AddonKey } from "@/hooks/useTournamentAddons";
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
-import { createBrandingRemovalCheckout, verifyBrandingRemoval } from "@/lib/brandingRemoval.functions";
+import { createBrandingRemovalCheckout, verifyBrandingRemoval, getBrandingStatus } from "@/lib/brandingRemoval.functions";
 
 interface TournamentRow {
   id: string;

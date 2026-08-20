@@ -36,7 +36,10 @@ interface Tournament {
   live_require_confirm_save: boolean;
   live_leaderboard_enabled: boolean;
   scoring_format: string | null;
+  branding_removed?: boolean | null;
+  branding_removed_by_admin?: boolean | null;
 }
+
 
 const NUM_HOLES = 18;
 const DEFAULT_SI = Array.from({ length: 18 }, (_, i) => i + 1);

@@ -1,0 +1,2 @@
+GRANT SELECT (branding_removed, branding_removed_by_admin, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, course_name, course_par, date) ON public.tournaments TO anon;
+GRANT SELECT (branding_removed, branding_removed_by_admin, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, course_name, course_par, date) ON public.tournaments TO authenticated;

@@ -1,4 +1,4 @@
-import logoAsset from "@/assets/teevents-logo-final.png.asset.json";
+import logoAsset from "@/assets/teevents-logo-black.png.asset.json";
 
 export interface BrandingFooterFields {
   is_pro?: boolean | null;

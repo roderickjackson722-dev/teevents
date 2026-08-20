@@ -246,14 +246,24 @@ export default function Volunteers() {
                   {roleVolunteers.length > 0 && (
                     <div className="space-y-2 pt-2 border-t border-border">
                       {roleVolunteers.map((v: any) => (
-                        <div key={v.id} className="flex items-center gap-2 text-sm group">
+                        <div key={v.id} className="flex items-start gap-2 text-sm group">
                           <Checkbox
+                            className="mt-1"
                             checked={v.checked_in || false}
                             onCheckedChange={(checked) => toggleCheckIn.mutate({ id: v.id, checked_in: !!checked })}
                           />
                           <div className="flex-1 min-w-0">
-                            <span className={v.checked_in ? "line-through text-muted-foreground" : ""}>{v.name}</span>
-                            <span className="text-muted-foreground ml-1 text-xs">({v.email})</span>
+                            <div className={v.checked_in ? "line-through text-muted-foreground" : "font-medium"}>{v.name}</div>
+                            {v.email && (
+                              <a href={`mailto:${v.email}`} className="block text-xs text-muted-foreground hover:underline break-all">
+                                {v.email}
+                              </a>
+                            )}
+                            {v.phone && (
+                              <a href={`tel:${v.phone}`} className="block text-xs text-muted-foreground hover:underline">
+                                {v.phone}
+                              </a>
+                            )}
                           </div>
                           <Button
                             variant="ghost"
@@ -265,6 +275,7 @@ export default function Volunteers() {
                           </Button>
                         </div>
                       ))}
+
                     </div>
                   )}
 

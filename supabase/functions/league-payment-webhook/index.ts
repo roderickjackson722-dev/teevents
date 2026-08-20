@@ -90,6 +90,9 @@ async function finalizeLeaguePayment(
       gross_amount_cents: gross || null,
       stripe_fee_cents: stripeFee,
       entry_source: "online",
+      // Confirmation emails are sent immediately below; the automatic reconciler
+      // reads this so a payment can never receive duplicate confirmations.
+      confirmation_sent_at: new Date().toISOString(),
       stripe_payment_intent: String(session.payment_intent || ""),
       updated_at: new Date().toISOString(),
     })

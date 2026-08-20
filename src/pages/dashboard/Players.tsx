@@ -2215,16 +2215,16 @@ const Players = () => {
                       </label>
                     ))}
                   </div>
-                  {customFieldCols.length > 0 && (
+                  {answerCols.length > 0 && (
                     <>
-                      <p className="text-xs font-medium mb-2 text-muted-foreground">Your custom questions</p>
+                      <p className="text-xs font-medium mb-2 text-muted-foreground">Registration responses</p>
                       <div className="space-y-2">
-                        {customFieldCols.map((f) => {
-                          const key = `custom_${f.id}`;
+                        {answerCols.map((f) => {
+                          const key = f.key;
                           return (
-                            <label key={f.id} className="flex items-center gap-2 cursor-pointer text-sm">
+                            <label key={key} className="flex items-center gap-2 cursor-pointer text-sm">
                               <Checkbox
-                                checked={!!rosterCols[key]}
+                                checked={rosterCols[key] !== false}
                                 onCheckedChange={() => toggleRosterCol(key)}
                               />
                               {f.label}
@@ -2524,8 +2524,8 @@ const Players = () => {
                         </SortableTh>
                       )}
                       {rosterCols.payment !== false && <SortableTh colKey="payment" align="center">Payment</SortableTh>}
-                      {customFieldCols.filter((f) => rosterCols[`custom_${f.id}`]).map((f) => (
-                        <SortableTh key={f.id} colKey={`custom_${f.id}`}>{f.label}</SortableTh>
+                      {visibleAnswerCols.map((f) => (
+                        <SortableTh key={f.key} colKey={f.key}>{f.label}</SortableTh>
                       ))}
                       <th className="text-center font-semibold px-4 py-3 w-12"></th>
                     </tr>
@@ -2677,9 +2677,9 @@ const Players = () => {
                         </div>
                       </td>
                     )}
-                    {customFieldCols.filter((f) => rosterCols[`custom_${f.id}`]).map((f) => (
-                      <td key={f.id} className="px-4 py-3 text-muted-foreground max-w-[220px] break-words">
-                        {getCustomAnswer(p, f.id) || "—"}
+                    {visibleAnswerCols.map((f) => (
+                      <td key={f.key} className="px-4 py-3 text-muted-foreground max-w-[220px] break-words">
+                        {answerForCol(p, f) || "—"}
                       </td>
                     ))}
                     <td className="px-4 py-3 text-center">

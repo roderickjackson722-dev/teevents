@@ -9,7 +9,8 @@ export interface BrandingFooterFields {
 }
 
 const DEFAULT_TEXT =
-  "Need to run your tournament? Get started with TeeVents - The all in one platform for golf tournaments →";
+  "Need to run your tournament? Get started with TeeVents\nThe all in one platform for golf tournaments →";
+
 
 /**
  * "Powered by TeeVents" footer shown on public tournament pages.

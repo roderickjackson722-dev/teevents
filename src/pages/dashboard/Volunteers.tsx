@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Plus, Trash2, UserCheck, UserPlus, Clock, CheckCircle2 } from "lucide-react";
+import { Users, Plus, Trash2, UserCheck, UserPlus, Clock, CheckCircle2, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Volunteers() {

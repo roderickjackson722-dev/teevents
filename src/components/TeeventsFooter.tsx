@@ -8,7 +8,8 @@ export interface BrandingFooterFields {
   branding_footer_custom_text?: string | null;
 }
 
-const DEFAULT_TEXT = "Need to run your golf tournament? Get started with TeeVents →";
+const DEFAULT_TEXT =
+  "Need to run your tournament? Get started with TeeVents - The all in one platform for golf tournaments";
 
 /**
  * "Powered by TeeVents" footer shown on public tournament pages.

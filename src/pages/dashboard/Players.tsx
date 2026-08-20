@@ -104,6 +104,7 @@ interface Registration {
   scoring_code: string | null;
   group_scoring_code?: string | null;
   tier_id: string | null;
+  flight_id?: string | null;
   custom_answers?: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> | null;
 }
 
@@ -124,7 +125,7 @@ interface RegFieldDef {
 }
 
 // Base column keys shown in the roster
-type RosterColKey = "name" | "email" | "phone" | "hcp" | "age" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier" | "group";
+type RosterColKey = "name" | "email" | "phone" | "hcp" | "age" | "shirt" | "hole" | "teetime" | "code" | "payment" | "tier" | "flight" | "group";
 const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "name", label: "Name" },
   { key: "email", label: "Email" },
@@ -133,12 +134,18 @@ const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "age", label: "Age" },
   { key: "group", label: "Group / Team" },
   { key: "tier", label: "Division / Tier" },
+  { key: "flight", label: "Flight" },
   { key: "shirt", label: "Shirt" },
   { key: "hole", label: "Hole" },
   { key: "teetime", label: "Tee Time" },
   { key: "code", label: "Scoring Code" },
   { key: "payment", label: "Payment" },
 ];
+
+// Registration answers that already have a dedicated roster column, so they are
+// not repeated a second time as an answer column.
+const ANSWER_LABELS_COVERED_BY_BASE_COLS = ["phone", "handicap", "shirt size", "age"];
+
 
 
 // Reserved custom_answers ids for organizer-entered demographic fields
@@ -261,7 +268,7 @@ const Players = () => {
   const rosterColsKey = selectedTournament ? `teevents_roster_cols_${selectedTournament}` : "";
   const rosterSortKey = selectedTournament ? `teevents_roster_sort_${selectedTournament}` : "";
   const [rosterCols, setRosterCols] = useState<Record<string, boolean>>({
-    name: true, email: true, phone: true, hcp: true, age: true, group: true, tier: true, shirt: true, hole: true, teetime: true, code: true, payment: true,
+    name: true, email: true, phone: true, hcp: true, age: true, group: true, tier: true, flight: true, shirt: true, hole: true, teetime: true, code: true, payment: true,
   });
 
   // ---- Age filter (Roster + Pairings) ----
@@ -272,6 +279,9 @@ const Players = () => {
 
   const [tiers, setTiers] = useState<Array<{ id: string; name: string }>>([]);
   const tierName = (id: string | null) => (id ? (tiers.find((t) => t.id === id)?.name || "—") : "—");
+  // Flights (tournament_tiers) are what the participant selected at registration.
+  const [flights, setFlights] = useState<Array<{ id: string; name: string }>>([]);
+  const flightName = (id: string | null | undefined) => (id ? (flights.find((f) => f.id === id)?.name || "—") : "—");
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});
@@ -343,10 +353,12 @@ const Players = () => {
       supabase.from("tournament_registration_fields").select("id, label, field_type, is_default, is_enabled, sort_order").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("tournament_registration_tiers").select("id, name").eq("tournament_id", selectedTournament).order("sort_order"),
       (supabase as any).from("registration_groups").select("id, group_name, team_name, group_number").eq("tournament_id", selectedTournament).order("created_at"),
-    ]).then(([regsRes, fieldsRes, tiersRes, groupsRes]: any) => {
+      (supabase as any).from("tournament_tiers").select("id, tier_name, display_order").eq("tournament_id", selectedTournament).order("display_order"),
+    ]).then(([regsRes, fieldsRes, tiersRes, groupsRes, flightsRes]: any) => {
       setAllPlayers((regsRes.data as unknown as Registration[]) || []);
       setRegFieldDefs((fieldsRes.data as RegFieldDef[]) || []);
       setTiers((tiersRes?.data as Array<{ id: string; name: string }>) || []);
+      setFlights(((flightsRes?.data as any[]) || []).map((f) => ({ id: f.id, name: String(f.tier_name || "") })));
       const rows: any[] = groupsRes?.data || [];
       const gm: Record<string, string> = {};
       const tn: Record<number, string> = {};
@@ -373,19 +385,67 @@ const Players = () => {
     setRegFeeCents(Number(t?.registration_fee_cents || 0));
   }, [selectedTournament, tournaments]);
 
-  // Custom field columns exposed in the roster (organizer-added registration questions)
-  const customFieldCols = regFieldDefs
-    .filter((f) => !f.is_default && f.is_enabled)
-    .sort((a, b) => a.sort_order - b.sort_order);
-
-  const getCustomAnswer = (p: Registration, fieldId: string): string => {
-    const match = (p.custom_answers || []).find((a) => a.field_id === fieldId);
-    const v = match?.answer;
+  const formatAnswer = (v: unknown): string => {
     if (v === null || v === undefined || v === "") return "";
     if (typeof v === "boolean") return v ? "Yes" : "No";
     if (Array.isArray(v)) return v.join(", ");
+    if (typeof v === "object") return Object.values(v as Record<string, unknown>).map(String).join(", ");
     return String(v);
   };
+
+  const getCustomAnswer = (p: Registration, fieldId: string): string => {
+    const match = (p.custom_answers || []).find((a) => a.field_id === fieldId);
+    return formatAnswer(match?.answer);
+  };
+
+  // Every question the participant could answer at registration — the organizer's
+  // own questions AND the built-in ones (Company, Skill Level, …) — plus any answer
+  // stored on a registration that no longer has a matching field definition, so no
+  // response is ever hidden from the roster.
+  const answerCols: Array<{ key: string; label: string; fieldId: string | null }> = (() => {
+    const cols: Array<{ key: string; label: string; fieldId: string | null }> = [];
+    const seen = new Set<string>();
+    const norm = (s: string) => s.trim().toLowerCase();
+
+    regFieldDefs
+      .filter((f) => f.is_enabled)
+      .slice()
+      .sort((a, b) => a.sort_order - b.sort_order)
+      .forEach((f) => {
+        if (ANSWER_LABELS_COVERED_BY_BASE_COLS.includes(norm(f.label))) return;
+        cols.push({ key: `custom_${f.id}`, label: f.label, fieldId: f.id });
+        seen.add(norm(f.label));
+      });
+
+    allPlayers.forEach((p) => {
+      (p.custom_answers || []).forEach((a) => {
+        const label = String(a.label || "").trim();
+        if (!label) return;
+        const key = norm(label);
+        if (seen.has(key) || ANSWER_LABELS_COVERED_BY_BASE_COLS.includes(key)) return;
+        seen.add(key);
+        cols.push({ key: `answer_${key}`, label, fieldId: null });
+      });
+    });
+
+    return cols;
+  })();
+
+  // Answer for a roster answer-column: matched by field id first, then by label so
+  // registrations saved before a question was re-created still line up.
+  const answerForCol = (p: Registration, col: { label: string; fieldId: string | null }): string => {
+    const norm = (s: string) => String(s || "").trim().toLowerCase();
+    const answers = p.custom_answers || [];
+    const byId = col.fieldId ? answers.find((a) => a.field_id === col.fieldId) : undefined;
+    const match = byId || answers.find((a) => norm(a.label) === norm(col.label));
+    const value = formatAnswer(match?.answer);
+    // The flight is stored as a relation on the registration, not as a text answer.
+    if (!value && norm(col.label) === "flight") return flightName(p.flight_id);
+    return value;
+  };
+
+  const visibleAnswerCols = answerCols.filter((c) => rosterCols[c.key] !== false);
+
 
   // Scoring codes live at the GROUP level and are only created once pairings are assigned.
   const codeOf = (p: Registration): string => (p.group_scoring_code || p.scoring_code || "");
@@ -411,6 +471,7 @@ const Players = () => {
       case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
       case "age": return ageOf(p) ?? Number.POSITIVE_INFINITY;
       case "tier": return tierName(p.tier_id).toLowerCase();
+      case "flight": return flightName(p.flight_id).toLowerCase();
       case "group": return (p.group_id ? (groupNames[p.group_id] || "team") : "\uFFFF").toLowerCase();
       case "shirt": return (p.shirt_size || "").toLowerCase();
       case "hole": return p.group_number ?? Number.POSITIVE_INFINITY;
@@ -420,9 +481,11 @@ const Players = () => {
       }
       case "code": return codeOf(p).toLowerCase();
       case "payment": return (p.payment_status || "").toLowerCase();
-      default:
-        if (key.startsWith("custom_")) return getCustomAnswer(p, key.slice("custom_".length)).toLowerCase();
+      default: {
+        const col = answerCols.find((c) => c.key === key);
+        if (col) return answerForCol(p, col).toLowerCase();
         return "";
+      }
     }
   };
 
@@ -2155,16 +2218,16 @@ const Players = () => {
                       </label>
                     ))}
                   </div>
-                  {customFieldCols.length > 0 && (
+                  {answerCols.length > 0 && (
                     <>
-                      <p className="text-xs font-medium mb-2 text-muted-foreground">Your custom questions</p>
+                      <p className="text-xs font-medium mb-2 text-muted-foreground">Registration responses</p>
                       <div className="space-y-2">
-                        {customFieldCols.map((f) => {
-                          const key = `custom_${f.id}`;
+                        {answerCols.map((f) => {
+                          const key = f.key;
                           return (
-                            <label key={f.id} className="flex items-center gap-2 cursor-pointer text-sm">
+                            <label key={key} className="flex items-center gap-2 cursor-pointer text-sm">
                               <Checkbox
-                                checked={!!rosterCols[key]}
+                                checked={rosterCols[key] !== false}
                                 onCheckedChange={() => toggleRosterCol(key)}
                               />
                               {f.label}
@@ -2455,6 +2518,7 @@ const Players = () => {
 
                       {rosterCols.group !== false && <SortableTh colKey="group">Group / Team</SortableTh>}
                       {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
+                      {rosterCols.flight !== false && <SortableTh colKey="flight">Flight</SortableTh>}
                       {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
                       {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
                       {rosterCols.teetime !== false && <SortableTh colKey="teetime" align="center">Tee Time</SortableTh>}
@@ -2464,8 +2528,8 @@ const Players = () => {
                         </SortableTh>
                       )}
                       {rosterCols.payment !== false && <SortableTh colKey="payment" align="center">Payment</SortableTh>}
-                      {customFieldCols.filter((f) => rosterCols[`custom_${f.id}`]).map((f) => (
-                        <SortableTh key={f.id} colKey={`custom_${f.id}`}>{f.label}</SortableTh>
+                      {visibleAnswerCols.map((f) => (
+                        <SortableTh key={f.key} colKey={f.key}>{f.label}</SortableTh>
                       ))}
                       <th className="text-center font-semibold px-4 py-3 w-12"></th>
                     </tr>
@@ -2532,6 +2596,17 @@ const Players = () => {
                         {p.tier_id ? (
                           <span className="inline-flex items-center bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
                             {tierName(p.tier_id)}
+                          </span>
+                        ) : (
+                          <span className="text-muted-foreground text-xs">—</span>
+                        )}
+                      </td>
+                    )}
+                    {rosterCols.flight !== false && (
+                      <td className="px-4 py-3">
+                        {p.flight_id ? (
+                          <span className="inline-flex items-center bg-emerald-500/10 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
+                            {flightName(p.flight_id)}
                           </span>
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
@@ -2617,9 +2692,9 @@ const Players = () => {
                         </div>
                       </td>
                     )}
-                    {customFieldCols.filter((f) => rosterCols[`custom_${f.id}`]).map((f) => (
-                      <td key={f.id} className="px-4 py-3 text-muted-foreground max-w-[220px] break-words">
-                        {getCustomAnswer(p, f.id) || "—"}
+                    {visibleAnswerCols.map((f) => (
+                      <td key={f.key} className="px-4 py-3 text-muted-foreground max-w-[220px] break-words">
+                        {answerForCol(p, f) || "—"}
                       </td>
                     ))}
                     <td className="px-4 py-3 text-center">
@@ -3677,10 +3752,30 @@ const Players = () => {
                   </span>
                 </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Division / Tier</p>
-                <p className="text-sm text-foreground">{tierName(viewingPlayer.tier_id)}</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <p className="text-xs text-muted-foreground">Division / Tier</p>
+                  <p className="text-sm text-foreground">{tierName(viewingPlayer.tier_id)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Flight (selected at registration)</p>
+                  <p className="text-sm text-foreground">{flightName(viewingPlayer.flight_id)}</p>
+                </div>
               </div>
+              {answerCols.length > 0 && (
+                <div className="border-t border-border pt-3">
+                  <p className="text-xs font-semibold text-foreground mb-2">All registration responses</p>
+                  <div className="space-y-2">
+                    {answerCols.map((c) => (
+                      <div key={c.key} className="flex items-start justify-between gap-3">
+                        <p className="text-xs text-muted-foreground">{c.label}</p>
+                        <p className="text-sm text-foreground text-right break-words">{answerForCol(viewingPlayer, c) || "—"}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Hole Assignment</p>

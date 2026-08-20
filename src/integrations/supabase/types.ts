@@ -5114,6 +5114,87 @@ export type Database = {
           },
         ]
       }
+      newsletter_subscribers: {
+        Row: {
+          created_at: string
+          email: string
+          full_name: string | null
+          id: string
+          source: string | null
+          status: string
+          unsubscribe_token: string
+          unsubscribed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          full_name?: string | null
+          id?: string
+          source?: string | null
+          status?: string
+          unsubscribe_token?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          full_name?: string | null
+          id?: string
+          source?: string | null
+          status?: string
+          unsubscribe_token?: string
+          unsubscribed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      newsletters: {
+        Row: {
+          body: string
+          created_at: string
+          created_by: string | null
+          id: string
+          recipient_count: number
+          scheduled_for: string | null
+          sent_at: string | null
+          status: string
+          subject: string
+          template_key: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          recipient_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string
+          subject: string
+          template_key?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          recipient_count?: number
+          scheduled_for?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string
+          template_key?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_emails: {
         Row: {
           created_at: string
@@ -8078,6 +8159,65 @@ export type Database = {
           user_agent?: string | null
         }
         Relationships: []
+      }
+      social_posts: {
+        Row: {
+          caption: string
+          content_type: string
+          created_at: string
+          engagements: number
+          id: string
+          impressions: number
+          link_url: string | null
+          notes: string | null
+          platform: string
+          post_date: string
+          published_at: string | null
+          source_article_id: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          caption?: string
+          content_type?: string
+          created_at?: string
+          engagements?: number
+          id?: string
+          impressions?: number
+          link_url?: string | null
+          notes?: string | null
+          platform: string
+          post_date: string
+          published_at?: string | null
+          source_article_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          caption?: string
+          content_type?: string
+          created_at?: string
+          engagements?: number
+          id?: string
+          impressions?: number
+          link_url?: string | null
+          notes?: string | null
+          platform?: string
+          post_date?: string
+          published_at?: string | null
+          source_article_id?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "social_posts_source_article_id_fkey"
+            columns: ["source_article_id"]
+            isOneToOne: false
+            referencedRelation: "lead_magnets"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sponsor_assets: {
         Row: {

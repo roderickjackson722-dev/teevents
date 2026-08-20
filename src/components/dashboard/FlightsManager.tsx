@@ -445,8 +445,9 @@ export default function FlightsManager({ tournamentId }: Props) {
       </div>
 
       {players.length > 0 && (
-        <div>
+        <div id="custom-flight-editor">
           <h3 className="text-lg font-semibold mb-1">Custom Flight Editor</h3>
+
           <p className="text-sm text-muted-foreground mb-4">
             Assign any player to any flight manually. The flighted leaderboard and the payout breakdown above update
             immediately.

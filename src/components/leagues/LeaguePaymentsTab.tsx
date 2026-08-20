@@ -59,9 +59,24 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
     }
   }, [fetchPayments, leagueId]);
 
+  // Reconciliation is automatic: Stripe is checked and confirmation emails are sent
+  // the moment a payment completes, on a background schedule, and again silently here
+  // so this tab is always current without anyone pressing a button.
   useEffect(() => {
-    void load();
-  }, [load]);
+    let active = true;
+    (async () => {
+      await load();
+      try {
+        const res: any = await syncPayments({ data: { leagueId } });
+        if (active && (res?.recovered || res?.reconciled)) await load();
+      } catch {
+        /* silent — the visible ledger already loaded */
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, [load, syncPayments, leagueId]);
 
   const handleSync = async () => {
     setSyncing(true);
@@ -71,7 +86,7 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
         res?.recovered
           ? `Found ${res.recovered} completed payment${res.recovered === 1 ? "" : "s"} in Stripe`
           : res?.reconciled
-            ? `Updated ${res.reconciled} registration record${res.reconciled === 1 ? "" : "s"} from completed payments`
+            ? `Sent ${res.reconciled} pending confirmation email${res.reconciled === 1 ? "" : "s"}`
           : "Everything is already up to date with Stripe",
       );
       await load();
@@ -81,6 +96,7 @@ export default function LeaguePaymentsTab({ leagueId }: { leagueId: string }) {
       setSyncing(false);
     }
   };
+
 
   return (
     <div className="space-y-4">

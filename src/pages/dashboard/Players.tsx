@@ -261,8 +261,9 @@ const Players = () => {
   const rosterColsKey = selectedTournament ? `teevents_roster_cols_${selectedTournament}` : "";
   const rosterSortKey = selectedTournament ? `teevents_roster_sort_${selectedTournament}` : "";
   const [rosterCols, setRosterCols] = useState<Record<string, boolean>>({
-    name: true, email: true, phone: true, hcp: true, age: true, group: true, tier: true, shirt: true, hole: true, code: true, payment: true,
+    name: true, email: true, phone: true, hcp: true, age: true, group: true, tier: true, shirt: true, hole: true, teetime: true, code: true, payment: true,
   });
+
   // ---- Age filter (Roster + Pairings) ----
   const [showAllAges, setShowAllAges] = useState(true);
   const [ageGroupFilters, setAgeGroupFilters] = useState<Record<string, boolean>>(allAgeGroupsOn());

@@ -299,11 +299,15 @@ const Players = () => {
   }, [rosterColsKey, rosterSortKey]);
   const toggleRosterCol = (key: string) => {
     setRosterCols((prev) => {
-      const next = { ...prev, [key]: !prev[key] };
+      // Base columns are visible unless explicitly false; custom question columns are hidden unless true.
+      const isCustom = key.startsWith("custom_");
+      const visible = isCustom ? !!prev[key] : prev[key] !== false;
+      const next = { ...prev, [key]: !visible };
       try { if (rosterColsKey) localStorage.setItem(rosterColsKey, JSON.stringify(next)); } catch { /* noop */ }
       return next;
     });
   };
+
   const changeSort = (key: string) => {
     setSortKey((prevKey) => {
       const nextKey = key;

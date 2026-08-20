@@ -12,7 +12,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Users, Plus, Trash2, UserCheck, UserPlus, Clock, CheckCircle2, Download } from "lucide-react";
+import { Users, Plus, Trash2, UserCheck, UserPlus, Clock, CheckCircle2, Download, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 
 export default function Volunteers() {
@@ -25,6 +25,8 @@ export default function Volunteers() {
   const [assignRoleId, setAssignRoleId] = useState<string | null>(null);
   const [form, setForm] = useState({ title: "", description: "", max_volunteers: "4", time_slot: "" });
   const [assignForm, setAssignForm] = useState({ name: "", email: "", phone: "" });
+  const [editVolunteer, setEditVolunteer] = useState<any | null>(null);
+  const [editForm, setEditForm] = useState({ name: "", email: "", phone: "", role_id: "", status: "pending", checked_in: false });
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
@@ -120,6 +122,47 @@ export default function Volunteers() {
       toast({ title: "Volunteer removed" });
     },
   });
+
+  const updateVolunteerMutation = useMutation({
+    mutationFn: async () => {
+      if (demoGuard()) throw new Error("Demo mode");
+      if (!editVolunteer) throw new Error("No volunteer selected");
+      if (!editForm.name.trim()) throw new Error("Name is required");
+      const { error } = await supabase
+        .from("tournament_volunteers")
+        .update({
+          name: editForm.name.trim(),
+          email: editForm.email.trim() || null,
+          phone: editForm.phone.trim() || null,
+          role_id: editForm.role_id || null,
+          status: editForm.status,
+          checked_in: editForm.checked_in,
+          checked_in_at: editForm.checked_in
+            ? editVolunteer.checked_in_at || new Date().toISOString()
+            : null,
+        } as any)
+        .eq("id", editVolunteer.id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      toast({ title: "Volunteer updated" });
+      setEditVolunteer(null);
+      queryClient.invalidateQueries({ queryKey: ["volunteers"] });
+    },
+    onError: (e: Error) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const openEdit = (v: any) => {
+    setEditVolunteer(v);
+    setEditForm({
+      name: v.name || "",
+      email: v.email || "",
+      phone: v.phone || "",
+      role_id: v.role_id || "",
+      status: v.status || "pending",
+      checked_in: !!v.checked_in,
+    });
+  };
 
   const toggleCheckIn = useMutation({
     mutationFn: async ({ id, checked_in }: { id: string; checked_in: boolean }) => {
@@ -296,6 +339,15 @@ export default function Volunteers() {
                           <Button
                             variant="ghost"
                             size="sm"
+                            className="h-6 w-6 p-0 opacity-60 group-hover:opacity-100"
+                            title="Edit volunteer"
+                            onClick={() => openEdit(v)}
+                          >
+                            <Pencil className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             className="h-6 w-6 p-0 opacity-0 group-hover:opacity-100 text-destructive"
                             onClick={() => removeVolunteerMutation.mutate(v.id)}
                           >
@@ -356,6 +408,7 @@ export default function Volunteers() {
                   <th className="py-2 pr-4 font-medium">Status</th>
                   <th className="py-2 pr-4 font-medium">Checked In</th>
                   <th className="py-2 pr-4 font-medium">Signed Up</th>
+                  <th className="py-2 pr-4 font-medium text-right">Edit</th>
                 </tr>
               </thead>
               <tbody>
@@ -382,6 +435,11 @@ export default function Volunteers() {
                       </td>
                       <td className="py-2 pr-4 whitespace-nowrap">
                         {v.created_at ? new Date(v.created_at).toLocaleDateString() : "—"}
+                      </td>
+                      <td className="py-2 pr-4 text-right">
+                        <Button variant="ghost" size="sm" className="h-7 w-7 p-0" title="Edit volunteer" onClick={() => openEdit(v)}>
+                          <Pencil className="h-3.5 w-3.5" />
+                        </Button>
                       </td>
                     </tr>
                   );
@@ -419,6 +477,68 @@ export default function Volunteers() {
               className="w-full"
             >
               {assignMutation.isPending ? "Assigning..." : "Assign Volunteer"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Volunteer Dialog */}
+      <Dialog open={!!editVolunteer} onOpenChange={(o) => { if (!o) setEditVolunteer(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit Volunteer</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Name *</Label>
+              <Input value={editForm.name} onChange={(e) => setEditForm({ ...editForm, name: e.target.value })} />
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>Email</Label>
+                <Input type="email" value={editForm.email} onChange={(e) => setEditForm({ ...editForm, email: e.target.value })} />
+              </div>
+              <div>
+                <Label>Phone</Label>
+                <Input value={editForm.phone} onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })} placeholder="(555) 123-4567" />
+              </div>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <Label>Role</Label>
+                <Select value={editForm.role_id} onValueChange={(v) => setEditForm({ ...editForm, role_id: v })}>
+                  <SelectTrigger><SelectValue placeholder="Select role" /></SelectTrigger>
+                  <SelectContent>
+                    {roles?.map((r) => <SelectItem key={r.id} value={r.id}>{r.title}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Status</Label>
+                <Select value={editForm.status} onValueChange={(v) => setEditForm({ ...editForm, status: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="pending">Pending</SelectItem>
+                    <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="declined">Declined</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="edit-checked-in"
+                checked={editForm.checked_in}
+                onCheckedChange={(c) => setEditForm({ ...editForm, checked_in: !!c })}
+              />
+              <Label htmlFor="edit-checked-in" className="cursor-pointer text-sm">Checked in</Label>
+            </div>
+            <Button
+              onClick={() => updateVolunteerMutation.mutate()}
+              disabled={!editForm.name.trim() || updateVolunteerMutation.isPending}
+              className="w-full"
+            >
+              {updateVolunteerMutation.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </div>
         </DialogContent>

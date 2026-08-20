@@ -42,7 +42,11 @@ import RegistrationSubmissions from "@/components/dashboard/RegistrationSubmissi
 import { toast } from "sonner";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 
+const DEFAULT_CLOSED_MESSAGE =
+  "Registration for this event is now closed. Thank you for your interest — we have reached our registration deadline. If you would still like to play, be added to our waitlist, or ask about sponsorship opportunities, please contact us using the information below and we will do our best to help.";
+
 /* ── types ── */
+
 interface Tournament {
   id: string;
   title: string;
@@ -59,7 +63,13 @@ interface Tournament {
   early_registration_expires_at?: string | null;
   allow_cash_registration?: boolean | null;
   show_registration_count?: boolean | null;
+  registration_auto_close_enabled?: boolean | null;
+  registration_close_at?: string | null;
+  registration_closed_message?: string | null;
+  registration_closed_contact_email?: string | null;
+  registration_closed_contact_phone?: string | null;
 }
+
 
 interface RegistrationTier {
   id?: string;
@@ -151,6 +161,14 @@ const Registration = () => {
   const [feeDisplay, setFeeDisplay] = useState<string>("0.00");
   const [feeCents, setFeeCents] = useState<number>(0);
   const [regOpen, setRegOpen] = useState<boolean>(false);
+  /* Scheduled auto-close of registration */
+  const [autoCloseEnabled, setAutoCloseEnabled] = useState<boolean>(false);
+  const [closeAt, setCloseAt] = useState<string>(""); // datetime-local string
+  const [closedMessage, setClosedMessage] = useState<string>("");
+  const [closedContactEmail, setClosedContactEmail] = useState<string>("");
+  const [closedContactPhone, setClosedContactPhone] = useState<string>("");
+  const [closeIncludesAddons, setCloseIncludesAddons] = useState<boolean>(true);
+
   const [maxPlayersDisplay, setMaxPlayersDisplay] = useState<string>("144");
   const [maxPlayers, setMaxPlayers] = useState<number>(144);
   const [foursomeReg, setFoursomeReg] = useState<boolean>(false);
@@ -185,7 +203,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label")
+      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label, registration_auto_close_enabled, registration_close_at, registration_closed_message, registration_closed_contact_email, registration_closed_contact_phone, registration_close_includes_addons")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -241,6 +259,13 @@ const Registration = () => {
       );
       setDonationAllowCustom((tournament as any).donation_allow_custom !== false);
       setDonationCustomLabel(((tournament as any).donation_custom_label as string) || "Enter your own amount");
+      setAutoCloseEnabled(!!(tournament as any).registration_auto_close_enabled);
+      const closeIso = (tournament as any).registration_close_at as string | null;
+      setCloseAt(closeIso ? new Date(closeIso).toISOString().slice(0, 16) : "");
+      setClosedMessage(((tournament as any).registration_closed_message as string) || "");
+      setClosedContactEmail(((tournament as any).registration_closed_contact_email as string) || "");
+      setClosedContactPhone(((tournament as any).registration_closed_contact_phone as string) || "");
+      setCloseIncludesAddons((tournament as any).registration_close_includes_addons !== false);
     }
 
     const [fieldsRes, addonsRes, promoRes, tiersRes] = await Promise.all([
@@ -309,6 +334,12 @@ const Registration = () => {
         .map((n) => Math.round(n * 100)),
       donation_allow_custom: donationAllowCustom,
       donation_custom_label: donationCustomLabel.trim() || "Enter your own amount",
+      registration_auto_close_enabled: autoCloseEnabled,
+      registration_close_at: autoCloseEnabled && closeAt ? new Date(closeAt).toISOString() : null,
+      registration_closed_message: closedMessage.trim() || null,
+      registration_closed_contact_email: closedContactEmail.trim() || null,
+      registration_closed_contact_phone: closedContactPhone.trim() || null,
+      registration_close_includes_addons: closeIncludesAddons,
     };
     const { error } = await supabase.from("tournaments").update(updates).eq("id", selectedTournament);
     if (error) toast.error(error.message);
@@ -794,6 +825,94 @@ const Registration = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Scheduled registration close */}
+              <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-3">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <Label className="text-sm font-semibold">Automatically Close Registration</Label>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Pick a date and time and registration closes on its own — no need to log in and flip the switch.
+                      Guests who visit afterward see your closed-registration message instead of the form.
+                    </p>
+                  </div>
+                  <Switch checked={autoCloseEnabled} onCheckedChange={setAutoCloseEnabled} />
+                </div>
+
+                {autoCloseEnabled && (
+                  <div className="space-y-3 rounded-md border border-border bg-background p-3">
+                    <div>
+                      <Label className="text-xs">Close registration at (your local time)</Label>
+                      <Input
+                        type="datetime-local"
+                        value={closeAt}
+                        onChange={(e) => setCloseAt(e.target.value)}
+                        className="max-w-[260px]"
+                      />
+                      {closeAt && (
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {new Date(closeAt).getTime() <= Date.now()
+                            ? "This time is in the past — registration will close on the next check (within 5 minutes)."
+                            : `Registration closes ${new Date(closeAt).toLocaleString()}.`}
+                        </p>
+                      )}
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between gap-2">
+                        <Label className="text-xs">Message shown when registration is closed</Label>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-xs"
+                          onClick={() => setClosedMessage(DEFAULT_CLOSED_MESSAGE)}
+                        >
+                          Use template
+                        </Button>
+                      </div>
+                      <Textarea
+                        rows={4}
+                        value={closedMessage}
+                        onChange={(e) => setClosedMessage(e.target.value)}
+                        placeholder={DEFAULT_CLOSED_MESSAGE}
+                      />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Leave blank to use our default closed-registration message.
+                      </p>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <div>
+                        <Label className="text-xs">Contact email for late requests</Label>
+                        <Input
+                          type="email"
+                          value={closedContactEmail}
+                          onChange={(e) => setClosedContactEmail(e.target.value)}
+                          placeholder="organizer@example.com"
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs">Contact phone (optional)</Label>
+                        <Input
+                          value={closedContactPhone}
+                          onChange={(e) => setClosedContactPhone(e.target.value)}
+                          placeholder="(555) 123-4567"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Switch checked={closeIncludesAddons} onCheckedChange={setCloseIncludesAddons} id="close-addons" />
+                      <Label htmlFor="close-addons" className="text-xs text-muted-foreground cursor-pointer">
+                        Also stop add-on and side-event sales (mulligans, dinner tickets, etc.) at this time
+                      </Label>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+
 
               <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-3">
                 <div className="flex items-center justify-between gap-3">

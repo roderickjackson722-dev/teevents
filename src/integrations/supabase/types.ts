@@ -7938,6 +7938,7 @@ export type Database = {
           max_tickets: number | null
           name: string
           price_cents: number
+          sales_close_at: string | null
           show_on_public: boolean
           tickets_sold: number
           tournament_id: string
@@ -7956,6 +7957,7 @@ export type Database = {
           max_tickets?: number | null
           name: string
           price_cents?: number
+          sales_close_at?: string | null
           show_on_public?: boolean
           tickets_sold?: number
           tournament_id: string
@@ -7974,6 +7976,7 @@ export type Database = {
           max_tickets?: number | null
           name?: string
           price_cents?: number
+          sales_close_at?: string | null
           show_on_public?: boolean
           tickets_sold?: number
           tournament_id?: string
@@ -9494,6 +9497,7 @@ export type Database = {
           max_per_golfer: number
           name: string
           price_cents: number
+          sales_close_at: string | null
           sort_order: number | null
           tournament_id: string
         }
@@ -9505,6 +9509,7 @@ export type Database = {
           max_per_golfer?: number
           name: string
           price_cents?: number
+          sales_close_at?: string | null
           sort_order?: number | null
           tournament_id: string
         }
@@ -9516,6 +9521,7 @@ export type Database = {
           max_per_golfer?: number
           name?: string
           price_cents?: number
+          sales_close_at?: string | null
           sort_order?: number | null
           tournament_id?: string
         }
@@ -10538,6 +10544,13 @@ export type Database = {
           refund_policy: string | null
           refund_policy_text: string | null
           refund_policy_type: string
+          registration_auto_close_enabled: boolean
+          registration_auto_closed_at: string | null
+          registration_close_at: string | null
+          registration_close_includes_addons: boolean
+          registration_closed_contact_email: string | null
+          registration_closed_contact_phone: string | null
+          registration_closed_message: string | null
           registration_fee_cents: number | null
           registration_intro_html: string | null
           registration_open: boolean | null
@@ -10837,6 +10850,13 @@ export type Database = {
           refund_policy?: string | null
           refund_policy_text?: string | null
           refund_policy_type?: string
+          registration_auto_close_enabled?: boolean
+          registration_auto_closed_at?: string | null
+          registration_close_at?: string | null
+          registration_close_includes_addons?: boolean
+          registration_closed_contact_email?: string | null
+          registration_closed_contact_phone?: string | null
+          registration_closed_message?: string | null
           registration_fee_cents?: number | null
           registration_intro_html?: string | null
           registration_open?: boolean | null
@@ -11136,6 +11156,13 @@ export type Database = {
           refund_policy?: string | null
           refund_policy_text?: string | null
           refund_policy_type?: string
+          registration_auto_close_enabled?: boolean
+          registration_auto_closed_at?: string | null
+          registration_close_at?: string | null
+          registration_close_includes_addons?: boolean
+          registration_closed_contact_email?: string | null
+          registration_closed_contact_phone?: string | null
+          registration_closed_message?: string | null
           registration_fee_cents?: number | null
           registration_intro_html?: string | null
           registration_open?: boolean | null
@@ -11905,6 +11932,7 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      apply_scheduled_registration_closures: { Args: never; Returns: number }
       attach_sample_viewer: {
         Args: { _org_id: string; _viewer_id: string }
         Returns: boolean

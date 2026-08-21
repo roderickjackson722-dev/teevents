@@ -821,8 +821,14 @@ const Registration = () => {
                   <Label>Registration Status</Label>
                   <div className="flex items-center gap-3 mt-1">
                     <Switch checked={regOpen} onCheckedChange={setRegOpen} />
-                    <span className="text-sm font-medium text-foreground">{regOpen ? "Close Registration" : "Open Registration"}</span>
+                    <span className="text-sm font-medium text-foreground">
+                      {regOpen ? "Registration Open" : "Registration Closed"}
+                    </span>
                   </div>
+                  <p className="text-xs text-muted-foreground">
+                    Toggle on = players can register. Toggle off to close registration.
+                  </p>
+
                 </div>
               </div>
 

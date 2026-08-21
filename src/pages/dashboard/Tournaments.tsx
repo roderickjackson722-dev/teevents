@@ -79,6 +79,19 @@ const Tournaments = () => {
     fetchTournaments();
   }, [org]);
 
+  // Tournaments this user only has team-member access to (not owned by their org).
+  useEffect(() => {
+    (async () => {
+      try {
+        const res: any = await loadUserTournaments({ data: {} } as any);
+        setSharedTournaments((res?.tournaments || []).filter((t: any) => t.access === "team_member"));
+      } catch {
+        setSharedTournaments([]);
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!org || demoGuard()) return;

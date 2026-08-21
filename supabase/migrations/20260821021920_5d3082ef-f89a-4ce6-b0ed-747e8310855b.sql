@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.sync_registration_flight_tier() FROM anon, authenticated;

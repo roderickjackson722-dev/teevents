@@ -17,6 +17,8 @@ export interface TeamHqSettings {
   show_welcome: boolean;
   show_quick_links: boolean;
   show_alpha_list: boolean;
+  /** Show each player's division / tier on the Team HQ alpha list. */
+  show_divisions: boolean;
   show_hole_assignments: boolean;
   show_tee_times: boolean;
   show_leaderboard: boolean;

@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import { useServerFn } from "@tanstack/react-start";
+import { getUserTournaments } from "@/lib/tournamentTeam.functions";
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
@@ -51,6 +53,7 @@ const Tournaments = () => {
   const { buildLink } = useAdminLink();
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();
+  const loadUserTournaments = useServerFn(getUserTournaments);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [sharedTournaments, setSharedTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

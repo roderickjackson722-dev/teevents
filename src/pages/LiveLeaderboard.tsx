@@ -629,18 +629,22 @@ export default function LiveLeaderboard() {
       ? null
       : flights.find((f) => f.id === activeFlight)?.tier_name || null;
   const baseTitle = tournament.leaderboard_title || tournament.title;
-  const displayTitle =
-    flightMode === "grid" ? baseTitle : activeFlightName ? `${baseTitle} — ${activeFlightName}` : baseTitle;
+  const displayTitle = baseTitle;
+  /** Heading for the single board — "[Flight] Leaderboard" when a flight is active. */
+  const singleBoardLabel = activeFlightName ? `${activeFlightName} Leaderboard` : "Leaderboard";
 
 
   const subtitleParts: string[] = [];
   if (tournament.course_name) subtitleParts.push(tournament.course_name);
-  if (tournament.date) {
+  // Organizers can override the displayed date (add-on events may start earlier).
+  const shownDate = design.display_date || tournament.date;
+  if (shownDate) {
     try {
-      subtitleParts.push(new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
+      subtitleParts.push(new Date(shownDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
     } catch { /* ignore */ }
   }
   const subtitle = subtitleParts.join(" · ");
+
 
   const presentedBy = tournament.leaderboard_show_sponsor && tournament.leaderboard_sponsor_name
     ? {

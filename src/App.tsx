@@ -13,6 +13,8 @@ import Reviews from "./pages/Reviews";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import AdminLogin from "./pages/AdminLogin";
+import TeamLogin from "./pages/TeamLogin";
+
 import AdminDashboard from "./pages/AdminDashboard";
 import SetupAdmin from "./pages/SetupAdmin";
 import CustomerAuth from "./pages/CustomerAuth";
@@ -236,6 +238,8 @@ const App = () => (
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/team-login" element={<TeamLogin />} />
+
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/admin/prospect-samples" element={<AdminDashboard />} />
           <Route path="/setup-admin" element={<SetupAdmin />} />

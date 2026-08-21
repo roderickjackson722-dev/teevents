@@ -7,7 +7,7 @@ import NotFound from "./NotFound";
 
 // Reserved top-level paths that must never be treated as a league slug.
 const RESERVED = new Set([
-  "about","services","platform","events","reviews","contact","login","admin","admin-login",
+  "about","services","platform","events","reviews","contact","login","admin","admin-login","team-login",
   "setup-admin","get-started","onboarding","payment-success","dashboard","league","leagues",
   "day-of","trips","pricing","plans","golf-leagues","sample","demo","help","features","faq",
   "privacy","terms","unsubscribe","claim","book","scan","score","survey","refund","flyer",

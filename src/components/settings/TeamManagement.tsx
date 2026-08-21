@@ -1,14 +1,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle, Send } from "lucide-react";
+import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle, Send, KeyRound, Copy, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import {
+  generateTeamLoginCode,
+  revokeTeamLoginCode,
+  adminImpersonateTeamMember,
+} from "@/lib/teamLogin.functions";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +22,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+
 
 const ALL_PERMISSIONS = [
   { id: "manage_players", label: "Players" },
@@ -64,7 +71,10 @@ interface MemberRow {
   role: string;
   permissions: string[];
   name?: string | null;
+  login_code?: string | null;
+  login_code_expires_at?: string | null;
 }
+
 
 interface InviteRow {
   id: string;
@@ -86,6 +96,12 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [canManage, setCanManage] = useState(false);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
+  // Login code + admin override state
+  const [codeBusyId, setCodeBusyId] = useState<string | null>(null);
+  const [impersonateId, setImpersonateId] = useState<string>("");
+  const [impersonating, setImpersonating] = useState(false);
 
   // Edit state
   const [editingMember, setEditingMember] = useState<MemberRow | null>(null);
@@ -103,7 +119,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
   }, [orgId]);
 
   const checkPermissions = async () => {
-    const [{ data: membership }, { data: isPlatformAdmin }] = await Promise.all([
+    const [{ data: membership }, { data: platformAdmin }] = await Promise.all([
       supabase
         .from("org_members")
         .select("role")
@@ -112,7 +128,8 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
         .maybeSingle(),
       supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
     ]);
-    setCanManage(isPlatformAdmin === true || (membership as any)?.role === "owner");
+    setIsPlatformAdmin(platformAdmin === true);
+    setCanManage(platformAdmin === true || (membership as any)?.role === "owner");
   };
 
   const fetchData = async () => {
@@ -120,7 +137,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     const [membersRes, invitesRes] = await Promise.all([
       supabase
         .from("org_members")
-        .select("id, user_id, role, permissions, name")
+        .select("id, user_id, role, permissions, name, login_code, login_code_expires_at")
         .eq("organization_id", orgId),
       supabase
         .from("org_invitations")
@@ -132,6 +149,58 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     setInvitations((invitesRes.data as any) || []);
     setLoading(false);
   };
+
+  const handleGenerateCode = async (member: MemberRow) => {
+    setCodeBusyId(member.id);
+    try {
+      const result = await generateTeamLoginCode({ data: { memberId: member.id, orgId } });
+      toast.success(`Login code ${result.code} generated — share it with ${member.name || "your team member"}`);
+      fetchData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not generate a login code");
+    } finally {
+      setCodeBusyId(null);
+    }
+  };
+
+  const handleRevokeCode = async (member: MemberRow) => {
+    setCodeBusyId(member.id);
+    try {
+      await revokeTeamLoginCode({ data: { memberId: member.id, orgId } });
+      toast.success("Login code removed");
+      fetchData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not remove the login code");
+    } finally {
+      setCodeBusyId(null);
+    }
+  };
+
+  const copyCode = (code: string) => {
+    navigator.clipboard?.writeText(code);
+    toast.success(`Copied ${code}`);
+  };
+
+  const handleImpersonate = async () => {
+    if (!impersonateId) return;
+    setImpersonating(true);
+    try {
+      const result = await adminImpersonateTeamMember({ data: { memberId: impersonateId } });
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: result.token_hash,
+        type: "magiclink",
+      });
+      if (error) throw new Error(error.message);
+      toast.success(`Signed in as ${result.email}`);
+      window.location.href = "/dashboard";
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not log in as that team member");
+    } finally {
+      setImpersonating(false);
+    }
+  };
+
+
 
   const togglePerm = (perm: string, perms: string[], setPerms: (p: string[]) => void) => {
     setPerms(perms.includes(perm) ? perms.filter((p) => p !== perm) : [...perms, perm]);
@@ -330,11 +399,29 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                     <span className="text-sm font-medium text-foreground block truncate">
                       {m.user_id === userId ? "You" : m.name || "Team Member"}
                     </span>
-                    {m.permissions && m.permissions.length > 0 && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {m.permissions.length} permissions
+                    <div className="flex flex-wrap items-center gap-2">
+                      {m.permissions && m.permissions.length > 0 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          {m.permissions.length} permissions
+                        </span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <KeyRound className="h-3 w-3" />
+                        Login code:{" "}
+                        {m.login_code ? (
+                          <button
+                            type="button"
+                            onClick={() => copyCode(m.login_code!)}
+                            className="font-mono font-semibold text-foreground tracking-widest hover:underline inline-flex items-center gap-1"
+                            title="Copy login code"
+                          >
+                            {m.login_code} <Copy className="h-3 w-3" />
+                          </button>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </span>
-                    )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -343,6 +430,32 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   </Badge>
                   {canManage && m.role !== "owner" && m.user_id !== userId && (
                     <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => handleGenerateCode(m)}
+                        disabled={codeBusyId === m.id}
+                        title="Generate a 6-character login code for this member"
+                      >
+                        {codeBusyId === m.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <><KeyRound className="h-3.5 w-3.5 mr-1" />{m.login_code ? "New Code" : "Generate Code"}</>
+                        )}
+                      </Button>
+                      {m.login_code && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-xs"
+                          onClick={() => handleRevokeCode(m)}
+                          disabled={codeBusyId === m.id}
+                          title="Remove this member's login code"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -365,6 +478,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                       </Button>
                     </>
                   )}
+
                   {m.role === "owner" && (
                     <Badge variant="outline" className="text-[10px]">Owner</Badge>
                   )}
@@ -373,7 +487,47 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
             ))}
           </div>
         )}
+        {canManage && (
+          <p className="text-xs text-muted-foreground mt-3">
+            Team members sign in at <span className="font-mono">/team-login</span> with their email and
+            password, or with the 6-character login code above.
+          </p>
+        )}
       </div>
+
+      {/* Admin override: log in as a team member */}
+      {isPlatformAdmin && members.filter((m) => m.role !== "owner").length > 0 && (
+        <div className="mb-6 rounded-lg border border-border p-3 space-y-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <LogIn className="h-4 w-4" /> Admin Override
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Sign in as a team member to troubleshoot their access. This replaces your current session.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={impersonateId} onValueChange={setImpersonateId}>
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder="Select a team member" />
+              </SelectTrigger>
+              <SelectContent>
+                {members
+                  .filter((m) => m.role !== "owner")
+                  .map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.name || "Team Member"} ({m.role})
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={handleImpersonate} disabled={!impersonateId || impersonating}>
+              {impersonating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LogIn className="h-4 w-4 mr-2" />}
+              Log in as member
+            </Button>
+          </div>
+        </div>
+      )}
+
+
 
       {/* Pending Invitations */}
       {invitations.length > 0 && (

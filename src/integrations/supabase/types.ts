@@ -5329,6 +5329,8 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          login_code: string | null
+          login_code_expires_at: string | null
           name: string | null
           organization_id: string
           permissions: Database["public"]["Enums"]["org_permission"][]
@@ -5338,6 +5340,8 @@ export type Database = {
         Insert: {
           created_at?: string
           id?: string
+          login_code?: string | null
+          login_code_expires_at?: string | null
           name?: string | null
           organization_id: string
           permissions?: Database["public"]["Enums"]["org_permission"][]
@@ -5347,6 +5351,8 @@ export type Database = {
         Update: {
           created_at?: string
           id?: string
+          login_code?: string | null
+          login_code_expires_at?: string | null
           name?: string | null
           organization_id?: string
           permissions?: Database["public"]["Enums"]["org_permission"][]
@@ -8160,6 +8166,53 @@ export type Database = {
         }
         Relationships: []
       }
+      sms_logs: {
+        Row: {
+          audience: string | null
+          error_detail: string | null
+          failed_count: number
+          id: string
+          message: string
+          recipient_count: number
+          sender_id: string | null
+          sent_at: string
+          status: string
+          tournament_id: string | null
+        }
+        Insert: {
+          audience?: string | null
+          error_detail?: string | null
+          failed_count?: number
+          id?: string
+          message: string
+          recipient_count?: number
+          sender_id?: string | null
+          sent_at?: string
+          status?: string
+          tournament_id?: string | null
+        }
+        Update: {
+          audience?: string | null
+          error_detail?: string | null
+          failed_count?: number
+          id?: string
+          message?: string
+          recipient_count?: number
+          sender_id?: string | null
+          sent_at?: string
+          status?: string
+          tournament_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sms_logs_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       social_posts: {
         Row: {
           caption: string
@@ -10747,6 +10800,10 @@ export type Database = {
           skins_entry_fee_cents: number
           skins_mode: string
           slug: string | null
+          sms_credits_limit: number
+          sms_credits_used: number
+          sms_enabled: boolean
+          sms_plan: string
           sponsor_custom_notes: string | null
           sponsor_day_of_email_config: Json | null
           sponsor_email_config: Json | null
@@ -11053,6 +11110,10 @@ export type Database = {
           skins_entry_fee_cents?: number
           skins_mode?: string
           slug?: string | null
+          sms_credits_limit?: number
+          sms_credits_used?: number
+          sms_enabled?: boolean
+          sms_plan?: string
           sponsor_custom_notes?: string | null
           sponsor_day_of_email_config?: Json | null
           sponsor_email_config?: Json | null
@@ -11359,6 +11420,10 @@ export type Database = {
           skins_entry_fee_cents?: number
           skins_mode?: string
           slug?: string | null
+          sms_credits_limit?: number
+          sms_credits_used?: number
+          sms_enabled?: boolean
+          sms_plan?: string
           sponsor_custom_notes?: string | null
           sponsor_day_of_email_config?: Json | null
           sponsor_email_config?: Json | null
@@ -12103,6 +12168,7 @@ export type Database = {
         }[]
       }
       generate_league_team_scoring_code: { Args: never; Returns: string }
+      generate_team_login_code: { Args: never; Returns: string }
       get_age_update_target: {
         Args: { _token: string }
         Returns: {

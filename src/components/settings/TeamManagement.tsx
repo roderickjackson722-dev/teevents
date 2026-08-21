@@ -399,11 +399,29 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                     <span className="text-sm font-medium text-foreground block truncate">
                       {m.user_id === userId ? "You" : m.name || "Team Member"}
                     </span>
-                    {m.permissions && m.permissions.length > 0 && (
-                      <span className="text-[10px] text-muted-foreground">
-                        {m.permissions.length} permissions
+                    <div className="flex flex-wrap items-center gap-2">
+                      {m.permissions && m.permissions.length > 0 && (
+                        <span className="text-[10px] text-muted-foreground">
+                          {m.permissions.length} permissions
+                        </span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                        <KeyRound className="h-3 w-3" />
+                        Login code:{" "}
+                        {m.login_code ? (
+                          <button
+                            type="button"
+                            onClick={() => copyCode(m.login_code!)}
+                            className="font-mono font-semibold text-foreground tracking-widest hover:underline inline-flex items-center gap-1"
+                            title="Copy login code"
+                          >
+                            {m.login_code} <Copy className="h-3 w-3" />
+                          </button>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
                       </span>
-                    )}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-1 shrink-0">
@@ -412,6 +430,32 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   </Badge>
                   {canManage && m.role !== "owner" && m.user_id !== userId && (
                     <>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-8 px-2 text-xs"
+                        onClick={() => handleGenerateCode(m)}
+                        disabled={codeBusyId === m.id}
+                        title="Generate a 6-character login code for this member"
+                      >
+                        {codeBusyId === m.id ? (
+                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                        ) : (
+                          <><KeyRound className="h-3.5 w-3.5 mr-1" />{m.login_code ? "New Code" : "Generate Code"}</>
+                        )}
+                      </Button>
+                      {m.login_code && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-xs"
+                          onClick={() => handleRevokeCode(m)}
+                          disabled={codeBusyId === m.id}
+                          title="Remove this member's login code"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </Button>
+                      )}
                       <Button
                         variant="ghost"
                         size="sm"
@@ -434,6 +478,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                       </Button>
                     </>
                   )}
+
                   {m.role === "owner" && (
                     <Badge variant="outline" className="text-[10px]">Owner</Badge>
                   )}

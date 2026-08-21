@@ -13,6 +13,8 @@ import Reviews from "./pages/Reviews";
 import Contact from "./pages/Contact";
 import Login from "./pages/Login";
 import AdminLogin from "./pages/AdminLogin";
+import TeamLogin from "./pages/TeamLogin";
+
 import AdminDashboard from "./pages/AdminDashboard";
 import SetupAdmin from "./pages/SetupAdmin";
 import CustomerAuth from "./pages/CustomerAuth";

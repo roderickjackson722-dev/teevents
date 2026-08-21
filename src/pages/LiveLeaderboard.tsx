@@ -696,7 +696,7 @@ export default function LiveLeaderboard() {
   return (
     <>
       <LeaderboardRenderer
-        design={design}
+        design={drillFlight ? { ...design, font_size: "large" } : design}
         title={displayTitle}
         rows={leaderboard}
         isStableford={isStableford}

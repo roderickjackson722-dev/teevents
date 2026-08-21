@@ -42,6 +42,32 @@ export default function Messages() {
     enabled: !!org,
   });
 
+  const { data: smsSettings } = useQuery({
+    queryKey: ["sms-settings", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from("tournaments") as any)
+        .select("sms_enabled, sms_plan, sms_credits_used, sms_credits_limit")
+        .eq("id", selectedTournament)
+        .maybeSingle();
+      if (error) throw error;
+      return data as {
+        sms_enabled: boolean;
+        sms_plan: string;
+        sms_credits_used: number;
+        sms_credits_limit: number;
+      } | null;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const smsEnabled = !!smsSettings?.sms_enabled;
+  const unlimited = smsSettings?.sms_plan === "unlimited";
+  const creditsRemaining = unlimited
+    ? Infinity
+    : Math.max(0, (smsSettings?.sms_credits_limit ?? 0) - (smsSettings?.sms_credits_used ?? 0));
+
+
+
   const { data: recipientCount } = useQuery({
     queryKey: ["sms-recipients", selectedTournament],
     queryFn: async () => {

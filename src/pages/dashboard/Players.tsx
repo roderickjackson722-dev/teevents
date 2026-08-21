@@ -1047,11 +1047,33 @@ const Players = () => {
 
 
   const maxGroupSize = 4;
-  const unassigned = players.filter((p) => p.group_number === null && ageVisible(p));
-  const groupNumbers = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))].sort((a, b) => a - b);
+
+  /**
+   * Pending (unpaid) registrations are never pulled into pairings automatically.
+   * The organizer opts each one in from the "Pending Players" panel, which adds
+   * them to the Unassigned list so they can be dragged onto a hole.
+   */
+  const [includedPendingIds, setIncludedPendingIds] = useState<string[]>([]);
+  const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
+  const includedPending = useMemo(
+    () => pendingPlayers.filter((p) => includedPendingIds.includes(p.id)),
+    [pendingPlayers, includedPendingIds],
+  );
+  const pendingAvailable = useMemo(
+    () => pendingPlayers.filter((p) => !includedPendingIds.includes(p.id) && p.group_number === null),
+    [pendingPlayers, includedPendingIds],
+  );
+  // Players available to the pairings board: all paid players + opted-in pending.
+  const pairingPool = useMemo(
+    () => [...players, ...includedPending, ...pendingPlayers.filter((p) => p.group_number !== null && !includedPendingIds.includes(p.id))],
+    [players, includedPending, pendingPlayers, includedPendingIds],
+  );
+
+  const unassigned = pairingPool.filter((p) => p.group_number === null && ageVisible(p));
+  const groupNumbers = [...new Set(pairingPool.filter((p) => p.group_number !== null).map((p) => p.group_number!))].sort((a, b) => a - b);
   const groupsFromPlayers = groupNumbers.map((num) => ({
     number: num,
-    players: players
+    players: pairingPool
       .filter((p) => p.group_number === num)
       .sort((a, b) => (a.group_position || 0) - (b.group_position || 0)),
   }));
@@ -3286,7 +3308,81 @@ const Players = () => {
             </DialogContent>
           </Dialog>
 
-
+          {/* Pending Players — opt-in only, never auto-added to pairings */}
+          <div className="mb-6 bg-card border border-border rounded-lg">
+            <button
+              type="button"
+              onClick={() => setPendingPanelOpen((o) => !o)}
+              className="w-full flex items-center justify-between px-4 py-3 text-left"
+            >
+              <span className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+                Pending Players ({pendingAvailable.length})
+              </span>
+              <span className="text-xs text-muted-foreground">
+                {pendingPanelOpen ? "Hide" : "Show"}
+              </span>
+            </button>
+            {pendingPanelOpen && (
+              <div className="px-4 pb-4 space-y-3 border-t border-border pt-3">
+                <p className="text-xs text-muted-foreground">
+                  These registrations have not been paid. They are not part of pairings until you add them
+                  manually. Adding a player moves them to Unassigned so you can drag them onto a hole.
+                </p>
+                {pendingAvailable.length === 0 ? (
+                  <p className="text-xs text-muted-foreground text-center py-3">No pending players to add.</p>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      {pendingAvailable.map((p) => (
+                        <div
+                          key={p.id}
+                          className="flex items-center gap-3 bg-background rounded-md border border-border px-3 py-2 text-sm"
+                        >
+                          <span className="font-medium text-foreground">
+                            {p.first_name} {p.last_name}
+                          </span>
+                          <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-muted text-muted-foreground capitalize">
+                            {p.payment_status || "pending"}
+                          </span>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="ml-auto"
+                            disabled={pairingsLocked}
+                            onClick={() => setIncludedPendingIds((ids) => [...ids, p.id])}
+                          >
+                            <UserPlus className="h-3.5 w-3.5 mr-1" /> Add to Unassigned
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+                {includedPending.length > 0 && (
+                  <div className="pt-2 border-t border-border space-y-2">
+                    <p className="text-xs font-medium text-foreground">
+                      Added to pairings ({includedPending.length})
+                    </p>
+                    {includedPending.map((p) => (
+                      <div key={p.id} className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <span>{p.first_name} {p.last_name}</span>
+                        {p.group_number === null && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="ml-auto h-6 px-2"
+                            onClick={() => setIncludedPendingIds((ids) => ids.filter((id) => id !== p.id))}
+                          >
+                            <X className="h-3 w-3 mr-1" /> Remove
+                          </Button>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <DragDropContext onDragEnd={onDragEnd}>
             <div className="grid lg:grid-cols-2 gap-6">

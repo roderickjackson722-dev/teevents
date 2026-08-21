@@ -20,7 +20,12 @@ const PRICES: Record<string, { name: string; cents: number }> = {
   custom_event_page: { name: "Custom Event Page Build Out", cents: 9900 },
   priority_support: { name: "Priority Support", cents: 9900 },
   bundle: { name: "All Add-ons Bundle", cents: 39900 },
+  sms_100: { name: "SMS Blasts – 100 Text Messages", cents: 2900 },
+  sms_unlimited: { name: "SMS Blasts – Unlimited Text Messages", cents: 9900 },
 };
+
+// SMS plans are standalone; the All Add-ons Bundle never includes them.
+const SMS_KEYS = ["sms_100", "sms_unlimited"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -64,7 +69,12 @@ serve(async (req) => {
     if (!membership) throw new Error("You are not a member of this organization");
 
     // If bundle chosen, collapse to just bundle line item
-    const finalAddons: string[] = addons.includes("bundle") ? ["bundle"] : addons;
+    const smsAddons: string[] = addons.filter((a: string) => SMS_KEYS.includes(a));
+    const nonSms: string[] = addons.filter((a: string) => !SMS_KEYS.includes(a));
+    const finalAddons: string[] = [
+      ...(nonSms.includes("bundle") ? ["bundle"] : nonSms),
+      ...smsAddons,
+    ];
 
     const line_items = finalAddons.map((k) => ({
       price_data: {

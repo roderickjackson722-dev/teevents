@@ -57,9 +57,29 @@ serve(async (req) => {
       next["priority_support"] = true;
     }
 
+    const update: Record<string, unknown> = { paid_features: next };
+
+    // SMS Blast plans toggle dedicated columns (1 credit = 1 text message).
+    if (addons.includes("sms_unlimited")) {
+      update["sms_enabled"] = true;
+      update["sms_plan"] = "unlimited";
+      update["sms_credits_limit"] = 0;
+    } else if (addons.includes("sms_100")) {
+      const { data: cur } = await supabaseAdmin
+        .from("tournaments")
+        .select("sms_credits_limit, sms_plan")
+        .eq("id", tournamentId)
+        .maybeSingle();
+      update["sms_enabled"] = true;
+      if ((cur as any)?.sms_plan !== "unlimited") {
+        update["sms_plan"] = "starter";
+        update["sms_credits_limit"] = ((cur as any)?.sms_credits_limit ?? 0) + 100;
+      }
+    }
+
     await supabaseAdmin
       .from("tournaments")
-      .update({ paid_features: next })
+      .update(update)
       .eq("id", tournamentId);
 
     return new Response(

@@ -35,13 +35,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { tournament_id, message, scheduled_for } = await req.json();
+    const { tournament_id, message, scheduled_for, to_phones, test } = await req.json();
     if (!tournament_id || !message) {
       return new Response(
         JSON.stringify({ error: "tournament_id and message are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Manual numbers (test sends or ad-hoc recipients) skip the roster lookup.
+    const manualPhones: string[] = Array.isArray(to_phones)
+      ? to_phones.map((p: string) => String(p).trim()).filter(Boolean)
+      : [];
+    const isTest = !!test;
 
     // If scheduling for later, just insert the record and return
     if (scheduled_for) {
@@ -76,17 +82,26 @@ Deno.serve(async (req) => {
     }
 
     // Send immediately
-    const { data: registrations, error: regError } = await supabase
-      .from("tournament_registrations")
-      .select("first_name, last_name, phone")
-      .eq("tournament_id", tournament_id)
-      .not("phone", "is", null);
+    let recipients: any[] = [];
+    if (manualPhones.length > 0) {
+      recipients = manualPhones.map((phone) => ({
+        first_name: isTest ? "Test" : "Manual",
+        last_name: phone,
+        phone,
+      }));
+    } else {
+      const { data: registrations, error: regError } = await supabase
+        .from("tournament_registrations")
+        .select("first_name, last_name, phone")
+        .eq("tournament_id", tournament_id)
+        .not("phone", "is", null);
 
-    if (regError) throw new Error(`Failed to fetch registrations: ${regError.message}`);
+      if (regError) throw new Error(`Failed to fetch registrations: ${regError.message}`);
 
-    const recipients = (registrations || []).filter(
-      (r: any) => r.phone && r.phone.trim() !== ""
-    );
+      recipients = (registrations || []).filter(
+        (r: any) => r.phone && r.phone.trim() !== ""
+      );
+    }
 
     if (recipients.length === 0) {
       return new Response(
@@ -127,12 +142,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    await supabase.from("tournament_messages").insert({
-      tournament_id,
-      body: message,
-      recipient_count: successCount,
-      status: failCount === 0 ? "sent" : "partial",
-    });
+    // Test sends stay out of the message history.
+    if (!isTest) {
+      await supabase.from("tournament_messages").insert({
+        tournament_id,
+        body: message,
+        recipient_count: successCount,
+        status: failCount === 0 ? "sent" : "partial",
+      });
+    }
 
     return new Response(
       JSON.stringify({ success: true, sent: successCount, failed: failCount, errors: errors.length > 0 ? errors : undefined }),

@@ -13,10 +13,63 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MessageSquare, Send, Users, Clock, CalendarIcon, Timer } from "lucide-react";
+import { MessageSquare, Send, Users, Clock, CalendarIcon, Timer, Phone, CreditCard, FlaskConical } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+
+/** Variables organizers can drop into a text. Mirrors the email template variables. */
+const SMS_VARIABLES: { token: string; label: string }[] = [
+  { token: "{{first_name}}", label: "First name" },
+  { token: "{{last_name}}", label: "Last name" },
+  { token: "{{tournament_name}}", label: "Tournament name" },
+  { token: "{{course_name}}", label: "Course name" },
+  { token: "{{event_date}}", label: "Event date" },
+  { token: "{{tee_time}}", label: "Tee time" },
+  { token: "{{starting_hole}}", label: "Starting hole" },
+  { token: "{{team_name}}", label: "Team name" },
+  { token: "{{scoring_code}}", label: "Scoring code" },
+  { token: "{{leaderboard_link}}", label: "Leaderboard link" },
+];
+
+const SMS_TEMPLATES: { id: string; name: string; body: string }[] = [
+  {
+    id: "registration_confirmation",
+    name: "Registration Confirmation",
+    body:
+      "Hi {{first_name}}! You're registered for {{tournament_name}} on {{event_date}} at {{course_name}}. We'll text your tee time once pairings are set. — TeeVents",
+  },
+  {
+    id: "tee_times",
+    name: "Tee Times",
+    body:
+      "{{first_name}}, your tee time for {{tournament_name}} is {{tee_time}} on hole {{starting_hole}}. Please arrive 30 minutes early to check in.",
+  },
+  {
+    id: "pairings",
+    name: "Pairings",
+    body:
+      "{{first_name}}, pairings are posted for {{tournament_name}}. You're with {{team_name}} starting on hole {{starting_hole}} at {{tee_time}}. Good luck!",
+  },
+  {
+    id: "day_of_reminder",
+    name: "Day-Of Reminder",
+    body:
+      "Today's the day! {{tournament_name}} at {{course_name}}. Your tee time is {{tee_time}} on hole {{starting_hole}}. Live scores: {{leaderboard_link}}",
+  },
+  {
+    id: "scoring_code",
+    name: "Scoring Code",
+    body:
+      "{{first_name}}, enter your scores for {{tournament_name}} with code {{scoring_code}}. Leaderboard: {{leaderboard_link}}",
+  },
+  {
+    id: "weather_delay",
+    name: "Weather / Delay Update",
+    body:
+      "Update for {{tournament_name}}: play is delayed due to weather. We'll text again as soon as we have an updated start time. Thanks for your patience!",
+  },
+];
 
 export default function Messages() {
   const { org, loading: orgLoading } = useOrgContext();
@@ -27,6 +80,9 @@ export default function Messages() {
   const [sendMode, setSendMode] = useState<"now" | "schedule">("now");
   const [scheduleDate, setScheduleDate] = useState<Date>();
   const [scheduleTime, setScheduleTime] = useState("09:00");
+  const [audience, setAudience] = useState<"registered" | "manual">("registered");
+  const [manualNumbers, setManualNumbers] = useState("");
+  const [testNumber, setTestNumber] = useState("");
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
@@ -62,11 +118,10 @@ export default function Messages() {
 
   const smsEnabled = !!smsSettings?.sms_enabled;
   const unlimited = smsSettings?.sms_plan === "unlimited";
-  const creditsRemaining = unlimited
+  // 1 text message = 1 credit. The UI always speaks in text messages.
+  const textsRemaining = unlimited
     ? Infinity
     : Math.max(0, (smsSettings?.sms_credits_limit ?? 0) - (smsSettings?.sms_credits_used ?? 0));
-
-
 
   const { data: recipientCount } = useQuery({
     queryKey: ["sms-recipients", selectedTournament],
@@ -97,6 +152,56 @@ export default function Messages() {
     enabled: !!selectedTournament,
   });
 
+  const parsedManualNumbers = manualNumbers
+    .split(/[\n,;]+/)
+    .map((n) => n.trim())
+    .filter(Boolean);
+
+  const audienceCount = audience === "manual" ? parsedManualNumbers.length : recipientCount ?? 0;
+
+  const insertVariable = (token: string) => setMessage((m) => (m ? `${m}${m.endsWith(" ") ? "" : " "}${token}` : token));
+
+  const purchaseMutation = useMutation({
+    mutationFn: async (addon: "sms_100" | "sms_unlimited") => {
+      if (demoGuard()) throw new Error("Demo mode");
+      const { data, error } = await supabase.functions.invoke("purchase-addons", {
+        body: { tournament_id: selectedTournament, addons: [addon] },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data as { url: string };
+    },
+    onSuccess: (data) => {
+      if (data?.url) window.open(data.url, "_blank");
+    },
+    onError: (error: Error) => {
+      toast({ title: "Could not start checkout", description: error.message, variant: "destructive" });
+    },
+  });
+
+  const testMutation = useMutation({
+    mutationFn: async () => {
+      if (demoGuard()) throw new Error("Demo mode");
+      const { data, error } = await supabase.functions.invoke("send-sms", {
+        body: {
+          tournament_id: selectedTournament,
+          message,
+          to_phones: [testNumber.trim()],
+          test: true,
+        },
+      });
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
+      return data;
+    },
+    onSuccess: () => {
+      toast({ title: "Test text sent", description: `Sent to ${testNumber}. Test sends are not saved to history.` });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Test failed", description: error.message, variant: "destructive" });
+    },
+  });
+
   const sendMutation = useMutation({
     mutationFn: async () => {
       if (demoGuard()) throw new Error("Demo mode");
@@ -109,7 +214,12 @@ export default function Messages() {
       }
 
       const { data, error } = await supabase.functions.invoke("send-sms", {
-        body: { tournament_id: selectedTournament, message, scheduled_for },
+        body: {
+          tournament_id: selectedTournament,
+          message,
+          scheduled_for,
+          ...(audience === "manual" ? { to_phones: parsedManualNumbers } : {}),
+        },
       });
       if (error) throw error;
       if (data?.error) throw new Error(data.error);
@@ -119,18 +229,19 @@ export default function Messages() {
       if (data.scheduled) {
         toast({
           title: "Message scheduled!",
-          description: `SMS will be sent at ${format(new Date(data.scheduled_for), "MMM d, h:mm a")}.`,
+          description: `Text will be sent at ${format(new Date(data.scheduled_for), "MMM d, h:mm a")}.`,
         });
       } else {
         toast({
-          title: "Messages sent!",
-          description: `Successfully sent to ${data.sent} player${data.sent !== 1 ? "s" : ""}.${data.failed ? ` ${data.failed} failed.` : ""}`,
+          title: "Text messages sent!",
+          description: `Successfully sent to ${data.sent} recipient${data.sent !== 1 ? "s" : ""}.${data.failed ? ` ${data.failed} failed.` : ""}`,
         });
       }
       setMessage("");
       setSendMode("now");
       setScheduleDate(undefined);
       queryClient.invalidateQueries({ queryKey: ["tournament-messages"] });
+      queryClient.invalidateQueries({ queryKey: ["sms-settings"] });
     },
     onError: (error: Error) => {
       toast({ title: "Failed to send", description: error.message, variant: "destructive" });
@@ -171,17 +282,17 @@ export default function Messages() {
   const canSend =
     selectedTournament &&
     smsEnabled &&
-    creditsRemaining > 0 &&
+    textsRemaining > 0 &&
     message.trim() &&
     !sendMutation.isPending &&
-    recipientCount !== 0 &&
+    audienceCount > 0 &&
     (sendMode === "now" || (sendMode === "schedule" && scheduleDate));
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold tracking-tight">SMS Blasts</h1>
-        <p className="text-muted-foreground">Send text message updates to registered players.</p>
+        <p className="text-muted-foreground">Send text message updates to registered players or any phone number.</p>
       </div>
 
       {selectedTournament && !smsEnabled && (
@@ -189,10 +300,25 @@ export default function Messages() {
           <CardHeader>
             <CardTitle className="text-base">SMS Blasts is a paid add-on</CardTitle>
             <CardDescription>
-              Text messaging is not enabled for this tournament yet. Plans: $29/event for 100 credits, or
-              $99/event for unlimited texts. Contact TeeVents at info@teevents.golf to turn it on.
+              Text messaging isn't enabled for this tournament yet. 1 text message = 1 credit, so 100 text
+              messages means 100 individual texts sent to players.
             </CardDescription>
           </CardHeader>
+          <CardContent className="flex flex-wrap gap-3">
+            <Button
+              onClick={() => purchaseMutation.mutate("sms_100")}
+              disabled={purchaseMutation.isPending}
+            >
+              <CreditCard className="mr-2 h-4 w-4" /> Buy 100 Text Messages – $29
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => purchaseMutation.mutate("sms_unlimited")}
+              disabled={purchaseMutation.isPending}
+            >
+              <CreditCard className="mr-2 h-4 w-4" /> Unlimited Text Messages – $99
+            </Button>
+          </CardContent>
         </Card>
       )}
 
@@ -201,18 +327,36 @@ export default function Messages() {
           <CardContent className="flex flex-wrap items-center gap-6 py-4">
             <div>
               <p className="text-xs text-muted-foreground">Plan</p>
-              <p className="font-semibold capitalize">{unlimited ? "Unlimited" : "100 credits"}</p>
+              <p className="font-semibold capitalize">{unlimited ? "Unlimited texts" : "100 text messages"}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Credits used</p>
+              <p className="text-xs text-muted-foreground">Text messages sent</p>
               <p className="font-semibold">{smsSettings?.sms_credits_used ?? 0}</p>
             </div>
             <div>
-              <p className="text-xs text-muted-foreground">Remaining</p>
-              <p className="font-semibold">{unlimited ? "Unlimited" : creditsRemaining}</p>
+              <p className="text-xs text-muted-foreground">Text messages remaining</p>
+              <p className="font-semibold">{unlimited ? "Unlimited" : textsRemaining}</p>
             </div>
-            {!unlimited && creditsRemaining === 0 && (
-              <Badge variant="destructive">Out of credits</Badge>
+            {!unlimited && (
+              <div className="ml-auto flex items-center gap-2">
+                {textsRemaining === 0 && <Badge variant="destructive">Out of text messages</Badge>}
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => purchaseMutation.mutate("sms_100")}
+                  disabled={purchaseMutation.isPending}
+                >
+                  <CreditCard className="mr-2 h-3.5 w-3.5" /> Add 100 texts – $29
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => purchaseMutation.mutate("sms_unlimited")}
+                  disabled={purchaseMutation.isPending}
+                >
+                  Go unlimited – $99
+                </Button>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -224,7 +368,7 @@ export default function Messages() {
             <CardTitle className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5" /> Compose Message
             </CardTitle>
-            <CardDescription>Send or schedule a text message to all registered players with phone numbers.</CardDescription>
+            <CardDescription>Send or schedule a text to registered players or a list of phone numbers you enter.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
 
@@ -242,6 +386,26 @@ export default function Messages() {
               </Select>
             </div>
 
+            {/* Template picker */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Message template</label>
+              <Select
+                onValueChange={(id) => {
+                  const tpl = SMS_TEMPLATES.find((t) => t.id === id);
+                  if (tpl) setMessage(tpl.body);
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Start from a template (optional)" />
+                </SelectTrigger>
+                <SelectContent>
+                  {SMS_TEMPLATES.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Message</label>
               <Textarea
@@ -252,6 +416,92 @@ export default function Messages() {
                 maxLength={1600}
               />
               <p className="text-xs text-muted-foreground">{message.length}/1600 characters</p>
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {SMS_VARIABLES.map((v) => (
+                  <Button
+                    key={v.token}
+                    type="button"
+                    size="sm"
+                    variant="outline"
+                    className="h-7 px-2 text-xs"
+                    onClick={() => insertVariable(v.token)}
+                  >
+                    {v.label}
+                  </Button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Variables are replaced per recipient when the text is sent.
+              </p>
+            </div>
+
+            {/* Audience */}
+            <div className="space-y-3">
+              <label className="text-sm font-medium">Send to</label>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={audience === "registered" ? "default" : "outline"}
+                  onClick={() => setAudience("registered")}
+                >
+                  <Users className="mr-1.5 h-3.5 w-3.5" /> Registered players
+                </Button>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant={audience === "manual" ? "default" : "outline"}
+                  onClick={() => setAudience("manual")}
+                >
+                  <Phone className="mr-1.5 h-3.5 w-3.5" /> Phone numbers I enter
+                </Button>
+              </div>
+              {audience === "manual" && (
+                <div className="space-y-2 rounded-lg border p-3 bg-muted/30">
+                  <label className="text-xs font-medium text-muted-foreground">
+                    Phone numbers (one per line, or comma separated)
+                  </label>
+                  <Textarea
+                    rows={3}
+                    placeholder={"+14045551234\n+14045555678"}
+                    value={manualNumbers}
+                    onChange={(e) => setManualNumbers(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    {parsedManualNumbers.length} number{parsedManualNumbers.length !== 1 ? "s" : ""} — use E.164 format
+                    (+1 then the 10-digit number).
+                  </p>
+                </div>
+              )}
+            </div>
+
+            {/* Test send */}
+            <div className="space-y-2 rounded-lg border p-3">
+              <label className="text-sm font-medium flex items-center gap-2">
+                <FlaskConical className="h-4 w-4" /> Send a test text
+              </label>
+              <div className="flex flex-wrap gap-2">
+                <Input
+                  className="max-w-[220px]"
+                  placeholder="+14045551234"
+                  value={testNumber}
+                  onChange={(e) => setTestNumber(e.target.value)}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => testMutation.mutate()}
+                  disabled={
+                    !selectedTournament || !smsEnabled || !message.trim() || !testNumber.trim() || testMutation.isPending
+                  }
+                >
+                  <Send className="mr-2 h-4 w-4" />
+                  {testMutation.isPending ? "Sending..." : "Send test"}
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Test texts go only to this number and aren't saved to message history.
+              </p>
             </div>
 
             {/* Send mode toggle */}
@@ -322,7 +572,8 @@ export default function Messages() {
               {selectedTournament && (
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Users className="h-4 w-4" />
-                  {recipientCount ?? "..."} recipient{recipientCount !== 1 ? "s" : ""} with phone numbers
+                  {audienceCount} recipient{audienceCount !== 1 ? "s" : ""} — uses {audienceCount} text message
+                  {audienceCount !== 1 ? "s" : ""}
                 </div>
               )}
               <Button
@@ -373,7 +624,7 @@ export default function Messages() {
                 <p className="text-2xl font-bold">
                   {messageHistory?.reduce((sum, m) => sum + (m.recipient_count || 0), 0) ?? 0}
                 </p>
-                <p className="text-xs text-muted-foreground">Total SMS delivered</p>
+                <p className="text-xs text-muted-foreground">Text messages delivered</p>
               </div>
             </div>
           </CardContent>

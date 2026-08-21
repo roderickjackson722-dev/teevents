@@ -499,6 +499,40 @@ const Tournaments = () => {
           ))}
         </div>
       )}
+
+      {sharedTournaments.length > 0 && (
+        <div className="mt-10">
+          <h2 className="text-xl font-display font-bold text-foreground mb-1">Shared With Me</h2>
+          <p className="text-muted-foreground text-sm mb-4">
+            Tournaments you were invited to as a team member.
+          </p>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {sharedTournaments.map((t: any) => (
+              <div key={t.id} className="bg-card rounded-lg border border-border p-5">
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="font-display font-bold text-foreground">{t.title}</h3>
+                  <span className="text-xs rounded-full bg-secondary px-2 py-0.5 text-secondary-foreground capitalize">
+                    {String(t.role || "viewer").replace("_", " ")}
+                  </span>
+                </div>
+                {t.date && (
+                  <p className="text-sm text-muted-foreground flex items-center gap-1">
+                    <Calendar className="h-3.5 w-3.5" />
+                    {t.date}
+                  </p>
+                )}
+                <Link
+                  to={buildLink(`/dashboard?tournament_id=${t.id}`)}
+                  className="mt-4 inline-flex items-center gap-1 text-sm font-medium text-primary"
+                >
+                  Open dashboard
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

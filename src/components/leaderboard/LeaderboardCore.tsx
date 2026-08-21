@@ -451,15 +451,15 @@ export function LeaderboardRenderer({
           </div>
           {/* Right logo replaces the trophy icon when the organizer uploads one. */}
           {design.right_logo_url ? (
-            <div className="shrink-0 rounded bg-white/95 p-1.5 flex items-center justify-center">
+            <div className="shrink-0 rounded bg-white/95 p-1 flex items-center justify-center">
               <img
                 src={design.right_logo_url}
                 alt=""
-                className={`${compact ? "h-6" : "h-12 sm:h-16"} w-auto max-w-[140px] object-contain`}
+                className={`${compact ? "h-6" : "h-8 sm:h-12 md:h-16"} w-auto max-w-[60px] sm:max-w-[100px] md:max-w-[160px] object-contain`}
               />
             </div>
           ) : (
-            <Trophy className={`shrink-0 ${compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"}`} style={{ color: accent }} />
+            <Trophy className={`shrink-0 ${compact ? "h-4 w-4" : "h-6 w-6 sm:h-10 sm:w-10 md:h-12 md:w-12"}`} style={{ color: accent }} />
           )}
         </div>
         {!compact && presentedBy && (

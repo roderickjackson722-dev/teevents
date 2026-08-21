@@ -154,7 +154,10 @@ function InlineHoleEditor({
   );
 }
 
-export default function Leaderboard() {
+export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings" | "entry" }) {
+  const showEntry = mode !== "settings";
+  const showSettings = mode !== "entry";
+
 
   const { org, loading: orgLoading } = useOrgContext();
   const queryClient = useQueryClient();
@@ -867,7 +870,7 @@ export default function Leaderboard() {
       )}
 
       {/* ===== SEARCH + PROGRESS ===== */}
-      {selectedTournament && (
+      {showEntry && selectedTournament && (
         <div className="space-y-3">
           <div className="flex items-center gap-2 flex-wrap">
             <div className="relative w-full sm:w-[320px]">
@@ -948,7 +951,7 @@ export default function Leaderboard() {
       )}
 
       {/* ===== TEAM LEADERBOARD ===== */}
-      {selectedTournament && isTeamFormat && teamScores.length > 0 && (
+      {showEntry && selectedTournament && isTeamFormat && teamScores.length > 0 && (
 
         <Card>
           <CardHeader>
@@ -1063,7 +1066,7 @@ export default function Leaderboard() {
       )}
 
       {/* ===== STABLEFORD LEADERBOARD ===== */}
-      {selectedTournament && isStableford && stablefordScores.length > 0 && (
+      {showEntry && selectedTournament && isStableford && stablefordScores.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 flex-wrap">
@@ -1138,7 +1141,7 @@ export default function Leaderboard() {
       )}
 
       {/* ===== INDIVIDUAL SCORECARD (stroke play only — team formats score from the team leaderboard) ===== */}
-      {selectedTournament && !isTeamFormat && (
+      {showEntry && selectedTournament && !isTeamFormat && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 flex-wrap">
@@ -1289,7 +1292,7 @@ export default function Leaderboard() {
         </Card>
       )}
 
-      {selectedTournament && (
+      {showSettings && selectedTournament && (
         <LeaderboardFreezeCard
           tournamentId={selectedTournament}
           frozenAt={frozenAt}
@@ -1298,21 +1301,21 @@ export default function Leaderboard() {
         />
       )}
 
-      {selectedTournament && (
+      {showSettings && selectedTournament && (
         <LeaderboardHeaderCard
           tournamentId={selectedTournament}
           onSaved={() => queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] })}
         />
       )}
 
-      {selectedTournament && (
+      {showSettings && selectedTournament && (
         <LiveDisplayShareCard
           tournamentId={selectedTournament}
           tournamentSlug={selectedTournamentData?.slug || null}
         />
       )}
 
-      {selectedTournament && (
+      {showSettings && selectedTournament && (
         <LeaderboardDesignCard
           tournamentId={selectedTournament}
           tournamentSlug={selectedTournamentData?.slug || null}
@@ -1320,25 +1323,25 @@ export default function Leaderboard() {
         />
       )}
 
-      {selectedTournament && (
+      {showSettings && selectedTournament && (
         <TickerSponsorsCard tournamentId={selectedTournament} />
       )}
 
-      {selectedTournament && org && (
+      {showSettings && selectedTournament && org && (
         <LeaderboardSponsorCard tournamentId={selectedTournament} orgId={org.orgId} />
       )}
 
 
-      {selectedTournament && org && (
+      {showSettings && selectedTournament && org && (
         <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
       )}
 
       {/* Edit history lives at the very bottom of the page */}
-      {selectedTournament && (
+      {showEntry && selectedTournament && (
         <ScoreEditHistory tournamentId={selectedTournament} />
       )}
 
-      {selectedTournament && (
+      {showSettings && selectedTournament && (
         <LeaderboardResetCard
           tournamentId={selectedTournament}
           canManage={canManageFreeze}

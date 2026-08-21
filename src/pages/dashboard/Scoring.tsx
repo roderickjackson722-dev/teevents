@@ -17,10 +17,9 @@ import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
 import HandicapSettings from "@/components/dashboard/HandicapSettings";
 import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
-import ScoringPageSponsorsCard from "@/components/dashboard/ScoringPageSponsorsCard";
 
 
-export default function Scoring() {
+export default function Scoring({ embedded = false }: { embedded?: boolean }) {
   const { org, loading: orgLoading } = useOrgContext();
   const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [searchParams, setSearchParams] = useSearchParams();
@@ -98,11 +97,14 @@ export default function Scoring() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold tracking-tight">Scoring</h1>
-        <p className="text-muted-foreground">Manage live scoring, QR codes, and scoring links for your tournaments.</p>
-      </div>
+      {!embedded && (
+        <div>
+          <h1 className="text-2xl font-bold tracking-tight">Scoring</h1>
+          <p className="text-muted-foreground">Manage live scoring, QR codes, and scoring links for your tournaments.</p>
+        </div>
+      )}
 
+      {!embedded && (
       <Select value={selectedTournament} onValueChange={setSelectedTournament}>
         <SelectTrigger className="w-[300px]">
           <SelectValue placeholder="Select a tournament" />
@@ -113,6 +115,7 @@ export default function Scoring() {
           ))}
         </SelectContent>
       </Select>
+      )}
 
       {!selectedTournament && (
         <Card>
@@ -140,9 +143,6 @@ export default function Scoring() {
             </TabsTrigger>
             <TabsTrigger value="live-settings">
               <SettingsIcon className="h-4 w-4 mr-1.5" /> Live Settings
-            </TabsTrigger>
-            <TabsTrigger value="sponsors">
-              <Trophy className="h-4 w-4 mr-1.5" /> Sponsors
             </TabsTrigger>
           </TabsList>
 
@@ -389,11 +389,6 @@ export default function Scoring() {
             <LiveLeaderboardSettings tournamentId={selectedTournament} />
           </TabsContent>
 
-          {/* ===== SPONSOR DISPLAY TAB ===== */}
-          <TabsContent value="sponsors" className="space-y-4">
-            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_scoring_page" />
-            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_leaderboard" />
-          </TabsContent>
 
 
 

@@ -1054,6 +1054,7 @@ const Players = () => {
    * them to the Unassigned list so they can be dragged onto a hole.
    */
   const [includedPendingIds, setIncludedPendingIds] = useState<string[]>([]);
+  const [pendingPanelOpen, setPendingPanelOpen] = useState(false);
   const includedPending = useMemo(
     () => pendingPlayers.filter((p) => includedPendingIds.includes(p.id)),
     [pendingPlayers, includedPendingIds],

@@ -736,7 +736,6 @@ export default function LiveLeaderboard() {
 
       />
       {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
-      <BrandingTagline tournament={tournament as any} />
       <PlayerScorecardDialog
         open={!!scorecardRow}
         onOpenChange={(v) => !v && setScorecardRow(null)}

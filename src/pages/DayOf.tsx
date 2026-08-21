@@ -667,7 +667,6 @@ function DayOfInner() {
 
       </main>
       {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
-      <BrandingTagline tournament={tournament as any} />
     </div>
   );
 }

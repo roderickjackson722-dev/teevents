@@ -526,8 +526,23 @@ export default function GroupScoring() {
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 text-destructive"
+                    disabled={!!editLocked || clearing || teamSaved == null}
+                    onClick={() => clearHoleScore(currentHole)}
+                    aria-label="Clear team score for this hole"
+                    title="Clear this hole's score"
+                  >
+                    <Eraser className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Wrong hole? Tap the eraser to clear this hole's score.
+              </p>
               {teamNum == null && (
                 <p className="text-xs text-muted-foreground italic">Tap +/- to enter the team score for this hole.</p>
               )}

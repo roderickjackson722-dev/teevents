@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
-import { Copy, RotateCcw, Save, ExternalLink, Tv2 } from "lucide-react";
+import { Copy, RotateCcw, Save, ExternalLink, Tv2, Upload, X, Loader2 } from "lucide-react";
 
 
 export interface LeaderboardDesign {
@@ -520,6 +520,58 @@ function Color({ label, value, onChange }: { label: string; value: string; onCha
       <div className="flex items-center gap-2">
         <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-10 w-12 rounded border cursor-pointer bg-transparent shrink-0" />
         <Input value={value} onChange={(e) => onChange(e.target.value)} className="flex-1 text-xs font-mono" />
+      </div>
+    </div>
+  );
+}
+
+/** Upload / preview / clear control for a leaderboard logo. */
+function LogoField({
+  label,
+  value,
+  uploading,
+  onUpload,
+  onClear,
+}: {
+  label: string;
+  value: string;
+  uploading: boolean;
+  onUpload: (file: File) => void;
+  onClear: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-3 mt-1">
+        {value ? (
+          <div className="relative">
+            <img src={value} alt={label} className="h-14 max-w-[160px] object-contain bg-white rounded border p-1" />
+            <button
+              type="button"
+              onClick={onClear}
+              aria-label={`Remove ${label}`}
+              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <div className="h-14 w-32 border-2 border-dashed rounded flex items-center justify-center text-xs text-muted-foreground">
+            No logo
+          </div>
+        )}
+        <input
+          ref={ref}
+          type="file"
+          accept="image/png,image/jpeg,image/svg+xml,image/webp"
+          hidden
+          onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
+        />
+        <Button type="button" variant="outline" size="sm" onClick={() => ref.current?.click()} disabled={uploading}>
+          {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
+          {value ? "Replace" : "Choose File"}
+        </Button>
       </div>
     </div>
   );

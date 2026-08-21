@@ -34,6 +34,9 @@ import {
   Crown,
   RotateCcw,
   Pencil,
+  CalendarClock,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
 import RefundManagement from "@/components/dashboard/RefundManagement";

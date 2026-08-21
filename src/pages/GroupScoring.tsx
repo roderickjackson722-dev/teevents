@@ -530,13 +530,13 @@ export default function GroupScoring() {
                     type="button"
                     variant="outline"
                     size="icon"
-                    className="h-10 w-10 text-destructive"
+                    className="h-7 w-7 -mr-1 text-destructive"
                     disabled={!!editLocked || clearing || teamSaved == null}
                     onClick={() => clearHoleScore(currentHole)}
                     aria-label="Clear team score for this hole"
                     title="Clear this hole's score"
                   >
-                    <Eraser className="h-4 w-4" />
+                    <Eraser className="h-3.5 w-3.5" />
                   </Button>
                 </div>
               </div>

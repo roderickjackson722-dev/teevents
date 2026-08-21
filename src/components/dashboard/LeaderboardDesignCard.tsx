@@ -536,13 +536,19 @@ function LogoField({
   uploading,
   onUpload,
   onClear,
+  orgLogoUrl,
+  onUseOrgLogo,
 }: {
   label: string;
   value: string;
   uploading: boolean;
   onUpload: (file: File) => void;
   onClear: () => void;
+  /** Organizer logo already shown on the public tournament page, if any. */
+  orgLogoUrl?: string | null;
+  onUseOrgLogo?: () => void;
 }) {
+
   const ref = useRef<HTMLInputElement>(null);
   return (
     <div>

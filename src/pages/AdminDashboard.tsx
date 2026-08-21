@@ -833,6 +833,12 @@ const AdminDashboard = () => {
                 >
                   <CalendarClock className="h-4 w-4" /> Scheduled Emails
                 </button>
+                <button
+                  onClick={() => navigate("/admin/sms-settings")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Mail className="h-4 w-4" /> SMS Settings
+                </button>
 
                 <button
                   onClick={() => navigate("/admin/platform-tournaments")}

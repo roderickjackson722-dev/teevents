@@ -151,7 +151,9 @@ export function LeaderboardRenderer({
   const textColor = design.text_color;
   const accent = design.accent_color;
   const showSponsorBanner = design.show_sponsor_banner !== false;
+  const titleAlign = design.title_align || "center";
   const sponsorPos = design.sponsor_banner_position || "top";
+
   const perPage = Math.max(1, design.max_rows || 20);
   /**
    * Page-by-page rotation. Every name in the field/flight is shown: the board

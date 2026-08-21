@@ -382,7 +382,12 @@ const Registration = () => {
     const { error } = await supabase.from("tournaments").update(updates).eq("id", selectedTournament);
     if (error) toast.error(error.message);
     else {
-      toast.success("Registration settings saved!");
+      setSavedCloseAt(updates.registration_close_at as string | null);
+      if (updates.registration_close_at) {
+        toast.success(`Saved — registration closes ${formatCloseAt(updates.registration_close_at as string)}`);
+      } else {
+        toast.success("Registration settings saved!");
+      }
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selectedTournament

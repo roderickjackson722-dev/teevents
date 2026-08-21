@@ -1,14 +1,20 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle, Send } from "lucide-react";
+import { Users, Mail, Shield, Trash2, Loader2, Plus, Pencil, X, Check, AlertTriangle, Send, KeyRound, Copy, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { motion } from "framer-motion";
+import {
+  generateTeamLoginCode,
+  revokeTeamLoginCode,
+  adminImpersonateTeamMember,
+} from "@/lib/teamLogin.functions";
 import {
   Dialog,
   DialogContent,
@@ -16,6 +22,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+
 
 const ALL_PERMISSIONS = [
   { id: "manage_players", label: "Players" },

@@ -108,6 +108,8 @@ interface RendererProps {
   onRowClick?: (row: LbRow) => void;
   /** Clicking a board title drills down into that flight full-screen. */
   onBoardSelect?: (key: string, label: string) => void;
+  /** Heading for the single (non-grid) board, eg. "Professionals Leaderboard". */
+  singleBoardLabel?: string;
 }
 
 
@@ -142,6 +144,7 @@ export function LeaderboardRenderer({
   currentRound,
   onRowClick,
   onBoardSelect,
+  singleBoardLabel = "Leaderboard",
 
 }: RendererProps) {
 

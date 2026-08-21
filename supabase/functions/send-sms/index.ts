@@ -82,17 +82,26 @@ Deno.serve(async (req) => {
     }
 
     // Send immediately
-    const { data: registrations, error: regError } = await supabase
-      .from("tournament_registrations")
-      .select("first_name, last_name, phone")
-      .eq("tournament_id", tournament_id)
-      .not("phone", "is", null);
+    let recipients: any[] = [];
+    if (manualPhones.length > 0) {
+      recipients = manualPhones.map((phone) => ({
+        first_name: isTest ? "Test" : "Manual",
+        last_name: phone,
+        phone,
+      }));
+    } else {
+      const { data: registrations, error: regError } = await supabase
+        .from("tournament_registrations")
+        .select("first_name, last_name, phone")
+        .eq("tournament_id", tournament_id)
+        .not("phone", "is", null);
 
-    if (regError) throw new Error(`Failed to fetch registrations: ${regError.message}`);
+      if (regError) throw new Error(`Failed to fetch registrations: ${regError.message}`);
 
-    const recipients = (registrations || []).filter(
-      (r: any) => r.phone && r.phone.trim() !== ""
-    );
+      recipients = (registrations || []).filter(
+        (r: any) => r.phone && r.phone.trim() !== ""
+      );
+    }
 
     if (recipients.length === 0) {
       return new Response(

@@ -370,8 +370,12 @@ export default function LiveLeaderboard() {
       setFlights(fRes.data || []);
       const map: Record<string, string | null> = {};
       (rRes.data || []).forEach((r: any) => { map[r.id] = r.flight_id; });
-      setRegFlights(map);
+      // Anonymous viewers cannot read tournament_registrations, so this map can
+      // come back empty; the scores RPC also carries flight_id per row (see
+      // flightOf below), which keeps the division boards populated publicly.
+      setRegFlights((prev) => ({ ...prev, ...map }));
     });
+
   }, [tournament]);
 
   // Realtime score updates
@@ -535,16 +539,27 @@ export default function LiveLeaderboard() {
   const flightMode = flights.length > 1 ? design.flight_display_mode || "tabs" : "tabs";
 
   // Auto-rotate mode: cycle flights (and Overall, when included) on a timer.
+  // Divisions with no posted scores are skipped so the board never parks on an
+  // empty "Scoring hasn't started yet" flight while other divisions have scores.
   const rotateKeys = useMemo(() => {
-    const keys = flights.map((f) => f.id);
+    const scored = new Set<string>();
+    scores.forEach((s: any) => {
+      const fid = (s?.flight_id as string | null) ?? regFlights[s?.registration_id] ?? null;
+      if (fid) scored.add(fid);
+    });
+    const withScores = flights.filter((f) => scored.has(f.id)).map((f) => f.id);
+    const keys = withScores.length > 0 ? withScores : flights.map((f) => f.id);
     if (design.flight_include_overall !== false) keys.push("__overall");
     return keys;
-  }, [flights, design.flight_include_overall]);
+  }, [flights, design.flight_include_overall, scores, regFlights]);
 
   useEffect(() => {
-    if (flightMode !== "rotate" || rotateKeys.length < 2) return;
+    // An explicit ?flight= request wins over rotation so a player's link stays put.
+    if (requestedFlight) return;
+    if (flightMode !== "rotate" || rotateKeys.length === 0) return;
     const seconds = Math.max(5, design.flight_rotate_seconds || 15);
-    setActiveFlight(rotateKeys[0]);
+    setActiveFlight((cur) => (rotateKeys.includes(cur) ? cur : rotateKeys[0]));
+    if (rotateKeys.length < 2) return;
     const t = setInterval(() => {
       setActiveFlight((cur) => {
         const i = rotateKeys.indexOf(cur);
@@ -552,12 +567,21 @@ export default function LiveLeaderboard() {
       });
     }, seconds * 1000);
     return () => clearInterval(t);
-  }, [flightMode, rotateKeys, design.flight_rotate_seconds]);
+  }, [flightMode, rotateKeys, design.flight_rotate_seconds, requestedFlight]);
+
+
+  /**
+   * Division/flight for a score row. The scores RPC carries flight_id (works for
+   * anonymous viewers); the registration map is only a fallback for organizers.
+   */
+  const flightOf = (s: any): string | null =>
+    (s?.flight_id as string | null) ?? regFlights[s?.registration_id] ?? null;
 
   const filteredScores = useMemo(() => {
     if (flights.length === 0 || activeFlight === "__overall") return scores;
-    return scores.filter((s: any) => regFlights[s.registration_id] === activeFlight);
+    return scores.filter((s: any) => flightOf(s) === activeFlight);
   }, [scores, regFlights, flights.length, activeFlight]);
+
 
   const holePars = (course?.hole_pars as number[] | null) || null;
 
@@ -581,7 +605,7 @@ export default function LiveLeaderboard() {
       key: f.id,
       label: f.tier_name,
       rows: buildLeaderboard(
-        scores.filter((s: any) => regFlights[s.registration_id] === f.id),
+        scores.filter((s: any) => flightOf(s) === f.id),
         tournament,
         holePars,
       ),

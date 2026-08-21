@@ -154,7 +154,10 @@ function InlineHoleEditor({
   );
 }
 
-export default function Leaderboard() {
+export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings" | "entry" }) {
+  const showEntry = mode !== "settings";
+  const showSettings = mode !== "entry";
+
 
   const { org, loading: orgLoading } = useOrgContext();
   const queryClient = useQueryClient();

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
-import { Copy, RotateCcw, Save, ExternalLink, Tv2 } from "lucide-react";
+import { Copy, RotateCcw, Save, ExternalLink, Tv2, Upload, X, Loader2 } from "lucide-react";
 
 
 export interface LeaderboardDesign {
@@ -44,6 +44,18 @@ export interface LeaderboardDesign {
   flight_rotate_seconds: number;
   /** Include a combined "Overall" board alongside the flights. */
   flight_include_overall: boolean;
+  /** Where the tournament title sits in the header. */
+  title_align: "center" | "left" | "right";
+  /** Logo shown to the left of the tournament title. */
+  left_logo_url: string;
+  /** Logo shown to the right of the title (replaces the trophy icon). */
+  right_logo_url: string;
+  /** Overrides the date shown under the leaderboard title. */
+  display_date: string;
+  /** Whether long fields scroll on one page or rotate page by page. */
+  row_paging_mode: "scroll" | "pages";
+  /** Seconds each page of names stays on screen in page-by-page mode. */
+  row_page_seconds: number;
 }
 
 export const DEFAULT_DESIGN: LeaderboardDesign = {
@@ -74,7 +86,14 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   flight_columns: 2,
   flight_rotate_seconds: 15,
   flight_include_overall: true,
+  title_align: "center",
+  left_logo_url: "",
+  right_logo_url: "",
+  display_date: "",
+  row_paging_mode: "pages",
+  row_page_seconds: 10,
 };
+
 
 
 const FONT_OPTIONS = ["Inter", "Roboto", "Montserrat", "Open Sans", "Lato", "Poppins"];
@@ -83,12 +102,36 @@ const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 
 interface Props {
   tournamentId: string;
   tournamentSlug: string | null;
+  /** Organization id — used as the storage folder for uploaded logos. */
+  orgId?: string;
 }
 
-export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: Props) {
+export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, orgId }: Props) {
   const [design, setDesign] = useState<LeaderboardDesign>(DEFAULT_DESIGN);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
+
+  const uploadLogo = async (
+    field: "left_logo_url" | "right_logo_url",
+    file: File,
+  ) => {
+    setUploading(field);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${orgId || "shared"}/${tournamentId}/leaderboard-${field}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      setDesign((d) => ({ ...d, [field]: data.publicUrl }));
+      toast({ title: "Logo uploaded", description: "Remember to save your leaderboard design." });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploading(null);
+    }
+  };
+
 
   useEffect(() => {
     if (!tournamentId) return;
@@ -226,6 +269,100 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: 
             </div>
           </div>
         </section>
+
+        {/* BRANDING & LOGOS */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Leaderboard Branding</Label>
+          <div>
+            <Label className="text-xs">Title Alignment</Label>
+            <RadioGroup
+              value={design.title_align}
+              onValueChange={(v) => update("title_align", v as LeaderboardDesign["title_align"])}
+              className="flex flex-wrap gap-4 mt-1"
+            >
+              <RadioOpt value="center" label="Center" />
+              <RadioOpt value="left" label="Left" />
+              <RadioOpt value="right" label="Right" />
+            </RadioGroup>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <LogoField
+              label="Left Logo"
+              value={design.left_logo_url}
+              uploading={uploading === "left_logo_url"}
+              onUpload={(f) => uploadLogo("left_logo_url", f)}
+              onClear={() => update("left_logo_url", "")}
+            />
+            <LogoField
+              label="Right Logo (replaces trophy icon)"
+              value={design.right_logo_url}
+              uploading={uploading === "right_logo_url"}
+              onUpload={(f) => uploadLogo("right_logo_url", f)}
+              onClear={() => update("right_logo_url", "")}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Logos render on a light plate so they stay visible on dark leaderboard backgrounds.
+            Use the "Presented by" card below to set the headline sponsor text and logo.
+          </p>
+        </section>
+
+        {/* LEADERBOARD DATE */}
+        <section className="space-y-2 border-t pt-5">
+          <Label className="text-base font-semibold">Leaderboard Date</Label>
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <Label className="text-xs">Display Date</Label>
+              <Input
+                type="date"
+                value={design.display_date}
+                onChange={(e) => update("display_date", e.target.value)}
+                className="w-[200px]"
+              />
+            </div>
+            {design.display_date && (
+              <Button type="button" variant="ghost" size="sm" onClick={() => update("display_date", "")}>
+                Use tournament date
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            This date appears on the live leaderboard. Leave blank to use the tournament start date.
+          </p>
+        </section>
+
+        {/* ROTATION / PAGING */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Rotation Settings</Label>
+          <div>
+            <Label className="text-xs">Display</Label>
+            <RadioGroup
+              value={design.row_paging_mode}
+              onValueChange={(v) => update("row_paging_mode", v as LeaderboardDesign["row_paging_mode"])}
+              className="flex flex-col gap-2 mt-1"
+            >
+              <RadioOpt value="scroll" label="All names on one page (scrolling)" />
+              <RadioOpt value="pages" label="Page by page (rotate through pages)" />
+            </RadioGroup>
+          </div>
+          {design.row_paging_mode === "pages" && (
+            <div>
+              <Label className="text-xs">Rotation Speed: {design.row_page_seconds}s per page</Label>
+              <Slider
+                min={3}
+                max={60}
+                step={1}
+                value={[design.row_page_seconds]}
+                onValueChange={([v]) => update("row_page_seconds", v)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Every name in the field or flight is shown — the board advances to the next page until it loops back to the top.
+              </p>
+            </div>
+          )}
+        </section>
+
+
 
         {/* SPONSOR BANNER */}
         <section className="space-y-3 border-t pt-5">
@@ -383,6 +520,58 @@ function Color({ label, value, onChange }: { label: string; value: string; onCha
       <div className="flex items-center gap-2">
         <input type="color" value={value} onChange={(e) => onChange(e.target.value)} className="h-10 w-12 rounded border cursor-pointer bg-transparent shrink-0" />
         <Input value={value} onChange={(e) => onChange(e.target.value)} className="flex-1 text-xs font-mono" />
+      </div>
+    </div>
+  );
+}
+
+/** Upload / preview / clear control for a leaderboard logo. */
+function LogoField({
+  label,
+  value,
+  uploading,
+  onUpload,
+  onClear,
+}: {
+  label: string;
+  value: string;
+  uploading: boolean;
+  onUpload: (file: File) => void;
+  onClear: () => void;
+}) {
+  const ref = useRef<HTMLInputElement>(null);
+  return (
+    <div>
+      <Label className="text-xs">{label}</Label>
+      <div className="flex items-center gap-3 mt-1">
+        {value ? (
+          <div className="relative">
+            <img src={value} alt={label} className="h-14 max-w-[160px] object-contain bg-white rounded border p-1" />
+            <button
+              type="button"
+              onClick={onClear}
+              aria-label={`Remove ${label}`}
+              className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
+            >
+              <X className="h-3 w-3" />
+            </button>
+          </div>
+        ) : (
+          <div className="h-14 w-32 border-2 border-dashed rounded flex items-center justify-center text-xs text-muted-foreground">
+            No logo
+          </div>
+        )}
+        <input
+          ref={ref}
+          type="file"
+          accept="image/png,image/jpeg,image/svg+xml,image/webp"
+          hidden
+          onChange={(e) => e.target.files?.[0] && onUpload(e.target.files[0])}
+        />
+        <Button type="button" variant="outline" size="sm" onClick={() => ref.current?.click()} disabled={uploading}>
+          {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
+          {value ? "Replace" : "Choose File"}
+        </Button>
       </div>
     </div>
   );

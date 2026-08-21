@@ -433,7 +433,7 @@ export function LeaderboardRenderer({
               titleAlign === "center" ? "text-center" : titleAlign === "right" ? "text-right" : "text-left"
             }`}
           >
-            <h1 className={`${compact ? "text-sm" : "text-lg sm:text-2xl md:text-4xl"} font-bold leading-tight tracking-tight text-balance`} style={{ color: textColor }}>
+            <h1 className={`${compact ? "text-sm" : "text-base sm:text-2xl md:text-4xl"} font-bold leading-tight tracking-tight text-balance`} style={{ color: textColor }}>
               {design.title || title}
             </h1>
             {!compact && subtitle && (

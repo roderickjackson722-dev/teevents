@@ -133,20 +133,24 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
   };
 
 
+  const [orgLogoUrl, setOrgLogoUrl] = useState<string | null>(null);
+
   useEffect(() => {
     if (!tournamentId) return;
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("leaderboard_design")
+      .select("leaderboard_design, site_logo_url")
       .eq("id", tournamentId)
       .maybeSingle()
       .then(({ data }) => {
         const d = (data as any)?.leaderboard_design;
         setDesign({ ...DEFAULT_DESIGN, ...(d || {}) });
+        setOrgLogoUrl(((data as any)?.site_logo_url as string) || null);
         setLoading(false);
       });
   }, [tournamentId]);
+
 
   const update = <K extends keyof LeaderboardDesign>(k: K, v: LeaderboardDesign[K]) =>
     setDesign((d) => ({ ...d, [k]: v }));

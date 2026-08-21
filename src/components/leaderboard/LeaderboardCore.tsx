@@ -106,7 +106,10 @@ interface RendererProps {
   currentRound?: number;
   /** Clicking a player row opens their round-by-round scorecard. */
   onRowClick?: (row: LbRow) => void;
+  /** Clicking a board title drills down into that flight full-screen. */
+  onBoardSelect?: (key: string, label: string) => void;
 }
+
 
 
 

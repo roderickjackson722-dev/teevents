@@ -111,7 +111,7 @@ const AdminSmsSettings = () => {
         </CardHeader>
         <CardContent className="flex flex-wrap items-end gap-4">
           <div className="space-y-1">
-            <label className="text-xs font-medium text-muted-foreground">100 credits ($/event)</label>
+            <label className="text-xs font-medium text-muted-foreground">100 text messages ($/event)</label>
             <Input className="w-32" value={priceCredits} onChange={(e) => setPriceCredits(e.target.value)} />
           </div>
           <div className="space-y-1">
@@ -127,7 +127,7 @@ const AdminSmsSettings = () => {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Tournament access</CardTitle>
-          <CardDescription>Enable SMS blasts and set the credit allowance per tournament.</CardDescription>
+          <CardDescription>Enable SMS blasts and set the text message allowance per tournament.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Input placeholder="Search tournaments..." value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -142,7 +142,7 @@ const AdminSmsSettings = () => {
                   <TableHead>Tournament</TableHead>
                   <TableHead>Enabled</TableHead>
                   <TableHead>Plan</TableHead>
-                  <TableHead>Credit limit</TableHead>
+                  <TableHead>Text message limit</TableHead>
                   <TableHead>Used</TableHead>
                 </TableRow>
               </TableHeader>
@@ -182,7 +182,7 @@ const AdminSmsSettings = () => {
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
-                          <SelectItem value="credits">100 credits</SelectItem>
+                          <SelectItem value="credits">100 text messages</SelectItem>
                           <SelectItem value="unlimited">Unlimited</SelectItem>
                         </SelectContent>
                       </Select>

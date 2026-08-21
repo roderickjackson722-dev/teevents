@@ -1047,11 +1047,32 @@ const Players = () => {
 
 
   const maxGroupSize = 4;
-  const unassigned = players.filter((p) => p.group_number === null && ageVisible(p));
-  const groupNumbers = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))].sort((a, b) => a - b);
+
+  /**
+   * Pending (unpaid) registrations are never pulled into pairings automatically.
+   * The organizer opts each one in from the "Pending Players" panel, which adds
+   * them to the Unassigned list so they can be dragged onto a hole.
+   */
+  const [includedPendingIds, setIncludedPendingIds] = useState<string[]>([]);
+  const includedPending = useMemo(
+    () => pendingPlayers.filter((p) => includedPendingIds.includes(p.id)),
+    [pendingPlayers, includedPendingIds],
+  );
+  const pendingAvailable = useMemo(
+    () => pendingPlayers.filter((p) => !includedPendingIds.includes(p.id) && p.group_number === null),
+    [pendingPlayers, includedPendingIds],
+  );
+  // Players available to the pairings board: all paid players + opted-in pending.
+  const pairingPool = useMemo(
+    () => [...players, ...includedPending, ...pendingPlayers.filter((p) => p.group_number !== null && !includedPendingIds.includes(p.id))],
+    [players, includedPending, pendingPlayers, includedPendingIds],
+  );
+
+  const unassigned = pairingPool.filter((p) => p.group_number === null && ageVisible(p));
+  const groupNumbers = [...new Set(pairingPool.filter((p) => p.group_number !== null).map((p) => p.group_number!))].sort((a, b) => a - b);
   const groupsFromPlayers = groupNumbers.map((num) => ({
     number: num,
-    players: players
+    players: pairingPool
       .filter((p) => p.group_number === num)
       .sort((a, b) => (a.group_position || 0) - (b.group_position || 0)),
   }));

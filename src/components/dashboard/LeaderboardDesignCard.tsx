@@ -44,6 +44,18 @@ export interface LeaderboardDesign {
   flight_rotate_seconds: number;
   /** Include a combined "Overall" board alongside the flights. */
   flight_include_overall: boolean;
+  /** Where the tournament title sits in the header. */
+  title_align: "center" | "left" | "right";
+  /** Logo shown to the left of the tournament title. */
+  left_logo_url: string;
+  /** Logo shown to the right of the title (replaces the trophy icon). */
+  right_logo_url: string;
+  /** Overrides the date shown under the leaderboard title. */
+  display_date: string;
+  /** Whether long fields scroll on one page or rotate page by page. */
+  row_paging_mode: "scroll" | "pages";
+  /** Seconds each page of names stays on screen in page-by-page mode. */
+  row_page_seconds: number;
 }
 
 export const DEFAULT_DESIGN: LeaderboardDesign = {
@@ -74,7 +86,14 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   flight_columns: 2,
   flight_rotate_seconds: 15,
   flight_include_overall: true,
+  title_align: "center",
+  left_logo_url: "",
+  right_logo_url: "",
+  display_date: "",
+  row_paging_mode: "pages",
+  row_page_seconds: 10,
 };
+
 
 
 const FONT_OPTIONS = ["Inter", "Roboto", "Montserrat", "Open Sans", "Lato", "Poppins"];

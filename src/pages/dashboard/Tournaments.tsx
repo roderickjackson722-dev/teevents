@@ -52,6 +52,7 @@ const Tournaments = () => {
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  const [sharedTournaments, setSharedTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);

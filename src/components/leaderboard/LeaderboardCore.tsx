@@ -1,5 +1,7 @@
+import { useEffect, useState } from "react";
 import { Trophy, Award } from "lucide-react";
 import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
+
 
 export interface LbRow {
   name: string;

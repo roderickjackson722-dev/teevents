@@ -108,6 +108,7 @@ import ScanCheckIn from "./pages/ScanCheckIn";
 import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import AcceptTeamInvitation from "./pages/AcceptTeamInvitation";
 import ForcePasswordChange from "./pages/ForcePasswordChange";
 import Nonprofits from "./pages/Nonprofits";
 import Plans from "./pages/Plans";
@@ -357,6 +358,7 @@ const App = () => (
           <Route path="/sales-deck" element={<SalesDeck />} />
           <Route path="/flyer" element={<Flyer />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
+          <Route path="/accept-team-invitation" element={<AcceptTeamInvitation />} />
           <Route path="/force-password-change" element={<ForcePasswordChange />} />
            <Route path="/nonprofits" element={<Nonprofits />} />
           <Route path="/plans" element={<Plans />} />

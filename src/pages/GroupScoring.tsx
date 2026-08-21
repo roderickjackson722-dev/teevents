@@ -803,11 +803,23 @@ export default function GroupScoring() {
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditTarget(null)}>Cancel</Button>
-            <Button onClick={saveEdit} disabled={savingEdit} style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
-              {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-            </Button>
+          <DialogFooter className="gap-2 sm:justify-between">
+            {editTarget && (
+              <Button
+                variant="outline"
+                className="text-destructive"
+                disabled={clearing}
+                onClick={() => clearHoleScore(editTarget.hole, editTarget.pid)}
+              >
+                {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Eraser className="h-4 w-4 mr-1" />Clear Score</>}
+              </Button>
+            )}
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditTarget(null)}>Cancel</Button>
+              <Button onClick={saveEdit} disabled={savingEdit} style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
+                {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

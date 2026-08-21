@@ -35,13 +35,19 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { tournament_id, message, scheduled_for } = await req.json();
+    const { tournament_id, message, scheduled_for, to_phones, test } = await req.json();
     if (!tournament_id || !message) {
       return new Response(
         JSON.stringify({ error: "tournament_id and message are required" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
+
+    // Manual numbers (test sends or ad-hoc recipients) skip the roster lookup.
+    const manualPhones: string[] = Array.isArray(to_phones)
+      ? to_phones.map((p: string) => String(p).trim()).filter(Boolean)
+      : [];
+    const isTest = !!test;
 
     // If scheduling for later, just insert the record and return
     if (scheduled_for) {

@@ -12553,6 +12553,7 @@ export type Database = {
       get_public_team_roster: {
         Args: { _tournament_id: string }
         Returns: {
+          division: string
           first_name: string
           group_number: number
           group_position: number

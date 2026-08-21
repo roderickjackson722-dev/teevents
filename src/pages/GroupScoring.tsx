@@ -330,6 +330,48 @@ export default function GroupScoring() {
     toast({ title: "Score saved" });
   };
 
+  const [clearing, setClearing] = useState(false);
+
+  /** Erase the saved score for a hole (whole team, or one player). */
+  const clearHoleScore = async (hole: number, pid?: string) => {
+    if (!tournament || !code) return;
+    const who = pid ? players.find((p) => p.id === pid) : undefined;
+    const label = who ? `${who.first_name} ${who.last_name}` : "this group";
+    if (!window.confirm(`Clear the Hole ${hole} score for ${label}? This cannot be undone.`)) return;
+    setClearing(true);
+    const { error } = await supabase.rpc("clear_group_hole_scores", {
+      _tournament_id: tournament.id,
+      _code: code,
+      _hole_number: hole,
+      _round_number: roundNumber,
+      _registration_id: isScramble ? null : (pid ?? null),
+    } as any);
+    setClearing(false);
+    if (error) {
+      toast({ title: "Could not clear score", description: error.message, variant: "destructive" });
+      return;
+    }
+    const targets = isScramble || !pid ? players.map((p) => p.id) : [pid];
+    setScores((prev) => {
+      const next = { ...prev };
+      targets.forEach((id) => {
+        if (next[id]) {
+          const { [hole]: _r, ...rest } = next[id];
+          next[id] = rest;
+        }
+      });
+      return next;
+    });
+    setDraft((d) => {
+      const next = { ...d };
+      targets.forEach((id) => { delete next[id]; });
+      delete next[TEAM_KEY];
+      return next;
+    });
+    setEditTarget(null);
+    toast({ title: `Hole ${hole} score cleared` });
+  };
+
   const handleSave = () => {
     if (!hasPending) {
       if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);

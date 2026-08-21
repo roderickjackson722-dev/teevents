@@ -836,10 +836,22 @@ export default function LiveScoring() {
                       >
                         <Plus className="h-5 w-5" />
                       </button>
+                      <button
+                        onClick={() => clearHole(focusHole, p.id)}
+                        disabled={saving || display === ""}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
+                        aria-label={`Clear Hole ${focusHole} score`}
+                        title="Clear this hole's score"
+                      >
+                        <Eraser className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 );
               })}
+              <p className="text-xs text-muted-foreground">
+                Entered a score on the wrong hole? Tap the eraser to clear that player's score for this hole.
+              </p>
             </CardContent>
           </Card>
         ) : (

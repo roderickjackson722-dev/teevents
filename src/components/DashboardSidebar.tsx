@@ -133,6 +133,7 @@ const categories: SidebarCategory[] = [
       { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio", description: "Canva‑integrated flyers" },
       { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize confirmation and reminder emails and send them" },
       { title: "Email Send Log", url: "/dashboard/email-log", icon: Mail, feature: null, description: "See every email sent, delivery results, and resend failures" },
+      { title: "SMS Blasts", url: "/dashboard/messages", icon: MessageSquare, feature: null, description: "Text message updates to players (paid add-on)" },
       { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null, description: "Opt in/out of teevents.golf search" },
       { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null, description: "Consulting, signage, insurance" },
     ],

@@ -142,12 +142,15 @@ Deno.serve(async (req) => {
       }
     }
 
-    await supabase.from("tournament_messages").insert({
-      tournament_id,
-      body: message,
-      recipient_count: successCount,
-      status: failCount === 0 ? "sent" : "partial",
-    });
+    // Test sends stay out of the message history.
+    if (!isTest) {
+      await supabase.from("tournament_messages").insert({
+        tournament_id,
+        body: message,
+        recipient_count: successCount,
+        status: failCount === 0 ? "sent" : "partial",
+      });
+    }
 
     return new Response(
       JSON.stringify({ success: true, sent: successCount, failed: failCount, errors: errors.length > 0 ? errors : undefined }),

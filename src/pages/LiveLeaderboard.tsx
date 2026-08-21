@@ -277,6 +277,8 @@ export default function LiveLeaderboard() {
   // land on their own flight's board.
   const requestedFlight = (search.get("flight") || "").trim();
   const [activeFlight, setActiveFlight] = useState<string>("__overall");
+  // Grid mode drill-down: clicking a flight title opens that flight full-screen.
+  const [drillFlight, setDrillFlight] = useState<string | null>(null);
   // Course pars / SI / yardages power the To Par column and the scorecard modal.
   const [course, setCourse] = useState<ScorecardCourseInfo | null>(null);
   const [scorecardRow, setScorecardRow] = useState<LeaderboardRow | null>(null);
@@ -629,18 +631,22 @@ export default function LiveLeaderboard() {
       ? null
       : flights.find((f) => f.id === activeFlight)?.tier_name || null;
   const baseTitle = tournament.leaderboard_title || tournament.title;
-  const displayTitle =
-    flightMode === "grid" ? baseTitle : activeFlightName ? `${baseTitle} — ${activeFlightName}` : baseTitle;
+  const displayTitle = baseTitle;
+  /** Heading for the single board — "[Flight] Leaderboard" when a flight is active. */
+  const singleBoardLabel = activeFlightName ? `${activeFlightName} Leaderboard` : "Leaderboard";
 
 
   const subtitleParts: string[] = [];
   if (tournament.course_name) subtitleParts.push(tournament.course_name);
-  if (tournament.date) {
+  // Organizers can override the displayed date (add-on events may start earlier).
+  const shownDate = design.display_date || tournament.date;
+  if (shownDate) {
     try {
-      subtitleParts.push(new Date(tournament.date + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
+      subtitleParts.push(new Date(shownDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
     } catch { /* ignore */ }
   }
   const subtitle = subtitleParts.join(" · ");
+
 
   const presentedBy = tournament.leaderboard_show_sponsor && tournament.leaderboard_sponsor_name
     ? {
@@ -690,7 +696,7 @@ export default function LiveLeaderboard() {
   return (
     <>
       <LeaderboardRenderer
-        design={design}
+        design={drillFlight ? { ...design, font_size: "large" } : design}
         title={displayTitle}
         rows={leaderboard}
         isStableford={isStableford}
@@ -707,7 +713,12 @@ export default function LiveLeaderboard() {
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         subtitle={subtitle}
-        boards={flightBoards}
+        boards={drillFlight ? undefined : flightBoards}
+        singleBoardLabel={singleBoardLabel}
+        onBoardSelect={(key) => {
+          setDrillFlight(key);
+          setActiveFlight(key);
+        }}
         boardColumns={design.flight_columns || 2}
         presentedBy={presentedBy}
 
@@ -723,6 +734,21 @@ export default function LiveLeaderboard() {
                 >
                   ← Return to Scoring
                 </a>
+              </div>
+            ) : null}
+            {drillFlight ? (
+              <div className="w-full bg-primary/10 border-b border-primary/20 px-4 py-2 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrillFlight(null);
+                    setActiveFlight("__overall");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold"
+                  style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
+                >
+                  ← Back to All Flights
+                </button>
               </div>
             ) : null}
             {isPreview ? (

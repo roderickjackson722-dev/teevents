@@ -1316,6 +1316,7 @@ export default function Leaderboard() {
         <LeaderboardDesignCard
           tournamentId={selectedTournament}
           tournamentSlug={selectedTournamentData?.slug || null}
+          orgId={org?.orgId}
         />
       )}
 

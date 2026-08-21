@@ -108,6 +108,8 @@ interface RendererProps {
   onRowClick?: (row: LbRow) => void;
   /** Clicking a board title drills down into that flight full-screen. */
   onBoardSelect?: (key: string, label: string) => void;
+  /** Heading for the single (non-grid) board, eg. "Professionals Leaderboard". */
+  singleBoardLabel?: string;
 }
 
 
@@ -142,6 +144,7 @@ export function LeaderboardRenderer({
   currentRound,
   onRowClick,
   onBoardSelect,
+  singleBoardLabel = "Leaderboard",
 
 }: RendererProps) {
 
@@ -151,7 +154,9 @@ export function LeaderboardRenderer({
   const textColor = design.text_color;
   const accent = design.accent_color;
   const showSponsorBanner = design.show_sponsor_banner !== false;
+  const titleAlign = design.title_align || "center";
   const sponsorPos = design.sponsor_banner_position || "top";
+
   const perPage = Math.max(1, design.max_rows || 20);
   /**
    * Page-by-page rotation. Every name in the field/flight is shown: the board
@@ -175,7 +180,6 @@ export function LeaderboardRenderer({
   }, [pageMode, pageCount, design.row_page_seconds]);
   const pageRows = (all: LbRow[]) =>
     pageMode ? all.slice(pageIdx * perPage, pageIdx * perPage + perPage) : all;
-  const visibleRows = pageRows(rows);
 
   const showGross = design.show_gross !== false && design.default_view !== "net";
   const showNet = design.show_net !== false && design.default_view !== "gross";
@@ -243,15 +247,22 @@ export function LeaderboardRenderer({
   const showToday = !isStableford && !!currentRound && (rounds || []).includes(currentRound);
 
   /** One leaderboard table — reused for the single board and each flight board. */
-  const renderBoard = (key: string, label: string, boardRows: LbRow[]) => {
-    const shown = boardRows.slice(0, Math.max(1, design.max_rows || 20));
+  const renderBoard = (key: string, label: string, boardRows: LbRow[], clickableTitle = false) => {
+    const all = boardRows;
+    const shown = pageRows(all);
+    const offset = pageMode ? pageIdx * perPage : 0;
     /** Competition positions: identical totals share a T-position. */
     const positionFor = (idx: number) => {
-      const total = shown[idx].total;
-      const first = shown.findIndex((r) => r.total === total);
-      const tied = shown.filter((r) => r.total === total).length > 1;
+      const total = all[offset + idx].total;
+      const first = all.findIndex((r) => r.total === total);
+      const tied = all.filter((r) => r.total === total).length > 1;
       return `${tied ? "T" : ""}${first + 1}`;
     };
+    const heading = (
+      <h2 className={`font-bold ${compact ? "text-xs" : "text-base sm:text-lg"}`} style={{ color: textColor }}>
+        {label}
+      </h2>
+    );
     return (
       <section
         key={key}
@@ -259,9 +270,30 @@ export function LeaderboardRenderer({
         style={{ backgroundColor: `${headerBg}33` }}
         data-testid="lb-table-section"
       >
-        <div className={`${padX} ${padY}`} style={{ backgroundColor: headerBg }}>
-          <h2 className={`font-bold ${compact ? "text-xs" : "text-base sm:text-lg"}`} style={{ color: textColor }}>{label}</h2>
+        <div className={`${padX} ${padY} flex items-center justify-between gap-3`} style={{ backgroundColor: headerBg }}>
+          {clickableTitle && onBoardSelect ? (
+            <button
+              type="button"
+              onClick={() => onBoardSelect(key, label)}
+              className="text-left group flex items-center gap-2 hover:opacity-80 transition-opacity"
+              data-testid="lb-board-title-button"
+              title="Click to expand"
+            >
+              {heading}
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: accent }}>
+                Click to Expand
+              </span>
+            </button>
+          ) : (
+            heading
+          )}
+          {pageMode && pageCount > 1 && !compact && (
+            <span className="text-[10px] uppercase tracking-widest opacity-70 shrink-0">
+              Page {pageIdx + 1} of {pageCount}
+            </span>
+          )}
         </div>
+
         {shown.length === 0 ? (
           <div className={`${compact ? "p-4" : "p-12"} text-center opacity-70`}>
             <Trophy className={`${compact ? "h-5 w-5" : "h-10 w-10"} mx-auto mb-2 opacity-40`} />
@@ -385,26 +417,50 @@ export function LeaderboardRenderer({
       )}
 
       <header className={`${padX} ${headerPadY}`} style={{ backgroundColor: headerBg }} data-testid="lb-header">
-        <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center justify-between gap-4`}>
-          <div className="flex items-center gap-3">
-            {logoUrl && (
-              <img src={logoUrl} alt="" className={`${compact ? "h-6 w-6" : "h-12 w-12"} object-contain rounded`} />
-            )}
-            <div>
-              <h1 className={`${compact ? "text-sm" : "text-xl sm:text-3xl md:text-4xl"} font-bold leading-tight tracking-tight`} style={{ color: textColor }}>
-                {design.title || title}
-              </h1>
-              {!compact && subtitle && (
-                <p className="text-xs sm:text-sm opacity-80 mt-1">{subtitle}</p>
-              )}
-              {!compact && (
-                <p className="text-xs sm:text-sm flex items-center gap-2 opacity-80 mt-1">
-                  <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: accent }} /> Live Leaderboard
-                </p>
-              )}
+        <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center gap-4`}>
+          {/* Left logo — organizer upload, falling back to the site logo. */}
+          {(design.left_logo_url || logoUrl) && (
+            <div className="shrink-0 rounded bg-white/95 p-1.5 flex items-center justify-center">
+              <img
+                src={design.left_logo_url || logoUrl || ""}
+                alt=""
+                className={`${compact ? "h-6" : "h-12 sm:h-16"} w-auto max-w-[140px] object-contain`}
+              />
             </div>
+          )}
+          <div
+            className={`flex-1 min-w-0 ${
+              titleAlign === "center" ? "text-center" : titleAlign === "right" ? "text-right" : "text-left"
+            }`}
+          >
+            <h1 className={`${compact ? "text-sm" : "text-xl sm:text-3xl md:text-4xl"} font-bold leading-tight tracking-tight`} style={{ color: textColor }}>
+              {design.title || title}
+            </h1>
+            {!compact && subtitle && (
+              <p className="text-xs sm:text-sm opacity-80 mt-1">{subtitle}</p>
+            )}
+            {!compact && (
+              <p
+                className={`text-xs sm:text-sm flex items-center gap-2 opacity-80 mt-1 ${
+                  titleAlign === "center" ? "justify-center" : titleAlign === "right" ? "justify-end" : ""
+                }`}
+              >
+                <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: accent }} /> Live Leaderboard
+              </p>
+            )}
           </div>
-          <Trophy className={compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"} style={{ color: accent }} />
+          {/* Right logo replaces the trophy icon when the organizer uploads one. */}
+          {design.right_logo_url ? (
+            <div className="shrink-0 rounded bg-white/95 p-1.5 flex items-center justify-center">
+              <img
+                src={design.right_logo_url}
+                alt=""
+                className={`${compact ? "h-6" : "h-12 sm:h-16"} w-auto max-w-[140px] object-contain`}
+              />
+            </div>
+          ) : (
+            <Trophy className={`shrink-0 ${compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"}`} style={{ color: accent }} />
+          )}
         </div>
         {!compact && presentedBy && (
           <div
@@ -415,14 +471,16 @@ export function LeaderboardRenderer({
               className="text-xs sm:text-sm uppercase tracking-[0.15em] font-semibold opacity-80 whitespace-nowrap"
               style={{ color: textColor }}
             >
-              {presentedBy.label}
+              {presentedBy.label.replace(/:*$/, "")}:
             </span>
             {presentedBy.logoUrl ? (
-              <img
-                src={presentedBy.logoUrl}
-                alt={presentedBy.name}
-                className="h-8 sm:h-12 max-w-[160px] sm:max-w-[220px] object-contain"
-              />
+              <span className="rounded bg-white/95 p-1.5 flex items-center">
+                <img
+                  src={presentedBy.logoUrl}
+                  alt={presentedBy.name}
+                  className="h-8 sm:h-12 max-w-[160px] sm:max-w-[220px] object-contain"
+                />
+              </span>
             ) : null}
             <span
               className="text-sm sm:text-lg font-bold text-center"
@@ -438,10 +496,11 @@ export function LeaderboardRenderer({
         <div className={`${compact ? "" : "max-w-7xl mx-auto"} grid grid-cols-1 ${showSponsorBanner && sponsorPos === "sidebar" && !compact ? "lg:grid-cols-[1fr_280px]" : ""} gap-4`}>
           {boards && boards.length > 0 ? (
             <div className={`grid grid-cols-1 ${gridColsClass} gap-4`} data-testid="lb-flight-grid">
-              {boards.map((b) => renderBoard(b.key, b.label, b.rows))}
+              {boards.map((b) => renderBoard(b.key, `${b.label} Leaderboard`, b.rows, true))}
             </div>
+
           ) : (
-            renderBoard("single", "Leaderboard", visibleRows)
+            renderBoard("single", singleBoardLabel, rows)
           )}
 
 

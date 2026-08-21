@@ -267,9 +267,29 @@ export function LeaderboardRenderer({
         data-testid="lb-table-section"
       >
         <div className={`${padX} ${padY} flex items-center justify-between gap-3`} style={{ backgroundColor: headerBg }}>
-
-          <h2 className={`font-bold ${compact ? "text-xs" : "text-base sm:text-lg"}`} style={{ color: textColor }}>{label}</h2>
+          {clickableTitle && onBoardSelect ? (
+            <button
+              type="button"
+              onClick={() => onBoardSelect(key, label)}
+              className="text-left group flex items-center gap-2 hover:opacity-80 transition-opacity"
+              data-testid="lb-board-title-button"
+              title="Click to expand"
+            >
+              {heading}
+              <span className="text-[10px] uppercase tracking-widest font-bold" style={{ color: accent }}>
+                Click to Expand
+              </span>
+            </button>
+          ) : (
+            heading
+          )}
+          {pageMode && pageCount > 1 && !compact && (
+            <span className="text-[10px] uppercase tracking-widest opacity-70 shrink-0">
+              Page {pageIdx + 1} of {pageCount}
+            </span>
+          )}
         </div>
+
         {shown.length === 0 ? (
           <div className={`${compact ? "p-4" : "p-12"} text-center opacity-70`}>
             <Trophy className={`${compact ? "h-5 w-5" : "h-10 w-10"} mx-auto mb-2 opacity-40`} />

@@ -96,6 +96,12 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [canManage, setCanManage] = useState(false);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+
+  // Login code + admin override state
+  const [codeBusyId, setCodeBusyId] = useState<string | null>(null);
+  const [impersonateId, setImpersonateId] = useState<string>("");
+  const [impersonating, setImpersonating] = useState(false);
 
   // Edit state
   const [editingMember, setEditingMember] = useState<MemberRow | null>(null);
@@ -113,7 +119,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
   }, [orgId]);
 
   const checkPermissions = async () => {
-    const [{ data: membership }, { data: isPlatformAdmin }] = await Promise.all([
+    const [{ data: membership }, { data: platformAdmin }] = await Promise.all([
       supabase
         .from("org_members")
         .select("role")
@@ -122,7 +128,8 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
         .maybeSingle(),
       supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
     ]);
-    setCanManage(isPlatformAdmin === true || (membership as any)?.role === "owner");
+    setIsPlatformAdmin(platformAdmin === true);
+    setCanManage(platformAdmin === true || (membership as any)?.role === "owner");
   };
 
   const fetchData = async () => {
@@ -130,7 +137,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     const [membersRes, invitesRes] = await Promise.all([
       supabase
         .from("org_members")
-        .select("id, user_id, role, permissions, name")
+        .select("id, user_id, role, permissions, name, login_code, login_code_expires_at")
         .eq("organization_id", orgId),
       supabase
         .from("org_invitations")
@@ -142,6 +149,58 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
     setInvitations((invitesRes.data as any) || []);
     setLoading(false);
   };
+
+  const handleGenerateCode = async (member: MemberRow) => {
+    setCodeBusyId(member.id);
+    try {
+      const result = await generateTeamLoginCode({ data: { memberId: member.id, orgId } });
+      toast.success(`Login code ${result.code} generated — share it with ${member.name || "your team member"}`);
+      fetchData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not generate a login code");
+    } finally {
+      setCodeBusyId(null);
+    }
+  };
+
+  const handleRevokeCode = async (member: MemberRow) => {
+    setCodeBusyId(member.id);
+    try {
+      await revokeTeamLoginCode({ data: { memberId: member.id, orgId } });
+      toast.success("Login code removed");
+      fetchData();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not remove the login code");
+    } finally {
+      setCodeBusyId(null);
+    }
+  };
+
+  const copyCode = (code: string) => {
+    navigator.clipboard?.writeText(code);
+    toast.success(`Copied ${code}`);
+  };
+
+  const handleImpersonate = async () => {
+    if (!impersonateId) return;
+    setImpersonating(true);
+    try {
+      const result = await adminImpersonateTeamMember({ data: { memberId: impersonateId } });
+      const { error } = await supabase.auth.verifyOtp({
+        token_hash: result.token_hash,
+        type: "magiclink",
+      });
+      if (error) throw new Error(error.message);
+      toast.success(`Signed in as ${result.email}`);
+      window.location.href = "/dashboard";
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Could not log in as that team member");
+    } finally {
+      setImpersonating(false);
+    }
+  };
+
+
 
   const togglePerm = (perm: string, perms: string[], setPerms: (p: string[]) => void) => {
     setPerms(perms.includes(perm) ? perms.filter((p) => p !== perm) : [...perms, perm]);

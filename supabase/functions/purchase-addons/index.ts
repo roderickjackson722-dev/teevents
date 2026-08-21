@@ -20,7 +20,12 @@ const PRICES: Record<string, { name: string; cents: number }> = {
   custom_event_page: { name: "Custom Event Page Build Out", cents: 9900 },
   priority_support: { name: "Priority Support", cents: 9900 },
   bundle: { name: "All Add-ons Bundle", cents: 39900 },
+  sms_100: { name: "SMS Blasts – 100 Text Messages", cents: 2900 },
+  sms_unlimited: { name: "SMS Blasts – Unlimited Text Messages", cents: 9900 },
 };
+
+// SMS plans are standalone; the All Add-ons Bundle never includes them.
+const SMS_KEYS = ["sms_100", "sms_unlimited"];
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

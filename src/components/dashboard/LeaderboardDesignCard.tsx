@@ -270,6 +270,100 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
           </div>
         </section>
 
+        {/* BRANDING & LOGOS */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Leaderboard Branding</Label>
+          <div>
+            <Label className="text-xs">Title Alignment</Label>
+            <RadioGroup
+              value={design.title_align}
+              onValueChange={(v) => update("title_align", v as LeaderboardDesign["title_align"])}
+              className="flex flex-wrap gap-4 mt-1"
+            >
+              <RadioOpt value="center" label="Center" />
+              <RadioOpt value="left" label="Left" />
+              <RadioOpt value="right" label="Right" />
+            </RadioGroup>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <LogoField
+              label="Left Logo"
+              value={design.left_logo_url}
+              uploading={uploading === "left_logo_url"}
+              onUpload={(f) => uploadLogo("left_logo_url", f)}
+              onClear={() => update("left_logo_url", "")}
+            />
+            <LogoField
+              label="Right Logo (replaces trophy icon)"
+              value={design.right_logo_url}
+              uploading={uploading === "right_logo_url"}
+              onUpload={(f) => uploadLogo("right_logo_url", f)}
+              onClear={() => update("right_logo_url", "")}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Logos render on a light plate so they stay visible on dark leaderboard backgrounds.
+            Use the "Presented by" card below to set the headline sponsor text and logo.
+          </p>
+        </section>
+
+        {/* LEADERBOARD DATE */}
+        <section className="space-y-2 border-t pt-5">
+          <Label className="text-base font-semibold">Leaderboard Date</Label>
+          <div className="flex flex-wrap items-end gap-3">
+            <div>
+              <Label className="text-xs">Display Date</Label>
+              <Input
+                type="date"
+                value={design.display_date}
+                onChange={(e) => update("display_date", e.target.value)}
+                className="w-[200px]"
+              />
+            </div>
+            {design.display_date && (
+              <Button type="button" variant="ghost" size="sm" onClick={() => update("display_date", "")}>
+                Use tournament date
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            This date appears on the live leaderboard. Leave blank to use the tournament start date.
+          </p>
+        </section>
+
+        {/* ROTATION / PAGING */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Rotation Settings</Label>
+          <div>
+            <Label className="text-xs">Display</Label>
+            <RadioGroup
+              value={design.row_paging_mode}
+              onValueChange={(v) => update("row_paging_mode", v as LeaderboardDesign["row_paging_mode"])}
+              className="flex flex-col gap-2 mt-1"
+            >
+              <RadioOpt value="scroll" label="All names on one page (scrolling)" />
+              <RadioOpt value="pages" label="Page by page (rotate through pages)" />
+            </RadioGroup>
+          </div>
+          {design.row_paging_mode === "pages" && (
+            <div>
+              <Label className="text-xs">Rotation Speed: {design.row_page_seconds}s per page</Label>
+              <Slider
+                min={3}
+                max={60}
+                step={1}
+                value={[design.row_page_seconds]}
+                onValueChange={([v]) => update("row_page_seconds", v)}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Every name in the field or flight is shown — the board advances to the next page until it loops back to the top.
+              </p>
+            </div>
+          )}
+        </section>
+
+
+
         {/* SPONSOR BANNER */}
         <section className="space-y-3 border-t pt-5">
           <Label className="text-base font-semibold">Sponsor Banner</Label>

@@ -243,15 +243,22 @@ export function LeaderboardRenderer({
   const showToday = !isStableford && !!currentRound && (rounds || []).includes(currentRound);
 
   /** One leaderboard table — reused for the single board and each flight board. */
-  const renderBoard = (key: string, label: string, boardRows: LbRow[]) => {
-    const shown = boardRows.slice(0, Math.max(1, design.max_rows || 20));
+  const renderBoard = (key: string, label: string, boardRows: LbRow[], clickableTitle = false) => {
+    const all = boardRows;
+    const shown = pageRows(all);
+    const offset = pageMode ? pageIdx * perPage : 0;
     /** Competition positions: identical totals share a T-position. */
     const positionFor = (idx: number) => {
-      const total = shown[idx].total;
-      const first = shown.findIndex((r) => r.total === total);
-      const tied = shown.filter((r) => r.total === total).length > 1;
+      const total = all[offset + idx].total;
+      const first = all.findIndex((r) => r.total === total);
+      const tied = all.filter((r) => r.total === total).length > 1;
       return `${tied ? "T" : ""}${first + 1}`;
     };
+    const heading = (
+      <h2 className={`font-bold ${compact ? "text-xs" : "text-base sm:text-lg"}`} style={{ color: textColor }}>
+        {label}
+      </h2>
+    );
     return (
       <section
         key={key}
@@ -259,7 +266,8 @@ export function LeaderboardRenderer({
         style={{ backgroundColor: `${headerBg}33` }}
         data-testid="lb-table-section"
       >
-        <div className={`${padX} ${padY}`} style={{ backgroundColor: headerBg }}>
+        <div className={`${padX} ${padY} flex items-center justify-between gap-3`} style={{ backgroundColor: headerBg }}>
+
           <h2 className={`font-bold ${compact ? "text-xs" : "text-base sm:text-lg"}`} style={{ color: textColor }}>{label}</h2>
         </div>
         {shown.length === 0 ? (

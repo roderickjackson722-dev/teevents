@@ -583,6 +583,19 @@ function LogoField({
           {value ? "Replace" : "Choose File"}
         </Button>
       </div>
+      {orgLogoUrl && onUseOrgLogo && orgLogoUrl !== value && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mt-1 h-7 px-2 text-xs"
+          onClick={onUseOrgLogo}
+        >
+          <img src={orgLogoUrl} alt="" className="h-4 w-4 mr-1.5 object-contain" />
+          Use organizer logo
+        </Button>
+      )}
     </div>
   );
 }
+

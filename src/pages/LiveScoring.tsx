@@ -776,11 +776,11 @@ export default function LiveScoring() {
                       <button
                         onClick={() => clearHole(focusHole)}
                         disabled={saving || display === ""}
-                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
+                        className="h-7 w-7 -mr-1 rounded-full border bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
                         aria-label="Clear team score for this hole"
                         title="Clear this hole's score"
                       >
-                        <Eraser className="h-5 w-5" />
+                        <Eraser className="h-3.5 w-3.5" />
                       </button>
                     </div>
                   </div>

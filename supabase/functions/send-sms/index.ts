@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     } else {
       const { data: registrations, error: regError } = await supabase
         .from("tournament_registrations")
-        .select("first_name, last_name, phone")
+        .select("*")
         .eq("tournament_id", tournament_id)
         .not("phone", "is", null);
 
@@ -118,13 +118,42 @@ Deno.serve(async (req) => {
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${accountSid}/Messages.json`;
     const twilioAuth = btoa(`${accountSid}:${authToken}`);
 
+    // Tournament-level values for message variables.
+    const { data: tourn } = await supabase
+      .from("tournaments")
+      .select("title, course_name, date, slug")
+      .eq("id", tournament_id)
+      .maybeSingle();
+    const t: any = tourn || {};
+    const leaderboardLink = t.slug ? `https://www.teevents.golf/live/${t.slug}` : "https://www.teevents.golf";
+
+    const personalize = (tpl: string, r: any) => {
+      const map: Record<string, string> = {
+        first_name: r.first_name ?? "",
+        last_name: r.last_name ?? "",
+        tournament_name: t.title ?? "",
+        course_name: t.course_name ?? "",
+        event_date: t.date ?? "",
+        tee_time: r.tee_time ?? r.starting_tee_time ?? "",
+        starting_hole: r.starting_hole != null ? String(r.starting_hole) : (r.group_number != null ? String(r.group_number) : ""),
+        team_name: r.team_name ?? "",
+        scoring_code: r.scoring_code ?? "",
+        leaderboard_link: leaderboardLink,
+      };
+      return tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (m, key) => (key in map ? map[key] : m));
+    };
+
     let successCount = 0;
     let failCount = 0;
     const errors: string[] = [];
 
     for (const recipient of recipients) {
       try {
-        const body = new URLSearchParams({ To: recipient.phone, From: fromPhone, Body: message });
+        const body = new URLSearchParams({
+          To: recipient.phone,
+          From: fromPhone,
+          Body: personalize(message, recipient),
+        });
         const res = await fetch(twilioUrl, {
           method: "POST",
           headers: { Authorization: `Basic ${twilioAuth}`, "Content-Type": "application/x-www-form-urlencoded" },

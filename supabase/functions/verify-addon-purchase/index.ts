@@ -72,7 +72,7 @@ serve(async (req) => {
         .maybeSingle();
       update["sms_enabled"] = true;
       if ((cur as any)?.sms_plan !== "unlimited") {
-        update["sms_plan"] = "starter";
+        update["sms_plan"] = "credits";
         update["sms_credits_limit"] = ((cur as any)?.sms_credits_limit ?? 0) + 100;
       }
     }

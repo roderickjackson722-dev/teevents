@@ -303,6 +303,7 @@ Deno.serve(async (req) => {
       notes: p.notes || null,
       payment_status: hasAnyCharge ? "pending" : "paid",
       tier_id: tierId || null,
+      flight_id: flightId || null,
       covered_fees: coverFees,
       referral_code_used: referralCode,
       promoter_id: promoterId,

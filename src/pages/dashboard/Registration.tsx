@@ -891,7 +891,7 @@ const Registration = () => {
                   <Switch checked={autoCloseEnabled} onCheckedChange={setAutoCloseEnabled} />
                 </div>
 
-                </div>
+
 
                 {/* Saved schedule confirmation */}
                 {savedCloseAt ? (

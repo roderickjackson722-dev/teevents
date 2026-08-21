@@ -420,11 +420,11 @@ export function LeaderboardRenderer({
         <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center gap-4`}>
           {/* Left logo — organizer upload, falling back to the site logo. */}
           {(design.left_logo_url || logoUrl) && (
-            <div className="shrink-0 rounded bg-white/95 p-1.5 flex items-center justify-center">
+            <div className="shrink-0 rounded bg-white/95 p-1 flex items-center justify-center">
               <img
                 src={design.left_logo_url || logoUrl || ""}
                 alt=""
-                className={`${compact ? "h-6" : "h-12 sm:h-16"} w-auto max-w-[140px] object-contain`}
+                className={`${compact ? "h-6" : "h-8 sm:h-12 md:h-16"} w-auto max-w-[60px] sm:max-w-[100px] md:max-w-[160px] object-contain`}
               />
             </div>
           )}

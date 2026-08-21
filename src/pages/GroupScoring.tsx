@@ -618,10 +618,25 @@ export default function GroupScoring() {
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 text-destructive"
+                      disabled={locked || clearing || (gross == null && !hasDraft)}
+                      onClick={() => clearHoleScore(currentHole, p.id)}
+                      aria-label={`Clear Hole ${currentHole} score`}
+                      title="Clear this hole's score"
+                    >
+                      <Eraser className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               );
             })}
+            <p className="text-xs text-muted-foreground">
+              Entered a score on the wrong hole? Tap the eraser to clear it for that player.
+            </p>
             {editLocked && (
               <p className="text-xs text-muted-foreground text-center pt-1">
                 Editing past holes is locked by the organizer.

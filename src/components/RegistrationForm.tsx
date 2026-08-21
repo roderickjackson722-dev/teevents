@@ -704,8 +704,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
         const promoCodeToSend = appliedPromo?.code || null;
         const body = allowGroup
-            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, players: playerData, team_name: teamName.trim() || null, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents }
-            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents, ...singleData };
+            ? { tournament_id: tournamentId, foursome: true, cover_fees: coverFees, tier_id: selectedTier, flight_id: selectedFlight, players: playerData, team_name: teamName.trim() || null, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents }
+            : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, flight_id: selectedFlight, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents, ...singleData };
 
 
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });

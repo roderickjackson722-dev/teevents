@@ -308,6 +308,7 @@ const App = () => (
           <Route path="/dashboard/missing-ages" element={<DashboardLayout><MissingAges /></DashboardLayout>} />
 
           <Route path="/dashboard/email-log" element={<DashboardLayout><EmailLog /></DashboardLayout>} />
+          <Route path="/dashboard/messages" element={<DashboardLayout><DashboardMessages /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/activity-log" element={<DashboardLayout><ActivityLog /></DashboardLayout>} />
           <Route path="/dashboard/team" element={<DashboardLayout><TeamManagementPage /></DashboardLayout>} />

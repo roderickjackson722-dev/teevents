@@ -42,6 +42,7 @@ interface RosterRow {
   team_name: string | null;
   tee_time: string | null;
   scoring_code: string | null;
+  division?: string | null;
 }
 
 const qrUrl = (url: string, size = 180) =>
@@ -274,6 +275,11 @@ export default function TeamHomepage() {
                 <span className="text-foreground">
                   <span className="text-muted-foreground mr-2">{i + 1}.</span>
                   {r.last_name}, {r.first_name}
+                  {hq.show_divisions && r.division && (
+                    <span className="ml-2 inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary align-middle">
+                      {r.division}
+                    </span>
+                  )}
                 </span>
                 <span className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-muted-foreground">

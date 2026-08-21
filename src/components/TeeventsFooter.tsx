@@ -39,7 +39,7 @@ export function TeeventsFooter({ tournament }: { tournament: BrandingFooterField
 
   return (
     <footer
-      className="teevents-footer w-full px-6 py-4 text-sm text-white"
+      className="teevents-footer w-full px-6 py-4 text-[11px] text-white"
       style={{ backgroundColor: "#1a5c38", fontFamily: "Arial, sans-serif" }}
     >
       <a

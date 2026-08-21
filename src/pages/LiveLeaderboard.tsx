@@ -556,9 +556,10 @@ export default function LiveLeaderboard() {
   useEffect(() => {
     // An explicit ?flight= request wins over rotation so a player's link stays put.
     if (requestedFlight) return;
-    if (flightMode !== "rotate" || rotateKeys.length < 2) return;
+    if (flightMode !== "rotate" || rotateKeys.length === 0) return;
     const seconds = Math.max(5, design.flight_rotate_seconds || 15);
     setActiveFlight((cur) => (rotateKeys.includes(cur) ? cur : rotateKeys[0]));
+    if (rotateKeys.length < 2) return;
     const t = setInterval(() => {
       setActiveFlight((cur) => {
         const i = rotateKeys.indexOf(cur);

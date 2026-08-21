@@ -170,6 +170,8 @@ export default function Messages() {
 
   const canSend =
     selectedTournament &&
+    smsEnabled &&
+    creditsRemaining > 0 &&
     message.trim() &&
     !sendMutation.isPending &&
     recipientCount !== 0 &&
@@ -178,9 +180,43 @@ export default function Messages() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
-        <p className="text-muted-foreground">Send SMS updates to registered players.</p>
+        <h1 className="text-2xl font-bold tracking-tight">SMS Blasts</h1>
+        <p className="text-muted-foreground">Send text message updates to registered players.</p>
       </div>
+
+      {selectedTournament && !smsEnabled && (
+        <Card className="border-amber-300 bg-amber-50/60">
+          <CardHeader>
+            <CardTitle className="text-base">SMS Blasts is a paid add-on</CardTitle>
+            <CardDescription>
+              Text messaging is not enabled for this tournament yet. Plans: $29/event for 100 credits, or
+              $99/event for unlimited texts. Contact TeeVents at info@teevents.golf to turn it on.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
+
+      {selectedTournament && smsEnabled && (
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-6 py-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Plan</p>
+              <p className="font-semibold capitalize">{unlimited ? "Unlimited" : "100 credits"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Credits used</p>
+              <p className="font-semibold">{smsSettings?.sms_credits_used ?? 0}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Remaining</p>
+              <p className="font-semibold">{unlimited ? "Unlimited" : creditsRemaining}</p>
+            </div>
+            {!unlimited && creditsRemaining === 0 && (
+              <Badge variant="destructive">Out of credits</Badge>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2">
@@ -191,6 +227,7 @@ export default function Messages() {
             <CardDescription>Send or schedule a text message to all registered players with phone numbers.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Tournament</label>
               <Select value={selectedTournament} onValueChange={setSelectedTournament}>

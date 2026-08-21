@@ -102,12 +102,36 @@ const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 
 interface Props {
   tournamentId: string;
   tournamentSlug: string | null;
+  /** Organization id — used as the storage folder for uploaded logos. */
+  orgId?: string;
 }
 
-export default function LeaderboardDesignCard({ tournamentId, tournamentSlug }: Props) {
+export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, orgId }: Props) {
   const [design, setDesign] = useState<LeaderboardDesign>(DEFAULT_DESIGN);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState<string | null>(null);
+
+  const uploadLogo = async (
+    field: "left_logo_url" | "right_logo_url",
+    file: File,
+  ) => {
+    setUploading(field);
+    try {
+      const ext = file.name.split(".").pop() || "png";
+      const path = `${orgId || "shared"}/${tournamentId}/leaderboard-${field}-${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+      if (error) throw error;
+      const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      setDesign((d) => ({ ...d, [field]: data.publicUrl }));
+      toast({ title: "Logo uploaded", description: "Remember to save your leaderboard design." });
+    } catch (e: any) {
+      toast({ title: "Upload failed", description: e.message, variant: "destructive" });
+    } finally {
+      setUploading(null);
+    }
+  };
+
 
   useEffect(() => {
     if (!tournamentId) return;

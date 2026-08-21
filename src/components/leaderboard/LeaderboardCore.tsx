@@ -413,26 +413,50 @@ export function LeaderboardRenderer({
       )}
 
       <header className={`${padX} ${headerPadY}`} style={{ backgroundColor: headerBg }} data-testid="lb-header">
-        <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center justify-between gap-4`}>
-          <div className="flex items-center gap-3">
-            {logoUrl && (
-              <img src={logoUrl} alt="" className={`${compact ? "h-6 w-6" : "h-12 w-12"} object-contain rounded`} />
-            )}
-            <div>
-              <h1 className={`${compact ? "text-sm" : "text-xl sm:text-3xl md:text-4xl"} font-bold leading-tight tracking-tight`} style={{ color: textColor }}>
-                {design.title || title}
-              </h1>
-              {!compact && subtitle && (
-                <p className="text-xs sm:text-sm opacity-80 mt-1">{subtitle}</p>
-              )}
-              {!compact && (
-                <p className="text-xs sm:text-sm flex items-center gap-2 opacity-80 mt-1">
-                  <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: accent }} /> Live Leaderboard
-                </p>
-              )}
+        <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center gap-4`}>
+          {/* Left logo — organizer upload, falling back to the site logo. */}
+          {(design.left_logo_url || logoUrl) && (
+            <div className="shrink-0 rounded bg-white/95 p-1.5 flex items-center justify-center">
+              <img
+                src={design.left_logo_url || logoUrl || ""}
+                alt=""
+                className={`${compact ? "h-6" : "h-12 sm:h-16"} w-auto max-w-[140px] object-contain`}
+              />
             </div>
+          )}
+          <div
+            className={`flex-1 min-w-0 ${
+              titleAlign === "center" ? "text-center" : titleAlign === "right" ? "text-right" : "text-left"
+            }`}
+          >
+            <h1 className={`${compact ? "text-sm" : "text-xl sm:text-3xl md:text-4xl"} font-bold leading-tight tracking-tight`} style={{ color: textColor }}>
+              {design.title || title}
+            </h1>
+            {!compact && subtitle && (
+              <p className="text-xs sm:text-sm opacity-80 mt-1">{subtitle}</p>
+            )}
+            {!compact && (
+              <p
+                className={`text-xs sm:text-sm flex items-center gap-2 opacity-80 mt-1 ${
+                  titleAlign === "center" ? "justify-center" : titleAlign === "right" ? "justify-end" : ""
+                }`}
+              >
+                <span className="inline-block h-2 w-2 rounded-full animate-pulse" style={{ backgroundColor: accent }} /> Live Leaderboard
+              </p>
+            )}
           </div>
-          <Trophy className={compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"} style={{ color: accent }} />
+          {/* Right logo replaces the trophy icon when the organizer uploads one. */}
+          {design.right_logo_url ? (
+            <div className="shrink-0 rounded bg-white/95 p-1.5 flex items-center justify-center">
+              <img
+                src={design.right_logo_url}
+                alt=""
+                className={`${compact ? "h-6" : "h-12 sm:h-16"} w-auto max-w-[140px] object-contain`}
+              />
+            </div>
+          ) : (
+            <Trophy className={`shrink-0 ${compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"}`} style={{ color: accent }} />
+          )}
         </div>
         {!compact && presentedBy && (
           <div
@@ -443,14 +467,16 @@ export function LeaderboardRenderer({
               className="text-xs sm:text-sm uppercase tracking-[0.15em] font-semibold opacity-80 whitespace-nowrap"
               style={{ color: textColor }}
             >
-              {presentedBy.label}
+              {presentedBy.label.replace(/:*$/, "")}:
             </span>
             {presentedBy.logoUrl ? (
-              <img
-                src={presentedBy.logoUrl}
-                alt={presentedBy.name}
-                className="h-8 sm:h-12 max-w-[160px] sm:max-w-[220px] object-contain"
-              />
+              <span className="rounded bg-white/95 p-1.5 flex items-center">
+                <img
+                  src={presentedBy.logoUrl}
+                  alt={presentedBy.name}
+                  className="h-8 sm:h-12 max-w-[160px] sm:max-w-[220px] object-contain"
+                />
+              </span>
             ) : null}
             <span
               className="text-sm sm:text-lg font-bold text-center"
@@ -466,8 +492,9 @@ export function LeaderboardRenderer({
         <div className={`${compact ? "" : "max-w-7xl mx-auto"} grid grid-cols-1 ${showSponsorBanner && sponsorPos === "sidebar" && !compact ? "lg:grid-cols-[1fr_280px]" : ""} gap-4`}>
           {boards && boards.length > 0 ? (
             <div className={`grid grid-cols-1 ${gridColsClass} gap-4`} data-testid="lb-flight-grid">
-              {boards.map((b) => renderBoard(b.key, b.label, b.rows))}
+              {boards.map((b) => renderBoard(b.key, `${b.label} Leaderboard`, b.rows, true))}
             </div>
+
           ) : (
             renderBoard("single", "Leaderboard", visibleRows)
           )}

@@ -296,6 +296,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
               uploading={uploading === "left_logo_url"}
               onUpload={(f) => uploadLogo("left_logo_url", f)}
               onClear={() => update("left_logo_url", "")}
+              orgLogoUrl={orgLogoUrl}
+              onUseOrgLogo={() => update("left_logo_url", orgLogoUrl || "")}
             />
             <LogoField
               label="Right Logo (replaces trophy icon)"
@@ -303,7 +305,10 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
               uploading={uploading === "right_logo_url"}
               onUpload={(f) => uploadLogo("right_logo_url", f)}
               onClear={() => update("right_logo_url", "")}
+              orgLogoUrl={orgLogoUrl}
+              onUseOrgLogo={() => update("right_logo_url", orgLogoUrl || "")}
             />
+
           </div>
           <p className="text-xs text-muted-foreground">
             Logos render on a light plate so they stay visible on dark leaderboard backgrounds.

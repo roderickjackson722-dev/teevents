@@ -295,32 +295,35 @@ export default function Messages() {
         <p className="text-muted-foreground">Send text message updates to registered players or any phone number.</p>
       </div>
 
-      {selectedTournament && !smsEnabled && (
+      {!smsEnabled && (
         <Card className="border-amber-300 bg-amber-50/60">
           <CardHeader>
-            <CardTitle className="text-base">SMS Blasts is a paid add-on</CardTitle>
+            <CardTitle className="text-base">Enable text messaging (paid add-on)</CardTitle>
             <CardDescription>
-              Text messaging isn't enabled for this tournament yet. 1 text message = 1 credit, so 100 text
-              messages means 100 individual texts sent to players.
+              1 text message = 1 credit, so 100 text messages means 100 individual texts sent to players.
+              Pricing is per tournament, one-time. Payment is handled securely by TeeVents through Stripe —
+              no separate SMS account needed.
+              {!selectedTournament && " Select a tournament above to unlock text messaging for it."}
             </CardDescription>
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             <Button
               onClick={() => purchaseMutation.mutate("sms_100")}
-              disabled={purchaseMutation.isPending}
+              disabled={purchaseMutation.isPending || !selectedTournament}
             >
               <CreditCard className="mr-2 h-4 w-4" /> Buy 100 Text Messages – $29
             </Button>
             <Button
               variant="outline"
               onClick={() => purchaseMutation.mutate("sms_unlimited")}
-              disabled={purchaseMutation.isPending}
+              disabled={purchaseMutation.isPending || !selectedTournament}
             >
               <CreditCard className="mr-2 h-4 w-4" /> Unlimited Text Messages – $99
             </Button>
           </CardContent>
         </Card>
       )}
+
 
       {selectedTournament && smsEnabled && (
         <Card>

@@ -39,20 +39,22 @@ const LeaderboardScoring = () => {
       <Tabs value={view} onValueChange={setView}>
         <TabsList className="mb-6">
           <TabsTrigger value="leaderboard" className="gap-2">
-            <BarChart3 className="h-4 w-4" /> Live Leaderboard
+            <BarChart3 className="h-4 w-4" /> Live Leaderboard Settings
           </TabsTrigger>
           <TabsTrigger value="scoring" className="gap-2">
             <PenLine className="h-4 w-4" /> Score Entry
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="leaderboard">
-          <Leaderboard />
+        <TabsContent value="leaderboard" className="space-y-6">
+          <Leaderboard mode="settings" />
+          <Scoring embedded />
         </TabsContent>
         <TabsContent value="scoring">
-          <Scoring />
+          <Leaderboard mode="entry" />
         </TabsContent>
       </Tabs>
+
     </div>
   );
 };

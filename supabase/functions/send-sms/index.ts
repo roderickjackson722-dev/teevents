@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
       .eq("id", tournament_id)
       .maybeSingle();
     const t: any = tourn || {};
-    const leaderboardLink = t.slug ? `https://teevents.golf/leaderboard/${t.slug}` : "";
+    const leaderboardLink = t.slug ? `https://www.teevents.golf/live/${t.slug}` : "https://www.teevents.golf";
 
     const personalize = (tpl: string, r: any) => {
       const map: Record<string, string> = {

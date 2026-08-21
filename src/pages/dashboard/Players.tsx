@@ -2600,7 +2600,7 @@ const Players = () => {
 
                     {rosterCols.tier !== false && (
                       <td className="px-4 py-3">
-                        {p.tier_id ? (
+                        {divisionLabel(p) !== "—" ? (
                           <span className="inline-flex items-center bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
                             {divisionLabel(p)}
                           </span>
@@ -3663,7 +3663,7 @@ const Players = () => {
                                       {groupInfoById[p.group_id].name}
                                     </span>
                                   )}
-                                  {p.tier_id && (
+                                  {divisionLabel(p) !== "—" && (
                                     <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-secondary/15 text-secondary-foreground border border-secondary/40">
                                       {divisionLabel(p)}
                                     </span>

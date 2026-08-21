@@ -133,20 +133,24 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
   };
 
 
+  const [orgLogoUrl, setOrgLogoUrl] = useState<string | null>(null);
+
   useEffect(() => {
     if (!tournamentId) return;
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("leaderboard_design")
+      .select("leaderboard_design, site_logo_url")
       .eq("id", tournamentId)
       .maybeSingle()
       .then(({ data }) => {
         const d = (data as any)?.leaderboard_design;
         setDesign({ ...DEFAULT_DESIGN, ...(d || {}) });
+        setOrgLogoUrl(((data as any)?.site_logo_url as string) || null);
         setLoading(false);
       });
   }, [tournamentId]);
+
 
   const update = <K extends keyof LeaderboardDesign>(k: K, v: LeaderboardDesign[K]) =>
     setDesign((d) => ({ ...d, [k]: v }));
@@ -292,6 +296,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
               uploading={uploading === "left_logo_url"}
               onUpload={(f) => uploadLogo("left_logo_url", f)}
               onClear={() => update("left_logo_url", "")}
+              orgLogoUrl={orgLogoUrl}
+              onUseOrgLogo={() => update("left_logo_url", orgLogoUrl || "")}
             />
             <LogoField
               label="Right Logo (replaces trophy icon)"
@@ -299,7 +305,10 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
               uploading={uploading === "right_logo_url"}
               onUpload={(f) => uploadLogo("right_logo_url", f)}
               onClear={() => update("right_logo_url", "")}
+              orgLogoUrl={orgLogoUrl}
+              onUseOrgLogo={() => update("right_logo_url", orgLogoUrl || "")}
             />
+
           </div>
           <p className="text-xs text-muted-foreground">
             Logos render on a light plate so they stay visible on dark leaderboard backgrounds.
@@ -532,13 +541,19 @@ function LogoField({
   uploading,
   onUpload,
   onClear,
+  orgLogoUrl,
+  onUseOrgLogo,
 }: {
   label: string;
   value: string;
   uploading: boolean;
   onUpload: (file: File) => void;
   onClear: () => void;
+  /** Organizer logo already shown on the public tournament page, if any. */
+  orgLogoUrl?: string | null;
+  onUseOrgLogo?: () => void;
 }) {
+
   const ref = useRef<HTMLInputElement>(null);
   return (
     <div>
@@ -573,6 +588,19 @@ function LogoField({
           {value ? "Replace" : "Choose File"}
         </Button>
       </div>
+      {orgLogoUrl && onUseOrgLogo && orgLogoUrl !== value && (
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          className="mt-1 h-7 px-2 text-xs"
+          onClick={onUseOrgLogo}
+        >
+          <img src={orgLogoUrl} alt="" className="h-4 w-4 mr-1.5 object-contain" />
+          Use organizer logo
+        </Button>
+      )}
     </div>
   );
 }
+

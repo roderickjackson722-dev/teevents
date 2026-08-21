@@ -590,8 +590,9 @@ const SiteBuilder = () => {
               onCheckedChange={(v) => updateField("registration_open", v)}
             />
             <span className="text-sm font-medium text-foreground whitespace-nowrap">
-              {settings.registration_open ? "Close Registration" : "Open Registration"}
+              {settings.registration_open ? "Registration Open" : "Registration Closed"}
             </span>
+
           </label>
           <label className="flex items-center gap-2 shrink-0">
             <Switch

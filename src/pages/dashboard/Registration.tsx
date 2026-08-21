@@ -261,7 +261,8 @@ const Registration = () => {
       setDonationCustomLabel(((tournament as any).donation_custom_label as string) || "Enter your own amount");
       setAutoCloseEnabled(!!(tournament as any).registration_auto_close_enabled);
       const closeIso = (tournament as any).registration_close_at as string | null;
-      setCloseAt(closeIso ? new Date(closeIso).toISOString().slice(0, 16) : "");
+      setCloseAt(closeIso ? toLocalInputValue(closeIso) : "");
+      setSavedCloseAt(closeIso && (tournament as any).registration_auto_close_enabled ? closeIso : null);
       setClosedMessage(((tournament as any).registration_closed_message as string) || "");
       setClosedContactEmail(((tournament as any).registration_closed_contact_email as string) || "");
       setClosedContactPhone(((tournament as any).registration_closed_contact_phone as string) || "");

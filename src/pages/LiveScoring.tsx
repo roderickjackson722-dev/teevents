@@ -468,6 +468,50 @@ export default function LiveScoring() {
     return true;
   };
 
+  /** Erase saved + pending scores for a hole (whole group, or one player). */
+  const clearHole = async (hole: number, regId?: string) => {
+    if (!tournament) return;
+    if (!scoringCode) {
+      toast.error("Missing scoring code. Please log in again with your code.");
+      return;
+    }
+    const who = regId ? players.find((p) => p.id === regId) : undefined;
+    const label = who ? `${who.first_name} ${who.last_name}` : "this group";
+    if (!window.confirm(`Clear the Hole ${hole} score for ${label}? This cannot be undone.`)) return;
+    setSaving(true);
+    const { error } = await supabase.rpc("clear_group_hole_scores", {
+      _tournament_id: tournament.id,
+      _code: scoringCode,
+      _hole_number: hole,
+      _round_number: roundNumber,
+      _registration_id: regId ?? null,
+    } as any);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    const targets = regId ? [regId] : players.map((p) => p.id);
+    setScores((prev) => {
+      const next = { ...prev };
+      targets.forEach((id) => {
+        if (next[id]) {
+          const { [hole]: _r, ...rest } = next[id];
+          next[id] = rest;
+        }
+      });
+      return next;
+    });
+    setEditedScores((prev) => {
+      const next: typeof prev = {};
+      Object.entries(prev).forEach(([id, holeMap]) => {
+        if (targets.includes(id)) {
+          const { [hole]: _r, ...rest } = holeMap;
+          if (Object.keys(rest).length > 0) next[id] = rest;
+        } else next[id] = holeMap;
+      });
+      return next;
+    });
+    toast.success(`Hole ${hole} score cleared`);
+  };
+
   /** Save the current hole then navigate. Blank scores are allowed. */
   const goToHole = async (nextHole: number) => {
     const target = Math.max(1, Math.min(18, nextHole));

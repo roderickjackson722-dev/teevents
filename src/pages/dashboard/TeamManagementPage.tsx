@@ -1,9 +1,13 @@
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { TeamManagement } from "@/components/settings/TeamManagement";
+import TournamentTeam from "@/components/settings/TournamentTeam";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { Loader2 } from "lucide-react";
 
 const TeamManagementPage = () => {
   const { org, loading } = useOrgContext();
+  const [tournamentId] = useTournamentIdParam();
 
   if (loading) {
     return (
@@ -22,7 +26,18 @@ const TeamManagementPage = () => {
         </p>
       </div>
 
-      {org && <TeamManagement orgId={org.orgId} userId={org.userId} />}
+      <Tabs defaultValue="tournament" className="space-y-6">
+        <TabsList>
+          <TabsTrigger value="tournament">By Tournament</TabsTrigger>
+          <TabsTrigger value="organization">Organization</TabsTrigger>
+        </TabsList>
+        <TabsContent value="tournament">
+          <TournamentTeam initialTournamentId={tournamentId} />
+        </TabsContent>
+        <TabsContent value="organization">
+          {org && <TeamManagement orgId={org.orgId} userId={org.userId} />}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

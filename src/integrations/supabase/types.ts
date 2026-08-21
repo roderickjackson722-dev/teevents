@@ -8646,6 +8646,30 @@ export type Database = {
           },
         ]
       }
+      temp_passwords: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          password_hash: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          password_hash: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          password_hash?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       test_participants: {
         Row: {
           course_handicap: number | null
@@ -9204,6 +9228,59 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tournament_donations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_invitations: {
+        Row: {
+          accepted_at: string | null
+          email: string
+          expires_at: string
+          id: string
+          invited_at: string
+          invited_by: string | null
+          is_active: boolean
+          name: string | null
+          permissions: string[]
+          role: string
+          token: string
+          tournament_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          email: string
+          expires_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          is_active?: boolean
+          name?: string | null
+          permissions?: string[]
+          role?: string
+          token: string
+          tournament_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          is_active?: boolean
+          name?: string | null
+          permissions?: string[]
+          role?: string
+          token?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_invitations_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
@@ -9988,6 +10065,56 @@ export type Database = {
           },
           {
             foreignKeyName: "tournament_registrations_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_roles: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          id: string
+          invited_at: string
+          invited_by: string | null
+          is_active: boolean
+          name: string | null
+          permissions: string[]
+          role: string
+          tournament_id: string
+          user_id: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          is_active?: boolean
+          name?: string | null
+          permissions?: string[]
+          role?: string
+          tournament_id: string
+          user_id: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          id?: string
+          invited_at?: string
+          invited_by?: string | null
+          is_active?: boolean
+          name?: string | null
+          permissions?: string[]
+          role?: string
+          tournament_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_roles_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
@@ -12143,6 +12270,10 @@ export type Database = {
         Returns: boolean
       }
       bump_sample_view: { Args: { _token: string }; Returns: string }
+      can_manage_tournament_team: {
+        Args: { _tournament_id: string; _user_id: string }
+        Returns: boolean
+      }
       check_auth_rate_limit: {
         Args: {
           _action: string
@@ -12497,6 +12628,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      has_tournament_role: {
+        Args: { _roles?: string[]; _tournament_id: string; _user_id: string }
         Returns: boolean
       }
       increment_event_ticket_sold: {

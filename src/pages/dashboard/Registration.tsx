@@ -164,6 +164,7 @@ const Registration = () => {
   /* Scheduled auto-close of registration */
   const [autoCloseEnabled, setAutoCloseEnabled] = useState<boolean>(false);
   const [closeAt, setCloseAt] = useState<string>(""); // datetime-local string
+  const [savedCloseAt, setSavedCloseAt] = useState<string | null>(null); // ISO, as stored
   const [closedMessage, setClosedMessage] = useState<string>("");
   const [closedContactEmail, setClosedContactEmail] = useState<string>("");
   const [closedContactPhone, setClosedContactPhone] = useState<string>("");

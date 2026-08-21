@@ -487,7 +487,47 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
             ))}
           </div>
         )}
+        {canManage && (
+          <p className="text-xs text-muted-foreground mt-3">
+            Team members sign in at <span className="font-mono">/team-login</span> with their email and
+            password, or with the 6-character login code above.
+          </p>
+        )}
       </div>
+
+      {/* Admin override: log in as a team member */}
+      {isPlatformAdmin && members.filter((m) => m.role !== "owner").length > 0 && (
+        <div className="mb-6 rounded-lg border border-border p-3 space-y-2">
+          <h3 className="text-sm font-semibold text-foreground flex items-center gap-2">
+            <LogIn className="h-4 w-4" /> Admin Override
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Sign in as a team member to troubleshoot their access. This replaces your current session.
+          </p>
+          <div className="flex flex-wrap items-center gap-2">
+            <Select value={impersonateId} onValueChange={setImpersonateId}>
+              <SelectTrigger className="w-56">
+                <SelectValue placeholder="Select a team member" />
+              </SelectTrigger>
+              <SelectContent>
+                {members
+                  .filter((m) => m.role !== "owner")
+                  .map((m) => (
+                    <SelectItem key={m.id} value={m.id}>
+                      {m.name || "Team Member"} ({m.role})
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            <Button onClick={handleImpersonate} disabled={!impersonateId || impersonating}>
+              {impersonating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LogIn className="h-4 w-4 mr-2" />}
+              Log in as member
+            </Button>
+          </div>
+        </div>
+      )}
+
+
 
       {/* Pending Invitations */}
       {invitations.length > 0 && (

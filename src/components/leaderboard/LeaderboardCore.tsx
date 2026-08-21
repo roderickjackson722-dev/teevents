@@ -86,7 +86,7 @@ interface RendererProps {
   /** Optional banner above the leaderboard (eg. "Preview Mode"). */
   topNotice?: React.ReactNode;
   /** Optional subtitle under title (date · course). */
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   /**
    * Multiple named boards (eg. one per flight) rendered side by side in a grid.
    * When provided, these replace the single `rows` table.

@@ -358,6 +358,7 @@ const App = () => (
           <Route path="/sales-deck" element={<SalesDeck />} />
           <Route path="/flyer" element={<Flyer />} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
+          <Route path="/accept-team-invitation" element={<AcceptTeamInvitation />} />
           <Route path="/force-password-change" element={<ForcePasswordChange />} />
            <Route path="/nonprofits" element={<Nonprofits />} />
           <Route path="/plans" element={<Plans />} />

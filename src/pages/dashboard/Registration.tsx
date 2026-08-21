@@ -34,6 +34,9 @@ import {
   Crown,
   RotateCcw,
   Pencil,
+  CalendarClock,
+  CheckCircle2,
+  AlertTriangle,
 } from "lucide-react";
 import RefundPolicySettings from "@/components/dashboard/RefundPolicySettings";
 import RefundManagement from "@/components/dashboard/RefundManagement";
@@ -106,6 +109,42 @@ interface Addon {
   max_per_golfer: number;
 }
 
+/** Convert an ISO timestamp into a `datetime-local` value in the viewer's timezone. */
+function toLocalInputValue(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+/** Friendly, timezone-labeled display of a scheduled close time. */
+function formatCloseAt(iso: string): string {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  return d.toLocaleString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+}
+
+function countdownTo(iso: string): string {
+  const ms = new Date(iso).getTime() - Date.now();
+  if (ms <= 0) return "";
+  const mins = Math.floor(ms / 60000);
+  const days = Math.floor(mins / 1440);
+  const hours = Math.floor((mins % 1440) / 60);
+  const rem = mins % 60;
+  if (days > 0) return `in ${days}d ${hours}h`;
+  if (hours > 0) return `in ${hours}h ${rem}m`;
+  return `in ${rem}m`;
+}
+
+
 interface PromoCode {
   id?: string;
   tournament_id: string;
@@ -164,6 +203,7 @@ const Registration = () => {
   /* Scheduled auto-close of registration */
   const [autoCloseEnabled, setAutoCloseEnabled] = useState<boolean>(false);
   const [closeAt, setCloseAt] = useState<string>(""); // datetime-local string
+  const [savedCloseAt, setSavedCloseAt] = useState<string | null>(null); // ISO, as stored
   const [closedMessage, setClosedMessage] = useState<string>("");
   const [closedContactEmail, setClosedContactEmail] = useState<string>("");
   const [closedContactPhone, setClosedContactPhone] = useState<string>("");
@@ -261,7 +301,8 @@ const Registration = () => {
       setDonationCustomLabel(((tournament as any).donation_custom_label as string) || "Enter your own amount");
       setAutoCloseEnabled(!!(tournament as any).registration_auto_close_enabled);
       const closeIso = (tournament as any).registration_close_at as string | null;
-      setCloseAt(closeIso ? new Date(closeIso).toISOString().slice(0, 16) : "");
+      setCloseAt(closeIso ? toLocalInputValue(closeIso) : "");
+      setSavedCloseAt(closeIso && (tournament as any).registration_auto_close_enabled ? closeIso : null);
       setClosedMessage(((tournament as any).registration_closed_message as string) || "");
       setClosedContactEmail(((tournament as any).registration_closed_contact_email as string) || "");
       setClosedContactPhone(((tournament as any).registration_closed_contact_phone as string) || "");
@@ -344,7 +385,12 @@ const Registration = () => {
     const { error } = await supabase.from("tournaments").update(updates).eq("id", selectedTournament);
     if (error) toast.error(error.message);
     else {
-      toast.success("Registration settings saved!");
+      setSavedCloseAt(updates.registration_close_at as string | null);
+      if (updates.registration_close_at) {
+        toast.success(`Saved — registration closes ${formatCloseAt(updates.registration_close_at as string)}`);
+      } else {
+        toast.success("Registration settings saved!");
+      }
       setTournaments((prev) =>
         prev.map((t) =>
           t.id === selectedTournament
@@ -845,8 +891,53 @@ const Registration = () => {
                   <Switch checked={autoCloseEnabled} onCheckedChange={setAutoCloseEnabled} />
                 </div>
 
+
+
+                {/* Saved schedule confirmation */}
+                {savedCloseAt ? (
+                  <div className="rounded-md border border-[#1a5c38]/30 bg-[#1a5c38]/5 p-3">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-[#1a5c38] mt-0.5 shrink-0" />
+                      <div className="text-sm">
+                        <div className="font-semibold text-[#1a5c38]">
+                          {new Date(savedCloseAt).getTime() <= Date.now()
+                            ? "Scheduled close has passed"
+                            : "Auto-close is scheduled"}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                          <span className="inline-flex items-center gap-1 text-foreground">
+                            <CalendarClock className="h-3.5 w-3.5" />
+                            {formatCloseAt(savedCloseAt)}
+                          </span>
+                          {new Date(savedCloseAt).getTime() > Date.now() && (
+                            <Badge variant="outline">{countdownTo(savedCloseAt)}</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Registration will turn off automatically at this time. Change the date below and save again to
+                          reschedule, or switch this off to keep registration open.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : autoCloseEnabled ? (
+                  <div className="rounded-md border border-amber-300 bg-amber-50 p-3 flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-900">
+                      No close time saved yet. Pick a date and time below, then click Save — you'll see the confirmed
+                      shut-off time here.
+                    </p>
+                  </div>
+                ) : null}
+
                 {autoCloseEnabled && (
                   <div className="space-y-3 rounded-md border border-border bg-background p-3">
+                    {savedCloseAt && closeAt && new Date(closeAt).toISOString() !== savedCloseAt && (
+                      <p className="text-xs font-medium text-amber-700">
+                        Unsaved change — click Save to move the close time to{" "}
+                        {formatCloseAt(new Date(closeAt).toISOString())}.
+                      </p>
+                    )}
                     <div>
                       <Label className="text-xs">Close registration at (your local time)</Label>
                       <Input

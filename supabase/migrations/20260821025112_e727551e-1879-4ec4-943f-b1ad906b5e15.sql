@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.generate_team_login_code() FROM anon, authenticated;

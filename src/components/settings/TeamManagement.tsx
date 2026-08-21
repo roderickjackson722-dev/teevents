@@ -71,7 +71,10 @@ interface MemberRow {
   role: string;
   permissions: string[];
   name?: string | null;
+  login_code?: string | null;
+  login_code_expires_at?: string | null;
 }
+
 
 interface InviteRow {
   id: string;

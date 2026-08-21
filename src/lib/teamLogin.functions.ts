@@ -30,7 +30,7 @@ export const generateTeamLoginCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { memberId: string; orgId: string; expiresInDays?: number }) => input)
   .handler(async ({ data, context }): Promise<CodeResult> => {
-    await assertCanManage(context.supabase, context.userId, data.orgId);
+    await assertCanManage(context!.supabase, context!.userId, data.orgId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: member, error: memberError } = await supabaseAdmin
@@ -60,7 +60,7 @@ export const revokeTeamLoginCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { memberId: string; orgId: string }) => input)
   .handler(async ({ data, context }) => {
-    await assertCanManage(context.supabase, context.userId, data.orgId);
+    await assertCanManage(context!.supabase, context!.userId, data.orgId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("org_members")
@@ -112,8 +112,8 @@ export const adminImpersonateTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { memberId: string }) => input)
   .handler(async ({ data, context }): Promise<SessionTokenResult> => {
-    const { data: isAdmin } = await context.supabase.rpc("has_role", {
-      _user_id: context.userId,
+    const { data: isAdmin } = await context!.supabase.rpc("has_role", {
+      _user_id: context!.userId,
       _role: "admin",
     });
     if (isAdmin !== true) throw new Error("Forbidden");

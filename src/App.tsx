@@ -415,6 +415,7 @@ const App = () => (
            <Route path="/admin/security" element={<AdminSecurity />} />
            <Route path="/admin/email-notifications" element={<AdminEmailNotifications />} />
            <Route path="/admin/scheduled-emails" element={<AdminScheduledEmails />} />
+           <Route path="/admin/sms-settings" element={<AdminSmsSettings />} />
 
            <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />

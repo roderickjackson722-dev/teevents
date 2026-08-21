@@ -10,7 +10,8 @@ import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
 import { getFormatById } from "@/lib/scoringFormats";
-import { BrandingTagline } from "@/components/BrandingTagline";
+import { isBrandingRemoved } from "@/components/BrandingTagline";
+import { TeeventsFooter } from "@/components/TeeventsFooter";
 
 interface Player {
   id: string;
@@ -1003,7 +1004,7 @@ export default function LiveScoring() {
 
 
       </div>
-      <BrandingTagline tournament={tournament as any} />
+      {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
     </div>
   );
 }

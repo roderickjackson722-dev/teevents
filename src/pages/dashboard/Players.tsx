@@ -477,7 +477,7 @@ const Players = () => {
       case "phone": return (p.phone || "").toLowerCase();
       case "hcp": return p.handicap ?? Number.POSITIVE_INFINITY;
       case "age": return ageOf(p) ?? Number.POSITIVE_INFINITY;
-      case "tier": return tierName(p.tier_id).toLowerCase();
+      case "tier": return divisionLabel(p).toLowerCase();
       case "flight": return flightName(p.flight_id).toLowerCase();
       case "group": return (p.group_id ? (groupNames[p.group_id] || "team") : "\uFFFF").toLowerCase();
       case "shirt": return (p.shirt_size || "").toLowerCase();
@@ -743,7 +743,7 @@ const Players = () => {
       p.email,
       p.phone || "",
       p.handicap?.toString() || "",
-      tierName(p.tier_id),
+      divisionLabel(p),
       p.shirt_size || "",
       p.group_number?.toString() || "Unassigned",
       p.payment_status,
@@ -1065,7 +1065,7 @@ const Players = () => {
 
   // Division shown on each pairing card (derived from the player's Division / Tier)
   const divisionOfGroup = (list: Registration[]): string => {
-    const names = [...new Set(list.map((p) => (p.tier_id ? tierName(p.tier_id) : "")).filter((n) => n && n !== "—"))];
+    const names = [...new Set(list.map((p) => divisionLabel(p)).filter((n) => n && n !== "—"))];
     if (names.length === 0) return "";
     if (names.length === 1) return names[0];
     return "Mixed";
@@ -1169,13 +1169,13 @@ const Players = () => {
   // ---- Division filter (Pro / Senior / Amateur / …) ----
   const [divFilter, setDivFilter] = useState<string>("all");
   const divisionOptions = [...new Set(
-    players.map((p) => (p.tier_id ? tierName(p.tier_id) : "")).filter((n) => n && n !== "—")
+    players.map((p) => divisionLabel(p)).filter((n) => n && n !== "—")
   )].sort((a, b) => a.localeCompare(b));
   useEffect(() => {
     if (divFilter !== "all" && !divisionOptions.includes(divFilter)) setDivFilter("all");
   }, [divisionOptions.join("|"), divFilter]);
   const groupMatchesDivision = (list: Registration[]) =>
-    divFilter === "all" || list.some((p) => p.tier_id && tierName(p.tier_id) === divFilter);
+    divFilter === "all" || list.some((p) => divisionLabel(p) === divFilter);
   // A hole stays visible when at least one of its players passes the age filter
   // (empty holes always stay visible so organizers can still drop players in).
   const groupMatchesAge = (list: Registration[]) =>
@@ -2602,7 +2602,7 @@ const Players = () => {
                       <td className="px-4 py-3">
                         {p.tier_id ? (
                           <span className="inline-flex items-center bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            {tierName(p.tier_id)}
+                            {divisionLabel(p)}
                           </span>
                         ) : (
                           <span className="text-muted-foreground text-xs">—</span>
@@ -3665,7 +3665,7 @@ const Players = () => {
                                   )}
                                   {p.tier_id && (
                                     <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-secondary/15 text-secondary-foreground border border-secondary/40">
-                                      {tierName(p.tier_id)}
+                                      {divisionLabel(p)}
                                     </span>
                                   )}
 
@@ -3762,7 +3762,7 @@ const Players = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Division / Tier</p>
-                  <p className="text-sm text-foreground">{tierName(viewingPlayer.tier_id)}</p>
+                  <p className="text-sm text-foreground">{divisionLabel(viewingPlayer)}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Flight (selected at registration)</p>

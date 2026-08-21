@@ -636,16 +636,21 @@ export default function LiveLeaderboard() {
   const singleBoardLabel = activeFlightName ? `${activeFlightName} Leaderboard` : "Leaderboard";
 
 
-  const subtitleParts: string[] = [];
-  if (tournament.course_name) subtitleParts.push(tournament.course_name);
   // Organizers can override the displayed date (add-on events may start earlier).
   const shownDate = design.display_date || tournament.date;
+  let dateText: string | null = null;
   if (shownDate) {
     try {
-      subtitleParts.push(new Date(shownDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }));
+      dateText = new Date(shownDate + "T00:00:00").toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" });
     } catch { /* ignore */ }
   }
-  const subtitle = subtitleParts.join(" · ");
+  const subtitle = (
+    <span className="flex flex-col sm:flex-row sm:items-center sm:gap-2">
+      {tournament.course_name && <span>{tournament.course_name}</span>}
+      {tournament.course_name && dateText && <span className="hidden sm:inline opacity-60">·</span>}
+      {dateText && <span>{dateText}</span>}
+    </span>
+  );
 
 
   const presentedBy = tournament.leaderboard_show_sponsor && tournament.leaderboard_sponsor_name

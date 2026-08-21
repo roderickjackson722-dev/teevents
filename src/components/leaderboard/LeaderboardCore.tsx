@@ -86,7 +86,7 @@ interface RendererProps {
   /** Optional banner above the leaderboard (eg. "Preview Mode"). */
   topNotice?: React.ReactNode;
   /** Optional subtitle under title (date · course). */
-  subtitle?: string;
+  subtitle?: React.ReactNode;
   /**
    * Multiple named boards (eg. one per flight) rendered side by side in a grid.
    * When provided, these replace the single `rows` table.
@@ -420,11 +420,11 @@ export function LeaderboardRenderer({
         <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center gap-4`}>
           {/* Left logo — organizer upload, falling back to the site logo. */}
           {(design.left_logo_url || logoUrl) && (
-            <div className="shrink-0 rounded bg-white/95 p-1.5 flex items-center justify-center">
+            <div className="shrink-0 rounded bg-white/95 p-1 flex items-center justify-center">
               <img
                 src={design.left_logo_url || logoUrl || ""}
                 alt=""
-                className={`${compact ? "h-6" : "h-12 sm:h-16"} w-auto max-w-[140px] object-contain`}
+                className={`${compact ? "h-6" : "h-8 sm:h-12 md:h-16"} w-auto max-w-[60px] sm:max-w-[100px] md:max-w-[160px] object-contain`}
               />
             </div>
           )}
@@ -433,11 +433,11 @@ export function LeaderboardRenderer({
               titleAlign === "center" ? "text-center" : titleAlign === "right" ? "text-right" : "text-left"
             }`}
           >
-            <h1 className={`${compact ? "text-sm" : "text-xl sm:text-3xl md:text-4xl"} font-bold leading-tight tracking-tight`} style={{ color: textColor }}>
+            <h1 className={`${compact ? "text-sm" : "text-base sm:text-2xl md:text-4xl"} font-bold leading-tight tracking-tight break-words`} style={{ color: textColor }}>
               {design.title || title}
             </h1>
             {!compact && subtitle && (
-              <p className="text-xs sm:text-sm opacity-80 mt-1">{subtitle}</p>
+              <div className="text-xs sm:text-sm opacity-80 mt-1">{subtitle}</div>
             )}
             {!compact && (
               <p
@@ -451,15 +451,15 @@ export function LeaderboardRenderer({
           </div>
           {/* Right logo replaces the trophy icon when the organizer uploads one. */}
           {design.right_logo_url ? (
-            <div className="shrink-0 rounded bg-white/95 p-1.5 flex items-center justify-center">
+            <div className="shrink-0 rounded bg-white/95 p-1 flex items-center justify-center">
               <img
                 src={design.right_logo_url}
                 alt=""
-                className={`${compact ? "h-6" : "h-12 sm:h-16"} w-auto max-w-[140px] object-contain`}
+                className={`${compact ? "h-6" : "h-8 sm:h-12 md:h-16"} w-auto max-w-[60px] sm:max-w-[100px] md:max-w-[160px] object-contain`}
               />
             </div>
           ) : (
-            <Trophy className={`shrink-0 ${compact ? "h-4 w-4" : "h-8 w-8 sm:h-12 sm:w-12"}`} style={{ color: accent }} />
+            <Trophy className={`shrink-0 ${compact ? "h-4 w-4" : "h-6 w-6 sm:h-10 sm:w-10 md:h-12 md:w-12"}`} style={{ color: accent }} />
           )}
         </div>
         {!compact && presentedBy && (

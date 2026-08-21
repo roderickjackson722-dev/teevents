@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users } from "lucide-react";
+import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
@@ -468,6 +468,50 @@ export default function LiveScoring() {
     return true;
   };
 
+  /** Erase saved + pending scores for a hole (whole group, or one player). */
+  const clearHole = async (hole: number, regId?: string) => {
+    if (!tournament) return;
+    if (!scoringCode) {
+      toast.error("Missing scoring code. Please log in again with your code.");
+      return;
+    }
+    const who = regId ? players.find((p) => p.id === regId) : undefined;
+    const label = who ? `${who.first_name} ${who.last_name}` : "this group";
+    if (!window.confirm(`Clear the Hole ${hole} score for ${label}? This cannot be undone.`)) return;
+    setSaving(true);
+    const { error } = await supabase.rpc("clear_group_hole_scores", {
+      _tournament_id: tournament.id,
+      _code: scoringCode,
+      _hole_number: hole,
+      _round_number: roundNumber,
+      _registration_id: regId ?? null,
+    } as any);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    const targets = regId ? [regId] : players.map((p) => p.id);
+    setScores((prev) => {
+      const next = { ...prev };
+      targets.forEach((id) => {
+        if (next[id]) {
+          const { [hole]: _r, ...rest } = next[id];
+          next[id] = rest;
+        }
+      });
+      return next;
+    });
+    setEditedScores((prev) => {
+      const next: typeof prev = {};
+      Object.entries(prev).forEach(([id, holeMap]) => {
+        if (targets.includes(id)) {
+          const { [hole]: _r, ...rest } = holeMap;
+          if (Object.keys(rest).length > 0) next[id] = rest;
+        } else next[id] = holeMap;
+      });
+      return next;
+    });
+    toast.success(`Hole ${hole} score cleared`);
+  };
+
   /** Save the current hole then navigate. Blank scores are allowed. */
   const goToHole = async (nextHole: number) => {
     const target = Math.max(1, Math.min(18, nextHole));
@@ -729,12 +773,22 @@ export default function LiveScoring() {
                       >
                         <Plus className="h-5 w-5" />
                       </button>
+                      <button
+                        onClick={() => clearHole(focusHole)}
+                        disabled={saving || display === ""}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
+                        aria-label="Clear team score for this hole"
+                        title="Clear this hole's score"
+                      >
+                        <Eraser className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 );
               })()}
               <p className="text-xs text-muted-foreground">
                 One score per hole for the whole group — it applies to every player on the team.
+                Entered a score on the wrong hole? Tap the eraser to clear it.
               </p>
             </CardContent>
           </Card>
@@ -782,10 +836,22 @@ export default function LiveScoring() {
                       >
                         <Plus className="h-5 w-5" />
                       </button>
+                      <button
+                        onClick={() => clearHole(focusHole, p.id)}
+                        disabled={saving || display === ""}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
+                        aria-label={`Clear Hole ${focusHole} score`}
+                        title="Clear this hole's score"
+                      >
+                        <Eraser className="h-5 w-5" />
+                      </button>
                     </div>
                   </div>
                 );
               })}
+              <p className="text-xs text-muted-foreground">
+                Entered a score on the wrong hole? Tap the eraser to clear that player's score for this hole.
+              </p>
             </CardContent>
           </Card>
         ) : (

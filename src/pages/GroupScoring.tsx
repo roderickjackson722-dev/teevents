@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ChevronLeft, ChevronRight, Trophy, Pencil, Check, Minus, Plus, Users } from "lucide-react";
+import { Loader2, ChevronLeft, ChevronRight, Trophy, Pencil, Check, Minus, Plus, Users, Eraser } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { allocateStrokes } from "@/lib/handicapUtils";
 import { getFormatById } from "@/lib/scoringFormats";
@@ -330,6 +330,48 @@ export default function GroupScoring() {
     toast({ title: "Score saved" });
   };
 
+  const [clearing, setClearing] = useState(false);
+
+  /** Erase the saved score for a hole (whole team, or one player). */
+  const clearHoleScore = async (hole: number, pid?: string) => {
+    if (!tournament || !code) return;
+    const who = pid ? players.find((p) => p.id === pid) : undefined;
+    const label = who ? `${who.first_name} ${who.last_name}` : "this group";
+    if (!window.confirm(`Clear the Hole ${hole} score for ${label}? This cannot be undone.`)) return;
+    setClearing(true);
+    const { error } = await supabase.rpc("clear_group_hole_scores", {
+      _tournament_id: tournament.id,
+      _code: code,
+      _hole_number: hole,
+      _round_number: roundNumber,
+      _registration_id: isScramble ? null : (pid ?? null),
+    } as any);
+    setClearing(false);
+    if (error) {
+      toast({ title: "Could not clear score", description: error.message, variant: "destructive" });
+      return;
+    }
+    const targets = isScramble || !pid ? players.map((p) => p.id) : [pid];
+    setScores((prev) => {
+      const next = { ...prev };
+      targets.forEach((id) => {
+        if (next[id]) {
+          const { [hole]: _r, ...rest } = next[id];
+          next[id] = rest;
+        }
+      });
+      return next;
+    });
+    setDraft((d) => {
+      const next = { ...d };
+      targets.forEach((id) => { delete next[id]; });
+      delete next[TEAM_KEY];
+      return next;
+    });
+    setEditTarget(null);
+    toast({ title: `Hole ${hole} score cleared` });
+  };
+
   const handleSave = () => {
     if (!hasPending) {
       if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
@@ -484,8 +526,23 @@ export default function GroupScoring() {
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    className="h-10 w-10 text-destructive"
+                    disabled={!!editLocked || clearing || teamSaved == null}
+                    onClick={() => clearHoleScore(currentHole)}
+                    aria-label="Clear team score for this hole"
+                    title="Clear this hole's score"
+                  >
+                    <Eraser className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground">
+                Wrong hole? Tap the eraser to clear this hole's score.
+              </p>
               {teamNum == null && (
                 <p className="text-xs text-muted-foreground italic">Tap +/- to enter the team score for this hole.</p>
               )}
@@ -561,10 +618,25 @@ export default function GroupScoring() {
                     >
                       <Plus className="h-4 w-4" />
                     </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      className="h-10 w-10 text-destructive"
+                      disabled={locked || clearing || (gross == null && !hasDraft)}
+                      onClick={() => clearHoleScore(currentHole, p.id)}
+                      aria-label={`Clear Hole ${currentHole} score`}
+                      title="Clear this hole's score"
+                    >
+                      <Eraser className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               );
             })}
+            <p className="text-xs text-muted-foreground">
+              Entered a score on the wrong hole? Tap the eraser to clear it for that player.
+            </p>
             {editLocked && (
               <p className="text-xs text-muted-foreground text-center pt-1">
                 Editing past holes is locked by the organizer.
@@ -731,11 +803,23 @@ export default function GroupScoring() {
               </div>
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditTarget(null)}>Cancel</Button>
-            <Button onClick={saveEdit} disabled={savingEdit} style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
-              {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
-            </Button>
+          <DialogFooter className="gap-2 sm:justify-between">
+            {editTarget && (
+              <Button
+                variant="outline"
+                className="text-destructive"
+                disabled={clearing}
+                onClick={() => clearHoleScore(editTarget.hole, editTarget.pid)}
+              >
+                {clearing ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Eraser className="h-4 w-4 mr-1" />Clear Score</>}
+              </Button>
+            )}
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setEditTarget(null)}>Cancel</Button>
+              <Button onClick={saveEdit} disabled={savingEdit} style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
+                {savingEdit ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save"}
+              </Button>
+            </div>
           </DialogFooter>
         </DialogContent>
       </Dialog>

@@ -29,8 +29,9 @@ async function assertCanManage(supabase: any, userId: string, orgId: string) {
 export const generateTeamLoginCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { memberId: string; orgId: string; expiresInDays?: number }) => input)
-  .handler(async ({ data, context }): Promise<CodeResult> => {
-    await assertCanManage(context!.supabase, context!.userId, data.orgId);
+  .handler(async ({ data, context }: any): Promise<CodeResult> => {
+    const ctx = context as any;
+    await assertCanManage(ctx.supabase, ctx.userId, data.orgId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
     const { data: member, error: memberError } = await supabaseAdmin
@@ -59,8 +60,9 @@ export const generateTeamLoginCode = createServerFn({ method: "POST" })
 export const revokeTeamLoginCode = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { memberId: string; orgId: string }) => input)
-  .handler(async ({ data, context }) => {
-    await assertCanManage(context!.supabase, context!.userId, data.orgId);
+  .handler(async ({ data, context }: any) => {
+    const ctx = context as any;
+    await assertCanManage(ctx.supabase, ctx.userId, data.orgId);
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { error } = await supabaseAdmin
       .from("org_members")
@@ -111,9 +113,10 @@ export const redeemTeamLoginCode = createServerFn({ method: "POST" })
 export const adminImpersonateTeamMember = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { memberId: string }) => input)
-  .handler(async ({ data, context }): Promise<SessionTokenResult> => {
-    const { data: isAdmin } = await context!.supabase.rpc("has_role", {
-      _user_id: context!.userId,
+  .handler(async ({ data, context }: any): Promise<SessionTokenResult> => {
+    const ctx = context as any;
+    const { data: isAdmin } = await ctx.supabase.rpc("has_role", {
+      _user_id: ctx.userId,
       _role: "admin",
     });
     if (isAdmin !== true) throw new Error("Forbidden");

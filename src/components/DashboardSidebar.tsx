@@ -6,7 +6,7 @@ import {
   CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
   Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate, Receipt, Gauge,
-  Clock, ChevronDown, Zap,
+  Clock, ChevronDown, Zap, MessageSquare,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";

@@ -42,6 +42,32 @@ export default function Messages() {
     enabled: !!org,
   });
 
+  const { data: smsSettings } = useQuery({
+    queryKey: ["sms-settings", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await (supabase.from("tournaments") as any)
+        .select("sms_enabled, sms_plan, sms_credits_used, sms_credits_limit")
+        .eq("id", selectedTournament)
+        .maybeSingle();
+      if (error) throw error;
+      return data as {
+        sms_enabled: boolean;
+        sms_plan: string;
+        sms_credits_used: number;
+        sms_credits_limit: number;
+      } | null;
+    },
+    enabled: !!selectedTournament,
+  });
+
+  const smsEnabled = !!smsSettings?.sms_enabled;
+  const unlimited = smsSettings?.sms_plan === "unlimited";
+  const creditsRemaining = unlimited
+    ? Infinity
+    : Math.max(0, (smsSettings?.sms_credits_limit ?? 0) - (smsSettings?.sms_credits_used ?? 0));
+
+
+
   const { data: recipientCount } = useQuery({
     queryKey: ["sms-recipients", selectedTournament],
     queryFn: async () => {
@@ -144,6 +170,8 @@ export default function Messages() {
 
   const canSend =
     selectedTournament &&
+    smsEnabled &&
+    creditsRemaining > 0 &&
     message.trim() &&
     !sendMutation.isPending &&
     recipientCount !== 0 &&
@@ -152,9 +180,43 @@ export default function Messages() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
-        <p className="text-muted-foreground">Send SMS updates to registered players.</p>
+        <h1 className="text-2xl font-bold tracking-tight">SMS Blasts</h1>
+        <p className="text-muted-foreground">Send text message updates to registered players.</p>
       </div>
+
+      {selectedTournament && !smsEnabled && (
+        <Card className="border-amber-300 bg-amber-50/60">
+          <CardHeader>
+            <CardTitle className="text-base">SMS Blasts is a paid add-on</CardTitle>
+            <CardDescription>
+              Text messaging is not enabled for this tournament yet. Plans: $29/event for 100 credits, or
+              $99/event for unlimited texts. Contact TeeVents at info@teevents.golf to turn it on.
+            </CardDescription>
+          </CardHeader>
+        </Card>
+      )}
+
+      {selectedTournament && smsEnabled && (
+        <Card>
+          <CardContent className="flex flex-wrap items-center gap-6 py-4">
+            <div>
+              <p className="text-xs text-muted-foreground">Plan</p>
+              <p className="font-semibold capitalize">{unlimited ? "Unlimited" : "100 credits"}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Credits used</p>
+              <p className="font-semibold">{smsSettings?.sms_credits_used ?? 0}</p>
+            </div>
+            <div>
+              <p className="text-xs text-muted-foreground">Remaining</p>
+              <p className="font-semibold">{unlimited ? "Unlimited" : creditsRemaining}</p>
+            </div>
+            {!unlimited && creditsRemaining === 0 && (
+              <Badge variant="destructive">Out of credits</Badge>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       <div className="grid gap-6 md:grid-cols-3">
         <Card className="md:col-span-2">
@@ -165,6 +227,7 @@ export default function Messages() {
             <CardDescription>Send or schedule a text message to all registered players with phone numbers.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
+
             <div className="space-y-2">
               <label className="text-sm font-medium">Tournament</label>
               <Select value={selectedTournament} onValueChange={setSelectedTournament}>

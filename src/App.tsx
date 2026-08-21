@@ -87,6 +87,8 @@ import ManualEntryGrantsAdmin from "./pages/admin/ManualEntryGrants";
 import AdminSecurity from "./pages/admin/Security";
 import AdminEmailNotifications from "./pages/admin/EmailNotifications";
 import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
+import AdminSmsSettings from "./pages/admin/SmsSettings";
+import DashboardMessages from "./pages/dashboard/Messages";
 
 import AdminUsersEvents from "./pages/admin/UsersEvents";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
@@ -306,6 +308,7 @@ const App = () => (
           <Route path="/dashboard/missing-ages" element={<DashboardLayout><MissingAges /></DashboardLayout>} />
 
           <Route path="/dashboard/email-log" element={<DashboardLayout><EmailLog /></DashboardLayout>} />
+          <Route path="/dashboard/messages" element={<DashboardLayout><DashboardMessages /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
           <Route path="/dashboard/activity-log" element={<DashboardLayout><ActivityLog /></DashboardLayout>} />
           <Route path="/dashboard/team" element={<DashboardLayout><TeamManagementPage /></DashboardLayout>} />
@@ -412,6 +415,7 @@ const App = () => (
            <Route path="/admin/security" element={<AdminSecurity />} />
            <Route path="/admin/email-notifications" element={<AdminEmailNotifications />} />
            <Route path="/admin/scheduled-emails" element={<AdminScheduledEmails />} />
+           <Route path="/admin/sms-settings" element={<AdminSmsSettings />} />
 
            <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />

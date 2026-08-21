@@ -282,6 +282,13 @@ const Players = () => {
   // Flights (tournament_tiers) are what the participant selected at registration.
   const [flights, setFlights] = useState<Array<{ id: string; name: string }>>([]);
   const flightName = (id: string | null | undefined) => (id ? (flights.find((f) => f.id === id)?.name || "—") : "—");
+  // Division / Tier falls back to the selected flight when no price tier was chosen,
+  // so a registration never shows blank when the player did pick a division.
+  const divisionLabel = (p: { tier_id: string | null; flight_id?: string | null }) => {
+    const t = p.tier_id ? tierName(p.tier_id) : "—";
+    if (t !== "—") return t;
+    return flightName(p.flight_id);
+  };
   const [sortKey, setSortKey] = useState<string>("name");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
   const [groupNames, setGroupNames] = useState<Record<string, string>>({});

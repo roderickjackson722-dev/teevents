@@ -141,6 +141,7 @@ export function LeaderboardRenderer({
   rounds = [],
   currentRound,
   onRowClick,
+  onBoardSelect,
 
 }: RendererProps) {
 
@@ -151,7 +152,31 @@ export function LeaderboardRenderer({
   const accent = design.accent_color;
   const showSponsorBanner = design.show_sponsor_banner !== false;
   const sponsorPos = design.sponsor_banner_position || "top";
-  const visibleRows = rows.slice(0, Math.max(1, design.max_rows || 20));
+  const perPage = Math.max(1, design.max_rows || 20);
+  /**
+   * Page-by-page rotation. Every name in the field/flight is shown: the board
+   * advances one page at a time and loops back to the top. In "scroll" mode
+   * all rows render on a single page instead.
+   */
+  const pageMode = (design.row_paging_mode || "pages") === "pages" && !compact;
+  const longestBoard = boards && boards.length > 0
+    ? Math.max(...boards.map((b) => b.rows.length))
+    : rows.length;
+  const pageCount = pageMode ? Math.max(1, Math.ceil(longestBoard / perPage)) : 1;
+  const [pageIdx, setPageIdx] = useState(0);
+  useEffect(() => {
+    if (!pageMode || pageCount < 2) {
+      setPageIdx(0);
+      return;
+    }
+    const seconds = Math.max(3, design.row_page_seconds || 10);
+    const t = setInterval(() => setPageIdx((i) => (i + 1) % pageCount), seconds * 1000);
+    return () => clearInterval(t);
+  }, [pageMode, pageCount, design.row_page_seconds]);
+  const pageRows = (all: LbRow[]) =>
+    pageMode ? all.slice(pageIdx * perPage, pageIdx * perPage + perPage) : all;
+  const visibleRows = pageRows(rows);
+
   const showGross = design.show_gross !== false && design.default_view !== "net";
   const showNet = design.show_net !== false && design.default_view !== "gross";
   const showThru = design.show_thru !== false;

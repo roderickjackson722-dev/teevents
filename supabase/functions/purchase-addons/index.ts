@@ -69,7 +69,12 @@ serve(async (req) => {
     if (!membership) throw new Error("You are not a member of this organization");
 
     // If bundle chosen, collapse to just bundle line item
-    const finalAddons: string[] = addons.includes("bundle") ? ["bundle"] : addons;
+    const smsAddons: string[] = addons.filter((a: string) => SMS_KEYS.includes(a));
+    const nonSms: string[] = addons.filter((a: string) => !SMS_KEYS.includes(a));
+    const finalAddons: string[] = [
+      ...(nonSms.includes("bundle") ? ["bundle"] : nonSms),
+      ...smsAddons,
+    ];
 
     const line_items = finalAddons.map((k) => ({
       price_data: {

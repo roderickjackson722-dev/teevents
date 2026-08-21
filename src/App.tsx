@@ -108,6 +108,7 @@ import ScanCheckIn from "./pages/ScanCheckIn";
 import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
 import AcceptInvitation from "./pages/AcceptInvitation";
+import AcceptTeamInvitation from "./pages/AcceptTeamInvitation";
 import ForcePasswordChange from "./pages/ForcePasswordChange";
 import Nonprofits from "./pages/Nonprofits";
 import Plans from "./pages/Plans";

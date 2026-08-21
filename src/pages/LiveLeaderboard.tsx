@@ -277,6 +277,8 @@ export default function LiveLeaderboard() {
   // land on their own flight's board.
   const requestedFlight = (search.get("flight") || "").trim();
   const [activeFlight, setActiveFlight] = useState<string>("__overall");
+  // Grid mode drill-down: clicking a flight title opens that flight full-screen.
+  const [drillFlight, setDrillFlight] = useState<string | null>(null);
   // Course pars / SI / yardages power the To Par column and the scorecard modal.
   const [course, setCourse] = useState<ScorecardCourseInfo | null>(null);
   const [scorecardRow, setScorecardRow] = useState<LeaderboardRow | null>(null);
@@ -711,7 +713,12 @@ export default function LiveLeaderboard() {
         heroImage={heroImage || null}
         logoUrl={tournament.site_logo_url}
         subtitle={subtitle}
-        boards={flightBoards}
+        boards={drillFlight ? undefined : flightBoards}
+        singleBoardLabel={singleBoardLabel}
+        onBoardSelect={(key) => {
+          setDrillFlight(key);
+          setActiveFlight(key);
+        }}
         boardColumns={design.flight_columns || 2}
         presentedBy={presentedBy}
 
@@ -727,6 +734,21 @@ export default function LiveLeaderboard() {
                 >
                   ← Return to Scoring
                 </a>
+              </div>
+            ) : null}
+            {drillFlight ? (
+              <div className="w-full bg-primary/10 border-b border-primary/20 px-4 py-2 flex justify-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDrillFlight(null);
+                    setActiveFlight("__overall");
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-semibold"
+                  style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
+                >
+                  ← Back to All Flights
+                </button>
               </div>
             ) : null}
             {isPreview ? (

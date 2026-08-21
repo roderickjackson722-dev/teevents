@@ -15,7 +15,8 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
 } from "@/components/ui/alert-dialog";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { BrandingTagline } from "@/components/BrandingTagline";
+import { isBrandingRemoved } from "@/components/BrandingTagline";
+import { TeeventsFooter } from "@/components/TeeventsFooter";
 
 interface Reg {
   id: string;
@@ -756,7 +757,7 @@ export default function GroupScoring() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-      <BrandingTagline tournament={tournament} />
+      {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
     </div>
   );
 }

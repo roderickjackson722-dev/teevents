@@ -6,7 +6,7 @@ import { Trophy, Loader2 } from "lucide-react";
 import { type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 import { LeaderboardRenderer, mergeDesign } from "@/components/leaderboard/LeaderboardCore";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
-import { BrandingTagline, isBrandingRemoved } from "@/components/BrandingTagline";
+import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { PlayerScorecardDialog, type ScorecardCourseInfo } from "@/components/leaderboard/PlayerScorecardDialog";
 
 

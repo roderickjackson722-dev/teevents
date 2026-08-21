@@ -177,7 +177,6 @@ export function LeaderboardRenderer({
   }, [pageMode, pageCount, design.row_page_seconds]);
   const pageRows = (all: LbRow[]) =>
     pageMode ? all.slice(pageIdx * perPage, pageIdx * perPage + perPage) : all;
-  const visibleRows = pageRows(rows);
 
   const showGross = design.show_gross !== false && design.default_view !== "net";
   const showNet = design.show_net !== false && design.default_view !== "gross";
@@ -498,7 +497,7 @@ export function LeaderboardRenderer({
             </div>
 
           ) : (
-            renderBoard("single", "Leaderboard", visibleRows)
+            renderBoard("single", singleBoardLabel, rows)
           )}
 
 

@@ -891,8 +891,53 @@ const Registration = () => {
                   <Switch checked={autoCloseEnabled} onCheckedChange={setAutoCloseEnabled} />
                 </div>
 
+                </div>
+
+                {/* Saved schedule confirmation */}
+                {savedCloseAt ? (
+                  <div className="rounded-md border border-[#1a5c38]/30 bg-[#1a5c38]/5 p-3">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle2 className="h-4 w-4 text-[#1a5c38] mt-0.5 shrink-0" />
+                      <div className="text-sm">
+                        <div className="font-semibold text-[#1a5c38]">
+                          {new Date(savedCloseAt).getTime() <= Date.now()
+                            ? "Scheduled close has passed"
+                            : "Auto-close is scheduled"}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-2 mt-0.5">
+                          <span className="inline-flex items-center gap-1 text-foreground">
+                            <CalendarClock className="h-3.5 w-3.5" />
+                            {formatCloseAt(savedCloseAt)}
+                          </span>
+                          {new Date(savedCloseAt).getTime() > Date.now() && (
+                            <Badge variant="outline">{countdownTo(savedCloseAt)}</Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          Registration will turn off automatically at this time. Change the date below and save again to
+                          reschedule, or switch this off to keep registration open.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : autoCloseEnabled ? (
+                  <div className="rounded-md border border-amber-300 bg-amber-50 p-3 flex items-start gap-2">
+                    <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-amber-900">
+                      No close time saved yet. Pick a date and time below, then click Save — you'll see the confirmed
+                      shut-off time here.
+                    </p>
+                  </div>
+                ) : null}
+
                 {autoCloseEnabled && (
                   <div className="space-y-3 rounded-md border border-border bg-background p-3">
+                    {savedCloseAt && closeAt && new Date(closeAt).toISOString() !== savedCloseAt && (
+                      <p className="text-xs font-medium text-amber-700">
+                        Unsaved change — click Save to move the close time to{" "}
+                        {formatCloseAt(new Date(closeAt).toISOString())}.
+                      </p>
+                    )}
                     <div>
                       <Label className="text-xs">Close registration at (your local time)</Label>
                       <Input

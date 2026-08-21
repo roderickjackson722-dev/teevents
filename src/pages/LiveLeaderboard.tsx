@@ -538,20 +538,13 @@ export default function LiveLeaderboard() {
 
   const flightMode = flights.length > 1 ? design.flight_display_mode || "tabs" : "tabs";
 
-  // Auto-rotate mode: cycle flights (and Overall, when included) on a timer.
-  // Divisions with no posted scores are skipped so the board never parks on an
-  // empty "Scoring hasn't started yet" flight while other divisions have scores.
+  // Auto-rotate mode: cycle through EVERY division (and Overall, when included)
+  // on a timer, so spectators see each flight even before scores are posted.
   const rotateKeys = useMemo(() => {
-    const scored = new Set<string>();
-    scores.forEach((s: any) => {
-      const fid = (s?.flight_id as string | null) ?? regFlights[s?.registration_id] ?? null;
-      if (fid) scored.add(fid);
-    });
-    const withScores = flights.filter((f) => scored.has(f.id)).map((f) => f.id);
-    const keys = withScores.length > 0 ? withScores : flights.map((f) => f.id);
+    const keys = flights.map((f) => f.id);
     if (design.flight_include_overall !== false) keys.push("__overall");
     return keys;
-  }, [flights, design.flight_include_overall, scores, regFlights]);
+  }, [flights, design.flight_include_overall]);
 
   useEffect(() => {
     // An explicit ?flight= request wins over rotation so a player's link stays put.

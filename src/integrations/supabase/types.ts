@@ -12283,6 +12283,16 @@ export type Database = {
         }
         Returns: Json
       }
+      clear_group_hole_scores: {
+        Args: {
+          _code: string
+          _hole_number: number
+          _registration_id?: string
+          _round_number?: number
+          _tournament_id: string
+        }
+        Returns: number
+      }
       college_tournament_accepts_registration: {
         Args: { _tournament_id: string }
         Returns: boolean

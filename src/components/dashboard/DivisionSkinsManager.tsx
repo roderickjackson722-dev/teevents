@@ -105,7 +105,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
 
   useEffect(() => { load(); }, [load]);
 
-  const keys = divisions.length > 0 ? divisions.map((d) => d.id) : ["__overall"];
+  const keys =
+    potMode === "total" || divisions.length === 0 ? ["__overall"] : divisions.map((d) => d.id);
   const labelFor = (key: string) =>
     key === "__overall" ? "Whole field" : divisions.find((d) => d.id === key)?.tier_name || "Division";
 

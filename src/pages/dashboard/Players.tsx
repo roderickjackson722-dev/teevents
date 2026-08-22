@@ -1178,6 +1178,15 @@ const Players = () => {
   };
   const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00", roundFormat: "", roundHoles: 18, sameStartHole: true, roundDate: "" });
 
+  /**
+   * Saved pairings per round. `tournament_registrations.group_number` always
+   * mirrors the round currently open, so setting up Round 2 never overwrites
+   * Round 1 — switching rounds saves the open round then restores the target.
+   */
+  type RoundAssignment = { g: number | null; p: number | null };
+  const [assignmentsByDay, setAssignmentsByDay] = useState<Record<number, Record<string, RoundAssignment>>>({});
+  const [switchingRound, setSwitchingRound] = useState(false);
+
   const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
   const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
 
@@ -1224,6 +1233,18 @@ const Players = () => {
   }, [divisionOptions.join("|"), divFilter]);
   const groupMatchesDivision = (list: Registration[]) =>
     divFilter === "all" || list.some((p) => divisionLabel(p) === divFilter);
+
+  // ---- Unassigned list: division filter so organizers can drag one division at a time ----
+  const [unassignedDivFilter, setUnassignedDivFilter] = useState<string>("all");
+  const unassignedDivisionOptions = [...new Set(
+    unassigned.map((p) => divisionLabel(p)).map((n) => (n && n !== "—" ? n : "No division")),
+  )].sort((a, b) => a.localeCompare(b));
+  const unassignedVisible = unassigned.filter((p) => {
+    if (unassignedDivFilter === "all") return true;
+    const d = divisionLabel(p);
+    const label = d && d !== "—" ? d : "No division";
+    return label === unassignedDivFilter;
+  });
   // A hole stays visible when at least one of its players passes the age filter
   // (empty holes always stay visible so organizers can still drop players in).
   const groupMatchesAge = (list: Registration[]) =>
@@ -1425,6 +1446,13 @@ const Players = () => {
           );
         }
         setRoundCount(Math.max(1, cfg.rounds));
+        setAssignmentsByDay(
+          Object.fromEntries(
+            Object.entries(cfg.assignmentsByDay || {}).map(([day, map]) => [Number(day), map]),
+          ) as Record<number, Record<string, RoundAssignment>>,
+        );
+        // Open the round whose pairings are currently live in the database.
+        setActiveDay(Math.min(Math.max(0, cfg.activeRound || 0), Math.max(0, cfg.rounds - 1)));
         if (Object.keys(cfg.byDay).length) {
           setStartFormatByDay(
             Object.fromEntries(
@@ -1452,6 +1480,8 @@ const Players = () => {
     teeTimesByDay?: Record<number, Record<number, string>>;
     byDay?: Record<number, unknown>;
     rounds?: number;
+    assignmentsByDay?: Record<number, Record<string, RoundAssignment>>;
+    activeRound?: number;
   }) => {
     if (!selectedTournament) return;
     const payload = {
@@ -1459,6 +1489,8 @@ const Players = () => {
       teeTimesByDay: patch.teeTimesByDay ?? holeTeeTimesByDay,
       byDay: patch.byDay ?? startFormatByDay,
       rounds: Math.max(patch.rounds ?? roundCount, numDays),
+      assignmentsByDay: patch.assignmentsByDay ?? assignmentsByDay,
+      activeRound: patch.activeRound ?? activeDay,
     };
     void (supabase.from("tournaments") as any)
       .update({ pairings_config: payload })
@@ -1644,11 +1676,89 @@ const Players = () => {
   const roundDateOf = (idx: number) =>
     (startFormatByDay[idx]?.roundDate || "") || tournamentDays[idx] || (currentTournamentObj?.date ? String(currentTournamentObj.date).slice(0, 10) : "");
 
+  /** Snapshot of the pairings currently live in the database. */
+  const snapshotCurrentRound = (): Record<string, RoundAssignment> => {
+    const snap: Record<string, RoundAssignment> = {};
+    for (const p of pairingPool) {
+      if (p.group_number != null) snap[p.id] = { g: p.group_number, p: (p as any).group_position ?? null };
+    }
+    return snap;
+  };
+
+  /**
+   * Switch the open round: save the round currently live in the DB, then
+   * restore the target round's saved pairings (a brand-new round starts empty
+   * so Round 1 assignments are never reshuffled).
+   */
+  const switchRound = async (idx: number) => {
+    if (idx === activeDay || switchingRound) return;
+    setSwitchingRound(true);
+    const current = snapshotCurrentRound();
+    const nextAssignments = { ...assignmentsByDay, [activeDay]: current };
+    const target = nextAssignments[idx] || {};
+
+    try {
+      const updates: Promise<unknown>[] = [];
+      for (const p of pairingPool) {
+        const want = target[p.id] || { g: null, p: null };
+        const haveG = p.group_number ?? null;
+        const haveP = ((p as any).group_position ?? null) as number | null;
+        if (want.g === haveG && want.p === haveP) continue;
+        updates.push(
+          Promise.resolve(
+            supabase
+              .from("tournament_registrations")
+              .update({ group_number: want.g, group_position: want.p })
+              .eq("id", p.id),
+          ),
+        );
+      }
+      for (let i = 0; i < updates.length; i += 10) {
+        await Promise.all(updates.slice(i, i + 10));
+      }
+      setAllPlayers((prev) =>
+        prev.map((p) => {
+          const want = target[p.id] || { g: null, p: null };
+          return { ...p, group_number: want.g, group_position: want.p } as typeof p;
+        }),
+      );
+      setAssignmentsByDay(nextAssignments);
+      setActiveDay(idx);
+      persistPairingsConfig({ assignmentsByDay: nextAssignments, activeRound: idx });
+      toast({
+        title: `Round ${idx + 1} open`,
+        description: `Round ${activeDay + 1} pairings saved. Editing Round ${idx + 1} won't change them.`,
+      });
+    } finally {
+      setSwitchingRound(false);
+    }
+  };
+
+  // Keep the open round's snapshot current so a reload restores the same board.
+  useEffect(() => {
+    if (!selectedTournament || switchingRound) return;
+    const t = setTimeout(() => {
+      const snap = snapshotCurrentRound();
+      setAssignmentsByDay((prev) => {
+        const next = { ...prev, [activeDay]: snap };
+        persistPairingsConfig({ assignmentsByDay: next, activeRound: activeDay });
+        return next;
+      });
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    selectedTournament,
+    activeDay,
+    switchingRound,
+    pairingPool.map((p) => `${p.id}:${p.group_number ?? ""}:${(p as any).group_position ?? ""}`).join("|"),
+  ]);
+
   const addRound = () => {
     const next = numRounds + 1;
     setRoundCount(next);
     persistPairingsConfig({ rounds: next });
-    setActiveDay(next - 1);
+    void switchRound(next - 1);
   };
 
   const removeRound = () => {
@@ -3040,7 +3150,8 @@ const Players = () => {
                       key={idx}
                       type="button"
                       className={`px-3 py-1.5 text-xs ${activeDay === idx ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${idx > 0 ? "border-l border-border" : ""}`}
-                      onClick={() => setActiveDay(idx)}
+                      disabled={switchingRound}
+                      onClick={() => void switchRound(idx)}
                     >
                       {label}
                     </button>
@@ -3454,9 +3565,22 @@ const Players = () => {
             <div className="grid lg:grid-cols-2 gap-6">
               {/* Unassigned */}
               <div>
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Unassigned ({unassigned.length})
-                </h3>
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    Unassigned ({unassignedVisible.length}
+                    {unassignedDivFilter !== "all" ? ` of ${unassigned.length}` : ""})
+                  </h3>
+                  <select
+                    className="ml-auto h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground"
+                    value={unassignedDivFilter}
+                    onChange={(e) => setUnassignedDivFilter(e.target.value)}
+                  >
+                    <option value="all">All divisions</option>
+                    {unassignedDivisionOptions.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
                 <Droppable droppableId="unassigned">
                   {(provided, snapshot) => (
                     <div
@@ -3466,12 +3590,14 @@ const Players = () => {
                         snapshot.isDraggingOver ? "border-secondary bg-secondary/5" : "border-border"
                       }`}
                     >
-                      {unassigned.length === 0 && !snapshot.isDraggingOver && (
+                      {unassignedVisible.length === 0 && !snapshot.isDraggingOver && (
                         <p className="text-xs text-muted-foreground text-center py-4">
-                          All players assigned!
+                          {unassigned.length === 0
+                            ? "All players assigned!"
+                            : "No unassigned players in this division."}
                         </p>
                       )}
-                      {unassigned.map((p, index) => (
+                      {unassignedVisible.map((p, index) => (
                         <Draggable key={p.id} draggableId={p.id} index={index} isDragDisabled={pairingsLocked}>
                           {(provided, snapshot) => (
                             <div
@@ -3485,6 +3611,9 @@ const Players = () => {
                               <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                               <span className="font-medium text-foreground">
                                 {p.first_name} {p.last_name}
+                              </span>
+                              <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-secondary/15 text-secondary-foreground">
+                                {divisionLabel(p) && divisionLabel(p) !== "—" ? divisionLabel(p) : "No division"}
                               </span>
                               {p.group_id && groupInfoById[p.group_id] && (
                                 <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary">

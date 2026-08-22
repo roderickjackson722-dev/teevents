@@ -99,7 +99,12 @@ export function parsePairingsConfig(raw: unknown): PairingsConfig {
     assignmentsByDay[String(day)] = inner;
   }
   const activeRound = Math.max(0, Number(obj.activeRound) || 0);
-  return { labels, teeTimesByDay, byDay, rounds, assignmentsByDay, activeRound };
+  const emptyGroups = Array.isArray(obj.emptyGroups)
+    ? [...new Set(obj.emptyGroups.map((n: unknown) => Number(n)).filter((n: number) => Number.isFinite(n) && n > 0))].sort(
+        (a: number, b: number) => a - b,
+      )
+    : [];
+  return { labels, teeTimesByDay, byDay, rounds, assignmentsByDay, activeRound, emptyGroups };
 }
 
 export function dayCfgOf(cfg: PairingsConfig, day = 0): PairingsDayCfg {

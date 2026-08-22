@@ -31,6 +31,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [purse, setPurse] = useState<Record<string, string>>({});
   const [format, setFormat] = useState<"gross" | "net">("gross");
+  const [potMode, setPotMode] = useState<"total" | "division">("total");
   const [carryover, setCarryover] = useState(true);
   const [names, setNames] = useState<Record<string, string>>({});
   const [players, setPlayers] = useState<PlayerRow[]>([]);
@@ -71,6 +72,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
         gs.map((g) => [g.division_id || "__overall", ((g.total_purse_cents || 0) / 100).toString()]),
       ),
     );
+    // One total pot for the whole field = a single game with no division.
+    if (gs.length > 0) setPotMode(gs.some((g) => g.division_id) ? "division" : "total");
     if (gs[0]) {
       setFormat((gs[0].skin_format === "net" ? "net" : "gross") as "gross" | "net");
       setCarryover(gs[0].carryover !== false);

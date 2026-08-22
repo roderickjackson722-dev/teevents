@@ -1,4 +1,4 @@
-import type { Registration } from "./types";
+import { startingHoleLabelOf, type Registration } from "./types";
 
 export interface RegistrationGroupRow {
   id: string;
@@ -15,6 +15,8 @@ export interface PrintTeam {
   groupNumber: number | null;
   /** Starting hole from pairings (falls back to the group number) */
   startingHole: number | null;
+  /** Printed starting-hole label, including lettered slots like "11A" */
+  startingHoleLabel: string | null;
   groupId?: string;
   teamName: string;
   /** Tee time for this group, as saved on the pairings page (display string) */
@@ -61,6 +63,9 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       key: `g-${num}`,
       groupNumber: num,
       startingHole: g?.starting_hole ?? (players.map((p) => (p as any).starting_hole).find((v) => v != null) ?? num),
+      startingHoleLabel:
+        players.map((p) => startingHoleLabelOf(p as any)).find((v) => v != null) ??
+        (g?.starting_hole != null ? String(g.starting_hole) : String(num)),
       groupId: g?.id,
       teamName: g?.team_name || `Group ${num}`,
       teeTime: g?.tee_time ?? (players.map((p) => (p as any).tee_time).find(Boolean) || null),
@@ -75,6 +80,7 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       key: `s-${p.id}`,
       groupNumber: null,
       startingHole: (p as any).starting_hole ?? null,
+      startingHoleLabel: startingHoleLabelOf(p as any),
       teamName: playerName(p),
       teeTime: (p as any).tee_time || null,
       players: [p],

@@ -90,3 +90,18 @@ export function startingHoleOf(r: { starting_hole?: number | null; group_number?
   if (v != null) return Number(v);
   return r.group_number ?? null;
 }
+
+/**
+ * Printed starting-hole label. Organizers can split a hole into lettered slots
+ * ("11A", "11B") on the Pairings tab, stored in `group_label`. Prefer that exact
+ * label so printables match the pairing sheet; fall back to the numeric hole.
+ */
+export function startingHoleLabelOf(
+  r: { starting_hole?: number | null; group_number?: number | null; group_label?: string | null } | null | undefined,
+): string | null {
+  if (!r) return null;
+  const label = (r as any).group_label as string | null | undefined;
+  if (label && /^\s*\d{1,2}\s*[A-Za-z]?\s*$/.test(label)) return label.trim().toUpperCase();
+  const hole = startingHoleOf(r);
+  return hole != null ? String(hole) : null;
+}

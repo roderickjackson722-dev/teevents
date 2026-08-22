@@ -9,7 +9,7 @@ import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, score
 import { formatTeeTime } from "./CartSignsTab";
 import type { Tournament, Registration } from "./types";
 
-import { getPrimaryColor, getPrintLogo, startingHoleOf } from "./types";
+import { getPrimaryColor, getPrintLogo, startingHoleOf, startingHoleLabelOf } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import TeamScorecards from "./TeamScorecards";
 import ScorecardSelector from "./ScorecardSelector";
@@ -59,9 +59,14 @@ function getTotalPar(tournament: Tournament | null, numHoles: number): number {
   return tournament?.course_par ?? (numHoles === 9 ? 36 : 72);
 }
 
+/**
+ * Scoring link for a printed QR code. Players without a personal code still get
+ * a QR to the scoring entry page so every scorecard is scannable.
+ */
 function getScoringUrl(slug: string | undefined, scoringCode: string | undefined): string {
-  if (!slug || !scoringCode) return "";
-  return `${window.location.origin}/t/${slug}/scoring?code=${scoringCode}`;
+  if (!slug) return "";
+  const base = `${window.location.origin}/t/${slug}/scoring`;
+  return scoringCode ? `${base}?code=${scoringCode}` : base;
 }
 
 function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: number, opts: PrintableOptions, showScoringQR: boolean, slug?: string, courseData?: CourseDataProp | null) {
@@ -84,7 +89,8 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   const firstName = r.customFirstName ?? r.first_name;
   const lastName = r.customLastName ?? r.last_name;
   const groupNum = r.customGroupNumber !== undefined ? r.customGroupNumber : startingHoleOf(r as any);
-  const scoringCode = (r as any).scoring_code;
+  const holeLabel = r.customGroupNumber !== undefined ? String(r.customGroupNumber) : startingHoleLabelOf(r as any);
+  const scoringCode = (r as any).scoring_code || (r as any).group_scoring_code;
   const scoringUrl = getScoringUrl(slug, scoringCode);
 
   const pars = Array.from({ length: numHoles }, (_, i) => getHolePar(tournament, i, numHoles, courseData));
@@ -103,13 +109,13 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(scoringUrl)}" style="width:80px;height:80px;" />
       <div>
         <div style="font-size:11px;font-weight:600;color:${color};">Scan to Enter Scores</div>
-        <div style="font-size:10px;color:#888;">Code: ${scoringCode}</div>
+        <div style="font-size:10px;color:#888;">${scoringCode ? `Code: ${scoringCode}` : "Enter your scoring code"}</div>
       </div>
     </div>` : "";
 
   const teeTimeText = formatTeeTime((r as any).tee_time);
   const metaParts = [
-    opts.showStartingHole && groupNum != null ? `Starting Hole: ${groupNum}` : "",
+    opts.showStartingHole && holeLabel ? `Starting Hole: ${holeLabel}` : "",
     opts.showTeeTime && teeTimeText ? `Tee Time: ${teeTimeText}` : "",
     opts.showFlight && r.flight_name ? r.flight_name : "",
   ].filter(Boolean);
@@ -285,7 +291,8 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           const firstName = er.customFirstName ?? er.first_name;
           const lastName = er.customLastName ?? er.last_name;
           const groupNum = er.customGroupNumber !== undefined ? er.customGroupNumber : startingHoleOf(er as any);
-          const scoringCode = (r as any).scoring_code as string | undefined;
+          const holeLabel = er.customGroupNumber !== undefined ? String(er.customGroupNumber) : startingHoleLabelOf(er as any);
+          const scoringCode = ((r as any).scoring_code || (r as any).group_scoring_code) as string | undefined;
           const scoringUrl = getScoringUrl(slug, scoringCode);
 
           return (
@@ -372,10 +379,10 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                   );
                 })()}
               </div>
-              {!isEditing && opts.showStartingHole && groupNum != null && <p className="text-xs text-primary mt-2">Starting Hole: {groupNum}</p>}
+              {!isEditing && opts.showStartingHole && holeLabel && <p className="text-xs text-primary mt-2">Starting Hole: {holeLabel}</p>}
               
               {/* Scoring QR Code */}
-              {!isEditing && showScoringQR && scoringCode && scoringUrl && (
+              {!isEditing && showScoringQR && scoringUrl && (
                 <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
                   <img 
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(scoringUrl)}`} 
@@ -386,7 +393,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                     <p className="text-xs font-semibold text-primary flex items-center gap-1">
                       <QrCode className="h-3 w-3" /> Scan to Enter Scores
                     </p>
-                    <p className="text-[10px] text-muted-foreground">Code: {scoringCode}</p>
+                    <p className="text-[10px] text-muted-foreground">{scoringCode ? `Code: ${scoringCode}` : "Enter your scoring code"}</p>
                   </div>
                 </div>
               )}

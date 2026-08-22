@@ -141,6 +141,8 @@ export default function StarterAnnouncements() {
     );
   }, [roster, query]);
 
+  const dayCfg = useMemo(() => dayCfgOf(pairings, day), [pairings, day]);
+
   const groups = useMemo(() => {
     const map = new Map<string, StarterRow[]>();
     filtered.forEach((r) => {
@@ -148,19 +150,30 @@ export default function StarterAnnouncements() {
       map.set(key, [...(map.get(key) || []), r]);
     });
     return [...map.entries()]
-      .sort((a, b) => {
-        if (a[0] === "unassigned") return 1;
-        if (b[0] === "unassigned") return -1;
-        return Number(a[0]) - Number(b[0]);
+      .map(([key, players]) => {
+        const groupNumber = key === "unassigned" ? null : Number(key);
+        const teeTime =
+          (groupNumber != null ? teeTimeForGroup(pairings, groupNumber, day) : null) ||
+          (dayCfg.startFormat === "shotgun" ? dayCfg.shotgunTime : null) ||
+          players.find((p) => p.tee_time)?.tee_time ||
+          null;
+        return {
+          key,
+          groupNumber,
+          holeLabel: groupNumber != null ? startingHoleLabelForGroup(pairings, groupNumber, day) : null,
+          teamName: players.find((p) => p.team_name)?.team_name || null,
+          teeTime,
+          players: [...players].sort((a, b) => (a.group_position ?? 99) - (b.group_position ?? 99)),
+        };
       })
-      .map(([key, players]) => ({
-        key,
-        hole: key === "unassigned" ? null : Number(key),
-        teamName: players.find((p) => p.team_name)?.team_name || null,
-        teeTime: players.find((p) => p.tee_time)?.tee_time || null,
-        players: [...players].sort((a, b) => (a.group_position ?? 99) - (b.group_position ?? 99)),
-      }));
-  }, [filtered]);
+      .sort((a, b) => {
+        if (a.key === "unassigned") return 1;
+        if (b.key === "unassigned") return -1;
+        const t = (a.teeTime || "99:99").localeCompare(b.teeTime || "99:99");
+        if (t !== 0) return t;
+        return (a.groupNumber ?? 0) - (b.groupNumber ?? 0);
+      });
+  }, [filtered, pairings, day, dayCfg]);
 
   const missingHometown = useMemo(() => roster.filter((r) => !r.hometown).length, [roster]);
 

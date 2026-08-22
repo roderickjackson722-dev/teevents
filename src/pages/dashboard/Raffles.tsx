@@ -301,6 +301,60 @@ export default function Raffles() {
         </div>
       )}
 
+      {selectedTournament && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Ticket className="h-4 w-4" /> Raffle tickets purchased with registration
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Registrants who added raffle tickets to their registration payment.
+              {addonPaid.length > 0 && (
+                <> {addonPaid.length} buyer{addonPaid.length === 1 ? "" : "s"} · {addonTotalTickets} tickets · <strong>{money(addonTotalCents)}</strong> collected</>
+              )}
+            </p>
+          </CardHeader>
+          <CardContent>
+            {addonBuyers && addonBuyers.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Package</TableHead>
+                      <TableHead>Tickets</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Purchased</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {addonBuyers.map((b) => (
+                      <TableRow key={b.id}>
+                        <TableCell className="font-medium">{[b.registration?.first_name, b.registration?.last_name].filter(Boolean).join(" ") || "—"}</TableCell>
+                        <TableCell className="text-xs">{b.registration?.email}</TableCell>
+                        <TableCell className="text-xs">{b.addon_name}</TableCell>
+                        <TableCell>{addonTicketCount(b.addon_name, b.quantity)}</TableCell>
+                        <TableCell>{money(b.unit_price_cents * (b.quantity || 1))}</TableCell>
+                        <TableCell>
+                          <Badge variant={b.registration?.payment_status === "paid" ? "default" : "secondary"}>
+                            {b.registration?.payment_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">{new Date(b.created_at).toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground py-2">No raffle add-ons purchased with registrations yet.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {viewTickets && (
         <Dialog open={!!viewTickets} onOpenChange={() => setViewTickets(null)}>
           <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">

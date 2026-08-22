@@ -51,8 +51,10 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       (supabase as any).from("division_skins_games").select("*").eq("tournament_id", tournamentId),
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name")
-        .eq("tournament_id", tournamentId),
+        .select("id, first_name, last_name, flight_id, status, skins_opt_in")
+        .eq("tournament_id", tournamentId)
+        .order("last_name"),
+
     ]);
 
     const divs = (dRes.data as Division[]) || [];

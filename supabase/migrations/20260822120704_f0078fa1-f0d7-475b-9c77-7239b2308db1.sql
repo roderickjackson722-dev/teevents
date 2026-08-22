@@ -1,0 +1,1 @@
+update public.tournaments set day_of_page_enabled = true, day_of_page_mode = 'live' where id = '8d241ebc-4fd3-4dcb-bfad-27f7e92e9c6a';

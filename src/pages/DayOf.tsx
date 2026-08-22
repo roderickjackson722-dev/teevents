@@ -298,12 +298,24 @@ function DayOfInner() {
         return;
       }
 
-      const { data: rpcData } = await supabase.rpc("get_day_of_player", {
-        _tournament_id: tt.id,
-        _code: code,
-      });
-      const payload = rpcData as any;
+      // Codes are 6 characters. Be forgiving about case, whitespace, and an
+      // extra pasted/typed character at the end of the link.
+      const raw = (code || "").trim().toUpperCase().replace(/[^A-Z0-9]/g, "");
+      const candidates = Array.from(
+        new Set([raw, raw.slice(0, 6), raw.slice(-6)].filter((c) => c.length === 6))
+      );
+
+      let payload: any = null;
+      let effectiveCode = raw;
+      for (const c of candidates) {
+        const { data: rpcData } = await supabase.rpc("get_day_of_player", {
+          _tournament_id: tt.id,
+          _code: c,
+        });
+        if ((rpcData as any)?.player) { payload = rpcData as any; effectiveCode = c; break; }
+      }
       if (!payload?.player) { setError("Player not found. Please check your code."); setLoading(false); return; }
+
       setReg(payload.player as Reg);
       setGroup((payload.group || []) as Reg[]);
       setLeaders((payload.leaders || []) as { name: string; total: number }[]);
@@ -313,7 +325,7 @@ function DayOfInner() {
       try {
         await (supabase as any).rpc("mark_day_of_check_in", {
           _tournament_id: tt.id,
-          _code: code,
+          _code: effectiveCode,
         });
       } catch (_e) {
         // Non-blocking — Day-of page still renders even if check-in write fails.

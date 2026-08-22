@@ -1468,6 +1468,8 @@ const Players = () => {
     teeTimesByDay?: Record<number, Record<number, string>>;
     byDay?: Record<number, unknown>;
     rounds?: number;
+    assignmentsByDay?: Record<number, Record<string, RoundAssignment>>;
+    activeRound?: number;
   }) => {
     if (!selectedTournament) return;
     const payload = {
@@ -1475,6 +1477,8 @@ const Players = () => {
       teeTimesByDay: patch.teeTimesByDay ?? holeTeeTimesByDay,
       byDay: patch.byDay ?? startFormatByDay,
       rounds: Math.max(patch.rounds ?? roundCount, numDays),
+      assignmentsByDay: patch.assignmentsByDay ?? assignmentsByDay,
+      activeRound: patch.activeRound ?? activeDay,
     };
     void (supabase.from("tournaments") as any)
       .update({ pairings_config: payload })

@@ -11,12 +11,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical, Settings as SettingsIcon } from "lucide-react";
+import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical, Settings as SettingsIcon, Coins } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
 import HandicapSettings from "@/components/dashboard/HandicapSettings";
 import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
+import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
 
 
 export default function Scoring({ embedded = false }: { embedded?: boolean }) {
@@ -143,6 +144,9 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
             </TabsTrigger>
             <TabsTrigger value="live-settings">
               <SettingsIcon className="h-4 w-4 mr-1.5" /> Live Settings
+            </TabsTrigger>
+            <TabsTrigger value="skins">
+              <Coins className="h-4 w-4 mr-1.5" /> Skins
             </TabsTrigger>
           </TabsList>
 
@@ -387,6 +391,11 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
           {/* ===== LIVE LEADERBOARD SETTINGS TAB ===== */}
           <TabsContent value="live-settings" className="space-y-4">
             <LiveLeaderboardSettings tournamentId={selectedTournament} />
+          </TabsContent>
+
+          {/* ===== SKINS TAB ===== */}
+          <TabsContent value="skins" className="space-y-4">
+            <DivisionSkinsManager tournamentId={selectedTournament} />
           </TabsContent>
 
 

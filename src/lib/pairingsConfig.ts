@@ -45,6 +45,8 @@ export interface PairingsConfig {
   assignmentsByDay: Record<string, Record<string, PairingAssignment>>;
   /** round index (0-based) whose pairings are currently live in the DB */
   activeRound: number;
+  /** hole/group slots the organizer created that currently have no players */
+  emptyGroups: number[];
 }
 
 export const defaultPairingsDayCfg = (): PairingsDayCfg => ({

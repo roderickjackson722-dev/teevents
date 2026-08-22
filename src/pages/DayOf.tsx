@@ -325,7 +325,7 @@ function DayOfInner() {
       try {
         await (supabase as any).rpc("mark_day_of_check_in", {
           _tournament_id: tt.id,
-          _code: code,
+          _code: effectiveCode,
         });
       } catch (_e) {
         // Non-blocking — Day-of page still renders even if check-in write fails.

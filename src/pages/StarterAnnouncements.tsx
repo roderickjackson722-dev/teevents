@@ -59,6 +59,9 @@ export default function StarterAnnouncements() {
   const [notFound, setNotFound] = useState(false);
   const [query, setQuery] = useState("");
   const [tournamentId, setTournamentId] = useState<string | null>(null);
+  const [pairings, setPairings] = useState<PairingsConfig>(() => parsePairingsConfig(null));
+  const [day, setDay] = useState(0);
+
 
   useEffect(() => {
     if (!slug) return;

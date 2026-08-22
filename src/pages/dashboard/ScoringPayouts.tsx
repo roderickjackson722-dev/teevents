@@ -13,6 +13,8 @@ import { Loader2, Save, Trophy, Coins } from "lucide-react";
 import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import FlightsManager from "@/components/dashboard/FlightsManager";
+import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
+
 
 const EXTRA_FORMATS = [
   { id: "match_play", name: "Match Play", description: "Head-to-head, hole-by-hole competition" },

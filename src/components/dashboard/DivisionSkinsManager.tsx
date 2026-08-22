@@ -35,6 +35,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [names, setNames] = useState<Record<string, string>>({});
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [openPot, setOpenPot] = useState<Record<string, boolean>>({});
+  const [showAll, setShowAll] = useState<Record<string, boolean>>({});
+  const [search, setSearch] = useState<Record<string, string>>({});
 
   const [winners, setWinners] = useState<Record<string, WinnerRow[]>>({});
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       (supabase as any).from("division_skins_games").select("*").eq("tournament_id", tournamentId),
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, flight_id, status, skins_opt_in")
+        .select("id, first_name, last_name, flight_id, tier_id, status, skins_opt_in")
         .eq("tournament_id", tournamentId)
         .order("last_name"),
 
@@ -104,9 +106,21 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const labelFor = (key: string) =>
     key === "__overall" ? "Whole field" : divisions.find((d) => d.id === key)?.tier_name || "Division";
 
-  /** Players eligible to be shown for a division key. */
-  const playersFor = (key: string) =>
-    key === "__overall" ? players : players.filter((p) => p.flight_id === key);
+  /** A player's division: the flight they picked, falling back to their price tier. */
+  const divisionOf = (p: PlayerRow) => p.flight_id || p.tier_id || null;
+  const divisionLabelFor = (p: PlayerRow) => {
+    const id = divisionOf(p);
+    return (id && divisions.find((d) => d.id === id)?.tier_name) || "No division";
+  };
+
+  /** Players shown for a division key — optionally the whole field, with a name search. */
+  const playersFor = (key: string) => {
+    const base =
+      key === "__overall" || showAll[key] ? players : players.filter((p) => divisionOf(p) === key);
+    const q = (search[key] || "").trim().toLowerCase();
+    if (!q) return base;
+    return base.filter((p) => `${p.first_name || ""} ${p.last_name || ""}`.toLowerCase().includes(q));
+  };
 
   const inPot = (p: PlayerRow) => p.skins_opt_in !== false;
 
@@ -242,6 +256,23 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                           </button>
                           {open && (
                             <div className="mt-2 rounded-md border">
+                              {key !== "__overall" && (
+                                <label className="flex items-center gap-2 px-3 py-2 border-b text-xs cursor-pointer">
+                                  <Checkbox
+                                    checked={!!showAll[key]}
+                                    onCheckedChange={(v) => setShowAll((s) => ({ ...s, [key]: !!v }))}
+                                  />
+                                  Show every player in the tournament (all divisions)
+                                </label>
+                              )}
+                              <div className="px-3 py-2 border-b">
+                                <Input
+                                  value={search[key] || ""}
+                                  onChange={(e) => setSearch((s) => ({ ...s, [key]: e.target.value }))}
+                                  placeholder="Search players by name"
+                                  className="h-8 text-sm"
+                                />
+                              </div>
                               <div className="flex gap-3 px-3 py-2 border-b bg-muted/40 text-xs">
                                 <button type="button" className="text-primary hover:underline"
                                   onClick={() => setInPot(list.map((p) => p.id), true)}>
@@ -254,7 +285,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                               </div>
                               <div className="max-h-56 overflow-y-auto divide-y">
                                 {list.length === 0 ? (
-                                  <p className="px-3 py-3 text-xs text-muted-foreground">No players in this division yet.</p>
+                                  <p className="px-3 py-3 text-xs text-muted-foreground">No players match. Turn on “Show every player” or clear the search.</p>
                                 ) : list.map((p) => (
                                   <label key={p.id} className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer">
                                     <Checkbox
@@ -262,6 +293,9 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                                       onCheckedChange={(v) => setInPot([p.id], !!v)}
                                     />
                                     <span>{`${p.first_name || ""} ${p.last_name || ""}`.trim() || "Unnamed player"}</span>
+                                    <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                                      {divisionLabelFor(p)}
+                                    </span>
                                     {!inPot(p) && (
                                       <span className="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground">
                                         Not in pot

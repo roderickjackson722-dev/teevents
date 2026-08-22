@@ -3565,9 +3565,22 @@ const Players = () => {
             <div className="grid lg:grid-cols-2 gap-6">
               {/* Unassigned */}
               <div>
-                <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider mb-3">
-                  Unassigned ({unassigned.length})
-                </h3>
+                <div className="mb-3 flex flex-wrap items-center gap-2">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    Unassigned ({unassignedVisible.length}
+                    {unassignedDivFilter !== "all" ? ` of ${unassigned.length}` : ""})
+                  </h3>
+                  <select
+                    className="ml-auto h-8 rounded-md border border-border bg-background px-2 text-xs text-foreground"
+                    value={unassignedDivFilter}
+                    onChange={(e) => setUnassignedDivFilter(e.target.value)}
+                  >
+                    <option value="all">All divisions</option>
+                    {unassignedDivisionOptions.map((d) => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
                 <Droppable droppableId="unassigned">
                   {(provided, snapshot) => (
                     <div

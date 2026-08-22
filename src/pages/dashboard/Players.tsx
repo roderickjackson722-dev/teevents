@@ -1936,16 +1936,12 @@ const Players = () => {
       return;
     }
     if (allGroupNumbers.includes(newNum)) {
-      {
-        const next = { ...holeLabels, [oldNum]: String(newNum) };
-        saveLabels(next);
-        toast({
-          title: `Starting hole set to Hole ${newNum}`,
-          description: "Tee-time groups may share the same starting hole. The pairing group remains separate.",
-        });
-        return;
-      }
-      toast({ title: "Hole already exists", description: `Hole ${newNum} is already in use.`, variant: "destructive" });
+      const next = { ...holeLabels, [oldNum]: String(newNum) };
+      saveLabels(next);
+      toast({
+        title: `Starting hole set to Hole ${newNum}`,
+        description: "Groups may share the same starting hole. The pairing group stays separate.",
+      });
       return;
     }
     const ids = players.filter((p) => p.group_number === oldNum).map((p) => p.id);

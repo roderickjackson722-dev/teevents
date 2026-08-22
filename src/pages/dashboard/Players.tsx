@@ -1517,7 +1517,7 @@ const Players = () => {
     const payload = {
       ...baseline,
       ...patch,
-      rounds: Math.max(patch.rounds ?? Number(baseline.rounds) || roundCount, numDays),
+      rounds: Math.max(patch.rounds ?? (Number(baseline.rounds) || roundCount), numDays),
     };
     pairingsConfigRef.current = payload;
     const tournamentId = selectedTournament;

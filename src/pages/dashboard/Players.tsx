@@ -92,6 +92,8 @@ interface Registration {
   dietary_restrictions: string | null;
   notes: string | null;
   payment_status: string;
+  status?: string | null;
+
   payment_method?: string | null;
   cash_payment_received?: boolean | null;
   group_number: number | null;

@@ -13,6 +13,8 @@ import { Loader2, Save, Trophy, Coins } from "lucide-react";
 import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import FlightsManager from "@/components/dashboard/FlightsManager";
+import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
+
 
 const EXTRA_FORMATS = [
   { id: "match_play", name: "Match Play", description: "Head-to-head, hole-by-hole competition" },
@@ -220,12 +222,15 @@ export default function ScoringPayouts() {
         </Button>
       </div>
 
+      {selected && <DivisionSkinsManager tournamentId={selected} />}
+
       {selected && (
         <div className="space-y-4">
           <h2 className="text-xl font-display font-bold">Flights &amp; Payout Breakdown</h2>
           <FlightsManager tournamentId={selected} />
         </div>
       )}
+
     </div>
   );
 }

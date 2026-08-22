@@ -90,9 +90,11 @@ export default function FlightsManager({ tournamentId }: Props) {
         .order("display_order", { ascending: true }),
       (supabase as any)
         .from("tournament_registrations")
-        .select("id, first_name, last_name, flight_id, handicap, group_number, tier_id")
+        .select("id, first_name, last_name, flight_id, handicap, group_number, tier_id, status")
         .eq("tournament_id", tournamentId)
+        .neq("status", "wd")
         .order("last_name", { ascending: true }),
+
       (supabase as any)
         .from("tournaments")
         .select("flights_enabled, flight_method, flight_based_on, scoring_format, registration_fee_cents")

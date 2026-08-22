@@ -2503,6 +2503,105 @@ export type Database = {
           },
         ]
       }
+      division_skin_winners: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          hole_number: number
+          id: string
+          registration_id: string | null
+          score: number | null
+          skins_game_id: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          hole_number: number
+          id?: string
+          registration_id?: string | null
+          score?: number | null
+          skins_game_id: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          hole_number?: number
+          id?: string
+          registration_id?: string | null
+          score?: number | null
+          skins_game_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "division_skin_winners_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "division_skin_winners_skins_game_id_fkey"
+            columns: ["skins_game_id"]
+            isOneToOne: false
+            referencedRelation: "division_skins_games"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      division_skins_games: {
+        Row: {
+          carryover: boolean
+          created_at: string
+          division_id: string | null
+          id: string
+          name: string
+          skin_format: string
+          status: string
+          total_purse_cents: number
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          carryover?: boolean
+          created_at?: string
+          division_id?: string | null
+          id?: string
+          name: string
+          skin_format?: string
+          status?: string
+          total_purse_cents?: number
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          carryover?: boolean
+          created_at?: string
+          division_id?: string | null
+          id?: string
+          name?: string
+          skin_format?: string
+          status?: string
+          total_purse_cents?: number
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "division_skins_games_division_id_fkey"
+            columns: ["division_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_tiers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "division_skins_games_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       early_signups: {
         Row: {
           created_at: string
@@ -9938,6 +10037,7 @@ export type Database = {
           referral_code_used: string | null
           scoring_code: string | null
           shirt_size: string | null
+          status: string
           strokes_per_hole: Json | null
           survey_completed_at: string | null
           survey_response_token: string | null
@@ -9946,6 +10046,8 @@ export type Database = {
           tee_time: string | null
           tier_id: string | null
           tournament_id: string
+          wd_at: string | null
+          wd_reason: string | null
         }
         Insert: {
           age_update_token?: string | null
@@ -9985,6 +10087,7 @@ export type Database = {
           referral_code_used?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
+          status?: string
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
           survey_response_token?: string | null
@@ -9993,6 +10096,8 @@ export type Database = {
           tee_time?: string | null
           tier_id?: string | null
           tournament_id: string
+          wd_at?: string | null
+          wd_reason?: string | null
         }
         Update: {
           age_update_token?: string | null
@@ -10032,6 +10137,7 @@ export type Database = {
           referral_code_used?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
+          status?: string
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
           survey_response_token?: string | null
@@ -10040,6 +10146,8 @@ export type Database = {
           tee_time?: string | null
           tier_id?: string | null
           tournament_id?: string
+          wd_at?: string | null
+          wd_reason?: string | null
         }
         Relationships: [
           {
@@ -12474,6 +12582,22 @@ export type Database = {
           updated_at: string
           winning_bid_amount_cents: number
           winning_bidder_name: string
+        }[]
+      }
+      get_public_division_skins: {
+        Args: { _tournament_id: string }
+        Returns: {
+          amount_cents: number
+          carryover: boolean
+          division_id: string
+          division_name: string
+          game_id: string
+          game_name: string
+          hole_number: number
+          player_name: string
+          score: number
+          skin_format: string
+          total_purse_cents: number
         }[]
       }
       get_public_donation_total: {

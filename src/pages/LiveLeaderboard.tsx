@@ -9,6 +9,8 @@ import { useLeaderboardPaused } from "@/lib/leaderboardPause";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { PlayerScorecardDialog, type ScorecardCourseInfo } from "@/components/leaderboard/PlayerScorecardDialog";
+import SkinsPayoutsCard from "@/components/leaderboard/SkinsPayoutsCard";
+
 
 
 
@@ -806,7 +808,13 @@ export default function LiveLeaderboard() {
         }
 
       />
+      {tournament.id ? (
+        <div className="max-w-5xl mx-auto px-4 py-6">
+          <SkinsPayoutsCard tournamentId={tournament.id} />
+        </div>
+      ) : null}
       {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
+
       <PlayerScorecardDialog
         open={!!scorecardRow}
         onOpenChange={(v) => !v && setScorecardRow(null)}

@@ -92,6 +92,8 @@ interface Registration {
   dietary_restrictions: string | null;
   notes: string | null;
   payment_status: string;
+  status?: string | null;
+
   payment_method?: string | null;
   cash_payment_received?: boolean | null;
   group_number: number | null;
@@ -887,7 +889,31 @@ const Players = () => {
     }
   };
 
+  /**
+   * Mark a player withdrawn (WD) or reinstate them. Withdrawn players drop off the
+   * live leaderboard and are excluded from skins and flight payouts.
+   */
+  const setPlayerStatus = async (id: string, status: "active" | "wd") => {
+    if (demoGuard()) return;
+    const prevStatus = allPlayers.find((p) => p.id === id)?.status || "active";
+    setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({
+        status,
+        wd_at: status === "wd" ? new Date().toISOString() : null,
+      } as any)
+      .eq("id", id);
+    if (error) {
+      setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, status: prevStatus } : p)));
+      toast({ title: "Couldn't update player status", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: status === "wd" ? "Player marked WD" : "Player reinstated" });
+    }
+  };
+
   /** Rename a registration group (foursome / team name shown in Players & Pairings). */
+
   const renameGroup = async (groupId: string, name: string) => {
     if (demoGuard()) return;
     const trimmed = name.trim();
@@ -2701,6 +2727,12 @@ const Players = () => {
                     {rosterCols.payment !== false && (
                       <td className="px-4 py-3 text-center">
                         <div className="flex flex-col items-center gap-1">
+                          {String(p.status || "active").toLowerCase() === "wd" && (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">
+                              WD
+                            </span>
+                          )}
+
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
                             {p.payment_status}
                           </span>
@@ -2775,7 +2807,41 @@ const Players = () => {
                             </AlertDialogContent>
                           </AlertDialog>
                         )}
+                        {String(p.status || "active").toLowerCase() === "wd" ? (
+                          <button
+                            className="text-xs font-semibold text-primary hover:underline"
+                            title="Reinstate player"
+                            onClick={() => setPlayerStatus(p.id, "active")}
+                          >
+                            Reinstate
+                          </button>
+                        ) : (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button className="text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors" title="Mark as withdrawn">
+                                WD
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Mark as WD (Withdrawn)</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Mark {p.first_name} {p.last_name} as withdrawn? This removes them from the live
+                                  leaderboard and scoring, makes them ineligible for skins, and excludes them from payouts.
+                                  You can reinstate them at any time.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => setPlayerStatus(p.id, "wd")}>
+                                  Confirm WD
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                         <AlertDialog>
+
                           <AlertDialogTrigger asChild>
                             <button className="text-muted-foreground hover:text-destructive transition-colors" title="Remove player">
                               <Trash2 className="h-4 w-4" />

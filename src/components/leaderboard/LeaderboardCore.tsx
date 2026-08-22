@@ -401,7 +401,7 @@ export function LeaderboardRenderer({
           onClick={() => setIsPaused((p) => !p)}
           aria-label={isPaused ? "Resume scrolling" : "Pause scrolling"}
           title={isPaused ? "Resume scrolling" : "Pause scrolling"}
-          className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-lg transition-transform hover:scale-105 active:scale-95"
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-3 py-2 text-xs sm:text-sm font-semibold shadow-lg transition-transform hover:scale-105 active:scale-95"
           style={{ backgroundColor: headerBg, color: textColor, border: `1px solid ${accent}55` }}
         >
           {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}

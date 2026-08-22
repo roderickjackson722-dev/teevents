@@ -507,7 +507,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     const channel = supabase
       .channel("live-scores")
       .on("postgres_changes", { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` }, () => {
-        (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }).then(({ data }) => {
+        (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }).then(({ data }: { data: any }) => {
           if (!data) return;
           setLeaderboard(buildLeaderboard(data as any[], tournament));
         });

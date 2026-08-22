@@ -6,6 +6,26 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Megaphone, Printer, ArrowLeft, MapPin, Trophy, Search } from "lucide-react";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { DEFAULT_TEAM_HQ_SETTINGS, parseTeamHqSettings, type TeamHqSettings } from "@/lib/teamHqSettings";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  parsePairingsConfig,
+  startingHoleLabelForGroup,
+  teeTimeForGroup,
+  roundDateFor,
+  roundLabel,
+  dayCfgOf,
+  type PairingsConfig,
+} from "@/lib/pairingsConfig";
+
+const formatTee = (t?: string | null) => {
+  if (!t) return null;
+  const m = /^(\d{1,2}):(\d{2})/.exec(String(t));
+  if (!m) return String(t);
+  let h = parseInt(m[1], 10);
+  const suffix = h >= 12 ? "PM" : "AM";
+  h = h % 12 === 0 ? 12 : h % 12;
+  return `${h}:${m[2]} ${suffix}`;
+};
 
 interface StarterTournament {
   id: string;

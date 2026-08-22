@@ -109,7 +109,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
       <img src="https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(scoringUrl)}" style="width:80px;height:80px;" />
       <div>
         <div style="font-size:11px;font-weight:600;color:${color};">Scan to Enter Scores</div>
-        <div style="font-size:10px;color:#888;">Code: ${scoringCode}</div>
+        <div style="font-size:10px;color:#888;">${scoringCode ? `Code: ${scoringCode}` : "Enter your scoring code"}</div>
       </div>
     </div>` : "";
 
@@ -382,7 +382,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
               {!isEditing && opts.showStartingHole && holeLabel && <p className="text-xs text-primary mt-2">Starting Hole: {holeLabel}</p>}
               
               {/* Scoring QR Code */}
-              {!isEditing && showScoringQR && scoringCode && scoringUrl && (
+              {!isEditing && showScoringQR && scoringUrl && (
                 <div className="flex items-center gap-3 mt-3 pt-3 border-t border-border">
                   <img 
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=64x64&data=${encodeURIComponent(scoringUrl)}`} 
@@ -393,7 +393,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                     <p className="text-xs font-semibold text-primary flex items-center gap-1">
                       <QrCode className="h-3 w-3" /> Scan to Enter Scores
                     </p>
-                    <p className="text-[10px] text-muted-foreground">Code: {scoringCode}</p>
+                    <p className="text-[10px] text-muted-foreground">{scoringCode ? `Code: ${scoringCode}` : "Enter your scoring code"}</p>
                   </div>
                 </div>
               )}

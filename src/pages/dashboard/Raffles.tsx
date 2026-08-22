@@ -78,6 +78,30 @@ export default function Raffles() {
     enabled: !!viewTickets,
   });
 
+  // Raffle tickets bought as registration add-ons
+  const { data: addonBuyers } = useQuery({
+    queryKey: ["raffle-addon-buyers", selectedTournament],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tournament_registration_addon_purchases")
+        .select("id, addon_name, quantity, unit_price_cents, created_at, registration:tournament_registrations!inner(first_name, last_name, email, payment_status, tournament_id)")
+        .eq("registration.tournament_id", selectedTournament)
+        .ilike("addon_name", "%raffle%")
+        .order("created_at", { ascending: false });
+      return (data || []) as any[];
+    },
+    enabled: !!selectedTournament,
+    refetchInterval: 30_000,
+  });
+
+  const addonTicketCount = (name: string, qty: number) => {
+    const m = name.match(/(\d+)/);
+    return (m ? parseInt(m[1], 10) : 1) * (qty || 1);
+  };
+  const addonPaid = (addonBuyers || []).filter((b) => b.registration?.payment_status === "paid");
+  const addonTotalTickets = addonPaid.reduce((a, b) => a + addonTicketCount(b.addon_name, b.quantity), 0);
+  const addonTotalCents = addonPaid.reduce((a, b) => a + b.unit_price_cents * (b.quantity || 1), 0);
+
   const openCreate = () => { setEditing(null); setForm(emptyForm); setDialogOpen(true); };
   const openEdit = (r: RaffleRow) => {
     setEditing(r);

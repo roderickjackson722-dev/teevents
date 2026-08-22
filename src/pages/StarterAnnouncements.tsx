@@ -105,13 +105,19 @@ export default function StarterAnnouncements() {
     if (!tournamentId) return;
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await (supabase as any).rpc("get_public_team_roster", { _tournament_id: tournamentId });
-      if (!cancelled) setRoster((data || []) as StarterRow[]);
+      const [{ data }, tRes] = await Promise.all([
+        (supabase as any).rpc("get_public_team_roster", { _tournament_id: tournamentId }),
+        supabase.from("tournaments").select("pairings_config").eq("id", tournamentId).maybeSingle(),
+      ]);
+      if (cancelled) return;
+      setRoster((data || []) as StarterRow[]);
+      setPairings(parsePairingsConfig((tRes.data as any)?.pairings_config));
     };
     const channel = supabase
       .channel(`starter-${tournamentId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "tournament_registrations", filter: `tournament_id=eq.${tournamentId}` }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "registration_groups", filter: `tournament_id=eq.${tournamentId}` }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournaments", filter: `id=eq.${tournamentId}` }, refresh)
       .subscribe();
     const onFocus = () => refresh();
     window.addEventListener("focus", onFocus);

@@ -392,9 +392,22 @@ export function LeaderboardRenderer({
 
     <div
       data-testid="lb-root"
-      className={`flex flex-col ${compact ? "rounded-lg overflow-hidden border" : "min-h-screen"}`}
+      className={`relative flex flex-col ${compact ? "rounded-lg overflow-hidden border" : "min-h-screen"}`}
       style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
     >
+      {!compact && (
+        <button
+          type="button"
+          onClick={() => setIsPaused((p) => !p)}
+          aria-label={isPaused ? "Resume scrolling" : "Pause scrolling"}
+          title={isPaused ? "Resume scrolling" : "Pause scrolling"}
+          className="fixed top-4 right-4 z-50 flex items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold shadow-lg transition-transform hover:scale-105 active:scale-95"
+          style={{ backgroundColor: headerBg, color: textColor, border: `1px solid ${accent}55` }}
+        >
+          {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+          {isPaused ? "Resume" : "Pause"}
+        </button>
+      )}
       {topNotice}
 
       {scrollPos === "top" && sponsorMarquee}

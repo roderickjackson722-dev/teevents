@@ -2727,6 +2727,12 @@ const Players = () => {
                     {rosterCols.payment !== false && (
                       <td className="px-4 py-3 text-center">
                         <div className="flex flex-col items-center gap-1">
+                          {String(p.status || "active").toLowerCase() === "wd" && (
+                            <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-destructive/10 text-destructive">
+                              WD
+                            </span>
+                          )}
+
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
                             {p.payment_status}
                           </span>

@@ -2807,7 +2807,41 @@ const Players = () => {
                             </AlertDialogContent>
                           </AlertDialog>
                         )}
+                        {String(p.status || "active").toLowerCase() === "wd" ? (
+                          <button
+                            className="text-xs font-semibold text-primary hover:underline"
+                            title="Reinstate player"
+                            onClick={() => setPlayerStatus(p.id, "active")}
+                          >
+                            Reinstate
+                          </button>
+                        ) : (
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <button className="text-xs font-semibold text-muted-foreground hover:text-destructive transition-colors" title="Mark as withdrawn">
+                                WD
+                              </button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Mark as WD (Withdrawn)</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Mark {p.first_name} {p.last_name} as withdrawn? This removes them from the live
+                                  leaderboard and scoring, makes them ineligible for skins, and excludes them from payouts.
+                                  You can reinstate them at any time.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => setPlayerStatus(p.id, "wd")}>
+                                  Confirm WD
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        )}
                         <AlertDialog>
+
                           <AlertDialogTrigger asChild>
                             <button className="text-muted-foreground hover:text-destructive transition-colors" title="Remove player">
                               <Trash2 className="h-4 w-4" />

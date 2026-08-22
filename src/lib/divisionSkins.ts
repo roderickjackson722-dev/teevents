@@ -33,19 +33,17 @@ function netStrokes(strokes: number, handicap: number, hole: number) {
  * across the holes that were actually won. Withdrawn players are excluded.
  */
 export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]> {
-  const regQuery = supabase
-    .from("tournament_registrations")
-    .select("id, handicap, status, flight_id, payment_status, skins_opt_in")
-    .eq("tournament_id", game.tournament_id);
-  if (game.division_id) regQuery.eq("flight_id", game.division_id);
-
   const [{ data: regs }, { data: scores }] = await Promise.all([
-    regQuery,
+    supabase
+      .from("tournament_registrations")
+      .select("id, handicap, status, flight_id, tier_id, payment_status, skins_opt_in")
+      .eq("tournament_id", game.tournament_id),
     supabase
       .from("tournament_scores")
       .select("registration_id, hole_number, strokes")
       .eq("tournament_id", game.tournament_id),
   ]);
+
 
   const eligible = new Map<string, number>();
   ((regs as any[]) || []).forEach((r) => {

@@ -71,7 +71,6 @@ export default function SkinsPayoutsCard({ tournamentId }: { tournamentId: strin
                   <span className="text-sm text-muted-foreground">Each skin is worth</span>
                   <span className="text-lg font-bold text-primary">{formatCents(skinValueCents)}</span>
                 </div>
-              <>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">
                     <thead className="text-xs uppercase text-muted-foreground">

@@ -254,9 +254,10 @@ export function LeaderboardRenderer({
     const all = boardRows;
     const shown = pageRows(all);
     const offset = pageMode ? pageIdx * perPage : 0;
-    /** Gross competition positions: only identical stroke totals share a T-position. */
+    /** Positions follow To Par; identical To Par AND total share a T-position. */
     const positionFor = (idx: number) => {
-      const keyOf = (r: LbRow) => r.total;
+      const keyOf = (r: LbRow) =>
+        `${r.total - (r.parPlayed ?? coursePar)}|${r.total}`;
       const k = keyOf(all[offset + idx]);
       const first = all.findIndex((r) => keyOf(r) === k);
       const tied = all.filter((r) => keyOf(r) === k).length > 1;

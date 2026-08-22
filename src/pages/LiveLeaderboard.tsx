@@ -134,15 +134,21 @@ function summarize(
 }
 
 /**
- * Gross-score leaderboard order: lowest accumulated stroke total ranks first,
- * regardless of how many holes a player has completed. Only identical totals
- * share a position; To Par remains a display of total minus par actually played.
+ * Gross-score leaderboard order: score relative to the par of the holes actually
+ * played ranks first, then lowest total, then most holes completed.
  */
+function toParOf(r: any) {
+  return Number(r.total || 0) - Number(r.parPlayed || 0);
+}
+
 function compareByTotal(a: any, b: any) {
   const aEmpty = !a.thru || a.total === 0;
   const bEmpty = !b.thru || b.total === 0;
   if (aEmpty !== bEmpty) return aEmpty ? 1 : -1;
   if (aEmpty && bEmpty) return 0;
+  const ap = toParOf(a);
+  const bp = toParOf(b);
+  if (ap !== bp) return ap - bp;
   if (a.total !== b.total) return a.total - b.total;
   if (a.thru !== b.thru) return b.thru - a.thru;
   return String(a.name || "").localeCompare(String(b.name || ""));

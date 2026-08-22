@@ -220,6 +220,16 @@ export default function StarterAnnouncements() {
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-1" /> Print starter sheet
           </Button>
+          {pairings.rounds > 1 && (
+            <Select value={String(day)} onValueChange={(v) => setDay(Number(v))}>
+              <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: pairings.rounds }, (_, i) => (
+                  <SelectItem key={i} value={String(i)}>{roundLabel(i)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className="relative flex-1 min-w-[180px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input

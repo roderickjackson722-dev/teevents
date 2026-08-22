@@ -269,15 +269,14 @@ function DayOfInner() {
           hole_assignment: null,
         });
         setGroup([]);
-        const { data: leaderRows } = await supabase
-          .from("tournament_scores")
-          .select("strokes, tournament_registrations(first_name, last_name)")
-          .eq("tournament_id", tt.id);
+        const { data: leaderRows } = await (supabase as any).rpc(
+          "get_public_leaderboard_scores",
+          { _tournament_id: tt.id }
+        );
         const totals = new Map<string, number>();
         ((leaderRows || []) as any[]).forEach((r) => {
           const reg = r.tournament_registrations;
-          if (!reg) return;
-          const name = `${reg.first_name || ""} ${reg.last_name || ""}`.trim();
+          const name = `${reg?.first_name ?? r.first_name ?? ""} ${reg?.last_name ?? r.last_name ?? ""}`.trim();
           if (!name) return;
           totals.set(name, (totals.get(name) || 0) + (r.strokes || 0));
         });

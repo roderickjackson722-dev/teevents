@@ -393,6 +393,11 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
             <LiveLeaderboardSettings tournamentId={selectedTournament} />
           </TabsContent>
 
+          {/* ===== SKINS TAB ===== */}
+          <TabsContent value="skins" className="space-y-4">
+            <DivisionSkinsManager tournamentId={selectedTournament} />
+          </TabsContent>
+
 
 
 

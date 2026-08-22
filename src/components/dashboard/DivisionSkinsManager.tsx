@@ -76,6 +76,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       nameMap[r.id] = `${r.first_name || ""} ${r.last_name || ""}`.trim();
     });
     setNames(nameMap);
+    setPlayers(((rRes.data as PlayerRow[]) || []).filter((p) => String(p.status || "active").toLowerCase() !== "wd"));
+
 
     if (gs.length > 0) {
       const { data: w } = await (supabase as any)

@@ -5,6 +5,7 @@ import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { Trophy, Loader2 } from "lucide-react";
 import { type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 import { LeaderboardRenderer, mergeDesign } from "@/components/leaderboard/LeaderboardCore";
+import { useLeaderboardPaused } from "@/lib/leaderboardPause";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { PlayerScorecardDialog, type ScorecardCourseInfo } from "@/components/leaderboard/PlayerScorecardDialog";
@@ -132,6 +133,23 @@ function summarize(
   return { total, parPlayed, today, parToday, thru, roundTotals };
 }
 
+/**
+ * Leaderboard order for stroke-based formats: relative to par (gross), so a
+ * player at even par thru 10 outranks one at +10 thru 7. Ties break on holes
+ * played (more = higher), then raw strokes. Entries with no scores sink last.
+ */
+function compareByToPar(a: any, b: any) {
+  const aEmpty = !a.thru || a.total === 0;
+  const bEmpty = !b.thru || b.total === 0;
+  if (aEmpty !== bEmpty) return aEmpty ? 1 : -1;
+  if (aEmpty && bEmpty) return 0;
+  const aPar = a.total - (a.parPlayed || 0);
+  const bPar = b.total - (b.parPlayed || 0);
+  if (aPar !== bPar) return aPar - bPar;
+  if (a.thru !== b.thru) return b.thru - a.thru;
+  return a.total - b.total;
+}
+
 function buildLeaderboard(
   scoresData: any[],
   t: Tournament,
@@ -216,7 +234,7 @@ function buildLeaderboard(
           holesByRound,
         };
       })
-      .sort((a, b) => (a.total === 0 ? 1 : b.total === 0 ? -1 : a.total - b.total));
+      .sort(compareByToPar);
   }
 
   if (isStableford) {
@@ -247,13 +265,14 @@ function buildLeaderboard(
         holesByRound: p.holesByRound,
       };
     })
-    .sort((a, b) => (a.total === 0 ? 1 : b.total === 0 ? -1 : a.total - b.total));
+    .sort(compareByToPar);
 }
 
 
 export default function LiveLeaderboard() {
   const { slug } = useParams<{ slug: string }>();
   const [search] = useSearchParams();
+  const [isPaused] = useLeaderboardPaused();
   const isTvMode = search.get("display") === "1";
   const isPreview = search.get("preview") === "true" || search.get("preview") === "1";
   // Players who arrive from the scoring page get a one-tap link back so they
@@ -457,7 +476,7 @@ export default function LiveLeaderboard() {
 
   // Auto-refresh fallback
   useEffect(() => {
-    if (!tournament) return;
+    if (!tournament || isPaused) return;
     const seconds = Math.max(5, design.auto_refresh_seconds || tournament.live_display_refresh_seconds || 10);
     const interval = setInterval(() => {
       (supabase as any)
@@ -465,7 +484,7 @@ export default function LiveLeaderboard() {
         .then(({ data }: any) => setScores(data || []));
     }, seconds * 1000);
     return () => clearInterval(interval);
-  }, [tournament]);
+  }, [tournament, isPaused]);
 
   // Sort sponsors by tier + display order
   const sortedSponsors = useMemo(() => {
@@ -515,17 +534,17 @@ export default function LiveLeaderboard() {
 
   // Rotate banner sponsor
   useEffect(() => {
-    if (bannerSponsors.length <= 1) return;
+    if (bannerSponsors.length <= 1 || isPaused) return;
     const t = setInterval(() => setBannerIdx((i) => (i + 1) % bannerSponsors.length), 5000);
     return () => clearInterval(t);
-  }, [bannerSponsors.length]);
+  }, [bannerSponsors.length, isPaused]);
 
   // Rotate gallery
   useEffect(() => {
-    if (gallery.length <= 1) return;
+    if (gallery.length <= 1 || isPaused) return;
     const t = setInterval(() => setGalleryIdx((i) => (i + 1) % gallery.length), 7000);
     return () => clearInterval(t);
-  }, [gallery.length]);
+  }, [gallery.length, isPaused]);
 
   // Honor ?flight= (id or flight name) once flights have loaded.
   useEffect(() => {
@@ -552,7 +571,7 @@ export default function LiveLeaderboard() {
     if (flightMode !== "rotate" || rotateKeys.length === 0) return;
     const seconds = Math.max(5, design.flight_rotate_seconds || 15);
     setActiveFlight((cur) => (rotateKeys.includes(cur) ? cur : rotateKeys[0]));
-    if (rotateKeys.length < 2) return;
+    if (rotateKeys.length < 2 || isPaused) return;
     const t = setInterval(() => {
       setActiveFlight((cur) => {
         const i = rotateKeys.indexOf(cur);
@@ -560,7 +579,7 @@ export default function LiveLeaderboard() {
       });
     }, seconds * 1000);
     return () => clearInterval(t);
-  }, [flightMode, rotateKeys, design.flight_rotate_seconds, requestedFlight]);
+  }, [flightMode, rotateKeys, design.flight_rotate_seconds, requestedFlight, isPaused]);
 
 
   /**

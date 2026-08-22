@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Trophy, Award, Pause, Play } from "lucide-react";
+import { useLeaderboardPaused } from "@/lib/leaderboardPause";
 import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 
 
@@ -169,7 +170,7 @@ export function LeaderboardRenderer({
     : rows.length;
   const pageCount = pageMode ? Math.max(1, Math.ceil(longestBoard / perPage)) : 1;
   const [pageIdx, setPageIdx] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useLeaderboardPaused();
   useEffect(() => {
     if (!pageMode || pageCount < 2 || isPaused) {
       if (!pageMode || pageCount < 2) setPageIdx(0);
@@ -255,9 +256,11 @@ export function LeaderboardRenderer({
     const offset = pageMode ? pageIdx * perPage : 0;
     /** Competition positions: identical totals share a T-position. */
     const positionFor = (idx: number) => {
-      const total = all[offset + idx].total;
-      const first = all.findIndex((r) => r.total === total);
-      const tied = all.filter((r) => r.total === total).length > 1;
+      const keyOf = (r: LbRow) =>
+        r.parPlayed != null ? r.total - (r.parPlayed || 0) : r.total;
+      const k = keyOf(all[offset + idx]);
+      const first = all.findIndex((r) => keyOf(r) === k);
+      const tied = all.filter((r) => keyOf(r) === k).length > 1;
       return `${tied ? "T" : ""}${first + 1}`;
     };
     const heading = (
@@ -398,7 +401,7 @@ export function LeaderboardRenderer({
       {!compact && (
         <button
           type="button"
-          onClick={() => setIsPaused((p) => !p)}
+          onClick={() => setIsPaused(!isPaused)}
           aria-label={isPaused ? "Resume scrolling" : "Pause scrolling"}
           title={isPaused ? "Resume scrolling" : "Pause scrolling"}
           className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-3 py-2 text-xs sm:text-sm font-semibold shadow-lg transition-transform hover:scale-105 active:scale-95"

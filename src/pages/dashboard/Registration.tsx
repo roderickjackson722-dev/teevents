@@ -375,8 +375,14 @@ const Registration = () => {
         .map((n) => Math.round(n * 100)),
       donation_allow_custom: donationAllowCustom,
       donation_custom_label: donationCustomLabel.trim() || "Enter your own amount",
-      registration_auto_close_enabled: autoCloseEnabled,
-      registration_close_at: autoCloseEnabled && closeAt ? new Date(closeAt).toISOString() : null,
+      // A schedule in the past would be re-applied immediately by the scheduler,
+      // which is what previously made "open registration again" not stick.
+      registration_auto_close_enabled:
+        autoCloseEnabled && !(closeAt && new Date(closeAt).getTime() <= Date.now()),
+      registration_close_at:
+        autoCloseEnabled && closeAt && new Date(closeAt).getTime() > Date.now()
+          ? new Date(closeAt).toISOString()
+          : null,
       registration_closed_message: closedMessage.trim() || null,
       registration_closed_contact_email: closedContactEmail.trim() || null,
       registration_closed_contact_phone: closedContactPhone.trim() || null,
@@ -866,7 +872,20 @@ const Registration = () => {
                 <div className="flex flex-col gap-2">
                   <Label>Registration Status</Label>
                   <div className="flex items-center gap-3 mt-1">
-                    <Switch checked={regOpen} onCheckedChange={setRegOpen} />
+                    <Switch
+                      checked={regOpen}
+                      onCheckedChange={(v) => {
+                        setRegOpen(v);
+                        // Reopening for late registration: drop an expired auto-close schedule
+                        // so the scheduler doesn't immediately close registration again.
+                        if (v && closeAt && new Date(closeAt).getTime() <= Date.now()) {
+                          setAutoCloseEnabled(false);
+                          setCloseAt("");
+                          setSavedCloseAt(null);
+                          toast.info("Expired auto-close time cleared so late registration stays open. Save to apply.");
+                        }
+                      }}
+                    />
                     <span className="text-sm font-medium text-foreground">
                       {regOpen ? "Registration Open" : "Registration Closed"}
                     </span>

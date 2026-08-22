@@ -17,6 +17,7 @@ import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
 import HandicapSettings from "@/components/dashboard/HandicapSettings";
 import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
+import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
 
 
 export default function Scoring({ embedded = false }: { embedded?: boolean }) {

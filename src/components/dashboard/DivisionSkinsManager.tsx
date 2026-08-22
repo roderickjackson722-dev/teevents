@@ -384,8 +384,9 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
 
         {games.filter((g) => g.status === "active").map((g) => {
           const rows = winners[g.id] || [];
+          const skinValueCents = rows.length > 0 ? Math.round(g.total_purse_cents / rows.length) : 0;
           return (
-            <div key={g.id} className="space-y-2">
+            <div key={g.id} className="space-y-3">
               <div className="flex items-baseline justify-between">
                 <h4 className="font-semibold">{g.name}</h4>
                 <span className="text-sm text-muted-foreground">
@@ -397,28 +398,40 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                   No skins calculated yet — enter scores, then choose “Calculate Skin Payouts”.
                 </p>
               ) : (
-                <div className="overflow-x-auto rounded-md border">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
-                      <tr>
-                        <th className="px-3 py-2 text-left">Hole</th>
-                        <th className="px-3 py-2 text-left">Player</th>
-                        <th className="px-3 py-2 text-center">Score</th>
-                        <th className="px-3 py-2 text-right">Payout</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y">
-                      {rows.map((r) => (
-                        <tr key={`${g.id}-${r.hole_number}`}>
-                          <td className="px-3 py-2">{r.hole_number}</td>
-                          <td className="px-3 py-2">{names[r.registration_id || ""] || "—"}</td>
-                          <td className="px-3 py-2 text-center">{r.score ?? "—"}</td>
-                          <td className="px-3 py-2 text-right font-medium">{formatCents(r.amount_cents)}</td>
+                <>
+                  <div className="rounded-md border bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Skins won</p>
+                      <p className="text-2xl font-bold">{rows.length}</p>
+                    </div>
+                    <div className="sm:text-right">
+                      <p className="text-sm text-muted-foreground">Each skin is worth</p>
+                      <p className="text-2xl font-bold text-primary">{formatCents(skinValueCents)}</p>
+                    </div>
+                  </div>
+                  <div className="overflow-x-auto rounded-md border">
+                    <table className="w-full text-sm">
+                      <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Hole</th>
+                          <th className="px-3 py-2 text-left">Player</th>
+                          <th className="px-3 py-2 text-center">Score</th>
+                          <th className="px-3 py-2 text-right">Payout</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                      </thead>
+                      <tbody className="divide-y">
+                        {rows.map((r) => (
+                          <tr key={`${g.id}-${r.hole_number}`}>
+                            <td className="px-3 py-2">{r.hole_number}</td>
+                            <td className="px-3 py-2">{names[r.registration_id || ""] || "—"}</td>
+                            <td className="px-3 py-2 text-center">{r.score ?? "—"}</td>
+                            <td className="px-3 py-2 text-right font-medium">{formatCents(r.amount_cents)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
               )}
             </div>
           );

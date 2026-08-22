@@ -1178,6 +1178,15 @@ const Players = () => {
   };
   const defaultDayCfg = (): DayCfg => ({ startFormat: "tee_times", firstTeeHole: 1, firstTeeTime: "08:00", teeInterval: 10, shotgunTime: "09:00", roundFormat: "", roundHoles: 18, sameStartHole: true, roundDate: "" });
 
+  /**
+   * Saved pairings per round. `tournament_registrations.group_number` always
+   * mirrors the round currently open, so setting up Round 2 never overwrites
+   * Round 1 — switching rounds saves the open round then restores the target.
+   */
+  type RoundAssignment = { g: number | null; p: number | null };
+  const [assignmentsByDay, setAssignmentsByDay] = useState<Record<number, Record<string, RoundAssignment>>>({});
+  const [switchingRound, setSwitchingRound] = useState(false);
+
   const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
   const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
 

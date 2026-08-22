@@ -9,7 +9,7 @@ import { openPrintWindow, downloadHtmlAsPdf, getFontImport, printLogoHtml, score
 import { formatTeeTime } from "./CartSignsTab";
 import type { Tournament, Registration } from "./types";
 
-import { getPrimaryColor, getPrintLogo, startingHoleOf } from "./types";
+import { getPrimaryColor, getPrintLogo, startingHoleOf, startingHoleLabelOf } from "./types";
 import PrintableSettings, { getDefaultOptions, type PrintableOptions } from "./PrintableSettings";
 import TeamScorecards from "./TeamScorecards";
 import ScorecardSelector from "./ScorecardSelector";
@@ -84,7 +84,8 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   const firstName = r.customFirstName ?? r.first_name;
   const lastName = r.customLastName ?? r.last_name;
   const groupNum = r.customGroupNumber !== undefined ? r.customGroupNumber : startingHoleOf(r as any);
-  const scoringCode = (r as any).scoring_code;
+  const holeLabel = r.customGroupNumber !== undefined ? String(r.customGroupNumber) : startingHoleLabelOf(r as any);
+  const scoringCode = (r as any).scoring_code || (r as any).group_scoring_code;
   const scoringUrl = getScoringUrl(slug, scoringCode);
 
   const pars = Array.from({ length: numHoles }, (_, i) => getHolePar(tournament, i, numHoles, courseData));
@@ -109,7 +110,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
 
   const teeTimeText = formatTeeTime((r as any).tee_time);
   const metaParts = [
-    opts.showStartingHole && groupNum != null ? `Starting Hole: ${groupNum}` : "",
+    opts.showStartingHole && holeLabel ? `Starting Hole: ${holeLabel}` : "",
     opts.showTeeTime && teeTimeText ? `Tee Time: ${teeTimeText}` : "",
     opts.showFlight && r.flight_name ? r.flight_name : "",
   ].filter(Boolean);
@@ -285,7 +286,8 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           const firstName = er.customFirstName ?? er.first_name;
           const lastName = er.customLastName ?? er.last_name;
           const groupNum = er.customGroupNumber !== undefined ? er.customGroupNumber : startingHoleOf(er as any);
-          const scoringCode = (r as any).scoring_code as string | undefined;
+          const holeLabel = er.customGroupNumber !== undefined ? String(er.customGroupNumber) : startingHoleLabelOf(er as any);
+          const scoringCode = ((r as any).scoring_code || (r as any).group_scoring_code) as string | undefined;
           const scoringUrl = getScoringUrl(slug, scoringCode);
 
           return (
@@ -372,7 +374,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
                   );
                 })()}
               </div>
-              {!isEditing && opts.showStartingHole && groupNum != null && <p className="text-xs text-primary mt-2">Starting Hole: {groupNum}</p>}
+              {!isEditing && opts.showStartingHole && holeLabel && <p className="text-xs text-primary mt-2">Starting Hole: {holeLabel}</p>}
               
               {/* Scoring QR Code */}
               {!isEditing && showScoringQR && scoringCode && scoringUrl && (

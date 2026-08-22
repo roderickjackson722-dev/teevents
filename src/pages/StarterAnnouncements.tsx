@@ -6,6 +6,26 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Megaphone, Printer, ArrowLeft, MapPin, Trophy, Search } from "lucide-react";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { DEFAULT_TEAM_HQ_SETTINGS, parseTeamHqSettings, type TeamHqSettings } from "@/lib/teamHqSettings";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  parsePairingsConfig,
+  startingHoleLabelForGroup,
+  teeTimeForGroup,
+  roundDateFor,
+  roundLabel,
+  dayCfgOf,
+  type PairingsConfig,
+} from "@/lib/pairingsConfig";
+
+const formatTee = (t?: string | null) => {
+  if (!t) return null;
+  const m = /^(\d{1,2}):(\d{2})/.exec(String(t));
+  if (!m) return String(t);
+  let h = parseInt(m[1], 10);
+  const suffix = h >= 12 ? "PM" : "AM";
+  h = h % 12 === 0 ? 12 : h % 12;
+  return `${h}:${m[2]} ${suffix}`;
+};
 
 interface StarterTournament {
   id: string;
@@ -39,6 +59,9 @@ export default function StarterAnnouncements() {
   const [notFound, setNotFound] = useState(false);
   const [query, setQuery] = useState("");
   const [tournamentId, setTournamentId] = useState<string | null>(null);
+  const [pairings, setPairings] = useState<PairingsConfig>(() => parsePairingsConfig(null));
+  const [day, setDay] = useState(0);
+
 
   useEffect(() => {
     if (!slug) return;
@@ -54,7 +77,7 @@ export default function StarterAnnouncements() {
       const [tRes, rRes] = await Promise.all([
         supabase
           .from("tournaments")
-          .select("id, title, slug, date, course_name, site_logo_url, team_hq_settings")
+          .select("id, title, slug, date, course_name, site_logo_url, team_hq_settings, pairings_config")
           .eq("id", row.id)
           .maybeSingle(),
         (supabase as any).rpc("get_public_team_roster", { _tournament_id: row.id }),
@@ -69,6 +92,7 @@ export default function StarterAnnouncements() {
         return;
       }
       setTournament(tData);
+      setPairings(parsePairingsConfig(tData?.pairings_config));
       setRoster(((rRes as any).data || []) as StarterRow[]);
       setTournamentId(row.id);
       setLoading(false);
@@ -81,13 +105,19 @@ export default function StarterAnnouncements() {
     if (!tournamentId) return;
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await (supabase as any).rpc("get_public_team_roster", { _tournament_id: tournamentId });
-      if (!cancelled) setRoster((data || []) as StarterRow[]);
+      const [{ data }, tRes] = await Promise.all([
+        (supabase as any).rpc("get_public_team_roster", { _tournament_id: tournamentId }),
+        supabase.from("tournaments").select("pairings_config").eq("id", tournamentId).maybeSingle(),
+      ]);
+      if (cancelled) return;
+      setRoster((data || []) as StarterRow[]);
+      setPairings(parsePairingsConfig((tRes.data as any)?.pairings_config));
     };
     const channel = supabase
       .channel(`starter-${tournamentId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "tournament_registrations", filter: `tournament_id=eq.${tournamentId}` }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "registration_groups", filter: `tournament_id=eq.${tournamentId}` }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournaments", filter: `id=eq.${tournamentId}` }, refresh)
       .subscribe();
     const onFocus = () => refresh();
     window.addEventListener("focus", onFocus);
@@ -111,6 +141,8 @@ export default function StarterAnnouncements() {
     );
   }, [roster, query]);
 
+  const dayCfg = useMemo(() => dayCfgOf(pairings, day), [pairings, day]);
+
   const groups = useMemo(() => {
     const map = new Map<string, StarterRow[]>();
     filtered.forEach((r) => {
@@ -118,19 +150,30 @@ export default function StarterAnnouncements() {
       map.set(key, [...(map.get(key) || []), r]);
     });
     return [...map.entries()]
-      .sort((a, b) => {
-        if (a[0] === "unassigned") return 1;
-        if (b[0] === "unassigned") return -1;
-        return Number(a[0]) - Number(b[0]);
+      .map(([key, players]) => {
+        const groupNumber = key === "unassigned" ? null : Number(key);
+        const teeTime =
+          (groupNumber != null ? teeTimeForGroup(pairings, groupNumber, day) : null) ||
+          (dayCfg.startFormat === "shotgun" ? dayCfg.shotgunTime : null) ||
+          players.find((p) => p.tee_time)?.tee_time ||
+          null;
+        return {
+          key,
+          groupNumber,
+          holeLabel: groupNumber != null ? startingHoleLabelForGroup(pairings, groupNumber, day) : null,
+          teamName: players.find((p) => p.team_name)?.team_name || null,
+          teeTime,
+          players: [...players].sort((a, b) => (a.group_position ?? 99) - (b.group_position ?? 99)),
+        };
       })
-      .map(([key, players]) => ({
-        key,
-        hole: key === "unassigned" ? null : Number(key),
-        teamName: players.find((p) => p.team_name)?.team_name || null,
-        teeTime: players.find((p) => p.tee_time)?.tee_time || null,
-        players: [...players].sort((a, b) => (a.group_position ?? 99) - (b.group_position ?? 99)),
-      }));
-  }, [filtered]);
+      .sort((a, b) => {
+        if (a.key === "unassigned") return 1;
+        if (b.key === "unassigned") return -1;
+        const t = (a.teeTime || "99:99").localeCompare(b.teeTime || "99:99");
+        if (t !== 0) return t;
+        return (a.groupNumber ?? 0) - (b.groupNumber ?? 0);
+      });
+  }, [filtered, pairings, day, dayCfg]);
 
   const missingHometown = useMemo(() => roster.filter((r) => !r.hometown).length, [roster]);
 
@@ -177,6 +220,16 @@ export default function StarterAnnouncements() {
           <Button variant="outline" size="sm" onClick={() => window.print()}>
             <Printer className="h-4 w-4 mr-1" /> Print starter sheet
           </Button>
+          {pairings.rounds > 1 && (
+            <Select value={String(day)} onValueChange={(v) => setDay(Number(v))}>
+              <SelectTrigger className="w-[150px]"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: pairings.rounds }, (_, i) => (
+                  <SelectItem key={i} value={String(i)}>{roundLabel(i)}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
           <div className="relative flex-1 min-w-[180px]">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
@@ -188,8 +241,23 @@ export default function StarterAnnouncements() {
           </div>
         </div>
 
+        <div className="rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs text-foreground">
+          <span className="font-semibold">
+            {pairings.rounds > 1 ? `${roundLabel(day)} • ` : ""}
+            {dayCfg.startFormat === "shotgun"
+              ? `Shotgun start ${formatTee(dayCfg.shotgunTime) ?? ""}`
+              : `Tee times from ${formatTee(dayCfg.firstTeeTime) ?? ""} • ${dayCfg.teeInterval} min intervals`}
+          </span>
+          {roundDateFor(pairings, day, tournament.date) && (
+            <span className="text-muted-foreground">
+              {" "}• {new Date(`${roundDateFor(pairings, day, tournament.date)}T12:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+            </span>
+          )}
+          <span className="text-muted-foreground"> • {groups.filter((g) => g.groupNumber != null).length} groups • {roster.length} players</span>
+        </div>
+
         <p className="text-sm text-muted-foreground print:hidden">
-          Read each player's name, where they're from or how far they traveled, and their division as they reach the first tee.
+          Groups, starting holes and tee times sync live from Players &amp; Pairings. Read each player's name, where they're from or how far they traveled, and their division as they reach the tee.
           {missingHometown > 0 && ` ${missingHometown} player${missingHometown === 1 ? "" : "s"} have no hometown on file yet.`}
         </p>
 
@@ -201,10 +269,14 @@ export default function StarterAnnouncements() {
             <section key={g.key} className="rounded-xl border border-border bg-card overflow-hidden break-inside-avoid">
               <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-2">
                 <p className="text-sm font-semibold text-foreground">
-                  {g.hole != null ? `Hole ${g.hole}` : "Not assigned"}
+                  {g.groupNumber != null
+                    ? `Group ${g.groupNumber}${g.holeLabel ? ` • Hole ${g.holeLabel}` : ""}`
+                    : "Not assigned to pairings yet"}
                   {g.teamName ? `: ${g.teamName}` : ""}
                 </p>
-                {g.teeTime && <span className="text-xs font-medium text-muted-foreground">{g.teeTime}</span>}
+                {g.teeTime && (
+                  <span className="text-xs font-semibold text-foreground">{formatTee(g.teeTime)}</span>
+                )}
               </div>
               <div className="divide-y divide-border">
                 {g.players.map((p) => (

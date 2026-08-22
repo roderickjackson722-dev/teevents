@@ -1189,6 +1189,7 @@ const Players = () => {
   const [switchingRound, setSwitchingRound] = useState(false);
   const pairingsConfigRef = useRef<Record<string, unknown>>({});
   const pairingsSaveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const [pairingsConfigLoaded, setPairingsConfigLoaded] = useState(false);
 
   const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
   const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
@@ -1429,12 +1430,18 @@ const Players = () => {
   useEffect(() => {
     if (!selectedTournament) return;
     let cancelled = false;
+    setPairingsConfigLoaded(false);
+    pairingsConfigRef.current = {};
     (supabase.from("tournaments") as any)
       .select("pairings_config")
       .eq("id", selectedTournament)
       .maybeSingle()
       .then(({ data }: any) => {
-        if (cancelled || !data?.pairings_config) return;
+        if (cancelled) return;
+        if (!data?.pairings_config) {
+          setPairingsConfigLoaded(true);
+          return;
+        }
         const cfg = parsePairingsConfig(data.pairings_config);
         pairingsConfigRef.current = {
           labels: cfg.labels,
@@ -1478,6 +1485,10 @@ const Players = () => {
             ) as Record<number, DayCfg>,
           );
         }
+        setPairingsConfigLoaded(true);
+      })
+      .catch(() => {
+        if (!cancelled) setPairingsConfigLoaded(true);
       });
     return () => { cancelled = true; };
   }, [selectedTournament]);
@@ -1502,7 +1513,7 @@ const Players = () => {
     activeRound?: number;
     emptyGroups?: number[];
   }) => {
-    if (!selectedTournament) return Promise.resolve();
+    if (!selectedTournament || !pairingsConfigLoaded) return Promise.resolve();
     const baseline = Object.keys(pairingsConfigRef.current).length
       ? pairingsConfigRef.current
       : {
@@ -1803,7 +1814,7 @@ const Players = () => {
 
   // Keep the open round's snapshot current so a reload restores the same board.
   useEffect(() => {
-    if (!selectedTournament || switchingRound) return;
+    if (!selectedTournament || switchingRound || !pairingsConfigLoaded) return;
     const t = setTimeout(() => {
       const snap = snapshotCurrentRound();
       setAssignmentsByDay((prev) => {
@@ -1816,6 +1827,7 @@ const Players = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedTournament,
+    pairingsConfigLoaded,
     activeDay,
     switchingRound,
     pairingPool.map((p) => `${p.id}:${p.group_number ?? ""}:${(p as any).group_position ?? ""}`).join("|"),

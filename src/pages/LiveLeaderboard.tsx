@@ -272,6 +272,7 @@ function buildLeaderboard(
 export default function LiveLeaderboard() {
   const { slug } = useParams<{ slug: string }>();
   const [search] = useSearchParams();
+  const [isPaused] = useLeaderboardPaused();
   const isTvMode = search.get("display") === "1";
   const isPreview = search.get("preview") === "true" || search.get("preview") === "1";
   // Players who arrive from the scoring page get a one-tap link back so they

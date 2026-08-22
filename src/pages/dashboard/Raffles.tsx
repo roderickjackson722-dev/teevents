@@ -78,6 +78,30 @@ export default function Raffles() {
     enabled: !!viewTickets,
   });
 
+  // Raffle tickets bought as registration add-ons
+  const { data: addonBuyers } = useQuery({
+    queryKey: ["raffle-addon-buyers", selectedTournament],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("tournament_registration_addon_purchases")
+        .select("id, addon_name, quantity, unit_price_cents, created_at, registration:tournament_registrations!inner(first_name, last_name, email, payment_status, tournament_id)")
+        .eq("registration.tournament_id", selectedTournament)
+        .ilike("addon_name", "%raffle%")
+        .order("created_at", { ascending: false });
+      return (data || []) as any[];
+    },
+    enabled: !!selectedTournament,
+    refetchInterval: 30_000,
+  });
+
+  const addonTicketCount = (name: string, qty: number) => {
+    const m = name.match(/(\d+)/);
+    return (m ? parseInt(m[1], 10) : 1) * (qty || 1);
+  };
+  const addonPaid = (addonBuyers || []).filter((b) => b.registration?.payment_status === "paid");
+  const addonTotalTickets = addonPaid.reduce((a, b) => a + addonTicketCount(b.addon_name, b.quantity), 0);
+  const addonTotalCents = addonPaid.reduce((a, b) => a + b.unit_price_cents * (b.quantity || 1), 0);
+
   const openCreate = () => { setEditing(null); setForm(emptyForm); setDialogOpen(true); };
   const openEdit = (r: RaffleRow) => {
     setEditing(r);
@@ -275,6 +299,60 @@ export default function Raffles() {
             <div className="col-span-full text-center py-12 text-muted-foreground">No raffles yet. Click "Add Raffle".</div>
           )}
         </div>
+      )}
+
+      {selectedTournament && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Ticket className="h-4 w-4" /> Raffle tickets purchased with registration
+            </CardTitle>
+            <p className="text-sm text-muted-foreground">
+              Registrants who added raffle tickets to their registration payment.
+              {addonPaid.length > 0 && (
+                <> {addonPaid.length} buyer{addonPaid.length === 1 ? "" : "s"} · {addonTotalTickets} tickets · <strong>{money(addonTotalCents)}</strong> collected</>
+              )}
+            </p>
+          </CardHeader>
+          <CardContent>
+            {addonBuyers && addonBuyers.length > 0 ? (
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Package</TableHead>
+                      <TableHead>Tickets</TableHead>
+                      <TableHead>Amount</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Purchased</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {addonBuyers.map((b) => (
+                      <TableRow key={b.id}>
+                        <TableCell className="font-medium">{[b.registration?.first_name, b.registration?.last_name].filter(Boolean).join(" ") || "—"}</TableCell>
+                        <TableCell className="text-xs">{b.registration?.email}</TableCell>
+                        <TableCell className="text-xs">{b.addon_name}</TableCell>
+                        <TableCell>{addonTicketCount(b.addon_name, b.quantity)}</TableCell>
+                        <TableCell>{money(b.unit_price_cents * (b.quantity || 1))}</TableCell>
+                        <TableCell>
+                          <Badge variant={b.registration?.payment_status === "paid" ? "default" : "secondary"}>
+                            {b.registration?.payment_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="text-xs">{new Date(b.created_at).toLocaleString()}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <p className="text-sm text-muted-foreground py-2">No raffle add-ons purchased with registrations yet.</p>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {viewTickets && (

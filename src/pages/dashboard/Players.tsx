@@ -1136,6 +1136,7 @@ const Players = () => {
   const notesStorageKey = selectedTournament ? `teevents_hole_notes_${selectedTournament}` : "";
   const teeTimesStorageKey = selectedTournament ? `teevents_hole_teetimes_${selectedTournament}` : "";
   const startFormatStorageKey = selectedTournament ? `teevents_pairings_startformat_${selectedTournament}` : "";
+  const emptyGroupsStorageKey = selectedTournament ? `teevents_empty_holes_${selectedTournament}` : "";
   const [holeLocations, setHoleLocations] = useState<Record<number, string>>({});
   const [holeLabels, setHoleLabels] = useState<Record<number, string>>({});
   const [holeNotes, setHoleNotes] = useState<Record<number, string>>({});
@@ -1391,6 +1392,11 @@ const Players = () => {
       const raw = localStorage.getItem(notesStorageKey);
       setHoleNotes(raw ? JSON.parse(raw) : {});
     } catch { setHoleNotes({}); }
+    try {
+      const raw = emptyGroupsStorageKey ? localStorage.getItem(emptyGroupsStorageKey) : null;
+      const parsed = raw ? JSON.parse(raw) : [];
+      setEmptyGroups(Array.isArray(parsed) ? parsed.map(Number).filter((n: number) => Number.isFinite(n)) : []);
+    } catch { setEmptyGroups([]); }
     // Tee times — support legacy flat shape and new per-day shape
     try {
       const raw = teeTimesStorageKey ? localStorage.getItem(teeTimesStorageKey) : null;
@@ -1414,7 +1420,7 @@ const Players = () => {
         setStartFormatByDay({ 0: defaultDayCfg() });
       }
     } catch { setStartFormatByDay({ 0: defaultDayCfg() }); }
-  }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey, startFormatStorageKey]);
+  }, [locStorageKey, labelsStorageKey, notesStorageKey, teeTimesStorageKey, startFormatStorageKey, emptyGroupsStorageKey]);
 
   // The saved pairings config on the tournament row wins over the local cache,
   // so pairings look the same on every device (and match Printables).
@@ -1446,6 +1452,7 @@ const Players = () => {
           );
         }
         setRoundCount(Math.max(1, cfg.rounds));
+        if (cfg.emptyGroups.length) setEmptyGroups((prev) => [...new Set([...prev, ...cfg.emptyGroups])].sort((a, b) => a - b));
         setAssignmentsByDay(
           Object.fromEntries(
             Object.entries(cfg.assignmentsByDay || {}).map(([day, map]) => [Number(day), map]),
@@ -1482,6 +1489,7 @@ const Players = () => {
     rounds?: number;
     assignmentsByDay?: Record<number, Record<string, RoundAssignment>>;
     activeRound?: number;
+    emptyGroups?: number[];
   }) => {
     if (!selectedTournament) return;
     const payload = {
@@ -1491,10 +1499,24 @@ const Players = () => {
       rounds: Math.max(patch.rounds ?? roundCount, numDays),
       assignmentsByDay: patch.assignmentsByDay ?? assignmentsByDay,
       activeRound: patch.activeRound ?? activeDay,
+      emptyGroups: patch.emptyGroups ?? emptyGroups,
     };
     void (supabase.from("tournaments") as any)
       .update({ pairings_config: payload })
       .eq("id", selectedTournament);
+  };
+
+  /** Empty hole slots must survive refreshes and round switches, so persist them. */
+  const saveEmptyGroups = (
+    updater: number[] | ((prev: number[]) => number[]),
+  ) => {
+    setEmptyGroups((prev) => {
+      const raw = typeof updater === "function" ? (updater as (p: number[]) => number[])(prev) : updater;
+      const next = [...new Set(raw.filter((n) => Number.isFinite(n)))].sort((a, b) => a - b);
+      try { if (emptyGroupsStorageKey) localStorage.setItem(emptyGroupsStorageKey, JSON.stringify(next)); } catch { /* noop */ }
+      persistPairingsConfig({ emptyGroups: next });
+      return next;
+    });
   };
 
   const saveLabels = (next: Record<number, string>) => {
@@ -1860,7 +1882,7 @@ const Players = () => {
 
   const handleAddGroup = () => {
     if (lockGuard()) return;
-    setEmptyGroups((prev) => [...prev, nextGroupNumber]);
+    saveEmptyGroups((prev) => [...prev, nextGroupNumber]);
     toast({ title: `Hole ${nextGroupNumber} created` });
   };
 
@@ -1872,7 +1894,7 @@ const Players = () => {
     if (lockGuard()) return;
     if (!slots.length) return;
     const nums = slots.map((_, i) => i + 1);
-    setEmptyGroups(nums);
+    saveEmptyGroups(nums);
     const labels = { ...holeLabels };
     const tees: Record<number, string> = {};
     slots.forEach((s, i) => {
@@ -1914,16 +1936,12 @@ const Players = () => {
       return;
     }
     if (allGroupNumbers.includes(newNum)) {
-      if (startFormat === "tee_times") {
-        const next = { ...holeLabels, [oldNum]: String(newNum) };
-        saveLabels(next);
-        toast({
-          title: `Starting hole set to Hole ${newNum}`,
-          description: "Tee-time groups may share the same starting hole. The pairing group remains separate.",
-        });
-        return;
-      }
-      toast({ title: "Hole already exists", description: `Hole ${newNum} is already in use.`, variant: "destructive" });
+      const next = { ...holeLabels, [oldNum]: String(newNum) };
+      saveLabels(next);
+      toast({
+        title: `Starting hole set to Hole ${newNum}`,
+        description: "Groups may share the same starting hole. The pairing group stays separate.",
+      });
       return;
     }
     const ids = players.filter((p) => p.group_number === oldNum).map((p) => p.id);
@@ -1935,7 +1953,7 @@ const Players = () => {
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     }
     setAllPlayers((prev) => prev.map((p) => p.group_number === oldNum ? { ...p, group_number: newNum } : p));
-    setEmptyGroups((prev) => prev.map((n) => n === oldNum ? newNum : n));
+    saveEmptyGroups((prev) => prev.map((n) => n === oldNum ? newNum : n));
     if (holeLocations[oldNum]) {
       const next = { ...holeLocations };
       next[newNum] = next[oldNum];
@@ -1971,7 +1989,7 @@ const Players = () => {
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     }
     setAllPlayers((prev) => prev.map((p) => p.group_number === num ? { ...p, group_number: null, group_position: null } : p));
-    setEmptyGroups((prev) => prev.filter((n) => n !== num));
+    saveEmptyGroups((prev) => prev.filter((n) => n !== num));
     if (holeLocations[num]) {
       const next = { ...holeLocations };
       delete next[num];
@@ -1996,7 +2014,7 @@ const Players = () => {
       if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
     }
     setAllPlayers((prev) => prev.map((p) => p.group_number !== null ? { ...p, group_number: null, group_position: null } : p));
-    setEmptyGroups((prev) => [...new Set([...prev, ...keepNums])].sort((a, b) => a - b));
+    saveEmptyGroups((prev) => [...prev, ...keepNums]);
     toast({
       title: "Tee time pairings reset",
       description: ids.length > 0 ? `${ids.length} player(s) moved to Unassigned. Tee times kept.` : "No players were assigned.",

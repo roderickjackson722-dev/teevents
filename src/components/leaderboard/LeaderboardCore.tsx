@@ -568,7 +568,7 @@ export function LeaderboardRenderer({
           className={`overflow-hidden whitespace-nowrap ${compact ? "py-1 text-xs" : "py-2"}`}
           style={{ backgroundColor: headerBg }}
         >
-          <span className={`inline-block ${tickerSpeedClass(design.ticker_speed)} px-4`}>{design.ticker_text}</span>
+          <span className={`inline-block ${tickerSpeedClass(design.ticker_speed)} px-4`} style={{ animationPlayState: isPaused ? "paused" : "running" }}>{design.ticker_text}</span>
         </div>
       )}
 

@@ -59,6 +59,7 @@ import Raffles from "./pages/dashboard/Raffles";
 import MediaClips from "./pages/dashboard/MediaClips";
 import DayOfSettings from "./pages/dashboard/DayOfSettings";
 import TeamHQ from "./pages/dashboard/TeamHQ";
+import StarterAnnouncements from "./pages/StarterAnnouncements";
 
 import DayOf from "./pages/DayOf";
 import Gallery from "./pages/dashboard/Gallery";
@@ -337,6 +338,7 @@ const App = () => (
           <Route path="/player/:slug/:token" element={<PlayerHub />} />
           <Route path="/live/:slug" element={<LiveLeaderboard />} />
           <Route path="/team/:slug" element={<TeamHomepage />} />
+          <Route path="/team/:slug/starter" element={<StarterAnnouncements />} />
           <Route path="/league-score" element={<LeagueTeamScoring />} />
           <Route path="/league-score/:code" element={<LeagueTeamScoring />} />
           <Route path="/league-leaderboard/:eventId" element={<LeagueEventLeaderboard />} />

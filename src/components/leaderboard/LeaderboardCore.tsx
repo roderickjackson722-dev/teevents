@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trophy, Award } from "lucide-react";
+import { Trophy, Award, Pause, Play } from "lucide-react";
 import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 
 
@@ -169,15 +169,16 @@ export function LeaderboardRenderer({
     : rows.length;
   const pageCount = pageMode ? Math.max(1, Math.ceil(longestBoard / perPage)) : 1;
   const [pageIdx, setPageIdx] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   useEffect(() => {
-    if (!pageMode || pageCount < 2) {
-      setPageIdx(0);
+    if (!pageMode || pageCount < 2 || isPaused) {
+      if (!pageMode || pageCount < 2) setPageIdx(0);
       return;
     }
     const seconds = Math.max(3, design.row_page_seconds || 10);
     const t = setInterval(() => setPageIdx((i) => (i + 1) % pageCount), seconds * 1000);
     return () => clearInterval(t);
-  }, [pageMode, pageCount, design.row_page_seconds]);
+  }, [pageMode, pageCount, design.row_page_seconds, isPaused]);
   const pageRows = (all: LbRow[]) =>
     pageMode ? all.slice(pageIdx * perPage, pageIdx * perPage + perPage) : all;
 
@@ -217,6 +218,7 @@ export function LeaderboardRenderer({
           className={`flex items-center w-max whitespace-nowrap transform-gpu ${compact ? "py-2" : "py-4"}`}
           style={{
             animation: `marquee ${loopSeconds}s linear infinite`,
+            animationPlayState: isPaused ? "paused" : "running",
             willChange: "transform",
             backfaceVisibility: "hidden",
             WebkitFontSmoothing: "antialiased",
@@ -390,9 +392,22 @@ export function LeaderboardRenderer({
 
     <div
       data-testid="lb-root"
-      className={`flex flex-col ${compact ? "rounded-lg overflow-hidden border" : "min-h-screen"}`}
+      className={`relative flex flex-col ${compact ? "rounded-lg overflow-hidden border" : "min-h-screen"}`}
       style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
     >
+      {!compact && (
+        <button
+          type="button"
+          onClick={() => setIsPaused((p) => !p)}
+          aria-label={isPaused ? "Resume scrolling" : "Pause scrolling"}
+          title={isPaused ? "Resume scrolling" : "Pause scrolling"}
+          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-3 py-2 text-xs sm:text-sm font-semibold shadow-lg transition-transform hover:scale-105 active:scale-95"
+          style={{ backgroundColor: headerBg, color: textColor, border: `1px solid ${accent}55` }}
+        >
+          {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
+          {isPaused ? "Resume" : "Pause"}
+        </button>
+      )}
       {topNotice}
 
       {scrollPos === "top" && sponsorMarquee}
@@ -520,6 +535,7 @@ export function LeaderboardRenderer({
                       className="flex flex-col items-center gap-6 transform-gpu"
                       style={{
                         animation: `marquee-y ${loopSeconds}s linear infinite`,
+                        animationPlayState: isPaused ? "paused" : "running",
                         willChange: "transform",
                         backfaceVisibility: "hidden",
                       }}
@@ -565,7 +581,7 @@ export function LeaderboardRenderer({
           className={`overflow-hidden whitespace-nowrap ${compact ? "py-1 text-xs" : "py-2"}`}
           style={{ backgroundColor: headerBg }}
         >
-          <span className={`inline-block ${tickerSpeedClass(design.ticker_speed)} px-4`}>{design.ticker_text}</span>
+          <span className={`inline-block ${tickerSpeedClass(design.ticker_speed)} px-4`} style={{ animationPlayState: isPaused ? "paused" : "running" }}>{design.ticker_text}</span>
         </div>
       )}
 
@@ -591,7 +607,7 @@ export function LeaderboardRenderer({
 
       {footerSponsors.length > 0 && !compact && (
         <footer className="overflow-hidden" style={{ backgroundColor: headerBg }} data-testid="lb-footer">
-          <div className="flex items-center gap-12 py-4 animate-marquee whitespace-nowrap">
+          <div className="flex items-center gap-12 py-4 animate-marquee whitespace-nowrap" style={{ animationPlayState: isPaused ? "paused" : "running" }}>
             {[...footerSponsors, ...footerSponsors].map((s, i) => (
               <div key={`${s.id}-${i}`} className="flex items-center gap-3 shrink-0 px-4">
                 {s.logo_url ? (

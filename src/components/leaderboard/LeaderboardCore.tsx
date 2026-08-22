@@ -218,6 +218,7 @@ export function LeaderboardRenderer({
           className={`flex items-center w-max whitespace-nowrap transform-gpu ${compact ? "py-2" : "py-4"}`}
           style={{
             animation: `marquee ${loopSeconds}s linear infinite`,
+            animationPlayState: isPaused ? "paused" : "running",
             willChange: "transform",
             backfaceVisibility: "hidden",
             WebkitFontSmoothing: "antialiased",

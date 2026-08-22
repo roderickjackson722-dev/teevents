@@ -226,8 +226,26 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
+          <Label>Skins Pot</Label>
+          <RadioGroup
+            value={potMode}
+            onValueChange={(v) => setPotMode(v as "total" | "division")}
+            className="mt-2 mb-4 space-y-2"
+          >
+            {[
+              ["total", "One total pot for the entire field"],
+              ["division", "A separate pot for each division"],
+            ].map(([v, label]) => (
+              <div key={v} className="flex items-center gap-2">
+                <RadioGroupItem value={v} id={`potmode-${v}`} disabled={v === "division" && divisions.length === 0} />
+                <Label htmlFor={`potmode-${v}`} className="font-normal cursor-pointer">{label}</Label>
+              </div>
+            ))}
+          </RadioGroup>
           <p className="text-sm text-muted-foreground mb-3">
-            Pick which divisions play a skins game and set each purse. Withdrawn (WD) players are never eligible.
+            {potMode === "total"
+              ? "Set one purse for the whole field, then choose which players are in the pot. Withdrawn (WD) players are never eligible."
+              : "Pick which divisions play a skins game and set each purse. Withdrawn (WD) players are never eligible."}
           </p>
           <div className="rounded-md border divide-y">
             {keys.map((key) => (

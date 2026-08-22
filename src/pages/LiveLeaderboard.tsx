@@ -9,6 +9,8 @@ import { useLeaderboardPaused } from "@/lib/leaderboardPause";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { PlayerScorecardDialog, type ScorecardCourseInfo } from "@/components/leaderboard/PlayerScorecardDialog";
+import SkinsPayoutsCard from "@/components/leaderboard/SkinsPayoutsCard";
+
 
 
 

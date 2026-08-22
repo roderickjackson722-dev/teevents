@@ -194,9 +194,11 @@ function buildLeaderboard(scoresData: any[], t: TournamentSite): LeaderboardEntr
     const key = s.registration_id;
     if (!playerData[key]) {
       const reg = s.tournament_registrations;
+      const first = reg?.first_name ?? s.first_name;
+      const last = reg?.last_name ?? s.last_name;
       playerData[key] = {
-        name: reg ? `${reg.first_name} ${reg.last_name}` : "Unknown",
-        group: reg?.group_number ?? null,
+        name: first || last ? `${first ?? ""} ${last ?? ""}`.trim() : "Unknown",
+        group: reg?.group_number ?? s.group_number ?? null,
         holes: {},
       };
     }
@@ -436,7 +438,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes, accommodationsRes, paidSponsorsRes, vendorTiersRes, paidVendorsRes, sideEventsRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
-          supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", t.id),
+          (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: t.id }),
           supabase.from("tournament_auction_items").select("id,tournament_id,title,description,image_url,type,starting_bid,current_bid,buy_now_price,raffle_ticket_price,is_active,sort_order,created_at").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_photos").select("id, image_url, caption").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_volunteer_roles").select("*, tournament_volunteers(id)").eq("tournament_id", t.id).order("sort_order"),
@@ -505,7 +507,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     const channel = supabase
       .channel("live-scores")
       .on("postgres_changes", { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` }, () => {
-        supabase.from("tournament_scores").select("registration_id, hole_number, strokes, tournament_registrations(first_name, last_name, group_number)").eq("tournament_id", tournament.id).then(({ data }) => {
+        (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }).then(({ data }) => {
           if (!data) return;
           setLeaderboard(buildLeaderboard(data as any[], tournament));
         });

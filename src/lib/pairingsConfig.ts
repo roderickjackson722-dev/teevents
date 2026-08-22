@@ -84,7 +84,20 @@ export function parsePairingsConfig(raw: unknown): PairingsConfig {
     Number(obj.rounds) || 0,
     ...Object.keys(byDay).map((d) => Number(d) + 1),
   );
-  return { labels, teeTimesByDay, byDay, rounds };
+  const assignmentsByDay: Record<string, Record<string, PairingAssignment>> = {};
+  for (const [day, map] of Object.entries(obj.assignmentsByDay || {})) {
+    if (!map || typeof map !== "object") continue;
+    const inner: Record<string, PairingAssignment> = {};
+    for (const [regId, a] of Object.entries(map as Record<string, any>)) {
+      if (!a || typeof a !== "object") continue;
+      const g = a.g == null ? null : Number(a.g);
+      const p = a.p == null ? null : Number(a.p);
+      inner[String(regId)] = { g: Number.isFinite(g as number) ? g : null, p: Number.isFinite(p as number) ? p : null };
+    }
+    assignmentsByDay[String(day)] = inner;
+  }
+  const activeRound = Math.max(0, Number(obj.activeRound) || 0);
+  return { labels, teeTimesByDay, byDay, rounds, assignmentsByDay, activeRound };
 }
 
 export function dayCfgOf(cfg: PairingsConfig, day = 0): PairingsDayCfg {

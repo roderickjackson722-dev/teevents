@@ -12569,6 +12569,7 @@ export type Database = {
           first_name: string
           group_number: number
           group_position: number
+          hometown: string
           last_name: string
           registration_id: string
           scoring_code: string

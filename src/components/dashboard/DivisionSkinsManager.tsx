@@ -31,6 +31,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [purse, setPurse] = useState<Record<string, string>>({});
   const [format, setFormat] = useState<"gross" | "net">("gross");
+  const [potMode, setPotMode] = useState<"total" | "division">("total");
   const [carryover, setCarryover] = useState(true);
   const [names, setNames] = useState<Record<string, string>>({});
   const [players, setPlayers] = useState<PlayerRow[]>([]);
@@ -65,12 +66,18 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
     const gs = ((gRes.data as SkinsGame[]) || []);
     setDivisions(divs);
     setGames(gs);
-    setSelected(Object.fromEntries(gs.map((g) => [g.division_id || "__overall", true])));
+    setSelected(
+      gs.length === 0
+        ? { __overall: true }
+        : Object.fromEntries(gs.map((g) => [g.division_id || "__overall", true])),
+    );
     setPurse(
       Object.fromEntries(
         gs.map((g) => [g.division_id || "__overall", ((g.total_purse_cents || 0) / 100).toString()]),
       ),
     );
+    // One total pot for the whole field = a single game with no division.
+    if (gs.length > 0) setPotMode(gs.some((g) => g.division_id) ? "division" : "total");
     if (gs[0]) {
       setFormat((gs[0].skin_format === "net" ? "net" : "gross") as "gross" | "net");
       setCarryover(gs[0].carryover !== false);
@@ -102,7 +109,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
 
   useEffect(() => { load(); }, [load]);
 
-  const keys = divisions.length > 0 ? divisions.map((d) => d.id) : ["__overall"];
+  const keys =
+    potMode === "total" || divisions.length === 0 ? ["__overall"] : divisions.map((d) => d.id);
   const labelFor = (key: string) =>
     key === "__overall" ? "Whole field" : divisions.find((d) => d.id === key)?.tier_name || "Division";
 
@@ -165,6 +173,11 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
           await (supabase as any).from("division_skins_games").insert(payload);
         }
       }
+      // Remove games that no longer belong to the chosen pot mode.
+      const stale = games.filter((g) => !keys.includes(g.division_id || "__overall"));
+      for (const g of stale) {
+        await (supabase as any).from("division_skins_games").delete().eq("id", g.id);
+      }
       toast.success("Skins settings saved");
       await load();
     } catch (e: any) {
@@ -213,8 +226,26 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       </CardHeader>
       <CardContent className="space-y-6">
         <div>
+          <Label>Skins Pot</Label>
+          <RadioGroup
+            value={potMode}
+            onValueChange={(v) => setPotMode(v as "total" | "division")}
+            className="mt-2 mb-4 space-y-2"
+          >
+            {[
+              ["total", "One total pot for the entire field"],
+              ["division", "A separate pot for each division"],
+            ].map(([v, label]) => (
+              <div key={v} className="flex items-center gap-2">
+                <RadioGroupItem value={v} id={`potmode-${v}`} disabled={v === "division" && divisions.length === 0} />
+                <Label htmlFor={`potmode-${v}`} className="font-normal cursor-pointer">{label}</Label>
+              </div>
+            ))}
+          </RadioGroup>
           <p className="text-sm text-muted-foreground mb-3">
-            Pick which divisions play a skins game and set each purse. Withdrawn (WD) players are never eligible.
+            {potMode === "total"
+              ? "Set one purse for the whole field, then choose which players are in the pot. Withdrawn (WD) players are never eligible."
+              : "Pick which divisions play a skins game and set each purse. Withdrawn (WD) players are never eligible."}
           </p>
           <div className="rounded-md border divide-y">
             {keys.map((key) => (

@@ -134,20 +134,18 @@ function summarize(
 }
 
 /**
- * Leaderboard order for stroke-based formats: relative to par (gross), so a
- * player at even par thru 10 outranks one at +10 thru 7. Ties break on holes
- * played (more = higher), then raw strokes. Entries with no scores sink last.
+ * Gross-score leaderboard order: lowest accumulated stroke total ranks first,
+ * regardless of how many holes a player has completed. Only identical totals
+ * share a position; To Par remains a display of total minus par actually played.
  */
-function compareByToPar(a: any, b: any) {
+function compareByTotal(a: any, b: any) {
   const aEmpty = !a.thru || a.total === 0;
   const bEmpty = !b.thru || b.total === 0;
   if (aEmpty !== bEmpty) return aEmpty ? 1 : -1;
   if (aEmpty && bEmpty) return 0;
-  const aPar = a.total - (a.parPlayed || 0);
-  const bPar = b.total - (b.parPlayed || 0);
-  if (aPar !== bPar) return aPar - bPar;
+  if (a.total !== b.total) return a.total - b.total;
   if (a.thru !== b.thru) return b.thru - a.thru;
-  return a.total - b.total;
+  return String(a.name || "").localeCompare(String(b.name || ""));
 }
 
 function buildLeaderboard(
@@ -234,7 +232,7 @@ function buildLeaderboard(
           holesByRound,
         };
       })
-      .sort(compareByToPar);
+      .sort(compareByTotal);
   }
 
   if (isStableford) {
@@ -265,7 +263,7 @@ function buildLeaderboard(
         holesByRound: p.holesByRound,
       };
     })
-    .sort(compareByToPar);
+    .sort(compareByTotal);
 }
 
 

@@ -102,6 +102,27 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const labelFor = (key: string) =>
     key === "__overall" ? "Whole field" : divisions.find((d) => d.id === key)?.tier_name || "Division";
 
+  /** Players eligible to be shown for a division key. */
+  const playersFor = (key: string) =>
+    key === "__overall" ? players : players.filter((p) => p.flight_id === key);
+
+  const inPot = (p: PlayerRow) => p.skins_opt_in !== false;
+
+  /** Manually add or remove a player from the skins pot. */
+  async function setInPot(ids: string[], value: boolean) {
+    if (ids.length === 0) return;
+    setPlayers((prev) => prev.map((p) => (ids.includes(p.id) ? { ...p, skins_opt_in: value } : p)));
+    const { error } = await (supabase as any)
+      .from("tournament_registrations")
+      .update({ skins_opt_in: value })
+      .in("id", ids);
+    if (error) {
+      toast.error(error.message);
+      await load();
+    }
+  }
+
+
   async function save() {
     setSaving(true);
     try {

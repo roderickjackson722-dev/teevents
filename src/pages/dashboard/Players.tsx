@@ -1693,10 +1693,12 @@ const Players = () => {
         const haveP = ((p as any).group_position ?? null) as number | null;
         if (want.g === haveG && want.p === haveP) continue;
         updates.push(
-          supabase
-            .from("tournament_registrations")
-            .update({ group_number: want.g, group_position: want.p })
-            .eq("id", p.id),
+          Promise.resolve(
+            supabase
+              .from("tournament_registrations")
+              .update({ group_number: want.g, group_position: want.p })
+              .eq("id", p.id),
+          ),
         );
       }
       for (let i = 0; i < updates.length; i += 10) {

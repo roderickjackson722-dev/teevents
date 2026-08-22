@@ -13,6 +13,15 @@ import { recomputeDivisionSkins, type SkinsGame } from "@/lib/divisionSkins";
 
 type Division = { id: string; tier_name: string; display_order: number };
 type WinnerRow = { hole_number: number; score: number | null; amount_cents: number; registration_id: string | null };
+type PlayerRow = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  flight_id: string | null;
+  status: string | null;
+  skins_opt_in: boolean | null;
+};
+
 
 export default function DivisionSkinsManager({ tournamentId }: { tournamentId: string }) {
   const [divisions, setDivisions] = useState<Division[]>([]);

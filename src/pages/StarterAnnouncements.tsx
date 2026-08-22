@@ -92,6 +92,7 @@ export default function StarterAnnouncements() {
         return;
       }
       setTournament(tData);
+      setPairings(parsePairingsConfig(tData?.pairings_config));
       setRoster(((rRes as any).data || []) as StarterRow[]);
       setTournamentId(row.id);
       setLoading(false);

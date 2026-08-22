@@ -220,12 +220,15 @@ export default function ScoringPayouts() {
         </Button>
       </div>
 
+      {selected && <DivisionSkinsManager tournamentId={selected} />}
+
       {selected && (
         <div className="space-y-4">
           <h2 className="text-xl font-display font-bold">Flights &amp; Payout Breakdown</h2>
           <FlightsManager tournamentId={selected} />
         </div>
       )}
+
     </div>
   );
 }

@@ -29,6 +29,7 @@ import { Route as ApiPublicNewsletterUnsubscribeRouteImport } from './routes/api
 import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/api/public/post-event-organizer-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
+import { Route as TeamSlugStarterRouteImport } from './routes/team/$slug.starter'
 import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes/api/public/hooks/check-tournament-links'
 import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
 import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
@@ -140,6 +141,11 @@ const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
   path: '/s/sassurvey/share',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TeamSlugStarterRoute = TeamSlugStarterRouteImport.update({
+  id: '/starter',
+  path: '/starter',
+  getParentRoute: () => TeamSlugRoute,
+} as any)
 const ApiPublicHooksCheckTournamentLinksRoute =
   ApiPublicHooksCheckTournamentLinksRouteImport.update({
     id: '/api/public/hooks/check-tournament-links',
@@ -167,7 +173,7 @@ export interface FileRoutesByFullPath {
   '/pairings/$slug': typeof PairingsSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
-  '/team/$slug': typeof TeamSlugRoute
+  '/team/$slug': typeof TeamSlugRouteWithChildren
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
@@ -180,6 +186,7 @@ export interface FileRoutesByFullPath {
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
+  '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
@@ -192,7 +199,7 @@ export interface FileRoutesByTo {
   '/pairings/$slug': typeof PairingsSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
-  '/team/$slug': typeof TeamSlugRoute
+  '/team/$slug': typeof TeamSlugRouteWithChildren
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college': typeof CollegeIndexRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
@@ -205,6 +212,7 @@ export interface FileRoutesByTo {
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
+  '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
@@ -218,7 +226,7 @@ export interface FileRoutesById {
   '/pairings/$slug': typeof PairingsSlugRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
-  '/team/$slug': typeof TeamSlugRoute
+  '/team/$slug': typeof TeamSlugRouteWithChildren
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
@@ -231,6 +239,7 @@ export interface FileRoutesById {
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
+  '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
@@ -258,6 +267,7 @@ export interface FileRouteTypes {
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
+    | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/process-scheduled-emails'
@@ -283,6 +293,7 @@ export interface FileRouteTypes {
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
+    | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/process-scheduled-emails'
@@ -308,6 +319,7 @@ export interface FileRouteTypes {
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
     | '/s/sassurvey/share'
+    | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/process-scheduled-emails'
@@ -321,7 +333,7 @@ export interface RootRouteChildren {
   PairingsSlugRoute: typeof PairingsSlugRoute
   SSlugRoute: typeof SSlugRoute
   TSlugRoute: typeof TSlugRoute
-  TeamSlugRoute: typeof TeamSlugRoute
+  TeamSlugRoute: typeof TeamSlugRouteWithChildren
   TournamentSlugRoute: typeof TournamentSlugRoute
   CollegeIndexRoute: typeof CollegeIndexRoute
   ApiPublicLeadMagnetDownloadRoute: typeof ApiPublicLeadMagnetDownloadRoute
@@ -481,6 +493,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SSassurveyShareRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/team/$slug/starter': {
+      id: '/team/$slug/starter'
+      path: '/starter'
+      fullPath: '/team/$slug/starter'
+      preLoaderRoute: typeof TeamSlugStarterRouteImport
+      parentRoute: typeof TeamSlugRoute
+    }
     '/api/public/hooks/check-tournament-links': {
       id: '/api/public/hooks/check-tournament-links'
       path: '/api/public/hooks/check-tournament-links'
@@ -505,6 +524,18 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface TeamSlugRouteChildren {
+  TeamSlugStarterRoute: typeof TeamSlugStarterRoute
+}
+
+const TeamSlugRouteChildren: TeamSlugRouteChildren = {
+  TeamSlugStarterRoute: TeamSlugStarterRoute,
+}
+
+const TeamSlugRouteWithChildren = TeamSlugRoute._addFileChildren(
+  TeamSlugRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   SplatRoute: SplatRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
@@ -513,7 +544,7 @@ const rootRouteChildren: RootRouteChildren = {
   PairingsSlugRoute: PairingsSlugRoute,
   SSlugRoute: SSlugRoute,
   TSlugRoute: TSlugRoute,
-  TeamSlugRoute: TeamSlugRoute,
+  TeamSlugRoute: TeamSlugRouteWithChildren,
   TournamentSlugRoute: TournamentSlugRoute,
   CollegeIndexRoute: CollegeIndexRoute,
   ApiPublicLeadMagnetDownloadRoute: ApiPublicLeadMagnetDownloadRoute,

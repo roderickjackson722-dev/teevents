@@ -11,6 +11,12 @@ import { toast } from "sonner";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { DEFAULT_TEAM_HQ_SETTINGS, parseTeamHqSettings, type TeamHqSettings } from "@/lib/teamHqSettings";
 import { sharePreviewUrl } from "@/lib/shareLinks";
+import {
+  parsePairingsConfig,
+  startingHoleLabelForGroup,
+  teeTimeForGroup,
+  type PairingsConfig,
+} from "@/lib/pairingsConfig";
 
 
 interface TeamTournament {
@@ -43,7 +49,18 @@ interface RosterRow {
   tee_time: string | null;
   scoring_code: string | null;
   division?: string | null;
+  hometown?: string | null;
 }
+
+const formatTeeTime = (value?: string | null) => {
+  if (!value) return null;
+  const twelveHour = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(value.trim());
+  if (twelveHour) return `${Number(twelveHour[1])}:${twelveHour[2]} ${twelveHour[3].toUpperCase()}`;
+  const twentyFourHour = /^(\d{1,2}):(\d{2})/.exec(value.trim());
+  if (!twentyFourHour) return value;
+  const hours = Number(twentyFourHour[1]);
+  return `${hours % 12 || 12}:${twentyFourHour[2]} ${hours >= 12 ? "PM" : "AM"}`;
+};
 
 const qrUrl = (url: string, size = 180) =>
   `https://api.qrserver.com/v1/create-qr-code/?size=${size * 2}x${size * 2}&margin=0&data=${encodeURIComponent(url)}`;
@@ -67,6 +84,7 @@ export default function TeamHomepage() {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [hq, setHq] = useState<TeamHqSettings>(DEFAULT_TEAM_HQ_SETTINGS);
+  const [pairings, setPairings] = useState<PairingsConfig>(() => parsePairingsConfig(null));
 
   const [tournamentId, setTournamentId] = useState<string | null>(null);
 
@@ -84,7 +102,7 @@ export default function TeamHomepage() {
       const [tRes, rRes] = await Promise.all([
         supabase
           .from("tournaments")
-          .select("id, title, slug, date, course_name, site_logo_url, site_primary_color, contact_name, contact_email, contact_phone, day_of_director_name, day_of_director_email, day_of_director_phone, day_of_emergency_contact, day_of_welcome_message, day_of_announcements, day_of_announcements_list, team_hq_settings")
+          .select("id, title, slug, date, course_name, site_logo_url, site_primary_color, contact_name, contact_email, contact_phone, day_of_director_name, day_of_director_email, day_of_director_phone, day_of_emergency_contact, day_of_welcome_message, day_of_announcements, day_of_announcements_list, team_hq_settings, pairings_config")
           .eq("id", row.id)
           .maybeSingle(),
         (supabase as any).rpc("get_public_team_roster", { _tournament_id: row.id }),
@@ -95,6 +113,7 @@ export default function TeamHomepage() {
       setHq(parsed);
       if (tData && !parsed.enabled) { setNotFound(true); setLoading(false); return; }
       setTournament(tData);
+      setPairings(parsePairingsConfig(tData?.pairings_config));
       setRoster(((rRes as any).data || []) as RosterRow[]);
       setTournamentId(row.id);
 
@@ -108,13 +127,20 @@ export default function TeamHomepage() {
     if (!tournamentId) return;
     let cancelled = false;
     const refresh = async () => {
-      const { data } = await (supabase as any).rpc("get_public_team_roster", { _tournament_id: tournamentId });
-      if (!cancelled) setRoster((data || []) as RosterRow[]);
+      const [{ data }, tournamentResult] = await Promise.all([
+        (supabase as any).rpc("get_public_team_roster", { _tournament_id: tournamentId }),
+        supabase.from("tournaments").select("pairings_config").eq("id", tournamentId).maybeSingle(),
+      ]);
+      if (!cancelled) {
+        setRoster((data || []) as RosterRow[]);
+        setPairings(parsePairingsConfig((tournamentResult.data as any)?.pairings_config));
+      }
     };
     const channel = supabase
       .channel(`team-hq-${tournamentId}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "tournament_registrations", filter: `tournament_id=eq.${tournamentId}` }, refresh)
       .on("postgres_changes", { event: "*", schema: "public", table: "registration_groups", filter: `tournament_id=eq.${tournamentId}` }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournaments", filter: `id=eq.${tournamentId}` }, refresh)
       .subscribe();
     const onFocus = () => refresh();
     window.addEventListener("focus", onFocus);
@@ -156,13 +182,14 @@ export default function TeamHomepage() {
     });
     return [...map.entries()]
       .sort((a, b) => a[0] - b[0])
-      .map(([hole, players]) => ({
-        hole,
-        teamName: players.find((p) => p.team_name)?.team_name || `Hole ${hole}`,
-        teeTime: players.find((p) => p.tee_time)?.tee_time || null,
+      .map(([groupNumber, players]) => ({
+        groupNumber,
+        startingHole: startingHoleLabelForGroup(pairings, groupNumber, 0),
+        teamName: players.find((p) => p.team_name)?.team_name || `Group ${groupNumber}`,
+        teeTime: teeTimeForGroup(pairings, groupNumber, 0) || players.find((p) => p.tee_time)?.tee_time || null,
         players: players.sort((a, b) => (a.group_position ?? 99) - (b.group_position ?? 99)),
       }));
-  }, [roster]);
+  }, [roster, pairings]);
 
   const announcements = useMemo(() => {
     const list = tournament?.day_of_announcements_list;
@@ -329,7 +356,9 @@ export default function TeamHomepage() {
                 </span>
                 <span className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-muted-foreground">
-                    {r.group_number != null ? `Hole ${r.group_number}` : "—"}
+                    {r.group_number != null
+                      ? `Group ${r.group_number} • Hole ${startingHoleLabelForGroup(pairings, r.group_number, 0) || "—"}`
+                      : "Not assigned"}
                   </span>
                   <span className="text-xs font-mono tracking-wider text-foreground">
                     {r.scoring_code || <span className="font-sans tracking-normal text-muted-foreground">—</span>}
@@ -352,14 +381,23 @@ export default function TeamHomepage() {
               <p className="rounded-xl border border-border bg-card p-4 text-sm text-muted-foreground">Pairings have not been assigned yet.</p>
             )}
             {holeGroups.map((g) => (
-              <div key={g.hole} className="rounded-xl border border-border bg-card p-3">
+              <div key={g.groupNumber} className="rounded-xl border border-border bg-card p-3">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="text-sm font-semibold text-foreground">Hole {g.hole}: {g.teamName}</p>
-                  {hq.show_tee_times && g.teeTime && <span className="text-xs text-muted-foreground">{g.teeTime}</span>}
+                  <p className="text-sm font-semibold text-foreground">
+                    Group {g.groupNumber} • Hole {g.startingHole || "—"}{g.teamName !== `Group ${g.groupNumber}` ? `: ${g.teamName}` : ""}
+                  </p>
+                  {hq.show_tee_times && g.teeTime && <span className="text-xs font-semibold text-foreground">{formatTeeTime(g.teeTime)}</span>}
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {g.players.map((p) => `${p.first_name ?? ""} ${p.last_name ?? ""}`.trim()).join(" • ")}
-                </p>
+                <div className="mt-2 divide-y divide-border">
+                  {g.players.map((p) => (
+                    <div key={p.registration_id} className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 py-1.5 text-xs">
+                      <span className="font-medium text-foreground">{`${p.first_name ?? ""} ${p.last_name ?? ""}`.trim()}</span>
+                      <span className="text-muted-foreground">
+                        {[p.division, p.hometown].filter(Boolean).join(" • ") || "Player information not provided"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </div>
             ))}
           </div>

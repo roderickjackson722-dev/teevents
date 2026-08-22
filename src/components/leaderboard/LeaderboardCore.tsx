@@ -169,7 +169,7 @@ export function LeaderboardRenderer({
     : rows.length;
   const pageCount = pageMode ? Math.max(1, Math.ceil(longestBoard / perPage)) : 1;
   const [pageIdx, setPageIdx] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+  const [isPaused, setIsPaused] = useLeaderboardPaused();
   useEffect(() => {
     if (!pageMode || pageCount < 2 || isPaused) {
       if (!pageMode || pageCount < 2) setPageIdx(0);

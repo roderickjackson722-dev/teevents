@@ -3590,12 +3590,14 @@ const Players = () => {
                         snapshot.isDraggingOver ? "border-secondary bg-secondary/5" : "border-border"
                       }`}
                     >
-                      {unassigned.length === 0 && !snapshot.isDraggingOver && (
+                      {unassignedVisible.length === 0 && !snapshot.isDraggingOver && (
                         <p className="text-xs text-muted-foreground text-center py-4">
-                          All players assigned!
+                          {unassigned.length === 0
+                            ? "All players assigned!"
+                            : "No unassigned players in this division."}
                         </p>
                       )}
-                      {unassigned.map((p, index) => (
+                      {unassignedVisible.map((p, index) => (
                         <Draggable key={p.id} draggableId={p.id} index={index} isDragDisabled={pairingsLocked}>
                           {(provided, snapshot) => (
                             <div
@@ -3609,6 +3611,9 @@ const Players = () => {
                               <GripVertical className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                               <span className="font-medium text-foreground">
                                 {p.first_name} {p.last_name}
+                              </span>
+                              <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-secondary/15 text-secondary-foreground">
+                                {divisionLabel(p) && divisionLabel(p) !== "—" ? divisionLabel(p) : "No division"}
                               </span>
                               {p.group_id && groupInfoById[p.group_id] && (
                                 <span className="text-[10px] uppercase tracking-wide px-1.5 py-0.5 rounded bg-primary/10 text-primary">

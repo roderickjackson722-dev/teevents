@@ -169,15 +169,16 @@ export function LeaderboardRenderer({
     : rows.length;
   const pageCount = pageMode ? Math.max(1, Math.ceil(longestBoard / perPage)) : 1;
   const [pageIdx, setPageIdx] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
   useEffect(() => {
-    if (!pageMode || pageCount < 2) {
-      setPageIdx(0);
+    if (!pageMode || pageCount < 2 || isPaused) {
+      if (!pageMode || pageCount < 2) setPageIdx(0);
       return;
     }
     const seconds = Math.max(3, design.row_page_seconds || 10);
     const t = setInterval(() => setPageIdx((i) => (i + 1) % pageCount), seconds * 1000);
     return () => clearInterval(t);
-  }, [pageMode, pageCount, design.row_page_seconds]);
+  }, [pageMode, pageCount, design.row_page_seconds, isPaused]);
   const pageRows = (all: LbRow[]) =>
     pageMode ? all.slice(pageIdx * perPage, pageIdx * perPage + perPage) : all;
 

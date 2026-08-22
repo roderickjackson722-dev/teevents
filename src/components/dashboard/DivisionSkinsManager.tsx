@@ -211,7 +211,9 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                   {labelFor(key)}
                 </label>
                 {selected[key] && (
+                  <>
                   <div className="pl-6 max-w-xs">
+
                     <Label htmlFor={`purse-${key}`} className="text-xs">Total Purse (USD)</Label>
                     <Input
                       id={`purse-${key}`}

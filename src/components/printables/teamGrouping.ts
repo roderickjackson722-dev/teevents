@@ -80,6 +80,7 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       key: `s-${p.id}`,
       groupNumber: null,
       startingHole: (p as any).starting_hole ?? null,
+      startingHoleLabel: startingHoleLabelOf(p as any),
       teamName: playerName(p),
       teeTime: (p as any).tee_time || null,
       players: [p],

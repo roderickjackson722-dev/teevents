@@ -89,39 +89,17 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
   const purse = game.total_purse_cents || 0;
   const result: SkinRow[] = [];
 
-  if (game.carryover) {
-    const perHole = Math.floor(purse / 18);
-    let carry = 0;
-    for (let h = 1; h <= 18; h++) {
-      const win = wins.find((w) => w.hole_number === h);
-      if (win) {
-        result.push({
-          hole_number: h,
-          registration_id: win.registration_id,
-          score: win.score,
-          amount_cents: perHole + carry,
-        });
-        carry = 0;
-      } else {
-        carry += perHole;
-      }
-    }
-    // Any purse left in the carry (or rounding remainder) goes to the last skin won.
-    if (result.length > 0) {
-      const paid = result.reduce((s, r) => s + r.amount_cents, 0);
-      result[result.length - 1].amount_cents += purse - paid;
-    }
-  } else {
-    const share = wins.length > 0 ? Math.floor(purse / wins.length) : 0;
-    wins.forEach((w, i) => {
-      result.push({
-        hole_number: w.hole_number,
-        registration_id: w.registration_id,
-        score: w.score,
-        amount_cents: share + (i === wins.length - 1 ? purse - share * wins.length : 0),
-      });
+  // Total skins pot is divided equally by the number of skins actually won.
+  // Example: $500 pot with 5 skins = $100 per skin.
+  const share = wins.length > 0 ? Math.floor(purse / wins.length) : 0;
+  wins.forEach((w, i) => {
+    result.push({
+      hole_number: w.hole_number,
+      registration_id: w.registration_id,
+      score: w.score,
+      amount_cents: share + (i === wins.length - 1 ? purse - share * wins.length : 0),
     });
-  }
+  });
 
   // Persist
   await (supabase as any).from("division_skin_winners").delete().eq("skins_game_id", game.id);

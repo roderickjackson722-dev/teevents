@@ -68,6 +68,8 @@ export default function TeamHomepage() {
   const [notFound, setNotFound] = useState(false);
   const [hq, setHq] = useState<TeamHqSettings>(DEFAULT_TEAM_HQ_SETTINGS);
 
+  const [tournamentId, setTournamentId] = useState<string | null>(null);
+
   useEffect(() => {
     if (!slug) return;
     let cancelled = false;
@@ -94,11 +96,37 @@ export default function TeamHomepage() {
       if (tData && !parsed.enabled) { setNotFound(true); setLoading(false); return; }
       setTournament(tData);
       setRoster(((rRes as any).data || []) as RosterRow[]);
+      setTournamentId(row.id);
 
       setLoading(false);
     })();
     return () => { cancelled = true; };
   }, [slug]);
+
+  // Keep the roster in sync immediately as organizers add players or change pairings.
+  useEffect(() => {
+    if (!tournamentId) return;
+    let cancelled = false;
+    const refresh = async () => {
+      const { data } = await (supabase as any).rpc("get_public_team_roster", { _tournament_id: tournamentId });
+      if (!cancelled) setRoster((data || []) as RosterRow[]);
+    };
+    const channel = supabase
+      .channel(`team-hq-${tournamentId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournament_registrations", filter: `tournament_id=eq.${tournamentId}` }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "registration_groups", filter: `tournament_id=eq.${tournamentId}` }, refresh)
+      .subscribe();
+    const onFocus = () => refresh();
+    window.addEventListener("focus", onFocus);
+    const interval = window.setInterval(refresh, 30000);
+    return () => {
+      cancelled = true;
+      window.removeEventListener("focus", onFocus);
+      window.clearInterval(interval);
+      supabase.removeChannel(channel);
+    };
+  }, [tournamentId]);
+
 
   const origin = typeof window !== "undefined" ? window.location.origin : "https://teevents.golf";
   const publicSlug = tournament?.slug || slug || "";

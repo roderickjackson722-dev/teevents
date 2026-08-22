@@ -241,8 +241,23 @@ export default function StarterAnnouncements() {
           </div>
         </div>
 
+        <div className="rounded-xl border border-border bg-muted/30 px-3 py-2 text-xs text-foreground">
+          <span className="font-semibold">
+            {pairings.rounds > 1 ? `${roundLabel(day)} • ` : ""}
+            {dayCfg.startFormat === "shotgun"
+              ? `Shotgun start ${formatTee(dayCfg.shotgunTime) ?? ""}`
+              : `Tee times from ${formatTee(dayCfg.firstTeeTime) ?? ""} • ${dayCfg.teeInterval} min intervals`}
+          </span>
+          {roundDateFor(pairings, day, tournament.date) && (
+            <span className="text-muted-foreground">
+              {" "}• {new Date(`${roundDateFor(pairings, day, tournament.date)}T12:00:00`).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+            </span>
+          )}
+          <span className="text-muted-foreground"> • {groups.filter((g) => g.groupNumber != null).length} groups • {roster.length} players</span>
+        </div>
+
         <p className="text-sm text-muted-foreground print:hidden">
-          Read each player's name, where they're from or how far they traveled, and their division as they reach the first tee.
+          Groups, starting holes and tee times sync live from Players &amp; Pairings. Read each player's name, where they're from or how far they traveled, and their division as they reach the tee.
           {missingHometown > 0 && ` ${missingHometown} player${missingHometown === 1 ? "" : "s"} have no hometown on file yet.`}
         </p>
 

@@ -51,7 +51,7 @@ function cartSignHtml(
   names: string[],
   tournament: Tournament | null,
   opts: PrintableOptions,
-  groupNumber: number | null,
+  holeLabel: string | null,
   teeTime?: string | null,
   flight?: string | null,
 ) {
@@ -76,7 +76,7 @@ function cartSignHtml(
       ${opts.showTournamentTitle ? `<div style="font-size:44px;font-weight:600;color:${subtitleColor};letter-spacing:6px;text-transform:uppercase;margin-bottom:0.1in;">${tournament?.title ?? ""}</div>` : ""}
       ${nameLines}
       ${opts.showTeeTime && formatTeeTime(teeTime) ? `<div style="font-size:56px;color:${accentColor};font-weight:700;margin-top:0.12in;">Tee Time: ${formatTeeTime(teeTime)}</div>` : ""}
-      ${opts.showStartingHole && groupNumber != null ? `<div style="font-size:48px;color:${accentColor};font-weight:600;margin-top:0.12in;">Starting Hole: ${groupNumber}</div>` : ""}
+      ${opts.showStartingHole && holeLabel ? `<div style="font-size:48px;color:${accentColor};font-weight:600;margin-top:0.12in;">Starting Hole: ${holeLabel}</div>` : ""}
       ${opts.showFlight && flight ? `<div style="font-size:44px;color:${accentColor};font-weight:600;margin-top:0.12in;">${flight}</div>` : ""}
     </div>`;
 }
@@ -154,12 +154,14 @@ export default function CartSignsTab({ tournament, registrations, loading, group
   /** Flat list of every printable cart sign (hole + cart + names) */
   const allSigns = teams.flatMap((t) => {
     const flight = t.players.map((p) => p.flight_name).find(Boolean) || null;
+    const holeLabel = t.startingHoleLabel ?? (t.startingHole ?? t.groupNumber)?.toString() ?? null;
     return cartsFor(t.key).map((c) => ({
       key: `${t.key}|${c.label}`,
       hole: t.startingHole ?? t.groupNumber,
-      label: `${t.startingHole != null ? `Hole ${t.startingHole}` : "Unassigned"} – ${c.label}: ${c.names.join(" & ")}`,
+      label: `${holeLabel ? `Hole ${holeLabel}` : "Unassigned"} – ${c.label}: ${c.names.join(" & ")}`,
       names: c.names,
       groupNumber: t.startingHole ?? t.groupNumber,
+      holeLabel,
       teeTime: teeEdits[t.key] ?? t.teeTime ?? null,
       flight,
     }));
@@ -175,7 +177,7 @@ export default function CartSignsTab({ tournament, registrations, loading, group
 
   const buildHtml = (signs: typeof allSigns) =>
     paginateSigns(
-      signs.map((s) => cartSignHtml(s.names, tournament, opts, s.groupNumber, s.teeTime, s.flight)),
+      signs.map((s) => cartSignHtml(s.names, tournament, opts, s.holeLabel, s.teeTime, s.flight)),
       signsPerPage,
     );
 
@@ -322,8 +324,8 @@ export default function CartSignsTab({ tournament, registrations, loading, group
                       {opts.showTeeTime && formatTeeTime(teeEdits[t.key] ?? t.teeTime) && (
                         <p className="text-sm font-bold text-primary">Tee Time: {formatTeeTime(teeEdits[t.key] ?? t.teeTime)}</p>
                       )}
-                      {opts.showStartingHole && (t.startingHole ?? t.groupNumber) != null && (
-                        <p className="text-sm font-semibold text-primary">Starting Hole: {t.startingHole ?? t.groupNumber}</p>
+                      {opts.showStartingHole && (t.startingHoleLabel ?? t.startingHole ?? t.groupNumber) != null && (
+                        <p className="text-sm font-semibold text-primary">Starting Hole: {t.startingHoleLabel ?? t.startingHole ?? t.groupNumber}</p>
                       )}
                       {opts.showFlight && t.players.map((p) => p.flight_name).find(Boolean) && (
                         <p className="text-sm font-semibold text-primary">{t.players.map((p) => p.flight_name).find(Boolean)}</p>

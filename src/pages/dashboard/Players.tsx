@@ -1434,6 +1434,13 @@ const Players = () => {
           );
         }
         setRoundCount(Math.max(1, cfg.rounds));
+        setAssignmentsByDay(
+          Object.fromEntries(
+            Object.entries(cfg.assignmentsByDay || {}).map(([day, map]) => [Number(day), map]),
+          ) as Record<number, Record<string, RoundAssignment>>,
+        );
+        // Open the round whose pairings are currently live in the database.
+        setActiveDay(Math.min(Math.max(0, cfg.activeRound || 0), Math.max(0, cfg.rounds - 1)));
         if (Object.keys(cfg.byDay).length) {
           setStartFormatByDay(
             Object.fromEntries(

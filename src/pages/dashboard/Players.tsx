@@ -1187,6 +1187,9 @@ const Players = () => {
   type RoundAssignment = { g: number | null; p: number | null };
   const [assignmentsByDay, setAssignmentsByDay] = useState<Record<number, Record<string, RoundAssignment>>>({});
   const [switchingRound, setSwitchingRound] = useState(false);
+  const pairingsConfigRef = useRef<Record<string, unknown>>({});
+  const pairingsSaveQueueRef = useRef<Promise<void>>(Promise.resolve());
+  const [pairingsConfigLoaded, setPairingsConfigLoaded] = useState(false);
 
   const [holeTeeTimesByDay, setHoleTeeTimesByDay] = useState<Record<number, Record<number, string>>>({});
   const [startFormatByDay, setStartFormatByDay] = useState<Record<number, DayCfg>>({ 0: defaultDayCfg() });
@@ -1427,13 +1430,28 @@ const Players = () => {
   useEffect(() => {
     if (!selectedTournament) return;
     let cancelled = false;
+    setPairingsConfigLoaded(false);
+    pairingsConfigRef.current = {};
     (supabase.from("tournaments") as any)
       .select("pairings_config")
       .eq("id", selectedTournament)
       .maybeSingle()
       .then(({ data }: any) => {
-        if (cancelled || !data?.pairings_config) return;
+        if (cancelled) return;
+        if (!data?.pairings_config) {
+          setPairingsConfigLoaded(true);
+          return;
+        }
         const cfg = parsePairingsConfig(data.pairings_config);
+        pairingsConfigRef.current = {
+          labels: cfg.labels,
+          teeTimesByDay: cfg.teeTimesByDay,
+          byDay: cfg.byDay,
+          rounds: cfg.rounds,
+          assignmentsByDay: cfg.assignmentsByDay,
+          activeRound: cfg.activeRound,
+          emptyGroups: cfg.emptyGroups,
+        };
         if (Object.keys(cfg.labels).length) {
           setHoleLabels(
             Object.fromEntries(
@@ -1467,6 +1485,10 @@ const Players = () => {
             ) as Record<number, DayCfg>,
           );
         }
+        setPairingsConfigLoaded(true);
+      })
+      .catch(() => {
+        if (!cancelled) setPairingsConfigLoaded(true);
       });
     return () => { cancelled = true; };
   }, [selectedTournament]);
@@ -1491,19 +1513,34 @@ const Players = () => {
     activeRound?: number;
     emptyGroups?: number[];
   }) => {
-    if (!selectedTournament) return;
+    if (!selectedTournament || !pairingsConfigLoaded) return Promise.resolve();
+    const baseline = Object.keys(pairingsConfigRef.current).length
+      ? pairingsConfigRef.current
+      : {
+          labels: holeLabels,
+          teeTimesByDay: holeTeeTimesByDay,
+          byDay: startFormatByDay,
+          rounds: roundCount,
+          assignmentsByDay,
+          activeRound: activeDay,
+          emptyGroups,
+        };
     const payload = {
-      labels: patch.labels ?? holeLabels,
-      teeTimesByDay: patch.teeTimesByDay ?? holeTeeTimesByDay,
-      byDay: patch.byDay ?? startFormatByDay,
-      rounds: Math.max(patch.rounds ?? roundCount, numDays),
-      assignmentsByDay: patch.assignmentsByDay ?? assignmentsByDay,
-      activeRound: patch.activeRound ?? activeDay,
-      emptyGroups: patch.emptyGroups ?? emptyGroups,
+      ...baseline,
+      ...patch,
+      rounds: Math.max(patch.rounds ?? (Number(baseline.rounds) || roundCount), numDays),
     };
-    void (supabase.from("tournaments") as any)
-      .update({ pairings_config: payload })
-      .eq("id", selectedTournament);
+    pairingsConfigRef.current = payload;
+    const tournamentId = selectedTournament;
+    pairingsSaveQueueRef.current = pairingsSaveQueueRef.current
+      .catch(() => undefined)
+      .then(async () => {
+        const { error } = await (supabase.from("tournaments") as any)
+          .update({ pairings_config: payload })
+          .eq("id", tournamentId);
+        if (error) throw error;
+      });
+    return pairingsSaveQueueRef.current;
   };
 
   /** Empty hole slots must survive refreshes and round switches, so persist them. */
@@ -1610,19 +1647,38 @@ const Players = () => {
   const handleSaveTeeTimesNow = async () => {
     if (demoGuard()) return;
     setSavingTeeTimes(true);
-    try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(holeTeeTimesByDay)); } catch { /* noop */ }
-    try { if (startFormatStorageKey) localStorage.setItem(startFormatStorageKey, JSON.stringify(startFormatByDay)); } catch { /* noop */ }
-    let saved = 0;
-    for (const [dayStr, map] of Object.entries(holeTeeTimesByDay)) {
-      const forDay = (map || {}) as Record<number, string>;
-      saved += Object.keys(forDay).length;
-      await persistTeeTimesToDb(forDay, Number(dayStr));
+    try {
+      try { if (teeTimesStorageKey) localStorage.setItem(teeTimesStorageKey, JSON.stringify(holeTeeTimesByDay)); } catch { /* noop */ }
+      try { if (startFormatStorageKey) localStorage.setItem(startFormatStorageKey, JSON.stringify(startFormatByDay)); } catch { /* noop */ }
+      const currentAssignments = snapshotCurrentRound();
+      const nextAssignments = { ...assignmentsByDay, [activeDay]: currentAssignments };
+      setAssignmentsByDay(nextAssignments);
+      await persistPairingsConfig({
+        teeTimesByDay: holeTeeTimesByDay,
+        byDay: startFormatByDay,
+        assignmentsByDay: nextAssignments,
+        activeRound: activeDay,
+        emptyGroups,
+      });
+      let saved = 0;
+      for (const [dayStr, map] of Object.entries(holeTeeTimesByDay)) {
+        const forDay = (map || {}) as Record<number, string>;
+        saved += Object.keys(forDay).length;
+        await persistTeeTimesToDb(forDay, Number(dayStr));
+      }
+      toast({
+        title: "Pairings and tee times saved",
+        description: saved ? `Round ${activeDay + 1} pairings and ${saved} tee time${saved === 1 ? "" : "s"} saved.` : `Round ${activeDay + 1} pairings saved.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Could not save pairings",
+        description: error instanceof Error ? error.message : "Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setSavingTeeTimes(false);
     }
-    setSavingTeeTimes(false);
-    toast({
-      title: "Tee times saved",
-      description: saved ? `${saved} tee time${saved === 1 ? "" : "s"} saved across all rounds.` : "No tee times to save yet.",
-    });
   };
   function fmtTee12(t?: string) {
     if (!t) return "";
@@ -1746,7 +1802,7 @@ const Players = () => {
       );
       setAssignmentsByDay(nextAssignments);
       setActiveDay(idx);
-      persistPairingsConfig({ assignmentsByDay: nextAssignments, activeRound: idx });
+      await persistPairingsConfig({ assignmentsByDay: nextAssignments, activeRound: idx });
       toast({
         title: `Round ${idx + 1} open`,
         description: `Round ${activeDay + 1} pairings saved. Editing Round ${idx + 1} won't change them.`,
@@ -1758,7 +1814,7 @@ const Players = () => {
 
   // Keep the open round's snapshot current so a reload restores the same board.
   useEffect(() => {
-    if (!selectedTournament || switchingRound) return;
+    if (!selectedTournament || switchingRound || !pairingsConfigLoaded) return;
     const t = setTimeout(() => {
       const snap = snapshotCurrentRound();
       setAssignmentsByDay((prev) => {
@@ -1771,6 +1827,7 @@ const Players = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     selectedTournament,
+    pairingsConfigLoaded,
     activeDay,
     switchingRound,
     pairingPool.map((p) => `${p.id}:${p.group_number ?? ""}:${(p as any).group_position ?? ""}`).join("|"),

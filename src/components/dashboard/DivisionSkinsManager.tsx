@@ -173,6 +173,11 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
           await (supabase as any).from("division_skins_games").insert(payload);
         }
       }
+      // Remove games that no longer belong to the chosen pot mode.
+      const stale = games.filter((g) => !keys.includes(g.division_id || "__overall"));
+      for (const g of stale) {
+        await (supabase as any).from("division_skins_games").delete().eq("id", g.id);
+      }
       toast.success("Skins settings saved");
       await load();
     } catch (e: any) {

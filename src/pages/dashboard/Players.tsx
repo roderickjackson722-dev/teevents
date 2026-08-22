@@ -889,7 +889,31 @@ const Players = () => {
     }
   };
 
+  /**
+   * Mark a player withdrawn (WD) or reinstate them. Withdrawn players drop off the
+   * live leaderboard and are excluded from skins and flight payouts.
+   */
+  const setPlayerStatus = async (id: string, status: "active" | "wd") => {
+    if (demoGuard()) return;
+    const prevStatus = allPlayers.find((p) => p.id === id)?.status || "active";
+    setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, status } : p)));
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({
+        status,
+        wd_at: status === "wd" ? new Date().toISOString() : null,
+      } as any)
+      .eq("id", id);
+    if (error) {
+      setAllPlayers((prev) => prev.map((p) => (p.id === id ? { ...p, status: prevStatus } : p)));
+      toast({ title: "Couldn't update player status", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: status === "wd" ? "Player marked WD" : "Player reinstated" });
+    }
+  };
+
   /** Rename a registration group (foursome / team name shown in Players & Pairings). */
+
   const renameGroup = async (groupId: string, name: string) => {
     if (demoGuard()) return;
     const trimmed = name.trim();

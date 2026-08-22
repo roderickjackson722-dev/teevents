@@ -594,7 +594,7 @@ export function LeaderboardRenderer({
 
       {footerSponsors.length > 0 && !compact && (
         <footer className="overflow-hidden" style={{ backgroundColor: headerBg }} data-testid="lb-footer">
-          <div className="flex items-center gap-12 py-4 animate-marquee whitespace-nowrap">
+          <div className="flex items-center gap-12 py-4 animate-marquee whitespace-nowrap" style={{ animationPlayState: isPaused ? "paused" : "running" }}>
             {[...footerSponsors, ...footerSponsors].map((s, i) => (
               <div key={`${s.id}-${i}`} className="flex items-center gap-3 shrink-0 px-4">
                 {s.logo_url ? (

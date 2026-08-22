@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trophy, Award } from "lucide-react";
+import { Trophy, Award, Pause, Play } from "lucide-react";
 import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 
 

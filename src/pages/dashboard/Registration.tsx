@@ -375,8 +375,14 @@ const Registration = () => {
         .map((n) => Math.round(n * 100)),
       donation_allow_custom: donationAllowCustom,
       donation_custom_label: donationCustomLabel.trim() || "Enter your own amount",
-      registration_auto_close_enabled: autoCloseEnabled,
-      registration_close_at: autoCloseEnabled && closeAt ? new Date(closeAt).toISOString() : null,
+      // A schedule in the past would be re-applied immediately by the scheduler,
+      // which is what previously made "open registration again" not stick.
+      registration_auto_close_enabled:
+        autoCloseEnabled && !(closeAt && new Date(closeAt).getTime() <= Date.now()),
+      registration_close_at:
+        autoCloseEnabled && closeAt && new Date(closeAt).getTime() > Date.now()
+          ? new Date(closeAt).toISOString()
+          : null,
       registration_closed_message: closedMessage.trim() || null,
       registration_closed_contact_email: closedContactEmail.trim() || null,
       registration_closed_contact_phone: closedContactPhone.trim() || null,

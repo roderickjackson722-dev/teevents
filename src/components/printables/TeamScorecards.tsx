@@ -66,7 +66,7 @@ interface TeamEdit {
 function teamScorecardHtml(
   edit: TeamEdit,
   scoringCode: string | null | undefined,
-  groupNumber: number | null,
+  holeLabel: string | null,
   tournament: Tournament | null,
   numHoles: number,
   opts: PrintableOptions,
@@ -181,7 +181,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
         .map((t) => {
           const e = edits[t.key] || { teamName: t.teamName, playersLine: "" };
           return teamScorecardHtml(
-            e, t.scoringCode, t.startingHole ?? t.groupNumber, tournament, numHoles, opts, courseData,
+            e, t.scoringCode, t.startingHoleLabel ?? (t.startingHole ?? t.groupNumber)?.toString() ?? null, tournament, numHoles, opts, courseData,
             scoringUrlFor(slug, t.scoringCode),
           );
         })

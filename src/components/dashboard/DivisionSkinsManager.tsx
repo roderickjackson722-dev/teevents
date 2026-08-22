@@ -22,6 +22,9 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [format, setFormat] = useState<"gross" | "net">("gross");
   const [carryover, setCarryover] = useState(true);
   const [names, setNames] = useState<Record<string, string>>({});
+  const [players, setPlayers] = useState<PlayerRow[]>([]);
+  const [openPot, setOpenPot] = useState<Record<string, boolean>>({});
+
   const [winners, setWinners] = useState<Record<string, WinnerRow[]>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

@@ -35,7 +35,7 @@ function netStrokes(strokes: number, handicap: number, hole: number) {
 export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]> {
   const regQuery = supabase
     .from("tournament_registrations")
-    .select("id, handicap, status, flight_id, payment_status")
+    .select("id, handicap, status, flight_id, payment_status, skins_opt_in")
     .eq("tournament_id", game.tournament_id);
   if (game.division_id) regQuery.eq("flight_id", game.division_id);
 
@@ -52,9 +52,11 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
     const status = String(r.status || "active").toLowerCase();
     const pay = String(r.payment_status || "").toLowerCase();
     if (status === "wd" || status === "dq") return;
+    if (r.skins_opt_in === false) return; // organizer removed them from the pot
     if (["refunded", "cancelled", "canceled", "failed", "void"].includes(pay)) return;
     eligible.set(r.id, Number(r.handicap) || 0);
   });
+
 
   const byHole: Record<number, { registration_id: string; score: number }[]> = {};
   ((scores as any[]) || []).forEach((s) => {

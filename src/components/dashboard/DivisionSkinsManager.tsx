@@ -222,8 +222,58 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                       onChange={(e) => setPurse((p) => ({ ...p, [key]: e.target.value }))}
                       placeholder="2000"
                     />
-                  </div>
+                    </div>
+                    {(() => {
+                      const list = playersFor(key);
+                      const open = !!openPot[key];
+                      const count = list.filter(inPot).length;
+                      return (
+                        <div className="pl-6 mt-3">
+                          <button
+                            type="button"
+                            className="text-xs font-medium text-primary hover:underline"
+                            onClick={() => setOpenPot((o) => ({ ...o, [key]: !open }))}
+                          >
+                            {open ? "Hide players in the pot" : `Choose players in the pot (${count} of ${list.length})`}
+                          </button>
+                          {open && (
+                            <div className="mt-2 rounded-md border">
+                              <div className="flex gap-3 px-3 py-2 border-b bg-muted/40 text-xs">
+                                <button type="button" className="text-primary hover:underline"
+                                  onClick={() => setInPot(list.map((p) => p.id), true)}>
+                                  Add everyone
+                                </button>
+                                <button type="button" className="text-primary hover:underline"
+                                  onClick={() => setInPot(list.map((p) => p.id), false)}>
+                                  Remove everyone
+                                </button>
+                              </div>
+                              <div className="max-h-56 overflow-y-auto divide-y">
+                                {list.length === 0 ? (
+                                  <p className="px-3 py-3 text-xs text-muted-foreground">No players in this division yet.</p>
+                                ) : list.map((p) => (
+                                  <label key={p.id} className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer">
+                                    <Checkbox
+                                      checked={inPot(p)}
+                                      onCheckedChange={(v) => setInPot([p.id], !!v)}
+                                    />
+                                    <span>{`${p.first_name || ""} ${p.last_name || ""}`.trim() || "Unnamed player"}</span>
+                                    {!inPot(p) && (
+                                      <span className="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground">
+                                        Not in pot
+                                      </span>
+                                    )}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </>
                 )}
+
               </div>
             ))}
           </div>

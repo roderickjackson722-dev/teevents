@@ -19,6 +19,14 @@ export interface PairingsDayCfg {
   roundDate?: string;
 }
 
+/** Per-round pairing assignment for one registration */
+export interface PairingAssignment {
+  /** group (starting-hole slot) number, null when unassigned */
+  g: number | null;
+  /** position within the group */
+  p: number | null;
+}
+
 export interface PairingsConfig {
   /** group number → starting hole label ("1", "1A", "10") */
   labels: Record<string, string>;
@@ -28,6 +36,15 @@ export interface PairingsConfig {
   byDay: Record<string, PairingsDayCfg>;
   /** number of rounds the organizer set up (independent of the tournament date range) */
   rounds: number;
+  /**
+   * Saved pairings per round: day index → registration id → assignment.
+   * The live `tournament_registrations.group_number` always mirrors the round
+   * the organizer currently has open, so switching rounds swaps snapshots in
+   * and out instead of overwriting another round's pairings.
+   */
+  assignmentsByDay: Record<string, Record<string, PairingAssignment>>;
+  /** round index (0-based) whose pairings are currently live in the DB */
+  activeRound: number;
 }
 
 export const defaultPairingsDayCfg = (): PairingsDayCfg => ({

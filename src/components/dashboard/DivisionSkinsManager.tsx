@@ -18,9 +18,11 @@ type PlayerRow = {
   first_name: string | null;
   last_name: string | null;
   flight_id: string | null;
+  tier_id: string | null;
   status: string | null;
   skins_opt_in: boolean | null;
 };
+
 
 
 export default function DivisionSkinsManager({ tournamentId }: { tournamentId: string }) {

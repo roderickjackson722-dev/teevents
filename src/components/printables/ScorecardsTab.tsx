@@ -59,9 +59,14 @@ function getTotalPar(tournament: Tournament | null, numHoles: number): number {
   return tournament?.course_par ?? (numHoles === 9 ? 36 : 72);
 }
 
+/**
+ * Scoring link for a printed QR code. Players without a personal code still get
+ * a QR to the scoring entry page so every scorecard is scannable.
+ */
 function getScoringUrl(slug: string | undefined, scoringCode: string | undefined): string {
-  if (!slug || !scoringCode) return "";
-  return `${window.location.origin}/t/${slug}/scoring?code=${scoringCode}`;
+  if (!slug) return "";
+  const base = `${window.location.origin}/t/${slug}/scoring`;
+  return scoringCode ? `${base}?code=${scoringCode}` : base;
 }
 
 function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: number, opts: PrintableOptions, showScoringQR: boolean, slug?: string, courseData?: CourseDataProp | null) {

@@ -3150,7 +3150,8 @@ const Players = () => {
                       key={idx}
                       type="button"
                       className={`px-3 py-1.5 text-xs ${activeDay === idx ? "bg-primary text-primary-foreground" : "bg-background text-foreground hover:bg-muted"} ${idx > 0 ? "border-l border-border" : ""}`}
-                      onClick={() => setActiveDay(idx)}
+                      disabled={switchingRound}
+                      onClick={() => void switchRound(idx)}
                     >
                       {label}
                     </button>

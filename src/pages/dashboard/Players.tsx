@@ -1987,50 +1987,23 @@ const Players = () => {
     }
 
     const newNum = parseInt(trimmed);
-    if (!newNum || isNaN(newNum) || newNum === oldNum) return;
+    if (!newNum || isNaN(newNum)) return;
     if (newNum < 1 || newNum > 99) {
       toast({ title: "Invalid hole number", description: "Use 1-99, or a label like 1A.", variant: "destructive" });
       return;
     }
-    if (allGroupNumbers.includes(newNum)) {
-      const next = { ...holeLabels, [oldNum]: String(newNum) };
-      saveLabels(next);
-      toast({
-        title: `Starting hole set to Hole ${newNum}`,
-        description: "Groups may share the same starting hole. The pairing group stays separate.",
-      });
-      return;
-    }
-    const ids = players.filter((p) => p.group_number === oldNum).map((p) => p.id);
-    if (ids.length > 0) {
-      const { error } = await supabase
-        .from("tournament_registrations")
-        .update({ group_number: newNum })
-        .in("id", ids);
-      if (error) { toast({ title: "Error", description: error.message, variant: "destructive" }); return; }
-    }
-    setAllPlayers((prev) => prev.map((p) => p.group_number === oldNum ? { ...p, group_number: newNum } : p));
-    saveEmptyGroups((prev) => prev.map((n) => n === oldNum ? newNum : n));
-    if (holeLocations[oldNum]) {
-      const next = { ...holeLocations };
-      next[newNum] = next[oldNum];
-      delete next[oldNum];
-      saveLocations(next);
-    }
-    // Migrate label + notes when renumbering
-    if (holeLabels[oldNum]) {
-      const next = { ...holeLabels };
-      next[newNum] = next[oldNum];
-      delete next[oldNum];
-      saveLabels(next);
-    }
-    if (holeNotes[oldNum]) {
-      const next = { ...holeNotes };
-      next[newNum] = next[oldNum];
-      delete next[oldNum];
-      saveNotes(next);
-    }
-    toast({ title: `Renamed to Hole ${newNum}` });
+    // Starting holes are stored as labels on the pairing group, never by
+    // renumbering group_number. Renumbering used to fight the saved round
+    // snapshot (which still pointed players at the old group) and the edit
+    // snapped back to the original hole on the next save/refresh.
+    const next = { ...holeLabels };
+    if (newNum === oldNum) delete next[oldNum];
+    else next[oldNum] = String(newNum);
+    saveLabels(next);
+    toast({
+      title: `Starting hole set to Hole ${newNum}`,
+      description: "Groups may share the same starting hole. The pairing group stays separate.",
+    });
   };
 
 

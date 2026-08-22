@@ -1,4 +1,4 @@
-import type { Registration } from "./types";
+import { startingHoleLabelOf, type Registration } from "./types";
 
 export interface RegistrationGroupRow {
   id: string;
@@ -15,6 +15,8 @@ export interface PrintTeam {
   groupNumber: number | null;
   /** Starting hole from pairings (falls back to the group number) */
   startingHole: number | null;
+  /** Printed starting-hole label, including lettered slots like "11A" */
+  startingHoleLabel: string | null;
   groupId?: string;
   teamName: string;
   /** Tee time for this group, as saved on the pairings page (display string) */

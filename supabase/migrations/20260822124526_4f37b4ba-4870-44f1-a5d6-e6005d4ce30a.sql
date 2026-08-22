@@ -1,0 +1,1 @@
+UPDATE public.tournaments SET show_promo_code_input = true WHERE id = '8d241ebc-4fd3-4dcb-bfad-27f7e92e9c6a';

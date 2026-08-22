@@ -77,7 +77,7 @@ export default function StarterAnnouncements() {
       const [tRes, rRes] = await Promise.all([
         supabase
           .from("tournaments")
-          .select("id, title, slug, date, course_name, site_logo_url, team_hq_settings")
+          .select("id, title, slug, date, course_name, site_logo_url, team_hq_settings, pairings_config")
           .eq("id", row.id)
           .maybeSingle(),
         (supabase as any).rpc("get_public_team_roster", { _tournament_id: row.id }),

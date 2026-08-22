@@ -244,10 +244,14 @@ export default function StarterAnnouncements() {
             <section key={g.key} className="rounded-xl border border-border bg-card overflow-hidden break-inside-avoid">
               <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-2">
                 <p className="text-sm font-semibold text-foreground">
-                  {g.hole != null ? `Hole ${g.hole}` : "Not assigned"}
+                  {g.groupNumber != null
+                    ? `Group ${g.groupNumber}${g.holeLabel ? ` • Hole ${g.holeLabel}` : ""}`
+                    : "Not assigned to pairings yet"}
                   {g.teamName ? `: ${g.teamName}` : ""}
                 </p>
-                {g.teeTime && <span className="text-xs font-medium text-muted-foreground">{g.teeTime}</span>}
+                {g.teeTime && (
+                  <span className="text-xs font-semibold text-foreground">{formatTee(g.teeTime)}</span>
+                )}
               </div>
               <div className="divide-y divide-border">
                 {g.players.map((p) => (

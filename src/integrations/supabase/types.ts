@@ -10037,6 +10037,7 @@ export type Database = {
           referral_code_used: string | null
           scoring_code: string | null
           shirt_size: string | null
+          skins_opt_in: boolean | null
           status: string
           strokes_per_hole: Json | null
           survey_completed_at: string | null
@@ -10087,6 +10088,7 @@ export type Database = {
           referral_code_used?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
+          skins_opt_in?: boolean | null
           status?: string
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
@@ -10137,6 +10139,7 @@ export type Database = {
           referral_code_used?: string | null
           scoring_code?: string | null
           shirt_size?: string | null
+          skins_opt_in?: boolean | null
           status?: string
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null

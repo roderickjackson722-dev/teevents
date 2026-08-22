@@ -13,6 +13,15 @@ import { recomputeDivisionSkins, type SkinsGame } from "@/lib/divisionSkins";
 
 type Division = { id: string; tier_name: string; display_order: number };
 type WinnerRow = { hole_number: number; score: number | null; amount_cents: number; registration_id: string | null };
+type PlayerRow = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  flight_id: string | null;
+  status: string | null;
+  skins_opt_in: boolean | null;
+};
+
 
 export default function DivisionSkinsManager({ tournamentId }: { tournamentId: string }) {
   const [divisions, setDivisions] = useState<Division[]>([]);
@@ -22,6 +31,9 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [format, setFormat] = useState<"gross" | "net">("gross");
   const [carryover, setCarryover] = useState(true);
   const [names, setNames] = useState<Record<string, string>>({});
+  const [players, setPlayers] = useState<PlayerRow[]>([]);
+  const [openPot, setOpenPot] = useState<Record<string, boolean>>({});
+
   const [winners, setWinners] = useState<Record<string, WinnerRow[]>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -39,8 +51,10 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       (supabase as any).from("division_skins_games").select("*").eq("tournament_id", tournamentId),
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name")
-        .eq("tournament_id", tournamentId),
+        .select("id, first_name, last_name, flight_id, status, skins_opt_in")
+        .eq("tournament_id", tournamentId)
+        .order("last_name"),
+
     ]);
 
     const divs = (dRes.data as Division[]) || [];
@@ -62,6 +76,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       nameMap[r.id] = `${r.first_name || ""} ${r.last_name || ""}`.trim();
     });
     setNames(nameMap);
+    setPlayers(((rRes.data as PlayerRow[]) || []).filter((p) => String(p.status || "active").toLowerCase() !== "wd"));
+
 
     if (gs.length > 0) {
       const { data: w } = await (supabase as any)
@@ -85,6 +101,27 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const keys = divisions.length > 0 ? divisions.map((d) => d.id) : ["__overall"];
   const labelFor = (key: string) =>
     key === "__overall" ? "Whole field" : divisions.find((d) => d.id === key)?.tier_name || "Division";
+
+  /** Players eligible to be shown for a division key. */
+  const playersFor = (key: string) =>
+    key === "__overall" ? players : players.filter((p) => p.flight_id === key);
+
+  const inPot = (p: PlayerRow) => p.skins_opt_in !== false;
+
+  /** Manually add or remove a player from the skins pot. */
+  async function setInPot(ids: string[], value: boolean) {
+    if (ids.length === 0) return;
+    setPlayers((prev) => prev.map((p) => (ids.includes(p.id) ? { ...p, skins_opt_in: value } : p)));
+    const { error } = await (supabase as any)
+      .from("tournament_registrations")
+      .update({ skins_opt_in: value })
+      .in("id", ids);
+    if (error) {
+      toast.error(error.message);
+      await load();
+    }
+  }
+
 
   async function save() {
     setSaving(true);
@@ -174,7 +211,9 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                   {labelFor(key)}
                 </label>
                 {selected[key] && (
+                  <>
                   <div className="pl-6 max-w-xs">
+
                     <Label htmlFor={`purse-${key}`} className="text-xs">Total Purse (USD)</Label>
                     <Input
                       id={`purse-${key}`}
@@ -185,8 +224,58 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                       onChange={(e) => setPurse((p) => ({ ...p, [key]: e.target.value }))}
                       placeholder="2000"
                     />
-                  </div>
+                    </div>
+                    {(() => {
+                      const list = playersFor(key);
+                      const open = !!openPot[key];
+                      const count = list.filter(inPot).length;
+                      return (
+                        <div className="pl-6 mt-3">
+                          <button
+                            type="button"
+                            className="text-xs font-medium text-primary hover:underline"
+                            onClick={() => setOpenPot((o) => ({ ...o, [key]: !open }))}
+                          >
+                            {open ? "Hide players in the pot" : `Choose players in the pot (${count} of ${list.length})`}
+                          </button>
+                          {open && (
+                            <div className="mt-2 rounded-md border">
+                              <div className="flex gap-3 px-3 py-2 border-b bg-muted/40 text-xs">
+                                <button type="button" className="text-primary hover:underline"
+                                  onClick={() => setInPot(list.map((p) => p.id), true)}>
+                                  Add everyone
+                                </button>
+                                <button type="button" className="text-primary hover:underline"
+                                  onClick={() => setInPot(list.map((p) => p.id), false)}>
+                                  Remove everyone
+                                </button>
+                              </div>
+                              <div className="max-h-56 overflow-y-auto divide-y">
+                                {list.length === 0 ? (
+                                  <p className="px-3 py-3 text-xs text-muted-foreground">No players in this division yet.</p>
+                                ) : list.map((p) => (
+                                  <label key={p.id} className="flex items-center gap-2 px-3 py-2 text-sm cursor-pointer">
+                                    <Checkbox
+                                      checked={inPot(p)}
+                                      onCheckedChange={(v) => setInPot([p.id], !!v)}
+                                    />
+                                    <span>{`${p.first_name || ""} ${p.last_name || ""}`.trim() || "Unnamed player"}</span>
+                                    {!inPot(p) && (
+                                      <span className="ml-auto text-[10px] uppercase tracking-wider text-muted-foreground">
+                                        Not in pot
+                                      </span>
+                                    )}
+                                  </label>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </>
                 )}
+
               </div>
             ))}
           </div>

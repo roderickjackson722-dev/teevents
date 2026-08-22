@@ -522,6 +522,7 @@ export function LeaderboardRenderer({
                       className="flex flex-col items-center gap-6 transform-gpu"
                       style={{
                         animation: `marquee-y ${loopSeconds}s linear infinite`,
+                        animationPlayState: isPaused ? "paused" : "running",
                         willChange: "transform",
                         backfaceVisibility: "hidden",
                       }}

@@ -51,6 +51,7 @@ export default function SkinsPayoutsCard({ tournamentId }: { tournamentId: strin
       {games.map(({ info, winners }) => {
         const open = !!expanded[info.game_id];
         const shown = open ? winners : winners.slice(0, 6);
+        const skinValueCents = winners.length > 0 ? Math.round(info.total_purse_cents / winners.length) : 0;
         return (
           <div key={info.game_id} className="rounded-lg border bg-card p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
@@ -65,6 +66,11 @@ export default function SkinsPayoutsCard({ tournamentId }: { tournamentId: strin
             {winners.length === 0 ? (
               <p className="text-sm text-muted-foreground">No skins won yet.</p>
             ) : (
+              <>
+                <div className="rounded-md border bg-primary/5 p-3 mb-3 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">Each skin is worth</span>
+                  <span className="text-lg font-bold text-primary">{formatCents(skinValueCents)}</span>
+                </div>
               <>
                 <div className="overflow-x-auto">
                   <table className="w-full text-sm">

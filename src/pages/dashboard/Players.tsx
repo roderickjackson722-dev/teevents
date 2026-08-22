@@ -1233,6 +1233,18 @@ const Players = () => {
   }, [divisionOptions.join("|"), divFilter]);
   const groupMatchesDivision = (list: Registration[]) =>
     divFilter === "all" || list.some((p) => divisionLabel(p) === divFilter);
+
+  // ---- Unassigned list: division filter so organizers can drag one division at a time ----
+  const [unassignedDivFilter, setUnassignedDivFilter] = useState<string>("all");
+  const unassignedDivisionOptions = [...new Set(
+    unassigned.map((p) => divisionLabel(p)).map((n) => (n && n !== "—" ? n : "No division")),
+  )].sort((a, b) => a.localeCompare(b));
+  const unassignedVisible = unassigned.filter((p) => {
+    if (unassignedDivFilter === "all") return true;
+    const d = divisionLabel(p);
+    const label = d && d !== "—" ? d : "No division";
+    return label === unassignedDivFilter;
+  });
   // A hole stays visible when at least one of its players passes the age filter
   // (empty holes always stay visible so organizers can still drop players in).
   const groupMatchesAge = (list: Registration[]) =>

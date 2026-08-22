@@ -66,7 +66,11 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
     const gs = ((gRes.data as SkinsGame[]) || []);
     setDivisions(divs);
     setGames(gs);
-    setSelected(Object.fromEntries(gs.map((g) => [g.division_id || "__overall", true])));
+    setSelected(
+      gs.length === 0
+        ? { __overall: true }
+        : Object.fromEntries(gs.map((g) => [g.division_id || "__overall", true])),
+    );
     setPurse(
       Object.fromEntries(
         gs.map((g) => [g.division_id || "__overall", ((g.total_purse_cents || 0) / 100).toString()]),

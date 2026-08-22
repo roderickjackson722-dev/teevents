@@ -17,6 +17,8 @@ export interface TeamHqSettings {
   show_welcome: boolean;
   show_quick_links: boolean;
   show_alpha_list: boolean;
+  /** Show the Starter Announcements sheet (player hometown + division) for the first tee starter. */
+  show_starter_sheet: boolean;
   /** Show each player's division / tier on the Team HQ alpha list. */
   show_divisions: boolean;
   show_hole_assignments: boolean;
@@ -36,6 +38,7 @@ export const DEFAULT_TEAM_HQ_SETTINGS: TeamHqSettings = {
   show_welcome: true,
   show_quick_links: true,
   show_alpha_list: true,
+  show_starter_sheet: true,
   show_divisions: false,
   show_hole_assignments: true,
   show_tee_times: true,
@@ -72,6 +75,7 @@ export const TEAM_HQ_SECTION_LABELS: Array<{ key: keyof TeamHqSettings; label: s
   { key: "show_welcome", label: "Welcome message", help: "Shows the day-of welcome message at the top." },
   { key: "show_quick_links", label: "Quick links grid", help: "Tap targets that jump to each section." },
   { key: "show_alpha_list", label: "Alpha list (A–Z players)", help: "Every registered player, alphabetical." },
+  { key: "show_starter_sheet", label: "Starter announcements sheet", help: "A dedicated page for the first-tee starter with every player's hometown / distance traveled and division." },
   { key: "show_divisions", label: "Show divisions / tiers", help: "Adds each player's division or tier next to their name on the alpha list." },
   { key: "show_hole_assignments", label: "Hole assignments & pairings", help: "Groups with their starting hole." },
   { key: "show_tee_times", label: "Tee times", help: "Shows tee times next to each group." },

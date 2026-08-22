@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Loader2, Trophy, ListOrdered, Flag, BarChart3, PencilLine, QrCode,
-  Users, Megaphone, Phone, Copy, Download, Mail, MessageCircle, Share2, Facebook, Linkedin,
+  Users, Megaphone, Phone, Copy, Download, Mail, MessageCircle, Share2, Facebook, Linkedin, MapPin,
 } from "lucide-react";
 import { toast } from "sonner";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
@@ -134,6 +134,7 @@ export default function TeamHomepage() {
   // Shared/copied link: rendered server-side with this page's own OG tags so every
   // app (GroupMe, iMessage, Facebook, Slack…) shows the right preview.
   const teamShareUrl = sharePreviewUrl(`/team/${publicSlug}`);
+  const starterUrl = `${origin}/team/${publicSlug}/starter`;
   const liveUrl = `${origin}/live/${publicSlug}`;
   const scoringUrl = `${origin}/t/${publicSlug}/scoring`;
   const tournamentUrl = `${origin}/t/${publicSlug}`;
@@ -207,6 +208,7 @@ export default function TeamHomepage() {
     { label: "Hole Assignments", icon: Flag, href: "#hole-assignments", show: hq.show_hole_assignments },
     { label: "Live Leaderboard", icon: BarChart3, href: liveUrl, external: true, show: hq.show_leaderboard },
     { label: "Scoring Entry", icon: PencilLine, href: scoringUrl, external: true, show: hq.show_scoring },
+    { label: "Starter Announcements", icon: MapPin, href: starterUrl, show: hq.show_starter_sheet },
     { label: "QR Codes", icon: QrCode, href: "#qr-codes", show: hq.show_qr_codes },
     { label: "Pairings & Tee Times", icon: Users, href: "#hole-assignments", show: hq.show_hole_assignments },
     { label: "Announcements", icon: Megaphone, href: "#announcements", show: hq.show_announcements },
@@ -286,6 +288,22 @@ export default function TeamHomepage() {
                 <span className="text-xs font-medium text-foreground leading-tight">{label}</span>
               </a>
             ))}
+          </div>
+        </section>
+        )}
+
+        {hq.show_starter_sheet && (
+        <section>
+          <h2 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
+            <MapPin className="h-4 w-4 text-primary" /> Starter Announcements
+          </h2>
+          <div className="rounded-xl border border-border bg-card p-3 space-y-2">
+            <p className="text-sm text-muted-foreground">
+              First-tee sheet with every player&apos;s hometown / distance traveled and division.
+            </p>
+            <Button asChild className="w-full sm:w-auto">
+              <a href={starterUrl}>Open Starter Announcements</a>
+            </Button>
           </div>
         </section>
         )}
@@ -378,6 +396,7 @@ export default function TeamHomepage() {
             {hq.show_leaderboard && <QrCard label="Live Leaderboard" url={liveUrl} />}
             {hq.show_scoring && <QrCard label="Scoring Entry" url={scoringUrl} />}
             <QrCard label="Team Homepage" url={teamUrl} />
+            {hq.show_starter_sheet && <QrCard label="Starter Announcements" url={starterUrl} />}
             {hq.show_alpha_list && <QrCard label="Alpha List" url={`${teamUrl}#alpha-list`} />}
             {hq.show_hole_assignments && <QrCard label="Hole Assignments" url={`${teamUrl}#hole-assignments`} />}
             <QrCard label="Tournament Page" url={tournamentUrl} />

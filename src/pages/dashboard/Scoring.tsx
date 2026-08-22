@@ -145,6 +145,9 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
             <TabsTrigger value="live-settings">
               <SettingsIcon className="h-4 w-4 mr-1.5" /> Live Settings
             </TabsTrigger>
+            <TabsTrigger value="skins">
+              <Coins className="h-4 w-4 mr-1.5" /> Skins
+            </TabsTrigger>
           </TabsList>
 
 

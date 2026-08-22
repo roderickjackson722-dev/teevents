@@ -1664,11 +1664,87 @@ const Players = () => {
   const roundDateOf = (idx: number) =>
     (startFormatByDay[idx]?.roundDate || "") || tournamentDays[idx] || (currentTournamentObj?.date ? String(currentTournamentObj.date).slice(0, 10) : "");
 
+  /** Snapshot of the pairings currently live in the database. */
+  const snapshotCurrentRound = (): Record<string, RoundAssignment> => {
+    const snap: Record<string, RoundAssignment> = {};
+    for (const p of pairingPool) {
+      if (p.group_number != null) snap[p.id] = { g: p.group_number, p: (p as any).group_position ?? null };
+    }
+    return snap;
+  };
+
+  /**
+   * Switch the open round: save the round currently live in the DB, then
+   * restore the target round's saved pairings (a brand-new round starts empty
+   * so Round 1 assignments are never reshuffled).
+   */
+  const switchRound = async (idx: number) => {
+    if (idx === activeDay || switchingRound) return;
+    setSwitchingRound(true);
+    const current = snapshotCurrentRound();
+    const nextAssignments = { ...assignmentsByDay, [activeDay]: current };
+    const target = nextAssignments[idx] || {};
+
+    try {
+      const updates: Promise<unknown>[] = [];
+      for (const p of pairingPool) {
+        const want = target[p.id] || { g: null, p: null };
+        const haveG = p.group_number ?? null;
+        const haveP = ((p as any).group_position ?? null) as number | null;
+        if (want.g === haveG && want.p === haveP) continue;
+        updates.push(
+          supabase
+            .from("tournament_registrations")
+            .update({ group_number: want.g, group_position: want.p })
+            .eq("id", p.id),
+        );
+      }
+      for (let i = 0; i < updates.length; i += 10) {
+        await Promise.all(updates.slice(i, i + 10));
+      }
+      setAllPlayers((prev) =>
+        prev.map((p) => {
+          const want = target[p.id] || { g: null, p: null };
+          return { ...p, group_number: want.g, group_position: want.p } as typeof p;
+        }),
+      );
+      setAssignmentsByDay(nextAssignments);
+      setActiveDay(idx);
+      persistPairingsConfig({ assignmentsByDay: nextAssignments, activeRound: idx });
+      toast({
+        title: `Round ${idx + 1} open`,
+        description: `Round ${activeDay + 1} pairings saved. Editing Round ${idx + 1} won't change them.`,
+      });
+    } finally {
+      setSwitchingRound(false);
+    }
+  };
+
+  // Keep the open round's snapshot current so a reload restores the same board.
+  useEffect(() => {
+    if (!selectedTournament || switchingRound) return;
+    const t = setTimeout(() => {
+      const snap = snapshotCurrentRound();
+      setAssignmentsByDay((prev) => {
+        const next = { ...prev, [activeDay]: snap };
+        persistPairingsConfig({ assignmentsByDay: next, activeRound: activeDay });
+        return next;
+      });
+    }, 1200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    selectedTournament,
+    activeDay,
+    switchingRound,
+    pairingPool.map((p) => `${p.id}:${p.group_number ?? ""}:${(p as any).group_position ?? ""}`).join("|"),
+  ]);
+
   const addRound = () => {
     const next = numRounds + 1;
     setRoundCount(next);
     persistPairingsConfig({ rounds: next });
-    setActiveDay(next - 1);
+    void switchRound(next - 1);
   };
 
   const removeRound = () => {

@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { allocateStrokes } from "@/lib/handicapUtils";
 import { getFormatById } from "@/lib/scoringFormats";
 import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
+import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle
@@ -101,9 +102,17 @@ export default function GroupScoring() {
       if (tRow?.scoring_format) t.scoring_format = tRow.scoring_format;
       t.branding_removed = (tRow as any)?.branding_removed ?? false;
       t.branding_removed_by_admin = (tRow as any)?.branding_removed_by_admin ?? false;
-      const activeRound = activeRoundNumber(
-        parsePairingsConfig((tRow as any)?.pairings_config),
-        (tRow as any)?.date,
+      const cfg = parsePairingsConfig((tRow as any)?.pairings_config);
+      // A closed round is locked, so scoring rolls forward to the next open
+      // round — players keep using the same scoring code.
+      const { data: roundRows } = await (supabase as any)
+        .from("tournament_rounds")
+        .select("round_number, status, closed_at")
+        .eq("tournament_id", t.id);
+      const activeRound = nextOpenRound(
+        activeRoundNumber(cfg, (tRow as any)?.date),
+        closedRoundSet((roundRows || []) as TournamentRoundRow[]),
+        Math.max(1, cfg.rounds || 1),
       );
       setRoundNumber(activeRound);
       setTournament(t);

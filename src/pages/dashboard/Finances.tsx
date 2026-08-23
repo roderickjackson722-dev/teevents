@@ -795,7 +795,17 @@ const Finances = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="transactions" className="space-y-4">
+      <Tabs
+        defaultValue={
+          typeof window !== "undefined" &&
+          ["transactions", "refunds", "details", "reports"].includes(
+            new URLSearchParams(window.location.search).get("tab") || "",
+          )
+            ? (new URLSearchParams(window.location.search).get("tab") as string)
+            : "transactions"
+        }
+        className="space-y-4"
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="transactions">

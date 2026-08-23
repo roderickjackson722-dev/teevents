@@ -1,6 +1,7 @@
 import { Component, ReactNode, useEffect, useState } from "react";
 import { useParams, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllPublicLeaderboardScores } from "@/lib/fetchLeaderboardScores";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -269,10 +270,7 @@ function DayOfInner() {
           hole_assignment: null,
         });
         setGroup([]);
-        const { data: leaderRows } = await (supabase as any).rpc(
-          "get_public_leaderboard_scores",
-          { _tournament_id: tt.id }
-        );
+        const { data: leaderRows } = await fetchAllPublicLeaderboardScores(tt.id).then((data) => ({ data }));
         const totals = new Map<string, number>();
         ((leaderRows || []) as any[]).forEach((r) => {
           const reg = r.tournament_registrations;

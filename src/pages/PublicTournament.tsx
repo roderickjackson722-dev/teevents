@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllPublicLeaderboardScores } from "@/lib/fetchLeaderboardScores";
 import { MapPin, Calendar, Clock, Mail, Phone, ExternalLink, Loader2, UserPlus, Award, ShoppingBag, Package, Trophy, Gavel, Ticket, ImageIcon, Users, ClipboardList, Star, Send, Menu, X, Facebook, Instagram, ChevronLeft, ChevronRight, Heart, DollarSign, CheckCircle, Store } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -345,7 +346,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         const [sponsorRes, productRes, scoresRes, auctionRes, photoRes, roleRes, surveyRes, tiersRes, fieldsRes, contestsRes, sponsorshipTiersRes, accommodationsRes, paidSponsorsRes, vendorTiersRes, paidVendorsRes, sideEventsRes] = await Promise.all([
           supabase.from("tournament_sponsors").select("id, name, tier, logo_url, website_url, show_on_leaderboard").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_store_products").select("id, name, description, price, image_url, category, purchase_url").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
-          (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: t.id }),
+          fetchAllPublicLeaderboardScores(t.id).then((data) => ({ data })),
           supabase.from("tournament_auction_items").select("id,tournament_id,title,description,image_url,type,starting_bid,current_bid,buy_now_price,raffle_ticket_price,is_active,sort_order,created_at").eq("tournament_id", t.id).eq("is_active", true).order("sort_order"),
           supabase.from("tournament_photos").select("id, image_url, caption").eq("tournament_id", t.id).order("sort_order"),
           supabase.from("tournament_volunteer_roles").select("*, tournament_volunteers(id)").eq("tournament_id", t.id).order("sort_order"),
@@ -414,7 +415,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (!tournament) return;
     let cancelled = false;
     const refresh = () => {
-      (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }).then(({ data }: { data: any }) => {
+      fetchAllPublicLeaderboardScores(tournament.id).then((data) => ({ data })).then(({ data }: { data: any }) => {
         if (cancelled || !data) return;
         setLeaderboard(buildLeaderboard(data as any[], tournament));
       });

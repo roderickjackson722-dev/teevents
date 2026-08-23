@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllPublicLeaderboardScores } from "@/lib/fetchLeaderboardScores";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { buildLeaderboard, compareByTotal, parForHole, summarize, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
 import { Trophy, Loader2 } from "lucide-react";
@@ -179,7 +180,7 @@ function LiveLeaderboardBoard({
   useEffect(() => {
     if (!tournament) return;
     Promise.all([
-      (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }),
+      fetchAllPublicLeaderboardScores(tournament.id).then((data) => ({ data })),
       supabase
         .from("tournament_sponsors")
         .select("id, name, logo_url, website_url, tier, show_on_leaderboard, leaderboard_placement, display_order")
@@ -230,8 +231,7 @@ function LiveLeaderboardBoard({
         "postgres_changes",
         { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` },
         () => {
-          (supabase as any)
-            .rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id })
+          fetchAllPublicLeaderboardScores(tournament.id).then((data) => ({ data }))
             .then(({ data }: any) => setScores(data || []));
         }
       )
@@ -277,8 +277,7 @@ function LiveLeaderboardBoard({
         .then(({ data }) => setSponsors((data as Sponsor[]) || []));
     };
     const refetchScores = () => {
-      (supabase as any)
-        .rpc("get_public_leaderboard_scores", { _tournament_id: tid })
+      fetchAllPublicLeaderboardScores(tid).then((data) => ({ data }))
         .then(({ data }: any) => setScores(data || []));
     };
 
@@ -303,8 +302,7 @@ function LiveLeaderboardBoard({
     if (!tournament || isPaused) return;
     const seconds = Math.max(5, design.auto_refresh_seconds || tournament.live_display_refresh_seconds || 10);
     const interval = setInterval(() => {
-      (supabase as any)
-        .rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id })
+      fetchAllPublicLeaderboardScores(tournament.id).then((data) => ({ data }))
         .then(({ data }: any) => setScores(data || []));
     }, seconds * 1000);
     return () => clearInterval(interval);

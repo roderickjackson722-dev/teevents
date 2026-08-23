@@ -14,7 +14,7 @@ export function parseScoreInput(
   // Reject anything other than digits (blocks e/+/-/. from native number inputs).
   if (!/^\d+$/.test(raw)) return { kind: "invalid" };
   const num = parseInt(raw, 10);
-  if (isNaN(num) || num < 0 || num > 20) return { kind: "invalid" };
+  if (isNaN(num) || num < 1 || num > 20) return { kind: "invalid" };
   return { kind: "value", value: num };
 }
 

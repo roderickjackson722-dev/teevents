@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo, useRef, Fragment } from "react";
 import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
-import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -177,6 +176,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
   const [editHole, setEditHole] = useState(1);
   const [workingRound, setWorkingRound] = useState(1);
+  const initializedTournamentRef = useRef<string | null>(null);
 
 
   // Detect platform admin — admins get access to ALL tournaments across every org
@@ -240,7 +240,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const roundLocked = closedRounds.has(workingRound);
 
   useEffect(() => {
-    if (!selectedTournamentData) return;
+    if (!selectedTournamentData || !roundRows || initializedTournamentRef.current === selectedTournament) return;
+    initializedTournamentRef.current = selectedTournament;
     setWorkingRound(nextOpenRound(
       activeRoundNumber(pairingsCfg, (selectedTournamentData as any).date),
       closedRounds,
@@ -248,7 +249,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     ));
     setEditedScores({});
     setSelectedRowKey(null);
-  }, [selectedTournament, selectedTournamentData, pairingsCfg, closedRounds, totalRounds]);
+  }, [selectedTournament, selectedTournamentData, pairingsCfg, roundRows, closedRounds, totalRounds]);
 
   // Freeze state
   const frozenAt: string | null = (selectedTournamentData as any)?.leaderboard_frozen_at ?? null;
@@ -516,7 +517,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   }, [activePlayerScores, isStableford, editedScores, holePar]);
 
   const saveMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (scoreSnapshot: Record<string, Record<number, number>>) => {
       if (!canEditScores) {
         throw new Error("You don't have permission to submit scores. Ask your tournament owner to grant a scoring role.");
       }
@@ -530,7 +531,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       // ---- Validation ----
       const errs: Record<string, Record<number, string>> = {};
       const upserts: { tournament_id: string; registration_id: string; hole_number: number; round_number: number; strokes: number }[] = [];
-      Object.entries(editedScores).forEach(([regId, holes]) => {
+      Object.entries(scoreSnapshot).forEach(([regId, holes]) => {
         Object.entries(holes).forEach(([hole, strokes]) => {
           const holeNum = parseInt(hole);
           const err = validateStrokes(strokes);
@@ -610,7 +611,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         throw e;
       }
     },
-    onSuccess: (result) => {
+    onSuccess: (result, scoreSnapshot) => {
       if (!result) return;
       if (result.mode === "queued") {
         toast({
@@ -620,7 +621,22 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       } else if (result.mode === "saved") {
         toast({ title: "Scores saved!" });
       }
-      setEditedScores({});
+      // Only clear values included in this request. A scorekeeper can keep
+      // entering scores while a save is in flight; those newer edits must not
+      // be erased when the earlier request completes.
+      setEditedScores((current) => {
+        const next: Record<string, Record<number, number>> = {};
+        Object.entries(current).forEach(([regId, holes]) => {
+          Object.entries(holes).forEach(([hole, value]) => {
+            const holeNumber = Number(hole);
+            if (scoreSnapshot[regId]?.[holeNumber] !== value) {
+              if (!next[regId]) next[regId] = {};
+              next[regId][holeNumber] = value;
+            }
+          });
+        });
+        return next;
+      });
       setScoreErrors({});
       queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
     },
@@ -762,7 +778,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const saveAndNext = async () => {
     const mayWrite = canEditScores && !isFrozen && !roundLocked;
     try {
-      if (mayWrite && hasEdits) await saveMutation.mutateAsync();
+      if (mayWrite && hasEdits) await saveMutation.mutateAsync(editedScores);
       setEditHole((h) => Math.min(holes.length, h + 1));
     } catch {
       /* mutation surfaces its own toast */
@@ -821,7 +837,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           )}
           {hasEdits && canEditScores && (
             <Button
-              onClick={() => saveMutation.mutate()}
+              onClick={() => saveMutation.mutate(editedScores)}
               disabled={saveMutation.isPending || isFrozen || roundLocked}
               title={roundLocked ? `${roundLabel(workingRound - 1)} is closed` : isFrozen ? "Leaderboard is frozen" : undefined}
             >
@@ -1106,7 +1122,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                           return (
                             <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
                               <ScoreInput
-                                value={Number(val ?? "")}
+                                value={typeof val === "number" ? val : ""}
                                 par={getHolePar(h)}
                                 ariaLabel={`${team.label} hole ${h}`}
                                 onChange={(raw) => updateTeamScore(team.players, h, raw)}
@@ -1213,7 +1229,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                         return (
                           <TableCell key={h} className="p-1 text-center">
                             <ScoreInput
-                              value={Number(val)}
+                              value={typeof val === "number" ? val : ""}
                               par={hp}
                               ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
                               onChange={(raw) => updateScore(ps.registration_id, h, raw)}
@@ -1349,7 +1365,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                             return (
                               <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
                                 <ScoreInput
-                                  value={Number(val)}
+                                  value={typeof val === "number" ? val : ""}
                                   par={hp}
                                   ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
                                   onChange={(raw) => updateScore(ps.registration_id, h, raw)}
@@ -1492,7 +1508,18 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         />
       )}
 
-      <StickySaveBar onSave={() => {}} />
+      {showEntry && selectedTournament && hasEdits && canEditScores && (
+        <div className="sticky bottom-3 z-30 flex justify-end pointer-events-none">
+          <Button
+            className="pointer-events-auto shadow-lg"
+            onClick={() => saveMutation.mutate(editedScores)}
+            disabled={saveMutation.isPending || isFrozen || roundLocked || hasErrors}
+          >
+            <Save className="mr-2 h-4 w-4" />
+            {saveMutation.isPending ? "Saving…" : "Save Scores"}
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

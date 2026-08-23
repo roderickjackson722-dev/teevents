@@ -45,6 +45,9 @@ export interface PairingsConfig {
   assignmentsByDay: Record<string, Record<string, PairingAssignment>>;
   /** round index (0-based) whose pairings are currently live in the DB */
   activeRound: number;
+  /** round (1-based) forced onto the public pairings page; 0 = automatic */
+  publishedRound: number;
+
   /** hole/group slots the organizer created that currently have no players */
   emptyGroups: number[];
 }

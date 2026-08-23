@@ -4132,7 +4132,7 @@ const Players = () => {
                 <div>
                   <p className="text-xs text-muted-foreground">Payment Status</p>
                   <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${paymentStatusClasses(viewingPlayer.payment_status)}`}>
-                    {viewingPlayer.payment_status}
+                    {paymentStatusIcon(viewingPlayer.payment_status)} {paymentStatusLabel(viewingPlayer.payment_status)}
                   </span>
                 </div>
               </div>

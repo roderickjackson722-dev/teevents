@@ -1,4 +1,6 @@
+import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export interface ScorecardCourseInfo {
   hole_pars?: number[] | null;
@@ -42,6 +44,12 @@ export function PlayerScorecardDialog({
   const rounds = Object.keys(holesByRound || {})
     .map(Number)
     .sort((a, b) => a - b);
+  const [activeRound, setActiveRound] = useState<number | null>(null);
+  useEffect(() => {
+    if (rounds.length === 0) setActiveRound(null);
+    else if (activeRound == null || !rounds.includes(activeRound)) setActiveRound(rounds[0]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, rounds.join(",")]);
   const parFor = (h: number) => {
     const p = course?.hole_pars?.[h - 1];
     return Number(p) > 0 ? Number(p) : Math.round(coursePar / 18);
@@ -127,14 +135,25 @@ export function PlayerScorecardDialog({
         {rounds.length === 0 ? (
           <p className="text-sm text-muted-foreground py-6 text-center">No scores posted yet.</p>
         ) : (
-          <div className="space-y-6">
-            {rounds.map((r) => {
+          <div className="space-y-4">
+            {rounds.length > 1 && (
+              <Tabs value={String(activeRound ?? rounds[0])} onValueChange={(v) => setActiveRound(Number(v))}>
+                <TabsList>
+                  {rounds.map((r) => (
+                    <TabsTrigger key={r} value={String(r)}>{roundLabels?.[r] || `Round ${r}`}</TabsTrigger>
+                  ))}
+                </TabsList>
+              </Tabs>
+            )}
+
+            {(() => {
+              const r = activeRound ?? rounds[0];
               const scores = holesByRound[r] || {};
               const gross = Object.values(scores).reduce((n, v) => n + (Number(v) || 0), 0);
               const parPlayed = Object.keys(scores).reduce((n, h) => n + parFor(Number(h)), 0);
               const toPar = gross - parPlayed;
               return (
-                <div key={r} className="space-y-2">
+                <div className="space-y-2">
                   <div className="flex items-baseline justify-between">
                     <h3 className="font-semibold">{roundLabels?.[r] || `Round ${r}`}</h3>
                     <span className="text-sm font-mono">
@@ -146,7 +165,30 @@ export function PlayerScorecardDialog({
                   {renderNine("In", BACK, scores)}
                 </div>
               );
-            })}
+            })()}
+
+            {/* Total across every round played */}
+            {(() => {
+              let total = 0;
+              let parPlayed = 0;
+              rounds.forEach((r) => {
+                Object.entries(holesByRound[r] || {}).forEach(([h, v]) => {
+                  total += Number(v) || 0;
+                  parPlayed += parFor(Number(h));
+                });
+              });
+              const toPar = total - parPlayed;
+              return (
+                <div className="flex items-baseline justify-between border-t pt-3">
+                  <span className="font-semibold">
+                    Total{rounds.length > 1 ? ` (${rounds.map((r) => `R${r}`).join(" + ")})` : ""}
+                  </span>
+                  <span className="font-mono font-bold">
+                    {total} ({toPar === 0 ? "E" : toPar > 0 ? `+${toPar}` : toPar})
+                  </span>
+                </div>
+              );
+            })()}
           </div>
         )}
         {(course?.name || course?.tee_name) && (

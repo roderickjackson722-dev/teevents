@@ -33,6 +33,7 @@ import { activeRoundNumber, parsePairingsConfig, roundLabel } from "@/lib/pairin
 import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
+import ScoreEntryWd, { isWithdrawn } from "@/components/dashboard/ScoreEntryWd";
 
 // Score validation: strokes must be an integer between 1 and 20 inclusive.
 const MIN_STROKES = 1;
@@ -55,6 +56,8 @@ interface PlayerScore {
   total: number;
   playing_handicap: number | null;
   strokes_per_hole: number[] | null;
+  /** Registration status — "wd" players are excluded from scoring. */
+  status?: string | null;
 }
 
 interface TeamScore {
@@ -288,7 +291,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole, payment_status")
+        .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole, payment_status, status")
         .eq("tournament_id", selectedTournament)
         .order("last_name");
       if (error) throw error;
@@ -412,6 +415,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       total: Object.values(scoreMap[r.id] || {}).reduce((sum, s) => sum + s, 0),
       playing_handicap: r.playing_handicap ?? null,
       strokes_per_hole: (r.strokes_per_hole as number[] | null) ?? null,
+      status: (r as any).status ?? "active",
     }));
 
     // Sort: for stableford highest first, else lowest first
@@ -425,11 +429,21 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     setPlayerScores(ps);
   }, [registrations, scores]);
 
+  // Withdrawn players never count toward scoring, team totals, skins or payouts.
+  const activePlayerScores = useMemo(
+    () => playerScores.filter((ps) => !isWithdrawn(ps.status)),
+    [playerScores],
+  );
+  const withdrawnPlayerScores = useMemo(
+    () => playerScores.filter((ps) => isWithdrawn(ps.status)),
+    [playerScores],
+  );
+
   // Team leaderboard grouping
   const teamScores = useMemo<TeamScore[]>(() => {
     if (!isTeamFormat || !scoringFormat) return [];
     const groups: Record<number, PlayerScore[]> = {};
-    playerScores.forEach((ps) => {
+    activePlayerScores.forEach((ps) => {
       if (ps.group_number != null) {
         if (!groups[ps.group_number]) groups[ps.group_number] = [];
         groups[ps.group_number].push(ps);
@@ -459,7 +473,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
     // Players without a pairing assignment still need to appear — show each as
     // their own single-player "team" so nobody is missing from the leaderboard.
-    const unassigned: TeamScore[] = playerScores
+    const unassigned: TeamScore[] = activePlayerScores
       .filter((ps) => ps.group_number == null)
       .map((ps) => ({
         key: `u-${ps.registration_id}`,
@@ -476,13 +490,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       if (b.total === 0) return -1;
       return a.total - b.total;
     });
-  }, [playerScores, isTeamFormat, scoringFormat, editedScores, teamNamesByHole]);
+  }, [activePlayerScores, isTeamFormat, scoringFormat, editedScores, teamNamesByHole]);
 
 
   // Stableford leaderboard
   const stablefordScores = useMemo(() => {
     if (!isStableford) return [];
-    return playerScores
+    return activePlayerScores
       .map((ps) => {
         let points = 0;
         holes.forEach((h) => {
@@ -499,7 +513,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         if (b.points === 0) return -1;
         return b.points - a.points; // Highest first
       });
-  }, [playerScores, isStableford, editedScores, holePar]);
+  }, [activePlayerScores, isStableford, editedScores, holePar]);
 
   const saveMutation = useMutation({
     mutationFn: async () => {
@@ -692,9 +706,9 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   }, [teamScores, searchTerm]);
 
   const visiblePlayerScores = useMemo(() => {
-    if (!searchTerm) return playerScores;
-    return playerScores.filter(matchesPlayer);
-  }, [playerScores, searchTerm]);
+    if (!searchTerm) return activePlayerScores;
+    return activePlayerScores.filter(matchesPlayer);
+  }, [activePlayerScores, searchTerm]);
 
   const visibleStablefordScores = useMemo(() => {
     if (!searchTerm) return stablefordScores;
@@ -711,13 +725,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           registrationId: t.players[0]?.registration_id ?? t.key,
           saved: t.holeScores,
         }))
-      : playerScores.map((ps) => ({
+      : activePlayerScores.map((ps) => ({
           label: `${ps.first_name} ${ps.last_name}`,
           registrationId: ps.registration_id,
           saved: ps.scores,
         }));
     return computeScoreProgress(rows, holes, editedScores);
-  }, [isTeamFormat, teamScores, playerScores, holes, editedScores]);
+  }, [isTeamFormat, teamScores, activePlayerScores, holes, editedScores]);
 
   const allScoresEntered = progress.complete;
 
@@ -1070,6 +1084,20 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                         <div className="text-xs text-muted-foreground">
                           {team.players.map((p) => `${p.first_name} ${p.last_name[0]}.`).join(", ")}
                         </div>
+                        <div className="mt-1 flex flex-wrap gap-1">
+                          {team.players.map((p) => (
+                            <span key={p.registration_id} className="inline-flex items-center gap-1">
+                              <span className="text-[10px] text-muted-foreground">{p.first_name}</span>
+                              <ScoreEntryWd
+                                registrationId={p.registration_id}
+                                playerName={`${p.first_name} ${p.last_name}`}
+                                status={p.status}
+                                disabled={!canEditScores}
+                                onChanged={() => queryClient.invalidateQueries({ queryKey: ["leaderboard-players", selectedTournament, workingRound] })}
+                              />
+                            </span>
+                          ))}
+                        </div>
                       </TableCell>
                       {holes.map((h) => {
                         const val = team.holeScores[h];
@@ -1295,6 +1323,15 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                             ) : ps.handicap !== null ? (
                               <span className="text-xs text-muted-foreground ml-1">({ps.handicap})</span>
                             ) : null}
+                            <div className="mt-1">
+                              <ScoreEntryWd
+                                registrationId={ps.registration_id}
+                                playerName={`${ps.first_name} ${ps.last_name}`}
+                                status={ps.status}
+                                disabled={!canEditScores}
+                                onChanged={() => queryClient.invalidateQueries({ queryKey: ["leaderboard-players", selectedTournament, workingRound] })}
+                              />
+                            </div>
                           </TableCell>
                           {isTeamFormat && (
                             <TableCell className="text-center text-xs text-muted-foreground">
@@ -1406,6 +1443,32 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
       {showSettings && selectedTournament && org && (
         <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
+      )}
+
+      {showEntry && selectedTournament && withdrawnPlayerScores.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Withdrawn (WD)</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <p className="text-sm text-muted-foreground">
+              These players are excluded from scoring, team totals, skins and payouts.
+            </p>
+            {withdrawnPlayerScores.map((ps) => (
+              <div key={ps.registration_id} className="flex items-center gap-2 text-sm">
+                <span className="font-medium">{ps.first_name} {ps.last_name}</span>
+                <Badge variant="secondary" className="text-[10px] uppercase">WD</Badge>
+                <ScoreEntryWd
+                  registrationId={ps.registration_id}
+                  playerName={`${ps.first_name} ${ps.last_name}`}
+                  status={ps.status}
+                  disabled={!canEditScores}
+                  onChanged={() => queryClient.invalidateQueries({ queryKey: ["leaderboard-players", selectedTournament, workingRound] })}
+                />
+              </div>
+            ))}
+          </CardContent>
+        </Card>
       )}
 
       {/* Edit history lives at the very bottom of the page */}

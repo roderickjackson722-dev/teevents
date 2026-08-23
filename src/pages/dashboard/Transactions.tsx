@@ -116,7 +116,7 @@ interface Addon {
   unit_price_cents: number;
 }
 
-const Transactions = () => {
+const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const { org } = useOrgContext();
   const [loading, setLoading] = useState(true);
   const [txs, setTxs] = useState<Tx[]>([]);

@@ -75,9 +75,27 @@ const tierOrder: Record<string, number> = {
 
 
 
+/** Route entry (/live/:slug) — reads the slug + query string from the router. */
 export default function LiveLeaderboard() {
   const { slug } = useParams<{ slug: string }>();
   const [search] = useSearchParams();
+  return <LiveLeaderboardBoard slug={slug} search={search} />;
+}
+
+/**
+ * Same board, embedded on the public event homepage. It takes the slug directly
+ * so it works outside the /live route's router context.
+ */
+export function LiveLeaderboardEmbed({ slug }: { slug: string }) {
+  const search = useMemo(() => new URLSearchParams(), []);
+  return <LiveLeaderboardBoard slug={slug} search={search} embedded />;
+}
+
+function LiveLeaderboardBoard({
+  slug,
+  search,
+  embedded = false,
+}: { slug?: string; search: URLSearchParams; embedded?: boolean }) {
   const [isPaused] = useLeaderboardPaused();
   const isTvMode = search.get("display") === "1";
   const isPreview = search.get("preview") === "true" || search.get("preview") === "1";
@@ -442,13 +460,15 @@ export default function LiveLeaderboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className={`${embedded ? "py-16" : "min-h-screen"} flex items-center justify-center bg-background`}>
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
 
   if (accessDenied || !tournament) {
+    // Embedded on the event homepage: stay silent rather than showing an error block.
+    if (embedded) return null;
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-md">
@@ -613,7 +633,7 @@ export default function LiveLeaderboard() {
           <SkinsPayoutsCard tournamentId={tournament.id} />
         </div>
       ) : null}
-      {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
+      {!embedded && !isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
 
       <PlayerScorecardDialog
         open={!!scorecardRow}

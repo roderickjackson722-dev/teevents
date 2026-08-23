@@ -68,7 +68,6 @@ interface Tournament {
   leaderboard_rotating_logos?: { url: string; name?: string; website_url?: string }[] | null;
 
 }
-}
 
 const tierOrder: Record<string, number> = {
   title: 0, platinum: 1, gold: 2, silver: 3, bronze: 4, hole: 5, inkind: 6,

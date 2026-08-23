@@ -1511,7 +1511,9 @@ const Players = () => {
     rounds?: number;
     assignmentsByDay?: Record<number, Record<string, RoundAssignment>>;
     activeRound?: number;
+    publishedRound?: number;
     emptyGroups?: number[];
+
   }) => {
     if (!selectedTournament || !pairingsConfigLoaded) return Promise.resolve();
     const baseline = Object.keys(pairingsConfigRef.current).length

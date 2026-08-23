@@ -77,6 +77,10 @@ export default function LiveScoring() {
   // Rounds the organizer has closed — those scores are locked.
   const [closedRounds, setClosedRounds] = useState<Set<number>>(new Set());
   const [startingHole, setStartingHole] = useState<number | null>(null);
+  // Some emailed codes are shared by more than one group in a round, so the
+  // player confirms which group is theirs and we pin it for the session.
+  const [groupOptions, setGroupOptions] = useState<{ group_number: number; players: string }[]>([]);
+  const [pinnedGroup, setPinnedGroup] = useState<number | null>(null);
 
 
   const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
@@ -199,7 +203,7 @@ export default function LiveScoring() {
       try {
         const raw = localStorage.getItem(sessionKey);
         if (!raw) return;
-        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number };
+        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number; pinnedGroup?: number | null };
         if (!saved?.code || saved.tournamentId !== tournament.id) return;
         // Re-validate the stored code server-side; the group is derived from it, never from the client
         const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
@@ -210,7 +214,8 @@ export default function LiveScoring() {
         if (cancelled) return;
         if (gNum) {
           setScoringCode(saved.code);
-          await loadGroup(gNum as number, saved.code);
+          if (saved.pinnedGroup != null) setPinnedGroup(saved.pinnedGroup);
+          await loadGroup(gNum as number, saved.code, undefined, saved.pinnedGroup ?? null);
         } else {
           localStorage.removeItem(sessionKey);
         }
@@ -223,12 +228,12 @@ export default function LiveScoring() {
     return () => { cancelled = true; setRestoring(false); };
   }, [tournament, sessionKey]);
 
-  const persistSession = (code: string | null, gNum: number) => {
+  const persistSession = (code: string | null, gNum: number, pinned?: number | null) => {
     if (!sessionKey || !tournament || !code) return;
     try {
       localStorage.setItem(
         sessionKey,
-        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum })
+        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum, pinnedGroup: pinned ?? null })
       );
     } catch { /* storage unavailable */ }
   };
@@ -243,6 +248,8 @@ export default function LiveScoring() {
     setTeamName(null);
     setCodeInput("");
     setEmailInput("");
+    setGroupOptions([]);
+    setPinnedGroup(null);
     setLoginMode(true);
   };
 
@@ -337,7 +344,7 @@ export default function LiveScoring() {
     ]);
     setStartingHole(assigned);
     setFocusHole(assigned);
-    persistSession(sessionCode, roundGroup);
+    persistSession(sessionCode, roundGroup, pinned ?? roundGroup);
   };
 
   // Switching rounds (organizer closes a round, or the player picks one)
@@ -389,6 +396,24 @@ export default function LiveScoring() {
       loginCode = codeInput.trim().toUpperCase();
       setScoringCode(loginCode);
       gNum = data as number;
+
+      // A code can match players in more than one group for this round — let
+      // the player confirm which group is theirs so every emailed code works.
+      const { data: opts } = await (supabase as any).rpc("scoring_code_group_options", {
+        _tournament_id: tournament.id,
+        _code: loginCode,
+        _round_number: roundNumber,
+      });
+      const options = (opts || []) as { group_number: number; players: string }[];
+      if (options.length > 1) {
+        setGroupOptions(options);
+        return;
+      }
+      if (options.length === 1) {
+        setPinnedGroup(options[0].group_number);
+        await loadGroup(options[0].group_number, loginCode, undefined, options[0].group_number);
+        return;
+      }
     } else if (emailLoginAllowed && emailInput.trim()) {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
         _tournament_id: tournament.id,

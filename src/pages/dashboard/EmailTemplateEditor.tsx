@@ -638,9 +638,12 @@ export default function EmailTemplateEditor() {
       first_name: sampleReg?.first_name || "John",
       last_name: sampleReg?.last_name || "Doe",
       event_name: t?.title || "Sample Tournament",
-      event_date: t?.date
-        ? formatTournamentDate(t.date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+      event_date: previewRoundDate
+        ? formatTournamentDate(previewRoundDate, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
         : "Saturday, June 15, 2026",
+      round_label: `Round ${previewRound + 1}`,
+      round_number: String(previewRound + 1),
+      total_rounds: String(Math.max(1, pairings.rounds || 1)),
       event_location: location || t?.location || "Your golf course",
       course_name: t?.course_name || t?.location || "Your golf course",
       scoring_code: sampleReg?.group_scoring_code || sampleReg?.scoring_code || "Assigned when pairings are finalized",

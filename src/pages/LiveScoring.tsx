@@ -647,21 +647,26 @@ export default function LiveScoring() {
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground">or</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Your Email</label>
-              <Input
-                type="email"
-                placeholder="john@example.com"
-                value={emailInput}
-                onChange={(e) => { setEmailInput(e.target.value); setCodeInput(""); setGroupInput(""); }}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              />
-            </div>
+            {emailLoginAllowed && (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-muted-foreground">or</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Your Email</label>
+                  <Input
+                    type="email"
+                    placeholder="john@example.com"
+                    value={emailInput}
+                    onChange={(e) => { setEmailInput(e.target.value); setCodeInput(""); setGroupInput(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  />
+                </div>
+              </>
+            )}
+
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button onClick={handleLogin} className="w-full">
               Start Scoring

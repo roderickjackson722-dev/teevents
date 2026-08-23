@@ -515,13 +515,16 @@ export default function GroupScoring() {
                     <Minus className="h-4 w-4" />
                   </Button>
                   <div
-                    className={`w-16 h-12 rounded border text-center text-xl font-bold flex items-center justify-center ${
-                      teamNum != null ? "bg-card text-foreground" : "bg-muted/40 text-muted-foreground"
+                    className={`w-16 h-12 rounded border text-center text-xl flex items-center justify-center ${
+                      teamNum != null
+                        ? "bg-card text-foreground font-bold opacity-100"
+                        : "bg-muted/40 text-muted-foreground font-normal opacity-50"
                     }`}
                     aria-label="Team score"
                   >
                     {teamNum ?? holePar}
                   </div>
+
                   <Button
                     type="button"
                     variant="outline"
@@ -609,9 +612,12 @@ export default function GroupScoring() {
                       <Minus className="h-4 w-4" />
                     </Button>
                     <div
-                      className={`w-14 h-12 rounded border text-center text-xl font-bold flex items-center justify-center ${
-                        hasDraft || gross != null ? "bg-card text-foreground" : "bg-muted/40 text-muted-foreground"
+                      className={`w-14 h-12 rounded border text-center text-xl flex items-center justify-center ${
+                        hasDraft || gross != null
+                          ? "bg-card text-foreground font-bold opacity-100"
+                          : "bg-muted/40 text-muted-foreground font-normal opacity-50"
                       }`}
+
                       aria-label="Current score"
                     >
                       {displayNum}

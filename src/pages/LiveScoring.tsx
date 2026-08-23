@@ -355,7 +355,7 @@ export default function LiveScoring() {
     ]);
     setStartingHole(assigned);
     setFocusHole(assigned);
-    persistSession(sessionCode, roundGroup, pinned ?? roundGroup);
+    persistSession(sessionCode, roundGroup, pinned ?? roundGroup, round);
   };
 
   // Switching rounds (organizer closes a round, or the player picks one)

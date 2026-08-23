@@ -7,6 +7,8 @@ export interface RegistrationGroupRow {
   tee_time?: string | null;
   /** Starting hole assigned on the Pairings tab */
   starting_hole?: number | null;
+  /** Exact printed starting-hole label from pairings, e.g. "11A" */
+  starting_hole_label?: string | null;
   cart_sign_names?: { cart1?: string[]; cart2?: string[] } | null;
 }
 
@@ -64,6 +66,7 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       groupNumber: num,
       startingHole: g?.starting_hole ?? (players.map((p) => (p as any).starting_hole).find((v) => v != null) ?? num),
       startingHoleLabel:
+        (g?.starting_hole_label?.trim() ? g.starting_hole_label.trim().toUpperCase() : null) ??
         players.map((p) => startingHoleLabelOf(p as any)).find((v) => v != null) ??
         (g?.starting_hole != null ? String(g.starting_hole) : String(num)),
       groupId: g?.id,

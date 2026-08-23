@@ -18,7 +18,7 @@ import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions
 import { rosterForPrintables } from "@/components/printables/rosterSource";
 import type { RegistrationGroupRow } from "@/components/printables/teamGrouping";
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
-import { parsePairingsConfig, roundDateFor, startingHoleForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
+import { parsePairingsConfig, roundDateFor, startingHoleForGroup, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 
 
 interface TournamentWithSlug extends Tournament {
@@ -168,13 +168,14 @@ const Printables = () => {
     [tournament, roundDate],
   );
 
-  /** Groups carry the pairings starting hole + tee time so every printable matches the tee sheet. */
+  /** Groups carry the pairings starting hole + label + tee time so every printable matches the tee sheet. */
   const printGroups = useMemo(
     () =>
       groups.map((g) => ({
         ...g,
         starting_hole:
           (round === 0 ? g.starting_hole : null) ?? startingHoleForGroup(pairingsCfg, g.group_number, round),
+        starting_hole_label: startingHoleLabelForGroup(pairingsCfg, g.group_number, round),
         tee_time:
           teeTimeForGroup(pairingsCfg, g.group_number, round) || (round === 0 ? g.tee_time : null),
       })),
@@ -189,6 +190,8 @@ const Printables = () => {
       return {
         ...r,
         starting_hole: g?.starting_hole ?? startingHoleForGroup(pairingsCfg, r.group_number ?? null, round),
+        starting_hole_label:
+          g?.starting_hole_label ?? startingHoleLabelForGroup(pairingsCfg, r.group_number ?? null, round),
         tee_time:
           g?.tee_time ||
           teeTimeForGroup(pairingsCfg, r.group_number ?? null, round) ||

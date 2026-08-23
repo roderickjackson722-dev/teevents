@@ -29,6 +29,8 @@ export interface Registration {
   group_position: number | null;
   /** Flight / division id (tournament_tiers) */
   flight_id?: string | null;
+  /** Exact starting-hole label from pairings, e.g. "11A" */
+  starting_hole_label?: string | null;
   /** Resolved flight / division name for printables */
   flight_name?: string | null;
 }
@@ -97,9 +99,19 @@ export function startingHoleOf(r: { starting_hole?: number | null; group_number?
  * label so printables match the pairing sheet; fall back to the numeric hole.
  */
 export function startingHoleLabelOf(
-  r: { starting_hole?: number | null; group_number?: number | null; group_label?: string | null } | null | undefined,
+  r:
+    | {
+        starting_hole?: number | null;
+        group_number?: number | null;
+        group_label?: string | null;
+        starting_hole_label?: string | null;
+      }
+    | null
+    | undefined,
 ): string | null {
   if (!r) return null;
+  const explicit = (r as any).starting_hole_label as string | null | undefined;
+  if (explicit && String(explicit).trim()) return String(explicit).trim().toUpperCase();
   const label = (r as any).group_label as string | null | undefined;
   if (label && /^\s*\d{1,2}\s*[A-Za-z]?\s*$/.test(label)) return label.trim().toUpperCase();
   const hole = startingHoleOf(r);

@@ -421,7 +421,18 @@ export default function SimpleFlightPayouts({
                   rows.map((r) => (
                     <TableRow key={r.flightId}>
                       <TableCell className="font-medium">{r.name}</TableCell>
-                      <TableCell className="text-right">{r.players}</TableCell>
+                      <TableCell className="text-right">
+                        {r.players}
+                        {r.countOverride != null && (
+                          <Badge variant="outline" className="ml-2 text-[10px]">manual</Badge>
+                        )}
+                        {r.excluded.length > 0 && (
+                          <Badge variant="secondary" className="ml-2 text-[10px]">
+                            {r.excluded.length} removed
+                          </Badge>
+                        )}
+                      </TableCell>
+
                       <TableCell className="text-right">{formatCents(r.purseCents)}</TableCell>
                       <TableCell className="text-right">{r.amounts.filter((a) => a > 0).length}</TableCell>
                       <TableCell className="text-right">

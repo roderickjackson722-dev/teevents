@@ -216,18 +216,21 @@ export default function SimpleFlightPayouts({
   const draftIncludedCount = draftCountManual
     ? Math.max(0, parseInt(draftCount, 10) || 0)
     : draftMembers.length
-      ? draftMembers.filter((m) => !draftExcluded.includes(m.id)).length
+      ? draftMembers.filter((m) => !isIneligible(m.status) && !draftExcluded.includes(m.id)).length
       : Math.max(0, parseInt(draftCount, 10) || 0);
 
   const openEdit = (row: Row) => {
+    const members = membersOf(row.flightId);
     setEditingId(row.flightId);
     setDraftPurse(toDollars(row.purseCents));
     setDraftAmounts(row.amounts.map(toDollars));
-    setDraftExcluded(row.excluded);
+    setDraftExcluded([
+      ...new Set([...row.excluded, ...members.filter((m) => isIneligible(m.status)).map((m) => m.id)]),
+    ]);
     setDraftCountManual(row.countOverride != null);
     setDraftCount(String(row.countOverride ?? row.players));
-
   };
+
 
   const setPlacesPaid = (places: number) => {
     const pcts = DEFAULT_SPLITS[places] || [];

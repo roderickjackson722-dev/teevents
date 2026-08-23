@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
-import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
+import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
+import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import { getFormatById } from "@/lib/scoringFormats";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { TeeventsFooter } from "@/components/TeeventsFooter";

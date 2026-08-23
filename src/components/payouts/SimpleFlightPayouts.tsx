@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Slider } from "@/components/ui/slider";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -618,7 +619,7 @@ export default function SimpleFlightPayouts({
                       <label key={m.id} className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer">
                         <Checkbox
                           checked={included}
-                          onCheckedChange={(v) =>
+                          onCheckedChange={(v: boolean | "indeterminate") =>
                             setDraftExcluded((prev) =>
                               v ? prev.filter((id) => id !== m.id) : [...new Set([...prev, m.id])],
                             )

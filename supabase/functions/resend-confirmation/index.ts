@@ -496,10 +496,13 @@ Deno.serve(async (req) => {
             tee_time: teeTimeFor(reg as any),
             hole_number: startingHoleFor(reg as any),
             team_name: teamNameFor(reg as any),
+            round_label: `Round ${roundDay + 1}`,
+            round_number: String(roundDay + 1),
+            total_rounds: String(roundCount),
 
             scoring_code: codeFor(reg as any)
               || "Scoring code will be assigned when pairings are finalized",
-            group_number: (reg as any).group_number != null ? String((reg as any).group_number) : "",
+            group_number: roundGroupFor(reg as any) != null ? String(roundGroupFor(reg as any)) : "",
             scoring_link: (tournament as any).slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
             leaderboard_link: (tournament as any).slug ? `https://www.teevents.golf/live/${(tournament as any).slug}` : "https://www.teevents.golf",
             event_homepage: homepage,

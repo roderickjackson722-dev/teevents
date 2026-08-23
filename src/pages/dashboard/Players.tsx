@@ -258,7 +258,7 @@ const Players = () => {
   const [editForm, setEditForm] = useState({
     first_name: "", last_name: "", email: "", phone: "",
     handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "", group_label: "",
-    age: "", city: "", state: "", tier_id: "",
+    age: "", city: "", state: "", tier_id: "", flight_id: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
   const [regFeeCents, setRegFeeCents] = useState(0);

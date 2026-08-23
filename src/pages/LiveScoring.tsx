@@ -423,6 +423,8 @@ export default function LiveScoring() {
 
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
   const hasEdits = Object.keys(editedScores).length > 0;
+  // Organizer closed this round — scores are read-only (the database rejects writes too).
+  const roundLocked = closedRounds.has(roundNumber);
   const handicapEnabled = tournament?.handicap_enabled === true;
   const activeFormat = getFormatById(tournament?.scoring_format || "stroke_play");
   // Team formats play one ball / one team score per hole — hide individual entry entirely.

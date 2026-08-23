@@ -124,7 +124,7 @@ export default function PublicPairings() {
             <p className="text-sm text-muted-foreground mt-1">{info?.title}</p>
           )}
           <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-            {cfg.show_date && (cfg.date_text?.trim() || cfg.date_override?.trim() || info?.event_date) && (
+            {cfg.show_date && (cfg.date_text?.trim() || cfg.date_override?.trim() || displayDate) && (
               <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4" />{
                 cfg.date_text?.trim()
                   ? cfg.date_text

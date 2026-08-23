@@ -693,9 +693,14 @@ export default function LiveScoring() {
             {groupOptions.length > 1 ? (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  This code matches more than one group. Tap your group to continue.
+                  {totalRounds > 1 ? `${roundLabel(roundNumber - 1)} — ` : ""}this code matches more
+                  than one group. Tap the group you are playing in.
                 </p>
-                {groupOptions.map((o) => (
+                {groupOptions.map((o) => {
+                  const holeLabel = pairingsCfg
+                    ? startingHoleLabelForGroup(pairingsCfg, o.group_number, Math.max(0, roundNumber - 1))
+                    : null;
+                  return (
                   <Button
                     key={o.group_number}
                     variant="outline"
@@ -706,10 +711,14 @@ export default function LiveScoring() {
                       await loadGroup(o.group_number, scoringCode || codeInput.trim().toUpperCase(), undefined, o.group_number);
                     }}
                   >
-                    <span className="font-semibold">Group {o.group_number}</span>
+                    <span className="font-semibold">
+                      {holeLabel ? `Starting Hole ${holeLabel}` : `Group ${o.group_number}`}
+                    </span>
                     <span className="text-xs text-muted-foreground whitespace-normal">{o.players}</span>
                   </Button>
-                ))}
+                  );
+                })}
+
                 <Button variant="ghost" className="w-full" onClick={() => setGroupOptions([])}>
                   Back
                 </Button>

@@ -29,6 +29,9 @@ export interface LeaderboardRow {
   roundTotals?: Record<number, number>;
   /** Hole-by-hole strokes per round. */
   holesByRound?: Record<number, Record<number, number>>;
+}
+
+
 /** Par for a single hole — real course pars when available, otherwise averaged. */
 export function parForHole(hole: number, holePars: number[] | null | undefined, coursePar: number) {
   const p = holePars?.[hole - 1];

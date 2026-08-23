@@ -374,7 +374,7 @@ export default function LiveScoring() {
       loginCode = codeInput.trim().toUpperCase();
       setScoringCode(loginCode);
       gNum = data as number;
-    } else if (emailInput.trim()) {
+    } else if (emailLoginAllowed && emailInput.trim()) {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
         _tournament_id: tournament.id,
         _scoring_code: "",
@@ -383,7 +383,7 @@ export default function LiveScoring() {
       if (!data) { setError("Player not found or not assigned to a hole."); return; }
       gNum = data as number;
     } else {
-      setError("Enter your scoring code or email."); return;
+      setError(emailLoginAllowed ? "Enter your scoring code or email." : "Enter your scoring code."); return;
     }
 
     await loadGroup(gNum, loginCode ?? undefined);

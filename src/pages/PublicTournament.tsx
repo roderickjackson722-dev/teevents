@@ -407,20 +407,32 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return () => window.clearTimeout(timer);
   }, [loading, tournament, searchParams, sponsorshipTiers.length, sponsors.length]);
 
-  // Realtime leaderboard
+  // Realtime leaderboard + a safety-net poll so the homepage board stays in
+  // sync with /live/:slug even if a realtime event is missed.
   useEffect(() => {
     if (!tournament) return;
+    let cancelled = false;
+    const refresh = () => {
+      (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }).then(({ data }: { data: any }) => {
+        if (cancelled || !data) return;
+        setLeaderboard(buildLeaderboard(data as any[], tournament));
+      });
+    };
     const channel = supabase
       .channel("live-scores")
-      .on("postgres_changes", { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` }, () => {
-        (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournament.id }).then(({ data }: { data: any }) => {
-          if (!data) return;
-          setLeaderboard(buildLeaderboard(data as any[], tournament));
-        });
-      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` }, refresh)
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+    const poll = window.setInterval(refresh, 30000);
+    const onVisible = () => { if (document.visibilityState === "visible") refresh(); };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      cancelled = true;
+      window.clearInterval(poll);
+      document.removeEventListener("visibilitychange", onVisible);
+      supabase.removeChannel(channel);
+    };
   }, [tournament]);
+
 
   // Check if tournament is full (for waitlist)
   useEffect(() => {

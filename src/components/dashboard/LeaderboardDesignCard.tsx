@@ -99,6 +99,67 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
 const FONT_OPTIONS = ["Inter", "Roboto", "Montserrat", "Open Sans", "Lato", "Poppins"];
 const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };
 
+/** Color-only presets. "TeeVents Default" restores the original board colors. */
+type ColorKeys = Pick<
+  LeaderboardDesign,
+  "background_color" | "header_background" | "text_color" | "accent_color"
+>;
+
+export const COLOR_PRESETS: { id: string; name: string; colors: ColorKeys }[] = [
+  {
+    id: "teevents",
+    name: "TeeVents Default (green & gold)",
+    colors: {
+      background_color: DEFAULT_DESIGN.background_color,
+      header_background: DEFAULT_DESIGN.header_background,
+      text_color: DEFAULT_DESIGN.text_color,
+      accent_color: DEFAULT_DESIGN.accent_color,
+    },
+  },
+  {
+    id: "midnight",
+    name: "Midnight (navy & gold)",
+    colors: {
+      background_color: "#0f172a",
+      header_background: "#1e293b",
+      text_color: "#FFFFFF",
+      accent_color: "#F5A623",
+    },
+  },
+  {
+    id: "classic-dark",
+    name: "Classic Dark (charcoal & white)",
+    colors: {
+      background_color: "#1a1a1a",
+      header_background: "#000000",
+      text_color: "#FFFFFF",
+      accent_color: "#E5E7EB",
+    },
+  },
+  {
+    id: "light",
+    name: "Light (white & green)",
+    colors: {
+      background_color: "#FFFFFF",
+      header_background: "#1a5c38",
+      text_color: "#111827",
+      accent_color: "#1a5c38",
+    },
+  },
+];
+
+function matchPresetId(d: LeaderboardDesign): string {
+  const hit = COLOR_PRESETS.find(
+    (p) =>
+      p.colors.background_color.toLowerCase() === (d.background_color || "").toLowerCase() &&
+      p.colors.header_background.toLowerCase() === (d.header_background || "").toLowerCase() &&
+      p.colors.text_color.toLowerCase() === (d.text_color || "").toLowerCase() &&
+      p.colors.accent_color.toLowerCase() === (d.accent_color || "").toLowerCase(),
+  );
+  return hit?.id || "custom";
+}
+
+
 interface Props {
   tournamentId: string;
   tournamentSlug: string | null;

@@ -481,9 +481,10 @@ export default function LiveScoring() {
         setSaving(false);
         return;
       }
-      const { error } = await supabase.rpc("save_group_scores", {
+      const { error } = await (supabase as any).rpc("save_group_scores", {
         _tournament_id: tournament.id,
         _code: scoringCode,
+        _group_number: groupNumber ?? null,
         _scores: upserts.map((u) => ({
           registration_id: u.registration_id,
           hole_number: u.hole_number,

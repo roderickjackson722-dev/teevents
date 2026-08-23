@@ -1450,8 +1450,11 @@ const Players = () => {
           rounds: cfg.rounds,
           assignmentsByDay: cfg.assignmentsByDay,
           activeRound: cfg.activeRound,
+          publishedRound: cfg.publishedRound,
           emptyGroups: cfg.emptyGroups,
         };
+        setPublishedRound(cfg.publishedRound || 0);
+
         if (Object.keys(cfg.labels).length) {
           setHoleLabels(
             Object.fromEntries(

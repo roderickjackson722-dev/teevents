@@ -238,13 +238,14 @@ export default function LiveScoring() {
     return () => { cancelled = true; setRestoring(false); };
   }, [tournament, sessionKey]);
 
-  const persistSession = (code: string | null, gNum: number, pinned?: number | null) => {
+  const persistSession = (code: string | null, gNum: number, pinned?: number | null, round?: number) => {
     if (!sessionKey || !tournament || !code) return;
     try {
       localStorage.setItem(
         sessionKey,
-        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum, pinnedGroup: pinned ?? null })
+        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum, pinnedGroup: pinned ?? null, round: round ?? roundNumber })
       );
+
     } catch { /* storage unavailable */ }
   };
 

@@ -23,6 +23,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TransactionDetails from "./Transactions";
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,

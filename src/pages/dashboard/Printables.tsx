@@ -18,7 +18,7 @@ import PrintablesOptionsCard, { DEFAULT_PRINTABLE_OPTIONS, type PrintableOptions
 import { rosterForPrintables } from "@/components/printables/rosterSource";
 import type { RegistrationGroupRow } from "@/components/printables/teamGrouping";
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
-import { parsePairingsConfig, roundDateFor, startingHoleForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
+import { parsePairingsConfig, roundDateFor, startingHoleForGroup, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 
 
 interface TournamentWithSlug extends Tournament {

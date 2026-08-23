@@ -76,7 +76,16 @@ const AdminTransactions = () => {
 
       if (orgFilter !== "all") query = query.eq("organization_id", orgFilter);
       if (tournamentFilter !== "all") query = query.eq("tournament_id", tournamentFilter);
-      if (statusFilter !== "all") query = query.eq("status", statusFilter);
+      // Legacy rows may still carry succeeded/completed/pending, so match every
+      // raw value that maps onto the chosen plain-English status.
+      if (statusFilter !== "all") {
+        const aliases: Record<string, string[]> = {
+          paid: ["paid", "succeeded", "completed", "released", "held"],
+          awaiting_payment: ["awaiting_payment", "pending"],
+          failed: ["failed", "canceled", "cancelled"],
+        };
+        query = query.in("status", aliases[statusFilter] || [statusFilter]);
+      }
 
       const { data, error } = await query;
       if (error) throw error;

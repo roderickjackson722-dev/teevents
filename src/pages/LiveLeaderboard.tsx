@@ -75,8 +75,12 @@ const tierOrder: Record<string, number> = {
 
 
 
-export default function LiveLeaderboard() {
-  const { slug } = useParams<{ slug: string }>();
+export default function LiveLeaderboard({
+  slug: slugProp,
+  embedded = false,
+}: { slug?: string; embedded?: boolean } = {}) {
+  const params = useParams<{ slug: string }>();
+  const slug = slugProp || params.slug;
   const [search] = useSearchParams();
   const [isPaused] = useLeaderboardPaused();
   const isTvMode = search.get("display") === "1";

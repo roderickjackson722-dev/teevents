@@ -9,7 +9,7 @@ import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users, Eraser } from "lu
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
-import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
+import { closedRoundSet, nextOpenRound, resolveStartingHole, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import { getFormatById } from "@/lib/scoringFormats";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
@@ -291,13 +291,12 @@ export default function LiveScoring() {
     setLoginMode(false);
     // Open on the group's assigned starting hole (shotgun starts) — the player
     // can still navigate anywhere from there.
-    const assigned =
-      groupPlayers.map((p: any) => Number(p.starting_hole)).find((n: number) => Number.isFinite(n) && n >= 1 && n <= 18) ??
-      (pairingsCfg ? startingHoleForGroup(pairingsCfg, gNum, Math.max(0, roundNumber - 1)) : null);
-    if (assigned != null && assigned >= 1 && assigned <= 18) {
-      setStartingHole(assigned);
-      setFocusHole(assigned);
-    }
+    const assigned = resolveStartingHole([
+      ...groupPlayers.map((p: any) => p.starting_hole),
+      pairingsCfg ? startingHoleForGroup(pairingsCfg, gNum, Math.max(0, roundNumber - 1)) : null,
+    ]);
+    setStartingHole(assigned);
+    setFocusHole(assigned);
     persistSession(sessionCode, gNum);
   };
 
@@ -684,11 +683,11 @@ export default function LiveScoring() {
         {roundLocked && (
           <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm">
             <p className="font-semibold mb-1">
-              {roundLabel(roundNumber - 1)} is closed.
+              {roundLabel(roundNumber - 1)} is locked
             </p>
             <p className="text-muted-foreground">
-              Scores for this round are locked by the organizer. Please see the scoring tent for
-              corrections.
+              The organizer closed this round, so score editing is unavailable — the plus/minus and
+              clear buttons are disabled. Please see the scoring tent for corrections.
             </p>
           </div>
         )}

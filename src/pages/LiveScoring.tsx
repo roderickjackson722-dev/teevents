@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
-import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
+import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, startingHoleLabelForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, resolveStartingHole, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import { getFormatById } from "@/lib/scoringFormats";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
@@ -112,13 +112,17 @@ export default function LiveScoring() {
           .eq("tournament_id", (data as any).id);
         const closed = closedRoundSet((roundRows || []) as TournamentRoundRow[]);
         setClosedRounds(closed);
+        // When the organizer pins a published round, that round is the one
+        // players score — it beats the date-derived guess.
+        const pinned = Math.max(0, Number(cfg.publishedRound) || 0);
         setRoundNumber(
           nextOpenRound(
-            activeRoundNumber(cfg, (data as any).date),
+            pinned > 0 ? pinned : activeRoundNumber(cfg, (data as any).date),
             closed,
             Math.max(1, cfg.rounds || 1),
           ),
         );
+
       }
       setTournament(data as TournamentData | null);
 
@@ -203,7 +207,7 @@ export default function LiveScoring() {
       try {
         const raw = localStorage.getItem(sessionKey);
         if (!raw) return;
-        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number; pinnedGroup?: number | null };
+        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number; pinnedGroup?: number | null; round?: number };
         if (!saved?.code || saved.tournamentId !== tournament.id) return;
         // Re-validate the stored code server-side; the group is derived from it, never from the client
         const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
@@ -214,8 +218,14 @@ export default function LiveScoring() {
         if (cancelled) return;
         if (gNum) {
           setScoringCode(saved.code);
-          if (saved.pinnedGroup != null) setPinnedGroup(saved.pinnedGroup);
-          await loadGroup(gNum as number, saved.code, undefined, saved.pinnedGroup ?? null);
+          // A group pinned in an earlier round means nothing once scoring rolls
+          // forward — the new round has its own pairings.
+          const sameRound = Number(saved.round || 1) === roundNumber;
+          const pinned = sameRound ? (saved.pinnedGroup ?? null) : null;
+          if (pinned != null) setPinnedGroup(pinned);
+          else setPinnedGroup(null);
+          await loadGroup(gNum as number, saved.code, undefined, pinned);
+
         } else {
           localStorage.removeItem(sessionKey);
         }
@@ -228,13 +238,14 @@ export default function LiveScoring() {
     return () => { cancelled = true; setRestoring(false); };
   }, [tournament, sessionKey]);
 
-  const persistSession = (code: string | null, gNum: number, pinned?: number | null) => {
+  const persistSession = (code: string | null, gNum: number, pinned?: number | null, round?: number) => {
     if (!sessionKey || !tournament || !code) return;
     try {
       localStorage.setItem(
         sessionKey,
-        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum, pinnedGroup: pinned ?? null })
+        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum, pinnedGroup: pinned ?? null, round: round ?? roundNumber })
       );
+
     } catch { /* storage unavailable */ }
   };
 
@@ -344,7 +355,7 @@ export default function LiveScoring() {
     ]);
     setStartingHole(assigned);
     setFocusHole(assigned);
-    persistSession(sessionCode, roundGroup, pinned ?? roundGroup);
+    persistSession(sessionCode, roundGroup, pinned ?? roundGroup, round);
   };
 
   // Switching rounds (organizer closes a round, or the player picks one)
@@ -682,9 +693,14 @@ export default function LiveScoring() {
             {groupOptions.length > 1 ? (
               <div className="space-y-3">
                 <p className="text-sm text-muted-foreground">
-                  This code matches more than one group. Tap your group to continue.
+                  {totalRounds > 1 ? `${roundLabel(roundNumber - 1)} — ` : ""}this code matches more
+                  than one group. Tap the group you are playing in.
                 </p>
-                {groupOptions.map((o) => (
+                {groupOptions.map((o) => {
+                  const holeLabel = pairingsCfg
+                    ? startingHoleLabelForGroup(pairingsCfg, o.group_number, Math.max(0, roundNumber - 1))
+                    : null;
+                  return (
                   <Button
                     key={o.group_number}
                     variant="outline"
@@ -695,10 +711,14 @@ export default function LiveScoring() {
                       await loadGroup(o.group_number, scoringCode || codeInput.trim().toUpperCase(), undefined, o.group_number);
                     }}
                   >
-                    <span className="font-semibold">Group {o.group_number}</span>
+                    <span className="font-semibold">
+                      {holeLabel ? `Starting Hole ${holeLabel}` : `Group ${o.group_number}`}
+                    </span>
                     <span className="text-xs text-muted-foreground whitespace-normal">{o.players}</span>
                   </Button>
-                ))}
+                  );
+                })}
+
                 <Button variant="ghost" className="w-full" onClick={() => setGroupOptions([])}>
                   Back
                 </Button>

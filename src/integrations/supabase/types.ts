@@ -2555,6 +2555,7 @@ export type Database = {
           division_id: string | null
           id: string
           name: string
+          round_number: number
           skin_format: string
           status: string
           total_purse_cents: number
@@ -2567,6 +2568,7 @@ export type Database = {
           division_id?: string | null
           id?: string
           name: string
+          round_number?: number
           skin_format?: string
           status?: string
           total_purse_cents?: number
@@ -2579,6 +2581,7 @@ export type Database = {
           division_id?: string | null
           id?: string
           name?: string
+          round_number?: number
           skin_format?: string
           status?: string
           total_purse_cents?: number
@@ -12672,6 +12675,7 @@ export type Database = {
           game_name: string
           hole_number: number
           player_name: string
+          round_number: number
           score: number
           skin_format: string
           total_purse_cents: number

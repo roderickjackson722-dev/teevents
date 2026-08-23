@@ -10,6 +10,7 @@ type Row = {
   total_purse_cents: number;
   skin_format: string;
   carryover: boolean;
+  round_number: number;
   hole_number: number | null;
   score: number | null;
   amount_cents: number | null;
@@ -56,7 +57,7 @@ export default function SkinsPayoutsCard({ tournamentId }: { tournamentId: strin
           <div key={info.game_id} className="rounded-lg border bg-card p-4">
             <div className="flex flex-wrap items-baseline justify-between gap-2 mb-3">
               <h3 className="font-display font-bold">
-                Skins Payouts — {info.division_name || info.game_name}
+                Round {info.round_number || 1} Skins Payouts — {info.division_name || info.game_name}
               </h3>
               <span className="text-sm text-muted-foreground">
                 Total Purse: {formatCents(info.total_purse_cents)}

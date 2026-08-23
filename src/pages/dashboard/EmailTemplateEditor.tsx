@@ -780,7 +780,8 @@ export default function EmailTemplateEditor() {
       const fnName = templateKind === "day_before" ? "send-day-before-reminder" : "resend-confirmation";
       const baseBody = templateKind === "day_before"
         ? { tournament_id: selectedTournament }
-        : { use_custom_template: true, template_kind: templateKind };
+        // Round-aware templates resolve tee times / holes from the chosen round.
+        : { use_custom_template: true, template_kind: templateKind, ...(roundAware ? { round: emailRound } : {}) };
 
       const { data, error } = await supabase.functions.invoke(fnName, {
         body: {

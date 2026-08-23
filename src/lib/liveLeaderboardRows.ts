@@ -190,7 +190,7 @@ export function buildLeaderboard(
         Object.values(p.holesByRound).forEach((roundHoles) => {
           holesPlayed += Object.keys(roundHoles).length;
           Object.entries(roundHoles).forEach(([hole, strokes]) => {
-            points += stablefordPoints(strokes, holePars[Number(hole) - 1] ?? holePar);
+            points += stablefordPoints(strokes, holePars?.[Number(hole) - 1] ?? holePar);
           });
         });
         return { name: p.name, total: points, thru: holesPlayed, points, key: regId, holesByRound: p.holesByRound };

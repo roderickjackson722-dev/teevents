@@ -92,7 +92,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   const groupNum = r.customGroupNumber !== undefined ? r.customGroupNumber : startingHoleOf(r as any);
   const holeLabel = r.customGroupNumber !== undefined ? String(r.customGroupNumber) : startingHoleLabelOf(r as any);
   const scoringCode = effectiveScoringCode(r);
-  const scoringUrl = getScoringUrl(slug, scoringCode);
+  const scoringUrl = getScoringUrl(slug, scoringCode ?? undefined);
 
   const pars = Array.from({ length: numHoles }, (_, i) => getHolePar(tournament, i, numHoles, courseData));
   const gridHtml = scorecardGridHtml(

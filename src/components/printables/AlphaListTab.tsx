@@ -4,6 +4,7 @@ import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import { formatTeeTime } from "./CartSignsTab";
 import type { Tournament, Registration } from "./types";
 import { startingHoleOf } from "./types";
+import { effectiveScoringCode } from "./scoringCodes";
 import type { AlphaColumnId } from "./PrintablesOptionsCard";
 import { ALPHA_COLUMNS, DEFAULT_PRINTABLE_OPTIONS } from "./PrintablesOptionsCard";
 
@@ -17,8 +18,7 @@ interface Props {
   columns?: AlphaColumnId[];
 }
 
-const codeOf = (r: Registration) =>
-  (r as any).group_scoring_code || (r as any).scoring_code || null;
+const codeOf = (r: Registration) => effectiveScoringCode(r);
 
 const NA = "—";
 

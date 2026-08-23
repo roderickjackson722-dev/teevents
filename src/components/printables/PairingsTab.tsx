@@ -49,6 +49,7 @@ export default function PairingsTab({ tournament, registrations, loading, groups
         <td style="border:1px solid #ddd;padding:6px 8px;font-weight:600;">${t.teamName}</td>
         <td style="border:1px solid #ddd;padding:6px 8px;">${t.players.map(playerName).join(" &bull; ")}</td>
         ${opts.showFlight ? `<td style="border:1px solid #ddd;padding:6px 8px;width:1.4in;">${flights || "—"}</td>` : ""}
+        <td style="border:1px solid #ddd;padding:6px 8px;width:1.1in;text-align:center;font-family:monospace;letter-spacing:1px;font-weight:700;">${t.scoringCode || "Not assigned"}</td>
       </tr>`;
     })
     .join("");
@@ -70,6 +71,7 @@ export default function PairingsTab({ tournament, registrations, loading, groups
           <th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;text-align:left;">Group</th>
           <th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;text-align:left;">Players</th>
           ${opts.showFlight ? `<th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;text-align:left;">Flight</th>` : ""}
+          <th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;">Scoring Code</th>
         </tr>
         ${rowsHtml}
       </table>
@@ -100,6 +102,7 @@ export default function PairingsTab({ tournament, registrations, loading, groups
               <th className="px-3 py-2 text-left">Group</th>
               <th className="px-3 py-2 text-left">Players</th>
               {opts.showFlight && <th className="px-3 py-2 text-left">Flight</th>}
+              <th className="px-3 py-2 text-center">Scoring Code</th>
             </tr>
           </thead>
           <tbody>
@@ -114,6 +117,9 @@ export default function PairingsTab({ tournament, registrations, loading, groups
                     {Array.from(new Set(t.players.map((p) => p.flight_name).filter(Boolean) as string[])).join(", ") || "—"}
                   </td>
                 )}
+                <td className="px-3 py-2 text-center font-mono tracking-wider font-semibold text-foreground">
+                  {t.scoringCode || "Not assigned"}
+                </td>
               </tr>
             ))}
           </tbody>

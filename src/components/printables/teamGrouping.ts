@@ -1,3 +1,4 @@
+import { effectiveScoringCode } from "./scoringCodes";
 import { startingHoleLabelOf, type Registration } from "./types";
 
 export interface RegistrationGroupRow {
@@ -73,7 +74,7 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       teamName: g?.team_name || `Group ${num}`,
       teeTime: g?.tee_time ?? (players.map((p) => (p as any).tee_time).find(Boolean) || null),
       players,
-      scoringCode: players.map((p) => (p as any).group_scoring_code || (p as any).scoring_code).find(Boolean) || null,
+      scoringCode: players.map((p) => effectiveScoringCode(p)).find(Boolean) || null,
     });
 
   });
@@ -87,7 +88,7 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       teamName: playerName(p),
       teeTime: (p as any).tee_time || null,
       players: [p],
-      scoringCode: (p as any).group_scoring_code || (p as any).scoring_code || null,
+      scoringCode: effectiveScoringCode(p),
     });
 
   });

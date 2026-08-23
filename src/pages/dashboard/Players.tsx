@@ -2826,15 +2826,24 @@ const Players = () => {
                     )}
                     {rosterCols.flight !== false && (
                       <td className="px-4 py-3">
-                        {p.flight_id ? (
-                          <span className="inline-flex items-center bg-emerald-500/10 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            {flightName(p.flight_id)}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
+                        <select
+                          className="text-xs border border-border rounded px-1.5 py-1 bg-background max-w-[140px]"
+                          value={p.flight_id || "__none"}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            const v = e.target.value;
+                            updatePlayerFlight(p.id, v === "__none" ? null : v);
+                          }}
+                        >
+                          <option value="__none">—</option>
+                          {flights.map((f) => (
+                            <option key={f.id} value={f.id}>{f.name}</option>
+                          ))}
+                        </select>
                       </td>
                     )}
+
                     {rosterCols.shirt !== false && (
                       <td className="px-4 py-3 text-center text-muted-foreground">{p.shirt_size || "—"}</td>
                     )}

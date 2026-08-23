@@ -66,6 +66,7 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
       groupNumber: num,
       startingHole: g?.starting_hole ?? (players.map((p) => (p as any).starting_hole).find((v) => v != null) ?? num),
       startingHoleLabel:
+        (g?.starting_hole_label && String(g.starting_hole_label).trim().toUpperCase()) ??
         players.map((p) => startingHoleLabelOf(p as any)).find((v) => v != null) ??
         (g?.starting_hole != null ? String(g.starting_hole) : String(num)),
       groupId: g?.id,

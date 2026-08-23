@@ -811,6 +811,10 @@ const Finances = () => {
                 </Badge>
               )}
             </TabsTrigger>
+            <TabsTrigger value="details">
+              <Receipt className="h-4 w-4 mr-1.5" />
+              Detailed Records
+            </TabsTrigger>
             <TabsTrigger value="reports">
               <FileText className="h-4 w-4 mr-1.5" />
               Reports

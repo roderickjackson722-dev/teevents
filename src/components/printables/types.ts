@@ -29,6 +29,8 @@ export interface Registration {
   group_position: number | null;
   /** Flight / division id (tournament_tiers) */
   flight_id?: string | null;
+  /** Exact starting-hole label from pairings, e.g. "11A" */
+  starting_hole_label?: string | null;
   /** Resolved flight / division name for printables */
   flight_name?: string | null;
 }

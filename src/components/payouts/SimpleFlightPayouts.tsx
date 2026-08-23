@@ -107,15 +107,37 @@ export default function SimpleFlightPayouts({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [draftPurse, setDraftPurse] = useState("0.00");
   const [draftAmounts, setDraftAmounts] = useState<string[]>([]);
+  const [draftExcluded, setDraftExcluded] = useState<string[]>([]);
+  const [draftCount, setDraftCount] = useState("0");
+  const [draftCountManual, setDraftCountManual] = useState(false);
 
   useEffect(() => { if (flightMethod && flightMethod !== "none") setMethod(flightMethod); }, [flightMethod]);
+
+  const membersOf = useCallback(
+    (flightId: string) => flights.find((f) => f.id === flightId)?.members ?? [],
+    [flights],
+  );
+
+  /** Roster count minus excluded players, unless the organizer typed an override. */
+  const effectiveCount = useCallback(
+    (flightId: string, rosterCount: number, excluded: string[], override: number | null) => {
+      if (override != null) return Math.max(0, override);
+      const members = flights.find((f) => f.id === flightId)?.members;
+      const total = members ? members.length : rosterCount;
+      const excludedInFlight = members
+        ? members.filter((m) => excluded.includes(m.id)).length
+        : excluded.length;
+      return Math.max(0, total - excludedInFlight);
+    },
+    [flights],
+  );
 
   /** Build default rows: purse split by player share, default places + percentages. */
   const buildDefaults = useCallback((): Row[] => {
     const payable = flights.filter((f) => f.players > 0 && defaultPlacesPaid(f.players) > 0);
     const totalPayable = payable.reduce((s, f) => s + f.players, 0);
     let allocated = 0;
-    return flights.map((f, i) => {
+    return flights.map((f) => {
       const isPayable = payable.some((p) => p.id === f.id);
       const last = isPayable && payable[payable.length - 1]?.id === f.id;
       let purse = 0;
@@ -133,7 +155,15 @@ export default function SimpleFlightPayouts({
         used += amt;
         return amt;
       });
-      return { flightId: f.id, name: f.name, players: f.players, purseCents: purse, amounts };
+      return {
+        flightId: f.id,
+        name: f.name,
+        players: f.players,
+        purseCents: purse,
+        amounts,
+        excluded: [],
+        countOverride: null,
+      };
     });
   }, [flights, defaultPurseCents]);
 
@@ -143,7 +173,9 @@ export default function SimpleFlightPayouts({
     (async () => {
       const { data } = await (supabase as any)
         .from("flight_payouts")
-        .select("flight_name, total_purse_cents, first_place_cents, second_place_cents, third_place_cents")
+        .select(
+          "flight_name, total_purse_cents, first_place_cents, second_place_cents, third_place_cents, excluded_registration_ids, player_count_override",
+        )
         .eq("tournament_id", tournamentId);
       if (cancelled) return;
       const saved = new Map<string, any>(((data as any[]) || []).map((r) => [String(r.flight_name), r]));
@@ -154,10 +186,15 @@ export default function SimpleFlightPayouts({
           if (!s) return d;
           const amounts = [s.first_place_cents || 0, s.second_place_cents || 0, s.third_place_cents || 0]
             .filter((c, i, arr) => arr.slice(i).some((v) => v > 0));
+          const excluded = (s.excluded_registration_ids || []) as string[];
+          const countOverride = s.player_count_override == null ? null : Number(s.player_count_override);
           return {
             ...d,
             purseCents: s.total_purse_cents || 0,
             amounts: amounts.length ? amounts : [],
+            excluded,
+            countOverride,
+            players: effectiveCount(d.flightId, d.players, excluded, countOverride),
           };
         }),
       );
@@ -173,11 +210,21 @@ export default function SimpleFlightPayouts({
   const editingRow = rows.find((r) => r.flightId === editingId) || null;
   const draftPurseCents = toCents(draftPurse);
   const draftTotal = draftAmounts.reduce((s, d) => s + toCents(d), 0);
+  const draftMembers = editingRow ? membersOf(editingRow.flightId) : [];
+  const draftIncludedCount = draftCountManual
+    ? Math.max(0, parseInt(draftCount, 10) || 0)
+    : draftMembers.length
+      ? draftMembers.filter((m) => !draftExcluded.includes(m.id)).length
+      : Math.max(0, parseInt(draftCount, 10) || 0);
 
   const openEdit = (row: Row) => {
     setEditingId(row.flightId);
     setDraftPurse(toDollars(row.purseCents));
     setDraftAmounts(row.amounts.map(toDollars));
+    setDraftExcluded(row.excluded);
+    setDraftCountManual(row.countOverride != null);
+    setDraftCount(String(row.countOverride ?? row.players));
+
   };
 
   const setPlacesPaid = (places: number) => {

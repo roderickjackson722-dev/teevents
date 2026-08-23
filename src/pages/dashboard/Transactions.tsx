@@ -116,7 +116,7 @@ interface Addon {
   unit_price_cents: number;
 }
 
-const Transactions = () => {
+const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const { org } = useOrgContext();
   const [loading, setLoading] = useState(true);
   const [txs, setTxs] = useState<Tx[]>([]);
@@ -740,11 +740,20 @@ const Transactions = () => {
   } : null;
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className={embedded ? "space-y-6" : "space-y-6 p-4 md:p-6"}>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2"><Receipt className="h-6 w-6" /> Transactions</h1>
-          <p className="text-sm text-muted-foreground">Every transaction on your account — registrations, sponsors, vendors, side events, donations, and add-ons — with full submission details.</p>
+          {embedded ? (
+            <>
+              <h2 className="text-lg font-semibold flex items-center gap-2"><Receipt className="h-5 w-5" /> Detailed Records</h2>
+              <p className="text-sm text-muted-foreground">Every transaction with full submission details — registrations, sponsors, vendors, side events, donations, and add-ons.</p>
+            </>
+          ) : (
+            <>
+              <h1 className="text-2xl font-bold flex items-center gap-2"><Receipt className="h-6 w-6" /> Transactions</h1>
+              <p className="text-sm text-muted-foreground">Every transaction on your account — registrations, sponsors, vendors, side events, donations, and add-ons — with full submission details.</p>
+            </>
+          )}
         </div>
         <div className="flex gap-2">
           <Button variant="outline" onClick={fetchAll} disabled={loading}>
@@ -755,6 +764,7 @@ const Transactions = () => {
           </Button>
         </div>
       </div>
+
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Transactions</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold">{filtered.length}</div></CardContent></Card>

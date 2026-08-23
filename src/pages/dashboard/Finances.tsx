@@ -23,6 +23,7 @@ import {
   AlertDialogTitle, AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import TransactionDetails from "./Transactions";
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
@@ -794,7 +795,17 @@ const Finances = () => {
       </div>
 
       {/* Tabs */}
-      <Tabs defaultValue="transactions" className="space-y-4">
+      <Tabs
+        defaultValue={
+          typeof window !== "undefined" &&
+          ["transactions", "refunds", "details", "reports"].includes(
+            new URLSearchParams(window.location.search).get("tab") || "",
+          )
+            ? (new URLSearchParams(window.location.search).get("tab") as string)
+            : "transactions"
+        }
+        className="space-y-4"
+      >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <TabsList className="bg-card border border-border">
             <TabsTrigger value="transactions">
@@ -809,6 +820,10 @@ const Finances = () => {
                   {pendingRefunds.length}
                 </Badge>
               )}
+            </TabsTrigger>
+            <TabsTrigger value="details">
+              <Receipt className="h-4 w-4 mr-1.5" />
+              Detailed Records
             </TabsTrigger>
             <TabsTrigger value="reports">
               <FileText className="h-4 w-4 mr-1.5" />
@@ -1184,6 +1199,10 @@ const Finances = () => {
               </div>
             </div>
           </div>
+        </TabsContent>
+
+        <TabsContent value="details" className="space-y-4">
+          <TransactionDetails embedded />
         </TabsContent>
       </Tabs>
 

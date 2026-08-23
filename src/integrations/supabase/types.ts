@@ -10968,6 +10968,7 @@ export type Database = {
           live_display_refresh_seconds: number
           live_leaderboard_enabled: boolean
           live_require_confirm_save: boolean
+          live_scoring_allow_email_login: boolean
           live_scoring_require_code: boolean
           live_show_gross: boolean
           live_show_net: boolean
@@ -11278,6 +11279,7 @@ export type Database = {
           live_display_refresh_seconds?: number
           live_leaderboard_enabled?: boolean
           live_require_confirm_save?: boolean
+          live_scoring_allow_email_login?: boolean
           live_scoring_require_code?: boolean
           live_show_gross?: boolean
           live_show_net?: boolean
@@ -11588,6 +11590,7 @@ export type Database = {
           live_display_refresh_seconds?: number
           live_leaderboard_enabled?: boolean
           live_require_confirm_save?: boolean
+          live_scoring_allow_email_login?: boolean
           live_scoring_require_code?: boolean
           live_show_gross?: boolean
           live_show_net?: boolean

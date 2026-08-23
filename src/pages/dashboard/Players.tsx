@@ -258,7 +258,7 @@ const Players = () => {
   const [editForm, setEditForm] = useState({
     first_name: "", last_name: "", email: "", phone: "",
     handicap: "", shirt_size: "", dietary_restrictions: "", group_number: "", group_label: "",
-    age: "", city: "", state: "", tier_id: "",
+    age: "", city: "", state: "", tier_id: "", flight_id: "",
   });
   const [savingEdit, setSavingEdit] = useState(false);
   const [regFeeCents, setRegFeeCents] = useState(0);
@@ -602,6 +602,8 @@ const Players = () => {
       city: readReserved(p, RESERVED_CITY),
       state: readReserved(p, RESERVED_STATE),
       tier_id: p.tier_id || "",
+      flight_id: p.flight_id || "",
+
     });
   };
 
@@ -627,6 +629,8 @@ const Players = () => {
       group_number: parsedGroupNumber,
       group_label: labelRaw || null,
       tier_id: editForm.tier_id || null,
+      flight_id: editForm.flight_id || null,
+
     };
     // Merge reserved demographic answers into custom_answers, preserving other
     // entries. A registration-form "Age" answer is updated in place so the
@@ -660,6 +664,31 @@ const Players = () => {
     toast({ title: "Player updated", description: `${updates.first_name} ${updates.last_name} saved.` });
     setEditingPlayer(null);
   };
+
+  /**
+   * Change a player's flight from the roster row. Flight lives on the
+   * registration, and the live leaderboard reads flight per registration, so the
+   * player moves to the new division board on its next refresh.
+   */
+  const updatePlayerFlight = async (registrationId: string, flightId: string | null) => {
+    if (demoGuard()) return;
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ flight_id: flightId })
+      .eq("id", registrationId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    setAllPlayers((prev) => prev.map((p) => (p.id === registrationId ? { ...p, flight_id: flightId } : p)));
+    toast({
+      title: "Flight updated",
+      description: flightId
+        ? `Moved to ${flights.find((f) => f.id === flightId)?.name || "flight"}. The live leaderboard will show them in that division.`
+        : "Flight cleared.",
+    });
+  };
+
 
   // ---- Bulk age clean-up -------------------------------------------------
   const [ageEditOpen, setAgeEditOpen] = useState(false);
@@ -2826,15 +2855,24 @@ const Players = () => {
                     )}
                     {rosterCols.flight !== false && (
                       <td className="px-4 py-3">
-                        {p.flight_id ? (
-                          <span className="inline-flex items-center bg-emerald-500/10 text-emerald-700 text-xs font-semibold px-2 py-0.5 rounded-full whitespace-nowrap">
-                            {flightName(p.flight_id)}
-                          </span>
-                        ) : (
-                          <span className="text-muted-foreground text-xs">—</span>
-                        )}
+                        <select
+                          className="text-xs border border-border rounded px-1.5 py-1 bg-background max-w-[140px]"
+                          value={p.flight_id || "__none"}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            e.stopPropagation();
+                            const v = e.target.value;
+                            updatePlayerFlight(p.id, v === "__none" ? null : v);
+                          }}
+                        >
+                          <option value="__none">—</option>
+                          {flights.map((f) => (
+                            <option key={f.id} value={f.id}>{f.name}</option>
+                          ))}
+                        </select>
                       </td>
                     )}
+
                     {rosterCols.shirt !== false && (
                       <td className="px-4 py-3 text-center text-muted-foreground">{p.shirt_size || "—"}</td>
                     )}
@@ -4270,6 +4308,24 @@ const Players = () => {
                 </Select>
               </div>
             )}
+            {flights.length > 0 && (
+              <div>
+                <Label htmlFor="ep-flight">Flight</Label>
+                <Select value={editForm.flight_id || "__none"} onValueChange={(v) => setEditForm((f) => ({ ...f, flight_id: v === "__none" ? "" : v }))}>
+                  <SelectTrigger id="ep-flight"><SelectValue placeholder="Select flight" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">No flight</SelectItem>
+                    {flights.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Changing the flight moves this player to that division on the live leaderboard.
+                </p>
+              </div>
+            )}
+
             <div>
               <Label htmlFor="ep-diet">Dietary Restrictions</Label>
               <Input id="ep-diet" value={editForm.dietary_restrictions} onChange={(e) => setEditForm((f) => ({ ...f, dietary_restrictions: e.target.value }))} placeholder="None" />

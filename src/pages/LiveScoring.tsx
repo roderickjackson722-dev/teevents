@@ -679,6 +679,32 @@ export default function LiveScoring() {
             <p className="text-sm text-muted-foreground">Live Scoring — Enter your scoring code to begin</p>
           </CardHeader>
           <CardContent className="space-y-4">
+            {groupOptions.length > 1 ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  This code matches more than one group. Tap your group to continue.
+                </p>
+                {groupOptions.map((o) => (
+                  <Button
+                    key={o.group_number}
+                    variant="outline"
+                    className="w-full h-auto py-3 text-left flex flex-col items-start"
+                    onClick={async () => {
+                      setGroupOptions([]);
+                      setPinnedGroup(o.group_number);
+                      await loadGroup(o.group_number, scoringCode || codeInput.trim().toUpperCase(), undefined, o.group_number);
+                    }}
+                  >
+                    <span className="font-semibold">Group {o.group_number}</span>
+                    <span className="text-xs text-muted-foreground whitespace-normal">{o.players}</span>
+                  </Button>
+                ))}
+                <Button variant="ghost" className="w-full" onClick={() => setGroupOptions([])}>
+                  Back
+                </Button>
+              </div>
+            ) : (
+            <>
             <div>
               <label className="text-sm font-medium mb-1 block">Scoring Code</label>
               <Input
@@ -713,6 +739,8 @@ export default function LiveScoring() {
             <Button onClick={handleLogin} className="w-full">
               Start Scoring
             </Button>
+            </>
+            )}
           </CardContent>
         </Card>
       </div>

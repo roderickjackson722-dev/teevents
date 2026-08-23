@@ -356,19 +356,39 @@ Deno.serve(async (req) => {
 
     if (!tournament) throw new Error("Tournament not found");
 
+    // Which round is being emailed. Defaults to the round the organizer
+    // currently has live in Players & Pairings.
+    const pairingsCfgRaw = ((tournament as any).pairings_config || {}) as Record<string, any>;
+    const requestedRound = Number(body.round);
+    const roundDay = Number.isFinite(requestedRound) && requestedRound >= 0
+      ? Math.floor(requestedRound)
+      : Math.max(0, Number(pairingsCfgRaw.activeRound) || 0);
+    const roundCount = Math.max(1, Number(pairingsCfgRaw.rounds) || 1);
+    /**
+     * Group number for this registration in the round being emailed. The live
+     * `group_number` column only mirrors the active round, so a saved snapshot
+     * for another round takes priority.
+     */
+    const roundGroupFor = (r: any): number | null => {
+      const snap = pairingsCfgRaw.assignmentsByDay?.[String(roundDay)]?.[String(r.id)];
+      if (snap && snap.g != null && Number.isFinite(Number(snap.g))) return Number(snap.g);
+      return r.group_number ?? null;
+    };
     const teeTimeFor = (r: any) => {
-      const pairing = pairingValuesFor((tournament as any).pairings_config, r.group_number);
+      const g = roundGroupFor(r);
+      const pairing = pairingValuesFor(pairingsCfgRaw, g, roundDay);
       return pairing.teeTime
-        || formatTeeTime(r.group_number != null ? groupTeeTimes.get(r.group_number) : undefined)
-        || formatTeeTime(r.tee_time)
+        || (roundDay === 0
+          ? formatTeeTime(g != null ? groupTeeTimes.get(g) : undefined) || formatTeeTime(r.tee_time)
+          : "")
         || "TBD";
     };
     const startingHoleFor = (r: any) =>
-      pairingValuesFor((tournament as any).pairings_config, r.group_number).startingHole;
+      pairingValuesFor(pairingsCfgRaw, roundGroupFor(r), roundDay).startingHole;
 
-    // Event-day variable follows the Round 1 play date set on Players & Pairings.
-    const round1Date = (tournament as any)?.pairings_config?.byDay?.["0"]?.roundDate;
-    if (round1Date && String(round1Date).trim()) (tournament as any).date = String(round1Date).trim();
+    // Event-day variable follows the play date this round is set to.
+    const roundDate = pairingsCfgRaw.byDay?.[String(roundDay)]?.roundDate;
+    if (roundDate && String(roundDate).trim()) (tournament as any).date = String(roundDate).trim();
 
     // Verify user is org member (skipped for internal scheduled sends)
     if (!isServiceRun) {

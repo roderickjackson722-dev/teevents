@@ -629,6 +629,8 @@ const Players = () => {
       group_number: parsedGroupNumber,
       group_label: labelRaw || null,
       tier_id: editForm.tier_id || null,
+      flight_id: editForm.flight_id || null,
+
     };
     // Merge reserved demographic answers into custom_answers, preserving other
     // entries. A registration-form "Age" answer is updated in place so the

@@ -11,13 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical, Settings as SettingsIcon, Coins } from "lucide-react";
+import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical, Settings as SettingsIcon, Coins, Lock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
 import HandicapSettings from "@/components/dashboard/HandicapSettings";
 import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
 import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
+import RoundClosureCard from "@/components/dashboard/RoundClosureCard";
+
 
 
 export default function Scoring({ embedded = false }: { embedded?: boolean }) {

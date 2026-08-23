@@ -504,6 +504,24 @@ export default function EmailTemplateEditor() {
     load();
   }, [selectedTournament]);
 
+  /**
+   * Pairings setup for the selected event. Multi-round events keep one tee time
+   * / start format snapshot per round, so emails must target a specific round.
+   */
+  const selectedPairings = useMemo(
+    () => parsePairingsConfig((tournaments.find((x: any) => x.id === selectedTournament) as any)?.pairings_config),
+    [tournaments, selectedTournament],
+  );
+  const roundCount = Math.max(1, selectedPairings.rounds || 1);
+  const roundAware = templateKind === "tee_times" || templateKind === "pairings_update";
+
+  // Default to the round the organizer currently has open in Players & Pairings.
+  useEffect(() => {
+    setEmailRound(Math.min(Math.max(0, selectedPairings.activeRound || 0), roundCount - 1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTournament, selectedPairings.activeRound, roundCount]);
+
+
   // Course address for the selected tournament (used by the live preview)
   const [courseAddress, setCourseAddress] = useState<string>("");
   useEffect(() => {

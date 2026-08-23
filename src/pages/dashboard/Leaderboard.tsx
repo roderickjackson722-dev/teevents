@@ -28,6 +28,9 @@ import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
 import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
+import RoundClosureCard from "@/components/dashboard/RoundClosureCard";
+import { activeRoundNumber, parsePairingsConfig, roundLabel } from "@/lib/pairingsConfig";
+import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
 
@@ -170,6 +173,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const [scoreSearch, setScoreSearch] = useState("");
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
   const [editHole, setEditHole] = useState(1);
+  const [workingRound, setWorkingRound] = useState(1);
 
 
   // Detect platform admin — admins get access to ALL tournaments across every org
@@ -194,7 +198,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     queryFn: async () => {
       let query = supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, leaderboard_last_reset_at, organizations(name)")
+        .select("id, title, date, pairings_config, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, leaderboard_last_reset_at, organizations(name)")
         .order("date", { ascending: false });
       if (!isPlatformAdmin) {
         query = query.eq("organization_id", org!.orgId);
@@ -212,6 +216,36 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const isStableford = scoringFormat?.scoring === "stableford";
   const handicapEnabled = (selectedTournamentData as any)?.handicap_enabled === true;
   const coursePar = selectedTournamentData?.course_par || 72;
+  const pairingsCfg = useMemo(
+    () => parsePairingsConfig((selectedTournamentData as any)?.pairings_config),
+    [selectedTournamentData],
+  );
+  const totalRounds = Math.max(1, pairingsCfg.rounds || 1);
+  const { data: roundRows } = useQuery({
+    queryKey: ["tournament-rounds", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("tournament_rounds")
+        .select("round_number, status, closed_at")
+        .eq("tournament_id", selectedTournament);
+      if (error) throw error;
+      return (data || []) as TournamentRoundRow[];
+    },
+    enabled: !!selectedTournament,
+  });
+  const closedRounds = useMemo(() => closedRoundSet(roundRows), [roundRows]);
+  const roundLocked = closedRounds.has(workingRound);
+
+  useEffect(() => {
+    if (!selectedTournamentData) return;
+    setWorkingRound(nextOpenRound(
+      activeRoundNumber(pairingsCfg, (selectedTournamentData as any).date),
+      closedRounds,
+      totalRounds,
+    ));
+    setEditedScores({});
+    setSelectedRowKey(null);
+  }, [selectedTournament, selectedTournamentData, pairingsCfg, closedRounds, totalRounds]);
 
   // Freeze state
   const frozenAt: string | null = (selectedTournamentData as any)?.leaderboard_frozen_at ?? null;
@@ -250,7 +284,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
 
   const { data: registrations } = useQuery({
-    queryKey: ["leaderboard-players", selectedTournament],
+    queryKey: ["leaderboard-players", selectedTournament, workingRound],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_registrations")
@@ -259,7 +293,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         .order("last_name");
       if (error) throw error;
       // Mirror Players & Pairings: only paid roster players appear on the leaderboard.
-      return (data || []).filter((r: any) => (r.payment_status || "").toLowerCase() === "paid");
+      const assignments = pairingsCfg.assignmentsByDay[String(workingRound - 1)];
+      return (data || [])
+        .filter((r: any) => (r.payment_status || "").toLowerCase() === "paid")
+        .map((r: any) => ({ ...r, group_number: assignments?.[r.id]?.g ?? r.group_number }));
     },
     enabled: !!selectedTournament,
   });
@@ -290,12 +327,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   }, [teamNameRows]);
 
   const { data: scores, isLoading: scoresLoading } = useQuery({
-    queryKey: ["tournament-scores", selectedTournament],
+    queryKey: ["tournament-scores", selectedTournament, workingRound],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_scores")
-        .select("registration_id, hole_number, strokes")
-        .eq("tournament_id", selectedTournament);
+        .select("registration_id, hole_number, strokes, round_number")
+        .eq("tournament_id", selectedTournament)
+        .eq("round_number", workingRound);
       if (error) throw error;
       return data;
     },

@@ -439,11 +439,11 @@ Deno.serve(async (req) => {
     const homepage = (tournament as any).slug
       ? `https://www.teevents.golf/t/${(tournament as any).slug}`
       : "https://www.teevents.golf";
-    const pairingsLink = (tournament as any).slug
-      ? `https://www.teevents.golf/pairings/${(tournament as any).slug}`
+    const pairingsLink = (code?: string) => (tournament as any).slug
+      ? `https://www.teevents.golf/pairings/${(tournament as any).slug}${code ? `?code=${encodeURIComponent(code)}` : ""}`
       : "https://www.teevents.golf";
     // The tee-time email's button points at the public pairings/tee sheet page.
-    if (!emailConfig.button_url) emailConfig.button_url = kind === "tee_times" ? pairingsLink : homepage;
+    if (!emailConfig.button_url) emailConfig.button_url = kind === "tee_times" ? pairingsLink() : homepage;
 
 
     const dateStr = tournament.date
@@ -484,6 +484,7 @@ Deno.serve(async (req) => {
       try {
         if (useCustom && RESEND_API_KEY) {
           // Use custom template
+          const recipientCode = codeFor(reg as any);
           const vars: Record<string, string> = {
             first_name: reg.first_name,
             last_name: reg.last_name,
@@ -500,13 +501,13 @@ Deno.serve(async (req) => {
             round_number: String(roundDay + 1),
             total_rounds: String(roundCount),
 
-            scoring_code: codeFor(reg as any)
+            scoring_code: recipientCode
               || "Scoring code will be assigned when pairings are finalized",
             group_number: roundGroupFor(reg as any) != null ? String(roundGroupFor(reg as any)) : "",
             scoring_link: (tournament as any).slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
             leaderboard_link: (tournament as any).slug ? `https://www.teevents.golf/live/${(tournament as any).slug}` : "https://www.teevents.golf",
             event_homepage: homepage,
-            pairings_link: pairingsLink,
+            pairings_link: pairingsLink(recipientCode),
           };
 
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);

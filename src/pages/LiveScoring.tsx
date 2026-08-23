@@ -261,7 +261,9 @@ export default function LiveScoring() {
       });
       payload = data || null;
     }
-    if (!payload) {
+    // A supplied code must resolve against this round's saved pairings. Never
+    // fall back to a stale group number from another round.
+    if (!payload && !codeForRound) {
       const { data } = await supabase.rpc("get_live_scoring_group", {
         _tournament_id: tournament.id,
         _group_number: gNum,
@@ -697,21 +699,6 @@ export default function LiveScoring() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {totalRounds > 1 && (
-              <select
-                aria-label="Round"
-                className="h-9 rounded-md border border-input bg-background px-2 text-sm"
-                value={roundNumber}
-                onChange={(e) => setRoundNumber(parseInt(e.target.value, 10))}
-              >
-                {Array.from({ length: totalRounds }, (_, i) => i + 1).map((rn) => (
-                  <option key={rn} value={rn}>
-                    {roundLabel(rn - 1)}
-                    {closedRounds.has(rn) ? " (locked)" : ""}
-                  </option>
-                ))}
-              </select>
-            )}
             {hasEdits && viewMode === "all" && !roundLocked && (
               <Button onClick={handleSave} disabled={saving} size="sm">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}

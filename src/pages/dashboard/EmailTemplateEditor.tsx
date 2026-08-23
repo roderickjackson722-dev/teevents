@@ -651,7 +651,9 @@ export default function EmailTemplateEditor() {
       scoring_link: t?.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
       leaderboard_link: t?.slug ? `https://www.teevents.golf/live/${t.slug}` : "https://www.teevents.golf",
       event_homepage: homepage,
-      pairings_link: t?.slug ? `https://www.teevents.golf/pairings/${t.slug}` : "https://www.teevents.golf",
+      pairings_link: t?.slug
+        ? `https://www.teevents.golf/pairings/${t.slug}${sampleReg?.group_scoring_code || sampleReg?.scoring_code ? `?code=${encodeURIComponent(sampleReg.group_scoring_code || sampleReg.scoring_code)}` : ""}`
+        : "https://www.teevents.golf",
       tee_time: pairingTeeTime || sampleReg?.tee_time || "TBD",
       hole_number: pairingStartingHole || "TBD",
       team_name: sampleReg?.team_name || (sampleReg?.group_number != null ? `Group ${sampleReg.group_number}` : "To be assigned"),

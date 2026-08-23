@@ -4,7 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Clock, MapPin, CalendarDays, Flag, Mail } from "lucide-react";
 import { formatTeeTime } from "@/components/printables/CartSignsTab";
 import { resolvePairingsPageConfig } from "@/lib/pairingsPageConfig";
-import { parsePairingsConfig, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
+import {
+  parsePairingsConfig,
+  startingHoleLabelForGroup,
+  teeTimeForGroup,
+  dayCfgOf,
+  roundLabel,
+  roundDateFor,
+} from "@/lib/pairingsConfig";
 
 interface Row {
   tournament_id: string;
@@ -52,8 +59,19 @@ export default function PublicPairings() {
   const info = rows?.[0];
   const cfg = useMemo(() => resolvePairingsPageConfig(info?.page_config), [info?.page_config]);
   const pairingsCfg = useMemo(() => parsePairingsConfig(info?.pairings_config), [info?.pairings_config]);
+  /**
+   * The roster's live group/tee-time values always mirror the round the
+   * organizer currently has open, so the public sheet must read that same
+   * round's setup — otherwise a shotgun Round 2 inherits Round 1 tee times.
+   */
+  const day = pairingsCfg.activeRound || 0;
+  const dayCfg = useMemo(() => dayCfgOf(pairingsCfg, day), [pairingsCfg, day]);
   const teeTimeStart =
-    (pairingsCfg.byDay["0"]?.startFormat || info?.start_format || "") === "tee_times";
+    (pairingsCfg.byDay[String(day)]?.startFormat || info?.start_format || "") === "tee_times";
+  const shotgunTime = !teeTimeStart ? formatTeeTime(dayCfg.shotgunTime) : null;
+  const showRoundLabel = (pairingsCfg.rounds || 1) > 1;
+  /** Each round can have its own play date; fall back to the tournament date. */
+  const displayDate = roundDateFor(pairingsCfg, day, info?.event_date ?? null);
 
   const groups = useMemo(() => {
     const map = new Map<number, Row[]>();
@@ -65,13 +83,13 @@ export default function PublicPairings() {
       .map(([number, players]) => ({ number, players }))
       .sort((a, b) => {
         if (teeTimeStart) {
-          const at = teeTimeForGroup(pairingsCfg, a.number) || a.players[0]?.tee_time || "";
-          const bt = teeTimeForGroup(pairingsCfg, b.number) || b.players[0]?.tee_time || "";
+          const at = teeTimeForGroup(pairingsCfg, a.number, day) || a.players[0]?.tee_time || "";
+          const bt = teeTimeForGroup(pairingsCfg, b.number, day) || b.players[0]?.tee_time || "";
           if (at !== bt) return at.localeCompare(bt);
         }
         return a.number - b.number;
       });
-  }, [rows, teeTimeStart, pairingsCfg]);
+  }, [rows, teeTimeStart, pairingsCfg, day]);
 
   if (rows === null) {
     return <div className="min-h-screen flex items-center justify-center"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
@@ -97,7 +115,7 @@ export default function PublicPairings() {
             <img src={info.logo_url} alt={`${info?.title ?? "Tournament"} logo`} className="h-16 w-auto mb-4 object-contain" />
           )}
           <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: accent }}>
-            {teeTimeStart ? "Tee Times" : "Pairings"}
+            {showRoundLabel ? `${roundLabel(day)} — ` : ""}{teeTimeStart ? "Tee Times" : "Shotgun Start"}
           </p>
           <h1 className="text-3xl font-display font-bold text-foreground">
             {cfg.headline?.trim() || info?.title}
@@ -106,11 +124,11 @@ export default function PublicPairings() {
             <p className="text-sm text-muted-foreground mt-1">{info?.title}</p>
           )}
           <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
-            {cfg.show_date && (cfg.date_text?.trim() || cfg.date_override?.trim() || info?.event_date) && (
+            {cfg.show_date && (cfg.date_text?.trim() || cfg.date_override?.trim() || displayDate) && (
               <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4" />{
                 cfg.date_text?.trim()
                   ? cfg.date_text
-                  : new Date(`${cfg.date_override?.trim() || info?.event_date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+                  : new Date(`${cfg.date_override?.trim() || displayDate}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
               }</span>
             )}
             {cfg.show_course && (cfg.course_override?.trim() || info?.course_name) && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{cfg.course_override?.trim() || info?.course_name}</span>}
@@ -130,9 +148,19 @@ export default function PublicPairings() {
           </div>
         )}
 
+        {shotgunTime && (
+          <div className="mb-6 rounded-xl border p-4 text-center" style={{ borderColor: accent }}>
+            <p className="text-sm text-muted-foreground">Shotgun start — every group tees off at</p>
+            <p className="text-2xl font-display font-bold" style={{ color: accent }}>{shotgunTime}</p>
+            <p className="text-xs text-muted-foreground mt-1">Find your starting hole below.</p>
+          </div>
+        )}
+
         <div className="space-y-3">
           {groups.map((g) => {
-            const tee = formatTeeTime(teeTimeForGroup(pairingsCfg, g.number) || g.players[0]?.tee_time);
+            const tee = teeTimeStart
+              ? formatTeeTime(teeTimeForGroup(pairingsCfg, g.number, day) || g.players[0]?.tee_time)
+              : null;
             const flight = g.players.map((p) => p.flight_name).find(Boolean);
             const teamName = cfg.show_team_names ? g.players[0]?.team_name : null;
             // Starting hole mirrors the Pairings tab: the saved hole label, then the
@@ -140,7 +168,7 @@ export default function PublicPairings() {
             const hole =
               pairingsCfg.labels[String(g.number)] ||
               (g.players[0]?.starting_hole != null ? String(g.players[0].starting_hole) : null) ||
-              startingHoleLabelForGroup(pairingsCfg, g.number);
+              startingHoleLabelForGroup(pairingsCfg, g.number, day);
             return (
               <div key={g.number} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">

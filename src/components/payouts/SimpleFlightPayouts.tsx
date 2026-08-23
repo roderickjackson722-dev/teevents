@@ -494,9 +494,13 @@ export default function SimpleFlightPayouts({
               {busy === "save" ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Save className="h-4 w-4 mr-1" />}
               Save All Payouts
             </Button>
+            <Button size="sm" variant="outline" onClick={rebalanceByPlayers} disabled={busy !== null || rows.length === 0}>
+              <Scale className="h-4 w-4 mr-1" /> Rebalance Purse by Players
+            </Button>
             <Button size="sm" variant="outline" onClick={() => setRows(buildDefaults())} disabled={busy !== null}>
               <RotateCcw className="h-4 w-4 mr-1" /> Reset to Defaults
             </Button>
+
           </div>
         </div>
       </CardContent>

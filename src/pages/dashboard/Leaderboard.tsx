@@ -612,7 +612,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         if (editLogs.length > 0) {
           await (supabase as any).from("score_edits").insert(editLogs);
         }
-        return { mode: "saved" as const, count: persisted.length, persisted };
+        return { mode: "saved" as const, count: persisted.length, persisted, roundNumber: workingRound };
       } catch (e: any) {
         // Network / fetch failures — queue for later sync so the scorekeeper doesn't lose work.
         const msg = String(e?.message || e || "");
@@ -639,7 +639,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         // prevents a concurrent realtime refresh from briefly restoring stale
         // values after the organizer saves a large scorecard batch.
         queryClient.setQueryData(
-          ["tournament-scores", selectedTournament, workingRound],
+          ["tournament-scores", selectedTournament, result.roundNumber],
           (current: Array<{ registration_id: string; hole_number: number; strokes: number; round_number: number }> | undefined) => {
             const byCell = new Map<string, { registration_id: string; hole_number: number; strokes: number; round_number: number }>();
             (current || []).forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));

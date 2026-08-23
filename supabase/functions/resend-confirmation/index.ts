@@ -24,19 +24,33 @@ function formatTeeTime(value: unknown): string {
   return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
 }
 
-function pairingValuesFor(pairingsConfig: unknown, groupNumber: number | null | undefined) {
+/**
+ * Pairing values for one group on a specific round (day index). Multi-round
+ * events keep an independent tee time / start format snapshot per round, so the
+ * round being emailed must be passed through instead of always reading Round 1.
+ */
+function pairingValuesFor(
+  pairingsConfig: unknown,
+  groupNumber: number | null | undefined,
+  roundDay = 0,
+) {
   if (groupNumber == null) return { teeTime: "", startingHole: "TBD" };
   const config = pairingsConfig && typeof pairingsConfig === "object"
     ? pairingsConfig as Record<string, any>
     : {};
   const groupKey = String(groupNumber);
-  const day = config.byDay?.["0"] || {};
+  const dayKey = String(roundDay);
+  const day = config.byDay?.[dayKey] || {};
   const savedLabel = String(config.labels?.[groupKey] || "").trim();
   const configuredHole = (day.startFormat || "tee_times") === "tee_times" && day.sameStartHole !== false
     ? String(day.firstTeeHole || 1)
     : String(groupNumber);
+  // Shotgun rounds share one universal start time for every group.
+  const shotgun = (day.startFormat || "tee_times") === "shotgun"
+    ? formatTeeTime(day.shotgunTime)
+    : "";
   return {
-    teeTime: formatTeeTime(config.teeTimesByDay?.["0"]?.[groupKey]),
+    teeTime: formatTeeTime(config.teeTimesByDay?.[dayKey]?.[groupKey]) || shotgun,
     startingHole: savedLabel || configuredHole,
   };
 }
@@ -342,19 +356,39 @@ Deno.serve(async (req) => {
 
     if (!tournament) throw new Error("Tournament not found");
 
+    // Which round is being emailed. Defaults to the round the organizer
+    // currently has live in Players & Pairings.
+    const pairingsCfgRaw = ((tournament as any).pairings_config || {}) as Record<string, any>;
+    const requestedRound = Number(body.round);
+    const roundDay = Number.isFinite(requestedRound) && requestedRound >= 0
+      ? Math.floor(requestedRound)
+      : Math.max(0, Number(pairingsCfgRaw.activeRound) || 0);
+    const roundCount = Math.max(1, Number(pairingsCfgRaw.rounds) || 1);
+    /**
+     * Group number for this registration in the round being emailed. The live
+     * `group_number` column only mirrors the active round, so a saved snapshot
+     * for another round takes priority.
+     */
+    const roundGroupFor = (r: any): number | null => {
+      const snap = pairingsCfgRaw.assignmentsByDay?.[String(roundDay)]?.[String(r.id)];
+      if (snap && snap.g != null && Number.isFinite(Number(snap.g))) return Number(snap.g);
+      return r.group_number ?? null;
+    };
     const teeTimeFor = (r: any) => {
-      const pairing = pairingValuesFor((tournament as any).pairings_config, r.group_number);
+      const g = roundGroupFor(r);
+      const pairing = pairingValuesFor(pairingsCfgRaw, g, roundDay);
       return pairing.teeTime
-        || formatTeeTime(r.group_number != null ? groupTeeTimes.get(r.group_number) : undefined)
-        || formatTeeTime(r.tee_time)
+        || (roundDay === 0
+          ? formatTeeTime(g != null ? groupTeeTimes.get(g) : undefined) || formatTeeTime(r.tee_time)
+          : "")
         || "TBD";
     };
     const startingHoleFor = (r: any) =>
-      pairingValuesFor((tournament as any).pairings_config, r.group_number).startingHole;
+      pairingValuesFor(pairingsCfgRaw, roundGroupFor(r), roundDay).startingHole;
 
-    // Event-day variable follows the Round 1 play date set on Players & Pairings.
-    const round1Date = (tournament as any)?.pairings_config?.byDay?.["0"]?.roundDate;
-    if (round1Date && String(round1Date).trim()) (tournament as any).date = String(round1Date).trim();
+    // Event-day variable follows the play date this round is set to.
+    const roundDate = pairingsCfgRaw.byDay?.[String(roundDay)]?.roundDate;
+    if (roundDate && String(roundDate).trim()) (tournament as any).date = String(roundDate).trim();
 
     // Verify user is org member (skipped for internal scheduled sends)
     if (!isServiceRun) {
@@ -462,10 +496,13 @@ Deno.serve(async (req) => {
             tee_time: teeTimeFor(reg as any),
             hole_number: startingHoleFor(reg as any),
             team_name: teamNameFor(reg as any),
+            round_label: `Round ${roundDay + 1}`,
+            round_number: String(roundDay + 1),
+            total_rounds: String(roundCount),
 
             scoring_code: codeFor(reg as any)
               || "Scoring code will be assigned when pairings are finalized",
-            group_number: (reg as any).group_number != null ? String((reg as any).group_number) : "",
+            group_number: roundGroupFor(reg as any) != null ? String(roundGroupFor(reg as any)) : "",
             scoring_link: (tournament as any).slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
             leaderboard_link: (tournament as any).slug ? `https://www.teevents.golf/live/${(tournament as any).slug}` : "https://www.teevents.golf",
             event_homepage: homepage,

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatTournamentDate } from "@/lib/formatDate";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
-import { parsePairingsConfig, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
+import { dayCfgOf, parsePairingsConfig, roundDateFor, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
 import ScheduledEmailCard from "@/components/dashboard/ScheduledEmailCard";
@@ -358,6 +358,8 @@ export default function EmailTemplateEditor() {
   const [loading, setLoading] = useState(true);
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<string>("");
+  /** Which round's tee times / hole assignments this send uses (0-based day index). */
+  const [emailRound, setEmailRound] = useState<number>(0);
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [paymentFilter, setPaymentFilter] = useState<"paid" | "pending" | "all">("paid");
@@ -502,6 +504,24 @@ export default function EmailTemplateEditor() {
     load();
   }, [selectedTournament]);
 
+  /**
+   * Pairings setup for the selected event. Multi-round events keep one tee time
+   * / start format snapshot per round, so emails must target a specific round.
+   */
+  const selectedPairings = useMemo(
+    () => parsePairingsConfig((tournaments.find((x: any) => x.id === selectedTournament) as any)?.pairings_config),
+    [tournaments, selectedTournament],
+  );
+  const roundCount = Math.max(1, selectedPairings.rounds || 1);
+  const roundAware = templateKind === "tee_times" || templateKind === "pairings_update";
+
+  // Default to the round the organizer currently has open in Players & Pairings.
+  useEffect(() => {
+    setEmailRound(Math.min(Math.max(0, selectedPairings.activeRound || 0), roundCount - 1));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedTournament, selectedPairings.activeRound, roundCount]);
+
+
   // Course address for the selected tournament (used by the live preview)
   const [courseAddress, setCourseAddress] = useState<string>("");
   useEffect(() => {
@@ -602,19 +622,32 @@ export default function EmailTemplateEditor() {
     const location = [t?.location, t?.state].filter(Boolean).join(", ");
     const sampleReg = registrations[0];
     const pairings = parsePairingsConfig(t?.pairings_config);
-    const pairingTeeTime = teeTimeForGroup(pairings, sampleReg?.group_number, 0);
-    const pairingStartingHole = startingHoleLabelForGroup(pairings, sampleReg?.group_number, 0);
+    const previewRound = roundAware ? emailRound : 0;
+    const previewDayCfg = dayCfgOf(pairings, previewRound);
+    // Group for the previewed round: a saved snapshot wins over the live column.
+    const snapGroup = sampleReg
+      ? pairings.assignmentsByDay[String(previewRound)]?.[sampleReg.id]?.g ?? null
+      : null;
+    const previewGroup = snapGroup ?? sampleReg?.group_number ?? null;
+    const pairingTeeTime =
+      teeTimeForGroup(pairings, previewGroup, previewRound)
+      || (previewDayCfg.startFormat === "shotgun" ? previewDayCfg.shotgunTime : "");
+    const pairingStartingHole = startingHoleLabelForGroup(pairings, previewGroup, previewRound);
+    const previewRoundDate = roundDateFor(pairings, previewRound, t?.date ?? null);
     const vars: Record<string, string> = {
       first_name: sampleReg?.first_name || "John",
       last_name: sampleReg?.last_name || "Doe",
       event_name: t?.title || "Sample Tournament",
-      event_date: t?.date
-        ? formatTournamentDate(t.date, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
+      event_date: previewRoundDate
+        ? formatTournamentDate(previewRoundDate, { weekday: "long", year: "numeric", month: "long", day: "numeric" })
         : "Saturday, June 15, 2026",
+      round_label: `Round ${previewRound + 1}`,
+      round_number: String(previewRound + 1),
+      total_rounds: String(Math.max(1, pairings.rounds || 1)),
       event_location: location || t?.location || "Your golf course",
       course_name: t?.course_name || t?.location || "Your golf course",
       scoring_code: sampleReg?.group_scoring_code || sampleReg?.scoring_code || "Assigned when pairings are finalized",
-      group_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
+      group_number: previewGroup != null ? String(previewGroup) : "TBD",
       scoring_link: t?.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
       leaderboard_link: t?.slug ? `https://www.teevents.golf/live/${t.slug}` : "https://www.teevents.golf",
       event_homepage: homepage,
@@ -747,7 +780,8 @@ export default function EmailTemplateEditor() {
       const fnName = templateKind === "day_before" ? "send-day-before-reminder" : "resend-confirmation";
       const baseBody = templateKind === "day_before"
         ? { tournament_id: selectedTournament }
-        : { use_custom_template: true, template_kind: templateKind };
+        // Round-aware templates resolve tee times / holes from the chosen round.
+        : { use_custom_template: true, template_kind: templateKind, ...(roundAware ? { round: emailRound } : {}) };
 
       const { data, error } = await supabase.functions.invoke(fnName, {
         body: {
@@ -975,6 +1009,18 @@ export default function EmailTemplateEditor() {
               ))}
             </SelectContent>
           </Select>
+          {roundAware && roundCount > 1 && (
+            <Select value={String(emailRound)} onValueChange={(v) => setEmailRound(Number(v))}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Round" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: roundCount }, (_, i) => (
+                  <SelectItem key={i} value={String(i)}>Round {i + 1}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 

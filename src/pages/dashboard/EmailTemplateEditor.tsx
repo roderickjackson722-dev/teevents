@@ -1009,6 +1009,18 @@ export default function EmailTemplateEditor() {
               ))}
             </SelectContent>
           </Select>
+          {roundAware && roundCount > 1 && (
+            <Select value={String(emailRound)} onValueChange={(v) => setEmailRound(Number(v))}>
+              <SelectTrigger className="w-[150px]">
+                <SelectValue placeholder="Round" />
+              </SelectTrigger>
+              <SelectContent>
+                {Array.from({ length: roundCount }, (_, i) => (
+                  <SelectItem key={i} value={String(i)}>Round {i + 1}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
         </div>
       </div>
 

@@ -1161,6 +1161,9 @@ const Players = () => {
    * is stored with the pairings setup.
    */
   const [roundCount, setRoundCount] = useState<number>(1);
+  /** Round (1-based) pinned to the public pairings page; 0 = automatic. */
+  const [publishedRound, setPublishedRound] = useState<number>(0);
+
   const numRounds = Math.max(numDays, roundCount);
   const [activeDay, setActiveDay] = useState<number>(0);
   useEffect(() => { if (activeDay >= numRounds) setActiveDay(0); }, [numRounds, activeDay]);

@@ -260,12 +260,20 @@ export default function SimpleFlightPayouts({
     setRows((prev) =>
       prev.map((r) =>
         r.flightId === editingRow.flightId
-          ? { ...r, purseCents: draftPurseCents, amounts: draftAmounts.map(toCents) }
+          ? {
+              ...r,
+              purseCents: draftPurseCents,
+              amounts: draftAmounts.map(toCents),
+              excluded: draftExcluded,
+              countOverride: draftCountManual ? draftIncludedCount : null,
+              players: draftIncludedCount,
+            }
           : r,
       ),
     );
     setEditingId(null);
   };
+
 
   const saveAll = async () => {
     setBusy("save");

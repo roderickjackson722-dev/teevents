@@ -56,7 +56,7 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
    frozen header. Force the outer scoring-table-wrap to be the only scroll
    container so thead rows stick correctly. */
 .scoring-table-wrap > div{overflow:visible !important}
-.scoring-table-wrap thead th{position:sticky;top:0;z-index:20;background-color:hsl(var(--card));border-bottom:1px solid hsl(var(--border))}
+.scoring-table-wrap thead th{position:sticky;top:0;z-index:20;background-color:hsl(var(--card))}
 .scoring-table-wrap thead tr.par-row th{top:2.75rem;z-index:19;background-color:hsl(var(--muted))}
 .scoring-table-wrap thead th.sticky-col,.scoring-table-wrap tbody td.sticky-col{position:sticky;z-index:25;background-color:hsl(var(--card))}
 .scoring-table-wrap thead tr.par-row th.sticky-col{background-color:hsl(var(--muted))}

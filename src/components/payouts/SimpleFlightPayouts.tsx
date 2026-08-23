@@ -275,6 +275,46 @@ export default function SimpleFlightPayouts({
   };
 
 
+  /**
+   * Re-splits the current total purse across flights using each flight's
+   * effective player count (roster minus removed players / manual count),
+   * then redistributes each flight's places by the saved percentages.
+   */
+  const rebalanceByPlayers = () => {
+    const pool = rows.reduce((s, r) => s + r.purseCents, 0) || defaultPurseCents;
+    const payable = rows.filter((r) => r.players > 0 && r.amounts.length > 0);
+    const totalPlayersPayable = payable.reduce((s, r) => s + r.players, 0);
+    if (totalPlayersPayable === 0) {
+      toast({ title: "Nothing to rebalance", description: "No flight has players and places paid.", variant: "destructive" });
+      return;
+    }
+    let allocated = 0;
+    setRows((prev) =>
+      prev.map((r) => {
+        const isPayable = payable.some((p) => p.flightId === r.flightId);
+        if (!isPayable) return { ...r, purseCents: 0, amounts: r.amounts.map(() => 0) };
+        const last = payable[payable.length - 1]?.flightId === r.flightId;
+        const purse = last ? Math.max(0, pool - allocated) : Math.round((pool * r.players) / totalPlayersPayable);
+        allocated += purse;
+        const prevTotal = r.amounts.reduce((s, a) => s + a, 0);
+        const pcts = r.amounts.length
+          ? prevTotal > 0
+            ? r.amounts.map((a) => (a / prevTotal) * 100)
+            : DEFAULT_SPLITS[r.amounts.length] || []
+          : [];
+        let used = 0;
+        const amounts = pcts.map((p, i) => {
+          const amt = i === pcts.length - 1 ? Math.max(0, purse - used) : Math.round((purse * p) / 100);
+          used += amt;
+          return amt;
+        });
+        return { ...r, purseCents: purse, amounts };
+      }),
+    );
+    toast({ title: "Purses rebalanced", description: "Prize money re-split by the current player counts." });
+  };
+
+
   const saveAll = async () => {
     setBusy("save");
     try {

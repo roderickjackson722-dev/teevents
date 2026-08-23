@@ -112,13 +112,17 @@ export default function LiveScoring() {
           .eq("tournament_id", (data as any).id);
         const closed = closedRoundSet((roundRows || []) as TournamentRoundRow[]);
         setClosedRounds(closed);
+        // When the organizer pins a published round, that round is the one
+        // players score — it beats the date-derived guess.
+        const pinned = Math.max(0, Number(cfg.publishedRound) || 0);
         setRoundNumber(
           nextOpenRound(
-            activeRoundNumber(cfg, (data as any).date),
+            pinned > 0 ? pinned : activeRoundNumber(cfg, (data as any).date),
             closed,
             Math.max(1, cfg.rounds || 1),
           ),
         );
+
       }
       setTournament(data as TournamentData | null);
 

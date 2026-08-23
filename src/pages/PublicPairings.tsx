@@ -178,12 +178,13 @@ export default function PublicPairings() {
               : null;
             const flight = g.players.map((p) => p.flight_name).find(Boolean);
             const teamName = cfg.show_team_names ? g.players[0]?.team_name : null;
-            // Starting hole mirrors the Pairings tab: the saved hole label, then the
-            // group's assigned starting hole — never the group number.
+            // The published round's pairings config is the source of truth. Legacy
+            // group rows can still contain a starting hole from another round, so
+            // only use that database value when the round config cannot resolve it.
             const hole =
               pairingsCfg.labels[String(g.number)] ||
-              (g.players[0]?.starting_hole != null ? String(g.players[0].starting_hole) : null) ||
-              startingHoleLabelForGroup(pairingsCfg, g.number, day);
+              startingHoleLabelForGroup(pairingsCfg, g.number, day) ||
+              (g.players[0]?.starting_hole != null ? String(g.players[0].starting_hole) : null);
             return (
               <div key={g.number} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">

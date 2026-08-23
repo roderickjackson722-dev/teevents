@@ -358,6 +358,8 @@ export default function EmailTemplateEditor() {
   const [loading, setLoading] = useState(true);
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [selectedTournament, setSelectedTournament] = useState<string>("");
+  /** Which round's tee times / hole assignments this send uses (0-based day index). */
+  const [emailRound, setEmailRound] = useState<number>(0);
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [selectedRecipients, setSelectedRecipients] = useState<string[]>([]);
   const [paymentFilter, setPaymentFilter] = useState<"paid" | "pending" | "all">("paid");

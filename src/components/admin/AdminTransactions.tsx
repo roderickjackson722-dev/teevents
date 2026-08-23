@@ -1,3 +1,4 @@
+import { paymentStatusBadgeVariant, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useState, useEffect, useCallback, Fragment } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -75,7 +76,16 @@ const AdminTransactions = () => {
 
       if (orgFilter !== "all") query = query.eq("organization_id", orgFilter);
       if (tournamentFilter !== "all") query = query.eq("tournament_id", tournamentFilter);
-      if (statusFilter !== "all") query = query.eq("status", statusFilter);
+      // Legacy rows may still carry succeeded/completed/pending, so match every
+      // raw value that maps onto the chosen plain-English status.
+      if (statusFilter !== "all") {
+        const aliases: Record<string, string[]> = {
+          paid: ["paid", "succeeded", "completed", "released", "held"],
+          awaiting_payment: ["awaiting_payment", "pending"],
+          failed: ["failed", "canceled", "cancelled"],
+        };
+        query = query.in("status", aliases[statusFilter] || [statusFilter]);
+      }
 
       const { data, error } = await query;
       if (error) throw error;
@@ -148,7 +158,7 @@ const AdminTransactions = () => {
       ((t.stripe_fee_cents || 0) / 100).toFixed(2),
       (t.net_amount_cents / 100).toFixed(2),
       t.type,
-      t.status,
+      paymentStatusLabel(t.status),
       t.payout_method || "",
       t.stripe_payment_intent_id || "",
       t.stripe_session_id || "",
@@ -309,8 +319,8 @@ const AdminTransactions = () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All statuses</SelectItem>
-                <SelectItem value="held">Held</SelectItem>
-                <SelectItem value="released">Released</SelectItem>
+                <SelectItem value="paid">Paid</SelectItem>
+                <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
                 <SelectItem value="failed">Failed</SelectItem>
                 <SelectItem value="refunded">Refunded</SelectItem>
               </SelectContent>
@@ -382,10 +392,10 @@ const AdminTransactions = () => {
                         <TableCell className="text-right text-sm font-medium">${(t.net_amount_cents / 100).toFixed(2)}</TableCell>
                         <TableCell>
                           <Badge
-                            variant={t.status === "failed" ? "destructive" : t.status === "released" ? "default" : "secondary"}
-                            className="capitalize text-xs"
+                            variant={paymentStatusBadgeVariant(t.status)}
+                            className="text-xs"
                           >
-                            {t.status}
+                            {paymentStatusIcon(t.status)} {paymentStatusLabel(t.status)}
                           </Badge>
                         </TableCell>
                       </TableRow>

@@ -1,3 +1,4 @@
+import { normalizePaymentStatus, paymentStatusBadgeVariant, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useEffect, useState, useMemo, Fragment, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -349,7 +350,7 @@ const Transactions = () => {
     return txs.filter(t => {
       if (tournamentFilter !== "all" && t.tournament_id !== tournamentFilter) return false;
       if (typeFilter !== "all" && t.type !== typeFilter) return false;
-      if (statusFilter !== "all" && t.status !== statusFilter) return false;
+      if (statusFilter !== "all" && normalizePaymentStatus(t.status) !== statusFilter) return false;
       if (cutoff && new Date(t.created_at).getTime() < cutoff) return false;
       if (missingFilter === "missing" && missingRequiredForTx(t).length === 0) return false;
       if (missingFilter === "complete" && missingRequiredForTx(t).length > 0) return false;
@@ -430,7 +431,7 @@ const Transactions = () => {
         new Date(t.created_at).toLocaleString(),
         tournamentTitle(t.tournament_id),
         typeLabel(t.type),
-        t.status,
+        paymentStatusLabel(t.status),
       ];
       const commonMoney = [
         (t.amount_cents / 100).toFixed(2),
@@ -822,9 +823,8 @@ const Transactions = () => {
                 <SelectTrigger className="w-[140px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All statuses</SelectItem>
-                  <SelectItem value="succeeded">Succeeded</SelectItem>
                   <SelectItem value="paid">Paid</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
                   <SelectItem value="failed">Failed</SelectItem>
                   <SelectItem value="refunded">Refunded</SelectItem>
                 </SelectContent>
@@ -902,8 +902,8 @@ const Transactions = () => {
                         <TableCell className="text-right text-sm">${(t.amount_cents / 100).toFixed(2)}</TableCell>
                         <TableCell className="text-right text-sm font-medium">${(t.net_amount_cents / 100).toFixed(2)}</TableCell>
                         <TableCell>
-                          <Badge variant={t.status === "failed" ? "destructive" : (t.status === "succeeded" || t.status === "paid") ? "default" : "secondary"} className="capitalize text-xs">
-                            {t.status}
+                          <Badge variant={paymentStatusBadgeVariant(t.status)} className="text-xs">
+                            {paymentStatusIcon(t.status)} {paymentStatusLabel(t.status)}
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
@@ -973,7 +973,7 @@ const Transactions = () => {
                 <div><span className="text-muted-foreground">Email:</span> {selectedRegistration.email || "—"}</div>
                 <div><span className="text-muted-foreground">Phone:</span> {selectedRegistration.phone || "—"}</div>
                 <div><span className="text-muted-foreground">Submitted:</span> {new Date(selectedRegistration.created_at).toLocaleString()}</div>
-                <div><span className="text-muted-foreground">Payment:</span> <Badge variant="outline">{selectedRegistration.payment_status}</Badge></div>
+                <div><span className="text-muted-foreground">Payment:</span> <Badge variant="outline">{paymentStatusIcon(selectedRegistration.payment_status)} {paymentStatusLabel(selectedRegistration.payment_status)}</Badge></div>
                 <div><span className="text-muted-foreground">Registration ID:</span> <code className="text-xs">{selectedRegistration.id}</code></div>
               </div>
 

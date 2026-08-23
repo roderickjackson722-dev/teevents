@@ -80,6 +80,8 @@ export default function LiveScoring() {
 
 
   const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
+  // Organizers can require scoring codes only (no email lookup) for an event.
+  const emailLoginAllowed = (tournament as any)?.live_scoring_allow_email_login !== false;
 
 
 

@@ -2247,7 +2247,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {isTabVisible("leaderboard") && leaderboard.length > 0 && tournament.slug && (
         <section id="leaderboard" className="py-12 bg-white">
           <div className="max-w-6xl mx-auto px-2 sm:px-4">
-            <div className="rounded-xl overflow-hidden border" style={{ borderColor: "#e5e5e5" }}>
+            <div className="rounded-xl overflow-hidden border [&_.min-h-screen]:min-h-0" style={{ borderColor: "#e5e5e5" }}>
               <LiveLeaderboardEmbed slug={tournament.slug} />
             </div>
             <p className="text-center text-sm mt-3">

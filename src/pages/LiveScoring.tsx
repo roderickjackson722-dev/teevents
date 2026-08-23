@@ -289,8 +289,18 @@ export default function LiveScoring() {
     setScores(scoreMap);
     setGroupNumber(gNum);
     setLoginMode(false);
+    // Open on the group's assigned starting hole (shotgun starts) — the player
+    // can still navigate anywhere from there.
+    const assigned =
+      groupPlayers.map((p: any) => Number(p.starting_hole)).find((n: number) => Number.isFinite(n) && n >= 1 && n <= 18) ??
+      (pairingsCfg ? startingHoleForGroup(pairingsCfg, gNum, Math.max(0, roundNumber - 1)) : null);
+    if (assigned != null && assigned >= 1 && assigned <= 18) {
+      setStartingHole(assigned);
+      setFocusHole(assigned);
+    }
     persistSession(sessionCode, gNum);
   };
+
 
   // Resolve the group's flight so players see (and open) their own flight board.
   useEffect(() => {

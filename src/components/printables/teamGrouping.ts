@@ -7,6 +7,8 @@ export interface RegistrationGroupRow {
   tee_time?: string | null;
   /** Starting hole assigned on the Pairings tab */
   starting_hole?: number | null;
+  /** Exact printed starting-hole label from pairings, e.g. "11A" */
+  starting_hole_label?: string | null;
   cart_sign_names?: { cart1?: string[]; cart2?: string[] } | null;
 }
 

@@ -808,8 +808,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           {hasEdits && canEditScores && (
             <Button
               onClick={() => saveMutation.mutate()}
-              disabled={saveMutation.isPending || isFrozen}
-              title={isFrozen ? "Leaderboard is frozen" : undefined}
+              disabled={saveMutation.isPending || isFrozen || roundLocked}
+              title={roundLocked ? `${roundLabel(workingRound - 1)} is closed` : isFrozen ? "Leaderboard is frozen" : undefined}
             >
               <Save className="mr-2 h-4 w-4" />
               {saveMutation.isPending ? "Saving..." : isFrozen ? "Frozen" : "Save Scores"}
@@ -1074,7 +1074,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                       {holes.map((h) => {
                         const val = team.holeScores[h];
                         const missing = val == null;
-                        if (canEditScores && !isFrozen) {
+                        if (canEditScores && !isFrozen && !roundLocked) {
                           return (
                             <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
                               <ScoreInput
@@ -1116,7 +1116,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                               team.holeScores[editHole] ?? 0
                             )}
                             maxHole={holes.length}
-                            disabled={!canEditScores || isFrozen}
+                            disabled={!canEditScores || isFrozen || roundLocked}
                             saving={saveMutation.isPending}
                             onHole={setEditHole}
                             onValue={(n) => setTeamScoreValue(team.players, editHole, n)}
@@ -1343,7 +1343,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                                 par={getHolePar(editHole)}
                                 value={Number(editedScores[ps.registration_id]?.[editHole] ?? ps.scores[editHole] ?? 0)}
                                 maxHole={holes.length}
-                                disabled={!canEditScores || isFrozen}
+                                disabled={!canEditScores || isFrozen || roundLocked}
                                 saving={saveMutation.isPending}
                                 onHole={setEditHole}
                                 onValue={(n) => setScore(ps.registration_id, editHole, n)}

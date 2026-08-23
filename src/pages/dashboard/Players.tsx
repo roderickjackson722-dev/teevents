@@ -602,6 +602,8 @@ const Players = () => {
       city: readReserved(p, RESERVED_CITY),
       state: readReserved(p, RESERVED_STATE),
       tier_id: p.tier_id || "",
+      flight_id: p.flight_id || "",
+
     });
   };
 

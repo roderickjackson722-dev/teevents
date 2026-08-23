@@ -24,6 +24,7 @@ interface RotatingLogo {
 interface Settings {
   live_leaderboard_enabled: boolean;
   live_scoring_require_code: boolean;
+  live_scoring_allow_email_login: boolean;
   live_show_gross: boolean;
   live_show_net: boolean;
   live_default_view: string;
@@ -44,6 +45,7 @@ interface Settings {
 const DEFAULTS: Settings = {
   live_leaderboard_enabled: true,
   live_scoring_require_code: true,
+  live_scoring_allow_email_login: true,
   live_show_gross: true,
   live_show_net: true,
   live_default_view: "gross",
@@ -61,7 +63,7 @@ const DEFAULTS: Settings = {
 };
 
 const SETTINGS_COLS =
-  "live_leaderboard_enabled, live_scoring_require_code, live_show_gross, live_show_net, live_default_view, live_show_sponsors, live_sponsor_placement, live_allow_edit_past_holes, live_require_confirm_save, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_rotating_logos, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order, leaderboard_sponsor_banner_position, leaderboard_sponsor_scroll_seconds";
+  "live_leaderboard_enabled, live_scoring_require_code, live_scoring_allow_email_login, live_show_gross, live_show_net, live_default_view, live_show_sponsors, live_sponsor_placement, live_allow_edit_past_holes, live_require_confirm_save, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_rotating_logos, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order, leaderboard_sponsor_banner_position, leaderboard_sponsor_scroll_seconds";
 
 
 export default function LiveLeaderboardSettings({ tournamentId }: Props) {
@@ -185,6 +187,15 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
               <div className="flex items-center space-x-2"><RadioGroupItem value="code" id="r-code" /><Label htmlFor="r-code">Scoring code required (players enter 6-character code)</Label></div>
               <div className="flex items-center space-x-2"><RadioGroupItem value="open" id="r-open" /><Label htmlFor="r-open">No code required (anyone can enter scores)</Label></div>
             </RadioGroup>
+            <Row
+              label="Allow email login"
+              desc="Off = players must use their scoring code (no email lookup on the scoring page)."
+            >
+              <Switch
+                checked={s.live_scoring_allow_email_login}
+                onCheckedChange={(v) => set("live_scoring_allow_email_login", v)}
+              />
+            </Row>
           </section>
 
           <section className="space-y-3 pt-2 border-t">

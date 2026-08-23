@@ -8,6 +8,7 @@ export type SkinsGame = {
   total_purse_cents: number;
   skin_format: "gross" | "net" | string;
   carryover: boolean;
+  round_number: number;
   status: string;
 };
 
@@ -40,8 +41,9 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
       .eq("tournament_id", game.tournament_id),
     supabase
       .from("tournament_scores")
-      .select("registration_id, hole_number, strokes")
-      .eq("tournament_id", game.tournament_id),
+      .select("registration_id, hole_number, strokes, round_number")
+      .eq("tournament_id", game.tournament_id)
+      .eq("round_number", game.round_number || 1),
   ]);
 
 

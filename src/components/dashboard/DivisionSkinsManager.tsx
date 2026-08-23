@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -38,6 +38,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [openPot, setOpenPot] = useState<Record<string, boolean>>({});
   const [showAll, setShowAll] = useState<Record<string, boolean>>({});
   const [search, setSearch] = useState<Record<string, string>>({});
+  const [roundNumber, setRoundNumber] = useState(1);
+  const [roundCount, setRoundCount] = useState(1);
 
   const [winners, setWinners] = useState<Record<string, WinnerRow[]>>({});
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
 
   const load = useCallback(async () => {
     setLoading(true);
-    const [dRes, gRes, rRes] = await Promise.all([
+    const [dRes, gRes, rRes, tRes] = await Promise.all([
       supabase
         .from("tournament_tiers")
         .select("id, tier_name, display_order")
@@ -59,10 +61,15 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
         .select("id, first_name, last_name, flight_id, tier_id, status, skins_opt_in")
         .eq("tournament_id", tournamentId)
         .order("last_name"),
-
+      supabase.from("tournaments").select("pairings_config").eq("id", tournamentId).maybeSingle(),
     ]);
 
     const divs = (dRes.data as Division[]) || [];
+    const config = (tRes.data as any)?.pairings_config || {};
+    const rounds = Math.max(1, Number(config.rounds) || 1);
+    const preferredRound = Math.min(rounds, Math.max(1, Number(config.publishedRound || config.activeRound || 1)));
+    setRoundCount(rounds);
+    setRoundNumber((current) => (current > rounds || (current === 1 && preferredRound > 1) ? preferredRound : current));
     const gs = ((gRes.data as SkinsGame[]) || []);
     setDivisions(divs);
     setGames(gs);
@@ -109,6 +116,25 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
 
   useEffect(() => { load(); }, [load]);
 
+  const roundGames = useMemo(
+    () => games.filter((game) => (game.round_number || 1) === roundNumber),
+    [games, roundNumber],
+  );
+
+  useEffect(() => {
+    setSelected(
+      roundGames.length === 0
+        ? { __overall: true }
+        : Object.fromEntries(roundGames.map((g) => [g.division_id || "__overall", true])),
+    );
+    setPurse(Object.fromEntries(roundGames.map((g) => [g.division_id || "__overall", ((g.total_purse_cents || 0) / 100).toString()])));
+    if (roundGames.length > 0) setPotMode(roundGames.some((g) => g.division_id) ? "division" : "total");
+    if (roundGames[0]) {
+      setFormat(roundGames[0].skin_format === "net" ? "net" : "gross");
+      setCarryover(roundGames[0].carryover !== false);
+    }
+  }, [roundGames]);
+
   const keys =
     potMode === "total" || divisions.length === 0 ? ["__overall"] : divisions.map((d) => d.id);
   const labelFor = (key: string) =>
@@ -152,7 +178,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
     try {
       for (const key of keys) {
         const divisionId = key === "__overall" ? null : key;
-        const existing = games.find((g) => (g.division_id || "__overall") === key);
+        const existing = roundGames.find((g) => (g.division_id || "__overall") === key);
         if (!selected[key]) {
           if (existing) await (supabase as any).from("division_skins_games").delete().eq("id", existing.id);
           continue;
@@ -160,6 +186,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
         const cents = Math.round((parseFloat(purse[key] || "0") || 0) * 100);
         const payload = {
           tournament_id: tournamentId,
+          round_number: roundNumber,
           division_id: divisionId,
           name: `${labelFor(key)} Skins`,
           total_purse_cents: cents,
@@ -174,7 +201,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
         }
       }
       // Remove games that no longer belong to the chosen pot mode.
-      const stale = games.filter((g) => !keys.includes(g.division_id || "__overall"));
+      const stale = roundGames.filter((g) => !keys.includes(g.division_id || "__overall"));
       for (const g of stale) {
         await (supabase as any).from("division_skins_games").delete().eq("id", g.id);
       }
@@ -193,7 +220,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       const { data } = await (supabase as any)
         .from("division_skins_games")
         .select("*")
-        .eq("tournament_id", tournamentId);
+        .eq("tournament_id", tournamentId)
+        .eq("round_number", roundNumber);
       const gs = ((data as SkinsGame[]) || []).filter((g) => g.status === "active");
       if (gs.length === 0) {
         toast.error("Save a skins game first");
@@ -225,6 +253,26 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        {roundCount > 1 && (
+          <div className="max-w-xs">
+            <Label>Skins Round</Label>
+            <div className="mt-2 flex rounded-md border p-1">
+              {Array.from({ length: roundCount }, (_, index) => index + 1).map((round) => (
+                <Button
+                  key={round}
+                  type="button"
+                  size="sm"
+                  variant={roundNumber === round ? "default" : "ghost"}
+                  className="flex-1"
+                  onClick={() => setRoundNumber(round)}
+                >
+                  Round {round}
+                </Button>
+              ))}
+            </div>
+            <p className="mt-1 text-xs text-muted-foreground">Each round keeps its own pot, settings, and payout breakdown.</p>
+          </div>
+        )}
         <div>
           <Label>Skins Pot</Label>
           <RadioGroup
@@ -382,7 +430,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
           </Button>
         </div>
 
-        {games.filter((g) => g.status === "active").map((g) => {
+        {roundGames.filter((g) => g.status === "active").map((g) => {
           const rows = winners[g.id] || [];
           const skinValueCents = rows.length > 0 ? Math.round(g.total_purse_cents / rows.length) : 0;
           return (

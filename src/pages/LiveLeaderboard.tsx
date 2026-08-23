@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPublicLeaderboardScores } from "@/lib/fetchLeaderboardScores";
@@ -126,6 +126,13 @@ function LiveLeaderboardBoard({
   // Course pars / SI / yardages power the To Par column and the scorecard modal.
   const [course, setCourse] = useState<ScorecardCourseInfo | null>(null);
   const [scorecardRow, setScorecardRow] = useState<LeaderboardRow | null>(null);
+  const scoreRefreshSequence = useRef(0);
+
+  const refreshScores = useCallback(async (tournamentId: string) => {
+    const sequence = ++scoreRefreshSequence.current;
+    const data = await fetchAllPublicLeaderboardScores(tournamentId);
+    if (sequence === scoreRefreshSequence.current) setScores(data || []);
+  }, []);
 
 
 
@@ -230,16 +237,13 @@ function LiveLeaderboardBoard({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` },
-        () => {
-          fetchAllPublicLeaderboardScores(tournament.id).then((data) => ({ data }))
-            .then(({ data }: any) => setScores(data || []));
-        }
+        () => refreshScores(tournament.id)
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tournament?.id]);
+  }, [tournament?.id, refreshScores]);
 
   // Realtime tournament updates — design + sponsor banner settings, applied live
   useEffect(() => {
@@ -277,8 +281,7 @@ function LiveLeaderboardBoard({
         .then(({ data }) => setSponsors((data as Sponsor[]) || []));
     };
     const refetchScores = () => {
-      fetchAllPublicLeaderboardScores(tid).then((data) => ({ data }))
-        .then(({ data }: any) => setScores(data || []));
+      refreshScores(tid);
     };
 
     const channel = supabase
@@ -291,7 +294,7 @@ function LiveLeaderboardBoard({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tournament?.id]);
+  }, [tournament?.id, refreshScores]);
 
 
 
@@ -302,11 +305,10 @@ function LiveLeaderboardBoard({
     if (!tournament || isPaused) return;
     const seconds = Math.max(5, design.auto_refresh_seconds || tournament.live_display_refresh_seconds || 10);
     const interval = setInterval(() => {
-      fetchAllPublicLeaderboardScores(tournament.id).then((data) => ({ data }))
-        .then(({ data }: any) => setScores(data || []));
+      refreshScores(tournament.id);
     }, seconds * 1000);
     return () => clearInterval(interval);
-  }, [tournament, isPaused]);
+  }, [tournament, isPaused, refreshScores]);
 
   // Sort sponsors by tier + display order
   const sortedSponsors = useMemo(() => {

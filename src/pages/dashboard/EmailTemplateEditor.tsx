@@ -647,7 +647,7 @@ export default function EmailTemplateEditor() {
       event_location: location || t?.location || "Your golf course",
       course_name: t?.course_name || t?.location || "Your golf course",
       scoring_code: sampleReg?.group_scoring_code || sampleReg?.scoring_code || "Assigned when pairings are finalized",
-      group_number: sampleReg?.group_number != null ? String(sampleReg.group_number) : "TBD",
+      group_number: previewGroup != null ? String(previewGroup) : "TBD",
       scoring_link: t?.slug ? `${homepage}/scoring` : "https://www.teevents.golf/score",
       leaderboard_link: t?.slug ? `https://www.teevents.golf/live/${t.slug}` : "https://www.teevents.golf",
       event_homepage: homepage,

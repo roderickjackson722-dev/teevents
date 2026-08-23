@@ -4308,6 +4308,24 @@ const Players = () => {
                 </Select>
               </div>
             )}
+            {flights.length > 0 && (
+              <div>
+                <Label htmlFor="ep-flight">Flight</Label>
+                <Select value={editForm.flight_id || "__none"} onValueChange={(v) => setEditForm((f) => ({ ...f, flight_id: v === "__none" ? "" : v }))}>
+                  <SelectTrigger id="ep-flight"><SelectValue placeholder="Select flight" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none">No flight</SelectItem>
+                    {flights.map((f) => (
+                      <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Changing the flight moves this player to that division on the live leaderboard.
+                </p>
+              </div>
+            )}
+
             <div>
               <Label htmlFor="ep-diet">Dietary Restrictions</Label>
               <Input id="ep-diet" value={editForm.dietary_restrictions} onChange={(e) => setEditForm((f) => ({ ...f, dietary_restrictions: e.target.value }))} placeholder="None" />

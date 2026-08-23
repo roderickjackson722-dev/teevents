@@ -10968,6 +10968,7 @@ export type Database = {
           live_display_refresh_seconds: number
           live_leaderboard_enabled: boolean
           live_require_confirm_save: boolean
+          live_scoring_allow_email_login: boolean
           live_scoring_require_code: boolean
           live_show_gross: boolean
           live_show_net: boolean
@@ -11278,6 +11279,7 @@ export type Database = {
           live_display_refresh_seconds?: number
           live_leaderboard_enabled?: boolean
           live_require_confirm_save?: boolean
+          live_scoring_allow_email_login?: boolean
           live_scoring_require_code?: boolean
           live_show_gross?: boolean
           live_show_net?: boolean
@@ -11588,6 +11590,7 @@ export type Database = {
           live_display_refresh_seconds?: number
           live_leaderboard_enabled?: boolean
           live_require_confirm_save?: boolean
+          live_scoring_allow_email_login?: boolean
           live_scoring_require_code?: boolean
           live_show_gross?: boolean
           live_show_net?: boolean
@@ -12801,6 +12804,14 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_round_group_by_number: {
+        Args: {
+          _group_number: number
+          _round_number?: number
+          _tournament_id: string
+        }
+        Returns: Json
+      }
       get_round_scoring_group: {
         Args: { _code: string; _round_number?: number; _tournament_id: string }
         Returns: Json
@@ -13026,6 +13037,10 @@ export type Database = {
       scoring_code_group_ids: {
         Args: { _code: string; _round_number?: number; _tournament_id: string }
         Returns: string[]
+      }
+      scoring_code_group_options: {
+        Args: { _code: string; _round_number?: number; _tournament_id: string }
+        Returns: Json
       }
       settle_manual_entry_liabilities: {
         Args: { _max_deduct_cents: number; _organization_id: string }

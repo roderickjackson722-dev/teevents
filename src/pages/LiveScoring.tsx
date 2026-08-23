@@ -77,9 +77,15 @@ export default function LiveScoring() {
   // Rounds the organizer has closed — those scores are locked.
   const [closedRounds, setClosedRounds] = useState<Set<number>>(new Set());
   const [startingHole, setStartingHole] = useState<number | null>(null);
+  // Some emailed codes are shared by more than one group in a round, so the
+  // player confirms which group is theirs and we pin it for the session.
+  const [groupOptions, setGroupOptions] = useState<{ group_number: number; players: string }[]>([]);
+  const [pinnedGroup, setPinnedGroup] = useState<number | null>(null);
 
 
   const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
+  // Organizers can require scoring codes only (no email lookup) for an event.
+  const emailLoginAllowed = (tournament as any)?.live_scoring_allow_email_login !== false;
 
 
 
@@ -90,7 +96,7 @@ export default function LiveScoring() {
       const match = Array.isArray(resolved) ? resolved[0] : null;
       const baseQuery = supabase
         .from("tournaments")
-        .select("id, title, course_par, scoring_format, handicap_enabled, pairings_config, date, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order, branding_removed, branding_removed_by_admin");
+        .select("id, title, course_par, scoring_format, handicap_enabled, pairings_config, date, leaderboard_rotating_logos, leaderboard_sponsor_interval_ms, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_rotation_order, branding_removed, branding_removed_by_admin, live_scoring_allow_email_login");
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.eq("slug", slug).eq("site_published", true).maybeSingle();
@@ -197,7 +203,7 @@ export default function LiveScoring() {
       try {
         const raw = localStorage.getItem(sessionKey);
         if (!raw) return;
-        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number };
+        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number; pinnedGroup?: number | null };
         if (!saved?.code || saved.tournamentId !== tournament.id) return;
         // Re-validate the stored code server-side; the group is derived from it, never from the client
         const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
@@ -208,7 +214,8 @@ export default function LiveScoring() {
         if (cancelled) return;
         if (gNum) {
           setScoringCode(saved.code);
-          await loadGroup(gNum as number, saved.code);
+          if (saved.pinnedGroup != null) setPinnedGroup(saved.pinnedGroup);
+          await loadGroup(gNum as number, saved.code, undefined, saved.pinnedGroup ?? null);
         } else {
           localStorage.removeItem(sessionKey);
         }
@@ -221,12 +228,12 @@ export default function LiveScoring() {
     return () => { cancelled = true; setRestoring(false); };
   }, [tournament, sessionKey]);
 
-  const persistSession = (code: string | null, gNum: number) => {
+  const persistSession = (code: string | null, gNum: number, pinned?: number | null) => {
     if (!sessionKey || !tournament || !code) return;
     try {
       localStorage.setItem(
         sessionKey,
-        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum })
+        JSON.stringify({ tournamentId: tournament.id, code, groupNumber: gNum, pinnedGroup: pinned ?? null })
       );
     } catch { /* storage unavailable */ }
   };
@@ -241,19 +248,36 @@ export default function LiveScoring() {
     setTeamName(null);
     setCodeInput("");
     setEmailInput("");
+    setGroupOptions([]);
+    setPinnedGroup(null);
     setLoginMode(true);
   };
 
-  const loadGroup = async (gNum: number, codeForSession?: string, roundOverride?: number) => {
+  const loadGroup = async (
+    gNum: number,
+    codeForSession?: string,
+    roundOverride?: number,
+    forceGroup?: number | null,
+  ) => {
     if (!tournament) return;
 
     const round = roundOverride ?? roundNumber;
     const codeForRound = codeForSession || scoringCode || null;
+    const pinned = forceGroup ?? pinnedGroup;
 
     // Each round has its own pairings, so resolve the group from that round's
     // snapshot when we have the player's scoring code.
     let payload: any = null;
-    if (codeForRound) {
+    if (pinned != null) {
+      // The player confirmed which group they're in (their code is shared).
+      const { data } = await (supabase as any).rpc("get_round_group_by_number", {
+        _tournament_id: tournament.id,
+        _group_number: pinned,
+        _round_number: round,
+      });
+      payload = data || null;
+    }
+    if (!payload && codeForRound) {
       const { data } = await (supabase as any).rpc("get_round_scoring_group", {
         _tournament_id: tournament.id,
         _code: codeForRound,
@@ -320,7 +344,7 @@ export default function LiveScoring() {
     ]);
     setStartingHole(assigned);
     setFocusHole(assigned);
-    persistSession(sessionCode, roundGroup);
+    persistSession(sessionCode, roundGroup, pinned ?? roundGroup);
   };
 
   // Switching rounds (organizer closes a round, or the player picks one)
@@ -372,7 +396,25 @@ export default function LiveScoring() {
       loginCode = codeInput.trim().toUpperCase();
       setScoringCode(loginCode);
       gNum = data as number;
-    } else if (emailInput.trim()) {
+
+      // A code can match players in more than one group for this round — let
+      // the player confirm which group is theirs so every emailed code works.
+      const { data: opts } = await (supabase as any).rpc("scoring_code_group_options", {
+        _tournament_id: tournament.id,
+        _code: loginCode,
+        _round_number: roundNumber,
+      });
+      const options = (opts || []) as { group_number: number; players: string }[];
+      if (options.length > 1) {
+        setGroupOptions(options);
+        return;
+      }
+      if (options.length === 1) {
+        setPinnedGroup(options[0].group_number);
+        await loadGroup(options[0].group_number, loginCode, undefined, options[0].group_number);
+        return;
+      }
+    } else if (emailLoginAllowed && emailInput.trim()) {
       const { data } = await supabase.rpc("live_scoring_lookup_group", {
         _tournament_id: tournament.id,
         _scoring_code: "",
@@ -381,7 +423,7 @@ export default function LiveScoring() {
       if (!data) { setError("Player not found or not assigned to a hole."); return; }
       gNum = data as number;
     } else {
-      setError("Enter your scoring code or email."); return;
+      setError(emailLoginAllowed ? "Enter your scoring code or email." : "Enter your scoring code."); return;
     }
 
     await loadGroup(gNum, loginCode ?? undefined);
@@ -637,6 +679,32 @@ export default function LiveScoring() {
             <p className="text-sm text-muted-foreground">Live Scoring — Enter your scoring code to begin</p>
           </CardHeader>
           <CardContent className="space-y-4">
+            {groupOptions.length > 1 ? (
+              <div className="space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  This code matches more than one group. Tap your group to continue.
+                </p>
+                {groupOptions.map((o) => (
+                  <Button
+                    key={o.group_number}
+                    variant="outline"
+                    className="w-full h-auto py-3 text-left flex flex-col items-start"
+                    onClick={async () => {
+                      setGroupOptions([]);
+                      setPinnedGroup(o.group_number);
+                      await loadGroup(o.group_number, scoringCode || codeInput.trim().toUpperCase(), undefined, o.group_number);
+                    }}
+                  >
+                    <span className="font-semibold">Group {o.group_number}</span>
+                    <span className="text-xs text-muted-foreground whitespace-normal">{o.players}</span>
+                  </Button>
+                ))}
+                <Button variant="ghost" className="w-full" onClick={() => setGroupOptions([])}>
+                  Back
+                </Button>
+              </div>
+            ) : (
+            <>
             <div>
               <label className="text-sm font-medium mb-1 block">Scoring Code</label>
               <Input
@@ -647,25 +715,32 @@ export default function LiveScoring() {
                 onKeyDown={(e) => e.key === "Enter" && handleLogin()}
               />
             </div>
-            <div className="flex items-center gap-3">
-              <div className="flex-1 h-px bg-border" />
-              <span className="text-xs text-muted-foreground">or</span>
-              <div className="flex-1 h-px bg-border" />
-            </div>
-            <div>
-              <label className="text-sm font-medium mb-1 block">Your Email</label>
-              <Input
-                type="email"
-                placeholder="john@example.com"
-                value={emailInput}
-                onChange={(e) => { setEmailInput(e.target.value); setCodeInput(""); setGroupInput(""); }}
-                onKeyDown={(e) => e.key === "Enter" && handleLogin()}
-              />
-            </div>
+            {emailLoginAllowed && (
+              <>
+                <div className="flex items-center gap-3">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-xs text-muted-foreground">or</span>
+                  <div className="flex-1 h-px bg-border" />
+                </div>
+                <div>
+                  <label className="text-sm font-medium mb-1 block">Your Email</label>
+                  <Input
+                    type="email"
+                    placeholder="john@example.com"
+                    value={emailInput}
+                    onChange={(e) => { setEmailInput(e.target.value); setCodeInput(""); setGroupInput(""); }}
+                    onKeyDown={(e) => e.key === "Enter" && handleLogin()}
+                  />
+                </div>
+              </>
+            )}
+
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button onClick={handleLogin} className="w-full">
               Start Scoring
             </Button>
+            </>
+            )}
           </CardContent>
         </Card>
       </div>

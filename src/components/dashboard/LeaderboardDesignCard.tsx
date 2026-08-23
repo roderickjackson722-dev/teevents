@@ -99,6 +99,67 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
 const FONT_OPTIONS = ["Inter", "Roboto", "Montserrat", "Open Sans", "Lato", "Poppins"];
 const FONT_SIZE_PX: Record<string, number> = { small: 14, medium: 16, large: 20 };
 
+/** Color-only presets. "TeeVents Default" restores the original board colors. */
+type ColorKeys = Pick<
+  LeaderboardDesign,
+  "background_color" | "header_background" | "text_color" | "accent_color"
+>;
+
+export const COLOR_PRESETS: { id: string; name: string; colors: ColorKeys }[] = [
+  {
+    id: "teevents",
+    name: "TeeVents Default (green & gold)",
+    colors: {
+      background_color: DEFAULT_DESIGN.background_color,
+      header_background: DEFAULT_DESIGN.header_background,
+      text_color: DEFAULT_DESIGN.text_color,
+      accent_color: DEFAULT_DESIGN.accent_color,
+    },
+  },
+  {
+    id: "midnight",
+    name: "Midnight (navy & gold)",
+    colors: {
+      background_color: "#0f172a",
+      header_background: "#1e293b",
+      text_color: "#FFFFFF",
+      accent_color: "#F5A623",
+    },
+  },
+  {
+    id: "classic-dark",
+    name: "Classic Dark (charcoal & white)",
+    colors: {
+      background_color: "#1a1a1a",
+      header_background: "#000000",
+      text_color: "#FFFFFF",
+      accent_color: "#E5E7EB",
+    },
+  },
+  {
+    id: "light",
+    name: "Light (white & green)",
+    colors: {
+      background_color: "#FFFFFF",
+      header_background: "#1a5c38",
+      text_color: "#111827",
+      accent_color: "#1a5c38",
+    },
+  },
+];
+
+function matchPresetId(d: LeaderboardDesign): string {
+  const hit = COLOR_PRESETS.find(
+    (p) =>
+      p.colors.background_color.toLowerCase() === (d.background_color || "").toLowerCase() &&
+      p.colors.header_background.toLowerCase() === (d.header_background || "").toLowerCase() &&
+      p.colors.text_color.toLowerCase() === (d.text_color || "").toLowerCase() &&
+      p.colors.accent_color.toLowerCase() === (d.accent_color || "").toLowerCase(),
+  );
+  return hit?.id || "custom";
+}
+
+
 interface Props {
   tournamentId: string;
   tournamentSlug: string | null;
@@ -243,6 +304,51 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
         {/* COLOR & STYLE */}
         <section className="space-y-3 border-t pt-5">
           <Label className="text-base font-semibold">Color &amp; Style</Label>
+
+          {/* Color presets — quick way back to the default TeeVents board colors */}
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[240px]">
+              <Label className="text-xs">Color Theme</Label>
+              <Select
+                value={matchPresetId(design)}
+                onValueChange={(id) => {
+                  const preset = COLOR_PRESETS.find((p) => p.id === id);
+                  if (preset) setDesign((d) => ({ ...d, ...preset.colors }));
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Choose a theme" /></SelectTrigger>
+                <SelectContent>
+                  {COLOR_PRESETS.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                  <SelectItem value="custom">Custom colors</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setDesign((d) => ({ ...d, ...COLOR_PRESETS[0].colors }))
+              }
+            >
+              <RotateCcw className="w-4 h-4 mr-1" /> Reset to default colors
+            </Button>
+            <div className="flex items-center gap-1">
+              {[design.background_color, design.header_background, design.text_color, design.accent_color].map((c, i) => (
+                <span
+                  key={i}
+                  className="h-6 w-6 rounded border border-border"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Pick a theme for one-click colors, or fine-tune each color below. Remember to save.
+          </p>
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Color label="Background" value={design.background_color} onChange={(v) => update("background_color", v)} />
             <Color label="Header BG" value={design.header_background} onChange={(v) => update("header_background", v)} />

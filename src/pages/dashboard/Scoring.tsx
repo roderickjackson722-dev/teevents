@@ -155,7 +155,7 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
               <Coins className="h-4 w-4 mr-1.5" /> Skins
             </TabsTrigger>
             <TabsTrigger value="rounds">
-              <Lock className="h-4 w-4 mr-1.5" /> Round Status
+              <Lock className="h-4 w-4 mr-1.5" /> Lock Rounds
             </TabsTrigger>
           </TabsList>
 

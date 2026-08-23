@@ -12804,6 +12804,14 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_round_group_by_number: {
+        Args: {
+          _group_number: number
+          _round_number?: number
+          _tournament_id: string
+        }
+        Returns: Json
+      }
       get_round_scoring_group: {
         Args: { _code: string; _round_number?: number; _tournament_id: string }
         Returns: Json
@@ -13029,6 +13037,10 @@ export type Database = {
       scoring_code_group_ids: {
         Args: { _code: string; _round_number?: number; _tournament_id: string }
         Returns: string[]
+      }
+      scoring_code_group_options: {
+        Args: { _code: string; _round_number?: number; _tournament_id: string }
+        Returns: Json
       }
       settle_manual_entry_liabilities: {
         Args: { _max_deduct_cents: number; _organization_id: string }

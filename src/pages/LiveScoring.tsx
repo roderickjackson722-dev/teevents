@@ -652,15 +652,19 @@ export default function LiveScoring() {
         )}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold">{tournament.title} — Starting Hole {groupNumber}</h1>
+            <h1 className="text-xl font-bold">
+              {totalRounds > 1 ? `${roundLabel(roundNumber - 1)} — ` : ""}Hole {focusHole}
+              {startingHole != null && focusHole === startingHole ? " (Your Starting Hole)" : ""}
+            </h1>
             <p className="text-xs text-muted-foreground">
+              {tournament.title} ·{" "}
               {courseData?.name && `${courseData.name} · `}
               {courseData?.tee_name && `${courseData.tee_name} Tees · `}
               Par {tournament.course_par || 72}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {hasEdits && viewMode === "all" && (
+            {hasEdits && viewMode === "all" && !roundLocked && (
               <Button onClick={handleSave} disabled={saving} size="sm">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
                 Save
@@ -674,6 +678,19 @@ export default function LiveScoring() {
             </button>
           </div>
         </div>
+
+        {roundLocked && (
+          <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm">
+            <p className="font-semibold mb-1">
+              {roundLabel(roundNumber - 1)} is closed.
+            </p>
+            <p className="text-muted-foreground">
+              Scores for this round are locked by the organizer. Please see the scoring tent for
+              corrections.
+            </p>
+          </div>
+        )}
+
 
         {/* Group roster — this group only */}
         <Card>

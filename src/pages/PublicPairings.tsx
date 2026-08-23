@@ -62,8 +62,12 @@ export default function PublicPairings() {
   const info = rows?.[0];
   const cfg = useMemo(() => resolvePairingsPageConfig(info?.page_config), [info?.page_config]);
   const pairingsCfg = useMemo(() => parsePairingsConfig(info?.pairings_config), [info?.pairings_config]);
-  // The public feed resolves the first open round after organizer closures.
-  const day = Math.max(0, Number(info?.active_round || pairingsCfg.activeRound + 1) - 1);
+  // Organizers can pin a round; otherwise the feed resolves the first open round.
+  const day = Math.max(
+    0,
+    Number(pairingsCfg.publishedRound || info?.active_round || pairingsCfg.activeRound + 1) - 1,
+  );
+
   const dayCfg = useMemo(() => dayCfgOf(pairingsCfg, day), [pairingsCfg, day]);
   const teeTimeStart =
     (pairingsCfg.byDay[String(day)]?.startFormat || info?.start_format || "") === "tee_times";

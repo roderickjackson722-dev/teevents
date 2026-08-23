@@ -577,6 +577,74 @@ export default function SimpleFlightPayouts({
               </div>
             </div>
 
+            {/* Players in this flight — remove WD/DQ so the payout math adds up */}
+            <div className="space-y-3">
+              <div className="flex items-end justify-between gap-3">
+                <div>
+                  <p className="text-sm font-semibold">Players in This Flight</p>
+                  <p className="text-xs text-muted-foreground">
+                    Uncheck anyone who withdrew or was disqualified — they're removed from the payout count.
+                  </p>
+                </div>
+                <div className="w-28 shrink-0">
+                  <Label htmlFor="sfp-count" className="text-xs">Player count</Label>
+                  <Input
+                    id="sfp-count"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value={draftCountManual ? draftCount : String(draftIncludedCount)}
+                    onChange={(e) => {
+                      setDraftCountManual(true);
+                      setDraftCount(e.target.value);
+                    }}
+                  />
+                </div>
+              </div>
+              {draftCountManual && (
+                <button
+                  type="button"
+                  className="text-xs underline text-muted-foreground"
+                  onClick={() => setDraftCountManual(false)}
+                >
+                  Use the roster count instead
+                </button>
+              )}
+              {draftMembers.length > 0 ? (
+                <div className="rounded-md border divide-y max-h-60 overflow-y-auto">
+                  {draftMembers.map((m) => {
+                    const included = !draftExcluded.includes(m.id);
+                    return (
+                      <label key={m.id} className="flex items-center gap-3 px-3 py-2 text-sm cursor-pointer">
+                        <Checkbox
+                          checked={included}
+                          onCheckedChange={(v) =>
+                            setDraftExcluded((prev) =>
+                              v ? prev.filter((id) => id !== m.id) : [...new Set([...prev, m.id])],
+                            )
+                          }
+                        />
+                        <span className={included ? "" : "line-through text-muted-foreground"}>{m.name}</span>
+                        {m.status && m.status !== "active" && (
+                          <Badge variant="secondary" className="text-[10px] uppercase">{m.status}</Badge>
+                        )}
+                      </label>
+                    );
+                  })}
+                </div>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  No roster loaded for this flight — set the player count manually above.
+                </p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Counting <span className="font-semibold text-foreground">{draftIncludedCount}</span> player
+                {draftIncludedCount === 1 ? "" : "s"} for this flight's payout.
+              </p>
+            </div>
+
+
+
             {draftAmounts.length > 0 && (
               <div className="space-y-4">
                 <p className="text-sm font-semibold">Payout Distribution</p>

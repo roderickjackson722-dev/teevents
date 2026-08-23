@@ -304,6 +304,51 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
         {/* COLOR & STYLE */}
         <section className="space-y-3 border-t pt-5">
           <Label className="text-base font-semibold">Color &amp; Style</Label>
+
+          {/* Color presets — quick way back to the default TeeVents board colors */}
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[240px]">
+              <Label className="text-xs">Color Theme</Label>
+              <Select
+                value={matchPresetId(design)}
+                onValueChange={(id) => {
+                  const preset = COLOR_PRESETS.find((p) => p.id === id);
+                  if (preset) setDesign((d) => ({ ...d, ...preset.colors }));
+                }}
+              >
+                <SelectTrigger><SelectValue placeholder="Choose a theme" /></SelectTrigger>
+                <SelectContent>
+                  {COLOR_PRESETS.map((p) => (
+                    <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                  ))}
+                  <SelectItem value="custom">Custom colors</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() =>
+                setDesign((d) => ({ ...d, ...COLOR_PRESETS[0].colors }))
+              }
+            >
+              <RotateCcw className="w-4 h-4 mr-1" /> Reset to default colors
+            </Button>
+            <div className="flex items-center gap-1">
+              {[design.background_color, design.header_background, design.text_color, design.accent_color].map((c, i) => (
+                <span
+                  key={i}
+                  className="h-6 w-6 rounded border border-border"
+                  style={{ backgroundColor: c }}
+                />
+              ))}
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Pick a theme for one-click colors, or fine-tune each color below. Remember to save.
+          </p>
+
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Color label="Background" value={design.background_color} onChange={(v) => update("background_color", v)} />
             <Color label="Header BG" value={design.header_background} onChange={(v) => update("header_background", v)} />

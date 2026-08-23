@@ -11,7 +11,6 @@ export interface LeaderboardTournamentInfo {
 }
 
 export interface LeaderboardRow {
-interface LeaderboardRow {
   name: string;
   total: number;
   thru: number;

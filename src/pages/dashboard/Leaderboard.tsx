@@ -590,14 +590,29 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       });
 
       try {
-        const { error } = await supabase.from("tournament_scores").upsert(upserts, {
-          onConflict: "registration_id,round_number,hole_number",
-        });
+        const { data: persistedRows, error } = await supabase
+          .from("tournament_scores")
+          .upsert(upserts, {
+            onConflict: "registration_id,round_number,hole_number",
+          })
+          .select("registration_id, hole_number, strokes, round_number");
         if (error) throw error;
+        const persisted = persistedRows || [];
+        const persistedKeys = new Set(
+          persisted.map((row) => `${row.registration_id}:${row.round_number}:${row.hole_number}:${row.strokes}`),
+        );
+        const missing = upserts.filter(
+          (row) => !persistedKeys.has(`${row.registration_id}:${row.round_number}:${row.hole_number}:${row.strokes}`),
+        );
+        if (missing.length > 0) {
+          throw new Error(
+            `${missing.length} score${missing.length === 1 ? " was" : "s were"} not confirmed by the database. Your entries remain on screen; please save again.`,
+          );
+        }
         if (editLogs.length > 0) {
           await (supabase as any).from("score_edits").insert(editLogs);
         }
-        return { mode: "saved" as const, count: upserts.length };
+        return { mode: "saved" as const, count: persisted.length, persisted };
       } catch (e: any) {
         // Network / fetch failures — queue for later sync so the scorekeeper doesn't lose work.
         const msg = String(e?.message || e || "");
@@ -620,6 +635,18 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         });
       } else if (result.mode === "saved") {
         toast({ title: "Scores saved!" });
+        // Put the confirmed rows into the active-round cache immediately. This
+        // prevents a concurrent realtime refresh from briefly restoring stale
+        // values after the organizer saves a large scorecard batch.
+        queryClient.setQueryData(
+          ["tournament-scores", selectedTournament, workingRound],
+          (current: Array<{ registration_id: string; hole_number: number; strokes: number; round_number: number }> | undefined) => {
+            const byCell = new Map<string, { registration_id: string; hole_number: number; strokes: number; round_number: number }>();
+            (current || []).forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));
+            result.persisted.forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));
+            return Array.from(byCell.values());
+          },
+        );
       }
       // Only clear values included in this request. A scorekeeper can keep
       // entering scores while a save is in flight; those newer edits must not

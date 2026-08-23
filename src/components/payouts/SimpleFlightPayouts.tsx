@@ -34,10 +34,19 @@ export function defaultPlacesPaid(players: number): number {
 const MAX_PLACES = 3;
 const PLACE_LABEL = ["1st Place", "2nd Place", "3rd Place"];
 
+export interface SimpleFlightMember {
+  id: string;
+  name: string;
+  /** active | wd | dq | nc — shown as a badge so organizers can spot withdrawals */
+  status?: string | null;
+}
+
 export interface SimpleFlightInput {
   id: string;
   name: string;
   players: number;
+  /** roster of the flight, used for include/exclude control */
+  members?: SimpleFlightMember[];
 }
 
 interface Props {
@@ -61,14 +70,20 @@ interface Props {
 interface Row {
   flightId: string;
   name: string;
+  /** effective player count used for payout math */
   players: number;
   purseCents: number;
   /** payout amounts in cents, one per paid place */
   amounts: number[];
+  /** registration ids the organizer removed from this flight's payout (WD/DQ etc.) */
+  excluded: string[];
+  /** organizer-entered player count that overrides the roster count */
+  countOverride: number | null;
 }
 
 const toCents = (dollars: string) => Math.round((parseFloat(dollars) || 0) * 100);
 const toDollars = (cents: number) => (cents / 100).toFixed(2);
+
 
 export default function SimpleFlightPayouts({
   tournamentId,

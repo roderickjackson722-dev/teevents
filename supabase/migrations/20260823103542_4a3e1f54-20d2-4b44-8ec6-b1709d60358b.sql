@@ -1,0 +1,1 @@
+GRANT SELECT (live_scoring_allow_email_login) ON public.tournaments TO anon, authenticated;

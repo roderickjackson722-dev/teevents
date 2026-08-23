@@ -127,11 +127,24 @@ function LiveLeaderboardBoard({
   const [course, setCourse] = useState<ScorecardCourseInfo | null>(null);
   const [scorecardRow, setScorecardRow] = useState<LeaderboardRow | null>(null);
   const scoreRefreshSequence = useRef(0);
+  const scoreRefreshTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const refreshScores = useCallback(async (tournamentId: string) => {
     const sequence = ++scoreRefreshSequence.current;
     const data = await fetchAllPublicLeaderboardScores(tournamentId);
     if (sequence === scoreRefreshSequence.current) setScores(data || []);
+  }, []);
+
+  const scheduleScoreRefresh = useCallback((tournamentId: string) => {
+    if (scoreRefreshTimer.current) clearTimeout(scoreRefreshTimer.current);
+    scoreRefreshTimer.current = setTimeout(() => {
+      scoreRefreshTimer.current = null;
+      void refreshScores(tournamentId);
+    }, 150);
+  }, [refreshScores]);
+
+  useEffect(() => () => {
+    if (scoreRefreshTimer.current) clearTimeout(scoreRefreshTimer.current);
   }, []);
 
 
@@ -237,13 +250,13 @@ function LiveLeaderboardBoard({
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` },
-        () => refreshScores(tournament.id)
+        () => scheduleScoreRefresh(tournament.id)
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tournament?.id, refreshScores]);
+  }, [tournament?.id, scheduleScoreRefresh]);
 
   // Realtime tournament updates — design + sponsor banner settings, applied live
   useEffect(() => {
@@ -281,7 +294,7 @@ function LiveLeaderboardBoard({
         .then(({ data }) => setSponsors((data as Sponsor[]) || []));
     };
     const refetchScores = () => {
-      refreshScores(tid);
+      scheduleScoreRefresh(tid);
     };
 
     const channel = supabase
@@ -294,7 +307,7 @@ function LiveLeaderboardBoard({
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [tournament?.id, refreshScores]);
+  }, [tournament?.id, scheduleScoreRefresh]);
 
 
 

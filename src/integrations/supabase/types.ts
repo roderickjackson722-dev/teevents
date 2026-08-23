@@ -12796,6 +12796,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_round_scoring_group: {
+        Args: { _code: string; _round_number?: number; _tournament_id: string }
+        Returns: Json
+      }
       get_score_edit_history: {
         Args: { _limit?: number; _tournament_id: string }
         Returns: {

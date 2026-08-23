@@ -509,10 +509,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       if (isFrozen) {
         throw new Error("This leaderboard is frozen. Unfreeze it in the Freeze Leaderboard card to edit scores.");
       }
+      if (roundLocked) {
+        throw new Error(`${roundLabel(workingRound - 1)} is closed. Reopen it before changing scores.`);
+      }
 
       // ---- Validation ----
       const errs: Record<string, Record<number, string>> = {};
-      const upserts: { tournament_id: string; registration_id: string; hole_number: number; strokes: number }[] = [];
+      const upserts: { tournament_id: string; registration_id: string; hole_number: number; round_number: number; strokes: number }[] = [];
       Object.entries(editedScores).forEach(([regId, holes]) => {
         Object.entries(holes).forEach(([hole, strokes]) => {
           const holeNum = parseInt(hole);
@@ -525,6 +528,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
               tournament_id: selectedTournament,
               registration_id: regId,
               hole_number: holeNum,
+              round_number: workingRound,
               strokes,
             });
           }
@@ -541,8 +545,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
       // ---- Offline fallback: queue instead of network call ----
       if (typeof navigator !== "undefined" && !navigator.onLine) {
-        enqueue(upserts.map(({ tournament_id, registration_id, hole_number, strokes }) => ({
-          tournament_id, registration_id, hole_number, strokes,
+        enqueue(upserts.map(({ tournament_id, registration_id, hole_number, round_number, strokes }) => ({
+          tournament_id, registration_id, hole_number, round_number, strokes,
         })));
         return { mode: "queued" as const, count: upserts.length };
       }
@@ -561,6 +565,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             tournament_id: selectedTournament,
             registration_id: u.registration_id,
             hole_number: u.hole_number,
+            round_number: workingRound,
             old_score: oldScore,
             new_score: u.strokes,
             edited_by: user.id,
@@ -571,7 +576,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
       try {
         const { error } = await supabase.from("tournament_scores").upsert(upserts, {
-          onConflict: "registration_id,hole_number",
+          onConflict: "registration_id,round_number,hole_number",
         });
         if (error) throw error;
         if (editLogs.length > 0) {
@@ -583,8 +588,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         const msg = String(e?.message || e || "");
         const looksNetwork = /network|fetch|failed to fetch|load failed/i.test(msg);
         if (looksNetwork) {
-          enqueue(upserts.map(({ tournament_id, registration_id, hole_number, strokes }) => ({
-            tournament_id, registration_id, hole_number, strokes,
+          enqueue(upserts.map(({ tournament_id, registration_id, hole_number, round_number, strokes }) => ({
+            tournament_id, registration_id, hole_number, round_number, strokes,
           })));
           return { mode: "queued" as const, count: upserts.length };
         }
@@ -741,7 +746,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
    * changes the selected hole — it never writes scores.
    */
   const saveAndNext = async () => {
-    const mayWrite = canEditScores && !isFrozen;
+    const mayWrite = canEditScores && !isFrozen && !roundLocked;
     try {
       if (mayWrite && hasEdits) await saveMutation.mutateAsync();
       setEditHole((h) => Math.min(holes.length, h + 1));
@@ -829,6 +834,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         </div>
       )}
 
+      {selectedTournament && roundLocked && (
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm flex items-start gap-2">
+          <Lock className="h-4 w-4 mt-0.5 shrink-0" />
+          <div><strong>{roundLabel(workingRound - 1)} is closed.</strong> Scores are visible for review but cannot be changed unless the round is reopened.</div>
+        </div>
+      )}
+
       {selectedTournament && !online && (
         <div className="rounded-md border border-amber-500/40 bg-amber-500/10 text-amber-900 dark:text-amber-200 px-4 py-3 text-sm flex items-start gap-2">
           <WifiOff className="h-4 w-4 mt-0.5 shrink-0" />
@@ -870,6 +882,28 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           </SelectContent>
 
         </Select>
+
+        {selectedTournament && totalRounds > 1 && (
+          <Select
+            value={String(workingRound)}
+            onValueChange={(value) => {
+              setWorkingRound(Number(value));
+              setEditedScores({});
+              setSelectedRowKey(null);
+            }}
+          >
+            <SelectTrigger className="w-[190px]">
+              <SelectValue placeholder="Working round" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: totalRounds }, (_, index) => index + 1).map((round) => (
+                <SelectItem key={round} value={String(round)}>
+                  {roundLabel(round - 1)}{closedRounds.has(round) ? " — Closed" : " — Open"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         {selectedTournamentData?.slug && selectedTournamentData?.site_published && (
           <>
@@ -1375,6 +1409,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       )}
 
       {/* Edit history lives at the very bottom of the page */}
+      {showEntry && selectedTournament && (
+        <RoundClosureCard tournamentId={selectedTournament} />
+      )}
+
       {showEntry && selectedTournament && (
         <ScoreEditHistory tournamentId={selectedTournament} />
       )}

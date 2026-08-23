@@ -10044,6 +10044,7 @@ export type Database = {
           scoring_code: string | null
           shirt_size: string | null
           skins_opt_in: boolean | null
+          starting_hole: number | null
           status: string
           strokes_per_hole: Json | null
           survey_completed_at: string | null
@@ -10095,6 +10096,7 @@ export type Database = {
           scoring_code?: string | null
           shirt_size?: string | null
           skins_opt_in?: boolean | null
+          starting_hole?: number | null
           status?: string
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
@@ -10146,6 +10148,7 @@ export type Database = {
           scoring_code?: string | null
           shirt_size?: string | null
           skins_opt_in?: boolean | null
+          starting_hole?: number | null
           status?: string
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
@@ -10232,6 +10235,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tournament_roles_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_rounds: {
+        Row: {
+          closed_at: string | null
+          closed_by: string | null
+          created_at: string
+          id: string
+          round_number: number
+          status: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          round_number: number
+          status?: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          closed_at?: string | null
+          closed_by?: string | null
+          created_at?: string
+          id?: string
+          round_number?: number
+          status?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_rounds_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
@@ -12796,6 +12840,10 @@ export type Database = {
       }
       is_org_owner: {
         Args: { _org_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_tournament_round_closed: {
+        Args: { _round_number: number; _tournament_id: string }
         Returns: boolean
       }
       is_trip_organizer: {

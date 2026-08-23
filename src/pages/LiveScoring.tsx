@@ -8,7 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
-import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
+import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
+import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import { getFormatById } from "@/lib/scoringFormats";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
@@ -70,6 +71,12 @@ export default function LiveScoring() {
   // Flight/division this group belongs to — used to scope the leaderboard link.
   const [flight, setFlight] = useState<{ id: string; name: string } | null>(null);
   const [restoring, setRestoring] = useState(true);
+  // Pairings config drives the group's assigned starting hole (shotgun starts).
+  const [pairingsCfg, setPairingsCfg] = useState<PairingsConfig | null>(null);
+  const [totalRounds, setTotalRounds] = useState(1);
+  // Rounds the organizer has closed — those scores are locked.
+  const [closedRounds, setClosedRounds] = useState<Set<number>>(new Set());
+  const [startingHole, setStartingHole] = useState<number | null>(null);
 
 
   const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
@@ -87,12 +94,28 @@ export default function LiveScoring() {
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.eq("slug", slug).eq("site_published", true).maybeSingle();
-      setTournament(data as TournamentData | null);
       if (data) {
+        const cfg = parsePairingsConfig((data as any).pairings_config);
+        setPairingsCfg(cfg);
+        setTotalRounds(Math.max(1, cfg.rounds || 1));
+        // Closed rounds are locked, so scoring rolls forward to the next open
+        // round using the very same scoring codes.
+        const { data: roundRows } = await (supabase as any)
+          .from("tournament_rounds")
+          .select("round_number, status, closed_at")
+          .eq("tournament_id", (data as any).id);
+        const closed = closedRoundSet((roundRows || []) as TournamentRoundRow[]);
+        setClosedRounds(closed);
         setRoundNumber(
-          activeRoundNumber(parsePairingsConfig((data as any).pairings_config), (data as any).date),
+          nextOpenRound(
+            activeRoundNumber(cfg, (data as any).date),
+            closed,
+            Math.max(1, cfg.rounds || 1),
+          ),
         );
       }
+      setTournament(data as TournamentData | null);
+
       setLoading(false);
       if (data) {
 
@@ -266,8 +289,18 @@ export default function LiveScoring() {
     setScores(scoreMap);
     setGroupNumber(gNum);
     setLoginMode(false);
+    // Open on the group's assigned starting hole (shotgun starts) — the player
+    // can still navigate anywhere from there.
+    const assigned =
+      groupPlayers.map((p: any) => Number(p.starting_hole)).find((n: number) => Number.isFinite(n) && n >= 1 && n <= 18) ??
+      (pairingsCfg ? startingHoleForGroup(pairingsCfg, gNum, Math.max(0, roundNumber - 1)) : null);
+    if (assigned != null && assigned >= 1 && assigned <= 18) {
+      setStartingHole(assigned);
+      setFocusHole(assigned);
+    }
     persistSession(sessionCode, gNum);
   };
+
 
   // Resolve the group's flight so players see (and open) their own flight board.
   useEffect(() => {
@@ -390,6 +423,8 @@ export default function LiveScoring() {
 
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
   const hasEdits = Object.keys(editedScores).length > 0;
+  // Organizer closed this round — scores are read-only (the database rejects writes too).
+  const roundLocked = closedRounds.has(roundNumber);
   const handicapEnabled = tournament?.handicap_enabled === true;
   const activeFormat = getFormatById(tournament?.scoring_format || "stroke_play");
   // Team formats play one ball / one team score per hole — hide individual entry entirely.
@@ -619,15 +654,19 @@ export default function LiveScoring() {
         )}
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold">{tournament.title} — Starting Hole {groupNumber}</h1>
+            <h1 className="text-xl font-bold">
+              {totalRounds > 1 ? `${roundLabel(roundNumber - 1)} — ` : ""}Hole {focusHole}
+              {startingHole != null && focusHole === startingHole ? " (Your Starting Hole)" : ""}
+            </h1>
             <p className="text-xs text-muted-foreground">
+              {tournament.title} ·{" "}
               {courseData?.name && `${courseData.name} · `}
               {courseData?.tee_name && `${courseData.tee_name} Tees · `}
               Par {tournament.course_par || 72}
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {hasEdits && viewMode === "all" && (
+            {hasEdits && viewMode === "all" && !roundLocked && (
               <Button onClick={handleSave} disabled={saving} size="sm">
                 {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
                 Save
@@ -641,6 +680,19 @@ export default function LiveScoring() {
             </button>
           </div>
         </div>
+
+        {roundLocked && (
+          <div className="rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/30 px-4 py-3 text-sm">
+            <p className="font-semibold mb-1">
+              {roundLabel(roundNumber - 1)} is closed.
+            </p>
+            <p className="text-muted-foreground">
+              Scores for this round are locked by the organizer. Please see the scoring tent for
+              corrections.
+            </p>
+          </div>
+        )}
+
 
         {/* Group roster — this group only */}
         <Card>
@@ -758,24 +810,32 @@ export default function LiveScoring() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => adjustTeamScore(focusHole, -1)}
-                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted flex items-center justify-center"
+                        disabled={roundLocked}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center"
                         aria-label="Decrease team score"
                       >
                         <Minus className="h-5 w-5" />
                       </button>
-                      <div className="w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl font-bold flex items-center justify-center">
-                        {display === "" ? <span className="text-muted-foreground/60 text-xl">{par}</span> : display}
+                      <div
+                        className={`w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl flex items-center justify-center ${
+                          display === ""
+                            ? "opacity-50 text-muted-foreground font-normal"
+                            : "opacity-100 text-primary font-bold"
+                        }`}
+                      >
+                        {display === "" ? par : display}
                       </div>
                       <button
                         onClick={() => adjustTeamScore(focusHole, +1)}
-                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center"
+                        disabled={roundLocked}
+                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 flex items-center justify-center"
                         aria-label="Increase team score"
                       >
                         <Plus className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => clearHole(focusHole)}
-                        disabled={saving || display === ""}
+                        disabled={saving || display === "" || roundLocked}
                         className="h-7 w-7 -mr-1 rounded-full border bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
                         aria-label="Clear team score for this hole"
                         title="Clear this hole's score"
@@ -783,6 +843,7 @@ export default function LiveScoring() {
                         <Eraser className="h-3.5 w-3.5" />
                       </button>
                     </div>
+
                   </div>
                 );
               })()}
@@ -821,24 +882,32 @@ export default function LiveScoring() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => adjustScore(p.id, focusHole, -1)}
-                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted flex items-center justify-center"
+                        disabled={roundLocked}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center"
                         aria-label="Decrease score"
                       >
                         <Minus className="h-5 w-5" />
                       </button>
-                      <div className="w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl font-bold flex items-center justify-center">
-                        {display === "" ? <span className="text-muted-foreground/60 text-xl">{par}</span> : display}
+                      <div
+                        className={`w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl flex items-center justify-center ${
+                          display === ""
+                            ? "opacity-50 text-muted-foreground font-normal"
+                            : "opacity-100 text-primary font-bold"
+                        }`}
+                      >
+                        {display === "" ? par : display}
                       </div>
                       <button
                         onClick={() => adjustScore(p.id, focusHole, +1)}
-                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center"
+                        disabled={roundLocked}
+                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 flex items-center justify-center"
                         aria-label="Increase score"
                       >
                         <Plus className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => clearHole(focusHole, p.id)}
-                        disabled={saving || display === ""}
+                        disabled={saving || display === "" || roundLocked}
                         className="h-7 w-7 -mr-1 rounded-full border bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
                         aria-label={`Clear Hole ${focusHole} score`}
                         title="Clear this hole's score"
@@ -846,6 +915,7 @@ export default function LiveScoring() {
                         <Eraser className="h-3.5 w-3.5" />
                       </button>
                     </div>
+
                   </div>
                 );
               })}

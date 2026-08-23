@@ -1185,6 +1185,10 @@ const Finances = () => {
             </div>
           </div>
         </TabsContent>
+
+        <TabsContent value="details" className="space-y-4">
+          <TransactionDetails embedded />
+        </TabsContent>
       </Tabs>
 
       {/* Breakdown Dialog */}

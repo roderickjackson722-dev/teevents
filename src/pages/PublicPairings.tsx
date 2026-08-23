@@ -10,6 +10,7 @@ import {
   teeTimeForGroup,
   dayCfgOf,
   roundLabel,
+  roundDateFor,
 } from "@/lib/pairingsConfig";
 
 interface Row {
@@ -69,6 +70,8 @@ export default function PublicPairings() {
     (pairingsCfg.byDay[String(day)]?.startFormat || info?.start_format || "") === "tee_times";
   const shotgunTime = !teeTimeStart ? formatTeeTime(dayCfg.shotgunTime) : null;
   const showRoundLabel = (pairingsCfg.rounds || 1) > 1;
+  /** Each round can have its own play date; fall back to the tournament date. */
+  const displayDate = roundDateFor(pairingsCfg, day, info?.event_date ?? null);
 
   const groups = useMemo(() => {
     const map = new Map<number, Row[]>();
@@ -125,7 +128,7 @@ export default function PublicPairings() {
               <span className="flex items-center gap-1"><CalendarDays className="h-4 w-4" />{
                 cfg.date_text?.trim()
                   ? cfg.date_text
-                  : new Date(`${cfg.date_override?.trim() || info?.event_date}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
+                  : new Date(`${cfg.date_override?.trim() || displayDate}T12:00:00`).toLocaleDateString(undefined, { weekday: "long", month: "long", day: "numeric", year: "numeric" })
               }</span>
             )}
             {cfg.show_course && (cfg.course_override?.trim() || info?.course_name) && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{cfg.course_override?.trim() || info?.course_name}</span>}

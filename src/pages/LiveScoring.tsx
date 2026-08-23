@@ -71,6 +71,12 @@ export default function LiveScoring() {
   // Flight/division this group belongs to — used to scope the leaderboard link.
   const [flight, setFlight] = useState<{ id: string; name: string } | null>(null);
   const [restoring, setRestoring] = useState(true);
+  // Pairings config drives the group's assigned starting hole (shotgun starts).
+  const [pairingsCfg, setPairingsCfg] = useState<PairingsConfig | null>(null);
+  const [totalRounds, setTotalRounds] = useState(1);
+  // Rounds the organizer has closed — those scores are locked.
+  const [closedRounds, setClosedRounds] = useState<Set<number>>(new Set());
+  const [startingHole, setStartingHole] = useState<number | null>(null);
 
 
   const sessionKey = slug ? `teevents_scoring_session_${slug}` : null;
@@ -88,12 +94,28 @@ export default function LiveScoring() {
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.eq("slug", slug).eq("site_published", true).maybeSingle();
-      setTournament(data as TournamentData | null);
       if (data) {
+        const cfg = parsePairingsConfig((data as any).pairings_config);
+        setPairingsCfg(cfg);
+        setTotalRounds(Math.max(1, cfg.rounds || 1));
+        // Closed rounds are locked, so scoring rolls forward to the next open
+        // round using the very same scoring codes.
+        const { data: roundRows } = await (supabase as any)
+          .from("tournament_rounds")
+          .select("round_number, status, closed_at")
+          .eq("tournament_id", (data as any).id);
+        const closed = closedRoundSet((roundRows || []) as TournamentRoundRow[]);
+        setClosedRounds(closed);
         setRoundNumber(
-          activeRoundNumber(parsePairingsConfig((data as any).pairings_config), (data as any).date),
+          nextOpenRound(
+            activeRoundNumber(cfg, (data as any).date),
+            closed,
+            Math.max(1, cfg.rounds || 1),
+          ),
         );
       }
+      setTournament(data as TournamentData | null);
+
       setLoading(false);
       if (data) {
 

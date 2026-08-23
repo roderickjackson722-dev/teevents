@@ -18,7 +18,7 @@ import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { buildLeaderboard, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
-import LiveLeaderboard from "@/pages/LiveLeaderboard";
+import { LiveLeaderboardEmbed } from "@/pages/LiveLeaderboard";
 import { normalizeOrder, normalizeVisibility, PublicTabKey } from "@/lib/publicTabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
@@ -2248,7 +2248,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="leaderboard" className="py-12 bg-white">
           <div className="max-w-6xl mx-auto px-2 sm:px-4">
             <div className="rounded-xl overflow-hidden border" style={{ borderColor: "#e5e5e5" }}>
-              <LiveLeaderboard slug={tournament.slug} embedded />
+              <LiveLeaderboardEmbed slug={tournament.slug} />
             </div>
             <p className="text-center text-sm mt-3">
               <a href={`/live/${tournament.slug}`} className="underline font-semibold" style={{ color: secondary }}>

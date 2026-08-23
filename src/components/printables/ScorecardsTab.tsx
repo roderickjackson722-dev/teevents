@@ -15,6 +15,7 @@ import TeamScorecards from "./TeamScorecards";
 import ScorecardSelector from "./ScorecardSelector";
 import { isTeamScoringFormat, type RegistrationGroupRow } from "./teamGrouping";
 import { scorecardGridHtml, scoreColumns, summaryValue } from "./scorecardGrid";
+import { effectiveScoringCode } from "./scoringCodes";
 
 interface CourseDataProp {
   hole_pars: number[] | null;
@@ -90,7 +91,7 @@ function scorecardHtml(r: EditableReg, tournament: Tournament | null, numHoles: 
   const lastName = r.customLastName ?? r.last_name;
   const groupNum = r.customGroupNumber !== undefined ? r.customGroupNumber : startingHoleOf(r as any);
   const holeLabel = r.customGroupNumber !== undefined ? String(r.customGroupNumber) : startingHoleLabelOf(r as any);
-  const scoringCode = (r as any).scoring_code || (r as any).group_scoring_code;
+  const scoringCode = effectiveScoringCode(r);
   const scoringUrl = getScoringUrl(slug, scoringCode);
 
   const pars = Array.from({ length: numHoles }, (_, i) => getHolePar(tournament, i, numHoles, courseData));
@@ -292,7 +293,7 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
           const lastName = er.customLastName ?? er.last_name;
           const groupNum = er.customGroupNumber !== undefined ? er.customGroupNumber : startingHoleOf(er as any);
           const holeLabel = er.customGroupNumber !== undefined ? String(er.customGroupNumber) : startingHoleLabelOf(er as any);
-          const scoringCode = ((r as any).scoring_code || (r as any).group_scoring_code) as string | undefined;
+          const scoringCode = (effectiveScoringCode(r) ?? undefined) as string | undefined;
           const scoringUrl = getScoringUrl(slug, scoringCode);
 
           return (

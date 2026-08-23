@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Printer, Download, Loader2 } from "lucide-react";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Registration } from "./types";
+import { effectiveScoringCode } from "./scoringCodes";
 import { startingHoleOf } from "./types";
 
 type Reg = Registration & {
@@ -41,7 +42,7 @@ function buildHtml(
   const detailSize = opts.layout === "large" ? "18px" : "13px";
 
   const cards = list.map((r) => {
-    const link = `${BASE_URL}/day-of/${tournament?.slug || ""}/${r.scoring_code || "DEMO"}`;
+    const link = `${BASE_URL}/day-of/${tournament?.slug || ""}/${effectiveScoringCode(r) || "DEMO"}`;
     return `
       <div style="border:1.5px solid #d4d4d8;border-radius:10px;padding:${cardPad};display:flex;align-items:center;gap:20px;min-height:${cardMinHeight};break-inside:avoid;page-break-inside:avoid;background:#fff;">
         ${opts.showQr ? `<img src="${qrImg(link, qrSize)}" alt="QR" style="width:${qrSize}px;height:${qrSize}px;flex-shrink:0;" />` : ""}
@@ -228,7 +229,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
         <p className="text-xs text-muted-foreground mb-3">Preview ({filtered.length} players) — first 4 shown</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {filtered.slice(0, 4).map((r) => {
-            const link = `${BASE_URL}/day-of/${tournament?.slug || ""}/${r.scoring_code || "DEMO"}`;
+            const link = `${BASE_URL}/day-of/${tournament?.slug || ""}/${effectiveScoringCode(r) || "DEMO"}`;
             return (
               <div key={r.id} className="flex items-center gap-3 bg-white p-3 rounded border">
                 {showQr && <img src={qrImg(link, 100)} alt="QR" className="w-20 h-20" />}

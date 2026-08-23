@@ -6,6 +6,7 @@ import { Printer, Download, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Registration } from "./types";
+import { effectiveScoringCode } from "./scoringCodes";
 import { startingHoleOf } from "./types";
 
 interface Props {
@@ -17,8 +18,7 @@ interface Props {
   showScoringCodes?: boolean;
 }
 
-const codeOf = (r: Registration) =>
-  (r as any).group_scoring_code || (r as any).scoring_code || null;
+const codeOf = (r: Registration) => effectiveScoringCode(r);
 
 export default function HoleAssignmentsTab({ tournament, registrations, loading, onUpdate, showScoringCodes = false }: Props) {
   const [editingHole, setEditingHole] = useState<{ id: string; value: string } | null>(null);

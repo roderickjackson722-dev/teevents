@@ -12453,6 +12453,7 @@ export type Database = {
       clear_group_hole_scores: {
         Args: {
           _code: string
+          _group_number?: number
           _hole_number: number
           _registration_id?: string
           _round_number?: number
@@ -12552,6 +12553,23 @@ export type Database = {
       get_demo_prep_share: { Args: { _token: string }; Returns: Json }
       get_group_scoring_roster: {
         Args: { _code: string; _round_number?: number; _tournament_id: string }
+        Returns: {
+          course_handicap: number
+          first_name: string
+          group_position: number
+          handicap: number
+          id: string
+          last_name: string
+          playing_handicap: number
+        }[]
+      }
+      get_group_scoring_roster_for_group: {
+        Args: {
+          _code: string
+          _group_number: number
+          _round_number: number
+          _tournament_id: string
+        }
         Returns: {
           course_handicap: number
           first_name: string
@@ -13027,7 +13045,12 @@ export type Database = {
       }
       sample_viewer_user_id: { Args: never; Returns: string }
       save_group_scores: {
-        Args: { _code: string; _scores: Json; _tournament_id: string }
+        Args: {
+          _code: string
+          _group_number?: number
+          _scores: Json
+          _tournament_id: string
+        }
         Returns: undefined
       }
       save_league_team_scores: {
@@ -13036,6 +13059,15 @@ export type Database = {
       }
       scoring_code_group_ids: {
         Args: { _code: string; _round_number?: number; _tournament_id: string }
+        Returns: string[]
+      }
+      scoring_code_group_ids_for_group: {
+        Args: {
+          _code: string
+          _group_number: number
+          _round_number: number
+          _tournament_id: string
+        }
         Returns: string[]
       }
       scoring_code_group_options: {

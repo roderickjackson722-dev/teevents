@@ -619,7 +619,7 @@ export default function LiveLeaderboard({
           <SkinsPayoutsCard tournamentId={tournament.id} />
         </div>
       ) : null}
-      {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
+      {!embedded && !isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
 
       <PlayerScorecardDialog
         open={!!scorecardRow}

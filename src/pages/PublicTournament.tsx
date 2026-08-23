@@ -2240,133 +2240,23 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       </section>
       )}
 
-      {/* ===== LIVE LEADERBOARD ===== */}
-      {isTabVisible("leaderboard") && leaderboard.length > 0 && (() => {
-        const fmt = getFormatById(tournament.scoring_format || "stroke_play");
-        const isStableford = fmt?.scoring === "stableford";
-        const isTeam = leaderboard[0]?.isTeam;
-         return (
-         <section id="leaderboard" className="py-16 bg-white">
-           <div className="max-w-3xl mx-auto px-4">
-             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
-                LIVE LEADERBOARD
-              </h2>
-              <div className="w-16 h-0.5 mx-auto mb-2" style={{ backgroundColor: secondary }} />
-              <p className="text-center text-sm mb-1" style={{ color: "#888" }}>
-                Par {coursePar} • Updates in real-time
-              </p>
-              {tournament.slug && (
-                <p className="text-center text-sm mb-1">
-                  <a
-                    href={`/live/${tournament.slug}`}
-                    className="underline font-semibold"
-                    style={{ color: secondary }}
-                  >
-                    View full live leaderboard
-                  </a>
-                </p>
-              )}
-
-              {fmt && fmt.id !== "stroke_play" && (
-                <p className="text-center text-xs mb-4 font-semibold" style={{ color: secondary }}>
-                  {fmt.name}
-                </p>
-              )}
-              {(() => {
-                if (tournament.leaderboard_sponsor_banner_enabled === false) return null;
-                const baseLbSponsors = sponsors.filter(s => s.show_on_leaderboard);
-                const uploadedLogos = (tournament.leaderboard_rotating_logos || []).map((l, idx) => ({
-                  id: `uploaded-${idx}`,
-                  name: l.name || "Sponsor",
-                  logo_url: l.url,
-                  website_url: l.website_url || null,
-                  tier: "gold",
-                  show_on_leaderboard: true,
-                }));
-                const lbSponsors = [...uploadedLogos, ...baseLbSponsors];
-                const style = tournament.leaderboard_sponsor_style || 'banner';
-                const interval = tournament.leaderboard_sponsor_interval_ms || 5000;
-                const randomOrder = (tournament.leaderboard_sponsor_rotation_order || 'sequential') === 'random';
-                if (lbSponsors.length === 0) return null;
-                if (style === 'ticker') {
-                  const ordered = randomOrder ? [...lbSponsors].sort(() => Math.random() - 0.5) : lbSponsors;
-                  return (
-                    <div className="mb-6 overflow-hidden rounded-lg border" style={{ borderColor: "#e5e5e5" }}>
-                      <div className="flex animate-marquee items-center gap-8 py-2 px-4 bg-white">
-                        {[...ordered, ...ordered].map((s, i) => (
-                          <div key={i} className="flex items-center gap-2 shrink-0">
-                            {s.logo_url ? (
-                              <img src={s.logo_url} alt={s.name} className="h-6 max-w-[80px] object-contain" />
-                            ) : (
-                              <span className="text-xs font-semibold" style={{ color: primary }}>{s.name}</span>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                }
-                return <div className="mb-6"><SponsorBanner sponsors={lbSponsors as any} intervalMs={interval} preserveOrder randomOrder={randomOrder} /></div>;
-              })()}
-
-              {isStableford && (
-                <div className="flex justify-center gap-3 mb-4 text-xs" style={{ color: "#888" }}>
-                  <span>Eagle+ = 4pt</span>
-                  <span>Birdie = 3pt</span>
-                  <span className="font-semibold" style={{ color: "#333" }}>Par = 2pt</span>
-                  <span>Bogey = 1pt</span>
-                  <span>Double+ = 0pt</span>
-                </div>
-              )}
-
-              <div className="bg-white rounded-xl border overflow-hidden" style={{ borderColor: "#e5e5e5" }}>
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr style={{ backgroundColor: primary + "10", borderBottom: "1px solid #e5e5e5" }}>
-                      <th className="text-left px-4 py-3 font-semibold">Pos</th>
-                      <th className="text-left px-4 py-3 font-semibold">{isTeam ? "Team" : "Player"}</th>
-                      <th className="text-center px-4 py-3 font-semibold">{isStableford ? "Points" : "Score"}</th>
-                      {!isStableford && <th className="text-center px-4 py-3 font-semibold">To Par</th>}
-                      <th className="text-center px-4 py-3 font-semibold">Thru</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leaderboard.map((entry, i) => {
-                      // Prefer par for the exact holes played (multi-round aware),
-                      // matching the standalone live leaderboard's To Par math.
-                      const parPlayed = entry.parPlayed && entry.parPlayed > 0
-                        ? entry.parPlayed
-                        : Math.round((coursePar / 18) * entry.thru);
-                      const toPar = isStableford ? 0 : entry.total - parPlayed;
-                      const toParStr = toPar === 0 ? "E" : toPar > 0 ? `+${toPar}` : `${toPar}`;
-                      return (
-                        <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>
-                          <td className="px-4 py-3 font-bold" style={{ color: i < 3 ? secondary : "#333" }}>{i + 1}</td>
-                          <td className="px-4 py-3" style={{ color: "#333" }}>
-                            <span className="font-medium">{entry.name}</span>
-                            {entry.isTeam && entry.players && (
-                              <span className="block text-xs mt-0.5" style={{ color: "#999" }}>
-                                {entry.players.join(", ")}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-4 py-3 text-center font-bold" style={{ color: isStableford ? primary : "#333" }}>{entry.total}</td>
-                          {!isStableford && (
-                            <td className="px-4 py-3 text-center" style={{ color: toPar < 0 ? "#dc2626" : toPar > 0 ? "#059669" : "#666" }}>{toParStr}</td>
-                          )}
-                          <td className="px-4 py-3 text-center" style={{ color: "#888" }}>{entry.thru}</td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            </motion.div>
+      {/* ===== LIVE LEADERBOARD =====
+          Renders the exact same board as /live/:slug (design, sponsors, flights,
+          scorecard drill-down) so the homepage never drifts from the live page. */}
+      {isTabVisible("leaderboard") && leaderboard.length > 0 && tournament.slug && (
+        <section id="leaderboard" className="py-12 bg-white">
+          <div className="max-w-6xl mx-auto px-2 sm:px-4">
+            <div className="rounded-xl overflow-hidden border" style={{ borderColor: "#e5e5e5" }}>
+              <LiveLeaderboard slug={tournament.slug} embedded />
+            </div>
+            <p className="text-center text-sm mt-3">
+              <a href={`/live/${tournament.slug}`} className="underline font-semibold" style={{ color: secondary }}>
+                Open the full live leaderboard
+              </a>
+            </p>
           </div>
         </section>
-        );
-      })()}
+      )}
 
       {galleryPosition === "after_leaderboard" && galleryNode}
       {mediaPosition === "after_leaderboard" && mediaNode}

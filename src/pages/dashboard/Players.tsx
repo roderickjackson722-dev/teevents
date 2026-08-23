@@ -661,6 +661,31 @@ const Players = () => {
     setEditingPlayer(null);
   };
 
+  /**
+   * Change a player's flight from the roster row. Flight lives on the
+   * registration, and the live leaderboard reads flight per registration, so the
+   * player moves to the new division board on its next refresh.
+   */
+  const updatePlayerFlight = async (registrationId: string, flightId: string | null) => {
+    if (demoGuard()) return;
+    const { error } = await supabase
+      .from("tournament_registrations")
+      .update({ flight_id: flightId })
+      .eq("id", registrationId);
+    if (error) {
+      toast({ title: "Error", description: error.message, variant: "destructive" });
+      return;
+    }
+    setAllPlayers((prev) => prev.map((p) => (p.id === registrationId ? { ...p, flight_id: flightId } : p)));
+    toast({
+      title: "Flight updated",
+      description: flightId
+        ? `Moved to ${flights.find((f) => f.id === flightId)?.name || "flight"}. The live leaderboard will show them in that division.`
+        : "Flight cleared.",
+    });
+  };
+
+
   // ---- Bulk age clean-up -------------------------------------------------
   const [ageEditOpen, setAgeEditOpen] = useState(false);
   const [ageDrafts, setAgeDrafts] = useState<Record<string, string>>({});

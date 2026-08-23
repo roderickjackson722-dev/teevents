@@ -1,3 +1,4 @@
+import { normalizePaymentStatus, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useEffect, useState, useCallback, Fragment } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -252,7 +253,7 @@ const Finances = () => {
   const pendingRefunds = refundRequests.filter((r) => r.status === "pending");
 
   // Summary stats from platform_transactions
-  const succeededTx = platformTransactions.filter((t) => t.status === "succeeded" || t.status === "paid");
+  const succeededTx = platformTransactions.filter((t) => normalizePaymentStatus(t.status) === "paid");
   // Manual / offline transactions (cash, check, manually approved sponsors) — these are
   // collected by the organizer directly and never route through Stripe, so they should
   // count toward Total Collected but NOT toward the Net-to-Stripe deposit total.
@@ -342,7 +343,7 @@ const Finances = () => {
         (tx.amount_cents / 100).toFixed(2),
         (tx.platform_fee_cents / 100).toFixed(2),
         (tx.net_amount_cents / 100).toFixed(2),
-        tx.status,
+        paymentStatusLabel(tx.status),
       ]);
       downloadCSV("transaction-history.csv", headers, rows);
       toast.success(`Exported ${rows.length} transactions`);
@@ -470,11 +471,12 @@ const Finances = () => {
   });
 
   const statusBadge = (status: string) => {
-    switch (status) {
+    switch (normalizePaymentStatus(status)) {
       case "paid": return <Badge className="bg-emerald-100 text-emerald-700 border-emerald-200"><CheckCircle className="h-3 w-3 mr-1" />Paid</Badge>;
-      case "pending": return <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50"><Clock className="h-3 w-3 mr-1" />Pending</Badge>;
+      case "awaiting_payment": return <Badge variant="outline" className="text-amber-600 border-amber-300 bg-amber-50"><Clock className="h-3 w-3 mr-1" />Awaiting Payment</Badge>;
+      case "failed": return <Badge variant="outline" className="text-red-600 border-red-300 bg-red-50"><XCircle className="h-3 w-3 mr-1" />Failed</Badge>;
       case "refunded": return <Badge variant="outline" className="text-red-600 border-red-300 bg-red-50"><RotateCcw className="h-3 w-3 mr-1" />Refunded</Badge>;
-      default: return <Badge variant="outline">{status}</Badge>;
+      default: return <Badge variant="outline">{paymentStatusLabel(status)}</Badge>;
     }
   };
 
@@ -961,7 +963,7 @@ const Finances = () => {
                               <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(tx.platform_fee_cents / 100).toFixed(2)}</td>
                               <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${((tx.stripe_fee_cents || 0) / 100).toFixed(2)}</td>
                               <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(tx.net_amount_cents / 100).toFixed(2)}</td>
-                              <td className="p-3">{statusBadge(tx.status === "succeeded" ? "paid" : tx.status)}</td>
+                              <td className="p-3">{statusBadge(tx.status)}</td>
                               <td className="p-3 text-sm text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</td>
                             </tr>
                             {expanded && (
@@ -976,7 +978,7 @@ const Finances = () => {
                                     </div>
                                     <div className="space-y-1">
                                       <div><span className="text-muted-foreground">Payout Method:</span> <Badge variant="outline" className="text-xs capitalize ml-1">{tx.payout_method || "—"}</Badge></div>
-                                      <div><span className="text-muted-foreground">Payout Status:</span> <Badge variant="outline" className="text-xs capitalize ml-1">{tx.status}</Badge></div>
+                                      <div><span className="text-muted-foreground">Payout Status:</span> <Badge variant="outline" className="text-xs ml-1">{paymentStatusLabel(tx.status)}</Badge></div>
                                       <div>
                                         <span className="text-muted-foreground">Gross:</span> ${(tx.amount_cents / 100).toFixed(2)} ·{" "}
                                         <span className="text-muted-foreground">Platform:</span> ${(tx.platform_fee_cents / 100).toFixed(2)} ·{" "}
@@ -1231,7 +1233,7 @@ const Finances = () => {
                         <td className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground"}`}>
                           ${(tx.net_amount_cents / 100).toFixed(2)}
                         </td>
-                        <td className="p-2">{statusBadge(tx.status === "succeeded" ? "paid" : tx.status)}</td>
+                        <td className="p-2">{statusBadge(tx.status)}</td>
                       </tr>
                     ))}
                   </tbody>

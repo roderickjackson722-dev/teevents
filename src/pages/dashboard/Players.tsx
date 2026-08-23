@@ -1,3 +1,4 @@
+import { paymentStatusClasses, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useEffect, useMemo, useRef, useState } from "react";
 import PublicPairingsPageEditor from "@/components/dashboard/PublicPairingsPageEditor";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
@@ -2899,8 +2900,8 @@ const Players = () => {
                             </span>
                           )}
 
-                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[p.payment_status] || paymentColors.pending}`}>
-                            {p.payment_status}
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${paymentStatusClasses(p.payment_status)}`}>
+                            {paymentStatusIcon(p.payment_status)} {paymentStatusLabel(p.payment_status)}
                           </span>
                           {(p as any).payment_method && (p as any).payment_method !== "online" && (
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{(p as any).payment_method}</span>
@@ -4130,7 +4131,7 @@ const Players = () => {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Payment Status</p>
-                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full capitalize ${paymentColors[viewingPlayer.payment_status] || paymentColors.pending}`}>
+                  <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${paymentStatusClasses(viewingPlayer.payment_status)}`}>
                     {viewingPlayer.payment_status}
                   </span>
                 </div>

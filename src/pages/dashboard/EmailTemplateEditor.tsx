@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { formatTournamentDate } from "@/lib/formatDate";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
-import { parsePairingsConfig, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
+import { dayCfgOf, parsePairingsConfig, roundDateFor, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
 import ScheduledEmailCard from "@/components/dashboard/ScheduledEmailCard";

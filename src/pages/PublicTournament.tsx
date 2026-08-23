@@ -2256,6 +2256,18 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
               <p className="text-center text-sm mb-1" style={{ color: "#888" }}>
                 Par {coursePar} • Updates in real-time
               </p>
+              {tournament.slug && (
+                <p className="text-center text-sm mb-1">
+                  <a
+                    href={`/live/${tournament.slug}`}
+                    className="underline font-semibold"
+                    style={{ color: secondary }}
+                  >
+                    View full live leaderboard
+                  </a>
+                </p>
+              )}
+
               {fmt && fmt.id !== "stroke_play" && (
                 <p className="text-center text-xs mb-4 font-semibold" style={{ color: secondary }}>
                   {fmt.name}

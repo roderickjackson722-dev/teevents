@@ -119,19 +119,20 @@ export default function SimpleFlightPayouts({
     [flights],
   );
 
-  /** Roster count minus excluded players, unless the organizer typed an override. */
+/** Withdrawn / disqualified / no-card players never count toward a payout. */
+  const isIneligible = (status?: string | null) => !!status && status !== "active";
+
+  /** Roster count minus removed players, unless the organizer typed an override. */
   const effectiveCount = useCallback(
     (flightId: string, rosterCount: number, excluded: string[], override: number | null) => {
       if (override != null) return Math.max(0, override);
       const members = flights.find((f) => f.id === flightId)?.members;
-      const total = members ? members.length : rosterCount;
-      const excludedInFlight = members
-        ? members.filter((m) => excluded.includes(m.id)).length
-        : excluded.length;
-      return Math.max(0, total - excludedInFlight);
+      if (!members) return Math.max(0, rosterCount - excluded.length);
+      return members.filter((m) => !isIneligible(m.status) && !excluded.includes(m.id)).length;
     },
     [flights],
   );
+
 
   /** Build default rows: purse split by player share, default places + percentages. */
   const buildDefaults = useCallback((): Row[] => {

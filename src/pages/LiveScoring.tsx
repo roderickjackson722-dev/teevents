@@ -246,16 +246,31 @@ export default function LiveScoring() {
     setLoginMode(true);
   };
 
-  const loadGroup = async (gNum: number, codeForSession?: string, roundOverride?: number) => {
+  const loadGroup = async (
+    gNum: number,
+    codeForSession?: string,
+    roundOverride?: number,
+    forceGroup?: number | null,
+  ) => {
     if (!tournament) return;
 
     const round = roundOverride ?? roundNumber;
     const codeForRound = codeForSession || scoringCode || null;
+    const pinned = forceGroup ?? pinnedGroup;
 
     // Each round has its own pairings, so resolve the group from that round's
     // snapshot when we have the player's scoring code.
     let payload: any = null;
-    if (codeForRound) {
+    if (pinned != null) {
+      // The player confirmed which group they're in (their code is shared).
+      const { data } = await (supabase as any).rpc("get_round_group_by_number", {
+        _tournament_id: tournament.id,
+        _group_number: pinned,
+        _round_number: round,
+      });
+      payload = data || null;
+    }
+    if (!payload && codeForRound) {
       const { data } = await (supabase as any).rpc("get_round_scoring_group", {
         _tournament_id: tournament.id,
         _code: codeForRound,

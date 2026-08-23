@@ -38,3 +38,21 @@ export function nextOpenRound(
   while (r < max && closed.has(r)) r++;
   return r;
 }
+
+/**
+ * Hole the scoring app should open on. Takes any number of candidate holes
+ * (player `starting_hole`, the pairings-derived hole, …) and returns the first
+ * usable one clamped to 1–18. Players with no assignment fall back to Hole 1 so
+ * the app always opens on a valid hole.
+ */
+export function resolveStartingHole(
+  candidates: Array<number | string | null | undefined>,
+  fallback = 1
+): number {
+  for (const c of candidates) {
+    const n = typeof c === "string" ? parseInt(c, 10) : Number(c);
+    if (Number.isFinite(n) && n >= 1 && n <= 18) return Math.floor(n);
+  }
+  const f = Math.floor(Number(fallback));
+  return Number.isFinite(f) && f >= 1 && f <= 18 ? f : 1;
+}

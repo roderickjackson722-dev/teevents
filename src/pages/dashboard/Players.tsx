@@ -1161,6 +1161,9 @@ const Players = () => {
    * is stored with the pairings setup.
    */
   const [roundCount, setRoundCount] = useState<number>(1);
+  /** Round (1-based) pinned to the public pairings page; 0 = automatic. */
+  const [publishedRound, setPublishedRound] = useState<number>(0);
+
   const numRounds = Math.max(numDays, roundCount);
   const [activeDay, setActiveDay] = useState<number>(0);
   useEffect(() => { if (activeDay >= numRounds) setActiveDay(0); }, [numRounds, activeDay]);
@@ -1450,8 +1453,11 @@ const Players = () => {
           rounds: cfg.rounds,
           assignmentsByDay: cfg.assignmentsByDay,
           activeRound: cfg.activeRound,
+          publishedRound: cfg.publishedRound,
           emptyGroups: cfg.emptyGroups,
         };
+        setPublishedRound(cfg.publishedRound || 0);
+
         if (Object.keys(cfg.labels).length) {
           setHoleLabels(
             Object.fromEntries(
@@ -1511,7 +1517,9 @@ const Players = () => {
     rounds?: number;
     assignmentsByDay?: Record<number, Record<string, RoundAssignment>>;
     activeRound?: number;
+    publishedRound?: number;
     emptyGroups?: number[];
+
   }) => {
     if (!selectedTournament || !pairingsConfigLoaded) return Promise.resolve();
     const baseline = Object.keys(pairingsConfigRef.current).length
@@ -3219,10 +3227,39 @@ const Players = () => {
                   onChange={(e) => persistStartFormat({ roundDate: e.target.value })}
                 />
               </div>
+              {numRounds > 1 && (
+                <div className="flex w-full items-center gap-2">
+                  <Label className="text-xs text-muted-foreground whitespace-nowrap">Public pairings page shows</Label>
+                  <Select
+                    value={String(publishedRound || 0)}
+                    onValueChange={(v) => {
+                      const n = Number(v) || 0;
+                      setPublishedRound(n);
+                      void persistPairingsConfig({ publishedRound: n });
+                      toast({
+                        title: n === 0 ? "Public page set to automatic" : `Public page now shows Round ${n}`,
+                        description:
+                          n === 0
+                            ? "The public tee sheet follows the first round that isn't locked."
+                            : "Players opening the pairings link will see this round's groups, holes and tee times.",
+                      });
+                    }}
+                  >
+                    <SelectTrigger className="h-8 w-[220px]"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="0">Automatic (first open round)</SelectItem>
+                      {Array.from({ length: numRounds }).map((_, idx) => (
+                        <SelectItem key={idx} value={String(idx + 1)}>Round {idx + 1}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
               <p className="w-full text-[11px] text-muted-foreground">
                 Each round keeps its own play date, format, start type and tee times. The round date is what printables, the public tee sheet and tee-time emails show — set it when side events start a day before the actual round.
               </p>
             </div>
+
             <div className="mb-3 flex flex-wrap items-end gap-4 border-b border-border pb-3">
               <div>
                 <Label className="text-xs text-muted-foreground">

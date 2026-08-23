@@ -45,6 +45,9 @@ export interface PairingsConfig {
   assignmentsByDay: Record<string, Record<string, PairingAssignment>>;
   /** round index (0-based) whose pairings are currently live in the DB */
   activeRound: number;
+  /** round (1-based) forced onto the public pairings page; 0 = automatic */
+  publishedRound: number;
+
   /** hole/group slots the organizer created that currently have no players */
   emptyGroups: number[];
 }
@@ -99,12 +102,14 @@ export function parsePairingsConfig(raw: unknown): PairingsConfig {
     assignmentsByDay[String(day)] = inner;
   }
   const activeRound = Math.max(0, Number(obj.activeRound) || 0);
+  const publishedRound = Math.min(rounds, Math.max(0, Number(obj.publishedRound) || 0));
   const emptyGroups = Array.isArray(obj.emptyGroups)
     ? [...new Set(obj.emptyGroups.map((n: unknown) => Number(n)).filter((n: number) => Number.isFinite(n) && n > 0))].sort(
         (a: number, b: number) => a - b,
       )
     : [];
-  return { labels, teeTimesByDay, byDay, rounds, assignmentsByDay, activeRound, emptyGroups };
+  return { labels, teeTimesByDay, byDay, rounds, assignmentsByDay, activeRound, publishedRound, emptyGroups };
+
 }
 
 export function dayCfgOf(cfg: PairingsConfig, day = 0): PairingsDayCfg {

@@ -207,7 +207,7 @@ export default function LiveScoring() {
       try {
         const raw = localStorage.getItem(sessionKey);
         if (!raw) return;
-        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number; pinnedGroup?: number | null };
+        const saved = JSON.parse(raw) as { tournamentId?: string; code?: string; groupNumber?: number; pinnedGroup?: number | null; round?: number };
         if (!saved?.code || saved.tournamentId !== tournament.id) return;
         // Re-validate the stored code server-side; the group is derived from it, never from the client
         const { data: gNum } = await supabase.rpc("live_scoring_lookup_group", {
@@ -218,8 +218,14 @@ export default function LiveScoring() {
         if (cancelled) return;
         if (gNum) {
           setScoringCode(saved.code);
-          if (saved.pinnedGroup != null) setPinnedGroup(saved.pinnedGroup);
-          await loadGroup(gNum as number, saved.code, undefined, saved.pinnedGroup ?? null);
+          // A group pinned in an earlier round means nothing once scoring rolls
+          // forward — the new round has its own pairings.
+          const sameRound = Number(saved.round || 1) === roundNumber;
+          const pinned = sameRound ? (saved.pinnedGroup ?? null) : null;
+          if (pinned != null) setPinnedGroup(pinned);
+          else setPinnedGroup(null);
+          await loadGroup(gNum as number, saved.code, undefined, pinned);
+
         } else {
           localStorage.removeItem(sessionKey);
         }

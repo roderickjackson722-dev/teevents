@@ -186,9 +186,12 @@ export function buildLeaderboard(
     return Object.entries(playerData)
       .map(([regId, p]) => {
         let points = 0;
-        const holesPlayed = Object.keys(p.holes).length;
-        Object.values(p.holes).forEach((strokes) => {
-          points += stablefordPoints(strokes, holePar);
+        let holesPlayed = 0;
+        Object.values(p.holesByRound).forEach((roundHoles) => {
+          holesPlayed += Object.keys(roundHoles).length;
+          Object.entries(roundHoles).forEach(([hole, strokes]) => {
+            points += stablefordPoints(strokes, holePars?.[Number(hole) - 1] ?? holePar);
+          });
         });
         return { name: p.name, total: points, thru: holesPlayed, points, key: regId, holesByRound: p.holesByRound };
       })

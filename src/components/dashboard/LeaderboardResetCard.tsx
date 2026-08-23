@@ -36,6 +36,7 @@ interface SnapshotRow {
 interface SnapshotScore {
   registration_id: string;
   hole_number: number;
+  round_number?: number;
   strokes: number;
 }
 
@@ -81,7 +82,7 @@ export default function LeaderboardResetCard({ tournamentId, canManage, lastRese
 
       const { data: current, error: readErr } = await supabase
         .from("tournament_scores")
-        .select("registration_id, hole_number, strokes")
+        .select("registration_id, hole_number, round_number, strokes")
         .eq("tournament_id", tournamentId);
       if (readErr) throw readErr;
 
@@ -151,9 +152,10 @@ export default function LeaderboardResetCard({ tournamentId, canManage, lastRese
           tournament_id: tournamentId,
           registration_id: r.registration_id,
           hole_number: r.hole_number,
+          round_number: r.round_number || 1,
           strokes: r.strokes,
         })) as never,
-        { onConflict: "registration_id,hole_number" }
+        { onConflict: "registration_id,round_number,hole_number" }
       );
       if (upErr) throw upErr;
 

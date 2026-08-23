@@ -176,7 +176,9 @@ Deno.serve(async (req) => {
       group_number: sampleRegistration?.group_number != null ? String(sampleRegistration.group_number) : "TBD",
       team_name: sampleRegistration?.group_number != null ? `Group ${sampleRegistration.group_number}` : "To be assigned",
       scoring_code: sampleRegistration?.group_scoring_code || sampleRegistration?.scoring_code || "Assigned when pairings are finalized",
-      pairings_link: tournamentSlug ? `https://www.teevents.golf/pairings/${tournamentSlug}` : "https://www.teevents.golf",
+      pairings_link: tournamentSlug
+        ? `https://www.teevents.golf/pairings/${tournamentSlug}${sampleRegistration?.group_scoring_code || sampleRegistration?.scoring_code ? `?code=${encodeURIComponent(sampleRegistration.group_scoring_code || sampleRegistration.scoring_code)}` : ""}`
+        : "https://www.teevents.golf",
     };
 
     const headers: Record<string, string> = {

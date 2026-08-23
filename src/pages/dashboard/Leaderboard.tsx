@@ -28,6 +28,9 @@ import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
 import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
+import RoundClosureCard from "@/components/dashboard/RoundClosureCard";
+import { activeRoundNumber, parsePairingsConfig, roundLabel } from "@/lib/pairingsConfig";
+import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
 
@@ -170,6 +173,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const [scoreSearch, setScoreSearch] = useState("");
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
   const [editHole, setEditHole] = useState(1);
+  const [workingRound, setWorkingRound] = useState(1);
 
 
   // Detect platform admin — admins get access to ALL tournaments across every org
@@ -194,7 +198,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     queryFn: async () => {
       let query = supabase
         .from("tournaments")
-        .select("id, title, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, leaderboard_last_reset_at, organizations(name)")
+        .select("id, title, date, pairings_config, course_par, slug, site_published, scoring_format, handicap_enabled, organization_id, leaderboard_frozen_at, leaderboard_frozen_by, leaderboard_last_reset_at, organizations(name)")
         .order("date", { ascending: false });
       if (!isPlatformAdmin) {
         query = query.eq("organization_id", org!.orgId);
@@ -212,6 +216,36 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const isStableford = scoringFormat?.scoring === "stableford";
   const handicapEnabled = (selectedTournamentData as any)?.handicap_enabled === true;
   const coursePar = selectedTournamentData?.course_par || 72;
+  const pairingsCfg = useMemo(
+    () => parsePairingsConfig((selectedTournamentData as any)?.pairings_config),
+    [selectedTournamentData],
+  );
+  const totalRounds = Math.max(1, pairingsCfg.rounds || 1);
+  const { data: roundRows } = useQuery({
+    queryKey: ["tournament-rounds", selectedTournament],
+    queryFn: async () => {
+      const { data, error } = await (supabase as any)
+        .from("tournament_rounds")
+        .select("round_number, status, closed_at")
+        .eq("tournament_id", selectedTournament);
+      if (error) throw error;
+      return (data || []) as TournamentRoundRow[];
+    },
+    enabled: !!selectedTournament,
+  });
+  const closedRounds = useMemo(() => closedRoundSet(roundRows), [roundRows]);
+  const roundLocked = closedRounds.has(workingRound);
+
+  useEffect(() => {
+    if (!selectedTournamentData) return;
+    setWorkingRound(nextOpenRound(
+      activeRoundNumber(pairingsCfg, (selectedTournamentData as any).date),
+      closedRounds,
+      totalRounds,
+    ));
+    setEditedScores({});
+    setSelectedRowKey(null);
+  }, [selectedTournament, selectedTournamentData, pairingsCfg, closedRounds, totalRounds]);
 
   // Freeze state
   const frozenAt: string | null = (selectedTournamentData as any)?.leaderboard_frozen_at ?? null;
@@ -250,7 +284,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const holes = Array.from({ length: 18 }, (_, i) => i + 1);
 
   const { data: registrations } = useQuery({
-    queryKey: ["leaderboard-players", selectedTournament],
+    queryKey: ["leaderboard-players", selectedTournament, workingRound],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_registrations")
@@ -259,7 +293,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         .order("last_name");
       if (error) throw error;
       // Mirror Players & Pairings: only paid roster players appear on the leaderboard.
-      return (data || []).filter((r: any) => (r.payment_status || "").toLowerCase() === "paid");
+      const assignments = pairingsCfg.assignmentsByDay[String(workingRound - 1)];
+      return (data || [])
+        .filter((r: any) => (r.payment_status || "").toLowerCase() === "paid")
+        .map((r: any) => ({ ...r, group_number: assignments?.[r.id]?.g ?? r.group_number }));
     },
     enabled: !!selectedTournament,
   });
@@ -290,12 +327,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   }, [teamNameRows]);
 
   const { data: scores, isLoading: scoresLoading } = useQuery({
-    queryKey: ["tournament-scores", selectedTournament],
+    queryKey: ["tournament-scores", selectedTournament, workingRound],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("tournament_scores")
-        .select("registration_id, hole_number, strokes")
-        .eq("tournament_id", selectedTournament);
+        .select("registration_id, hole_number, strokes, round_number")
+        .eq("tournament_id", selectedTournament)
+        .eq("round_number", workingRound);
       if (error) throw error;
       return data;
     },
@@ -471,10 +509,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       if (isFrozen) {
         throw new Error("This leaderboard is frozen. Unfreeze it in the Freeze Leaderboard card to edit scores.");
       }
+      if (roundLocked) {
+        throw new Error(`${roundLabel(workingRound - 1)} is closed. Reopen it before changing scores.`);
+      }
 
       // ---- Validation ----
       const errs: Record<string, Record<number, string>> = {};
-      const upserts: { tournament_id: string; registration_id: string; hole_number: number; strokes: number }[] = [];
+      const upserts: { tournament_id: string; registration_id: string; hole_number: number; round_number: number; strokes: number }[] = [];
       Object.entries(editedScores).forEach(([regId, holes]) => {
         Object.entries(holes).forEach(([hole, strokes]) => {
           const holeNum = parseInt(hole);
@@ -487,6 +528,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
               tournament_id: selectedTournament,
               registration_id: regId,
               hole_number: holeNum,
+              round_number: workingRound,
               strokes,
             });
           }
@@ -503,8 +545,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
       // ---- Offline fallback: queue instead of network call ----
       if (typeof navigator !== "undefined" && !navigator.onLine) {
-        enqueue(upserts.map(({ tournament_id, registration_id, hole_number, strokes }) => ({
-          tournament_id, registration_id, hole_number, strokes,
+        enqueue(upserts.map(({ tournament_id, registration_id, hole_number, round_number, strokes }) => ({
+          tournament_id, registration_id, hole_number, round_number, strokes,
         })));
         return { mode: "queued" as const, count: upserts.length };
       }
@@ -523,6 +565,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             tournament_id: selectedTournament,
             registration_id: u.registration_id,
             hole_number: u.hole_number,
+            round_number: workingRound,
             old_score: oldScore,
             new_score: u.strokes,
             edited_by: user.id,
@@ -533,7 +576,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
       try {
         const { error } = await supabase.from("tournament_scores").upsert(upserts, {
-          onConflict: "registration_id,hole_number",
+          onConflict: "registration_id,round_number,hole_number",
         });
         if (error) throw error;
         if (editLogs.length > 0) {
@@ -545,8 +588,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         const msg = String(e?.message || e || "");
         const looksNetwork = /network|fetch|failed to fetch|load failed/i.test(msg);
         if (looksNetwork) {
-          enqueue(upserts.map(({ tournament_id, registration_id, hole_number, strokes }) => ({
-            tournament_id, registration_id, hole_number, strokes,
+          enqueue(upserts.map(({ tournament_id, registration_id, hole_number, round_number, strokes }) => ({
+            tournament_id, registration_id, hole_number, round_number, strokes,
           })));
           return { mode: "queued" as const, count: upserts.length };
         }
@@ -703,7 +746,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
    * changes the selected hole — it never writes scores.
    */
   const saveAndNext = async () => {
-    const mayWrite = canEditScores && !isFrozen;
+    const mayWrite = canEditScores && !isFrozen && !roundLocked;
     try {
       if (mayWrite && hasEdits) await saveMutation.mutateAsync();
       setEditHole((h) => Math.min(holes.length, h + 1));
@@ -765,8 +808,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           {hasEdits && canEditScores && (
             <Button
               onClick={() => saveMutation.mutate()}
-              disabled={saveMutation.isPending || isFrozen}
-              title={isFrozen ? "Leaderboard is frozen" : undefined}
+              disabled={saveMutation.isPending || isFrozen || roundLocked}
+              title={roundLocked ? `${roundLabel(workingRound - 1)} is closed` : isFrozen ? "Leaderboard is frozen" : undefined}
             >
               <Save className="mr-2 h-4 w-4" />
               {saveMutation.isPending ? "Saving..." : isFrozen ? "Frozen" : "Save Scores"}
@@ -788,6 +831,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           <div>
             <strong>Leaderboard frozen.</strong> Score entry is locked as of {new Date(frozenAt!).toLocaleString()}. Unfreeze below to resume edits.
           </div>
+        </div>
+      )}
+
+      {selectedTournament && roundLocked && (
+        <div className="rounded-md border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm flex items-start gap-2">
+          <Lock className="h-4 w-4 mt-0.5 shrink-0" />
+          <div><strong>{roundLabel(workingRound - 1)} is closed.</strong> Scores are visible for review but cannot be changed unless the round is reopened.</div>
         </div>
       )}
 
@@ -832,6 +882,28 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           </SelectContent>
 
         </Select>
+
+        {selectedTournament && totalRounds > 1 && (
+          <Select
+            value={String(workingRound)}
+            onValueChange={(value) => {
+              setWorkingRound(Number(value));
+              setEditedScores({});
+              setSelectedRowKey(null);
+            }}
+          >
+            <SelectTrigger className="w-[190px]">
+              <SelectValue placeholder="Working round" />
+            </SelectTrigger>
+            <SelectContent>
+              {Array.from({ length: totalRounds }, (_, index) => index + 1).map((round) => (
+                <SelectItem key={round} value={String(round)}>
+                  {roundLabel(round - 1)}{closedRounds.has(round) ? " — Closed" : " — Open"}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        )}
 
         {selectedTournamentData?.slug && selectedTournamentData?.site_published && (
           <>
@@ -1002,7 +1074,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                       {holes.map((h) => {
                         const val = team.holeScores[h];
                         const missing = val == null;
-                        if (canEditScores && !isFrozen) {
+                        if (canEditScores && !isFrozen && !roundLocked) {
                           return (
                             <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
                               <ScoreInput
@@ -1044,7 +1116,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                               team.holeScores[editHole] ?? 0
                             )}
                             maxHole={holes.length}
-                            disabled={!canEditScores || isFrozen}
+                            disabled={!canEditScores || isFrozen || roundLocked}
                             saving={saveMutation.isPending}
                             onHole={setEditHole}
                             onValue={(n) => setTeamScoreValue(team.players, editHole, n)}
@@ -1271,7 +1343,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                                 par={getHolePar(editHole)}
                                 value={Number(editedScores[ps.registration_id]?.[editHole] ?? ps.scores[editHole] ?? 0)}
                                 maxHole={holes.length}
-                                disabled={!canEditScores || isFrozen}
+                                disabled={!canEditScores || isFrozen || roundLocked}
                                 saving={saveMutation.isPending}
                                 onHole={setEditHole}
                                 onValue={(n) => setScore(ps.registration_id, editHole, n)}
@@ -1337,6 +1409,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       )}
 
       {/* Edit history lives at the very bottom of the page */}
+      {showEntry && selectedTournament && (
+        <RoundClosureCard tournamentId={selectedTournament} />
+      )}
+
       {showEntry && selectedTournament && (
         <ScoreEditHistory tournamentId={selectedTournament} />
       )}

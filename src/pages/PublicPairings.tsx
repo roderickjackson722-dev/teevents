@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { useParams } from "@tanstack/react-router";
+import { useParams, useSearch } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Clock, MapPin, CalendarDays, Flag, Mail } from "lucide-react";
+import { Loader2, Clock, MapPin, CalendarDays, Flag, Mail, PencilLine, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { formatTeeTime } from "@/components/printables/CartSignsTab";
 import { resolvePairingsPageConfig } from "@/lib/pairingsPageConfig";
 import {
@@ -24,6 +25,7 @@ interface Row {
   logo_url: string | null;
   hero_image_url: string | null;
   contact_email: string | null;
+  active_round?: number | null;
   group_number: number | null;
   starting_hole: number | null;
   tee_time: string | null;
@@ -37,6 +39,7 @@ interface Row {
 /** Public, read-only tee sheet / pairings page: /pairings/$slug */
 export default function PublicPairings() {
   const params = useParams({ strict: false }) as { slug?: string };
+  const search = useSearch({ strict: false }) as { code?: string };
   const slug = params.slug ?? "";
   const [rows, setRows] = useState<Row[] | null>(null);
 
@@ -59,12 +62,8 @@ export default function PublicPairings() {
   const info = rows?.[0];
   const cfg = useMemo(() => resolvePairingsPageConfig(info?.page_config), [info?.page_config]);
   const pairingsCfg = useMemo(() => parsePairingsConfig(info?.pairings_config), [info?.pairings_config]);
-  /**
-   * The roster's live group/tee-time values always mirror the round the
-   * organizer currently has open, so the public sheet must read that same
-   * round's setup — otherwise a shotgun Round 2 inherits Round 1 tee times.
-   */
-  const day = pairingsCfg.activeRound || 0;
+  // The public feed resolves the first open round after organizer closures.
+  const day = Math.max(0, Number(info?.active_round || pairingsCfg.activeRound + 1) - 1);
   const dayCfg = useMemo(() => dayCfgOf(pairingsCfg, day), [pairingsCfg, day]);
   const teeTimeStart =
     (pairingsCfg.byDay[String(day)]?.startFormat || info?.start_format || "") === "tee_times";
@@ -137,6 +136,18 @@ export default function PublicPairings() {
           {cfg.intro?.trim() && (
             <p className="mt-4 text-sm text-foreground/80 whitespace-pre-line">{cfg.intro}</p>
           )}
+          <div className="mt-5 flex flex-wrap gap-3">
+            <Button asChild>
+              <a href={`/t/${slug}/scoring${search.code ? `?code=${encodeURIComponent(search.code)}` : ""}`}>
+                <PencilLine className="h-4 w-4 mr-2" /> Enter Scores
+              </a>
+            </Button>
+            <Button variant="outline" asChild>
+              <a href={`/live/${slug}`} target="_blank" rel="noopener noreferrer">
+                <Trophy className="h-4 w-4 mr-2" /> Live Leaderboard
+              </a>
+            </Button>
+          </div>
         </header>
 
         {cfg.notes?.trim() && (

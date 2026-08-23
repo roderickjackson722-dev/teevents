@@ -6,6 +6,7 @@ export interface QueuedScore {
   tournament_id: string;
   registration_id: string;
   hole_number: number;
+  round_number: number;
   strokes: number;
   queued_at: number;
 }
@@ -62,13 +63,14 @@ export function useOfflineScoreQueue(tournamentId: string | null | undefined) {
     (rows: Omit<QueuedScore, "queued_at">[]) => {
       if (!tournamentId) return;
       const now = Date.now();
-      // De-dupe by registration_id + hole_number — latest wins.
+      // De-dupe within a round so a later round never overwrites an earlier one.
       const map = new Map<string, QueuedScore>();
       for (const r of loadQueue(tournamentId)) {
-        map.set(`${r.registration_id}:${r.hole_number}`, r);
+        const normalized = { ...r, round_number: r.round_number || 1 };
+        map.set(`${r.registration_id}:${normalized.round_number}:${r.hole_number}`, normalized);
       }
       for (const r of rows) {
-        map.set(`${r.registration_id}:${r.hole_number}`, { ...r, queued_at: now });
+        map.set(`${r.registration_id}:${r.round_number}:${r.hole_number}`, { ...r, queued_at: now });
       }
       const next = Array.from(map.values());
       saveQueue(tournamentId, next);

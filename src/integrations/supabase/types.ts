@@ -7729,6 +7729,7 @@ export type Database = {
           notes: string | null
           old_score: number | null
           registration_id: string
+          round_number: number
           tournament_id: string
         }
         Insert: {
@@ -7741,6 +7742,7 @@ export type Database = {
           notes?: string | null
           old_score?: number | null
           registration_id: string
+          round_number?: number
           tournament_id: string
         }
         Update: {
@@ -7753,6 +7755,7 @@ export type Database = {
           notes?: string | null
           old_score?: number | null
           registration_id?: string
+          round_number?: number
           tournament_id?: string
         }
         Relationships: [
@@ -12683,6 +12686,7 @@ export type Database = {
       get_public_pairings: {
         Args: { _slug: string }
         Returns: {
+          active_round: number
           contact_email: string
           course_name: string
           event_date: string
@@ -12695,6 +12699,7 @@ export type Database = {
           logo_url: string
           page_config: Json
           pairings_config: Json
+          registration_id: string
           start_format: string
           starting_hole: number
           team_name: string

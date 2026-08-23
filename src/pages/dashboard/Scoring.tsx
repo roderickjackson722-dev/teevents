@@ -129,6 +129,10 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
         </Card>
       )}
 
+      {/* Round locking stays visible so an organizer can close Round 1 while
+          later rounds keep accepting scores. */}
+      {selectedTournament && <RoundClosureCard tournamentId={selectedTournament} />}
+
       {selectedTournament && (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
           <TabsList>
@@ -151,7 +155,7 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
               <Coins className="h-4 w-4 mr-1.5" /> Skins
             </TabsTrigger>
             <TabsTrigger value="rounds">
-              <Lock className="h-4 w-4 mr-1.5" /> Round Status
+              <Lock className="h-4 w-4 mr-1.5" /> Lock Rounds
             </TabsTrigger>
           </TabsList>
 

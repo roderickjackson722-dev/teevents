@@ -117,10 +117,11 @@ export default function GroupScoring() {
       setRoundNumber(activeRound);
       setTournament(t);
 
-      const { data: regs } = await supabase
+      const { data: regs } = await (supabase as any)
         .rpc("get_group_scoring_roster", {
           _tournament_id: t.id,
           _code: cleanCode,
+          _round_number: activeRound,
         });
       if (!regs || regs.length === 0) {
         setError("No players found for this code.");

@@ -12545,7 +12545,7 @@ export type Database = {
       get_demo_conversion_discount: { Args: { _token: string }; Returns: Json }
       get_demo_prep_share: { Args: { _token: string }; Returns: Json }
       get_group_scoring_roster: {
-        Args: { _code: string; _tournament_id: string }
+        Args: { _code: string; _round_number?: number; _tournament_id: string }
         Returns: {
           course_handicap: number
           first_name: string
@@ -12796,6 +12796,10 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      get_round_scoring_group: {
+        Args: { _code: string; _round_number?: number; _tournament_id: string }
+        Returns: Json
+      }
       get_score_edit_history: {
         Args: { _limit?: number; _tournament_id: string }
         Returns: {
@@ -13013,6 +13017,10 @@ export type Database = {
       save_league_team_scores: {
         Args: { _code: string; _scores: Json }
         Returns: Json
+      }
+      scoring_code_group_ids: {
+        Args: { _code: string; _round_number?: number; _tournament_id: string }
+        Returns: string[]
       }
       settle_manual_entry_liabilities: {
         Args: { _max_deduct_cents: number; _organization_id: string }

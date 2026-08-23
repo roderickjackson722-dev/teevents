@@ -244,13 +244,30 @@ export default function LiveScoring() {
     setLoginMode(true);
   };
 
-  const loadGroup = async (gNum: number, codeForSession?: string) => {
+  const loadGroup = async (gNum: number, codeForSession?: string, roundOverride?: number) => {
     if (!tournament) return;
 
-    const { data: payload } = await supabase.rpc("get_live_scoring_group", {
-      _tournament_id: tournament.id,
-      _group_number: gNum,
-    });
+    const round = roundOverride ?? roundNumber;
+    const codeForRound = codeForSession || scoringCode || null;
+
+    // Each round has its own pairings, so resolve the group from that round's
+    // snapshot when we have the player's scoring code.
+    let payload: any = null;
+    if (codeForRound) {
+      const { data } = await (supabase as any).rpc("get_round_scoring_group", {
+        _tournament_id: tournament.id,
+        _code: codeForRound,
+        _round_number: round,
+      });
+      payload = data || null;
+    }
+    if (!payload) {
+      const { data } = await supabase.rpc("get_live_scoring_group", {
+        _tournament_id: tournament.id,
+        _group_number: gNum,
+      });
+      payload = data;
+    }
     const groupPlayers = (payload as any)?.players as any[] | undefined;
     const existingScores = (payload as any)?.scores as any[] | undefined;
 
@@ -262,7 +279,7 @@ export default function LiveScoring() {
     const scoreMap: Record<string, Record<number, number>> = {};
     existingScores?.forEach((s: any) => {
       // Only the round in play — earlier rounds keep their own saved cards.
-      if ((Number(s.round_number) || 1) !== roundNumber) return;
+      if ((Number(s.round_number) || 1) !== round) return;
       if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });
@@ -281,24 +298,39 @@ export default function LiveScoring() {
 
     // Remember a scoring_code from the group so we can authorize saves
     const anyCode = groupPlayers.find((p: any) => p.scoring_code)?.scoring_code;
-    const sessionCode = codeForSession || scoringCode || anyCode || null;
+    const sessionCode = codeForRound || anyCode || null;
     if (!scoringCode && anyCode) setScoringCode(anyCode);
+
+    // The round's own group number (from its pairings snapshot) wins.
+    const roundGroup = Number((payload as any)?.group_number) || gNum;
 
     setTeamName((payload as any)?.team_name || null);
     setPlayers(mappedPlayers);
     setScores(scoreMap);
-    setGroupNumber(gNum);
+    setEditedScores({});
+    setGroupNumber(roundGroup);
     setLoginMode(false);
     // Open on the group's assigned starting hole (shotgun starts) — the player
     // can still navigate anywhere from there.
     const assigned = resolveStartingHole([
+      pairingsCfg ? startingHoleForGroup(pairingsCfg, roundGroup, Math.max(0, round - 1)) : null,
       ...groupPlayers.map((p: any) => p.starting_hole),
-      pairingsCfg ? startingHoleForGroup(pairingsCfg, gNum, Math.max(0, roundNumber - 1)) : null,
     ]);
     setStartingHole(assigned);
     setFocusHole(assigned);
-    persistSession(sessionCode, gNum);
+    persistSession(sessionCode, roundGroup);
   };
+
+  // Switching rounds (organizer closes a round, or the player picks one)
+  // reloads that round's group and card with the same scoring code.
+  const activeRoundRef = useRef<number | null>(null);
+  useEffect(() => {
+    if (loginMode || !tournament || !scoringCode || groupNumber == null) return;
+    if (activeRoundRef.current === roundNumber) return;
+    activeRoundRef.current = roundNumber;
+    loadGroup(groupNumber, scoringCode, roundNumber);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [roundNumber, loginMode, tournament?.id, scoringCode]);
 
 
   // Resolve the group's flight so players see (and open) their own flight board.

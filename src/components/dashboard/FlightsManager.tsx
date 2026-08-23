@@ -33,6 +33,7 @@ interface Player {
   handicap: number | null;
   group_number?: number | null;
   tier_id?: string | null;
+  status?: string | null;
 }
 
 interface RegistrationTier {
@@ -92,7 +93,6 @@ export default function FlightsManager({ tournamentId }: Props) {
         .from("tournament_registrations")
         .select("id, first_name, last_name, flight_id, handicap, group_number, tier_id, status")
         .eq("tournament_id", tournamentId)
-        .neq("status", "wd")
         .order("last_name", { ascending: true }),
 
       (supabase as any)
@@ -360,7 +360,13 @@ export default function FlightsManager({ tournamentId }: Props) {
     setPlayers((prev) => prev.map((p) => (p.id === playerId ? { ...p, flight_id: flightId } : p)));
   };
 
-  const countByFlight = (id: string) => players.filter((p) => p.flight_id === id).length;
+  const isEligible = (p: Player) => !p.status || p.status === "active";
+  /** Only active players count toward flight size and payout math. */
+  const countByFlight = (id: string) => players.filter((p) => p.flight_id === id && isEligible(p)).length;
+  const membersByFlight = (id: string) =>
+    players
+      .filter((p) => p.flight_id === id)
+      .map((p) => ({ id: p.id, name: `${p.first_name} ${p.last_name}`.trim(), status: p.status ?? "active" }));
 
   if (loading) return <p className="text-sm text-muted-foreground">Loading flights…</p>;
 
@@ -368,13 +374,18 @@ export default function FlightsManager({ tournamentId }: Props) {
     <div className="space-y-8">
       <SimpleFlightPayouts
         tournamentId={tournamentId}
-        flights={flights.map((f) => ({ id: f.id, name: f.tier_name, players: countByFlight(f.id) }))}
+        flights={flights.map((f) => ({
+          id: f.id,
+          name: f.tier_name,
+          players: countByFlight(f.id),
+          members: membersByFlight(f.id),
+        }))}
         defaultPurseCents={purseCents}
         flightMethod={settings.flight_method}
         onSaveMethod={(m: FlightMethod) => saveFlightSettings({ ...settings, flights_enabled: true, flight_method: m })}
-        unassignedNames={players.filter((p) => !p.flight_id).map((p) => `${p.first_name} ${p.last_name}`)}
-        assignedCount={players.filter((p) => p.flight_id).length}
-        totalPlayers={players.length}
+        unassignedNames={players.filter((p) => !p.flight_id && isEligible(p)).map((p) => `${p.first_name} ${p.last_name}`)}
+        assignedCount={players.filter((p) => p.flight_id && isEligible(p)).length}
+        totalPlayers={players.filter(isEligible).length}
         onSync={syncFromRegistrationDivisions}
         syncing={syncing}
         onAddFlight={openAdd}

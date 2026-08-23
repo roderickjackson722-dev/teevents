@@ -3053,12 +3053,14 @@ export type Database = {
         Row: {
           created_at: string
           display_order: number
+          excluded_registration_ids: string[]
           first_place_cents: number
           flight_name: string
           id: string
           league_event_id: string | null
           league_id: string | null
           player_count: number
+          player_count_override: number | null
           second_place_cents: number
           third_place_cents: number
           total_purse_cents: number
@@ -3068,12 +3070,14 @@ export type Database = {
         Insert: {
           created_at?: string
           display_order?: number
+          excluded_registration_ids?: string[]
           first_place_cents?: number
           flight_name: string
           id?: string
           league_event_id?: string | null
           league_id?: string | null
           player_count?: number
+          player_count_override?: number | null
           second_place_cents?: number
           third_place_cents?: number
           total_purse_cents?: number
@@ -3083,12 +3087,14 @@ export type Database = {
         Update: {
           created_at?: string
           display_order?: number
+          excluded_registration_ids?: string[]
           first_place_cents?: number
           flight_name?: string
           id?: string
           league_event_id?: string | null
           league_id?: string | null
           player_count?: number
+          player_count_override?: number | null
           second_place_cents?: number
           third_place_cents?: number
           total_purse_cents?: number

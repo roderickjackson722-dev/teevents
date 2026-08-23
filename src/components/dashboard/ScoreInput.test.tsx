@@ -7,8 +7,7 @@ describe("parseScoreInput", () => {
     expect(parseScoreInput("")).toEqual({ kind: "clear" });
   });
 
-  it("accepts plain integers between 0 and 20", () => {
-    expect(parseScoreInput("0")).toEqual({ kind: "value", value: 0 });
+  it("accepts plain integers between 1 and 20", () => {
     expect(parseScoreInput("6")).toEqual({ kind: "value", value: 6 });
     expect(parseScoreInput("20")).toEqual({ kind: "value", value: 20 });
   });
@@ -21,6 +20,7 @@ describe("parseScoreInput", () => {
   });
 
   it("rejects out-of-range values", () => {
+    expect(parseScoreInput("0")).toEqual({ kind: "invalid" });
     expect(parseScoreInput("99")).toEqual({ kind: "invalid" });
   });
 });

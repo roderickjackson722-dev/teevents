@@ -176,6 +176,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
   const [editHole, setEditHole] = useState(1);
   const [workingRound, setWorkingRound] = useState(1);
+  const initializedTournamentRef = useRef<string | null>(null);
 
 
   // Detect platform admin — admins get access to ALL tournaments across every org
@@ -239,7 +240,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const roundLocked = closedRounds.has(workingRound);
 
   useEffect(() => {
-    if (!selectedTournamentData) return;
+    if (!selectedTournamentData || !roundRows || initializedTournamentRef.current === selectedTournament) return;
+    initializedTournamentRef.current = selectedTournament;
     setWorkingRound(nextOpenRound(
       activeRoundNumber(pairingsCfg, (selectedTournamentData as any).date),
       closedRounds,
@@ -247,7 +249,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     ));
     setEditedScores({});
     setSelectedRowKey(null);
-  }, [selectedTournament, selectedTournamentData, pairingsCfg, closedRounds, totalRounds]);
+  }, [selectedTournament, selectedTournamentData, pairingsCfg, roundRows, closedRounds, totalRounds]);
 
   // Freeze state
   const frozenAt: string | null = (selectedTournamentData as any)?.leaderboard_frozen_at ?? null;

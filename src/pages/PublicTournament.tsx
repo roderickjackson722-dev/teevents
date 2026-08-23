@@ -2321,7 +2321,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   </thead>
                   <tbody>
                     {leaderboard.map((entry, i) => {
-                      const toPar = isStableford ? 0 : entry.total - Math.round((coursePar / 18) * entry.thru);
+                      // Prefer par for the exact holes played (multi-round aware),
+                      // matching the standalone live leaderboard's To Par math.
+                      const parPlayed = entry.parPlayed && entry.parPlayed > 0
+                        ? entry.parPlayed
+                        : Math.round((coursePar / 18) * entry.thru);
+                      const toPar = isStableford ? 0 : entry.total - parPlayed;
                       const toParStr = toPar === 0 ? "E" : toPar > 0 ? `+${toPar}` : `${toPar}`;
                       return (
                         <tr key={i} style={{ borderBottom: "1px solid #f0f0f0" }}>

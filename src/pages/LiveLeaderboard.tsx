@@ -446,13 +446,15 @@ export default function LiveLeaderboard({
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className={`${embedded ? "py-16" : "min-h-screen"} flex items-center justify-center bg-background`}>
         <Loader2 className="h-10 w-10 animate-spin text-primary" />
       </div>
     );
   }
 
   if (accessDenied || !tournament) {
+    // Embedded on the event homepage: stay silent rather than showing an error block.
+    if (embedded) return null;
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-md">

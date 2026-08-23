@@ -810,24 +810,32 @@ export default function LiveScoring() {
                     <div className="flex items-center gap-3">
                       <button
                         onClick={() => adjustTeamScore(focusHole, -1)}
-                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted flex items-center justify-center"
+                        disabled={roundLocked}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center"
                         aria-label="Decrease team score"
                       >
                         <Minus className="h-5 w-5" />
                       </button>
-                      <div className="w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl font-bold flex items-center justify-center">
-                        {display === "" ? <span className="text-muted-foreground/60 text-xl">{par}</span> : display}
+                      <div
+                        className={`w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl flex items-center justify-center ${
+                          display === ""
+                            ? "opacity-50 text-muted-foreground font-normal"
+                            : "opacity-100 text-primary font-bold"
+                        }`}
+                      >
+                        {display === "" ? par : display}
                       </div>
                       <button
                         onClick={() => adjustTeamScore(focusHole, +1)}
-                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 flex items-center justify-center"
+                        disabled={roundLocked}
+                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 flex items-center justify-center"
                         aria-label="Increase team score"
                       >
                         <Plus className="h-5 w-5" />
                       </button>
                       <button
                         onClick={() => clearHole(focusHole)}
-                        disabled={saving || display === ""}
+                        disabled={saving || display === "" || roundLocked}
                         className="h-7 w-7 -mr-1 rounded-full border bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
                         aria-label="Clear team score for this hole"
                         title="Clear this hole's score"
@@ -835,6 +843,7 @@ export default function LiveScoring() {
                         <Eraser className="h-3.5 w-3.5" />
                       </button>
                     </div>
+
                   </div>
                 );
               })()}

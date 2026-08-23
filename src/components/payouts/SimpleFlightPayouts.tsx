@@ -288,6 +288,9 @@ export default function SimpleFlightPayouts({
         first_place_cents: r.amounts[0] || 0,
         second_place_cents: r.amounts[1] || 0,
         third_place_cents: r.amounts[2] || 0,
+        excluded_registration_ids: r.excluded,
+        player_count_override: r.countOverride,
+
       }));
       if (payload.length) {
         const { error } = await (supabase as any).from("flight_payouts").insert(payload);

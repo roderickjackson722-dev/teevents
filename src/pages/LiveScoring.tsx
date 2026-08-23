@@ -602,12 +602,13 @@ export default function LiveScoring() {
     const label = who ? `${who.first_name} ${who.last_name}` : "this group";
     if (!window.confirm(`Clear the Hole ${hole} score for ${label}? This cannot be undone.`)) return;
     setSaving(true);
-    const { error } = await supabase.rpc("clear_group_hole_scores", {
+    const { error } = await (supabase as any).rpc("clear_group_hole_scores", {
       _tournament_id: tournament.id,
       _code: scoringCode,
       _hole_number: hole,
       _round_number: roundNumber,
       _registration_id: regId ?? null,
+      _group_number: groupNumber ?? null,
     } as any);
     setSaving(false);
     if (error) { toast.error(error.message); return; }

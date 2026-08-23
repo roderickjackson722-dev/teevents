@@ -622,8 +622,18 @@ export default function EmailTemplateEditor() {
     const location = [t?.location, t?.state].filter(Boolean).join(", ");
     const sampleReg = registrations[0];
     const pairings = parsePairingsConfig(t?.pairings_config);
-    const pairingTeeTime = teeTimeForGroup(pairings, sampleReg?.group_number, 0);
-    const pairingStartingHole = startingHoleLabelForGroup(pairings, sampleReg?.group_number, 0);
+    const previewRound = roundAware ? emailRound : 0;
+    const previewDayCfg = dayCfgOf(pairings, previewRound);
+    // Group for the previewed round: a saved snapshot wins over the live column.
+    const snapGroup = sampleReg
+      ? pairings.assignmentsByDay[String(previewRound)]?.[sampleReg.id]?.g ?? null
+      : null;
+    const previewGroup = snapGroup ?? sampleReg?.group_number ?? null;
+    const pairingTeeTime =
+      teeTimeForGroup(pairings, previewGroup, previewRound)
+      || (previewDayCfg.startFormat === "shotgun" ? previewDayCfg.shotgunTime : "");
+    const pairingStartingHole = startingHoleLabelForGroup(pairings, previewGroup, previewRound);
+    const previewRoundDate = roundDateFor(pairings, previewRound, t?.date ?? null);
     const vars: Record<string, string> = {
       first_name: sampleReg?.first_name || "John",
       last_name: sampleReg?.last_name || "Doe",

@@ -17,6 +17,7 @@ import WaitlistSignup from "@/components/WaitlistSignup";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
+import { buildLeaderboard, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
 import { normalizeOrder, normalizeVisibility, PublicTabKey } from "@/lib/publicTabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
@@ -136,7 +137,6 @@ const upsertSingleCanonical = (href: string) => {
   matches.slice(1).forEach((duplicate) => duplicate.remove());
 };
 
-interface LeaderboardEntry { name: string; total: number; thru: number; points?: number; isTeam?: boolean; players?: string[]; }
 interface AuctionItem {
   id: string; title: string; description: string | null; type: string;
   starting_bid: number; current_bid: number; buy_now_price: number | null;
@@ -181,100 +181,6 @@ const templateStyles = {
   },
 };
 
-function buildLeaderboard(scoresData: any[], t: TournamentSite): LeaderboardEntry[] {
-  const fmt = getFormatById(t.scoring_format || "stroke_play");
-  const isTeam = fmt && fmt.teamSize > 1;
-  const isStableford = fmt?.scoring === "stableford";
-  const cPar = t.course_par || 72;
-  const holePar = Math.round(cPar / 18);
-
-  // Build per-player data
-  const playerData: Record<string, { name: string; group: number | null; holes: Record<number, number> }> = {};
-  scoresData.forEach((s: any) => {
-    const key = s.registration_id;
-    if (!playerData[key]) {
-      const reg = s.tournament_registrations;
-      const first = reg?.first_name ?? s.first_name;
-      const last = reg?.last_name ?? s.last_name;
-      playerData[key] = {
-        name: first || last ? `${first ?? ""} ${last ?? ""}`.trim() : "Unknown",
-        group: reg?.group_number ?? s.group_number ?? null,
-        holes: {},
-      };
-    }
-    playerData[key].holes[s.hole_number] = s.strokes;
-  });
-
-  if (isTeam && (fmt.scoring === "best_ball" || fmt.scoring === "scramble" || fmt.scoring === "shamble")) {
-    // Group by group_number
-    const groups: Record<number, typeof playerData[string][]> = {};
-    Object.values(playerData).forEach((p) => {
-      if (p.group != null) {
-        if (!groups[p.group]) groups[p.group] = [];
-        groups[p.group].push(p);
-      }
-    });
-
-    return Object.entries(groups)
-      .map(([gn, players]) => {
-        let total = 0;
-        let holesPlayed = 0;
-        for (let h = 1; h <= 18; h++) {
-          const strokes = players.map((p) => p.holes[h]).filter((v) => v != null);
-          if (strokes.length > 0) {
-            total += Math.min(...strokes);
-            holesPlayed++;
-          }
-        }
-        return {
-          name: `Group ${gn}`,
-          total,
-          thru: holesPlayed,
-          isTeam: true,
-          players: players.map((p) => p.name),
-        };
-      })
-      .sort((a, b) => {
-        if (a.total === 0 && b.total === 0) return 0;
-        if (a.total === 0) return 1;
-        if (b.total === 0) return -1;
-        return a.total - b.total;
-      });
-  }
-
-  if (isStableford) {
-    return Object.values(playerData)
-      .map((p) => {
-        let points = 0;
-        const holesPlayed = Object.keys(p.holes).length;
-        Object.values(p.holes).forEach((strokes) => {
-          points += stablefordPoints(strokes, holePar);
-        });
-        return { name: p.name, total: points, thru: holesPlayed, points };
-      })
-      .sort((a, b) => {
-        if (a.total === 0 && b.total === 0) return 0;
-        if (a.total === 0) return 1;
-        if (b.total === 0) return -1;
-        return b.total - a.total; // Highest first
-      });
-  }
-
-  // Default stroke play
-  return Object.values(playerData)
-    .map((p) => ({
-      name: p.name,
-      total: Object.values(p.holes).reduce((s, v) => s + v, 0),
-      thru: Object.keys(p.holes).length,
-    }))
-    .sort((a, b) => {
-      if (a.total === 0 && b.total === 0) return 0;
-      if (a.total === 0) return 1;
-      if (b.total === 0) return -1;
-      return a.total - b.total;
-    });
-}
-
 const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = slugOverride || paramSlug;
@@ -295,7 +201,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
    const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
    const [products, setProducts] = useState<PublicProduct[]>([]);
-   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+   const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([]);
    const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
    const [photos, setPhotos] = useState<Photo[]>([]);
    const [mediaClips, setMediaClips] = useState<Array<{ id: string; title: string; description: string | null; video_url: string; thumbnail_url: string | null }>>([]);

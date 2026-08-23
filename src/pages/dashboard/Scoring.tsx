@@ -150,7 +150,11 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
             <TabsTrigger value="skins">
               <Coins className="h-4 w-4 mr-1.5" /> Skins
             </TabsTrigger>
+            <TabsTrigger value="rounds">
+              <Lock className="h-4 w-4 mr-1.5" /> Round Status
+            </TabsTrigger>
           </TabsList>
+
 
 
           {/* ===== SCORING LINKS TAB ===== */}
@@ -399,6 +403,12 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
           <TabsContent value="skins" className="space-y-4">
             <DivisionSkinsManager tournamentId={selectedTournament} />
           </TabsContent>
+
+          {/* ===== ROUND STATUS TAB ===== */}
+          <TabsContent value="rounds" className="space-y-4">
+            <RoundClosureCard tournamentId={selectedTournament} />
+          </TabsContent>
+
 
 
 

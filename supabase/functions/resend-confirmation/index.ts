@@ -24,19 +24,33 @@ function formatTeeTime(value: unknown): string {
   return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
 }
 
-function pairingValuesFor(pairingsConfig: unknown, groupNumber: number | null | undefined) {
+/**
+ * Pairing values for one group on a specific round (day index). Multi-round
+ * events keep an independent tee time / start format snapshot per round, so the
+ * round being emailed must be passed through instead of always reading Round 1.
+ */
+function pairingValuesFor(
+  pairingsConfig: unknown,
+  groupNumber: number | null | undefined,
+  roundDay = 0,
+) {
   if (groupNumber == null) return { teeTime: "", startingHole: "TBD" };
   const config = pairingsConfig && typeof pairingsConfig === "object"
     ? pairingsConfig as Record<string, any>
     : {};
   const groupKey = String(groupNumber);
-  const day = config.byDay?.["0"] || {};
+  const dayKey = String(roundDay);
+  const day = config.byDay?.[dayKey] || {};
   const savedLabel = String(config.labels?.[groupKey] || "").trim();
   const configuredHole = (day.startFormat || "tee_times") === "tee_times" && day.sameStartHole !== false
     ? String(day.firstTeeHole || 1)
     : String(groupNumber);
+  // Shotgun rounds share one universal start time for every group.
+  const shotgun = (day.startFormat || "tee_times") === "shotgun"
+    ? formatTeeTime(day.shotgunTime)
+    : "";
   return {
-    teeTime: formatTeeTime(config.teeTimesByDay?.["0"]?.[groupKey]),
+    teeTime: formatTeeTime(config.teeTimesByDay?.[dayKey]?.[groupKey]) || shotgun,
     startingHole: savedLabel || configuredHole,
   };
 }

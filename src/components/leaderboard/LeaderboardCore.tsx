@@ -105,6 +105,8 @@ interface RendererProps {
   rounds?: number[];
   /** Round currently in play — drives the "Today" column. */
   currentRound?: number;
+  /** Rounds the organizer has closed — the column header shows R# instead of "Today". */
+  closedRounds?: number[];
   /** Clicking a player row opens their round-by-round scorecard. */
   onRowClick?: (row: LbRow) => void;
   /** Clicking a board title drills down into that flight full-screen. */
@@ -143,6 +145,7 @@ export function LeaderboardRenderer({
   presentedBy,
   rounds = [],
   currentRound,
+  closedRounds = [],
   onRowClick,
   onBoardSelect,
   singleBoardLabel = "Leaderboard",
@@ -248,6 +251,8 @@ export function LeaderboardRenderer({
   /** Rounds that are finished (shown as their own R1/R2 column). */
   const priorRounds = (rounds || []).filter((r) => !currentRound || r < currentRound);
   const showToday = !isStableford && !!currentRound && (rounds || []).includes(currentRound);
+  /** A closed current round is no longer "Today" — label it by round number. */
+  const todayLabel = currentRound && (closedRounds || []).includes(currentRound) ? `R${currentRound}` : "Today";
 
   /** One leaderboard table — reused for the single board and each flight board. */
   const renderBoard = (key: string, label: string, boardRows: LbRow[], clickableTitle = false) => {
@@ -311,12 +316,12 @@ export function LeaderboardRenderer({
                 <tr className="text-xs uppercase tracking-wider">
                   {showPos && <th className={`text-left ${padX} ${padY} w-14`}>Pos</th>}
                   {showPlayer && <th className={`text-left ${padX} ${padY}`}>Player / Team</th>}
-                  {!isStableford && <th className={`text-center ${padX} ${padY} w-20`}>To Par</th>}
+                  {!isStableford && <th className={`text-center ${padX} ${padY} w-24 whitespace-nowrap`}>To Par</th>}
                   {showThru && <th className={`text-right ${padX} ${padY} w-16`}>Thru</th>}
                   {priorRounds.map((r) => (
                     <th key={`h-r${r}`} className={`text-right ${padX} ${padY} w-16`}>R{r}</th>
                   ))}
-                  {showToday && <th className={`text-right ${padX} ${padY} w-20`}>Today</th>}
+                  {showToday && <th className={`text-right ${padX} ${padY} w-20 whitespace-nowrap`}>{todayLabel}</th>}
                   {(showGross || showNet) && (
                     <th className={`text-right ${padX} ${padY} w-24`}>{isStableford ? "Pts" : "Total"}</th>
                   )}
@@ -348,10 +353,10 @@ export function LeaderboardRenderer({
                       </td>
                     )}
                     {!isStableford && (
-                      <td className={`${padX} ${padY} text-center`} data-testid="lb-topar">
+                      <td className={`${padX} ${padY} text-center whitespace-nowrap`} data-testid="lb-topar">
                         {row.total ? (
                           <span
-                            className="inline-block min-w-[3rem] rounded px-2 py-1 font-mono font-bold"
+                            className="inline-block min-w-[3rem] whitespace-nowrap rounded px-2 py-1 font-mono font-bold tabular-nums leading-none"
                             style={{ backgroundColor: headerBg, color: accent }}
                           >
                             {formatToPar(row.total, row.parPlayed ?? coursePar)}

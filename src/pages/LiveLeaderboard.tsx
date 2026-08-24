@@ -116,6 +116,8 @@ function LiveLeaderboardBoard({
   const [bannerIdx, setBannerIdx] = useState(0);
   const [galleryIdx, setGalleryIdx] = useState(0);
   const [allFlights, setFlights] = useState<{ id: string; tier_name: string; display_order: number }[]>([]);
+  /** Rounds the organizer has locked/closed — a closed round shows as "R2" instead of "Today". */
+  const [closedRounds, setClosedRounds] = useState<number[]>([]);
   // Organizers can hide individual flight boards from spectators; an empty
   // selection means every active flight is public.
   const flights = useMemo(() => {
@@ -247,6 +249,18 @@ function LiveLeaderboardBoard({
       setRegFlights((prev) => ({ ...prev, ...map }));
     });
 
+    // Round closure status (publicly readable) drives the round column label.
+    (supabase as any)
+      .from("tournament_rounds")
+      .select("round_number, status")
+      .eq("tournament_id", tournament.id)
+      .then(({ data }: any) => {
+        setClosedRounds(
+          (data || [])
+            .filter((r: any) => (r.status || "active") === "closed")
+            .map((r: any) => Number(r.round_number)),
+        );
+      });
   }, [tournament]);
 
   // Realtime score updates
@@ -590,6 +604,7 @@ function LiveLeaderboardBoard({
         coursePar={tournament.course_par || 72}
         rounds={rounds}
         currentRound={currentRound}
+        closedRounds={closedRounds}
         onRowClick={(row) => setScorecardRow(row as LeaderboardRow)}
         bannerSponsor={bannerSponsor}
         sidebarSponsors={sidebarSponsors}

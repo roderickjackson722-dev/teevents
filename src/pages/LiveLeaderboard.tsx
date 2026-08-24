@@ -249,6 +249,18 @@ function LiveLeaderboardBoard({
       setRegFlights((prev) => ({ ...prev, ...map }));
     });
 
+    // Round closure status (publicly readable) drives the round column label.
+    (supabase as any)
+      .from("tournament_rounds")
+      .select("round_number, status")
+      .eq("tournament_id", tournament.id)
+      .then(({ data }: any) => {
+        setClosedRounds(
+          (data || [])
+            .filter((r: any) => (r.status || "active") === "closed")
+            .map((r: any) => Number(r.round_number)),
+        );
+      });
   }, [tournament]);
 
   // Realtime score updates

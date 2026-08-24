@@ -295,12 +295,12 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const { data: registrations } = useQuery({
     queryKey: ["leaderboard-players", selectedTournament, workingRound],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tournament_registrations")
-        .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole, payment_status, status")
-        .eq("tournament_id", selectedTournament)
-        .order("last_name");
-      if (error) throw error;
+      const data = await fetchAllRegistrations(
+        selectedTournament,
+        "id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole, payment_status, status",
+        { orderBy: "last_name" },
+      );
+
       // Mirror Players & Pairings: only paid roster players appear on the leaderboard.
       const assignments = pairingsCfg.assignmentsByDay[String(workingRound - 1)];
       return (data || [])

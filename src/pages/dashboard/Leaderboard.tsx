@@ -584,14 +584,19 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       });
 
       try {
-        const { data: persistedRows, error } = await supabase
-          .from("tournament_scores")
-          .upsert(upserts, {
-            onConflict: "registration_id,round_number,hole_number",
-          })
-          .select("registration_id, hole_number, strokes, round_number");
-        if (error) throw error;
-        const persisted = persistedRows || [];
+        // Chunked writes: a single upsert of thousands of rows can exceed the
+        // Data API's request/response limits on very large events.
+        const persisted: any[] = [];
+        for (const batch of chunkRows(upserts, 500)) {
+          const { data: persistedRows, error } = await supabase
+            .from("tournament_scores")
+            .upsert(batch, {
+              onConflict: "registration_id,round_number,hole_number",
+            })
+            .select("registration_id, hole_number, strokes, round_number");
+          if (error) throw error;
+          persisted.push(...(persistedRows || []));
+        }
         const persistedKeys = new Set(
           persisted.map((row) => `${row.registration_id}:${row.round_number}:${row.hole_number}:${row.strokes}`),
         );
@@ -603,9 +608,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             `${missing.length} score${missing.length === 1 ? " was" : "s were"} not confirmed by the database. Your entries remain on screen; please save again.`,
           );
         }
-        if (editLogs.length > 0) {
-          await (supabase as any).from("score_edits").insert(editLogs);
+        for (const batch of chunkRows(editLogs, 500)) {
+          await (supabase as any).from("score_edits").insert(batch);
         }
+
         return { mode: "saved" as const, count: persisted.length, persisted, roundNumber: workingRound, invalidCount };
       } catch (e: any) {
         // Network / fetch failures — queue for later sync so the scorekeeper doesn't lose work.

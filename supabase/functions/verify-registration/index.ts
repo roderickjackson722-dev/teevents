@@ -197,7 +197,11 @@ Deno.serve(async (req) => {
       const passFeesToGolfer = session.metadata?.pass_fees_to_golfer === "true";
       const grossRegistrationCents = parseCents(session.metadata?.gross_registration_cents);
       const grossAmount = grossRegistrationCents > 0 ? grossRegistrationCents : (session.amount_total || 0);
-      const platformFeeCents = parseCents(session.metadata?.platform_fee_cents) || Math.round(grossAmount * PLATFORM_FEE_RATE);
+      // NOTE: a recorded "0" is meaningful (Flat-Rate Pro event) — only fall
+      // back to the 5% calculation when the metadata is absent entirely.
+      const platformFeeCents = session.metadata?.platform_fee_cents != null
+        ? parseCents(session.metadata.platform_fee_cents)
+        : Math.round(grossAmount * PLATFORM_FEE_RATE);
       const chargeTotalCents = parseCents(session.metadata?.charge_total_cents)
         || session.amount_total
         || (passFeesToGolfer ? grossAmount + platformFeeCents : grossAmount);

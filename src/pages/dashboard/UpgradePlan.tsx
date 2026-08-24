@@ -11,6 +11,7 @@ import { useTournamentAddons, type AddonKey } from "@/hooks/useTournamentAddons"
 import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { createBrandingRemovalCheckout, verifyBrandingRemoval, getBrandingStatus } from "@/lib/brandingRemoval.functions";
+import FlatRateProCard from "@/components/dashboard/FlatRateProCard";
 
 interface TournamentRow {
   id: string;
@@ -244,6 +245,11 @@ const UpgradeFeaturesPage = () => {
               ))}
             </select>
           </div>
+
+          {/* Flat-Rate Pro: $299 once instead of the 5% platform fee */}
+          <FlatRateProCard tournamentId={selectedTournamentId} />
+
+
 
           {/* Manual entry usage */}
           <div className="bg-card rounded-xl border border-border p-5 mb-6">

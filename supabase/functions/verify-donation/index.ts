@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { notifyPlatformAdmin, buildNotificationHtml, sendNotificationEmails } from "../_shared/notify.ts";
-import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
+import { notifyPlatformFallbackForConfirmedSession, isFlatRateTournament } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
 
@@ -50,7 +50,8 @@ Deno.serve(async (req) => {
       const amountCents = session.amount_total || 0;
 
       if (organizationId && amountCents > 0) {
-        const platformFeeCents = Math.round(amountCents * PLATFORM_FEE_RATE);
+        const flatRate = await isFlatRateTournament(supabaseAdmin, tournamentId);
+        const platformFeeCents = flatRate ? 0 : Math.round(amountCents * PLATFORM_FEE_RATE);
         const netAmountCents = amountCents - platformFeeCents;
 
         // No reserve hold — Connect destination charges split at checkout.

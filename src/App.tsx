@@ -93,6 +93,7 @@ import DashboardMessages from "./pages/dashboard/Messages";
 
 import AdminUsersEvents from "./pages/admin/UsersEvents";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
+import FlatRateOverride from "./pages/admin/FlatRateOverride";
 import TeamManagementPage from "./pages/dashboard/TeamManagementPage";
 import PublicSearch from "./pages/dashboard/PublicSearch";
 import PublicTournament from "./pages/PublicTournament";
@@ -415,7 +416,8 @@ const App = () => (
            <Route path="/admin/sales/flyer-to-demo" element={<FlyerToDemo />} />
            <Route path="/admin/sales/prospecting" element={<SalesProspecting />} />
            <Route path="/admin/demo-leads" element={<DemoLeads />} />
-           <Route path="/admin/manual-entry-grants" element={<ManualEntryGrantsAdmin />} />
+          <Route path="/admin/manual-entry-grants" element={<ManualEntryGrantsAdmin />} />
+          <Route path="/admin/flat-rate" element={<FlatRateOverride />} />
            <Route path="/admin/security" element={<AdminSecurity />} />
            <Route path="/admin/email-notifications" element={<AdminEmailNotifications />} />
            <Route path="/admin/scheduled-emails" element={<AdminScheduledEmails />} />

@@ -3,7 +3,7 @@
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, isFlatRateTournament, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
@@ -80,7 +80,8 @@ Deno.serve(async (req) => {
       .single();
     if (tkErr || !ticket) throw new Error(tkErr?.message || "Failed to create ticket");
 
-    const platformFeeCents = Math.round(grossCents * PLATFORM_FEE_RATE);
+    const flatRate = await isFlatRateTournament(supabaseAdmin, ev.tournament_id);
+    const platformFeeCents = flatRate ? 0 : Math.round(grossCents * PLATFORM_FEE_RATE);
     const stripeFeeCents = calculateGrossedUpStripeFee(grossCents + platformFeeCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
     const applicationFeeAmount = platformFeeCents;

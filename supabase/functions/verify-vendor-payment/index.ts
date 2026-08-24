@@ -84,9 +84,10 @@ Deno.serve(async (req) => {
     // Record platform_transaction (best-effort; matches sponsor flow shape)
     try {
       const grossCents = parseCents(session.metadata?.gross_amount_cents);
-      const platformFeeCents =
-        parseCents(session.metadata?.platform_fee_cents) ||
-        Math.round(grossCents * PLATFORM_FEE_RATE);
+      // A recorded "0" is meaningful (Flat-Rate Pro event).
+      const platformFeeCents = session.metadata?.platform_fee_cents != null
+        ? parseCents(session.metadata.platform_fee_cents)
+        : Math.round(grossCents * PLATFORM_FEE_RATE);
       const stripeFeeCents = parseCents(session.metadata?.stripe_fee_cents);
       const applicationFeeCents =
         parseCents(session.metadata?.application_fee_cents) ||

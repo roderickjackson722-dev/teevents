@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -100,10 +101,7 @@ export default function FlightsManager({ tournamentId }: Props) {
         .select("flights_enabled, flight_method, flight_based_on, scoring_format, registration_fee_cents")
         .eq("id", tournamentId)
         .maybeSingle(),
-      (supabase as any)
-        .from("tournament_scores")
-        .select("registration_id, strokes")
-        .eq("tournament_id", tournamentId),
+      fetchAllTournamentScores(tournamentId, { columns: "registration_id, strokes" }).then((data) => ({ data })),
       (supabase as any)
         .from("tournament_registration_tiers")
         .select("id, name, price_cents")
@@ -128,7 +126,7 @@ export default function FlightsManager({ tournamentId }: Props) {
     }
 
     const totals = new Map<string, number>();
-    for (const s of (sRes.data || []) as { registration_id: string; strokes: number }[]) {
+    for (const s of ((sRes as any).data || []) as { registration_id: string; strokes: number }[]) {
       totals.set(s.registration_id, (totals.get(s.registration_id) || 0) + (s.strokes || 0));
     }
     setScoreTotals(totals);

@@ -139,7 +139,7 @@ export default function LeaderboardResetCard({ tournamentId, canManage, lastRese
         .eq("id", snapshotId)
         .maybeSingle();
       if (snapErr) throw snapErr;
-      const rows = ((snap as { snapshot_data?: SnapshotScore[] } | null)?.snapshot_data || []) as SnapshotScore[];
+      const rows = ((snap as unknown as { snapshot_data?: SnapshotScore[] } | null)?.snapshot_data || []) as SnapshotScore[];
       if (rows.length === 0) {
         toast({ title: "Nothing to restore", description: "That snapshot has no saved scores." });
         setRetrieveId(null);

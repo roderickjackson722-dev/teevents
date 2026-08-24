@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
+
 
 export type SkinsGame = {
   id: string;

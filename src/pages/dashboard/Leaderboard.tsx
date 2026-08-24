@@ -28,6 +28,8 @@ import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
 import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
 import RoundClosureCard from "@/components/dashboard/RoundClosureCard";
+import LeaderboardExportCard from "@/components/dashboard/LeaderboardExportCard";
+
 import { activeRoundNumber, parsePairingsConfig, roundLabel } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 

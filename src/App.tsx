@@ -86,6 +86,7 @@ import Contests from "./pages/dashboard/Contests";
 import UpgradePlan from "./pages/dashboard/UpgradePlan";
 import ManualEntryGrantsAdmin from "./pages/admin/ManualEntryGrants";
 import AdminSecurity from "./pages/admin/Security";
+import AdminPlatformHealth from "./pages/admin/PlatformHealth";
 import AdminEmailNotifications from "./pages/admin/EmailNotifications";
 import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
 import AdminSmsSettings from "./pages/admin/SmsSettings";

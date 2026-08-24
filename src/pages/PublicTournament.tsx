@@ -203,7 +203,11 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
    const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
    const [products, setProducts] = useState<PublicProduct[]>([]);
-   const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([]);
+  // The embedded live board renders nothing when the organizer turns the live
+  // display off — hide the whole section instead of showing an empty panel.
+  const [leaderboardEmbedUnavailable, setLeaderboardEmbedUnavailable] = useState(false);
+
    const [auctionItems, setAuctionItems] = useState<AuctionItem[]>([]);
    const [photos, setPhotos] = useState<Photo[]>([]);
    const [mediaClips, setMediaClips] = useState<Array<{ id: string; title: string; description: string | null; video_url: string; thumbnail_url: string | null }>>([]);

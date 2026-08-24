@@ -37,16 +37,15 @@ import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/to
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
 import ScoreEntryWd, { isWithdrawn } from "@/components/dashboard/ScoreEntryWd";
 
-// Score validation: strokes must be an integer between 1 and 20 inclusive.
-const MIN_STROKES = 1;
-const MAX_STROKES = 20;
-function validateStrokes(n: unknown): string | null {
-  if (typeof n !== "number" || !Number.isFinite(n)) return "Must be a number";
-  if (!Number.isInteger(n)) return "Whole strokes only";
-  if (n < MIN_STROKES) return `Min ${MIN_STROKES}`;
-  if (n > MAX_STROKES) return `Max ${MAX_STROKES}`;
-  return null;
-}
+// Score validation + batch partition/retention helpers (unit-tested in src/lib/scoreBatch.test.ts).
+import {
+  MIN_STROKES,
+  MAX_STROKES,
+  partitionScoreBatch,
+  pruneSavedEdits,
+  mergeConfirmedScores,
+} from "@/lib/scoreBatch";
+
 
 interface PlayerScore {
   registration_id: string;
@@ -536,30 +535,14 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       }
 
       // ---- Validation ----
-      const errs: Record<string, Record<number, string>> = {};
-      const upserts: { tournament_id: string; registration_id: string; hole_number: number; round_number: number; strokes: number }[] = [];
-      Object.entries(scoreSnapshot).forEach(([regId, holes]) => {
-        Object.entries(holes).forEach(([hole, strokes]) => {
-          const holeNum = parseInt(hole);
-          const err = validateStrokes(strokes);
-          if (err) {
-            if (!errs[regId]) errs[regId] = {};
-            errs[regId][holeNum] = err;
-          } else {
-            upserts.push({
-              tournament_id: selectedTournament,
-              registration_id: regId,
-              hole_number: holeNum,
-              round_number: workingRound,
-              strokes,
-            });
-          }
-        });
-      });
-      setScoreErrors(errs);
       // Invalid cells (0, blanks that parsed oddly, out-of-range) are skipped so
       // they never block the rest of the batch from saving.
-      const invalidCount = Object.values(errs).reduce((sum, holes) => sum + Object.keys(holes).length, 0);
+      const { upserts, errors: errs, invalidCount } = partitionScoreBatch(scoreSnapshot, {
+        tournamentId: selectedTournament,
+        roundNumber: workingRound,
+      });
+      setScoreErrors(errs);
+
       if (upserts.length === 0) {
         if (invalidCount > 0) {
           throw new Error(
@@ -658,30 +641,15 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         // values after the organizer saves a large scorecard batch.
         queryClient.setQueryData(
           ["tournament-scores", selectedTournament, result.roundNumber],
-          (current: Array<{ registration_id: string; hole_number: number; strokes: number; round_number: number }> | undefined) => {
-            const byCell = new Map<string, { registration_id: string; hole_number: number; strokes: number; round_number: number }>();
-            (current || []).forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));
-            result.persisted.forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));
-            return Array.from(byCell.values());
-          },
+          (current: Array<{ registration_id: string; hole_number: number; strokes: number; round_number: number }> | undefined) =>
+            mergeConfirmedScores(current, result.persisted as any),
         );
       }
       // Only clear values included in this request. A scorekeeper can keep
       // entering scores while a save is in flight; those newer edits must not
       // be erased when the earlier request completes.
-      setEditedScores((current) => {
-        const next: Record<string, Record<number, number>> = {};
-        Object.entries(current).forEach(([regId, holes]) => {
-          Object.entries(holes).forEach(([hole, value]) => {
-            const holeNumber = Number(hole);
-            if (scoreSnapshot[regId]?.[holeNumber] !== value) {
-              if (!next[regId]) next[regId] = {};
-              next[regId][holeNumber] = value;
-            }
-          });
-        });
-        return next;
-      });
+      setEditedScores((current) => pruneSavedEdits(current, scoreSnapshot));
+
       queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
     },
     onError: (e: Error) => {

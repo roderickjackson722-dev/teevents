@@ -159,6 +159,10 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
             <TabsTrigger value="rounds">
               <Lock className="h-4 w-4 mr-1.5" /> Lock Rounds
             </TabsTrigger>
+            <TabsTrigger value="sponsors">
+              <Handshake className="h-4 w-4 mr-1.5" /> Sponsors
+            </TabsTrigger>
+
           </TabsList>
 
 

@@ -85,18 +85,22 @@ export default function LiveLeaderboard() {
 
 /**
  * Same board, embedded on the public event homepage. It takes the slug directly
- * so it works outside the /live route's router context.
+ * so it works outside the /live route's router context. `onUnavailable` lets the
+ * host page hide its wrapper when the organizer has the live display switched off
+ * (otherwise the page would render an empty bordered panel).
  */
-export function LiveLeaderboardEmbed({ slug }: { slug: string }) {
+export function LiveLeaderboardEmbed({ slug, onUnavailable }: { slug: string; onUnavailable?: () => void }) {
   const search = useMemo(() => new URLSearchParams(), []);
-  return <LiveLeaderboardBoard slug={slug} search={search} embedded />;
+  return <LiveLeaderboardBoard slug={slug} search={search} embedded onUnavailable={onUnavailable} />;
 }
 
 function LiveLeaderboardBoard({
   slug,
   search,
   embedded = false,
-}: { slug?: string; search: URLSearchParams; embedded?: boolean }) {
+  onUnavailable,
+}: { slug?: string; search: URLSearchParams; embedded?: boolean; onUnavailable?: () => void }) {
+
   const [isPaused] = useLeaderboardPaused();
   const isTvMode = search.get("display") === "1";
   const isPreview = search.get("preview") === "true" || search.get("preview") === "1";

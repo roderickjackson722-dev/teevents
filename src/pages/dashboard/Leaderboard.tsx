@@ -37,16 +37,15 @@ import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/to
 import { useOfflineScoreQueue } from "@/hooks/useOfflineScoreQueue";
 import ScoreEntryWd, { isWithdrawn } from "@/components/dashboard/ScoreEntryWd";
 
-// Score validation: strokes must be an integer between 1 and 20 inclusive.
-const MIN_STROKES = 1;
-const MAX_STROKES = 20;
-function validateStrokes(n: unknown): string | null {
-  if (typeof n !== "number" || !Number.isFinite(n)) return "Must be a number";
-  if (!Number.isInteger(n)) return "Whole strokes only";
-  if (n < MIN_STROKES) return `Min ${MIN_STROKES}`;
-  if (n > MAX_STROKES) return `Max ${MAX_STROKES}`;
-  return null;
-}
+// Score validation + batch partition/retention helpers (unit-tested in src/lib/scoreBatch.test.ts).
+import {
+  MIN_STROKES,
+  MAX_STROKES,
+  partitionScoreBatch,
+  pruneSavedEdits,
+  mergeConfirmedScores,
+} from "@/lib/scoreBatch";
+
 
 interface PlayerScore {
   registration_id: string;

@@ -1514,10 +1514,15 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         </Card>
       )}
 
+      {selectedTournament && (
+        <LeaderboardExportCard tournamentId={selectedTournament} />
+      )}
+
       {/* Edit history lives at the very bottom of the page */}
       {showEntry && selectedTournament && (
         <RoundClosureCard tournamentId={selectedTournament} />
       )}
+
 
       {showEntry && selectedTournament && (
         <ScoreEditHistory tournamentId={selectedTournament} />

@@ -19,6 +19,8 @@ import HandicapSettings from "@/components/dashboard/HandicapSettings";
 import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
 import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
 import RoundClosureCard from "@/components/dashboard/RoundClosureCard";
+import ScoringPageSponsorsCard from "@/components/dashboard/ScoringPageSponsorsCard";
+
 
 
 

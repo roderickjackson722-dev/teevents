@@ -495,6 +495,12 @@ function LiveLeaderboardBoard({
 
 
 
+  // Tell an embedding page as soon as the board has nothing to render so it can
+  // drop its wrapper instead of showing an empty box.
+  useEffect(() => {
+    if (!loading && (accessDenied || !tournament)) onUnavailable?.();
+  }, [loading, accessDenied, tournament, onUnavailable]);
+
   if (loading) {
     return (
       <div className={`${embedded ? "py-16" : "min-h-screen"} flex items-center justify-center bg-background`}>
@@ -510,6 +516,7 @@ function LiveLeaderboardBoard({
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-md">
           <Trophy className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+
           <h1 className="text-2xl font-bold text-foreground mb-2">Leaderboard data is loading</h1>
           <p className="text-muted-foreground">
             We couldn't find this tournament's live leaderboard. Please check back in a few moments,

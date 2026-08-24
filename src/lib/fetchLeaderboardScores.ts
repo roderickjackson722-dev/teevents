@@ -53,7 +53,7 @@ export async function fetchAllPages<T = any>(
           const { data, error } = await makeQuery().range(start, start + PAGE_SIZE - 1);
           if (error) throw error;
           return (data as T[]) || [];
-        }).catch((e) => {
+        }, opts?.stats).catch((e) => {
           if (opts?.onError === "empty") return null;
           throw e;
         }),

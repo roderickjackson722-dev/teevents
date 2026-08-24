@@ -205,6 +205,14 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Every text that actually went out burns a credit on the tournament's plan.
+    if (successCount > 0 && !smsUnlimited) {
+      await supabase
+        .from("tournaments")
+        .update({ sms_credits_used: creditsUsed + successCount })
+        .eq("id", tournament_id);
+    }
+
     // Test sends stay out of the message history.
     if (!isTest) {
       await supabase.from("tournament_messages").insert({
@@ -216,9 +224,17 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, sent: successCount, failed: failCount, errors: errors.length > 0 ? errors : undefined }),
+      JSON.stringify({
+        success: true,
+        sent: successCount,
+        failed: failCount,
+        skipped_no_credits: skippedForCredits || undefined,
+        credits_remaining: smsUnlimited ? null : Math.max(0, creditsLimit - (creditsUsed + successCount)),
+        errors: errors.length > 0 ? errors : undefined,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (error) {
     console.error("Error sending SMS:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

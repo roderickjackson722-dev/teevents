@@ -535,30 +535,14 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       }
 
       // ---- Validation ----
-      const errs: Record<string, Record<number, string>> = {};
-      const upserts: { tournament_id: string; registration_id: string; hole_number: number; round_number: number; strokes: number }[] = [];
-      Object.entries(scoreSnapshot).forEach(([regId, holes]) => {
-        Object.entries(holes).forEach(([hole, strokes]) => {
-          const holeNum = parseInt(hole);
-          const err = validateStrokes(strokes);
-          if (err) {
-            if (!errs[regId]) errs[regId] = {};
-            errs[regId][holeNum] = err;
-          } else {
-            upserts.push({
-              tournament_id: selectedTournament,
-              registration_id: regId,
-              hole_number: holeNum,
-              round_number: workingRound,
-              strokes,
-            });
-          }
-        });
-      });
-      setScoreErrors(errs);
       // Invalid cells (0, blanks that parsed oddly, out-of-range) are skipped so
       // they never block the rest of the batch from saving.
-      const invalidCount = Object.values(errs).reduce((sum, holes) => sum + Object.keys(holes).length, 0);
+      const { upserts, errors: errs, invalidCount } = partitionScoreBatch(scoreSnapshot, {
+        tournamentId: selectedTournament,
+        roundNumber: workingRound,
+      });
+      setScoreErrors(errs);
+
       if (upserts.length === 0) {
         if (invalidCount > 0) {
           throw new Error(

@@ -4,6 +4,7 @@ import {
   requireConnectedAccount,
   logDirectCharge,
   PLATFORM_FEE_RATE,
+  isFlatRateTournament,
   stripeAccountOpts,
   acctQuerySuffix,
   applicationFeeBlock,
@@ -88,7 +89,8 @@ Deno.serve(async (req) => {
     );
 
     const buyerPaysFees = (tournament as any).pass_fees_to_participants !== false;
-    const platformFeeCents = Math.round(subtotalCents * PLATFORM_FEE_RATE);
+    const flatRate = await isFlatRateTournament(supabaseAdmin, tournamentId);
+    const platformFeeCents = flatRate ? 0 : Math.round(subtotalCents * PLATFORM_FEE_RATE);
     const stripeFeeCents = buyerPaysFees
       ? calculateGrossedUpStripeFee(subtotalCents + platformFeeCents)
       : calculateProcessingFee(subtotalCents);

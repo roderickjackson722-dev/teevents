@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
-import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, isFlatRateTournament, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
@@ -391,7 +391,8 @@ Deno.serve(async (req) => {
 
     const lineItems: any[] = [];
     // Fees are computed on the COMBINED total (registration + add-ons)
-    const platformFeeCents = Math.round(baseTotalCents * PLATFORM_FEE_RATE);
+    const flatRate = await isFlatRateTournament(supabaseAdmin, tournament.id);
+    const platformFeeCents = flatRate ? 0 : Math.round(baseTotalCents * PLATFORM_FEE_RATE);
     const stripeFeeCents = golferPaysFees
       ? calculateGrossedUpStripeFee(baseTotalCents + platformFeeCents)
       : calculateProcessingFee(baseTotalCents);

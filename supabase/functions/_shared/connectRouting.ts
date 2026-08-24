@@ -193,9 +193,33 @@ export async function notifyPlatformFallbackForConfirmedSession(
   }
 }
 
+/**
+ * Flat-Rate Pro: when a tournament has paid the one-time flat fee (or an admin
+ * granted the override), NO 5% platform fee is charged on its transactions.
+ * Returns false on any lookup problem so billing never silently breaks.
+ */
+export async function isFlatRateTournament(
+  supabaseAdmin: any,
+  tournamentId: string | null | undefined,
+): Promise<boolean> {
+  if (!tournamentId) return false;
+  try {
+    const { data } = await supabaseAdmin
+      .from("tournaments")
+      .select("flat_rate_enabled")
+      .eq("id", tournamentId)
+      .maybeSingle();
+    return !!data?.flat_rate_enabled;
+  } catch (e) {
+    console.error("[isFlatRateTournament] lookup failed:", e);
+    return false;
+  }
+}
+
 // Compute platform fee + grossed-up Stripe processing fee for application_fee_amount.
-export function computeFees(grossCents: number) {
-  const platformFeeCents = Math.round(grossCents * PLATFORM_FEE_RATE);
+// When `flatRate` is true the 5% platform fee is waived (Flat-Rate Pro event).
+export function computeFees(grossCents: number, flatRate = false) {
+  const platformFeeCents = flatRate ? 0 : Math.round(grossCents * PLATFORM_FEE_RATE);
   const preStripeTotal = grossCents + platformFeeCents;
   const stripeFeeCents = Math.max(0, Math.round((preStripeTotal + 30) / (1 - 0.029)) - preStripeTotal);
   const combinedFeesCents = platformFeeCents + stripeFeeCents;

@@ -93,6 +93,7 @@ import DashboardMessages from "./pages/dashboard/Messages";
 
 import AdminUsersEvents from "./pages/admin/UsersEvents";
 import PayoutSettings from "./pages/dashboard/PayoutSettings";
+import FlatRateOverride from "./pages/admin/FlatRateOverride";
 import TeamManagementPage from "./pages/dashboard/TeamManagementPage";
 import PublicSearch from "./pages/dashboard/PublicSearch";
 import PublicTournament from "./pages/PublicTournament";

@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
-import { requireConnectedAccount, computeFees, logDirectCharge, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, computeFees, isFlatRateTournament, logDirectCharge, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -57,7 +57,8 @@ Deno.serve(async (req) => {
       },
     ];
 
-    const { platformFeeCents, stripeFeeCents, combinedFeesCents } = computeFees(amount_cents);
+    const flatRate = await isFlatRateTournament(supabaseAdmin, tournament_id);
+    const { platformFeeCents, stripeFeeCents, combinedFeesCents } = computeFees(amount_cents, flatRate);
     if (passFeesToParticipants && combinedFeesCents > 0) {
       lineItems.push({
         price_data: { currency: "usd", product_data: { name: "Fees" }, unit_amount: combinedFeesCents },

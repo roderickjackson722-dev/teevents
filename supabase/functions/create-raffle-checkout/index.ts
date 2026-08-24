@@ -1,7 +1,7 @@
 // Stripe Direct-Charge checkout for raffle ticket purchase.
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireConnectedAccount, computeFees, logDirectCharge, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, computeFees, isFlatRateTournament, logDirectCharge, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -43,7 +43,8 @@ Deno.serve(async (req) => {
     const connected = await requireConnectedAccount(supabaseAdmin, stripe, t?.organization_id || null, "raffle");
 
     const subtotal = raffle.ticket_price_cents * qty;
-    const { platformFeeCents, stripeFeeCents, combinedFeesCents } = computeFees(subtotal);
+    const flatRate = await isFlatRateTournament(supabaseAdmin, raffle.tournament_id);
+    const { platformFeeCents, stripeFeeCents, combinedFeesCents } = computeFees(subtotal, flatRate);
 
     const origin = req.headers.get("origin") || "https://teevents.lovable.app";
     const slug = tournament_slug || t?.slug || "";

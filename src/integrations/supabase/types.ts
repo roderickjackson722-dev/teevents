@@ -9346,6 +9346,47 @@ export type Database = {
           },
         ]
       }
+      tournament_flat_rate_log: {
+        Row: {
+          action: string
+          actor_user_id: string | null
+          amount_cents: number
+          created_at: string
+          id: string
+          reason: string | null
+          stripe_session_id: string | null
+          tournament_id: string
+        }
+        Insert: {
+          action: string
+          actor_user_id?: string | null
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          reason?: string | null
+          stripe_session_id?: string | null
+          tournament_id: string
+        }
+        Update: {
+          action?: string
+          actor_user_id?: string | null
+          amount_cents?: number
+          created_at?: string
+          id?: string
+          reason?: string | null
+          stripe_session_id?: string | null
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_flat_rate_log_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_invitations: {
         Row: {
           accepted_at: string | null
@@ -10927,6 +10968,13 @@ export type Database = {
           early_signup_label: string | null
           end_date: string | null
           external_link: string | null
+          flat_rate_admin_override: boolean
+          flat_rate_amount_cents: number
+          flat_rate_enabled: boolean
+          flat_rate_override_reason: string | null
+          flat_rate_paid: boolean
+          flat_rate_paid_at: string | null
+          flat_rate_payment_intent_id: string | null
           flight_based_on: string
           flight_method: string
           flights_enabled: boolean
@@ -11238,6 +11286,13 @@ export type Database = {
           early_signup_label?: string | null
           end_date?: string | null
           external_link?: string | null
+          flat_rate_admin_override?: boolean
+          flat_rate_amount_cents?: number
+          flat_rate_enabled?: boolean
+          flat_rate_override_reason?: string | null
+          flat_rate_paid?: boolean
+          flat_rate_paid_at?: string | null
+          flat_rate_payment_intent_id?: string | null
           flight_based_on?: string
           flight_method?: string
           flights_enabled?: boolean
@@ -11549,6 +11604,13 @@ export type Database = {
           early_signup_label?: string | null
           end_date?: string | null
           external_link?: string | null
+          flat_rate_admin_override?: boolean
+          flat_rate_amount_cents?: number
+          flat_rate_enabled?: boolean
+          flat_rate_override_reason?: string | null
+          flat_rate_paid?: boolean
+          flat_rate_paid_at?: string | null
+          flat_rate_payment_intent_id?: string | null
           flight_based_on?: string
           flight_method?: string
           flights_enabled?: boolean

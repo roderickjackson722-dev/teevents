@@ -43,11 +43,37 @@ Deno.serve(async (req) => {
       );
     }
 
+    // SMS is a paid add-on: verify it is enabled and that credits remain.
+    const { data: smsSettings } = await supabase
+      .from("tournaments")
+      .select("sms_enabled, sms_plan, sms_credits_used, sms_credits_limit")
+      .eq("id", tournament_id)
+      .maybeSingle();
+
+    const smsUnlimited = (smsSettings as any)?.sms_plan === "unlimited";
+    const creditsUsed = Number((smsSettings as any)?.sms_credits_used ?? 0);
+    const creditsLimit = Number((smsSettings as any)?.sms_credits_limit ?? 0);
+    const creditsRemaining = smsUnlimited ? Infinity : Math.max(0, creditsLimit - creditsUsed);
+
+    if (!(smsSettings as any)?.sms_enabled) {
+      return new Response(
+        JSON.stringify({ error: "Text messaging is not enabled for this tournament" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (creditsRemaining <= 0) {
+      return new Response(
+        JSON.stringify({ error: "No text messages remaining on your plan" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Manual numbers (test sends or ad-hoc recipients) skip the roster lookup.
     const manualPhones: string[] = Array.isArray(to_phones)
       ? to_phones.map((p: string) => String(p).trim()).filter(Boolean)
       : [];
     const isTest = !!test;
+
 
     // If scheduling for later, just insert the record and return
     if (scheduled_for) {
@@ -110,6 +136,14 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Never send more texts than the plan allows.
+    let skippedForCredits = 0;
+    if (!smsUnlimited && recipients.length > creditsRemaining) {
+      skippedForCredits = recipients.length - creditsRemaining;
+      recipients = recipients.slice(0, creditsRemaining);
+    }
+
+
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const fromPhone = Deno.env.get("TWILIO_PHONE_NUMBER");
@@ -171,6 +205,14 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Every text that actually went out burns a credit on the tournament's plan.
+    if (successCount > 0 && !smsUnlimited) {
+      await supabase
+        .from("tournaments")
+        .update({ sms_credits_used: creditsUsed + successCount })
+        .eq("id", tournament_id);
+    }
+
     // Test sends stay out of the message history.
     if (!isTest) {
       await supabase.from("tournament_messages").insert({
@@ -182,9 +224,17 @@ Deno.serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ success: true, sent: successCount, failed: failCount, errors: errors.length > 0 ? errors : undefined }),
+      JSON.stringify({
+        success: true,
+        sent: successCount,
+        failed: failCount,
+        skipped_no_credits: skippedForCredits || undefined,
+        credits_remaining: smsUnlimited ? null : Math.max(0, creditsLimit - (creditsUsed + successCount)),
+        errors: errors.length > 0 ? errors : undefined,
+      }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
+
   } catch (error) {
     console.error("Error sending SMS:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

@@ -11,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical, Settings as SettingsIcon, Coins, Lock } from "lucide-react";
+import { Trophy, Copy, ExternalLink, QrCode, Link2, Users, Loader2, Download, Calculator, FlaskConical, Settings as SettingsIcon, Coins, Lock, Handshake } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { QRCodeSVG } from "qrcode.react";
 import { getFormatById } from "@/lib/scoringFormats";
@@ -19,6 +19,8 @@ import HandicapSettings from "@/components/dashboard/HandicapSettings";
 import LiveLeaderboardSettings from "@/components/dashboard/LiveLeaderboardSettings";
 import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
 import RoundClosureCard from "@/components/dashboard/RoundClosureCard";
+import ScoringPageSponsorsCard from "@/components/dashboard/ScoringPageSponsorsCard";
+
 
 
 
@@ -157,6 +159,10 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
             <TabsTrigger value="rounds">
               <Lock className="h-4 w-4 mr-1.5" /> Lock Rounds
             </TabsTrigger>
+            <TabsTrigger value="sponsors">
+              <Handshake className="h-4 w-4 mr-1.5" /> Sponsors
+            </TabsTrigger>
+
           </TabsList>
 
 
@@ -412,6 +418,13 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
           <TabsContent value="rounds" className="space-y-4">
             <RoundClosureCard tournamentId={selectedTournament} />
           </TabsContent>
+
+          {/* ===== SPONSOR VISIBILITY TAB ===== */}
+          <TabsContent value="sponsors" className="space-y-4">
+            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_scoring_page" />
+            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_leaderboard" />
+          </TabsContent>
+
 
 
 

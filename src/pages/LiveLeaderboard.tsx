@@ -85,18 +85,22 @@ export default function LiveLeaderboard() {
 
 /**
  * Same board, embedded on the public event homepage. It takes the slug directly
- * so it works outside the /live route's router context.
+ * so it works outside the /live route's router context. `onUnavailable` lets the
+ * host page hide its wrapper when the organizer has the live display switched off
+ * (otherwise the page would render an empty bordered panel).
  */
-export function LiveLeaderboardEmbed({ slug }: { slug: string }) {
+export function LiveLeaderboardEmbed({ slug, onUnavailable }: { slug: string; onUnavailable?: () => void }) {
   const search = useMemo(() => new URLSearchParams(), []);
-  return <LiveLeaderboardBoard slug={slug} search={search} embedded />;
+  return <LiveLeaderboardBoard slug={slug} search={search} embedded onUnavailable={onUnavailable} />;
 }
 
 function LiveLeaderboardBoard({
   slug,
   search,
   embedded = false,
-}: { slug?: string; search: URLSearchParams; embedded?: boolean }) {
+  onUnavailable,
+}: { slug?: string; search: URLSearchParams; embedded?: boolean; onUnavailable?: () => void }) {
+
   const [isPaused] = useLeaderboardPaused();
   const isTvMode = search.get("display") === "1";
   const isPreview = search.get("preview") === "true" || search.get("preview") === "1";
@@ -491,6 +495,12 @@ function LiveLeaderboardBoard({
 
 
 
+  // Tell an embedding page as soon as the board has nothing to render so it can
+  // drop its wrapper instead of showing an empty box.
+  useEffect(() => {
+    if (!loading && (accessDenied || !tournament)) onUnavailable?.();
+  }, [loading, accessDenied, tournament, onUnavailable]);
+
   if (loading) {
     return (
       <div className={`${embedded ? "py-16" : "min-h-screen"} flex items-center justify-center bg-background`}>
@@ -506,6 +516,7 @@ function LiveLeaderboardBoard({
       <div className="min-h-screen flex items-center justify-center bg-background p-6">
         <div className="text-center max-w-md">
           <Trophy className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
+
           <h1 className="text-2xl font-bold text-foreground mb-2">Leaderboard data is loading</h1>
           <p className="text-muted-foreground">
             We couldn't find this tournament's live leaderboard. Please check back in a few moments,

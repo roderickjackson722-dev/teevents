@@ -361,7 +361,7 @@ const AdminPlatformHealth = () => {
                     </p>
                   ) : (
                     <ul className="space-y-1">
-                      {walQ.data.diagnostics.replication_slots.map((s: any) => (
+                      {(walQ.data?.diagnostics?.replication_slots ?? []).map((s: any) => (
                         <li key={s.slot_name}>
                           <span className="font-mono">{s.slot_name}</span> — {s.active ? "active" : "INACTIVE"} • retaining {mb(s.retained_bytes)} MB
                         </li>

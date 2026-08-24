@@ -459,6 +459,10 @@ Deno.serve(async (req) => {
     const pairingsLink = (code?: string) => (tournament as any).slug
       ? `https://www.teevents.golf/pairings/${(tournament as any).slug}${code ? `?code=${encodeURIComponent(code)}` : ""}`
       : "https://www.teevents.golf";
+    // Each player's unique post-event survey link.
+    const surveyLinkFor = (r: any) => (r?.survey_response_token
+      ? `https://www.teevents.golf/survey/${r.survey_response_token}`
+      : homepage);
     // The tee-time email's button points at the public pairings/tee sheet page.
     if (!emailConfig.button_url) emailConfig.button_url = kind === "tee_times" ? pairingsLink() : homepage;
 

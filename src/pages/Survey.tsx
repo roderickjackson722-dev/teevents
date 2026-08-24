@@ -35,31 +35,20 @@ export default function Survey() {
   useEffect(() => {
     (async () => {
       if (!token) return;
-      const { data: reg } = await supabase
-        .from("tournament_registrations")
-        .select("id, tournament_id, first_name, last_name, email, survey_completed_at")
-        .eq("survey_response_token", token)
-        .maybeSingle();
-      if (!reg) { setLoading(false); return; }
-
-      const [{ data: t }, { data: surveys }] = await Promise.all([
-        supabase.from("tournaments").select("title, post_event_survey_message, early_signup_enabled, early_signup_label").eq("id", reg.tournament_id).maybeSingle(),
-        supabase.from("tournament_surveys").select("id, tournament_survey_questions(id, question, type, sort_order, survey_id)").eq("tournament_id", reg.tournament_id).eq("is_active", true).limit(1),
-      ]);
-      const survey = surveys?.[0] as any;
-      const questions = ((survey?.tournament_survey_questions as any[]) || []).sort((a, b) => (a.sort_order || 0) - (b.sort_order || 0));
+      const { data } = await (supabase as any).rpc("get_survey_by_token", { _token: token });
+      if (!data) { setLoading(false); return; }
       setCtx({
-        registration_id: reg.id,
-        tournament_id: reg.tournament_id,
-        player_name: `${reg.first_name || ""} ${reg.last_name || ""}`.trim(),
-        tournament_title: t?.title || "Tournament",
-        message: t?.post_event_survey_message || null,
-        early_signup_enabled: !!t?.early_signup_enabled,
-        early_signup_label: t?.early_signup_label || null,
-        already_completed: !!reg.survey_completed_at,
-        questions,
+        registration_id: data.registration_id,
+        tournament_id: data.tournament_id,
+        player_name: data.player_name || "",
+        tournament_title: data.tournament_title || "Tournament",
+        message: data.message || null,
+        early_signup_enabled: !!data.early_signup_enabled,
+        early_signup_label: data.early_signup_label || null,
+        already_completed: !!data.already_completed,
+        questions: data.questions || [],
       });
-      setSignupEmail(reg.email || "");
+      setSignupEmail(data.email || "");
       setLoading(false);
     })();
   }, [token]);
@@ -67,31 +56,21 @@ export default function Survey() {
   const handleSubmit = async () => {
     if (!ctx) return;
     setSubmitting(true);
-    if (ctx.questions.length > 0) {
-      const inserts = ctx.questions.map((q) => ({
-        survey_id: q.survey_id,
-        question_id: q.id,
-        respondent_email: signupEmail || `player-${ctx.registration_id}@anon`,
-        answer: answers[q.id] || "",
-      }));
-      await supabase.from("tournament_survey_responses").insert(inserts);
-    }
-    if (signupOptIn && signupEmail) {
-      await supabase.from("early_signups").insert({
-        tournament_id: ctx.tournament_id,
-        email: signupEmail,
-        name: ctx.player_name || null,
-        source: "survey",
-      });
-    }
-    await supabase
-      .from("tournament_registrations")
-      .update({ survey_completed_at: new Date().toISOString() })
-      .eq("id", ctx.registration_id);
-    setSubmitted(true);
+    const { data, error } = await (supabase as any).rpc("submit_survey_by_token", {
+      _token: token,
+      _answers: answers,
+      _signup_opt_in: signupOptIn,
+      _signup_email: signupEmail || null,
+    });
     setSubmitting(false);
+    if (error || !data?.ok) {
+      toast({ title: "Could not submit", description: error?.message || data?.error || "Please try again.", variant: "destructive" });
+      return;
+    }
+    setSubmitted(true);
     toast({ title: "Thank you for your feedback!" });
   };
+
 
   if (loading) return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   if (!ctx) return <div className="min-h-screen flex items-center justify-center text-muted-foreground">This survey link is invalid or expired.</div>;

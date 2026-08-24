@@ -12975,6 +12975,7 @@ export type Database = {
           tournament_id: string
         }[]
       }
+      get_survey_by_token: { Args: { _token: string }; Returns: Json }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -13205,6 +13206,15 @@ export type Database = {
       submit_age_update: {
         Args: { _age: number; _token: string }
         Returns: boolean
+      }
+      submit_survey_by_token: {
+        Args: {
+          _answers: Json
+          _signup_email?: string
+          _signup_opt_in?: boolean
+          _token: string
+        }
+        Returns: Json
       }
       update_college_invitation_rsvp_by_token: {
         Args: { _response: string; _token: string }

@@ -529,7 +529,14 @@ Deno.serve(async (req) => {
             leaderboard_link: (tournament as any).slug ? `https://www.teevents.golf/live/${(tournament as any).slug}` : "https://www.teevents.golf",
             event_homepage: homepage,
             pairings_link: pairingsLink(recipientCode),
+            survey_link: surveyLinkFor(reg as any),
           };
+
+          // The survey email's action button always resolves to this player's
+          // own survey link unless the organizer typed a custom URL.
+          const sendConfig = kind === "survey" && (!emailConfig.button_url || emailConfig.button_url === homepage)
+            ? { ...emailConfig, button_url: vars.survey_link }
+            : emailConfig;
 
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
           regSubject = subject;
@@ -537,7 +544,7 @@ Deno.serve(async (req) => {
           const slug = (tournament as any).slug;
           const qrToken = (reg as any).qr_token;
           const hubUrl = slug && qrToken ? `https://www.teevents.golf/player/${slug}/${qrToken}` : "";
-          const html = buildCustomHtml(emailConfig, vars, { includePlayerHub: kind === "confirmation" && !!hubUrl, hubUrl, headerText });
+          const html = buildCustomHtml(sendConfig, vars, { includePlayerHub: kind === "confirmation" && !!hubUrl, hubUrl, headerText });
 
           const res = await fetch("https://api.resend.com/emails", {
             method: "POST",

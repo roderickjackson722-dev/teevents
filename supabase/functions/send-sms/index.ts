@@ -136,6 +136,14 @@ Deno.serve(async (req) => {
       );
     }
 
+    // Never send more texts than the plan allows.
+    let skippedForCredits = 0;
+    if (!smsUnlimited && recipients.length > creditsRemaining) {
+      skippedForCredits = recipients.length - creditsRemaining;
+      recipients = recipients.slice(0, creditsRemaining);
+    }
+
+
     const accountSid = Deno.env.get("TWILIO_ACCOUNT_SID");
     const authToken = Deno.env.get("TWILIO_AUTH_TOKEN");
     const fromPhone = Deno.env.get("TWILIO_PHONE_NUMBER");

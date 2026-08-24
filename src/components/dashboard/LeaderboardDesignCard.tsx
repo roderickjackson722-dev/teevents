@@ -201,6 +201,27 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
 
 
   const [orgLogoUrl, setOrgLogoUrl] = useState<string | null>(null);
+  const [flights, setFlights] = useState<{ id: string; tier_name: string }[]>([]);
+
+  useEffect(() => {
+    if (!tournamentId) return;
+    (supabase as any)
+      .from("tournament_tiers")
+      .select("id, tier_name, display_order")
+      .eq("tournament_id", tournamentId)
+      .eq("is_active", true)
+      .order("display_order", { ascending: true })
+      .then(({ data }: any) => setFlights(data || []));
+  }, [tournamentId]);
+
+  /** Empty selection means "show every active flight". */
+  const toggleFlight = (id: string, on: boolean) =>
+    setDesign((d) => {
+      const current = d.public_flight_ids?.length ? d.public_flight_ids : flights.map((f) => f.id);
+      const next = on ? [...new Set([...current, id])] : current.filter((f) => f !== id);
+      return { ...d, public_flight_ids: next };
+    });
+
 
   useEffect(() => {
     if (!tournamentId) return;

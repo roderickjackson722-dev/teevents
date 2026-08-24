@@ -3697,6 +3697,57 @@ export type Database = {
           },
         ]
       }
+      leaderboard_performance_log: {
+        Row: {
+          context: Json
+          created_at: string
+          duration_ms: number
+          error_message: string | null
+          id: string
+          league_event_id: string | null
+          ok: boolean
+          operation: string
+          page_count: number
+          retry_count: number
+          round_number: number | null
+          row_count: number
+          tournament_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          context?: Json
+          created_at?: string
+          duration_ms?: number
+          error_message?: string | null
+          id?: string
+          league_event_id?: string | null
+          ok?: boolean
+          operation: string
+          page_count?: number
+          retry_count?: number
+          round_number?: number | null
+          row_count?: number
+          tournament_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          context?: Json
+          created_at?: string
+          duration_ms?: number
+          error_message?: string | null
+          id?: string
+          league_event_id?: string | null
+          ok?: boolean
+          operation?: string
+          page_count?: number
+          retry_count?: number
+          round_number?: number | null
+          row_count?: number
+          tournament_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       leaderboard_snapshots: {
         Row: {
           created_at: string
@@ -13036,6 +13087,7 @@ export type Database = {
         Returns: boolean
       }
       org_is_demo_only: { Args: { _org_id: string }; Returns: boolean }
+      purge_old_leaderboard_performance_log: { Args: never; Returns: number }
       push_admin_notification: {
         Args: {
           _link?: string

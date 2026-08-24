@@ -1,4 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
+import { measureLeaderboardOp, type PerfStats } from "@/lib/leaderboardMetrics";
+
 
 /**
  * The Data API caps a single response at 1000 rows. Large events (1000+ paid
@@ -15,13 +17,14 @@ export const MAX_ROWS = 100_000;
 const PARALLEL_PAGES = 4;
 const RETRIES = 2;
 
-async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
+async function withRetry<T>(fn: () => Promise<T>, stats?: PerfStats): Promise<T> {
   let lastErr: unknown;
   for (let attempt = 0; attempt <= RETRIES; attempt++) {
     try {
       return await fn();
     } catch (e) {
       lastErr = e;
+      if (stats) stats.retryCount += 1;
       await new Promise((r) => setTimeout(r, 250 * (attempt + 1)));
     }
   }
@@ -34,8 +37,9 @@ async function withRetry<T>(fn: () => Promise<T>): Promise<T> {
  */
 export async function fetchAllPages<T = any>(
   makeQuery: () => any,
-  opts?: { onError?: "throw" | "empty"; maxRows?: number },
+  opts?: { onError?: "throw" | "empty"; maxRows?: number; stats?: PerfStats },
 ): Promise<T[]> {
+
   const maxRows = opts?.maxRows ?? MAX_ROWS;
   const all: T[] = [];
   let from = 0;
@@ -61,6 +65,7 @@ export async function fetchAllPages<T = any>(
         done = true;
         break;
       }
+      if (opts?.stats) opts.stats.pageCount += 1;
       all.push(...rows);
       if (rows.length < PAGE_SIZE) {
         done = true;
@@ -70,6 +75,7 @@ export async function fetchAllPages<T = any>(
     from += PARALLEL_PAGES * PAGE_SIZE;
   }
 
+  if (opts?.stats) opts.stats.rowCount = Math.min(all.length, maxRows);
   return all.slice(0, maxRows);
 }
 
@@ -86,14 +92,19 @@ export function chunkRows<T>(rows: T[], size = 500): T[][] {
  */
 export async function fetchAllPublicLeaderboardScores(tournamentId: string): Promise<any[]> {
   try {
-    return await fetchAllPages(
-      () =>
-        (supabase as any)
-          .rpc("get_public_leaderboard_scores", { _tournament_id: tournamentId })
-          .order("registration_id", { ascending: true })
-          .order("round_number", { ascending: true })
-          .order("hole_number", { ascending: true }),
-      { onError: "empty" },
+    return await measureLeaderboardOp(
+      "leaderboard.public.fetch",
+      { tournamentId },
+      (stats) =>
+        fetchAllPages(
+          () =>
+            (supabase as any)
+              .rpc("get_public_leaderboard_scores", { _tournament_id: tournamentId })
+              .order("registration_id", { ascending: true })
+              .order("round_number", { ascending: true })
+              .order("hole_number", { ascending: true }),
+          { onError: "empty", stats },
+        ),
     );
   } catch {
     return [];
@@ -110,18 +121,27 @@ export async function fetchAllTournamentScores(
   opts?: { roundNumber?: number; columns?: string },
 ): Promise<any[]> {
   const columns = opts?.columns ?? "registration_id, hole_number, strokes, round_number";
-  return fetchAllPages(() => {
-    let query = (supabase as any)
-      .from("tournament_scores")
-      .select(columns)
-      .eq("tournament_id", tournamentId);
-    if (opts?.roundNumber != null) query = query.eq("round_number", opts.roundNumber);
-    return query
-      .order("registration_id", { ascending: true })
-      .order("round_number", { ascending: true })
-      .order("hole_number", { ascending: true });
-  });
+  return measureLeaderboardOp(
+    "scores.fetch",
+    { tournamentId, roundNumber: opts?.roundNumber ?? null },
+    (stats) =>
+      fetchAllPages(
+        () => {
+          let query = (supabase as any)
+            .from("tournament_scores")
+            .select(columns)
+            .eq("tournament_id", tournamentId);
+          if (opts?.roundNumber != null) query = query.eq("round_number", opts.roundNumber);
+          return query
+            .order("registration_id", { ascending: true })
+            .order("round_number", { ascending: true })
+            .order("hole_number", { ascending: true });
+        },
+        { stats },
+      ),
+  );
 }
+
 
 /**
  * Fetch every registration row for a tournament. Large events can exceed the
@@ -133,11 +153,42 @@ export async function fetchAllRegistrations(
   columns: string,
   opts?: { orderBy?: string },
 ): Promise<any[]> {
-  return fetchAllPages(() => {
-    const query = (supabase as any)
-      .from("tournament_registrations")
-      .select(columns)
-      .eq("tournament_id", tournamentId);
-    return opts?.orderBy ? query.order(opts.orderBy) : query.order("id", { ascending: true });
-  });
+  return measureLeaderboardOp("registrations.fetch", { tournamentId }, (stats) =>
+    fetchAllPages(
+      () => {
+        const query = (supabase as any)
+          .from("tournament_registrations")
+          .select(columns)
+          .eq("tournament_id", tournamentId);
+        return opts?.orderBy ? query.order(opts.orderBy) : query.order("id", { ascending: true });
+      },
+      { stats },
+    ),
+  );
 }
+
+/**
+ * Wrap a chunked write (score saves, edit logs, snapshot restores) so its
+ * latency and row volume land in the server performance log.
+ */
+export async function measuredScoreWrite<T>(
+  rowCount: number,
+  meta: { tournamentId?: string | null; roundNumber?: number | null; operation?: string },
+  fn: () => Promise<T>,
+): Promise<T> {
+  return measureLeaderboardOp(
+    meta.operation ?? "scores.save",
+    {
+      tournamentId: meta.tournamentId ?? null,
+      roundNumber: meta.roundNumber ?? null,
+      rowCount,
+      context: { chunkCount: Math.ceil(rowCount / 500) },
+    },
+    async (stats) => {
+      stats.rowCount = rowCount;
+      stats.pageCount = Math.ceil(rowCount / 500);
+      return fn();
+    },
+  );
+}
+

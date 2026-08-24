@@ -820,6 +820,12 @@ const AdminDashboard = () => {
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <Shield className="h-4 w-4" /> Security & Monitoring
+                 </button>
+                <button
+                  onClick={() => navigate("/admin/platform-health")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Gauge className="h-4 w-4" /> Platform Health
                 </button>
                 <button
                   onClick={() => navigate("/admin/email-notifications")}

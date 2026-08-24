@@ -90,6 +90,8 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   flight_columns: 2,
   flight_rotate_seconds: 15,
   flight_include_overall: true,
+  public_flight_ids: [],
+  show_skins_payouts: true,
   title_align: "center",
   left_logo_url: "",
   right_logo_url: "",

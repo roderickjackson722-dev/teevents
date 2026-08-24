@@ -412,7 +412,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });
 
-    const ps: PlayerScore[] = registrations.map((r) => ({
+    const ps: PlayerScore[] = registrations.map((r: any) => ({
       registration_id: r.id,
       first_name: r.first_name,
       last_name: r.last_name,

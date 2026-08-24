@@ -3,6 +3,7 @@ import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, ChevronLeft, ChevronRight, Minus, Plus } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, ChevronLeft, ChevronRight, Minus, Plus, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -264,6 +265,9 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
   // Per-cell validation errors: { [regId]: { [hole]: message } }
   const [scoreErrors, setScoreErrors] = useState<Record<string, Record<number, string>>>({});
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
+  const [alertingSupport, setAlertingSupport] = useState(false);
 
   // Fetch course data for hole pars
   const { data: courseData } = useQuery({
@@ -332,19 +336,20 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     return m;
   }, [teamNameRows]);
 
-  const { data: scores, isLoading: scoresLoading } = useQuery({
+  const {
+    data: scores,
+    isLoading: scoresLoading,
+    dataUpdatedAt: scoresUpdatedAt,
+    isFetching: scoresFetching,
+    refetch: refetchScores,
+  } = useQuery({
     queryKey: ["tournament-scores", selectedTournament, workingRound],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tournament_scores")
-        .select("registration_id, hole_number, strokes, round_number")
-        .eq("tournament_id", selectedTournament)
-        .eq("round_number", workingRound);
-      if (error) throw error;
-      return data;
-    },
+    // Pages through every row so events with more than 1000 score rows still
+    // show late holes and later rounds.
+    queryFn: () => fetchAllTournamentScores(selectedTournament, { roundNumber: workingRound }),
     enabled: !!selectedTournament,
   });
+
 
   // Realtime subscription for live score updates
   useEffect(() => {
@@ -403,7 +408,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   useEffect(() => {
     if (!registrations || !scores) return;
     const scoreMap: Record<string, Record<number, number>> = {};
-    scores.forEach((s) => {
+    (scores as any[]).forEach((s: any) => {
       if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });
@@ -552,20 +557,24 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         });
       });
       setScoreErrors(errs);
-      if (Object.keys(errs).length > 0) {
-        const count = Object.values(errs).reduce((sum, holes) => sum + Object.keys(holes).length, 0);
-        throw new Error(
-          `${count} invalid score${count === 1 ? "" : "s"}. Strokes must be a whole number between ${MIN_STROKES} and ${MAX_STROKES}.`
-        );
+      // Invalid cells (0, blanks that parsed oddly, out-of-range) are skipped so
+      // they never block the rest of the batch from saving.
+      const invalidCount = Object.values(errs).reduce((sum, holes) => sum + Object.keys(holes).length, 0);
+      if (upserts.length === 0) {
+        if (invalidCount > 0) {
+          throw new Error(
+            `${invalidCount} invalid score${invalidCount === 1 ? "" : "s"}. Strokes must be a whole number between ${MIN_STROKES} and ${MAX_STROKES}.`
+          );
+        }
+        return { mode: "noop" as const, invalidCount: 0 };
       }
-      if (upserts.length === 0) return { mode: "noop" as const };
 
       // ---- Offline fallback: queue instead of network call ----
       if (typeof navigator !== "undefined" && !navigator.onLine) {
         enqueue(upserts.map(({ tournament_id, registration_id, hole_number, round_number, strokes }) => ({
           tournament_id, registration_id, hole_number, round_number, strokes,
         })));
-        return { mode: "queued" as const, count: upserts.length };
+        return { mode: "queued" as const, count: upserts.length, invalidCount };
       }
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -614,7 +623,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         if (editLogs.length > 0) {
           await (supabase as any).from("score_edits").insert(editLogs);
         }
-        return { mode: "saved" as const, count: persisted.length, persisted, roundNumber: workingRound };
+        return { mode: "saved" as const, count: persisted.length, persisted, roundNumber: workingRound, invalidCount };
       } catch (e: any) {
         // Network / fetch failures — queue for later sync so the scorekeeper doesn't lose work.
         const msg = String(e?.message || e || "");
@@ -623,7 +632,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           enqueue(upserts.map(({ tournament_id, registration_id, hole_number, round_number, strokes }) => ({
             tournament_id, registration_id, hole_number, round_number, strokes,
           })));
-          return { mode: "queued" as const, count: upserts.length };
+          return { mode: "queued" as const, count: upserts.length, invalidCount };
         }
         throw e;
       }
@@ -636,7 +645,14 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           description: "We'll sync automatically when you're back online.",
         });
       } else if (result.mode === "saved") {
-        toast({ title: "Scores saved!" });
+        setLastSavedAt(Date.now());
+        setSaveState("saved");
+        toast({
+          title: `Scores saved successfully at ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`,
+          description: result.invalidCount > 0
+            ? `${result.invalidCount} invalid entr${result.invalidCount === 1 ? "y was" : "ies were"} skipped — fix and save again.`
+            : undefined,
+        });
         // Put the confirmed rows into the active-round cache immediately. This
         // prevents a concurrent realtime refresh from briefly restoring stale
         // values after the organizer saves a large scorecard batch.
@@ -666,10 +682,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         });
         return next;
       });
-      setScoreErrors({});
       queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
     },
     onError: (e: Error) => {
+      setSaveState("error");
       toast({ title: "Can't save scores", description: e.message, variant: "destructive" });
     },
   });
@@ -780,6 +796,50 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
   const allScoresEntered = progress.complete;
 
+  /** Missing holes collapsed to one line per player/team. */
+  const missingByLabel = useMemo(() => {
+    const map = new Map<string, number[]>();
+    progress.missing.forEach((m) => {
+      const list = map.get(m.label) || [];
+      list.push(m.hole);
+      map.set(m.label, list);
+    });
+    return Array.from(map.entries())
+      .map(([label, holesList]) => ({ label, holes: holesList.sort((a, b) => a - b) }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [progress.missing]);
+
+  /** Email info@teevents.golf a summary of the holes still missing scores. */
+  const alertMissingScores = async () => {
+    if (!selectedTournament || !org?.orgId) return;
+    setAlertingSupport(true);
+    try {
+      const { error } = await supabase.functions.invoke("notify-admin-action", {
+        body: {
+          type: "missing_scores_alert",
+          organization_id: org.orgId,
+          subject: `Missing scores — ${selectedTournamentData?.title || selectedTournament}`,
+          details: {
+            tournament_id: selectedTournament,
+            tournament_title: selectedTournamentData?.title || "",
+            round: workingRound,
+            missing_count: progress.missing.length,
+            total_entries: progress.total,
+            lines: missingByLabel
+              .slice(0, 50)
+              .map((row) => `${row.label}: Holes ${row.holes.join(", ")}`),
+          },
+        },
+      });
+      if (error) throw error;
+      toast({ title: "Support alerted", description: "We emailed info@teevents.golf a missing-score report." });
+    } catch (e: any) {
+      toast({ title: "Couldn't send alert", description: e?.message || "Please try again.", variant: "destructive" });
+    } finally {
+      setAlertingSupport(false);
+    }
+  };
+
 
   // Notify the organizer once, the moment the last missing score is filled in.
   const completeNotifiedRef = useRef<string | null>(null);
@@ -858,7 +918,41 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           </h1>
           <p className="text-muted-foreground">Enter scores and track the leaderboard in real-time.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Save / sync status indicator */}
+          {selectedTournament && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+              {saveMutation.isPending ? (
+                <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…</>
+              ) : saveState === "error" ? (
+                <span className="flex items-center gap-1.5 text-destructive">
+                  <AlertTriangle className="h-3.5 w-3.5" /> Save failed
+                  <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => saveMutation.mutate(editedScores)}>
+                    Retry
+                  </Button>
+                </span>
+              ) : lastSavedAt ? (
+                <span className="flex items-center gap-1.5 text-primary">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Saved at{" "}
+                  {new Date(lastSavedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                </span>
+              ) : null}
+            </span>
+          )}
+          {selectedTournament && (
+            <span className="text-xs text-muted-foreground">
+              Last synced:{" "}
+              {scoresUpdatedAt
+                ? new Date(scoresUpdatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+                : "—"}
+            </span>
+          )}
+          {selectedTournament && (
+            <Button variant="outline" size="sm" onClick={() => refetchScores()} disabled={scoresFetching}>
+              {scoresFetching ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              Refresh Leaderboard
+            </Button>
+          )}
           {pending.length > 0 && online && (
             <Button variant="outline" size="sm" onClick={() => flush()}>
               <CloudUpload className="h-4 w-4 mr-1" /> Sync {pending.length}
@@ -866,7 +960,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           )}
           {hasEdits && canEditScores && (
             <Button
-              onClick={() => saveMutation.mutate(editedScores)}
+              onClick={() => { setSaveState("idle"); saveMutation.mutate(editedScores); }}
               disabled={saveMutation.isPending || isFrozen || roundLocked}
               title={roundLocked ? `${roundLabel(workingRound - 1)} is closed` : isFrozen ? "Leaderboard is frozen" : undefined}
             >
@@ -875,6 +969,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             </Button>
           )}
         </div>
+
       </div>
 
       {selectedTournament && !canEditScores && (
@@ -1050,16 +1145,29 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
           {progress.total > 0 && progress.missing.length > 0 && (
             <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
-              <div className="flex items-center gap-2 font-semibold">
+              <div className="flex items-center gap-2 font-semibold flex-wrap">
                 <AlertTriangle className="h-4 w-4" />
-                Scores Remaining: {progress.missing.length} of {progress.total} hole entries need scores.
+                Missing Scores: {progress.missing.length} of {progress.total} hole entries need scores.
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="ml-auto"
+                  disabled={alertingSupport}
+                  onClick={alertMissingScores}
+                >
+                  {alertingSupport ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : null}
+                  Alert TeeVents Support
+                </Button>
               </div>
-              <ul className="mt-1.5 space-y-0.5 text-xs">
-                {progress.missing.slice(0, 8).map((m) => (
-                  <li key={`${m.label}-${m.hole}`}>• {m.label} — Hole {m.hole}</li>
+              {/* One compact line per player/team, scrollable when the list is long. */}
+              <div className="mt-2 max-h-48 overflow-y-auto rounded border border-amber-500/30 bg-background/40 divide-y divide-amber-500/20">
+                {missingByLabel.map((row) => (
+                  <p key={row.label} className="px-3 py-1.5 text-xs">
+                    <span className="font-medium">{row.label}:</span> {roundLabel(workingRound - 1)} — Holes{" "}
+                    {row.holes.join(", ")}
+                  </p>
                 ))}
-                {progress.missing.length > 8 && <li>• +{progress.missing.length - 8} more…</li>}
-              </ul>
+              </div>
             </div>
           )}
 

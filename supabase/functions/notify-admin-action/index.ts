@@ -147,7 +147,26 @@ Deno.serve(async (req) => {
         break;
       }
 
+      case "missing_scores_alert": {
+        const lines: string[] = Array.isArray(details?.lines) ? details.lines : [];
+        sent = await sendEmail(
+          [ADMIN_EMAIL],
+          `⚠️ Missing Scores — ${details?.tournament_title || orgName}`,
+          wrapHtml("Missing Scores Reported", `
+            <p style="margin:0 0 8px;color:#374151;font-size:15px;"><strong>Organization:</strong> ${orgName}</p>
+            <p style="margin:0 0 8px;color:#374151;font-size:15px;"><strong>Tournament:</strong> ${details?.tournament_title || ""} (${details?.tournament_id || ""})</p>
+            <p style="margin:0 0 8px;color:#374151;font-size:15px;"><strong>Round:</strong> ${details?.round ?? ""}</p>
+            <p style="margin:0 0 12px;color:#374151;font-size:15px;"><strong>Missing:</strong> ${details?.missing_count ?? 0} of ${details?.total_entries ?? 0} hole entries</p>
+            <div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;">
+              ${lines.map((l: string) => `<p style="margin:0 0 6px;color:#374151;font-size:13px;">${l}</p>`).join("")}
+            </div>
+          `),
+        );
+        break;
+      }
+
       case "organizer_message": {
+
         // Notify admin about new organizer message
         sent = await sendEmail(
           [ADMIN_EMAIL],

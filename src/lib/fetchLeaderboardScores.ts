@@ -87,7 +87,12 @@ export function chunkRows<T>(rows: T[], size = 500): T[][] {
 export async function fetchAllPublicLeaderboardScores(tournamentId: string): Promise<any[]> {
   try {
     return await fetchAllPages(
-      () => (supabase as any).rpc("get_public_leaderboard_scores", { _tournament_id: tournamentId }),
+      () =>
+        (supabase as any)
+          .rpc("get_public_leaderboard_scores", { _tournament_id: tournamentId })
+          .order("registration_id", { ascending: true })
+          .order("round_number", { ascending: true })
+          .order("hole_number", { ascending: true }),
       { onError: "empty" },
     );
   } catch {
@@ -113,6 +118,7 @@ export async function fetchAllTournamentScores(
     if (opts?.roundNumber != null) query = query.eq("round_number", opts.roundNumber);
     return query
       .order("registration_id", { ascending: true })
+      .order("round_number", { ascending: true })
       .order("hole_number", { ascending: true });
   });
 }

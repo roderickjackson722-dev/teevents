@@ -874,7 +874,41 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           </h1>
           <p className="text-muted-foreground">Enter scores and track the leaderboard in real-time.</p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Save / sync status indicator */}
+          {selectedTournament && (
+            <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+              {saveMutation.isPending ? (
+                <><Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…</>
+              ) : saveState === "error" ? (
+                <span className="flex items-center gap-1.5 text-destructive">
+                  <AlertTriangle className="h-3.5 w-3.5" /> Save failed
+                  <Button variant="link" size="sm" className="h-auto p-0 text-xs" onClick={() => saveMutation.mutate(editedScores)}>
+                    Retry
+                  </Button>
+                </span>
+              ) : lastSavedAt ? (
+                <span className="flex items-center gap-1.5 text-primary">
+                  <CheckCircle2 className="h-3.5 w-3.5" /> Saved at{" "}
+                  {new Date(lastSavedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}
+                </span>
+              ) : null}
+            </span>
+          )}
+          {selectedTournament && (
+            <span className="text-xs text-muted-foreground">
+              Last synced:{" "}
+              {scoresUpdatedAt
+                ? new Date(scoresUpdatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+                : "—"}
+            </span>
+          )}
+          {selectedTournament && (
+            <Button variant="outline" size="sm" onClick={() => refetchScores()} disabled={scoresFetching}>
+              {scoresFetching ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-1" />}
+              Refresh Leaderboard
+            </Button>
+          )}
           {pending.length > 0 && online && (
             <Button variant="outline" size="sm" onClick={() => flush()}>
               <CloudUpload className="h-4 w-4 mr-1" /> Sync {pending.length}
@@ -882,7 +916,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           )}
           {hasEdits && canEditScores && (
             <Button
-              onClick={() => saveMutation.mutate(editedScores)}
+              onClick={() => { setSaveState("idle"); saveMutation.mutate(editedScores); }}
               disabled={saveMutation.isPending || isFrozen || roundLocked}
               title={roundLocked ? `${roundLabel(workingRound - 1)} is closed` : isFrozen ? "Leaderboard is frozen" : undefined}
             >
@@ -891,6 +925,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             </Button>
           )}
         </div>
+
       </div>
 
       {selectedTournament && !canEditScores && (

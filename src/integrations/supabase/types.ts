@@ -13094,6 +13094,7 @@ export type Database = {
         Returns: boolean
       }
       org_is_demo_only: { Args: { _org_id: string }; Returns: boolean }
+      prune_platform_logs: { Args: never; Returns: undefined }
       purge_old_leaderboard_performance_log: { Args: never; Returns: number }
       push_admin_notification: {
         Args: {

@@ -63,6 +63,8 @@ const TEMPLATE_HEADERS: Record<string, string> = {
   day_before: "Your Tournament Is Almost Here!",
   pairings_update: "Updated Hole Assignments",
   tee_times: "Your Tee Time",
+  survey: "We'd Love Your Feedback",
+
 
 };
 
@@ -139,7 +141,20 @@ const DEFAULT_CONFIGS: Record<string, any> = {
     show_event_details: true,
     show_button: true,
   },
+  survey: {
+    ...BASE_DEFAULT,
+    subject: "Tell us about your day at {{event_name}}",
+    greeting: "Hi {{first_name}},",
+    header_title: "We'd Love Your Feedback",
+    body_text: "Thank you for playing in {{event_name}}! Your feedback helps us make next year's event even better.\n\nThe survey takes less than two minutes.",
+    closing_text: "This survey link is unique to you, so you only need to fill it out once.",
+    footer_text: "Thanks again for joining us! ⛳",
+    button_text: "Take the Survey",
+    show_button: true,
+    show_event_details: false,
+  },
 };
+
 
 
 
@@ -302,7 +317,7 @@ Deno.serve(async (req) => {
     // Get registrations with tournament info
     const { data: registrations, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")
-      .select("id, first_name, last_name, email, tournament_id, qr_token, scoring_code, group_scoring_code, group_number, tee_time")
+      .select("id, first_name, last_name, email, tournament_id, qr_token, survey_response_token, scoring_code, group_scoring_code, group_number, tee_time")
       .in("id", registration_ids);
 
     if (regErr || !registrations || registrations.length === 0) {
@@ -350,7 +365,7 @@ Deno.serve(async (req) => {
     const tournamentId = registrations[0].tournament_id;
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, tee_times_email_config, schedule_info, schedule_info_html, slug, pairings_config")
+      .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, tee_times_email_config, survey_email_config, schedule_info, schedule_info_html, slug, pairings_config")
       .eq("id", tournamentId)
       .single();
 
@@ -407,6 +422,8 @@ Deno.serve(async (req) => {
       vendor: "vendor_email_config",
       pairings_update: "pairings_update_email_config",
       tee_times: "tee_times_email_config",
+      survey: "survey_email_config",
+
 
     };
 
@@ -442,6 +459,10 @@ Deno.serve(async (req) => {
     const pairingsLink = (code?: string) => (tournament as any).slug
       ? `https://www.teevents.golf/pairings/${(tournament as any).slug}${code ? `?code=${encodeURIComponent(code)}` : ""}`
       : "https://www.teevents.golf";
+    // Each player's unique post-event survey link.
+    const surveyLinkFor = (r: any) => (r?.survey_response_token
+      ? `https://www.teevents.golf/survey/${r.survey_response_token}`
+      : homepage);
     // The tee-time email's button points at the public pairings/tee sheet page.
     if (!emailConfig.button_url) emailConfig.button_url = kind === "tee_times" ? pairingsLink() : homepage;
 
@@ -508,7 +529,14 @@ Deno.serve(async (req) => {
             leaderboard_link: (tournament as any).slug ? `https://www.teevents.golf/live/${(tournament as any).slug}` : "https://www.teevents.golf",
             event_homepage: homepage,
             pairings_link: pairingsLink(recipientCode),
+            survey_link: surveyLinkFor(reg as any),
           };
+
+          // The survey email's action button always resolves to this player's
+          // own survey link unless the organizer typed a custom URL.
+          const sendConfig = kind === "survey" && (!emailConfig.button_url || emailConfig.button_url === homepage)
+            ? { ...emailConfig, button_url: vars.survey_link }
+            : emailConfig;
 
           const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
           regSubject = subject;
@@ -516,7 +544,7 @@ Deno.serve(async (req) => {
           const slug = (tournament as any).slug;
           const qrToken = (reg as any).qr_token;
           const hubUrl = slug && qrToken ? `https://www.teevents.golf/player/${slug}/${qrToken}` : "";
-          const html = buildCustomHtml(emailConfig, vars, { includePlayerHub: kind === "confirmation" && !!hubUrl, hubUrl, headerText });
+          const html = buildCustomHtml(sendConfig, vars, { includePlayerHub: kind === "confirmation" && !!hubUrl, hubUrl, headerText });
 
           const res = await fetch("https://api.resend.com/emails", {
             method: "POST",

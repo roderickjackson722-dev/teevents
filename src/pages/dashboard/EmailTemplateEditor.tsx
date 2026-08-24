@@ -91,7 +91,7 @@ const DAY_BEFORE_SECTIONS: { id: string; label: string; hint: string }[] = [
 ];
 const DEFAULT_SECTION_ORDER = DAY_BEFORE_SECTIONS.map((s) => s.id);
 
-type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of" | "sponsorship_day_of" | "pairings_update" | "tee_times";
+type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of" | "sponsorship_day_of" | "pairings_update" | "tee_times" | "survey";
 
 
 const DEFAULT_CONFIG: EmailConfig = {
@@ -245,6 +245,25 @@ const DEFAULT_TEE_TIMES_CONFIG: EmailConfig = {
   show_button: true,
 };
 
+/**
+ * Post-event survey invitation. The action button resolves to each player's
+ * unique survey link at send time.
+ */
+const DEFAULT_SURVEY_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "Tell us about your day at {{event_name}}",
+  greeting: "Hi {{first_name}},",
+  header_title: "We'd Love Your Feedback",
+  body_text:
+    "Thank you for playing in {{event_name}}! Your feedback helps us make next year's event even better.\n\nThe survey takes less than two minutes.",
+  closing_text: "This survey link is unique to you, so you only need to fill it out once.",
+  footer_text: "Thanks again for joining us! ⛳",
+  button_text: "Take the Survey",
+  button_url: "",
+  show_button: true,
+  show_event_details: false,
+};
+
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
   sponsor: "Sponsor Confirmation",
@@ -255,6 +274,7 @@ const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   sponsorship_day_of: "Day of Event Sponsorship Email",
   pairings_update: "Updated Hole Assignments / Pairings",
   tee_times: "Tee Times & Pairings (individual players)",
+  survey: "Post-Event Survey Invitation",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
@@ -267,6 +287,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   sponsorship_day_of: "Thank You for Your Sponsorship!",
   pairings_update: "Updated Hole Assignments",
   tee_times: "Your Tee Time",
+  survey: "We'd Love Your Feedback",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -279,6 +300,7 @@ const CONFIG_KEY: Record<TemplateKind, string> = {
   sponsorship_day_of: "sponsorship_day_of_email_config",
   pairings_update: "pairings_update_email_config",
   tee_times: "tee_times_email_config",
+  survey: "survey_email_config",
 };
 
 
@@ -309,6 +331,7 @@ const VARIABLE_TAGS = [
   { label: "Leaderboard Link", value: "{{leaderboard_link}}" },
   { label: "Event Homepage", value: "{{event_homepage}}" },
   { label: "Pairings / Tee Sheet Link", value: "{{pairings_link}}" },
+  { label: "Survey Link", value: "{{survey_link}}" },
   { label: "Sponsor Name", value: "{{sponsor_name}}" },
   { label: "Sponsor Tier", value: "{{sponsor_tier}}" },
   { label: "Check-in Time", value: "{{checkin_time}}" },
@@ -327,7 +350,7 @@ export default function EmailTemplateEditor() {
   const initialTemplate: TemplateKind = (() => {
     if (typeof window === "undefined") return "confirmation";
     const q = new URLSearchParams(window.location.search).get("template");
-    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of" || q === "sponsorship_day_of" || q === "pairings_update" || q === "tee_times"
+    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of" || q === "sponsorship_day_of" || q === "pairings_update" || q === "tee_times" || q === "survey"
       ? (q as TemplateKind)
       : "confirmation";
   })();
@@ -351,6 +374,8 @@ export default function EmailTemplateEditor() {
               ? DEFAULT_PAIRINGS_UPDATE_CONFIG
               : initialTemplate === "tee_times"
               ? DEFAULT_TEE_TIMES_CONFIG
+              : initialTemplate === "survey"
+              ? DEFAULT_SURVEY_CONFIG
               : DEFAULT_CONFIG,
 
   );
@@ -428,6 +453,7 @@ export default function EmailTemplateEditor() {
     if (k === "sponsorship_day_of") return DEFAULT_SPONSORSHIP_DAY_OF_CONFIG;
     if (k === "pairings_update") return DEFAULT_PAIRINGS_UPDATE_CONFIG;
     if (k === "tee_times") return DEFAULT_TEE_TIMES_CONFIG;
+    if (k === "survey") return DEFAULT_SURVEY_CONFIG;
 
     return DEFAULT_CONFIG;
   };
@@ -666,6 +692,9 @@ export default function EmailTemplateEditor() {
       sponsor_tier: "Sponsor",
       organization_name: org?.orgName || "",
       contact_email: t?.contact_email || t?.org_contact_email || "",
+      survey_link: sampleReg?.survey_response_token
+        ? `https://www.teevents.golf/survey/${sampleReg.survey_response_token}`
+        : `${homepage}` ,
     };
     if (courseAddress) vars.course_address = courseAddress;
     else if (location) vars.course_address = location;
@@ -965,6 +994,7 @@ export default function EmailTemplateEditor() {
               <SelectItem value="sponsorship_day_of">{TEMPLATE_LABELS.sponsorship_day_of}</SelectItem>
               <SelectItem value="pairings_update">{TEMPLATE_LABELS.pairings_update}</SelectItem>
               <SelectItem value="tee_times">{TEMPLATE_LABELS.tee_times}</SelectItem>
+              <SelectItem value="survey">{TEMPLATE_LABELS.survey}</SelectItem>
             </SelectContent>
           </Select>
           <Button

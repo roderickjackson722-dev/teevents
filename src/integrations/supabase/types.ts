@@ -11208,6 +11208,7 @@ export type Database = {
           state: string | null
           status: string
           store_section_title: string | null
+          survey_email_config: Json | null
           team_hq_settings: Json
           tee_times_email_config: Json | null
           template: string | null
@@ -11526,6 +11527,7 @@ export type Database = {
           state?: string | null
           status?: string
           store_section_title?: string | null
+          survey_email_config?: Json | null
           team_hq_settings?: Json
           tee_times_email_config?: Json | null
           template?: string | null
@@ -11844,6 +11846,7 @@ export type Database = {
           state?: string | null
           status?: string
           store_section_title?: string | null
+          survey_email_config?: Json | null
           team_hq_settings?: Json
           tee_times_email_config?: Json | null
           template?: string | null

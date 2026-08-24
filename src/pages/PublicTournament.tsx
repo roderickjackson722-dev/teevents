@@ -2245,11 +2245,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {/* ===== LIVE LEADERBOARD =====
           Renders the exact same board as /live/:slug (design, sponsors, flights,
           scorecard drill-down) so the homepage never drifts from the live page. */}
-      {isTabVisible("leaderboard") && leaderboard.length > 0 && tournament.slug && (
+      {isTabVisible("leaderboard") && leaderboard.length > 0 && tournament.slug && !leaderboardEmbedUnavailable && (
         <section id="leaderboard" className="py-12 bg-white">
           <div className="max-w-6xl mx-auto px-2 sm:px-4">
             <div className="rounded-xl overflow-hidden border [&_.min-h-screen]:min-h-0" style={{ borderColor: "#e5e5e5" }}>
-              <LiveLeaderboardEmbed slug={tournament.slug} />
+              <LiveLeaderboardEmbed
+                slug={tournament.slug}
+                onUnavailable={() => setLeaderboardEmbedUnavailable(true)}
+              />
             </div>
             <p className="text-center text-sm mt-3">
               <a href={`/live/${tournament.slug}`} className="underline font-semibold" style={{ color: secondary }}>
@@ -2259,6 +2262,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           </div>
         </section>
       )}
+
 
       {galleryPosition === "after_leaderboard" && galleryNode}
       {mediaPosition === "after_leaderboard" && mediaNode}

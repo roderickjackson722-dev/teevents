@@ -3,6 +3,7 @@ import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -404,7 +405,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   useEffect(() => {
     if (!registrations || !scores) return;
     const scoreMap: Record<string, Record<number, number>> = {};
-    scores.forEach((s) => {
+    (scores as any[]).forEach((s: any) => {
       if (!scoreMap[s.registration_id]) scoreMap[s.registration_id] = {};
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });

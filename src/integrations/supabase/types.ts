@@ -6609,6 +6609,156 @@ export type Database = {
           },
         ]
       }
+      platform_health_alerts: {
+        Row: {
+          created_at: string
+          email_error: string | null
+          emailed_at: string | null
+          id: string
+          message: string
+          metric: string
+          resolved_at: string | null
+          severity: string
+          threshold: number | null
+          value: number | null
+        }
+        Insert: {
+          created_at?: string
+          email_error?: string | null
+          emailed_at?: string | null
+          id?: string
+          message: string
+          metric: string
+          resolved_at?: string | null
+          severity?: string
+          threshold?: number | null
+          value?: number | null
+        }
+        Update: {
+          created_at?: string
+          email_error?: string | null
+          emailed_at?: string | null
+          id?: string
+          message?: string
+          metric?: string
+          resolved_at?: string | null
+          severity?: string
+          threshold?: number | null
+          value?: number | null
+        }
+        Relationships: []
+      }
+      platform_health_settings: {
+        Row: {
+          alert_email: string
+          alerts_enabled: boolean
+          cache_hit_pct_floor: number
+          connections_pct_threshold: number
+          disk_gb_threshold: number
+          id: boolean
+          last_summary_sent_at: string | null
+          monitoring_ends_at: string | null
+          monitoring_label: string | null
+          monitoring_started_at: string | null
+          updated_at: string
+          wal_pct_threshold: number
+        }
+        Insert: {
+          alert_email?: string
+          alerts_enabled?: boolean
+          cache_hit_pct_floor?: number
+          connections_pct_threshold?: number
+          disk_gb_threshold?: number
+          id?: boolean
+          last_summary_sent_at?: string | null
+          monitoring_ends_at?: string | null
+          monitoring_label?: string | null
+          monitoring_started_at?: string | null
+          updated_at?: string
+          wal_pct_threshold?: number
+        }
+        Update: {
+          alert_email?: string
+          alerts_enabled?: boolean
+          cache_hit_pct_floor?: number
+          connections_pct_threshold?: number
+          disk_gb_threshold?: number
+          id?: boolean
+          last_summary_sent_at?: string | null
+          monitoring_ends_at?: string | null
+          monitoring_label?: string | null
+          monitoring_started_at?: string | null
+          updated_at?: string
+          wal_pct_threshold?: number
+        }
+        Relationships: []
+      }
+      platform_health_snapshots: {
+        Row: {
+          active_queries: number | null
+          cache_hit_pct: number | null
+          captured_at: string
+          checkpoints_requested: number | null
+          checkpoints_timed: number | null
+          connections: number | null
+          connections_pct: number | null
+          db_bytes: number | null
+          deadlocks: number | null
+          id: string
+          longest_query_seconds: number | null
+          max_connections: number | null
+          max_wal_bytes: number | null
+          metrics: Json
+          rolled_back: number | null
+          temp_bytes: number | null
+          wal_bytes: number | null
+          wal_files: number | null
+          wal_pct: number | null
+        }
+        Insert: {
+          active_queries?: number | null
+          cache_hit_pct?: number | null
+          captured_at?: string
+          checkpoints_requested?: number | null
+          checkpoints_timed?: number | null
+          connections?: number | null
+          connections_pct?: number | null
+          db_bytes?: number | null
+          deadlocks?: number | null
+          id?: string
+          longest_query_seconds?: number | null
+          max_connections?: number | null
+          max_wal_bytes?: number | null
+          metrics?: Json
+          rolled_back?: number | null
+          temp_bytes?: number | null
+          wal_bytes?: number | null
+          wal_files?: number | null
+          wal_pct?: number | null
+        }
+        Update: {
+          active_queries?: number | null
+          cache_hit_pct?: number | null
+          captured_at?: string
+          checkpoints_requested?: number | null
+          checkpoints_timed?: number | null
+          connections?: number | null
+          connections_pct?: number | null
+          db_bytes?: number | null
+          deadlocks?: number | null
+          id?: string
+          longest_query_seconds?: number | null
+          max_connections?: number | null
+          max_wal_bytes?: number | null
+          metrics?: Json
+          rolled_back?: number | null
+          temp_bytes?: number | null
+          wal_bytes?: number | null
+          wal_files?: number | null
+          wal_pct?: number | null
+        }
+        Relationships: []
+      }
       platform_settings: {
         Row: {
           description: string | null
@@ -12553,6 +12703,8 @@ export type Database = {
           isSetofReturn: true
         }
       }
+      admin_platform_health: { Args: never; Returns: Json }
+      admin_wal_diagnostics: { Args: never; Returns: Json }
       apply_scheduled_registration_closures: { Args: never; Returns: number }
       attach_sample_viewer: {
         Args: { _org_id: string; _viewer_id: string }
@@ -13094,6 +13246,9 @@ export type Database = {
         Returns: boolean
       }
       org_is_demo_only: { Args: { _org_id: string }; Returns: boolean }
+      platform_health_capture: { Args: never; Returns: Json }
+      platform_health_live: { Args: never; Returns: Json }
+      prune_platform_health_snapshots: { Args: never; Returns: undefined }
       prune_platform_logs: { Args: never; Returns: undefined }
       purge_old_leaderboard_performance_log: { Args: never; Returns: number }
       push_admin_notification: {

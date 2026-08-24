@@ -32,6 +32,7 @@ import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 import { Route as TeamSlugStarterRouteImport } from './routes/team/$slug.starter'
 import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes/api/public/hooks/check-tournament-links'
 import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
+import { Route as ApiPublicHooksPlatformHealthMonitorRouteImport } from './routes/api/public/hooks/platform-health-monitor'
 import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
 
 const SplatRoute = SplatRouteImport.update({
@@ -158,6 +159,12 @@ const ApiPublicHooksLeadMagnetFollowupsRoute =
     path: '/api/public/hooks/lead-magnet-followups',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksPlatformHealthMonitorRoute =
+  ApiPublicHooksPlatformHealthMonitorRouteImport.update({
+    id: '/api/public/hooks/platform-health-monitor',
+    path: '/api/public/hooks/platform-health-monitor',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessScheduledEmailsRoute =
   ApiPublicHooksProcessScheduledEmailsRouteImport.update({
     id: '/api/public/hooks/process-scheduled-emails',
@@ -189,6 +196,7 @@ export interface FileRoutesByFullPath {
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
+  '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
 }
 export interface FileRoutesByTo {
@@ -215,6 +223,7 @@ export interface FileRoutesByTo {
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
+  '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
 }
 export interface FileRoutesById {
@@ -242,6 +251,7 @@ export interface FileRoutesById {
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
+  '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
 }
 export interface FileRouteTypes {
@@ -270,6 +280,7 @@ export interface FileRouteTypes {
     | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
+    | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-scheduled-emails'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -296,6 +307,7 @@ export interface FileRouteTypes {
     | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
+    | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-scheduled-emails'
   id:
     | '__root__'
@@ -322,6 +334,7 @@ export interface FileRouteTypes {
     | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
+    | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-scheduled-emails'
   fileRoutesById: FileRoutesById
 }
@@ -348,6 +361,7 @@ export interface RootRouteChildren {
   SSassurveyShareRoute: typeof SSassurveyShareRoute
   ApiPublicHooksCheckTournamentLinksRoute: typeof ApiPublicHooksCheckTournamentLinksRoute
   ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
+  ApiPublicHooksPlatformHealthMonitorRoute: typeof ApiPublicHooksPlatformHealthMonitorRoute
   ApiPublicHooksProcessScheduledEmailsRoute: typeof ApiPublicHooksProcessScheduledEmailsRoute
 }
 
@@ -514,6 +528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksLeadMagnetFollowupsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/platform-health-monitor': {
+      id: '/api/public/hooks/platform-health-monitor'
+      path: '/api/public/hooks/platform-health-monitor'
+      fullPath: '/api/public/hooks/platform-health-monitor'
+      preLoaderRoute: typeof ApiPublicHooksPlatformHealthMonitorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-scheduled-emails': {
       id: '/api/public/hooks/process-scheduled-emails'
       path: '/api/public/hooks/process-scheduled-emails'
@@ -562,6 +583,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksCheckTournamentLinksRoute,
   ApiPublicHooksLeadMagnetFollowupsRoute:
     ApiPublicHooksLeadMagnetFollowupsRoute,
+  ApiPublicHooksPlatformHealthMonitorRoute:
+    ApiPublicHooksPlatformHealthMonitorRoute,
   ApiPublicHooksProcessScheduledEmailsRoute:
     ApiPublicHooksProcessScheduledEmailsRoute,
 }

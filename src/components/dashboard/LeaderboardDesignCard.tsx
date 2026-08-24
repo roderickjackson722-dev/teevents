@@ -568,6 +568,38 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
             checked={design.flight_include_overall}
             onChange={(v) => update("flight_include_overall", v)}
           />
+
+          {flights.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <Label className="text-xs">Flights shown on the public leaderboard</Label>
+              <p className="text-xs text-muted-foreground">
+                Uncheck a flight to hide its board from spectators. Scores are still recorded.
+              </p>
+              {flights.map((f) => (
+                <Check
+                  key={f.id}
+                  label={f.tier_name}
+                  checked={
+                    design.public_flight_ids?.length ? design.public_flight_ids.includes(f.id) : true
+                  }
+                  onChange={(v) => toggleFlight(f.id, v)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* SKINS PAYOUTS */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Skins Payouts</Label>
+          <p className="text-xs text-muted-foreground">
+            Controls whether the skins payout summary appears under the public leaderboard.
+          </p>
+          <Check
+            label="Show skins payouts on the public leaderboard"
+            checked={design.show_skins_payouts !== false}
+            onChange={(v) => update("show_skins_payouts", v)}
+          />
         </section>
 
 

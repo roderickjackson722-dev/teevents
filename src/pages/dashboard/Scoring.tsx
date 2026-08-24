@@ -419,6 +419,13 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
             <RoundClosureCard tournamentId={selectedTournament} />
           </TabsContent>
 
+          {/* ===== SPONSOR VISIBILITY TAB ===== */}
+          <TabsContent value="sponsors" className="space-y-4">
+            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_scoring_page" />
+            <ScoringPageSponsorsCard tournamentId={selectedTournament} field="show_on_leaderboard" />
+          </TabsContent>
+
+
 
 
 

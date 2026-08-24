@@ -94,7 +94,9 @@ export function pruneSavedEdits(current: ScoreSnapshot, saved: ScoreSnapshot): S
  */
 export function mergeConfirmedScores(current: ScoreRow[] | undefined, persisted: ScoreRow[]): ScoreRow[] {
   const byCell = new Map<string, ScoreRow>();
-  (current || []).forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));
-  persisted.forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));
+  // Key includes the round so multi-round caches never collapse into one round.
+  const key = (row: ScoreRow) => `${row.registration_id}:${row.round_number ?? 1}:${row.hole_number}`;
+  (current || []).forEach((row) => byCell.set(key(row), row));
+  persisted.forEach((row) => byCell.set(key(row), row));
   return Array.from(byCell.values());
 }

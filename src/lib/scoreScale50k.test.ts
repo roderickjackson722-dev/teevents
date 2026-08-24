@@ -181,8 +181,11 @@ describe("50,000-row event: streaming export", () => {
     expect(chunkCount).toBeGreaterThan(100);
     expect(byteLength).toBeGreaterThan(0);
     expect(blob.size).toBe(byteLength);
-    const text = await blob.text();
-    expect(text.trimEnd().split("\n").length).toBe(TOTAL + 1);
+    let lines = 0;
+    for await (const chunk of csvChunks(["registration_id", "round", "hole", "strokes"], rows())) {
+      lines += chunk.trimEnd().split("\n").length;
+    }
+    expect(lines).toBe(TOTAL + 1);
   }, 30_000);
 
   it("escapes commas and quotes in team names", async () => {

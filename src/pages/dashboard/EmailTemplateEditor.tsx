@@ -522,7 +522,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, payment_status, scoring_code, group_scoring_code, group_number, tee_time")
+        .select("id, first_name, last_name, email, payment_status, scoring_code, group_scoring_code, group_number, tee_time, survey_response_token")
         .eq("tournament_id", selectedTournament)
         .order("created_at", { ascending: false });
       setRegistrations(data || []);

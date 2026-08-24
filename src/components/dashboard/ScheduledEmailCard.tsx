@@ -34,6 +34,7 @@ interface Job {
   error: string | null;
   note: string | null;
   timezone: string | null;
+  test_email: string | null;
 }
 
 const STATUS_STYLES: Record<string, string> = {
@@ -59,6 +60,8 @@ export default function ScheduledEmailCard({
   const [timezone, setTimezone] = useState<string>(guessTimezone());
   const [audience, setAudience] = useState<"all" | "selected">("all");
   const [note, setNote] = useState("");
+  // When set, the scheduled run delivers a single copy to this address only.
+  const [testEmail, setTestEmail] = useState("");
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -67,7 +70,7 @@ export default function ScheduledEmailCard({
     setLoading(true);
     const { data } = await supabase
       .from("scheduled_emails")
-      .select("id, template_kind, scheduled_for, recipient_count, recipient_ids, status, sent_at, sent_count, failed_count, error, note, timezone")
+      .select("id, template_kind, scheduled_for, recipient_count, recipient_ids, status, sent_at, sent_count, failed_count, error, note, timezone, test_email")
       .eq("tournament_id", tournamentId)
       .order("scheduled_for", { ascending: true });
     setJobs((data || []) as unknown as Job[]);
@@ -82,7 +85,12 @@ export default function ScheduledEmailCard({
     const when = zonedInputToUtc(sendAt, timezone);
     if (Number.isNaN(when.getTime())) { toast.error("That date and time isn't valid"); return; }
     if (when.getTime() < Date.now() - 60_000) { toast.error("Pick a time in the future"); return; }
-    if (audience === "selected" && selectedRecipients.length === 0) {
+    const test = testEmail.trim();
+    if (test && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(test)) {
+      toast.error("Enter a valid test email address");
+      return;
+    }
+    if (!test && audience === "selected" && selectedRecipients.length === 0) {
       toast.error("Check at least one player in the list below");
       return;
     }
@@ -94,7 +102,8 @@ export default function ScheduledEmailCard({
       scheduled_for: when.toISOString(),
       timezone,
       recipient_ids: audience === "selected" ? selectedRecipients : null,
-      recipient_count: audience === "selected" ? selectedRecipients.length : totalRecipients,
+      recipient_count: test ? 1 : (audience === "selected" ? selectedRecipients.length : totalRecipients),
+      test_email: test || null,
       note: note.trim() || null,
       created_by: userRes?.user?.id || null,
       status: "scheduled",
@@ -107,6 +116,7 @@ export default function ScheduledEmailCard({
     toast.success(`${templateLabel} scheduled for ${formatInTimezone(when.toISOString(), timezone)}`);
     setSendAt("");
     setNote("");
+    setTestEmail("");
     load();
   };
 
@@ -189,6 +199,19 @@ export default function ScheduledEmailCard({
           <Label className="text-xs text-muted-foreground">Internal Note (optional)</Label>
           <Input value={note} onChange={(e) => setNote(e.target.value)} placeholder="e.g. Week-of reminder" className="mt-1" />
         </div>
+        <div className="md:col-span-2">
+          <Label className="text-xs text-muted-foreground">Test send to one address (optional)</Label>
+          <Input
+            type="email"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            placeholder="you@yourdomain.com"
+            className="mt-1"
+          />
+          <p className="text-xs text-muted-foreground mt-1">
+            Fill this in and only this address gets the email at the scheduled time — your players are not contacted.
+          </p>
+        </div>
       </div>
 
       {sendAt && (
@@ -218,7 +241,9 @@ export default function ScheduledEmailCard({
                     )}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {j.recipient_ids && j.recipient_ids.length > 0
+                    {j.test_email
+                      ? `Test send to ${j.test_email}`
+                      : j.recipient_ids && j.recipient_ids.length > 0
                       ? `${j.recipient_ids.length} selected player(s)`
                       : "Everyone registered"}
                     {j.note ? ` · ${j.note}` : ""}

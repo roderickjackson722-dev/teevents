@@ -251,8 +251,15 @@ export default function Surveys() {
             <Card>
               <CardHeader>
                 <CardTitle className="text-base">Post-Event Email Delivery</CardTitle>
-                <CardDescription>The survey is no longer shown on your public page. Players receive a unique survey link by email after the event ends.</CardDescription>
+                <CardDescription>
+                  The survey is no longer shown on your public page. Players receive a unique survey link by email after the event ends.{" "}
+                  Want to design the invitation, pick recipients, or schedule it yourself? Use the{" "}
+                  <a href="/dashboard/email-templates?template=survey" className="underline font-medium">
+                    Post-Event Survey Invitation email template
+                  </a>.
+                </CardDescription>
               </CardHeader>
+
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <Label className="text-sm">Automatically email survey to players after event ends</Label>

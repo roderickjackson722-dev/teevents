@@ -24,7 +24,7 @@ async function run() {
 
   const { data: due, error } = await admin
     .from("scheduled_emails")
-    .select("id, tournament_id, template_kind, recipient_ids")
+    .select("id, tournament_id, template_kind, recipient_ids, test_email")
     .eq("status", "scheduled")
     .lte("scheduled_for", new Date().toISOString())
     .order("scheduled_for", { ascending: true })
@@ -48,18 +48,28 @@ async function run() {
       ? job.recipient_ids.map((x: unknown) => String(x))
       : null;
 
-    const isDayBefore = job.template_kind === "day_before";
+    /**
+     * Test sends deliver ONE copy of the selected template to a single address
+     * (the organizer / platform team) instead of the player list. They always
+     * render through resend-confirmation so the saved template design is used.
+     */
+    const testEmail = String(job.test_email || "").trim();
+    const isDayBefore = job.template_kind === "day_before" && !testEmail;
     const fnName = isDayBefore ? "send-day-before-reminder" : "resend-confirmation";
 
     // Everyone: resolve the tournament's registrants (the confirmation-style
     // function requires an explicit id list).
-    if (!ids && !isDayBefore) {
+    if (!isDayBefore && (!ids || testEmail)) {
       const { data: regs } = await admin
         .from("tournament_registrations")
         .select("id, email")
         .eq("tournament_id", job.tournament_id);
-      ids = ((regs ?? []) as any[]).filter((r) => r.email).map((r) => r.id);
-      if (ids.length === 0) {
+      const candidates = ((regs ?? []) as any[]).filter((r) => r.email);
+      // A test send only needs one registration to pull sample data from.
+      ids = testEmail
+        ? (ids && ids.length > 0 ? ids.slice(0, 1) : candidates.slice(0, 1).map((r) => r.id))
+        : candidates.map((r) => r.id);
+      if (!ids || ids.length === 0) {
         await admin
           .from("scheduled_emails")
           .update({ status: "failed", error: "No registrants with an email address" })
@@ -73,6 +83,9 @@ async function run() {
       ? { tournament_id: job.tournament_id, service_run: true }
       : { use_custom_template: true, template_kind: job.template_kind, tournament_id: job.tournament_id, service_run: true };
     if (ids) body["registration_ids"] = ids;
+    if (testEmail && ids) {
+      body["email_overrides"] = Object.fromEntries(ids.map((id) => [id, testEmail]));
+    }
 
     try {
       const res = await fetch(`${supabaseUrl}/functions/v1/${fnName}`, {

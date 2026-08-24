@@ -3,7 +3,7 @@ import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
+import { fetchAllTournamentScores, fetchAllRegistrations, chunkRows } from "@/lib/fetchLeaderboardScores";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

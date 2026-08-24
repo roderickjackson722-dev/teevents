@@ -28,6 +28,8 @@ import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
 import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
 import RoundClosureCard from "@/components/dashboard/RoundClosureCard";
+import LeaderboardExportCard from "@/components/dashboard/LeaderboardExportCard";
+
 import { activeRoundNumber, parsePairingsConfig, roundLabel } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 
@@ -1514,10 +1516,15 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         </Card>
       )}
 
+      {selectedTournament && (
+        <LeaderboardExportCard tournamentId={selectedTournament} />
+      )}
+
       {/* Edit history lives at the very bottom of the page */}
       {showEntry && selectedTournament && (
         <RoundClosureCard tournamentId={selectedTournament} />
       )}
+
 
       {showEntry && selectedTournament && (
         <ScoreEditHistory tournamentId={selectedTournament} />

@@ -641,30 +641,15 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         // values after the organizer saves a large scorecard batch.
         queryClient.setQueryData(
           ["tournament-scores", selectedTournament, result.roundNumber],
-          (current: Array<{ registration_id: string; hole_number: number; strokes: number; round_number: number }> | undefined) => {
-            const byCell = new Map<string, { registration_id: string; hole_number: number; strokes: number; round_number: number }>();
-            (current || []).forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));
-            result.persisted.forEach((row) => byCell.set(`${row.registration_id}:${row.hole_number}`, row));
-            return Array.from(byCell.values());
-          },
+          (current: Array<{ registration_id: string; hole_number: number; strokes: number; round_number: number }> | undefined) =>
+            mergeConfirmedScores(current, result.persisted as any),
         );
       }
       // Only clear values included in this request. A scorekeeper can keep
       // entering scores while a save is in flight; those newer edits must not
       // be erased when the earlier request completes.
-      setEditedScores((current) => {
-        const next: Record<string, Record<number, number>> = {};
-        Object.entries(current).forEach(([regId, holes]) => {
-          Object.entries(holes).forEach(([hole, value]) => {
-            const holeNumber = Number(hole);
-            if (scoreSnapshot[regId]?.[holeNumber] !== value) {
-              if (!next[regId]) next[regId] = {};
-              next[regId][holeNumber] = value;
-            }
-          });
-        });
-        return next;
-      });
+      setEditedScores((current) => pruneSavedEdits(current, scoreSnapshot));
+
       queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
     },
     onError: (e: Error) => {

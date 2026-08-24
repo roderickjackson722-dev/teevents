@@ -44,6 +44,10 @@ export interface LeaderboardDesign {
   flight_rotate_seconds: number;
   /** Include a combined "Overall" board alongside the flights. */
   flight_include_overall: boolean;
+  /** Flight ids shown publicly. Empty array = show every active flight. */
+  public_flight_ids: string[];
+  /** Show the skins payout summary on the public leaderboard. */
+  show_skins_payouts: boolean;
   /** Where the tournament title sits in the header. */
   title_align: "center" | "left" | "right";
   /** Logo shown to the left of the tournament title. */

@@ -43,11 +43,37 @@ Deno.serve(async (req) => {
       );
     }
 
+    // SMS is a paid add-on: verify it is enabled and that credits remain.
+    const { data: smsSettings } = await supabase
+      .from("tournaments")
+      .select("sms_enabled, sms_plan, sms_credits_used, sms_credits_limit")
+      .eq("id", tournament_id)
+      .maybeSingle();
+
+    const smsUnlimited = (smsSettings as any)?.sms_plan === "unlimited";
+    const creditsUsed = Number((smsSettings as any)?.sms_credits_used ?? 0);
+    const creditsLimit = Number((smsSettings as any)?.sms_credits_limit ?? 0);
+    const creditsRemaining = smsUnlimited ? Infinity : Math.max(0, creditsLimit - creditsUsed);
+
+    if (!(smsSettings as any)?.sms_enabled) {
+      return new Response(
+        JSON.stringify({ error: "Text messaging is not enabled for this tournament" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+    if (creditsRemaining <= 0) {
+      return new Response(
+        JSON.stringify({ error: "No text messages remaining on your plan" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // Manual numbers (test sends or ad-hoc recipients) skip the roster lookup.
     const manualPhones: string[] = Array.isArray(to_phones)
       ? to_phones.map((p: string) => String(p).trim()).filter(Boolean)
       : [];
     const isTest = !!test;
+
 
     // If scheduling for later, just insert the record and return
     if (scheduled_for) {

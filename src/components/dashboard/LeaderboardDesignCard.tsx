@@ -44,6 +44,10 @@ export interface LeaderboardDesign {
   flight_rotate_seconds: number;
   /** Include a combined "Overall" board alongside the flights. */
   flight_include_overall: boolean;
+  /** Flight ids shown publicly. Empty array = show every active flight. */
+  public_flight_ids: string[];
+  /** Show the skins payout summary on the public leaderboard. */
+  show_skins_payouts: boolean;
   /** Where the tournament title sits in the header. */
   title_align: "center" | "left" | "right";
   /** Logo shown to the left of the tournament title. */
@@ -86,6 +90,8 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   flight_columns: 2,
   flight_rotate_seconds: 15,
   flight_include_overall: true,
+  public_flight_ids: [],
+  show_skins_payouts: true,
   title_align: "center",
   left_logo_url: "",
   right_logo_url: "",
@@ -195,6 +201,27 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
 
 
   const [orgLogoUrl, setOrgLogoUrl] = useState<string | null>(null);
+  const [flights, setFlights] = useState<{ id: string; tier_name: string }[]>([]);
+
+  useEffect(() => {
+    if (!tournamentId) return;
+    (supabase as any)
+      .from("tournament_tiers")
+      .select("id, tier_name, display_order")
+      .eq("tournament_id", tournamentId)
+      .eq("is_active", true)
+      .order("display_order", { ascending: true })
+      .then(({ data }: any) => setFlights(data || []));
+  }, [tournamentId]);
+
+  /** Empty selection means "show every active flight". */
+  const toggleFlight = (id: string, on: boolean) =>
+    setDesign((d) => {
+      const current = d.public_flight_ids?.length ? d.public_flight_ids : flights.map((f) => f.id);
+      const next = on ? [...new Set([...current, id])] : current.filter((f) => f !== id);
+      return { ...d, public_flight_ids: next };
+    });
+
 
   useEffect(() => {
     if (!tournamentId) return;
@@ -540,6 +567,38 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
             label='Include a combined "Overall" leaderboard'
             checked={design.flight_include_overall}
             onChange={(v) => update("flight_include_overall", v)}
+          />
+
+          {flights.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <Label className="text-xs">Flights shown on the public leaderboard</Label>
+              <p className="text-xs text-muted-foreground">
+                Uncheck a flight to hide its board from spectators. Scores are still recorded.
+              </p>
+              {flights.map((f) => (
+                <Check
+                  key={f.id}
+                  label={f.tier_name}
+                  checked={
+                    design.public_flight_ids?.length ? design.public_flight_ids.includes(f.id) : true
+                  }
+                  onChange={(v) => toggleFlight(f.id, v)}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* SKINS PAYOUTS */}
+        <section className="space-y-3 border-t pt-5">
+          <Label className="text-base font-semibold">Skins Payouts</Label>
+          <p className="text-xs text-muted-foreground">
+            Controls whether the skins payout summary appears under the public leaderboard.
+          </p>
+          <Check
+            label="Show skins payouts on the public leaderboard"
+            checked={design.show_skins_payouts !== false}
+            onChange={(v) => update("show_skins_payouts", v)}
           />
         </section>
 

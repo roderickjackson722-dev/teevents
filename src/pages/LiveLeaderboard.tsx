@@ -115,7 +115,14 @@ function LiveLeaderboardBoard({
   const [gallery, setGallery] = useState<GalleryItem[]>([]);
   const [bannerIdx, setBannerIdx] = useState(0);
   const [galleryIdx, setGalleryIdx] = useState(0);
-  const [flights, setFlights] = useState<{ id: string; tier_name: string; display_order: number }[]>([]);
+  const [allFlights, setFlights] = useState<{ id: string; tier_name: string; display_order: number }[]>([]);
+  // Organizers can hide individual flight boards from spectators; an empty
+  // selection means every active flight is public.
+  const flights = useMemo(() => {
+    const allowed = (design as any).public_flight_ids as string[] | undefined;
+    if (!allowed || allowed.length === 0) return allFlights;
+    return allFlights.filter((f) => allowed.includes(f.id));
+  }, [allFlights, design]);
   const [regFlights, setRegFlights] = useState<Record<string, string | null>>({});
   // Players arriving from their scoring page carry ?flight=<id|name> so they
   // land on their own flight's board.
@@ -641,7 +648,7 @@ function LiveLeaderboardBoard({
         }
 
       />
-      {tournament.id ? (
+      {tournament.id && (design as any).show_skins_payouts !== false ? (
         <div className="max-w-5xl mx-auto px-4 py-6">
           <SkinsPayoutsCard tournamentId={tournament.id} />
         </div>

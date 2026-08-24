@@ -274,7 +274,33 @@ Deno.serve(async (req) => {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) throw new Error("Not authenticated");
     const token = authHeader.replace("Bearer ", "");
-    const isServiceRun = service_run === true && token === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    /**
+     * A scheduled/internal run authenticates with the project's service-role
+     * credential rather than a user session. The literal key can differ between
+     * the caller's environment and this function's (key rotation, publishable /
+     * secret key formats), so we also accept a token that proves service-role
+     * access: a JWT carrying the service_role claim, or a credential that can
+     * use the admin auth API.
+     */
+    const isServiceCredential = async (t: string): Promise<boolean> => {
+      if (!t) return false;
+      if (t === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) return true;
+      try {
+        const part = t.split(".")[1];
+        if (part) {
+          const claims = JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
+          if (claims?.role === "service_role") return true;
+        }
+      } catch (_) { /* not a JWT — fall through to the admin probe */ }
+      try {
+        const probe = createClient(Deno.env.get("SUPABASE_URL")!, t, { auth: { persistSession: false } });
+        const { data, error } = await probe.auth.admin.listUsers({ page: 1, perPage: 1 });
+        return !error && !!data;
+      } catch (_) {
+        return false;
+      }
+    };
+    const isServiceRun = service_run === true && await isServiceCredential(token);
     let user: { id: string } | null = null;
     if (!isServiceRun) {
       const { data: { user: u } } = await createClient(

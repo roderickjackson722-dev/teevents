@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAllPublicLeaderboardScores } from "@/lib/fetchLeaderboardScores";
+import { fetchAllPublicLeaderboardScores, fetchAllRegistrations } from "@/lib/fetchLeaderboardScores";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { buildLeaderboard, compareByTotal, parForHole, summarize, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
 import { Trophy, Loader2 } from "lucide-react";
@@ -235,10 +235,9 @@ function LiveLeaderboardBoard({
         .eq("tournament_id", tournament.id)
         .eq("is_active", true)
         .order("display_order", { ascending: true }),
-      (supabase as any)
-        .from("tournament_registrations")
-        .select("id, flight_id")
-        .eq("tournament_id", tournament.id),
+      fetchAllRegistrations(tournament.id, "id, flight_id")
+        .then((data) => ({ data }))
+        .catch(() => ({ data: [] })),
     ]).then(([fRes, rRes]: any) => {
       setFlights(fRes.data || []);
       const map: Record<string, string | null> = {};

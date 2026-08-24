@@ -13,7 +13,7 @@ import {
 const HARD_CAP = 1000;
 const allRows: any[] = [];
 for (let round = 1; round <= 2; round++) {
-  for (let player = 0; player < 46; player++) {
+  for (let player = 0; player < 560; player++) {
     for (let hole = 1; hole <= 18; hole++) {
       allRows.push({
         registration_id: `reg-${player}`,
@@ -58,14 +58,14 @@ import {
   fetchAllPublicLeaderboardScores,
 } from "@/lib/fetchLeaderboardScores";
 
-describe("1500+ score event loads every hole and round", () => {
+describe("20,000+ score event loads every hole and round", () => {
   beforeEach(() => {
     rpcCalls = 0;
   });
 
   it("pages past the 1000-row cap for the whole event", async () => {
     const rows = await fetchAllTournamentScores("t1");
-    expect(allRows.length).toBe(1656); // 2 rounds x 46 players x 18 holes
+    expect(allRows.length).toBe(20160); // 2 rounds x 560 players x 18 holes
     expect(rows.length).toBe(allRows.length);
   });
 
@@ -73,7 +73,7 @@ describe("1500+ score event loads every hole and round", () => {
     const rows = await fetchAllTournamentScores("t1");
     for (const round of [1, 2]) {
       const forRound = rows.filter((r) => r.round_number === round);
-      expect(forRound.length).toBe(46 * 18);
+      expect(forRound.length).toBe(560 * 18);
       const holes = new Set(forRound.map((r) => r.hole_number));
       expect([...holes].sort((a, b) => a - b)).toEqual(
         Array.from({ length: 18 }, (_, i) => i + 1),
@@ -83,7 +83,7 @@ describe("1500+ score event loads every hole and round", () => {
 
   it("filters to a single round when asked and still pages", async () => {
     const rows = await fetchAllTournamentScores("t1", { roundNumber: 2 });
-    expect(rows.length).toBe(46 * 18);
+    expect(rows.length).toBe(560 * 18);
     expect(rows.every((r) => r.round_number === 2)).toBe(true);
   });
 

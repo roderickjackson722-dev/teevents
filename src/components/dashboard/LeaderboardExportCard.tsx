@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAllPublicLeaderboardScores } from "@/lib/fetchLeaderboardScores";
+import { fetchAllPublicLeaderboardScores, fetchAllRegistrations } from "@/lib/fetchLeaderboardScores";
 import { buildLeaderboard, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
 import { getFormatById } from "@/lib/scoringFormats";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -55,10 +55,7 @@ export default function LeaderboardExportCard({ tournamentId }: Props) {
         .eq("tournament_id", tournamentId)
         .eq("is_active", true)
         .order("display_order", { ascending: true }),
-      (supabase as any)
-        .from("tournament_registrations")
-        .select("id, flight_id")
-        .eq("tournament_id", tournamentId),
+      fetchAllRegistrations(tournamentId, "id, flight_id").then((data) => ({ data })),
       (supabase as any)
         .from("golf_courses")
         .select("hole_pars, par")

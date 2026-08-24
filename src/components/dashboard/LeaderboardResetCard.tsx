@@ -17,6 +17,7 @@ import {
 import { AlertTriangle, RotateCcw, Loader2, History } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
+import { fetchAllTournamentScores, chunkRows } from "@/lib/fetchLeaderboardScores";
 
 interface Props {
   tournamentId: string;
@@ -80,13 +81,11 @@ export default function LeaderboardResetCard({ tournamentId, canManage, lastRese
     try {
       const { data: { user } } = await supabase.auth.getUser();
 
-      const { data: current, error: readErr } = await supabase
-        .from("tournament_scores")
-        .select("registration_id, hole_number, round_number, strokes")
-        .eq("tournament_id", tournamentId);
-      if (readErr) throw readErr;
-
-      const rows = (current || []) as SnapshotScore[];
+      // Paginated read: large events can hold 20,000+ score rows, well past the
+      // 1000-row response cap, and a snapshot must capture every one of them.
+      const rows = (await fetchAllTournamentScores(tournamentId, {
+        columns: "registration_id, hole_number, round_number, strokes",
+      })) as SnapshotScore[];
 
       const { error: snapErr } = await supabase.from("leaderboard_snapshots").insert({
         tournament_id: tournamentId,
@@ -140,24 +139,27 @@ export default function LeaderboardResetCard({ tournamentId, canManage, lastRese
         .eq("id", snapshotId)
         .maybeSingle();
       if (snapErr) throw snapErr;
-      const rows = ((snap as { snapshot_data?: SnapshotScore[] } | null)?.snapshot_data || []) as SnapshotScore[];
+      const rows = ((snap as unknown as { snapshot_data?: SnapshotScore[] } | null)?.snapshot_data || []) as SnapshotScore[];
       if (rows.length === 0) {
         toast({ title: "Nothing to restore", description: "That snapshot has no saved scores." });
         setRetrieveId(null);
         return;
       }
 
-      const { error: upErr } = await supabase.from("tournament_scores").upsert(
-        rows.map((r) => ({
-          tournament_id: tournamentId,
-          registration_id: r.registration_id,
-          hole_number: r.hole_number,
-          round_number: r.round_number || 1,
-          strokes: r.strokes,
-        })) as never,
-        { onConflict: "registration_id,round_number,hole_number" }
-      );
-      if (upErr) throw upErr;
+      const restoreRows = rows.map((r) => ({
+        tournament_id: tournamentId,
+        registration_id: r.registration_id,
+        hole_number: r.hole_number,
+        round_number: r.round_number || 1,
+        strokes: r.strokes,
+      }));
+      for (const batch of chunkRows(restoreRows, 500)) {
+        const { error: upErr } = await supabase.from("tournament_scores").upsert(
+          batch as never,
+          { onConflict: "registration_id,round_number,hole_number" }
+        );
+        if (upErr) throw upErr;
+      }
 
       await supabase
         .from("leaderboard_snapshots")

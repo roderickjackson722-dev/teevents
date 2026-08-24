@@ -3,7 +3,7 @@ import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
+import { fetchAllTournamentScores, fetchAllRegistrations, chunkRows } from "@/lib/fetchLeaderboardScores";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -295,12 +295,12 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const { data: registrations } = useQuery({
     queryKey: ["leaderboard-players", selectedTournament, workingRound],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tournament_registrations")
-        .select("id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole, payment_status, status")
-        .eq("tournament_id", selectedTournament)
-        .order("last_name");
-      if (error) throw error;
+      const data = await fetchAllRegistrations(
+        selectedTournament,
+        "id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole, payment_status, status",
+        { orderBy: "last_name" },
+      );
+
       // Mirror Players & Pairings: only paid roster players appear on the leaderboard.
       const assignments = pairingsCfg.assignmentsByDay[String(workingRound - 1)];
       return (data || [])
@@ -412,7 +412,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       scoreMap[s.registration_id][s.hole_number] = s.strokes;
     });
 
-    const ps: PlayerScore[] = registrations.map((r) => ({
+    const ps: PlayerScore[] = registrations.map((r: any) => ({
       registration_id: r.id,
       first_name: r.first_name,
       last_name: r.last_name,
@@ -584,14 +584,19 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       });
 
       try {
-        const { data: persistedRows, error } = await supabase
-          .from("tournament_scores")
-          .upsert(upserts, {
-            onConflict: "registration_id,round_number,hole_number",
-          })
-          .select("registration_id, hole_number, strokes, round_number");
-        if (error) throw error;
-        const persisted = persistedRows || [];
+        // Chunked writes: a single upsert of thousands of rows can exceed the
+        // Data API's request/response limits on very large events.
+        const persisted: any[] = [];
+        for (const batch of chunkRows(upserts, 500)) {
+          const { data: persistedRows, error } = await supabase
+            .from("tournament_scores")
+            .upsert(batch, {
+              onConflict: "registration_id,round_number,hole_number",
+            })
+            .select("registration_id, hole_number, strokes, round_number");
+          if (error) throw error;
+          persisted.push(...(persistedRows || []));
+        }
         const persistedKeys = new Set(
           persisted.map((row) => `${row.registration_id}:${row.round_number}:${row.hole_number}:${row.strokes}`),
         );
@@ -603,9 +608,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             `${missing.length} score${missing.length === 1 ? " was" : "s were"} not confirmed by the database. Your entries remain on screen; please save again.`,
           );
         }
-        if (editLogs.length > 0) {
-          await (supabase as any).from("score_edits").insert(editLogs);
+        for (const batch of chunkRows(editLogs, 500)) {
+          await (supabase as any).from("score_edits").insert(batch);
         }
+
         return { mode: "saved" as const, count: persisted.length, persisted, roundNumber: workingRound, invalidCount };
       } catch (e: any) {
         // Network / fetch failures — queue for later sync so the scorekeeper doesn't lose work.

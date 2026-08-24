@@ -43,7 +43,7 @@ export default function LeaderboardExportCard({ tournamentId }: Props) {
   const [busy, setBusy] = useState<null | "summary" | "holes">(null);
 
   async function loadDivisions(): Promise<{ divisions: Division[]; title: string; isStableford: boolean }> {
-    const [tRes, fRes, rRes, scores] = await Promise.all([
+    const [tRes, fRes, rRes, cRes, scores] = await Promise.all([
       (supabase as any)
         .from("tournaments")
         .select("title, scoring_format, course_par, course_name, date")
@@ -59,10 +59,20 @@ export default function LeaderboardExportCard({ tournamentId }: Props) {
         .from("tournament_registrations")
         .select("id, flight_id")
         .eq("tournament_id", tournamentId),
+      (supabase as any)
+        .from("golf_courses")
+        .select("hole_pars, par")
+        .eq("tournament_id", tournamentId)
+        .limit(1)
+        .maybeSingle(),
       fetchAllPublicLeaderboardScores(tournamentId),
     ]);
 
-    const tournament = tRes?.data || { title: "Tournament", scoring_format: "stroke_play", course_par: 72 };
+    const tRow = tRes?.data || { title: "Tournament", scoring_format: "stroke_play", course_par: 72 };
+    const holePars = (cRes?.data?.hole_pars as number[] | null) || null;
+    // Prefer the course scorecard's par total (e.g. 71) over any stale value on the tournament.
+    const coursePar = Number(cRes?.data?.par) > 0 ? Number(cRes.data.par) : Number(tRow.course_par) || 72;
+    const tournament = { ...tRow, course_par: coursePar };
     const regFlights: Record<string, string | null> = {};
     (rRes?.data || []).forEach((r: any) => { regFlights[r.id] = r.flight_id; });
     const flightOf = (s: any) => (s?.flight_id as string | null) ?? regFlights[s?.registration_id] ?? null;
@@ -70,9 +80,9 @@ export default function LeaderboardExportCard({ tournamentId }: Props) {
     const divisions: Division[] = ((fRes?.data as any[]) || []).map((f) => ({
       key: f.id,
       label: f.tier_name,
-      rows: buildLeaderboard(scores.filter((s: any) => flightOf(s) === f.id), tournament, null),
+      rows: buildLeaderboard(scores.filter((s: any) => flightOf(s) === f.id), tournament, holePars),
     }));
-    divisions.push({ key: "__overall", label: "Overall", rows: buildLeaderboard(scores, tournament, null) });
+    divisions.push({ key: "__overall", label: "Overall", rows: buildLeaderboard(scores, tournament, holePars) });
 
     return {
       divisions: divisions.filter((d) => d.rows.length > 0),
@@ -80,6 +90,7 @@ export default function LeaderboardExportCard({ tournamentId }: Props) {
       isStableford: getFormatById(tournament.scoring_format || "stroke_play")?.scoring === "stableford",
     };
   }
+
 
   async function exportSummary() {
     setBusy("summary");

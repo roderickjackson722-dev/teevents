@@ -332,19 +332,20 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     return m;
   }, [teamNameRows]);
 
-  const { data: scores, isLoading: scoresLoading } = useQuery({
+  const {
+    data: scores,
+    isLoading: scoresLoading,
+    dataUpdatedAt: scoresUpdatedAt,
+    isFetching: scoresFetching,
+    refetch: refetchScores,
+  } = useQuery({
     queryKey: ["tournament-scores", selectedTournament, workingRound],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tournament_scores")
-        .select("registration_id, hole_number, strokes, round_number")
-        .eq("tournament_id", selectedTournament)
-        .eq("round_number", workingRound);
-      if (error) throw error;
-      return data;
-    },
+    // Pages through every row so events with more than 1000 score rows still
+    // show late holes and later rounds.
+    queryFn: () => fetchAllTournamentScores(selectedTournament, { roundNumber: workingRound }),
     enabled: !!selectedTournament,
   });
+
 
   // Realtime subscription for live score updates
   useEffect(() => {

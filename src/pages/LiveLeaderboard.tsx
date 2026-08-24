@@ -604,6 +604,7 @@ function LiveLeaderboardBoard({
         coursePar={tournament.course_par || 72}
         rounds={rounds}
         currentRound={currentRound}
+        closedRounds={closedRounds}
         onRowClick={(row) => setScorecardRow(row as LeaderboardRow)}
         bannerSponsor={bannerSponsor}
         sidebarSponsors={sidebarSponsors}

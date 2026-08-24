@@ -265,6 +265,9 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
   // Per-cell validation errors: { [regId]: { [hole]: message } }
   const [scoreErrors, setScoreErrors] = useState<Record<string, Record<number, string>>>({});
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const [saveState, setSaveState] = useState<"idle" | "saved" | "error">("idle");
+  const [alertingSupport, setAlertingSupport] = useState(false);
 
   // Fetch course data for hole pars
   const { data: courseData } = useQuery({
@@ -554,20 +557,24 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         });
       });
       setScoreErrors(errs);
-      if (Object.keys(errs).length > 0) {
-        const count = Object.values(errs).reduce((sum, holes) => sum + Object.keys(holes).length, 0);
-        throw new Error(
-          `${count} invalid score${count === 1 ? "" : "s"}. Strokes must be a whole number between ${MIN_STROKES} and ${MAX_STROKES}.`
-        );
+      // Invalid cells (0, blanks that parsed oddly, out-of-range) are skipped so
+      // they never block the rest of the batch from saving.
+      const invalidCount = Object.values(errs).reduce((sum, holes) => sum + Object.keys(holes).length, 0);
+      if (upserts.length === 0) {
+        if (invalidCount > 0) {
+          throw new Error(
+            `${invalidCount} invalid score${invalidCount === 1 ? "" : "s"}. Strokes must be a whole number between ${MIN_STROKES} and ${MAX_STROKES}.`
+          );
+        }
+        return { mode: "noop" as const, invalidCount: 0 };
       }
-      if (upserts.length === 0) return { mode: "noop" as const };
 
       // ---- Offline fallback: queue instead of network call ----
       if (typeof navigator !== "undefined" && !navigator.onLine) {
         enqueue(upserts.map(({ tournament_id, registration_id, hole_number, round_number, strokes }) => ({
           tournament_id, registration_id, hole_number, round_number, strokes,
         })));
-        return { mode: "queued" as const, count: upserts.length };
+        return { mode: "queued" as const, count: upserts.length, invalidCount };
       }
 
       const { data: { user } } = await supabase.auth.getUser();
@@ -616,7 +623,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         if (editLogs.length > 0) {
           await (supabase as any).from("score_edits").insert(editLogs);
         }
-        return { mode: "saved" as const, count: persisted.length, persisted, roundNumber: workingRound };
+        return { mode: "saved" as const, count: persisted.length, persisted, roundNumber: workingRound, invalidCount };
       } catch (e: any) {
         // Network / fetch failures — queue for later sync so the scorekeeper doesn't lose work.
         const msg = String(e?.message || e || "");
@@ -625,7 +632,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           enqueue(upserts.map(({ tournament_id, registration_id, hole_number, round_number, strokes }) => ({
             tournament_id, registration_id, hole_number, round_number, strokes,
           })));
-          return { mode: "queued" as const, count: upserts.length };
+          return { mode: "queued" as const, count: upserts.length, invalidCount };
         }
         throw e;
       }
@@ -638,7 +645,14 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           description: "We'll sync automatically when you're back online.",
         });
       } else if (result.mode === "saved") {
-        toast({ title: "Scores saved!" });
+        setLastSavedAt(Date.now());
+        setSaveState("saved");
+        toast({
+          title: `Scores saved successfully at ${new Date().toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}`,
+          description: result.invalidCount > 0
+            ? `${result.invalidCount} invalid entr${result.invalidCount === 1 ? "y was" : "ies were"} skipped — fix and save again.`
+            : undefined,
+        });
         // Put the confirmed rows into the active-round cache immediately. This
         // prevents a concurrent realtime refresh from briefly restoring stale
         // values after the organizer saves a large scorecard batch.
@@ -668,10 +682,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         });
         return next;
       });
-      setScoreErrors({});
       queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
     },
     onError: (e: Error) => {
+      setSaveState("error");
       toast({ title: "Can't save scores", description: e.message, variant: "destructive" });
     },
   });

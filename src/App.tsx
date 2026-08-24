@@ -419,6 +419,7 @@ const App = () => (
           <Route path="/admin/manual-entry-grants" element={<ManualEntryGrantsAdmin />} />
           <Route path="/admin/flat-rate" element={<FlatRateOverride />} />
            <Route path="/admin/security" element={<AdminSecurity />} />
+           <Route path="/admin/platform-health" element={<AdminPlatformHealth />} />
            <Route path="/admin/email-notifications" element={<AdminEmailNotifications />} />
            <Route path="/admin/scheduled-emails" element={<AdminScheduledEmails />} />
            <Route path="/admin/sms-settings" element={<AdminSmsSettings />} />

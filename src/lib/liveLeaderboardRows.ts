@@ -32,10 +32,14 @@ export interface LeaderboardRow {
 }
 
 
-/** Par for a single hole — real course pars when available, otherwise averaged. */
+/**
+ * Par for a single hole — real course pars when available. Without a per-hole
+ * scorecard we fall back to an exact fraction of the course par (e.g. 71/18)
+ * so an 18-hole round totals the course par instead of rounding up to 72.
+ */
 export function parForHole(hole: number, holePars: number[] | null | undefined, coursePar: number) {
   const p = holePars?.[hole - 1];
-  return Number(p) > 0 ? Number(p) : Math.round(coursePar / 18);
+  return Number(p) > 0 ? Number(p) : coursePar / 18;
 }
 
 /** Totals / To Par / Today for a set of per-round hole scores. */
@@ -71,8 +75,9 @@ export function summarize(
   if (thru === 0) {
     thru = Object.values(holesByRound).reduce((n, holes) => n + Object.keys(holes).length, 0);
   }
-  return { total, parPlayed, today, parToday, thru, roundTotals };
+  return { total, parPlayed: Math.round(parPlayed), today, parToday: Math.round(parToday), thru, roundTotals };
 }
+
 
 /**
  * Gross-score leaderboard order: score relative to the par of the holes actually

@@ -3,7 +3,7 @@ import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { fetchAllTournamentScores, fetchAllRegistrations, chunkRows } from "@/lib/fetchLeaderboardScores";
+import { fetchAllTournamentScores, fetchAllRegistrations, chunkRows, measuredScoreWrite } from "@/lib/fetchLeaderboardScores";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -586,17 +586,25 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       try {
         // Chunked writes: a single upsert of thousands of rows can exceed the
         // Data API's request/response limits on very large events.
-        const persisted: any[] = [];
-        for (const batch of chunkRows(upserts, 500)) {
-          const { data: persistedRows, error } = await supabase
-            .from("tournament_scores")
-            .upsert(batch, {
-              onConflict: "registration_id,round_number,hole_number",
-            })
-            .select("registration_id, hole_number, strokes, round_number");
-          if (error) throw error;
-          persisted.push(...(persistedRows || []));
-        }
+        const persisted: any[] = await measuredScoreWrite(
+          upserts.length,
+          { tournamentId: selectedTournament, roundNumber: workingRound },
+          async () => {
+            const out: any[] = [];
+            for (const batch of chunkRows(upserts, 500)) {
+              const { data: persistedRows, error } = await supabase
+                .from("tournament_scores")
+                .upsert(batch, {
+                  onConflict: "registration_id,round_number,hole_number",
+                })
+                .select("registration_id, hole_number, strokes, round_number");
+              if (error) throw error;
+              out.push(...(persistedRows || []));
+            }
+            return out;
+          },
+        );
+
         const persistedKeys = new Set(
           persisted.map((row) => `${row.registration_id}:${row.round_number}:${row.hole_number}:${row.strokes}`),
         );

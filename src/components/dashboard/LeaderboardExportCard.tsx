@@ -7,26 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Download, Loader2, Archive } from "lucide-react";
 import { toast } from "sonner";
+import { downloadCsvStream, type CsvRow } from "@/lib/streamCsv";
+import { measureLeaderboardOp } from "@/lib/leaderboardMetrics";
 
 interface Props {
   tournamentId: string;
-}
-
-const esc = (v: unknown) => {
-  const s = v == null ? "" : String(v);
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
-};
-
-function download(name: string, csv: string) {
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = name;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  URL.revokeObjectURL(url);
 }
 
 function slugify(s: string) {
@@ -94,27 +79,41 @@ export default function LeaderboardExportCard({ tournamentId }: Props) {
     try {
       const { divisions, title, isStableford } = await loadDivisions();
       if (divisions.length === 0) { toast.error("No scores to export yet."); return; }
-      const header = [
+      const header: CsvRow = [
         "division", "position", "name", "team_players",
         isStableford ? "points" : "total_strokes",
         "to_par", "thru", "round_totals",
       ];
-      const lines: string[] = [header.join(",")];
-      divisions.forEach((d) => {
-        d.rows.forEach((r, i) => {
-          const toPar = isStableford ? "" : Number(r.total || 0) - Number(r.parPlayed || 0);
-          const rounds = Object.entries(r.roundTotals || {})
-            .sort((a, b) => Number(a[0]) - Number(b[0]))
-            .map(([n, v]) => `R${n}: ${v}`)
-            .join(" | ");
-          lines.push([
-            d.label, i + 1, r.name, (r.players || []).join(" / "),
-            r.total, toPar === "" ? "" : (Number(toPar) > 0 ? `+${toPar}` : toPar),
-            r.thru, rounds,
-          ].map(esc).join(","));
-        });
-      });
-      download(`${slugify(title)}-leaderboard-${new Date().toISOString().slice(0, 10)}.csv`, lines.join("\n"));
+      // Generator: rows are produced (and encoded) lazily, so a 50,000-row
+      // export never materialises the whole file as one string.
+      function* rows(): Generator<CsvRow> {
+        for (const d of divisions) {
+          let i = 0;
+          for (const r of d.rows) {
+            i++;
+            const toPar = isStableford ? "" : Number(r.total || 0) - Number(r.parPlayed || 0);
+            const rounds = Object.entries(r.roundTotals || {})
+              .sort((a, b) => Number(a[0]) - Number(b[0]))
+              .map(([n, v]) => `R${n}: ${v}`)
+              .join(" | ");
+            yield [
+              d.label, i, r.name, (r.players || []).join(" / "),
+              r.total, toPar === "" ? "" : (Number(toPar) > 0 ? `+${toPar}` : toPar),
+              r.thru, rounds,
+            ];
+          }
+        }
+      }
+      const rowCount = divisions.reduce((n, d) => n + d.rows.length, 0);
+      await measureLeaderboardOp(
+        "export.csv.summary",
+        { tournamentId, rowCount },
+        () => downloadCsvStream(
+          `${slugify(title)}-leaderboard-${new Date().toISOString().slice(0, 10)}.csv`,
+          header,
+          rows(),
+        ),
+      );
       toast.success("Leaderboard exported");
     } catch {
       toast.error("Export failed. Please try again.");
@@ -128,22 +127,30 @@ export default function LeaderboardExportCard({ tournamentId }: Props) {
     try {
       const { divisions, title } = await loadDivisions();
       if (divisions.length === 0) { toast.error("No scores to export yet."); return; }
-      const header = ["division", "name", "team_players", "round", ...Array.from({ length: 18 }, (_, i) => `h${i + 1}`), "round_total"];
-      const lines: string[] = [header.join(",")];
-      divisions.forEach((d) => {
-        d.rows.forEach((r) => {
-          const byRound = r.holesByRound || {};
-          Object.keys(byRound)
-            .sort((a, b) => Number(a) - Number(b))
-            .forEach((round) => {
+      const header: CsvRow = ["division", "name", "team_players", "round", ...Array.from({ length: 18 }, (_, i) => `h${i + 1}`), "round_total"];
+      function* rows(): Generator<CsvRow> {
+        for (const d of divisions) {
+          for (const r of d.rows) {
+            const byRound = r.holesByRound || {};
+            for (const round of Object.keys(byRound).sort((a, b) => Number(a) - Number(b))) {
               const holes = byRound[Number(round)] || {};
               const cells = Array.from({ length: 18 }, (_, i) => holes[i + 1] ?? "");
               const total = Object.values(holes).reduce((n: number, v: any) => n + Number(v || 0), 0);
-              lines.push([d.label, r.name, (r.players || []).join(" / "), round, ...cells, total].map(esc).join(","));
-            });
-        });
-      });
-      download(`${slugify(title)}-hole-by-hole-${new Date().toISOString().slice(0, 10)}.csv`, lines.join("\n"));
+              yield [d.label, r.name, (r.players || []).join(" / "), round, ...cells, total];
+            }
+          }
+        }
+      }
+      const rowCount = divisions.reduce((n, d) => n + d.rows.length, 0);
+      await measureLeaderboardOp(
+        "export.csv.holes",
+        { tournamentId, rowCount },
+        () => downloadCsvStream(
+          `${slugify(title)}-hole-by-hole-${new Date().toISOString().slice(0, 10)}.csv`,
+          header,
+          rows(),
+        ),
+      );
       toast.success("Hole-by-hole scores exported");
     } catch {
       toast.error("Export failed. Please try again.");

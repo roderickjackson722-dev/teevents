@@ -3,6 +3,7 @@
 // It proxies to the `share-preview` edge function, which renders per-page
 // Open Graph tags and redirects real visitors to the app.
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { adminGuard } from '../_shared/auth.ts';
 
 const CF_API = "https://api.cloudflare.com/client/v4";
 const ZONE_NAME = "teevents.golf";

@@ -461,13 +461,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (!tournament) return;
     Promise.all([
       (supabase as any).rpc("get_public_donation_total", { _tournament_id: tournament.id }),
-      (supabase as any)
-        .from("tournament_offline_donations")
-        .select("amount_cents")
-        .eq("tournament_id", tournament.id),
+      (supabase as any).rpc("get_public_offline_donation_total", { _tournament_id: tournament.id }),
     ]).then(([onRes, offRes]: any[]) => {
       const onlineTotal = Number(onRes?.data || 0);
-      const offlineTotal = ((offRes.data || []) as any[]).reduce((s, d) => s + (d.amount_cents || 0), 0);
+      const offlineTotal = Number(offRes?.data || 0);
       setDonationTotal(onlineTotal + offlineTotal);
     });
   }, [tournament, donated]);

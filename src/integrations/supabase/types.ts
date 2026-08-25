@@ -9210,13 +9210,6 @@ export type Database = {
             foreignKeyName: "tournament_auction_bids_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
-            referencedRelation: "public_auction_items"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "tournament_auction_bids_item_id_fkey"
-            columns: ["item_id"]
-            isOneToOne: false
             referencedRelation: "tournament_auction_items"
             referencedColumns: ["id"]
           },
@@ -12634,32 +12627,7 @@ export type Database = {
       }
     }
     Views: {
-      public_auction_items: {
-        Row: {
-          buy_now_price: number | null
-          created_at: string | null
-          current_bid: number | null
-          description: string | null
-          id: string | null
-          image_url: string | null
-          is_active: boolean | null
-          raffle_ticket_price: number | null
-          sort_order: number | null
-          starting_bid: number | null
-          title: string | null
-          tournament_id: string | null
-          type: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "tournament_auction_items_tournament_id_fkey"
-            columns: ["tournament_id"]
-            isOneToOne: false
-            referencedRelation: "tournaments"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
+      [_ in never]: never
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }
@@ -12943,6 +12911,24 @@ export type Database = {
           tournament_id: string
           tournament_slug: string
           tournament_title: string
+        }[]
+      }
+      get_public_auction_items: {
+        Args: { _tournament_id: string }
+        Returns: {
+          buy_now_price: number
+          created_at: string
+          current_bid: number
+          description: string
+          id: string
+          image_url: string
+          is_active: boolean
+          raffle_ticket_price: number
+          sort_order: number
+          starting_bid: number
+          title: string
+          tournament_id: string
+          type: string
         }[]
       }
       get_public_auctions: {

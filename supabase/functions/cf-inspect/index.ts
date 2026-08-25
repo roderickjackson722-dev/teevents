@@ -1,7 +1,10 @@
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { adminGuard } from '../_shared/auth.ts';
 const CF_API = 'https://api.cloudflare.com/client/v4';
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const denied = await adminGuard(req, corsHeaders);
+  if (denied) return denied;
   const token = Deno.env.get('CLOUDFLARE_API_TOKEN')!;
   const h = { 'Authorization': `Bearer ${token}` };
   const z = await (await fetch(`${CF_API}/zones?name=teevents.golf`, { headers: h })).json();

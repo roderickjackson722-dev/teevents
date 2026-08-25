@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { requireUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -9,6 +10,16 @@ const corsHeaders = {
 const SENDER_EMAIL = "info@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
 const ADMIN_EMAIL = "info@teevents.golf";
+
+// Notification types that only a platform admin may trigger (they email organizers
+// on behalf of TeeVents, so they must never be callable by organizers or anonymously).
+const ADMIN_ONLY_TYPES = new Set(["bank_change_approved", "bank_change_denied", "admin_reply"]);
+
+const unauthorized = (status: number, error: string) =>
+  new Response(JSON.stringify({ error }), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -22,6 +33,40 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+
+    // --- Authentication & authorization ---------------------------------
+    let user;
+    try {
+      user = await requireUser(req);
+    } catch (r) {
+      if (r instanceof Response) {
+        const body = await r.text();
+        return new Response(body, { status: r.status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      }
+      return unauthorized(401, "Unauthorized");
+    }
+
+    const { data: adminRole } = await supabaseAdmin
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", user.id)
+      .eq("role", "admin")
+      .maybeSingle();
+    const isPlatformAdmin = !!adminRole;
+
+    if (!isPlatformAdmin) {
+      if (ADMIN_ONLY_TYPES.has(type)) return unauthorized(403, "Forbidden");
+      if (!organization_id) return unauthorized(400, "organization_id required");
+      const { data: membership } = await supabaseAdmin
+        .from("org_members")
+        .select("id")
+        .eq("organization_id", organization_id)
+        .eq("user_id", user.id)
+        .maybeSingle();
+      if (!membership) return unauthorized(403, "Forbidden");
+    }
+    // --------------------------------------------------------------------
+
 
     // Fetch org name
     const { data: org } = await supabaseAdmin

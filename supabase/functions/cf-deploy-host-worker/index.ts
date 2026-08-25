@@ -1,6 +1,7 @@
 // Bind the existing teevents-proxy worker to a custom hostname route + reset custom_origin_server.
 // This mirrors the proven setup used for www.yourgolftournament.com.
 import { corsHeaders } from 'npm:@supabase/supabase-js@2/cors';
+import { adminGuard } from '../_shared/auth.ts';
 const CF_API = 'https://api.cloudflare.com/client/v4';
 const ZONE_NAME = 'teevents.golf';
 const FALLBACK_ORIGIN = 'custom-domains.teevents.golf';
@@ -16,6 +17,8 @@ async function cf(token: string, path: string, init: RequestInit = {}) {
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
+  const denied = await adminGuard(req, corsHeaders);
+  if (denied) return denied;
   const token = Deno.env.get('CLOUDFLARE_API_TOKEN');
   if (!token) return new Response(JSON.stringify({ error: 'no token' }), { status: 500, headers: corsHeaders });
   const body = await req.json().catch(() => ({}));

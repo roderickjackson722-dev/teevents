@@ -9210,6 +9210,13 @@ export type Database = {
             foreignKeyName: "tournament_auction_bids_item_id_fkey"
             columns: ["item_id"]
             isOneToOne: false
+            referencedRelation: "public_auction_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_auction_bids_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
             referencedRelation: "tournament_auction_items"
             referencedColumns: ["id"]
           },
@@ -12627,7 +12634,32 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_auction_items: {
+        Row: {
+          buy_now_price: number | null
+          created_at: string | null
+          current_bid: number | null
+          description: string | null
+          id: string | null
+          image_url: string | null
+          is_active: boolean | null
+          raffle_ticket_price: number | null
+          sort_order: number | null
+          starting_bid: number | null
+          title: string | null
+          tournament_id: string | null
+          type: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_auction_items_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }
@@ -12978,6 +13010,10 @@ export type Database = {
           id: string
           member_name: string
         }[]
+      }
+      get_public_offline_donation_total: {
+        Args: { _tournament_id: string }
+        Returns: number
       }
       get_public_pairings: {
         Args: { _slug: string }

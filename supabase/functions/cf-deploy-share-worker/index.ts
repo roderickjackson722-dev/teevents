@@ -65,6 +65,10 @@ export default {
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
+  const denied = await adminGuard(req, corsHeaders);
+  if (denied) return denied;
+
+
   const token = Deno.env.get("CLOUDFLARE_API_TOKEN");
   if (!token) {
     return new Response(JSON.stringify({ error: "CLOUDFLARE_API_TOKEN not set" }), {

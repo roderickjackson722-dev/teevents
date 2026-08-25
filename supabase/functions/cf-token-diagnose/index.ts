@@ -1,8 +1,13 @@
+import { adminGuard } from "../_shared/auth.ts";
+
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  const denied = await adminGuard(req, corsHeaders);
+  if (denied) return denied;
   const token = Deno.env.get("CLOUDFLARE_API_TOKEN") || "";
   const zoneId = Deno.env.get("CLOUDFLARE_ZONE_ID") || "";
   const headers = { Authorization: `Bearer ${token}`, "Content-Type": "application/json" };

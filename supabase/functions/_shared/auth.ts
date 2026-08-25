@@ -44,3 +44,26 @@ export async function requireAdmin(req: Request) {
   }
   return user;
 }
+
+// Returns a Response when the caller is NOT a platform admin, otherwise null.
+export async function adminGuard(
+  req: Request,
+  cors: Record<string, string> = {},
+): Promise<Response | null> {
+  try {
+    await requireAdmin(req);
+    return null;
+  } catch (r) {
+    if (r instanceof Response) {
+      const body = await r.text();
+      return new Response(body, {
+        status: r.status,
+        headers: { ...cors, "Content-Type": "application/json" },
+      });
+    }
+    return new Response(JSON.stringify({ error: "Unauthorized" }), {
+      status: 401,
+      headers: { ...cors, "Content-Type": "application/json" },
+    });
+  }
+}

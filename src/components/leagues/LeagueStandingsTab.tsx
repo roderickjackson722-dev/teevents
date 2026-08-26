@@ -131,14 +131,14 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
           <h2 className="text-lg font-semibold flex items-center gap-2"><Trophy className="h-5 w-5" /> Season Standings</h2>
           <Button onClick={recompute} disabled={computing}>
             {computing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
-            Recompute
+            Refresh
           </Button>
         </div>
         {loading ? (
           <div className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
         ) : rows.length === 0 ? (
           <p className="text-muted-foreground text-sm py-6 text-center">
-            No standings yet. Enter scores on the Scoring tab, then click <b>Recompute</b>.
+            No standings yet. Enter scores on the Event Scoring tab — standings update automatically.
           </p>
         ) : (
           groups.map((g, gi) => (

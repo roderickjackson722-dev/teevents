@@ -8,6 +8,7 @@ import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
+import { NodeSelection } from "@tiptap/pm/state";
 import { useEffect, useRef } from "react";
 import {
   Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2, Heading3,
@@ -117,7 +118,24 @@ export function RichTextEditor({ value, onChange, placeholder, className, onImag
       attributes: {
         class: "prose prose-sm max-w-none min-h-[180px] px-3 py-2 focus:outline-none",
       },
+      // Clicking an image selects the image node so the size/alignment controls appear.
+      handleClickOn: (view, pos, node, nodePos, event) => {
+        const target = event.target as HTMLElement | null;
+        if (node.type.name === "image" || target?.tagName === "IMG") {
+          const imagePos = node.type.name === "image" ? nodePos : pos;
+          try {
+            const tr = view.state.tr.setSelection(NodeSelection.create(view.state.doc, imagePos));
+            view.dispatch(tr);
+            view.focus();
+            return true;
+          } catch {
+            return false;
+          }
+        }
+        return false;
+      },
     },
+
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
   });
 
@@ -132,8 +150,13 @@ export function RichTextEditor({ value, onChange, placeholder, className, onImag
   return (
     <div className={cn("border border-input rounded-md bg-background", className)}>
       <Toolbar editor={editor} onImageUpload={onImageUpload} />
-      <EditorContent editor={editor} placeholder={placeholder} />
+      <EditorContent
+        editor={editor}
+        placeholder={placeholder}
+        className="[&_img]:cursor-pointer [&_.ProseMirror-selectednode]:outline [&_.ProseMirror-selectednode]:outline-2 [&_.ProseMirror-selectednode]:outline-primary [&_.ProseMirror-selectednode]:outline-offset-2"
+      />
     </div>
+
   );
 }
 

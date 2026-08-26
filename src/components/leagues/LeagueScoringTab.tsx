@@ -68,7 +68,28 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     setStatusBusy(false);
   };
 
+  /** 9-hole events: switch between the front (1-9) and back (10-18) nine. */
+  const setStartHole = async (value: string) => {
+    if (!eventId) return;
+    const start = Number(value) === 10 ? 10 : 1;
+    const { error } = await (supabase as any)
+      .from("league_events")
+      .update({ start_hole: start })
+      .eq("id", eventId);
+    if (error) {
+      toast({ title: "Could not change holes played", description: error.message, variant: "destructive" });
+      return;
+    }
+    const next = { ...(event || {}), start_hole: start };
+    setEvent(next);
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, start_hole: start } : e)));
+    await refreshScores(players, eventHoleNumbers(next));
+    try { await recomputeLeagueStandings(leagueId); } catch { /* best effort */ }
+    toast({ title: start === 10 ? "Scoring set to back nine (10-18)" : "Scoring set to front nine (1-9)" });
+  };
+
   const recompute = async () => {
+
     setStatusBusy(true);
     try {
       const n = await recomputeLeagueStandings(leagueId);

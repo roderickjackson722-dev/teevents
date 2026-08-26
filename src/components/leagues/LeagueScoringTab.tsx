@@ -434,9 +434,17 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
               </SelectContent>
             </Select>
           </div>
-          {eventId && (
-            <Badge variant="outline">{holeCount === 9 ? "9-hole event" : "18-hole event"}</Badge>
+          {eventId && <Badge variant="outline">{nineLabel(event)}</Badge>}
+          {eventId && holeCount === 9 && (
+            <Select value={String(eventStartHole(event))} onValueChange={setStartHole}>
+              <SelectTrigger className="w-40 h-9"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Front nine (1-9)</SelectItem>
+                <SelectItem value="10">Back nine (10-18)</SelectItem>
+              </SelectContent>
+            </Select>
           )}
+
           {skinsOn && (
             <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-900 border-yellow-300">
               <Sparkles className="h-3 w-3" /> Skins {event?.skins_mode || "gross"}

@@ -82,7 +82,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     (async () => {
       const { data } = await (supabase as any)
         .from("league_events")
-        .select("id, event_name, event_date, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents, round_status, completed_at")
+        .select("id, event_name, event_date, holes, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents, round_status, completed_at")
         .eq("league_id", leagueId)
         .order("event_date");
       setEvents(data || []);
@@ -94,7 +94,12 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     if (!eventId) return;
     setLoading(true);
 
-    const ev = events.find((e) => e.id === eventId);
+    const { data: freshEv } = await (supabase as any)
+      .from("league_events")
+      .select("id, event_name, event_date, holes, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents, round_status, completed_at")
+      .eq("id", eventId)
+      .maybeSingle();
+    const ev = freshEv || events.find((e) => e.id === eventId);
     setEvent(ev || null);
 
     let courseData: CourseSnapshot | null = null;
@@ -162,7 +167,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     );
     setPlayers(list);
 
-    await refreshScores(list);
+    await refreshScores(list, Number(ev?.holes) === 9 ? 9 : 18);
 
     if (ev?.skins_enabled) {
       const { data: sk } = await (supabase as any)
@@ -180,9 +185,10 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   };
 
   // Pulls both individual and team scores into the per-player grid
-  const refreshScores = async (list?: Player[]) => {
+  const refreshScores = async (list?: Player[], holeLimit?: number) => {
     if (!eventId) return;
     const roster = list ?? players;
+    const limit = holeLimit ?? (event?.holes === 9 ? 9 : 18);
     const map: Record<string, Record<number, string>> = {};
 
     const { data: existing } = await (supabase as any)
@@ -190,6 +196,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       .select("member_id, hole_number, gross_score")
       .eq("event_id", eventId);
     (existing || []).forEach((s: any) => {
+      if (Number(s.hole_number) > limit) return;
       if (!map[s.member_id]) map[s.member_id] = {};
       map[s.member_id][s.hole_number] = String(s.gross_score ?? "");
     });
@@ -200,13 +207,14 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       .eq("event_id", eventId);
     const byPairing: Record<string, Record<number, string>> = {};
     (teamScores || []).forEach((s: any) => {
+      if (Number(s.hole_number) > limit) return;
       (byPairing[s.pairing_id] ||= {})[s.hole_number] = String(s.gross_score ?? "");
     });
     roster.forEach((p) => {
       if (!p.pairing_id) return;
       const holes = byPairing[p.pairing_id];
       if (!holes) return;
-      map[p.member_id] = { ...holes, ...(map[p.member_id] || {}) };
+      map[p.member_id] = { ...(map[p.member_id] || {}), ...holes };
     });
 
     setScores(map);
@@ -241,7 +249,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   const save = async () => {
     if (!eventId) return;
     setSaving(true);
-    const holeCount = event?.holes === 9 ? 9 : 18;
+    const holeCount = Number(event?.holes) === 9 ? 9 : 18;
     const rows: any[] = [];
     // Team-format players write one shared row per pairing so the team
     // leaderboard's hole-by-hole view stays in sync with this grid.
@@ -368,7 +376,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     await refreshScores();
   };
 
-  const holeCount = event?.holes === 9 ? 9 : 18;
+  const holeCount = Number(event?.holes) === 9 ? 9 : 18;
   const holes = Array.from({ length: holeCount }, (_, i) => i + 1);
   const parRow = course?.hole_pars && course.hole_pars.length === 18 ? course.hole_pars : null;
 

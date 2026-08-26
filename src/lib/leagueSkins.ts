@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { eventHoleNumbers } from "@/lib/leagueHoles";
 
 /**
  * Compute skins for a single event.
@@ -15,10 +16,10 @@ export async function computeEventSkins(
 ) {
   const { data: ev } = await (supabase as any)
     .from("league_events")
-    .select("holes")
+    .select("holes, start_hole")
     .eq("id", eventId)
     .maybeSingle();
-  const holeCount = Number(ev?.holes) === 9 ? 9 : 18;
+  const playedHoles = eventHoleNumbers(ev);
 
   const { data: scores } = await (supabase as any)
     .from("league_event_scores")
@@ -29,7 +30,7 @@ export async function computeEventSkins(
   (scores || []).forEach((s: any) => {
     const val = mode === "net" ? (s.net_score ?? s.gross_score) : s.gross_score;
     if (val == null) return;
-    if (Number(s.hole_number) > holeCount) return;
+    if (!playedHoles.includes(Number(s.hole_number))) return;
     if (!byHole[s.hole_number]) byHole[s.hole_number] = [];
     byHole[s.hole_number].push({ member_id: s.member_id, score: Number(val) });
   });
@@ -39,7 +40,7 @@ export async function computeEventSkins(
 
   const results: { hole_number: number; winner_member_id: string | null; skin_amount_cents: number; is_gross: boolean }[] = [];
   let carry = 0;
-  for (let h = 1; h <= holeCount; h++) {
+  for (const h of playedHoles) {
     const holeScores = byHole[h];
     if (!holeScores || holeScores.length === 0) continue;
     const min = Math.min(...holeScores.map(s => s.score));

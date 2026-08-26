@@ -1,4 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
+import { isHolePlayed } from "@/lib/leagueHoles";
 
 /**
  * Recompute league standings for a given league.
@@ -23,14 +24,14 @@ export async function recomputeLeagueStandings(leagueId: string) {
 
   const { data: events } = await (supabase as any)
     .from("league_events")
-    .select("id, season_id, holes")
+    .select("id, season_id, holes, start_hole")
     .eq("league_id", leagueId);
 
   const eventIds = (events || []).map((e: any) => e.id);
   // 9-hole events must ignore any stray scores stored on holes 10-18
-  const holesByEvent: Record<string, number> = {};
-  (events || []).forEach((e: any) => { holesByEvent[e.id] = Number(e.holes) === 9 ? 9 : 18; });
-  const withinEvent = (eventId: string, hole: number) => hole >= 1 && hole <= (holesByEvent[eventId] ?? 18);
+  const cfgByEvent: Record<string, { holes: number; start_hole: number }> = {};
+  (events || []).forEach((e: any) => { cfgByEvent[e.id] = { holes: e.holes, start_hole: e.start_hole }; });
+  const withinEvent = (eventId: string, hole: number) => isHolePlayed(cfgByEvent[eventId], hole);
 
   const { data: scores } = await (supabase as any)
     .from("league_event_scores")

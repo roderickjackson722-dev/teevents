@@ -186,10 +186,11 @@ export const generateResizeReport = createServerFn({ method: "POST" })
     const regs = await countSince("tournament_registrations", "created_at", windowStart);
     const txns = await countSince("platform_transactions", "created_at", windowStart);
     const emails = await countSince("email_send_log", "created_at", windowStart);
-    const { count: liveEvents } = await admin
+    const { count: liveEvents, error: liveEventsError } = await admin
       .from("tournaments")
       .select("id", { count: "exact", head: true })
-      .gte("event_date", new Date(Date.now() - 2 * 864e5).toISOString().slice(0, 10));
+      .gte("date", new Date(Date.now() - 2 * 864e5).toISOString().slice(0, 10));
+    if (liveEventsError) throw new Error(liveEventsError.message);
     const { data: failedEmails } = await admin
       .from("email_send_log")
       .select("id")

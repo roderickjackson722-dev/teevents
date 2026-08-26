@@ -150,8 +150,13 @@ export function RichTextEditor({ value, onChange, placeholder, className, onImag
   return (
     <div className={cn("border border-input rounded-md bg-background", className)}>
       <Toolbar editor={editor} onImageUpload={onImageUpload} />
-      <EditorContent editor={editor} placeholder={placeholder} />
+      <EditorContent
+        editor={editor}
+        placeholder={placeholder}
+        className="[&_img]:cursor-pointer [&_.ProseMirror-selectednode]:outline [&_.ProseMirror-selectednode]:outline-2 [&_.ProseMirror-selectednode]:outline-primary [&_.ProseMirror-selectednode]:outline-offset-2"
+      />
     </div>
+
   );
 }
 

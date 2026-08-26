@@ -432,6 +432,9 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
               </SelectContent>
             </Select>
           </div>
+          {eventId && (
+            <Badge variant="outline">{holeCount === 9 ? "9-hole event" : "18-hole event"}</Badge>
+          )}
           {skinsOn && (
             <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-900 border-yellow-300">
               <Sparkles className="h-3 w-3" /> Skins {event?.skins_mode || "gross"}

@@ -195,7 +195,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
     ties: r.ties,
     total_gross: r.totalGross,
     total_net: r.totalNet,
-    prize_money_cents: prizeByMember[memberId] || 0,
+    prize_money_cents: paidByMember[memberId] ?? (prizeByMember[memberId] || 0),
     wins_override: winsOverrideByMember[memberId] ?? null,
 
   }));

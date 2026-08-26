@@ -23,15 +23,20 @@ export async function recomputeLeagueStandings(leagueId: string) {
 
   const { data: events } = await (supabase as any)
     .from("league_events")
-    .select("id, season_id")
+    .select("id, season_id, holes")
     .eq("league_id", leagueId);
 
   const eventIds = (events || []).map((e: any) => e.id);
+  // 9-hole events must ignore any stray scores stored on holes 10-18
+  const holesByEvent: Record<string, number> = {};
+  (events || []).forEach((e: any) => { holesByEvent[e.id] = Number(e.holes) === 9 ? 9 : 18; });
+  const withinEvent = (eventId: string, hole: number) => hole >= 1 && hole <= (holesByEvent[eventId] ?? 18);
 
   const { data: scores } = await (supabase as any)
     .from("league_event_scores")
-    .select("event_id, member_id, gross_score, net_score")
+    .select("event_id, member_id, hole_number, gross_score, net_score")
     .in("event_id", eventIds);
+
 
   // Aggregate scores per event per player
   type Agg = { totalGross: number; totalNet: number; holes: number };

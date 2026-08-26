@@ -3968,6 +3968,64 @@ export type Database = {
           },
         ]
       }
+      league_event_earnings: {
+        Row: {
+          amount_cents: number
+          created_at: string
+          event_id: string
+          id: string
+          league_id: string
+          member_id: string
+          note: string | null
+          position: number | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents?: number
+          created_at?: string
+          event_id: string
+          id?: string
+          league_id: string
+          member_id: string
+          note?: string | null
+          position?: number | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          created_at?: string
+          event_id?: string
+          id?: string
+          league_id?: string
+          member_id?: string
+          note?: string | null
+          position?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "league_event_earnings_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "league_events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_event_earnings_league_id_fkey"
+            columns: ["league_id"]
+            isOneToOne: false
+            referencedRelation: "golf_leagues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "league_event_earnings_member_id_fkey"
+            columns: ["member_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       league_event_registrations: {
         Row: {
           added_by: string | null

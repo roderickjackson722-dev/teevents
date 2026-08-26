@@ -331,6 +331,34 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
         .in("hole_number", stillSet);
     }
 
+    // 9-hole events: drop any legacy rows stored on holes past the event length
+    // so the grid, leaderboard and season standings all agree.
+    const pairingIds = Array.from(new Set(players.map((p) => p.pairing_id).filter(Boolean))) as string[];
+    const strayHoles = Array.from({ length: 18 - holeCount }, (_, i) => holeCount + 1 + i);
+    if (strayHoles.length > 0) {
+      await (supabase as any)
+        .from("league_event_scores")
+        .delete()
+        .eq("event_id", eventId)
+        .in("hole_number", strayHoles);
+      if (pairingIds.length > 0) {
+        await (supabase as any)
+          .from("league_team_scores")
+          .delete()
+          .in("pairing_id", pairingIds)
+          .in("hole_number", strayHoles);
+      }
+    }
+    // Paired players score off the team card — remove duplicate individual rows
+    const pairedMembers = players.filter((p) => p.pairing_id).map((p) => p.member_id);
+    if (pairedMembers.length > 0) {
+      await (supabase as any)
+        .from("league_event_scores")
+        .delete()
+        .eq("event_id", eventId)
+        .in("member_id", pairedMembers);
+    }
+
     if (rows.length === 0 && teamUpserts.length === 0) {
       toast({ title: clears.length || Object.keys(teamClears).length ? "Cleared blank scores" : "No scores to save" });
       setSaving(false);
@@ -370,11 +398,17 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       }
     }
 
+    // Keep season standings in sync with every save
+    try {
+      await recomputeLeagueStandings(leagueId);
+    } catch { /* standings refresh is best-effort */ }
+
     const total = rows.length + Object.keys(teamRows).length;
-    toast({ title: `Saved ${total} scores${event?.skins_enabled ? " · skins updated" : ""}` });
+    toast({ title: `Saved ${total} scores (${holeCount} holes) · standings updated` });
     setSaving(false);
     await refreshScores();
   };
+
 
   const holeCount = Number(event?.holes) === 9 ? 9 : 18;
   const holes = Array.from({ length: holeCount }, (_, i) => i + 1);

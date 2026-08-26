@@ -35,12 +35,13 @@ const FONTS = [
 
 const SIZES = ["12", "14", "16", "18", "20", "24", "32"];
 
-/** Image widths offered when an image is selected (email-safe pixel widths). */
+/** Image widths offered when an image is selected (email-safe pixel widths + full width). */
 const IMAGE_WIDTHS = [
   { label: "Small (120px)", value: "120" },
   { label: "Medium (240px)", value: "240" },
   { label: "Large (400px)", value: "400" },
-  { label: "Full width (600px)", value: "600" },
+  { label: "XL (600px)", value: "600" },
+  { label: "Full width (100%)", value: "100%" },
 ];
 
 /** Image alignments offered when an image is selected. */

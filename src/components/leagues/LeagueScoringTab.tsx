@@ -12,6 +12,7 @@ import { Loader2, Save, PenLine, Sparkles, Trophy, ExternalLink } from "lucide-r
 import { buildAllocation, netForHole, capNetDoubleBogey, type CourseSnapshot } from "@/lib/leagueHandicap";
 import { computeEventSkins } from "@/lib/leagueSkins";
 import { recomputeLeagueStandings } from "@/lib/leagueStandings";
+import { eventHoleCount, eventHoleNumbers, eventStartHole, nineLabel } from "@/lib/leagueHoles";
 import { CheckCircle2, RefreshCw } from "lucide-react";
 
 interface Player {
@@ -67,7 +68,28 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     setStatusBusy(false);
   };
 
+  /** 9-hole events: switch between the front (1-9) and back (10-18) nine. */
+  const setStartHole = async (value: string) => {
+    if (!eventId) return;
+    const start = Number(value) === 10 ? 10 : 1;
+    const { error } = await (supabase as any)
+      .from("league_events")
+      .update({ start_hole: start })
+      .eq("id", eventId);
+    if (error) {
+      toast({ title: "Could not change holes played", description: error.message, variant: "destructive" });
+      return;
+    }
+    const next = { ...(event || {}), start_hole: start };
+    setEvent(next);
+    setEvents((prev) => prev.map((e) => (e.id === eventId ? { ...e, start_hole: start } : e)));
+    await refreshScores(players, eventHoleNumbers(next));
+    try { await recomputeLeagueStandings(leagueId); } catch { /* best effort */ }
+    toast({ title: start === 10 ? "Scoring set to back nine (10-18)" : "Scoring set to front nine (1-9)" });
+  };
+
   const recompute = async () => {
+
     setStatusBusy(true);
     try {
       const n = await recomputeLeagueStandings(leagueId);
@@ -82,7 +104,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     (async () => {
       const { data } = await (supabase as any)
         .from("league_events")
-        .select("id, event_name, event_date, holes, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents, round_status, completed_at")
+        .select("id, event_name, event_date, holes, start_hole, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents, round_status, completed_at")
         .eq("league_id", leagueId)
         .order("event_date");
       setEvents(data || []);
@@ -96,7 +118,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
 
     const { data: freshEv } = await (supabase as any)
       .from("league_events")
-      .select("id, event_name, event_date, holes, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents, round_status, completed_at")
+      .select("id, event_name, event_date, holes, start_hole, course_id, skins_enabled, skins_mode, skins_carryover, skins_value_cents, round_status, completed_at")
       .eq("id", eventId)
       .maybeSingle();
     const ev = freshEv || events.find((e) => e.id === eventId);
@@ -167,7 +189,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     );
     setPlayers(list);
 
-    await refreshScores(list, Number(ev?.holes) === 9 ? 9 : 18);
+    await refreshScores(list, eventHoleNumbers(ev));
 
     if (ev?.skins_enabled) {
       const { data: sk } = await (supabase as any)
@@ -185,10 +207,10 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   };
 
   // Pulls both individual and team scores into the per-player grid
-  const refreshScores = async (list?: Player[], holeLimit?: number) => {
+  const refreshScores = async (list?: Player[], holeList?: number[]) => {
     if (!eventId) return;
     const roster = list ?? players;
-    const limit = holeLimit ?? (event?.holes === 9 ? 9 : 18);
+    const played = new Set(holeList ?? eventHoleNumbers(event));
     const map: Record<string, Record<number, string>> = {};
 
     const { data: existing } = await (supabase as any)
@@ -196,7 +218,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       .select("member_id, hole_number, gross_score")
       .eq("event_id", eventId);
     (existing || []).forEach((s: any) => {
-      if (Number(s.hole_number) > limit) return;
+      if (!played.has(Number(s.hole_number))) return;
       if (!map[s.member_id]) map[s.member_id] = {};
       map[s.member_id][s.hole_number] = String(s.gross_score ?? "");
     });
@@ -207,7 +229,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
       .eq("event_id", eventId);
     const byPairing: Record<string, Record<number, string>> = {};
     (teamScores || []).forEach((s: any) => {
-      if (Number(s.hole_number) > limit) return;
+      if (!played.has(Number(s.hole_number))) return;
       (byPairing[s.pairing_id] ||= {})[s.hole_number] = String(s.gross_score ?? "");
     });
     roster.forEach((p) => {
@@ -249,7 +271,8 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   const save = async () => {
     if (!eventId) return;
     setSaving(true);
-    const holeCount = Number(event?.holes) === 9 ? 9 : 18;
+    const holeCount = eventHoleCount(event);
+    const playedHoles = eventHoleNumbers(event);
     const rows: any[] = [];
     // Team-format players write one shared row per pairing so the team
     // leaderboard's hole-by-hole view stays in sync with this grid.
@@ -257,7 +280,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     const teamClears: Record<string, number[]> = {};
     for (const p of players) {
       const holes = scores[p.member_id] || {};
-      for (let h = 1; h <= holeCount; h++) {
+      for (const h of playedHoles) {
         const g = holes[h];
         const hasVal = g !== "" && g != null && !isNaN(Number(g));
         if (p.pairing_id) {
@@ -292,7 +315,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     for (const p of players) {
       if (p.pairing_id) continue;
       const holes = scores[p.member_id] || {};
-      for (let h = 1; h <= holeCount; h++) {
+      for (const h of playedHoles) {
         const g = holes[h];
         if (g === "" || g == null) clears.push({ member_id: p.member_id, hole_number: h });
       }
@@ -334,7 +357,7 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
     // 9-hole events: drop any legacy rows stored on holes past the event length
     // so the grid, leaderboard and season standings all agree.
     const pairingIds = Array.from(new Set(players.map((p) => p.pairing_id).filter(Boolean))) as string[];
-    const strayHoles = Array.from({ length: 18 - holeCount }, (_, i) => holeCount + 1 + i);
+    const strayHoles = Array.from({ length: 18 }, (_, i) => i + 1).filter((h) => !playedHoles.includes(h));
     if (strayHoles.length > 0) {
       await (supabase as any)
         .from("league_event_scores")
@@ -410,8 +433,8 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
   };
 
 
-  const holeCount = Number(event?.holes) === 9 ? 9 : 18;
-  const holes = Array.from({ length: holeCount }, (_, i) => i + 1);
+  const holeCount = eventHoleCount(event);
+  const holes = eventHoleNumbers(event);
   const parRow = course?.hole_pars && course.hole_pars.length === 18 ? course.hole_pars : null;
 
   const skinsOn = !!event?.skins_enabled;
@@ -432,9 +455,17 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
               </SelectContent>
             </Select>
           </div>
-          {eventId && (
-            <Badge variant="outline">{holeCount === 9 ? "9-hole event" : "18-hole event"}</Badge>
+          {eventId && <Badge variant="outline">{nineLabel(event)}</Badge>}
+          {eventId && holeCount === 9 && (
+            <Select value={String(eventStartHole(event))} onValueChange={setStartHole}>
+              <SelectTrigger className="w-40 h-9"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="1">Front nine (1-9)</SelectItem>
+                <SelectItem value="10">Back nine (10-18)</SelectItem>
+              </SelectContent>
+            </Select>
           )}
+
           {skinsOn && (
             <Badge variant="secondary" className="gap-1 bg-yellow-100 text-yellow-900 border-yellow-300">
               <Sparkles className="h-3 w-3" /> Skins {event?.skins_mode || "gross"}

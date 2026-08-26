@@ -16,6 +16,8 @@ export interface LeaderboardPayload {
   event_date?: string | null;
   format_type?: string | null;
   holes?: number;
+  /** 1 = front nine, 10 = back nine (9-hole events only) */
+  start_hole?: number;
   course_name?: string | null;
   hole_pars?: number[] | null;
   league_name?: string | null;
@@ -47,6 +49,15 @@ export function formatToPar(n: number) {
 /** Builds sorted leaderboard rows from the public leaderboard RPC payload. */
 export function buildLeaderboardRows(payload: LeaderboardPayload): LeaderboardRow[] {
   const eventHoles = payload.holes === 9 ? 9 : 18;
+  // 9-hole events can be played on the back nine — honour the configured start
+  // hole, and fall back to inferring it from the holes that carry scores.
+  const inferredStart = (payload.teams || []).some((t) =>
+    Object.entries(t.scores || {}).some(([k, v]) => v != null && Number(k) > 9),
+  )
+    ? 10
+    : 1;
+  const eventStart =
+    eventHoles === 18 ? 1 : Number(payload.start_hole) === 10 ? 10 : Number(payload.start_hole) === 1 ? 1 : inferredStart;
   const pars =
     Array.isArray(payload.hole_pars) && payload.hole_pars.length >= 18
       ? payload.hole_pars.map((p) => Number(p) || 4)
@@ -57,7 +68,8 @@ export function buildLeaderboardRows(payload: LeaderboardPayload): LeaderboardRo
     const scores: Record<number, number> = {};
     Object.entries(t.scores || {}).forEach(([k, v]) => {
       const h = Number(k);
-      if (v != null && h >= 1 && h <= teamHoles) scores[h] = Number(v);
+      const start = teamHoles === 18 ? 1 : eventStart;
+      if (v != null && h >= start && h <= start + teamHoles - 1) scores[h] = Number(v);
     });
     const entries = Object.entries(scores);
     const gross = entries.reduce((sum, [, v]) => sum + Number(v), 0);

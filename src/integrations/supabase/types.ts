@@ -4195,6 +4195,7 @@ export type Database = {
           skins_mode: string
           skins_value_cents: number
           start_format: string
+          start_hole: number
           start_time: string | null
           tee_interval_minutes: number
           updated_at: string
@@ -4229,6 +4230,7 @@ export type Database = {
           skins_mode?: string
           skins_value_cents?: number
           start_format?: string
+          start_hole?: number
           start_time?: string | null
           tee_interval_minutes?: number
           updated_at?: string
@@ -4263,6 +4265,7 @@ export type Database = {
           skins_mode?: string
           skins_value_cents?: number
           start_format?: string
+          start_hole?: number
           start_time?: string | null
           tee_interval_minutes?: number
           updated_at?: string

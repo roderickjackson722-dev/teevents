@@ -23,15 +23,20 @@ export async function recomputeLeagueStandings(leagueId: string) {
 
   const { data: events } = await (supabase as any)
     .from("league_events")
-    .select("id, season_id")
+    .select("id, season_id, holes")
     .eq("league_id", leagueId);
 
   const eventIds = (events || []).map((e: any) => e.id);
+  // 9-hole events must ignore any stray scores stored on holes 10-18
+  const holesByEvent: Record<string, number> = {};
+  (events || []).forEach((e: any) => { holesByEvent[e.id] = Number(e.holes) === 9 ? 9 : 18; });
+  const withinEvent = (eventId: string, hole: number) => hole >= 1 && hole <= (holesByEvent[eventId] ?? 18);
 
   const { data: scores } = await (supabase as any)
     .from("league_event_scores")
-    .select("event_id, member_id, gross_score, net_score")
+    .select("event_id, member_id, hole_number, gross_score, net_score")
     .in("event_id", eventIds);
+
 
   // Aggregate scores per event per player
   type Agg = { totalGross: number; totalNet: number; holes: number };
@@ -44,21 +49,18 @@ export async function recomputeLeagueStandings(leagueId: string) {
     a.totalNet += net;
     a.holes += 1;
   };
-  (scores || []).forEach((s: any) => {
-    addScore(
-      s.event_id,
-      s.member_id,
-      Number(s.gross_score) || 0,
-      Number(s.net_score ?? s.gross_score) || 0,
-    );
-  });
-
   // Team formats (e.g. 2-person scramble) store scores per pairing — credit both players
+  const pairedByEvent: Record<string, Set<string>> = {};
   if (eventIds.length > 0) {
     const { data: pairings } = await (supabase as any)
       .from("league_team_pairings")
       .select("id, event_id, player1_id, player2_id")
       .in("event_id", eventIds);
+    (pairings || []).forEach((p: any) => {
+      [p.player1_id, p.player2_id].forEach((mid: string | null) => {
+        if (mid) (pairedByEvent[p.event_id] ||= new Set()).add(mid);
+      });
+    });
     const pairingIds = (pairings || []).map((p: any) => p.id);
     if (pairingIds.length > 0) {
       const { data: teamScores } = await (supabase as any)
@@ -70,6 +72,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
       (teamScores || []).forEach((s: any) => {
         const p = byPairing[s.pairing_id];
         if (!p) return;
+        if (!withinEvent(p.event_id, Number(s.hole_number))) return;
         const g = Number(s.gross_score) || 0;
         [p.player1_id, p.player2_id].forEach((mid: string | null) => {
           if (mid) addScore(p.event_id, mid, g, g);
@@ -77,6 +80,19 @@ export async function recomputeLeagueStandings(leagueId: string) {
       });
     }
   }
+
+  // Individual scores — skipped for players whose event score comes from a team card
+  (scores || []).forEach((s: any) => {
+    if (!withinEvent(s.event_id, Number(s.hole_number))) return;
+    if (pairedByEvent[s.event_id]?.has(s.member_id)) return;
+    addScore(
+      s.event_id,
+      s.member_id,
+      Number(s.gross_score) || 0,
+      Number(s.net_score ?? s.gross_score) || 0,
+    );
+  });
+
 
 
   // Standings per member across all events in the league

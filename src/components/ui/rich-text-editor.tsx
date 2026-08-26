@@ -43,6 +43,13 @@ const IMAGE_WIDTHS = [
   { label: "Full width (600px)", value: "600" },
 ];
 
+/** Image alignments offered when an image is selected. */
+const IMAGE_ALIGNMENTS = [
+  { label: "Left", value: "left" },
+  { label: "Center", value: "center" },
+  { label: "Right", value: "right" },
+];
+
 /**
  * Image node with a persisted width so organizers can resize inserted images.
  * Width is written as both the `width` attribute and an inline style so email
@@ -59,6 +66,20 @@ const ResizableImage = Image.extend({
           if (!attrs.width) return {};
           const w = String(attrs.width).replace("px", "");
           return { width: w, style: `width:${w}px;max-width:100%;height:auto;` };
+        },
+      },
+      align: {
+        default: null,
+        parseHTML: (el) => el.getAttribute("align") || null,
+        renderHTML: (attrs) => {
+          if (!attrs.align) return {};
+          const margin =
+            attrs.align === "center"
+              ? "margin:0 auto;"
+              : attrs.align === "left"
+              ? "margin-right:auto;"
+              : "margin-left:auto;";
+          return { align: attrs.align, style: `display:block;${margin}` };
         },
       },
     };
@@ -214,15 +235,28 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload?: (f
       <Btn title="Insert link" active={editor.isActive("link")} onClick={insertLink}><LinkIcon className="h-4 w-4" /></Btn>
       <Btn title="Insert image" onClick={() => fileInputRef.current?.click()}><ImageIcon className="h-4 w-4" /></Btn>
       {editor.isActive("image") && (
-        <Select
-          value={String(editor.getAttributes("image").width || "")}
-          onValueChange={(v) => editor.chain().focus().updateAttributes("image", { width: v }).run()}
-        >
-          <SelectTrigger className="h-8 w-[150px] text-xs" title="Image size"><SelectValue placeholder="Image size" /></SelectTrigger>
-          <SelectContent>
-            {IMAGE_WIDTHS.map((w) => <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <>
+          <Select
+            value={String(editor.getAttributes("image").width || "")}
+            onValueChange={(v) => editor.chain().focus().updateAttributes("image", { width: v }).run()}
+          >
+            <SelectTrigger className="h-8 w-[150px] text-xs" title="Image size"><SelectValue placeholder="Image size" /></SelectTrigger>
+            <SelectContent>
+              {IMAGE_WIDTHS.map((w) => <SelectItem key={w.value} value={w.value}>{w.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+          <div className="w-px h-6 bg-border mx-1" />
+          <Select
+            value={String(editor.getAttributes("image").align || "")}
+            onValueChange={(v) => editor.chain().focus().updateAttributes("image", { align: v || null }).run()}
+          >
+            <SelectTrigger className="h-8 w-[120px] text-xs" title="Image alignment"><SelectValue placeholder="Image align" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Inline (default)</SelectItem>
+              {IMAGE_ALIGNMENTS.map((a) => <SelectItem key={a.value} value={a.value}>{a.label}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </>
       )}
       <input
         ref={fileInputRef}
@@ -247,6 +281,6 @@ function Toolbar({ editor, onImageUpload }: { editor: Editor; onImageUpload?: (f
 export function sanitizeHtml(html: string): string {
   return DOMPurify.sanitize(html, {
     ALLOWED_TAGS: ["b", "i", "u", "strong", "em", "mark", "h1", "h2", "h3", "h4", "p", "br", "ul", "ol", "li", "a", "span", "div", "blockquote", "code", "pre", "img"],
-    ALLOWED_ATTR: ["href", "target", "rel", "style", "class", "data-color", "src", "alt", "title", "width", "height"],
+    ALLOWED_ATTR: ["href", "target", "rel", "style", "class", "data-color", "src", "alt", "title", "width", "height", "align"],
   });
 }

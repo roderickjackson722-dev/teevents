@@ -40,7 +40,52 @@ export default function LeagueStandingsTab({ leagueId }: { leagueId: string }) {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, [leagueId]);
+  // Standings stay in sync automatically: recompute on open and whenever
+  // scores or earnings change for any event in this league.
+  const autoSync = async () => {
+    try { await recomputeLeagueStandings(leagueId); } catch { /* best effort */ }
+    await load();
+  };
+
+  useEffect(() => { autoSync(); }, [leagueId]);
+
+  useEffect(() => {
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    let channel: any = null;
+
+    (async () => {
+      const { data: evs } = await (supabase as any)
+        .from("league_events")
+        .select("id")
+        .eq("league_id", leagueId);
+      if (cancelled) return;
+      const eventIds = new Set<string>((evs || []).map((e: any) => e.id));
+
+      const queue = (payload: any) => {
+        const evId = payload?.new?.event_id ?? payload?.old?.event_id;
+        if (evId && !eventIds.has(evId)) return;
+        if (timer) clearTimeout(timer);
+        timer = setTimeout(() => { autoSync(); }, 1200);
+      };
+
+      channel = (supabase as any)
+        .channel(`league-standings-sync-${leagueId}`)
+        .on("postgres_changes", { event: "*", schema: "public", table: "league_event_scores" }, queue)
+        .on("postgres_changes", { event: "*", schema: "public", table: "league_team_scores" }, queue)
+        .on("postgres_changes", { event: "*", schema: "public", table: "league_event_earnings" }, queue)
+        .on("postgres_changes", { event: "*", schema: "public", table: "league_skins" }, queue)
+        .subscribe();
+    })();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+      if (channel) (supabase as any).removeChannel(channel);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [leagueId]);
+
 
   const recompute = async () => {
     setComputing(true);

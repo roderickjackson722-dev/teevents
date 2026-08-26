@@ -66,6 +66,9 @@ const ResizableImage = Image.extend({
         renderHTML: (attrs) => {
           if (!attrs.width) return {};
           const w = String(attrs.width).replace("px", "");
+          if (w.endsWith("%")) {
+            return { width: w, style: `width:${w};max-width:100%;height:auto;` };
+          }
           return { width: w, style: `width:${w}px;max-width:100%;height:auto;` };
         },
       },

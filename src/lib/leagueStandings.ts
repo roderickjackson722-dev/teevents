@@ -157,6 +157,30 @@ export async function recomputeLeagueStandings(leagueId: string) {
     winsOverrideByMember[e.member_id] = e.wins_override ?? null;
   });
 
+  // Prize money = skins won + event earnings recorded by the league manager
+  const paidByMember: Record<string, number> = {};
+  if (eventIds.length > 0) {
+    const [skinsRes, earnRes] = await Promise.all([
+      (supabase as any)
+        .from("league_skins")
+        .select("winner_member_id, skin_amount_cents")
+        .in("event_id", eventIds),
+      (supabase as any)
+        .from("league_event_earnings")
+        .select("member_id, amount_cents")
+        .eq("league_id", leagueId),
+    ]);
+    (skinsRes.data || []).forEach((s: any) => {
+      if (!s.winner_member_id) return;
+      paidByMember[s.winner_member_id] = (paidByMember[s.winner_member_id] || 0) + Number(s.skin_amount_cents || 0);
+    });
+    (earnRes.data || []).forEach((e: any) => {
+      paidByMember[e.member_id] = (paidByMember[e.member_id] || 0) + Number(e.amount_cents || 0);
+    });
+  }
+
+
+
 
   // Clear then upsert
   await (supabase as any).from("league_standings").delete().eq("league_id", leagueId);
@@ -171,7 +195,7 @@ export async function recomputeLeagueStandings(leagueId: string) {
     ties: r.ties,
     total_gross: r.totalGross,
     total_net: r.totalNet,
-    prize_money_cents: prizeByMember[memberId] || 0,
+    prize_money_cents: paidByMember[memberId] ?? (prizeByMember[memberId] || 0),
     wins_override: winsOverrideByMember[memberId] ?? null,
 
   }));

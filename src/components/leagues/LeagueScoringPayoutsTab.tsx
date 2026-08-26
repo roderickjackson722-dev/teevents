@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Coins, Flag } from "lucide-react";
 import LeagueSkinsTab from "@/components/leagues/LeagueSkinsTab";
 import LeaguePayoutsTab from "@/components/leagues/LeaguePayoutsTab";
+import LeagueEarningsTab from "@/components/leagues/LeagueEarningsTab";
 
 export default function LeagueScoringPayoutsTab({ leagueId }: { leagueId: string }) {
   return (
@@ -17,6 +18,8 @@ export default function LeagueScoringPayoutsTab({ leagueId }: { leagueId: string
         </CardContent>
       </Card>
 
+
+      <LeagueEarningsTab leagueId={leagueId} />
 
       <Card>
         <CardHeader className="pb-3">

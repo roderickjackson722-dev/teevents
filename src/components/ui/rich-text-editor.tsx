@@ -117,7 +117,24 @@ export function RichTextEditor({ value, onChange, placeholder, className, onImag
       attributes: {
         class: "prose prose-sm max-w-none min-h-[180px] px-3 py-2 focus:outline-none",
       },
+      // Clicking an image selects the image node so the size/alignment controls appear.
+      handleClickOn: (view, pos, node, nodePos, event) => {
+        const target = event.target as HTMLElement | null;
+        if (node.type.name === "image" || target?.tagName === "IMG") {
+          const imagePos = node.type.name === "image" ? nodePos : pos;
+          try {
+            const tr = view.state.tr.setSelection(NodeSelection.create(view.state.doc, imagePos));
+            view.dispatch(tr);
+            view.focus();
+            return true;
+          } catch {
+            return false;
+          }
+        }
+        return false;
+      },
     },
+
     onUpdate: ({ editor }) => onChange(editor.getHTML()),
   });
 

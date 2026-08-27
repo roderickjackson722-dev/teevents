@@ -8,7 +8,7 @@ import Link from "@tiptap/extension-link";
 import TextAlign from "@tiptap/extension-text-align";
 import Highlight from "@tiptap/extension-highlight";
 import Image from "@tiptap/extension-image";
-import { NodeSelection } from "@tiptap/pm/state";
+import { NodeSelection, TextSelection } from "@tiptap/pm/state";
 import { useEffect, useRef } from "react";
 import {
   Bold, Italic, Underline as UnderlineIcon, Heading1, Heading2, Heading3,
@@ -58,36 +58,43 @@ const IMAGE_ALIGNMENTS = [
  * clients (which ignore CSS classes) honour the size.
  */
 const ResizableImage = Image.extend({
+  selectable: true,
+  draggable: true,
   addAttributes() {
     return {
       ...this.parent?.(),
       width: {
         default: null,
         parseHTML: (el) => el.getAttribute("width") || (el as HTMLElement).style.width || null,
-        renderHTML: (attrs) => {
-          if (!attrs.width) return {};
-          const w = String(attrs.width).replace("px", "");
-          if (w.endsWith("%")) {
-            return { width: w, style: `width:${w};max-width:100%;height:auto;` };
-          }
-          return { width: w, style: `width:${w}px;max-width:100%;height:auto;` };
-        },
+        renderHTML: (attrs) => attrs.width ? { width: String(attrs.width).replace("px", "") } : {},
       },
       align: {
         default: null,
-        parseHTML: (el) => el.getAttribute("align") || null,
-        renderHTML: (attrs) => {
-          if (!attrs.align) return {};
-          const margin =
-            attrs.align === "center"
-              ? "margin:0 auto;"
-              : attrs.align === "left"
-              ? "margin-right:auto;"
-              : "margin-left:auto;";
-          return { align: attrs.align, style: `display:block;${margin}` };
+        parseHTML: (el) => {
+          const explicit = el.getAttribute("align");
+          if (explicit) return explicit;
+          const style = (el as HTMLElement).style;
+          if (style.marginLeft === "auto" && style.marginRight === "auto") return "center";
+          if (style.marginLeft === "auto") return "right";
+          if (style.marginRight === "auto") return "left";
+          return null;
         },
+        renderHTML: (attrs) => attrs.align ? { align: attrs.align } : {},
       },
     };
+  },
+  renderHTML({ HTMLAttributes }) {
+    const width = HTMLAttributes.width ? String(HTMLAttributes.width).replace("px", "") : null;
+    const widthStyle = width ? `width:${width.endsWith("%") ? width : `${width}px`};max-width:100%;height:auto;` : "max-width:100%;height:auto;";
+    const align = HTMLAttributes.align;
+    const alignStyle = align === "center"
+      ? "display:block;margin-left:auto;margin-right:auto;"
+      : align === "right"
+      ? "display:block;margin-left:auto;margin-right:0;"
+      : align === "left"
+      ? "display:block;margin-left:0;margin-right:auto;"
+      : "";
+    return ["img", { ...HTMLAttributes, style: `${widthStyle}${alignStyle}` }];
   },
 });
 
@@ -118,21 +125,38 @@ export function RichTextEditor({ value, onChange, placeholder, className, onImag
       attributes: {
         class: "prose prose-sm max-w-none min-h-[180px] px-3 py-2 focus:outline-none",
       },
-      // Clicking an image selects the image node so the size/alignment controls appear.
-      handleClickOn: (view, pos, node, nodePos, event) => {
-        const target = event.target as HTMLElement | null;
-        if (node.type.name === "image" || target?.tagName === "IMG") {
-          const imagePos = node.type.name === "image" ? nodePos : pos;
-          try {
-            const tr = view.state.tr.setSelection(NodeSelection.create(view.state.doc, imagePos));
-            view.dispatch(tr);
-            view.focus();
+      handleDOMEvents: {
+        mousedown: (view, event) => {
+          const target = event.target;
+          if (!(target instanceof HTMLImageElement)) return false;
+          event.preventDefault();
+          const domPos = view.posAtDOM(target, 0);
+          const candidates = [domPos, domPos - 1].filter((pos) => pos >= 0);
+          const imagePos = candidates.find((pos) => view.state.doc.nodeAt(pos)?.type.name === "image");
+          if (imagePos === undefined) return false;
+          view.dispatch(view.state.tr.setSelection(NodeSelection.create(view.state.doc, imagePos)));
+          view.focus();
+          return true;
+        },
+        keydown: (view, event) => {
+          const selection = view.state.selection;
+          if (!(selection instanceof NodeSelection) || selection.node.type.name !== "image") return false;
+          if (event.key === "Tab") {
+            event.preventDefault();
             return true;
-          } catch {
-            return false;
           }
-        }
-        return false;
+          if (event.key === " ") {
+            event.preventDefault();
+            const insertAt = selection.to;
+            const paragraph = view.state.schema.nodes.paragraph?.create();
+            if (!paragraph) return true;
+            const transaction = view.state.tr.insert(insertAt, paragraph);
+            transaction.setSelection(TextSelection.near(transaction.doc.resolve(insertAt + 1)));
+            view.dispatch(transaction);
+            return true;
+          }
+          return false;
+        },
       },
     },
 

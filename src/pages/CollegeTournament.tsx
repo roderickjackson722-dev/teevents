@@ -241,7 +241,17 @@ const CollegeTournament = () => {
            custom_answers: p.custom_answers,
         })) as any
       );
+      if (playersErr) {
+        toast({
+          title: "Player roster not saved",
+          description: `${playersErr.message} — your team registration was received. Please contact the organizer to add your players.`,
+          variant: "destructive",
+        });
+        setRegistering(false);
+        return;
+      }
     }
+
 
     // Send notification to admin
     try {

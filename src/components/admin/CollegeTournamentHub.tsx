@@ -21,6 +21,7 @@ import {
   FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList, Upload, Image, Settings, Download, Sliders, Archive, ArchiveRestore,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { CollegeRosterField, DEFAULT_COLLEGE_ROSTER_FIELDS, getCollegeRosterAnswer, parseCollegeRosterFields, STANDARD_COLLEGE_ROSTER_IDS } from "@/lib/collegeRosterFields";
 
 interface RegistrationField {
   id: string;
@@ -49,6 +50,7 @@ interface CollegeTournament {
   slug: string | null;
   hero_image_url: string | null;
   hero_overlay_opacity: number | null;
+  player_roster_fields: unknown;
   overview_visible?: boolean | null;
   archived_at?: string | null;
 }
@@ -85,6 +87,8 @@ interface Player {
   last_name: string;
   year: string | null;
   position: string | null;
+  shirt_size: string | null;
+  custom_answers: Record<string, string> | null;
 }
 
 interface TournamentTab {
@@ -166,6 +170,10 @@ const CollegeTournamentHub = () => {
   const [editRegForm, setEditRegForm] = useState({ coach_name: "", coach_email: "", school_name: "", notes: "" });
   const [editingPlayerId, setEditingPlayerId] = useState<string | null>(null);
   const [editPlayerForm, setEditPlayerForm] = useState({ first_name: "", last_name: "", year: "", position: "" });
+  const [editPlayerAnswers, setEditPlayerAnswers] = useState<Record<string, string>>({});
+  const [rosterFields, setRosterFields] = useState<CollegeRosterField[]>(DEFAULT_COLLEGE_ROSTER_FIELDS);
+  const [newRosterLabel, setNewRosterLabel] = useState("");
+  const [newRosterType, setNewRosterType] = useState<CollegeRosterField["type"]>("text");
 
   // Inline tournament editing
   const [editingTournament, setEditingTournament] = useState<string | null>(null);
@@ -223,6 +231,7 @@ const CollegeTournamentHub = () => {
         { id: "notes", label: "Notes", type: "text", required: false, editable: true },
       ]);
     }
+    setRosterFields(parseCollegeRosterFields(tournament?.player_roster_fields));
   };
 
   useEffect(() => { fetchTournaments(); }, []);
@@ -469,6 +478,7 @@ const CollegeTournamentHub = () => {
   const startEditPlayer = (p: Player) => {
     setEditingPlayerId(p.id);
     setEditPlayerForm({ first_name: p.first_name, last_name: p.last_name, year: p.year || "", position: p.position || "" });
+    setEditPlayerAnswers({ shirt_size: p.shirt_size || "", ...(p.custom_answers || {}) });
   };
 
   const saveEditPlayer = async () => {
@@ -478,6 +488,8 @@ const CollegeTournamentHub = () => {
       last_name: editPlayerForm.last_name,
       year: editPlayerForm.year || null,
       position: editPlayerForm.position || null,
+      shirt_size: editPlayerAnswers.shirt_size || null,
+      custom_answers: Object.fromEntries(Object.entries(editPlayerAnswers).filter(([key]) => !STANDARD_COLLEGE_ROSTER_IDS.has(key))),
     } as any).eq("id", editingPlayerId);
     setEditingPlayerId(null);
     if (expandedId) fetchTournamentData(expandedId);
@@ -583,6 +595,47 @@ const CollegeTournamentHub = () => {
     setRegFields(fields);
     fetchTournaments();
     toast({ title: "Registration fields saved" });
+  };
+
+  const saveRosterFields = async (fields: CollegeRosterField[]) => {
+    if (!expandedId) return;
+    const { error } = await supabase.from("college_tournaments").update({ player_roster_fields: fields } as any).eq("id", expandedId);
+    if (error) {
+      toast({ title: "Player roster fields could not be saved", description: error.message, variant: "destructive" });
+      return;
+    }
+    setRosterFields(fields);
+    setTournaments(current => current.map(t => t.id === expandedId ? { ...t, player_roster_fields: fields } : t));
+    toast({ title: "Player roster fields saved" });
+  };
+
+  const updateRosterField = (fieldId: string, patch: Partial<CollegeRosterField>) => {
+    const fields = rosterFields.map(field => field.id === fieldId ? { ...field, ...patch } : field);
+    saveRosterFields(fields);
+  };
+
+  const moveRosterField = (index: number, direction: -1 | 1) => {
+    const destination = index + direction;
+    if (destination < 0 || destination >= rosterFields.length) return;
+    const fields = [...rosterFields];
+    const [field] = fields.splice(index, 1);
+    fields.splice(destination, 0, field);
+    saveRosterFields(fields);
+  };
+
+  const addRosterField = () => {
+    if (!newRosterLabel.trim()) return;
+    saveRosterFields([...rosterFields, {
+      id: `custom_player_${Date.now()}`,
+      label: newRosterLabel.trim(),
+      type: newRosterType,
+      required: false,
+      editable: true,
+      visible: true,
+      options: newRosterType === "select" ? ["Option 1", "Option 2"] : undefined,
+    }]);
+    setNewRosterLabel("");
+    setNewRosterType("text");
   };
 
   const addRegField = () => {
@@ -701,8 +754,13 @@ const CollegeTournamentHub = () => {
 
 
   const updateOverlayOpacity = async (tournamentId: string, value: number) => {
-    await supabase.from("college_tournaments").update({ hero_overlay_opacity: value } as any).eq("id", tournamentId);
-    fetchTournaments();
+    const { error } = await supabase.from("college_tournaments").update({ hero_overlay_opacity: value } as any).eq("id", tournamentId);
+    if (error) {
+      toast({ title: "Transparency could not be saved", description: error.message, variant: "destructive" });
+      await fetchTournaments();
+      return;
+    }
+    toast({ title: "Hero transparency saved" });
   };
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;

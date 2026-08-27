@@ -1093,6 +1093,17 @@ const CollegeTournamentHub = () => {
                                   value={editTournamentForm.description}
                                   onChange={html => setEditTournamentForm({ ...editTournamentForm, description: html })}
                                   placeholder="Full event overview — supports headings, lists, links, colors, images..."
+                                   onImageUpload={async (file) => {
+                                     const ext = file.name.split(".").pop() || "png";
+                                     const path = `college/${t.id}/description-${Date.now()}.${ext}`;
+                                     const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+                                     if (upErr) {
+                                       toast({ title: "Image upload failed", description: upErr.message, variant: "destructive" });
+                                       throw upErr;
+                                     }
+                                     const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+                                     return publicUrl;
+                                   }}
                                 />
                               </div>
                               <div className="grid grid-cols-2 gap-3">

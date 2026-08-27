@@ -58,6 +58,8 @@ const IMAGE_ALIGNMENTS = [
  * clients (which ignore CSS classes) honour the size.
  */
 const ResizableImage = Image.extend({
+  selectable: true,
+  draggable: true,
   addAttributes() {
     return {
       ...this.parent?.(),

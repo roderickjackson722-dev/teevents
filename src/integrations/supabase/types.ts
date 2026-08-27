@@ -1325,29 +1325,35 @@ export type Database = {
       college_tournament_players: {
         Row: {
           created_at: string
+          custom_answers: Json
           first_name: string
           id: string
           last_name: string
           position: string | null
           registration_id: string
+          shirt_size: string | null
           year: string | null
         }
         Insert: {
           created_at?: string
+          custom_answers?: Json
           first_name: string
           id?: string
           last_name: string
           position?: string | null
           registration_id: string
+          shirt_size?: string | null
           year?: string | null
         }
         Update: {
           created_at?: string
+          custom_answers?: Json
           first_name?: string
           id?: string
           last_name?: string
           position?: string | null
           registration_id?: string
+          shirt_size?: string | null
           year?: string | null
         }
         Relationships: [
@@ -1470,6 +1476,7 @@ export type Database = {
           id: string
           location: string | null
           overview_visible: boolean
+          player_roster_fields: Json
           registration_fields: Json | null
           registration_open: boolean | null
           slug: string | null
@@ -1492,6 +1499,7 @@ export type Database = {
           id?: string
           location?: string | null
           overview_visible?: boolean
+          player_roster_fields?: Json
           registration_fields?: Json | null
           registration_open?: boolean | null
           slug?: string | null
@@ -1514,6 +1522,7 @@ export type Database = {
           id?: string
           location?: string | null
           overview_visible?: boolean
+          player_roster_fields?: Json
           registration_fields?: Json | null
           registration_open?: boolean | null
           slug?: string | null

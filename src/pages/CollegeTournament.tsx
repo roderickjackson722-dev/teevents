@@ -14,6 +14,7 @@ import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { BookingsEmbed } from "@/components/bookings/BookingsEmbed";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import golfCourseHero from "@/assets/golf-course-hero.jpg";
+import { getCollegeRosterAnswer, parseCollegeRosterFields, STANDARD_COLLEGE_ROSTER_IDS } from "@/lib/collegeRosterFields";
 
 interface RegistrationField {
   id: string;
@@ -42,6 +43,7 @@ interface Tournament {
   hero_image_url: string | null;
   hero_overlay_opacity: number | null;
   overview_visible: boolean | null;
+  player_roster_fields: unknown;
 }
 
 interface TournamentTab {
@@ -87,13 +89,8 @@ const CollegeTournament = () => {
   const [regForm, setRegForm] = useState<Record<string, string>>({
     school_name: "", coach_name: "", coach_email: "", notes: "",
   });
-  const [players, setPlayers] = useState([
-    { first_name: "", last_name: "", year: "", position: "" },
-    { first_name: "", last_name: "", year: "", position: "" },
-    { first_name: "", last_name: "", year: "", position: "" },
-    { first_name: "", last_name: "", year: "", position: "" },
-    { first_name: "", last_name: "", year: "", position: "" },
-  ]);
+  const blankPlayer = () => ({ first_name: "", last_name: "", year: "", position: "", shirt_size: "", custom_answers: {} as Record<string, string> });
+  const [players, setPlayers] = useState(() => Array.from({ length: 5 }, blankPlayer));
   const [registering, setRegistering] = useState(false);
   const [regSuccess, setRegSuccess] = useState(false);
 
@@ -173,7 +170,7 @@ const CollegeTournament = () => {
   };
 
   const addPlayer = () => {
-    setPlayers([...players, { first_name: "", last_name: "", year: "", position: "" }]);
+    setPlayers([...players, blankPlayer()]);
   };
 
   const removePlayer = (idx: number) => {
@@ -182,7 +179,11 @@ const CollegeTournament = () => {
   };
 
   const updatePlayer = (idx: number, field: string, value: string) => {
-    setPlayers(players.map((p, i) => i === idx ? { ...p, [field]: value } : p));
+    setPlayers(players.map((p, i) => {
+      if (i !== idx) return p;
+      if (STANDARD_COLLEGE_ROSTER_IDS.has(field)) return { ...p, [field]: value };
+      return { ...p, custom_answers: { ...p.custom_answers, [field]: value } };
+    }));
   };
 
   const handleRegister = async (e: React.FormEvent) => {
@@ -236,6 +237,8 @@ const CollegeTournament = () => {
           last_name: p.last_name,
           year: p.year || null,
           position: p.position || null,
+           shirt_size: p.shirt_size || null,
+           custom_answers: p.custom_answers,
         })) as any
       );
     }
@@ -294,7 +297,7 @@ const CollegeTournament = () => {
           className="absolute inset-0 bg-cover bg-center bg-no-repeat"
           style={{ backgroundImage: `url(${tournament.hero_image_url || golfCourseHero})` }}
         />
-        <div className="absolute inset-0" style={{ backgroundColor: `rgba(0,0,0,${tournament.hero_overlay_opacity ?? 0.6})` }} />
+        <div className="absolute inset-0 bg-foreground" style={{ opacity: tournament.hero_overlay_opacity ?? 0.6 }} />
         <div className="relative z-10 container mx-auto px-4 max-w-4xl text-center">
           <div className="flex items-center justify-center gap-2 mb-4">
             <School className="h-6 w-6" />
@@ -443,51 +446,27 @@ const CollegeTournament = () => {
                 <p className="text-xs text-muted-foreground mb-3">You can add players now or update your roster later.</p>
                 <div className="space-y-3">
                   {players.map((p, i) => (
-                    <div key={i} className="grid grid-cols-[1fr_1fr_120px_120px_auto] gap-2 items-end">
-                      <div>
-                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">First Name</label>}
-                        <Input placeholder="First" value={p.first_name} onChange={e => updatePlayer(i, "first_name", e.target.value)} />
+                    <div key={i} className="rounded-md border border-border p-3">
+                      <div className="mb-2 flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Player {i + 1}</span>
+                        <Button type="button" variant="ghost" size="sm" onClick={() => removePlayer(i)} disabled={players.length <= 1} className="text-muted-foreground hover:text-destructive h-7 px-2">✕</Button>
                       </div>
-                      <div>
-                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">Last Name</label>}
-                        <Input placeholder="Last" value={p.last_name} onChange={e => updatePlayer(i, "last_name", e.target.value)} />
-                      </div>
-                      <div>
-                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">Year</label>}
-                        <select
-                          value={p.year}
-                          onChange={e => updatePlayer(i, "year", e.target.value)}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="">Year</option>
-                          <option value="freshman">FR</option>
-                          <option value="sophomore">SO</option>
-                          <option value="junior">JR</option>
-                          <option value="senior">SR</option>
-                          <option value="graduate">GR</option>
-                        </select>
-                      </div>
-                      <div>
-                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">Position</label>}
-                        <select
-                          value={p.position}
-                          onChange={e => updatePlayer(i, "position", e.target.value)}
-                          className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                        >
-                          <option value="">Position</option>
-                          <option value="1">1</option>
-                          <option value="2">2</option>
-                          <option value="3">3</option>
-                          <option value="4">4</option>
-                          <option value="5">5</option>
-                          <option value="alternate">Alt</option>
-                        </select>
-                      </div>
-                      <div>
-                        {i === 0 && <label className="text-xs text-muted-foreground mb-1 block">&nbsp;</label>}
-                        <Button type="button" variant="ghost" size="sm" onClick={() => removePlayer(i)} disabled={players.length <= 1} className="text-muted-foreground hover:text-destructive h-10 px-2">
-                          ✕
-                        </Button>
+                      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                        {parseCollegeRosterFields(tournament.player_roster_fields).filter(field => field.visible).map(field => (
+                          <div key={field.id} className={field.type === "textarea" ? "sm:col-span-2 lg:col-span-3" : ""}>
+                            <label className="text-xs text-muted-foreground mb-1 block">{field.label}{field.required ? " *" : ""}</label>
+                            {field.type === "select" ? (
+                              <select value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                                <option value="">Select...</option>
+                                {(field.options || []).map(option => <option key={option} value={option.toLowerCase()}>{option}</option>)}
+                              </select>
+                            ) : field.type === "textarea" ? (
+                              <Textarea value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required} placeholder={field.label} />
+                            ) : (
+                              <Input type={field.type === "number" ? "number" : "text"} value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required} placeholder={field.label} />
+                            )}
+                          </div>
+                        ))}
                       </div>
                     </div>
                   ))}

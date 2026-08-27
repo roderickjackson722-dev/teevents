@@ -354,24 +354,11 @@ export default function LeagueScoringTab({ leagueId }: { leagueId: string }) {
         .in("hole_number", stillSet);
     }
 
-    // 9-hole events: drop any legacy rows stored on holes past the event length
-    // so the grid, leaderboard and season standings all agree.
-    const pairingIds = Array.from(new Set(players.map((p) => p.pairing_id).filter(Boolean))) as string[];
-    const strayHoles = Array.from({ length: 18 }, (_, i) => i + 1).filter((h) => !playedHoles.includes(h));
-    if (strayHoles.length > 0) {
-      await (supabase as any)
-        .from("league_event_scores")
-        .delete()
-        .eq("event_id", eventId)
-        .in("hole_number", strayHoles);
-      if (pairingIds.length > 0) {
-        await (supabase as any)
-          .from("league_team_scores")
-          .delete()
-          .in("pairing_id", pairingIds)
-          .in("hole_number", strayHoles);
-      }
-    }
+    // NOTE: scores stored outside the event's selected nine are intentionally
+    // left in place. Reads/leaderboards/standings already ignore unplayed holes,
+    // and deleting them here would permanently destroy a week's entries if the
+    // front/back nine selection is wrong.
+
     // Paired players score off the team card — remove duplicate individual rows
     const pairedMembers = players.filter((p) => p.pairing_id).map((p) => p.member_id);
     if (pairedMembers.length > 0) {

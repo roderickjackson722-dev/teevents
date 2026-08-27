@@ -1184,7 +1184,10 @@ const CollegeTournamentHub = () => {
                           </h4>
                           {t.hero_image_url ? (
                             <div className="space-y-3">
-                              <img src={t.hero_image_url} alt="Hero" className="w-full max-h-48 object-cover rounded-lg border border-border" />
+                              <div className="relative max-h-48 overflow-hidden rounded-lg border border-border">
+                                <img src={t.hero_image_url} alt="Hero" className="h-48 w-full object-cover" />
+                                <div className="absolute inset-0 bg-foreground" style={{ opacity: t.hero_overlay_opacity ?? 0.6 }} />
+                              </div>
                               <div className="flex gap-2 flex-wrap">
                                 <label className="cursor-pointer">
                                   <input type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleHeroUpload(t.id, e.target.files[0]); }} />

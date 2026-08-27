@@ -452,21 +452,24 @@ const CollegeTournament = () => {
                         <Button type="button" variant="ghost" size="sm" onClick={() => removePlayer(i)} disabled={players.length <= 1} className="text-muted-foreground hover:text-destructive h-7 px-2">✕</Button>
                       </div>
                       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                        {parseCollegeRosterFields(tournament.player_roster_fields).filter(field => field.visible).map(field => (
+                        {parseCollegeRosterFields(tournament.player_roster_fields).filter(field => field.visible).map(field => {
+                          const playerHasData = Boolean(p.first_name || p.last_name || p.year || p.position || p.shirt_size || Object.values(p.custom_answers).some(Boolean));
+                          return (
                           <div key={field.id} className={field.type === "textarea" ? "sm:col-span-2 lg:col-span-3" : ""}>
                             <label className="text-xs text-muted-foreground mb-1 block">{field.label}{field.required ? " *" : ""}</label>
                             {field.type === "select" ? (
-                              <select value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
+                              <select value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required && playerHasData} className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm">
                                 <option value="">Select...</option>
                                 {(field.options || []).map(option => <option key={option} value={option.toLowerCase()}>{option}</option>)}
                               </select>
                             ) : field.type === "textarea" ? (
-                              <Textarea value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required} placeholder={field.label} />
+                              <Textarea value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required && playerHasData} placeholder={field.label} />
                             ) : (
-                              <Input type={field.type === "number" ? "number" : "text"} value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required} placeholder={field.label} />
+                              <Input type={field.type === "number" ? "number" : "text"} value={getCollegeRosterAnswer(p, field.id)} onChange={e => updatePlayer(i, field.id, e.target.value)} required={field.required && playerHasData} placeholder={field.label} />
                             )}
                           </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </div>
                   ))}

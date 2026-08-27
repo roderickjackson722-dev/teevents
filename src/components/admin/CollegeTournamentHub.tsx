@@ -21,7 +21,8 @@ import {
   FileText, Eye, EyeOff, GripVertical, ChevronDown, ChevronUp, School, Save, X, Globe, RefreshCw, Pencil, ClipboardList, Upload, Image, Settings, Download, Sliders, Archive, ArchiveRestore,
 } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
-import { CollegeRosterField, DEFAULT_COLLEGE_ROSTER_FIELDS, getCollegeRosterAnswer, parseCollegeRosterFields, STANDARD_COLLEGE_ROSTER_IDS } from "@/lib/collegeRosterFields";
+import { DEFAULT_COLLEGE_ROSTER_FIELDS, getCollegeRosterAnswer, parseCollegeRosterFields, STANDARD_COLLEGE_ROSTER_IDS } from "@/lib/collegeRosterFields";
+import type { CollegeRosterField } from "@/lib/collegeRosterFields";
 
 interface RegistrationField {
   id: string;
@@ -1227,6 +1228,7 @@ const CollegeTournamentHub = () => {
                               min={0}
                               max={1}
                               step={0.05}
+                              onValueChange={(val) => setTournaments(current => current.map(item => item.id === t.id ? { ...item, hero_overlay_opacity: val[0] } : item))}
                               onValueCommit={(val) => updateOverlayOpacity(t.id, val[0])}
                               className="flex-1"
                             />
@@ -1434,6 +1436,16 @@ const CollegeTournamentHub = () => {
                                               <option value="5">5</option>
                                               <option value="alternate">Alt</option>
                                             </select>
+                                            {rosterFields.filter(field => field.visible && !["first_name", "last_name", "year", "position"].includes(field.id)).map(field => (
+                                              field.type === "select" ? (
+                                                <select key={field.id} value={editPlayerAnswers[field.id] || ""} onChange={e => setEditPlayerAnswers({ ...editPlayerAnswers, [field.id]: e.target.value })} className="h-7 rounded-md border border-input bg-background px-2 text-sm" aria-label={field.label}>
+                                                  <option value="">{field.label}</option>
+                                                  {(field.options || []).map(option => <option key={option} value={option.toLowerCase()}>{option}</option>)}
+                                                </select>
+                                              ) : (
+                                                <Input key={field.id} type={field.type === "number" ? "number" : "text"} value={editPlayerAnswers[field.id] || ""} onChange={e => setEditPlayerAnswers({ ...editPlayerAnswers, [field.id]: e.target.value })} placeholder={field.label} className="h-7 text-sm w-32" />
+                                              )
+                                            ))}
                                             <Button size="sm" onClick={saveEditPlayer} className="h-6 px-2"><Save className="h-3 w-3" /></Button>
                                             <Button size="sm" variant="ghost" onClick={() => setEditingPlayerId(null)} className="h-6 px-2"><X className="h-3 w-3" /></Button>
                                           </div>
@@ -1442,6 +1454,10 @@ const CollegeTournamentHub = () => {
                                             <span className="font-medium">{p.first_name} {p.last_name}</span>
                                             {p.year && <span className="text-xs text-muted-foreground capitalize">{p.year}</span>}
                                             {p.position && <span className="text-xs text-muted-foreground">Pos: {p.position === "alternate" ? "Alt" : p.position}</span>}
+                                            {rosterFields.filter(field => field.visible && !["first_name", "last_name", "year", "position"].includes(field.id)).map(field => {
+                                              const answer = getCollegeRosterAnswer(p as unknown as Record<string, unknown>, field.id);
+                                              return answer ? <span key={field.id} className="text-xs text-muted-foreground">{field.label}: {answer}</span> : null;
+                                            })}
                                             <div className="opacity-0 group-hover:opacity-100 flex items-center gap-1 ml-auto transition-opacity">
                                               <button onClick={() => startEditPlayer(p)} className="text-muted-foreground hover:text-foreground" title="Edit player">
                                                 <Pencil className="h-3.5 w-3.5" />
@@ -1775,6 +1791,36 @@ const CollegeTournamentHub = () => {
                               </label>
                               <Button onClick={addRegField}><Plus className="h-4 w-4 mr-1" /> Add Field</Button>
                             </div>
+                          </div>
+                        </div>
+
+                        <div className="bg-card rounded-lg border border-border p-4">
+                          <h4 className="font-semibold text-sm mb-1">Player Roster Fields</h4>
+                          <p className="text-xs text-muted-foreground mb-4">Customize the questions asked for each player. First and Last Name always remain visible and required.</p>
+                          <div className="space-y-2">
+                            {rosterFields.map((field, index) => (
+                              <div key={field.id} className="grid gap-2 rounded-lg border border-border bg-muted/30 p-3 sm:grid-cols-[auto_minmax(140px,1fr)_120px_auto_auto_auto] sm:items-center">
+                                <div className="flex gap-1">
+                                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={index === 0} onClick={() => moveRosterField(index, -1)} title="Move up"><ChevronUp className="h-3.5 w-3.5" /></Button>
+                                  <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0" disabled={index === rosterFields.length - 1} onClick={() => moveRosterField(index, 1)} title="Move down"><ChevronDown className="h-3.5 w-3.5" /></Button>
+                                </div>
+                                <Input value={field.label} disabled={!field.editable} onChange={e => setRosterFields(current => current.map(item => item.id === field.id ? { ...item, label: e.target.value } : item))} onBlur={() => saveRosterFields(rosterFields)} className="h-8 text-sm" aria-label={`${field.label} label`} />
+                                <select value={field.type} disabled={!field.editable} onChange={e => updateRosterField(field.id, { type: e.target.value as CollegeRosterField["type"] })} className="h-8 rounded-md border border-input bg-background px-2 text-sm">
+                                  <option value="text">Text</option><option value="number">Number</option><option value="textarea">Textarea</option><option value="select">Dropdown</option>
+                                </select>
+                                <label className="flex items-center gap-1.5 text-xs"><input type="checkbox" checked={field.required} disabled={!field.editable} onChange={e => updateRosterField(field.id, { required: e.target.checked })} /> Required</label>
+                                <label className="flex items-center gap-1.5 text-xs"><input type="checkbox" checked={field.visible} disabled={!field.editable} onChange={e => updateRosterField(field.id, { visible: e.target.checked })} /> Visible</label>
+                                {field.editable && !STANDARD_COLLEGE_ROSTER_IDS.has(field.id) ? <Button type="button" variant="ghost" size="sm" className="h-7 w-7 p-0 text-destructive" onClick={() => saveRosterFields(rosterFields.filter(item => item.id !== field.id))} title="Remove field"><Trash2 className="h-3.5 w-3.5" /></Button> : <span />}
+                                {field.type === "select" && field.editable && (
+                                  <Input className="h-8 text-xs sm:col-start-2 sm:col-span-4" value={(field.options || []).join(", ")} onChange={e => setRosterFields(current => current.map(item => item.id === field.id ? { ...item, options: e.target.value.split(",").map(option => option.trim()).filter(Boolean) } : item))} onBlur={() => saveRosterFields(rosterFields)} placeholder="Dropdown options, separated by commas" />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="mt-4 flex flex-wrap items-end gap-2 border-t border-border pt-4">
+                            <Input value={newRosterLabel} onChange={e => setNewRosterLabel(e.target.value)} placeholder="New player question" className="min-w-[180px] flex-1" />
+                            <select value={newRosterType} onChange={e => setNewRosterType(e.target.value as CollegeRosterField["type"])} className="h-10 rounded-md border border-input bg-background px-3 text-sm"><option value="text">Text</option><option value="number">Number</option><option value="textarea">Textarea</option><option value="select">Dropdown</option></select>
+                            <Button type="button" onClick={addRosterField}><Plus className="mr-1 h-4 w-4" /> Add Player Question</Button>
                           </div>
                         </div>
                       </TabsContent>

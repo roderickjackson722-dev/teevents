@@ -10,6 +10,7 @@ import { toast } from "@/hooks/use-toast";
 import { Loader2, Trophy, Save, Wand2, Trash2, Plus } from "lucide-react";
 import { formatCents } from "@/lib/formatCurrency";
 import { recomputeLeagueStandings } from "@/lib/leagueStandings";
+import { isHolePlayed } from "@/lib/leagueHoles";
 
 interface EarningRow {
   id?: string;
@@ -40,7 +41,7 @@ export default function LeagueEarningsTab({ leagueId }: { leagueId: string }) {
       const [{ data: evs }, { data: mems }] = await Promise.all([
         (supabase as any)
           .from("league_events")
-          .select("id, event_name, event_date, holes")
+          .select("id, event_name, event_date, holes, start_hole")
           .eq("league_id", leagueId)
           .order("event_date"),
         (supabase as any)
@@ -83,7 +84,7 @@ export default function LeagueEarningsTab({ leagueId }: { leagueId: string }) {
     if (!eventId) return;
     setLoading(true);
     const ev = events.find((e) => e.id === eventId);
-    const holeCount = Number(ev?.holes) === 9 ? 9 : 18;
+    const holePlayed = (hole: unknown) => isHolePlayed(ev, Number(hole));
 
     const [{ data: pairings }, { data: indScores }] = await Promise.all([
       (supabase as any)
@@ -105,7 +106,7 @@ export default function LeagueEarningsTab({ leagueId }: { leagueId: string }) {
         .in("pairing_id", pairingIds);
       const sums: Record<string, number> = {};
       (teamScores || []).forEach((s: any) => {
-        if (Number(s.hole_number) > holeCount) return;
+        if (!holePlayed(s.hole_number)) return;
         sums[s.pairing_id] = (sums[s.pairing_id] || 0) + (Number(s.gross_score) || 0);
       });
       (pairings || []).forEach((p: any) => {
@@ -119,7 +120,7 @@ export default function LeagueEarningsTab({ leagueId }: { leagueId: string }) {
     const pairedMembers = new Set(totals.map((t) => t.member_id));
     const indSums: Record<string, { name: string; gross: number }> = {};
     (indScores || []).forEach((s: any) => {
-      if (Number(s.hole_number) > holeCount) return;
+      if (!holePlayed(s.hole_number)) return;
       if (pairedMembers.has(s.member_id)) return;
       const e = (indSums[s.member_id] ||= { name: s.league_members?.member_name || "—", gross: 0 });
       e.gross += Number(s.gross_score) || 0;

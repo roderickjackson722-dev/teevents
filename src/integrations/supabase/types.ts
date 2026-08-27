@@ -12805,6 +12805,10 @@ export type Database = {
         }
         Returns: number
       }
+      college_player_insert_allowed: {
+        Args: { _registration_id: string }
+        Returns: boolean
+      }
       college_tournament_accepts_registration: {
         Args: { _tournament_id: string }
         Returns: boolean

@@ -230,7 +230,7 @@ const CollegeTournament = () => {
     // Add players
     const validPlayers = players.filter(p => p.first_name && p.last_name);
     if (validPlayers.length > 0) {
-      await supabase.from("college_tournament_players").insert(
+      const { error: playersErr } = await supabase.from("college_tournament_players").insert(
         validPlayers.map(p => ({
           registration_id: reg.id,
           first_name: p.first_name,
@@ -241,7 +241,17 @@ const CollegeTournament = () => {
            custom_answers: p.custom_answers,
         })) as any
       );
+      if (playersErr) {
+        toast({
+          title: "Player roster not saved",
+          description: `${playersErr.message} — your team registration was received. Please contact the organizer to add your players.`,
+          variant: "destructive",
+        });
+        setRegistering(false);
+        return;
+      }
     }
+
 
     // Send notification to admin
     try {

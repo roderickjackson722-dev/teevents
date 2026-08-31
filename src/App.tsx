@@ -66,6 +66,7 @@ import Gallery from "./pages/dashboard/Gallery";
 import Volunteers from "./pages/dashboard/Volunteers";
 import Surveys from "./pages/dashboard/Surveys";
 import Donations from "./pages/dashboard/Donations";
+import PostEventReport from "./pages/dashboard/PostEventReport";
 import Finances from "./pages/dashboard/Finances";
 import Transactions from "./pages/dashboard/Transactions";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
@@ -306,6 +307,7 @@ const App = () => (
           <Route path="/dashboard/volunteers" element={<DashboardLayout><PlanGate feature="volunteers"><Volunteers /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/surveys" element={<DashboardLayout><PlanGate feature="surveys"><Surveys /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/donations" element={<DashboardLayout><PlanGate feature="donations"><Donations /></PlanGate></DashboardLayout>} />
+          <Route path="/dashboard/post-event-report" element={<DashboardLayout><PostEventReport /></DashboardLayout>} />
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
           <Route path="/dashboard/transactions" element={<DashboardLayout><Transactions /></DashboardLayout>} />
           <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />

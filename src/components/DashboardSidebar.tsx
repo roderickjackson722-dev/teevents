@@ -97,6 +97,7 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Sponsor levels, prices, benefits, logos, and vendors" },
       { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Vendor booths: packages, registrations, documents, and hole locations" },
+      { title: "Post-Tournament Report", url: "/dashboard/post-event-report", icon: FileText, feature: null, description: "Recap of attendance, revenue, results, and sponsors (PDF/CSV)" },
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
       { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
       { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },

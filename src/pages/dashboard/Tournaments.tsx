@@ -199,7 +199,9 @@ const Tournaments = () => {
     completed: "bg-secondary/10 text-secondary",
   };
 
-  const canCreateMore = tournaments.length < 1;
+  // Organizers can always create another tournament (event re-use).
+  const canCreateMore = true;
+
 
   return (
     <div>

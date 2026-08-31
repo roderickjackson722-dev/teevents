@@ -108,7 +108,7 @@ export const verifyBrandingRemoval = createServerFn({ method: "POST" })
 
     const { data: existing } = await supabaseAdmin
       .from("tournaments")
-      .select("branding_removed")
+      .select("branding_removed, organization_id")
       .eq("id", tournamentId)
       .maybeSingle();
 
@@ -140,6 +140,18 @@ export const verifyBrandingRemoval = createServerFn({ method: "POST" })
         details: { stripe_confirmed_at: confirmedAt, branding: "disabled" },
       } as any);
     }
+
+    // Platform revenue line for the Admin → Revenue Dashboard.
+    const { recordUpgradeRevenue } = await import("./upgradeRevenue.server");
+    await recordUpgradeRevenue(supabaseAdmin, {
+      type: "branding_removal",
+      organizationId: (existing as any)?.organization_id,
+      tournamentId,
+      amountCents: session.amount_total ?? PRICE_CENTS,
+      stripeSessionId: session.id ?? data.sessionId,
+      stripePaymentIntentId: paymentIntentId,
+      userId: session.metadata?.user_id ?? context.userId,
+    });
 
     return {
       verified: true,

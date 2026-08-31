@@ -96,6 +96,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-purple-400 bg-purple-400/5",
     items: [
       { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Sponsor levels, prices, benefits, logos, and vendors" },
+      { title: "Sponsorship Tools", url: "/dashboard/sponsorship-tools", icon: Megaphone, feature: null, description: "Digital Sponsor package, outreach email template, and sponsor QR code" },
       { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Vendor booths: packages, registrations, documents, and hole locations" },
       { title: "Post-Tournament Report", url: "/dashboard/post-event-report", icon: FileText, feature: null, description: "Recap of attendance, revenue, results, and sponsors (PDF/CSV)" },
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },

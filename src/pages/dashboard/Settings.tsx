@@ -264,6 +264,37 @@ const Settings = () => {
         </p>
       </div>
 
+      {/* Start a new tournament — runs the full guided setup again */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="bg-card rounded-lg border-2 border-primary/30 p-6"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <Trophy className="h-6 w-6 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <h2 className="text-lg font-display font-semibold text-foreground">
+                Start a new tournament
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Set up another event in this workspace. We'll walk you through the full setup again —
+                event details, course, registration, sponsors, and publishing — with a fresh planning
+                checklist.
+              </p>
+            </div>
+          </div>
+          <Button asChild className="flex-shrink-0">
+            <Link to="/dashboard/tournaments?new=1">
+              Create Tournament
+              <ArrowRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
+        </div>
+      </motion.div>
+
+
+
       {/* Payout Settings Link */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}

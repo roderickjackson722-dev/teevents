@@ -539,6 +539,44 @@ export type Database = {
           },
         ]
       }
+      archived_tournaments: {
+        Row: {
+          archived_at: string
+          created_at: string
+          data: Json
+          id: string
+          organization_id: string | null
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          archived_at?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          organization_id?: string | null
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          archived_at?: string
+          created_at?: string
+          data?: Json
+          id?: string
+          organization_id?: string | null
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "archived_tournaments_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       auction_bids: {
         Row: {
           auction_id: string
@@ -11136,6 +11174,8 @@ export type Database = {
           allow_cash_registration: boolean
           allow_cover_fees: boolean
           allowed_group_sizes: number[] | null
+          archived: boolean
+          archived_at: string | null
           auction_tab_title: string | null
           branding_admin_override_at: string | null
           branding_footer_admin_override: boolean
@@ -11149,6 +11189,8 @@ export type Database = {
           branding_removed_at: string | null
           branding_removed_by: string | null
           branding_removed_by_admin: boolean
+          branding_removed_paid: boolean
+          branding_removed_paid_at: string | null
           captain_label: string | null
           confirmation_email_config: Json | null
           contact_email: string | null
@@ -11338,6 +11380,8 @@ export type Database = {
           post_event_survey_enabled: boolean
           post_event_survey_message: string | null
           post_event_survey_sent_at: string | null
+          presented_by: string | null
+          presented_by_logo_url: string | null
           printable_font: string
           printable_layout: string
           printable_logo_url: string | null
@@ -11455,6 +11499,8 @@ export type Database = {
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
           allowed_group_sizes?: number[] | null
+          archived?: boolean
+          archived_at?: string | null
           auction_tab_title?: string | null
           branding_admin_override_at?: string | null
           branding_footer_admin_override?: boolean
@@ -11468,6 +11514,8 @@ export type Database = {
           branding_removed_at?: string | null
           branding_removed_by?: string | null
           branding_removed_by_admin?: boolean
+          branding_removed_paid?: boolean
+          branding_removed_paid_at?: string | null
           captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
@@ -11657,6 +11705,8 @@ export type Database = {
           post_event_survey_enabled?: boolean
           post_event_survey_message?: string | null
           post_event_survey_sent_at?: string | null
+          presented_by?: string | null
+          presented_by_logo_url?: string | null
           printable_font?: string
           printable_layout?: string
           printable_logo_url?: string | null
@@ -11774,6 +11824,8 @@ export type Database = {
           allow_cash_registration?: boolean
           allow_cover_fees?: boolean
           allowed_group_sizes?: number[] | null
+          archived?: boolean
+          archived_at?: string | null
           auction_tab_title?: string | null
           branding_admin_override_at?: string | null
           branding_footer_admin_override?: boolean
@@ -11787,6 +11839,8 @@ export type Database = {
           branding_removed_at?: string | null
           branding_removed_by?: string | null
           branding_removed_by_admin?: boolean
+          branding_removed_paid?: boolean
+          branding_removed_paid_at?: string | null
           captain_label?: string | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
@@ -11976,6 +12030,8 @@ export type Database = {
           post_event_survey_enabled?: boolean
           post_event_survey_message?: string | null
           post_event_survey_sent_at?: string | null
+          presented_by?: string | null
+          presented_by_logo_url?: string | null
           printable_font?: string
           printable_layout?: string
           printable_logo_url?: string | null
@@ -12776,6 +12832,14 @@ export type Database = {
       admin_platform_health: { Args: never; Returns: Json }
       admin_wal_diagnostics: { Args: never; Returns: Json }
       apply_scheduled_registration_closures: { Args: never; Returns: number }
+      archive_completed_tournaments: {
+        Args: { _days?: number }
+        Returns: {
+          archived_count: number
+          clicks_deleted: number
+          snapshots_deleted: number
+        }[]
+      }
       attach_sample_viewer: {
         Args: { _org_id: string; _viewer_id: string }
         Returns: boolean

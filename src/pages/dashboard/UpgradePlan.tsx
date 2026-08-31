@@ -359,7 +359,7 @@ const UpgradeFeaturesPage = () => {
           <div className="bg-card rounded-xl border border-border p-6 mb-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-semibold text-foreground">Remove TeeVents Branding — $99</p>
+                <p className="font-semibold text-foreground">Remove TeeVents Branding — $500</p>
                 <p className="text-sm text-muted-foreground mt-1">
                   Hides the TeeVents logo and tagline from your live leaderboard and mobile scoring pages.
                   One-time fee for this tournament.
@@ -383,7 +383,7 @@ const UpgradeFeaturesPage = () => {
                 ) : (
                   <Button size="sm" onClick={handleBrandingPurchase} disabled={brandingLoading}>
                     {brandingLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                    Remove for $99
+                    Remove for $500
                   </Button>
                 )}
               </div>

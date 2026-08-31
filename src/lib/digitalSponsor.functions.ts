@@ -126,5 +126,18 @@ export const verifyDigitalSponsorPayment = createServerFn({ method: "POST" })
       })
       .eq("id", tournamentId);
 
+    // Platform revenue line for the Admin → Revenue Dashboard.
+    const { recordUpgradeRevenue } = await import("./upgradeRevenue.server");
+    await recordUpgradeRevenue(supabaseAdmin, {
+      type: "digital_sponsor",
+      organizationId: session.metadata?.organization_id as string,
+      tournamentId,
+      amountCents: session.amount_total ?? DIGITAL_SPONSOR_AMOUNT_CENTS,
+      stripeSessionId: session.id,
+      stripePaymentIntentId:
+        typeof session.payment_intent === "string" ? session.payment_intent : null,
+      userId: context.userId,
+    });
+
     return { verified: true as const, tournament_id: tournamentId };
   });

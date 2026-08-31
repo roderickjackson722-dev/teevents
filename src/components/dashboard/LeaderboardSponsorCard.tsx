@@ -175,9 +175,16 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
             The "Presented by" space on your live leaderboard and mobile scoring can be sold as a sponsorship
             opportunity. Use this space to recognize your title sponsor and increase your event revenue.
           </p>
-          <Button asChild size="sm" variant="outline" className="mt-3">
-            <Link to="/help/step-by-step">Learn More</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Button asChild size="sm">
+              <Link to={`/dashboard/sponsors?tournament=${tournamentId}`}>
+                <Users className="h-4 w-4 mr-2" /> Manage Sponsors &amp; Tiers
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/help/step-by-step">Learn More</Link>
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">

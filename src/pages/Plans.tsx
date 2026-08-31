@@ -98,10 +98,10 @@ const Plans = () => {
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Simple, Transparent Pricing – No Upfront Costs
+              Simple, Transparent Pricing
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
-              You only pay when you collect registration fees. No monthly fees. No hidden charges. No setup costs.
+              Start for free. Pay only when you get paid. No monthly fees, no hidden charges, no setup costs.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link

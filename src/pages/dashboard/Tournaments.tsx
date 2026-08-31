@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { notifyAdminNewTournament } from "@/lib/newTournamentAdminAlert.functions";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useServerFn } from "@tanstack/react-start";
 import { getUserTournaments } from "@/lib/tournamentTeam.functions";
@@ -104,7 +105,7 @@ const Tournaments = () => {
       ? `${form.course_name} Tournament`
       : `${org.orgName || "My"} Golf Tournament`;
 
-    const { error } = await supabase.from("tournaments").insert({
+    const { data: created, error } = await supabase.from("tournaments").insert({
       organization_id: org.orgId,
       title,
       date: form.date || null,
@@ -112,7 +113,12 @@ const Tournaments = () => {
       location: form.location || null,
       course_name: form.course_name || null,
       scoring_format: form.scoring_format,
-    } as any);
+    } as any).select("id").maybeSingle();
+
+    if (!error && (created as any)?.id) {
+      // Best-effort admin alert; never blocks tournament creation.
+      notifyAdminNewTournament({ data: { tournamentId: (created as any).id } }).catch(() => {});
+    }
 
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -199,7 +205,9 @@ const Tournaments = () => {
     completed: "bg-secondary/10 text-secondary",
   };
 
-  const canCreateMore = tournaments.length < 1;
+  // Organizers can always create another tournament (event re-use).
+  const canCreateMore = true;
+
 
   return (
     <div>

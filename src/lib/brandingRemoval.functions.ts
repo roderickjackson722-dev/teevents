@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const PRICE_CENTS = 9900;
+const PRICE_CENTS = 50000;
 
-/** Creates a $99 one-time Stripe Checkout session to remove TeeVents branding. */
+/** Creates a $500 one-time Stripe Checkout session to remove TeeVents branding. */
 export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string; origin?: string }) => {
@@ -112,6 +112,8 @@ export const verifyBrandingRemoval = createServerFn({ method: "POST" })
       .from("tournaments")
       .update({
         branding_removed: true,
+        branding_removed_paid: true,
+        branding_removed_paid_at: new Date().toISOString(),
         branding_removed_at: new Date().toISOString(),
         branding_removed_by: session.metadata?.user_id ?? context.userId,
         branding_payment_session_id: session.id ?? data.sessionId,

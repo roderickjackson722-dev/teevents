@@ -44,8 +44,35 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
     if (!tournamentId) return;
     (async () => {
       try {
+        // Returning from Stripe Checkout: confirm the payment right here.
+        const params = new URLSearchParams(window.location.search);
+        const sid = params.get("branding_session_id");
+        if (sid) {
+          const v: any = await verifyBrandingRemoval({ data: { sessionId: sid } });
+          if (v?.verified) {
+            setBrandingRemoved(true);
+            toast({ title: "Payment confirmed — TeeVents branding removed for this event" });
+          }
+          params.delete("branding_session_id");
+          params.delete("tournament_id");
+          const qs = params.toString();
+          window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+        } else if (params.get("branding_canceled")) {
+          toast({ title: "Checkout canceled — no charge was made" });
+          params.delete("branding_canceled");
+          params.delete("tournament_id");
+          const qs = params.toString();
+          window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+        }
+
         const res: any = await getBrandingStatus({ data: { tournamentId } });
-        setBrandingRemoved(!!res?.removed);
+        if (res?.removed) {
+          setBrandingRemoved(true);
+          return;
+        }
+        // Safety net for abandoned redirects — a completed Stripe payment still applies.
+        const rec: any = await reconcileBrandingPayment({ data: { tournamentId } });
+        setBrandingRemoved(!!rec?.removed);
       } catch {
         /* non-blocking */
       }
@@ -56,9 +83,17 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
     setBrandingLoading(true);
     try {
       const res: any = await createBrandingRemovalCheckout({
-        data: { tournamentId, origin: window.location.origin },
+        data: {
+          tournamentId,
+          origin: window.location.origin,
+          returnPath: window.location.pathname,
+        },
       });
-      if (res?.url) window.location.href = res.url;
+      if (res?.url) {
+        window.location.href = res.url;
+        return;
+      }
+      toast({ title: "Could not start checkout", variant: "destructive" });
     } catch (e: any) {
       toast({ title: "Could not start checkout", description: e?.message, variant: "destructive" });
     } finally {

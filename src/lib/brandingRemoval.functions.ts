@@ -32,6 +32,10 @@ export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
     if (!membership) throw new Error("Not authorized for this tournament");
 
     const origin = (data.origin || "https://www.teevents.golf").replace(/\/$/, "");
+    // Organizers can buy from the Leaderboard Branding card or the Upgrade page —
+    // send them back to whichever surface they started from.
+    const rawReturn = typeof data.returnPath === "string" ? data.returnPath : "";
+    const returnPath = /^\/[A-Za-z0-9\-_/]*$/.test(rawReturn) ? rawReturn : "/dashboard/upgrade";
     const body = new URLSearchParams({
       mode: "payment",
       "payment_method_types[0]": "card",

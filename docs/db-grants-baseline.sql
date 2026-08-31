@@ -1,3 +1,16 @@
+-- =====================================================================
+-- TeeVents — table-level GRANT baseline (known-good snapshot)
+-- Generated: 2026-08-31 UTC
+--
+-- PURPOSE: rollback plan. If public tournament pages break with
+-- "permission denied" or the "Just a moment" retry card, run this whole
+-- file as a migration to restore every table grant to the state captured
+-- here. It is idempotent — re-granting an existing privilege is a no-op.
+--
+-- Row Level Security policies are NOT touched by this file; grants and
+-- RLS are independent layers and both must be present.
+-- =====================================================================
+
 GRANT DELETE, INSERT, SELECT, UPDATE ON public.accommodation_custom_fields TO anon;
 GRANT DELETE, INSERT, SELECT, UPDATE ON public.accommodation_custom_fields TO authenticated;
 GRANT DELETE, INSERT, SELECT, UPDATE ON public.accommodation_custom_fields TO service_role;

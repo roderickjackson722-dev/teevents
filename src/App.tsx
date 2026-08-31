@@ -284,6 +284,7 @@ const App = () => (
           <Route path="/dashboard/players" element={<DashboardLayout><Players /></DashboardLayout>} />
           <Route path="/dashboard/budget" element={<DashboardLayout><PlanGate feature="budget"><Budget /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/sponsors" element={<DashboardLayout><Sponsors /></DashboardLayout>} />
+          <Route path="/dashboard/sponsorship-tools" element={<DashboardLayout><SponsorshipTools /></DashboardLayout>} />
           <Route path="/dashboard/store" element={<DashboardLayout><PlanGate feature="store"><Store /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/leaderboard" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
           <Route path="/dashboard/scoring" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />

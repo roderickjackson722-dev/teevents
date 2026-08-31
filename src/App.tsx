@@ -47,6 +47,7 @@ import WebpageLayout from "./pages/dashboard/WebpageLayout";
 import Players from "./pages/dashboard/Players";
 import Budget from "./pages/dashboard/Budget";
 import Sponsors from "./pages/dashboard/Sponsors";
+import SponsorshipTools from "./pages/dashboard/SponsorshipTools";
 import Store from "./pages/dashboard/Store";
 import LeaderboardScoring from "./pages/dashboard/LeaderboardScoring";
 import CRM from "./pages/dashboard/CRM";

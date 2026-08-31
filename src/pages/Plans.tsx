@@ -153,6 +153,60 @@ const Plans = () => {
       {/* 2. PRICING */}
       <section id="pricing" className="bg-primary/5 py-20">
         <div className="container mx-auto px-4 max-w-6xl">
+          {/* Four core options */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            {planCards.map((p, i) => (
+              <motion.div
+                key={p.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className={`bg-card rounded-2xl p-6 flex flex-col ${
+                  p.highlight ? "border-2 border-secondary shadow-lg" : "border border-border"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
+                    <p.icon className="h-4 w-4" />
+                  </div>
+                  {p.badge && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                      {p.badge}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-display font-bold text-foreground">{p.title}</h3>
+                <div className="mt-2 mb-1">
+                  <span className="text-4xl font-display font-bold text-foreground">{p.price}</span>
+                  <span className="text-xs ml-1.5 text-muted-foreground">{p.unit}</span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{p.desc}</p>
+                <ul className="space-y-2 mb-6">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-foreground/80">
+                      <Check className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto">
+                  <Link
+                    to={p.ctaTo}
+                    className={`block w-full text-center px-5 py-3 rounded-md font-semibold text-xs tracking-wider uppercase transition-colors ${
+                      p.highlight
+                        ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    }`}
+                  >
+                    {p.cta}
+                  </Link>
+                  <p className="text-[11px] text-muted-foreground mt-2 text-center">{p.note}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
           {/* Free tier card */}
           <div className="grid md:grid-cols-2 gap-8 items-start mb-14">
             <motion.div

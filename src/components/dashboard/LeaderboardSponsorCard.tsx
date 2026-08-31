@@ -36,7 +36,36 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [brandingRemoved, setBrandingRemoved] = useState(false);
+  const [brandingLoading, setBrandingLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (!tournamentId) return;
+    (async () => {
+      try {
+        const res: any = await getBrandingStatus({ data: { tournamentId } });
+        setBrandingRemoved(!!res?.removed);
+      } catch {
+        /* non-blocking */
+      }
+    })();
+  }, [tournamentId]);
+
+  const handleBrandingPurchase = async () => {
+    setBrandingLoading(true);
+    try {
+      const res: any = await createBrandingRemovalCheckout({
+        data: { tournamentId, origin: window.location.origin },
+      });
+      if (res?.url) window.location.href = res.url;
+    } catch (e: any) {
+      toast({ title: "Could not start checkout", description: e?.message, variant: "destructive" });
+    } finally {
+      setBrandingLoading(false);
+    }
+  };
+
 
   useEffect(() => {
     if (!tournamentId) return;

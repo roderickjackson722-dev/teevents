@@ -47,6 +47,7 @@ import WebpageLayout from "./pages/dashboard/WebpageLayout";
 import Players from "./pages/dashboard/Players";
 import Budget from "./pages/dashboard/Budget";
 import Sponsors from "./pages/dashboard/Sponsors";
+import SponsorshipTools from "./pages/dashboard/SponsorshipTools";
 import Store from "./pages/dashboard/Store";
 import LeaderboardScoring from "./pages/dashboard/LeaderboardScoring";
 import CRM from "./pages/dashboard/CRM";
@@ -283,6 +284,7 @@ const App = () => (
           <Route path="/dashboard/players" element={<DashboardLayout><Players /></DashboardLayout>} />
           <Route path="/dashboard/budget" element={<DashboardLayout><PlanGate feature="budget"><Budget /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/sponsors" element={<DashboardLayout><Sponsors /></DashboardLayout>} />
+          <Route path="/dashboard/sponsorship-tools" element={<DashboardLayout><SponsorshipTools /></DashboardLayout>} />
           <Route path="/dashboard/store" element={<DashboardLayout><PlanGate feature="store"><Store /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/leaderboard" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
           <Route path="/dashboard/scoring" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />

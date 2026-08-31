@@ -2,12 +2,87 @@ import { motion } from "framer-motion";
 import {
   Check, ArrowRight, Shield, Lock, CreditCard, Smartphone, Sparkles,
   Globe, Users, BarChart3, Award, MessageSquare, Trophy,
-  Package, Phone, Gavel, LayoutTemplate,
-
+  Package, Phone, Gavel, LayoutTemplate, BadgeDollarSign, EyeOff, Megaphone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
+
+/* ─── Four core pricing options ─── */
+const planCards = [
+  {
+    icon: Sparkles,
+    title: "Pay as You Grow",
+    price: "$0",
+    unit: "to start",
+    badge: "Most popular",
+    highlight: false,
+    desc: "5% platform fee per paid transaction. No upfront cost — you only pay when you get paid.",
+    features: [
+      "Full tournament platform included",
+      "Registration, payments & payouts",
+      "Live leaderboard & mobile scoring",
+      "No monthly subscription",
+    ],
+    cta: "Get Started",
+    ctaTo: "/get-started",
+    note: "Stripe processing fees apply.",
+  },
+  {
+    icon: BadgeDollarSign,
+    title: "Flat-Rate Pro",
+    price: "$299",
+    unit: "per event",
+    badge: "Best value",
+    highlight: true,
+    desc: "Pay once per tournament and we drop the 5% platform fee on every transaction.",
+    features: [
+      "No 5% platform fee",
+      "Unlimited transactions",
+      "Every standard feature included",
+      "One-time, per event",
+    ],
+    cta: "Buy in Dashboard",
+    ctaTo: "/dashboard/upgrade",
+    note: "Purchased per tournament.",
+  },
+  {
+    icon: EyeOff,
+    title: "Branding Removal",
+    price: "$500",
+    unit: "per event",
+    badge: null,
+    highlight: false,
+    desc: "Remove TeeVents branding from your live leaderboard and mobile scoring pages.",
+    features: [
+      "TeeVents logo & tagline hidden",
+      "Custom \"Presented by\" text and logo",
+      "Applies to leaderboard & scoring",
+      "One-time, per event",
+    ],
+    cta: "Buy in Dashboard",
+    ctaTo: "/dashboard/sponsors",
+    note: "Under Leaderboard Branding.",
+  },
+  {
+    icon: Megaphone,
+    title: "Digital Sponsor",
+    price: "$799",
+    unit: "flat fee",
+    badge: "Resell for $5k–$10k",
+    highlight: false,
+    desc: "A turnkey digital sponsorship package you can resell to a title sponsor for $5,000–$10,000.",
+    features: [
+      "Leaderboard & website placement",
+      "Logo on emails and printables",
+      "Sponsor QR code & asset kit",
+      "Outreach email template included",
+    ],
+    cta: "Buy in Dashboard",
+    ctaTo: "/dashboard/sponsorship-tools",
+    note: "Under Sponsorship Tools.",
+  },
+];
 
 /* ─── Free tier features ─── */
 const freeFeatures = [
@@ -98,10 +173,10 @@ const Plans = () => {
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Simple, Transparent Pricing – No Upfront Costs
+              Simple, Transparent Pricing
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
-              You only pay when you collect registration fees. No monthly fees. No hidden charges. No setup costs.
+              Start for free. Pay only when you get paid. No monthly fees, no hidden charges, no setup costs.
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -153,6 +228,60 @@ const Plans = () => {
       {/* 2. PRICING */}
       <section id="pricing" className="bg-primary/5 py-20">
         <div className="container mx-auto px-4 max-w-6xl">
+          {/* Four core options */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+            {planCards.map((p, i) => (
+              <motion.div
+                key={p.title}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.05 }}
+                className={`bg-card rounded-2xl p-6 flex flex-col ${
+                  p.highlight ? "border-2 border-secondary shadow-lg" : "border border-border"
+                }`}
+              >
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
+                    <p.icon className="h-4 w-4" />
+                  </div>
+                  {p.badge && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                      {p.badge}
+                    </span>
+                  )}
+                </div>
+                <h3 className="text-lg font-display font-bold text-foreground">{p.title}</h3>
+                <div className="mt-2 mb-1">
+                  <span className="text-4xl font-display font-bold text-foreground">{p.price}</span>
+                  <span className="text-xs ml-1.5 text-muted-foreground">{p.unit}</span>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{p.desc}</p>
+                <ul className="space-y-2 mb-6">
+                  {p.features.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-sm text-foreground/80">
+                      <Check className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                      <span>{f}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="mt-auto">
+                  <Link
+                    to={p.ctaTo}
+                    className={`block w-full text-center px-5 py-3 rounded-md font-semibold text-xs tracking-wider uppercase transition-colors ${
+                      p.highlight
+                        ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    }`}
+                  >
+                    {p.cta}
+                  </Link>
+                  <p className="text-[11px] text-muted-foreground mt-2 text-center">{p.note}</p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+
           {/* Free tier card */}
           <div className="grid md:grid-cols-2 gap-8 items-start mb-14">
             <motion.div

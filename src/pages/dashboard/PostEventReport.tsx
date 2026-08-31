@@ -83,7 +83,7 @@ const PostEventReport = () => {
       supabase.from("tournament_sponsors").select("name, tier, amount, is_paid").eq("tournament_id", selected),
       supabase
         .from("sponsor_registrations")
-        .select("company_name, tier_name, amount_cents, payment_status")
+        .select("company_name, tier_id, amount_cents, payment_status, sponsorship_tiers(name)")
         .eq("tournament_id", selected),
     ]).then(([regRes, txRes, scoreRes, sponRes, sponRegRes]) => {
       const registrations = (regRes.data || []) as any[];
@@ -109,7 +109,7 @@ const PostEventReport = () => {
         .filter((r) => !manualNames.has(String(r.company_name || "").trim().toLowerCase()))
         .map((r) => ({
           name: r.company_name || "Sponsor",
-          tier: r.tier_name || null,
+          tier: r.sponsorship_tiers?.name || null,
           amount: Number(r.amount_cents || 0) / 100,
           is_paid: String(r.payment_status || "").toLowerCase() === "paid",
         }));

@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
+import { sortTournamentsForPicker } from "@/lib/tournamentOrder";
 import { formatCents } from "@/lib/formatCurrency";
 import { toast } from "sonner";
 import {
@@ -64,7 +65,9 @@ const SponsorshipTools = () => {
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const t = ((data || []) as unknown as TournamentRow[]);
+        const t = sortTournamentsForPicker(
+          (data || []) as unknown as TournamentRow[],
+        ) as TournamentRow[];
         setTournaments(t);
         if (t.length > 0) setSelected(pickTournamentId(t as any));
         setLoading(false);

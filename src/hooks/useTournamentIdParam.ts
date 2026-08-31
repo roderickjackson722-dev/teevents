@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
+import { sortTournamentsForPicker } from "@/lib/tournamentOrder";
 
 const STORAGE_KEY = "selectedTournamentId";
 
@@ -87,5 +88,6 @@ export function pickTournamentId<T extends { id: string }>(list: T[], current?: 
   if (current && list.some((t) => t.id === current)) return current;
   const preferred = getPreferredTournamentId();
   if (preferred && list.some((t) => t.id === preferred)) return preferred;
-  return list[0]?.id || "";
+  // No explicit context: default to the soonest upcoming event, never a past one.
+  return sortTournamentsForPicker(list as any)[0]?.id || list[0]?.id || "";
 }

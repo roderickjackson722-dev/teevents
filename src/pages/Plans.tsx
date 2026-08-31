@@ -2,12 +2,87 @@ import { motion } from "framer-motion";
 import {
   Check, ArrowRight, Shield, Lock, CreditCard, Smartphone, Sparkles,
   Globe, Users, BarChart3, Award, MessageSquare, Trophy,
-  Package, Phone, Gavel, LayoutTemplate,
-
+  Package, Phone, Gavel, LayoutTemplate, BadgeDollarSign, EyeOff, Megaphone,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
+
+/* ─── Four core pricing options ─── */
+const planCards = [
+  {
+    icon: Sparkles,
+    title: "Pay as You Grow",
+    price: "$0",
+    unit: "to start",
+    badge: "Most popular",
+    highlight: false,
+    desc: "5% platform fee per paid transaction. No upfront cost — you only pay when you get paid.",
+    features: [
+      "Full tournament platform included",
+      "Registration, payments & payouts",
+      "Live leaderboard & mobile scoring",
+      "No monthly subscription",
+    ],
+    cta: "Get Started",
+    ctaTo: "/get-started",
+    note: "Stripe processing fees apply.",
+  },
+  {
+    icon: BadgeDollarSign,
+    title: "Flat-Rate Pro",
+    price: "$299",
+    unit: "per event",
+    badge: "Best value",
+    highlight: true,
+    desc: "Pay once per tournament and we drop the 5% platform fee on every transaction.",
+    features: [
+      "No 5% platform fee",
+      "Unlimited transactions",
+      "Every standard feature included",
+      "One-time, per event",
+    ],
+    cta: "Buy in Dashboard",
+    ctaTo: "/dashboard/upgrade",
+    note: "Purchased per tournament.",
+  },
+  {
+    icon: EyeOff,
+    title: "Branding Removal",
+    price: "$500",
+    unit: "per event",
+    badge: null,
+    highlight: false,
+    desc: "Remove TeeVents branding from your live leaderboard and mobile scoring pages.",
+    features: [
+      "TeeVents logo & tagline hidden",
+      "Custom \"Presented by\" text and logo",
+      "Applies to leaderboard & scoring",
+      "One-time, per event",
+    ],
+    cta: "Buy in Dashboard",
+    ctaTo: "/dashboard/sponsors",
+    note: "Under Leaderboard Branding.",
+  },
+  {
+    icon: Megaphone,
+    title: "Digital Sponsor",
+    price: "$799",
+    unit: "flat fee",
+    badge: "Resell for $5k–$10k",
+    highlight: false,
+    desc: "A turnkey digital sponsorship package you can resell to a title sponsor for $5,000–$10,000.",
+    features: [
+      "Leaderboard & website placement",
+      "Logo on emails and printables",
+      "Sponsor QR code & asset kit",
+      "Outreach email template included",
+    ],
+    cta: "Buy in Dashboard",
+    ctaTo: "/dashboard/sponsorship-tools",
+    note: "Under Sponsorship Tools.",
+  },
+];
 
 /* ─── Free tier features ─── */
 const freeFeatures = [

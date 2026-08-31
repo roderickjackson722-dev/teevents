@@ -6,7 +6,7 @@ const PRICE_CENTS = 50000;
 /** Creates a $500 one-time Stripe Checkout session to remove TeeVents branding. */
 export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { tournamentId: string; origin?: string }) => {
+  .inputValidator((input: { tournamentId: string; origin?: string; returnPath?: string }) => {
     if (!input?.tournamentId) throw new Error("tournamentId is required");
     return input;
   })

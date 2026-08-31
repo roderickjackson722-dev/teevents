@@ -8,8 +8,13 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { Award, Upload, Loader2, X, DollarSign, Check } from "lucide-react";
-import { createBrandingRemovalCheckout, getBrandingStatus } from "@/lib/brandingRemoval.functions";
+import { Award, Upload, Loader2, X, DollarSign, Check, Users } from "lucide-react";
+import {
+  createBrandingRemovalCheckout,
+  getBrandingStatus,
+  verifyBrandingRemoval,
+  reconcileBrandingPayment,
+} from "@/lib/brandingRemoval.functions";
 
 
 interface Props {

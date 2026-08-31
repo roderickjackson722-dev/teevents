@@ -34,6 +34,7 @@ import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes
 import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
 import { Route as ApiPublicHooksPlatformHealthMonitorRouteImport } from './routes/api/public/hooks/platform-health-monitor'
 import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
+import { Route as ApiPublicHooksTournamentPageCanaryRouteImport } from './routes/api/public/hooks/tournament-page-canary'
 
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
@@ -171,6 +172,12 @@ const ApiPublicHooksProcessScheduledEmailsRoute =
     path: '/api/public/hooks/process-scheduled-emails',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksTournamentPageCanaryRoute =
+  ApiPublicHooksTournamentPageCanaryRouteImport.update({
+    id: '/api/public/hooks/tournament-page-canary',
+    path: '/api/public/hooks/tournament-page-canary',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/$': typeof SplatRoute
@@ -198,6 +205,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
+  '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
 export interface FileRoutesByTo {
   '/$': typeof SplatRoute
@@ -225,6 +233,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
+  '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -253,6 +262,7 @@ export interface FileRoutesById {
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
+  '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -282,6 +292,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-scheduled-emails'
+    | '/api/public/hooks/tournament-page-canary'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/$'
@@ -309,6 +320,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-scheduled-emails'
+    | '/api/public/hooks/tournament-page-canary'
   id:
     | '__root__'
     | '/$'
@@ -336,6 +348,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-scheduled-emails'
+    | '/api/public/hooks/tournament-page-canary'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -363,6 +376,7 @@ export interface RootRouteChildren {
   ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
   ApiPublicHooksPlatformHealthMonitorRoute: typeof ApiPublicHooksPlatformHealthMonitorRoute
   ApiPublicHooksProcessScheduledEmailsRoute: typeof ApiPublicHooksProcessScheduledEmailsRoute
+  ApiPublicHooksTournamentPageCanaryRoute: typeof ApiPublicHooksTournamentPageCanaryRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -542,6 +556,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessScheduledEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/tournament-page-canary': {
+      id: '/api/public/hooks/tournament-page-canary'
+      path: '/api/public/hooks/tournament-page-canary'
+      fullPath: '/api/public/hooks/tournament-page-canary'
+      preLoaderRoute: typeof ApiPublicHooksTournamentPageCanaryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -587,6 +608,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksPlatformHealthMonitorRoute,
   ApiPublicHooksProcessScheduledEmailsRoute:
     ApiPublicHooksProcessScheduledEmailsRoute,
+  ApiPublicHooksTournamentPageCanaryRoute:
+    ApiPublicHooksTournamentPageCanaryRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

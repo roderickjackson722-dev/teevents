@@ -133,6 +133,19 @@ export const verifyFlatRatePayment = createServerFn({ method: "POST" })
       stripe_session_id: session.id,
     });
 
+    // Platform revenue line for the Admin → Revenue Dashboard.
+    const { recordUpgradeRevenue } = await import("./upgradeRevenue.server");
+    await recordUpgradeRevenue(supabaseAdmin, {
+      type: "flat_rate_pro",
+      organizationId: session.metadata?.organization_id as string,
+      tournamentId,
+      amountCents: session.amount_total ?? FLAT_RATE_AMOUNT_CENTS,
+      stripeSessionId: session.id,
+      stripePaymentIntentId:
+        typeof session.payment_intent === "string" ? session.payment_intent : null,
+      userId: context.userId,
+    });
+
     return { verified: true as const, tournament_id: tournamentId };
   });
 

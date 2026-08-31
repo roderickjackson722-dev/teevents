@@ -6,13 +6,17 @@ import { Badge } from "@/components/ui/badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { Loader2, DollarSign, Award, Users, Download } from "lucide-react";
+import { Loader2, DollarSign, Award, Users, Download, Percent, Sparkles } from "lucide-react";
 import { formatCents } from "@/lib/formatCurrency";
 import { getAdminRevenueOverview, type RevenueTournamentRow } from "@/lib/adminRevenue.functions";
 
 interface Totals {
   brandingFeeCents: number;
   brandingCount: number;
+  flatRateFeeCents: number;
+  flatRateCount: number;
+  digitalSponsorFeeCents: number;
+  digitalSponsorCount: number;
   sponsorGrossCents: number;
   sponsorPlatformFeeCents: number;
   otherPlatformFeeCents: number;
@@ -53,13 +57,15 @@ const AdminRevenue = () => {
   const downloadCsv = () => {
     const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     const lines = [
-      "Tournament,Organization,Date,Branding fee,Sponsor payments (gross),Sponsor platform fee,Other platform fees,Total platform revenue",
+      "Tournament,Organization,Date,Branding fee,Flat-Rate Pro,Digital Sponsor,Sponsor payments (gross),Sponsor platform fee,Other platform fees,Total platform revenue",
       ...filtered.map((r) =>
         [
           r.title,
           r.organizationName || "—",
           r.date || "—",
           formatCents(r.brandingFeeCents),
+          formatCents(r.flatRateFeeCents),
+          formatCents(r.digitalSponsorFeeCents),
           formatCents(r.sponsorGrossCents),
           formatCents(r.sponsorPlatformFeeCents),
           formatCents(r.otherPlatformFeeCents),
@@ -102,7 +108,7 @@ const AdminRevenue = () => {
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
@@ -124,6 +130,34 @@ const AdminRevenue = () => {
             <p className="text-xs text-muted-foreground mt-1">
               {totals?.brandingCount || 0} event{(totals?.brandingCount || 0) === 1 ? "" : "s"} ·{" "}
               {pct(totals?.brandingFeeCents || 0)} of revenue
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+              <Percent className="h-4 w-4" /> Flat-Rate Pro ($299)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{formatCents(totals?.flatRateFeeCents || 0)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {totals?.flatRateCount || 0} event{(totals?.flatRateCount || 0) === 1 ? "" : "s"} ·{" "}
+              {pct(totals?.flatRateFeeCents || 0)} of revenue
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
+              <Sparkles className="h-4 w-4" /> Digital Sponsor ($799)
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-2xl font-bold">{formatCents(totals?.digitalSponsorFeeCents || 0)}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {totals?.digitalSponsorCount || 0} event{(totals?.digitalSponsorCount || 0) === 1 ? "" : "s"} ·{" "}
+              {pct(totals?.digitalSponsorFeeCents || 0)} of revenue
             </p>
           </CardContent>
         </Card>
@@ -177,6 +211,8 @@ const AdminRevenue = () => {
               <TableRow>
                 <TableHead>Tournament</TableHead>
                 <TableHead>Branding fee</TableHead>
+                <TableHead>Flat-Rate Pro</TableHead>
+                <TableHead>Digital Sponsor</TableHead>
                 <TableHead>Sponsor payments</TableHead>
                 <TableHead>Sponsor platform fee</TableHead>
                 <TableHead>Other platform fees</TableHead>
@@ -187,7 +223,7 @@ const AdminRevenue = () => {
             <TableBody>
               {filtered.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                  <TableCell colSpan={9} className="text-center text-muted-foreground py-8">
                     No revenue recorded yet.
                   </TableCell>
                 </TableRow>
@@ -205,6 +241,20 @@ const AdminRevenue = () => {
                       <span className="font-medium">{formatCents(r.brandingFeeCents)}</span>
                     ) : r.brandingSource === "admin" ? (
                       <Badge variant="secondary">Admin comp</Badge>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {r.flatRateFeeCents > 0 ? (
+                      <span className="font-medium">{formatCents(r.flatRateFeeCents)}</span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {r.digitalSponsorFeeCents > 0 ? (
+                      <span className="font-medium">{formatCents(r.digitalSponsorFeeCents)}</span>
                     ) : (
                       <span className="text-muted-foreground">—</span>
                     )}

@@ -32,6 +32,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Plus, Trophy, MapPin, Calendar, Loader2, Globe, Lock, Users, Trash2, Pencil, ClipboardCheck, ArrowRight } from "lucide-react";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
+import { sortTournamentsForPicker, isPastTournament } from "@/lib/tournamentOrder";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import EventDetailsForm from "@/components/dashboard/EventDetailsForm";
 import CourseDetails from "@/pages/dashboard/CourseDetails";
@@ -75,13 +76,18 @@ const Tournaments = () => {
       .select("id, title, date, end_date, location, course_name, status, max_players, registration_open, scoring_format")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false });
-    setTournaments(data || []);
+    setTournaments(sortTournamentsForPicker((data || []) as any) as any);
     setLoading(false);
   };
 
   useEffect(() => {
     fetchTournaments();
   }, [org]);
+
+  // Deep link from Settings → "Start a new tournament" opens the create dialog.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get("new") === "1") setDialogOpen(true);
+  }, []);
 
   // Tournaments this user only has team-member access to (not owned by their org).
   useEffect(() => {
@@ -123,10 +129,16 @@ const Tournaments = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
-      toast({ title: "Tournament created!", description: "Your planning checklist has been generated." });
+      toast({ title: "Tournament created!", description: "Let's walk through the setup step by step." });
       setForm({ date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
       setDialogOpen(false);
       fetchTournaments();
+      // Walk the organizer through the full setup for the new event.
+      const newId = (created as any)?.id;
+      if (newId) {
+        window.location.href = buildLink(`/dashboard/setup-checklist?tournament_id=${newId}`);
+        return;
+      }
     }
     setCreating(false);
   };
@@ -462,9 +474,16 @@ const Tournaments = () => {
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                <span className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${statusColors[t.status] || statusColors.draft}`}>
-                  {t.status}
-                </span>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {isPastTournament(t) && (
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                      Past event
+                    </span>
+                  )}
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${statusColors[t.status] || statusColors.draft}`}>
+                    {t.status}
+                  </span>
+                </div>
               </div>
               {t.course_name && (
                 <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-1">

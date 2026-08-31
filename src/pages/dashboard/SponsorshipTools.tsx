@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,8 +11,12 @@ import {
 import {
   Award, CheckCircle2, Copy, Loader2, Mail, Megaphone, QrCode, Sparkles,
 } from "lucide-react";
-import { QRCodeSVG } from "qrcode.react";
+import { QRCodeSVG, QRCodeCanvas } from "qrcode.react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Download } from "lucide-react";
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
+import { sortTournamentsForPicker } from "@/lib/tournamentOrder";
 import { formatCents } from "@/lib/formatCurrency";
 import { toast } from "sonner";
 import {
@@ -25,7 +29,9 @@ interface TournamentRow {
   id: string;
   title: string;
   date: string | null;
+  end_date?: string | null;
   slug: string | null;
+  leaderboard_sponsor_name?: string | null;
 }
 
 type Status = {
@@ -53,6 +59,8 @@ const SponsorshipTools = () => {
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<Status | null>(null);
   const [purchasing, setPurchasing] = useState(false);
+  const [sponsorName, setSponsorName] = useState("");
+  const qrRef = useRef<HTMLDivElement>(null);
 
   const tournament = tournaments.find((t) => t.id === selected) || null;
 
@@ -60,11 +68,13 @@ const SponsorshipTools = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, date, slug")
+      .select("id, title, date, end_date, slug, leaderboard_sponsor_name")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const t = ((data || []) as unknown as TournamentRow[]);
+        const t = sortTournamentsForPicker(
+          (data || []) as unknown as TournamentRow[],
+        ) as TournamentRow[];
         setTournaments(t);
         if (t.length > 0) setSelected(pickTournamentId(t as any));
         setLoading(false);
@@ -79,6 +89,12 @@ const SponsorshipTools = () => {
       toast.error(e?.message || "Could not load the Digital Sponsor status");
     }
   };
+
+  useEffect(() => {
+    const t = tournaments.find((x) => x.id === selected);
+    setSponsorName(t?.leaderboard_sponsor_name || "");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selected, tournaments]);
 
   useEffect(() => {
     if (selected) loadStatus(selected);
@@ -176,6 +192,101 @@ Thank you for considering it,
 [Title], [Organization]
 [Phone] · [Email]`;
   }, [tournament, eventUrl]);
+
+
+  /** Downloads a canvas as a PNG file. */
+  const downloadCanvas = (canvas: HTMLCanvasElement, filename: string) => {
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    }, "image/png");
+  };
+
+  const brandName = sponsorName.trim() || "[Sponsor Name]";
+  const eventName = tournament?.title || "Your Tournament";
+  const slugPart = (tournament?.slug || "event").replace(/[^a-z0-9-]/gi, "-").toLowerCase();
+
+  /** 1200x300 leaderboard banner: "Presented by <Sponsor>" over the event name. */
+  const downloadBanner = () => {
+    const c = document.createElement("canvas");
+    c.width = 1200;
+    c.height = 300;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    const grad = ctx.createLinearGradient(0, 0, 1200, 300);
+    grad.addColorStop(0, "#1a5c38");
+    grad.addColorStop(1, "#0f3d25");
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1200, 300);
+    ctx.fillStyle = "#F5A623";
+    ctx.fillRect(0, 0, 1200, 10);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#F5A623";
+    ctx.font = "600 28px Georgia, serif";
+    ctx.fillText("PRESENTED BY", 600, 110);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 68px Georgia, serif";
+    ctx.fillText(brandName, 600, 185);
+    ctx.fillStyle = "rgba(255,255,255,0.75)";
+    ctx.font = "400 26px Georgia, serif";
+    ctx.fillText(eventName, 600, 240);
+    downloadCanvas(c, `${slugPart}-sponsor-banner.png`);
+  };
+
+  /** 800x800 square sponsor tile for social posts and signage. */
+  const downloadTile = () => {
+    const c = document.createElement("canvas");
+    c.width = 800;
+    c.height = 800;
+    const ctx = c.getContext("2d");
+    if (!ctx) return;
+    ctx.fillStyle = "#1a5c38";
+    ctx.fillRect(0, 0, 800, 800);
+    ctx.strokeStyle = "#F5A623";
+    ctx.lineWidth = 12;
+    ctx.strokeRect(34, 34, 732, 732);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#F5A623";
+    ctx.font = "600 26px Georgia, serif";
+    ctx.fillText("PRESENTING SPONSOR", 400, 300);
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 60px Georgia, serif";
+    ctx.fillText(brandName, 400, 390);
+    ctx.fillStyle = "rgba(255,255,255,0.8)";
+    ctx.font = "400 28px Georgia, serif";
+    ctx.fillText(eventName, 400, 460);
+    if (tournament?.date) {
+      ctx.font = "400 24px Georgia, serif";
+      ctx.fillText(
+        new Date(tournament.date + "T12:00:00").toLocaleDateString("en-US", {
+          month: "long", day: "numeric", year: "numeric",
+        }),
+        400,
+        505,
+      );
+    }
+    downloadCanvas(c, `${slugPart}-sponsor-tile.png`);
+  };
+
+  /** The rendered QR canvas, exported as a PNG. */
+  const downloadQr = () => {
+    const canvas = qrRef.current?.querySelector("canvas");
+    if (!canvas) {
+      toast.error("QR code is still rendering — try again in a second");
+      return;
+    }
+    downloadCanvas(canvas as HTMLCanvasElement, `${slugPart}-sponsor-qr.png`);
+  };
+
+  const downloadAll = () => {
+    downloadBanner();
+    setTimeout(downloadTile, 400);
+    setTimeout(downloadQr, 800);
+  };
 
   const copy = async (text: string, label: string) => {
     try {
@@ -302,19 +413,48 @@ Thank you for considering it,
               <div className="bg-white p-4 rounded-lg border inline-block">
                 <QRCodeSVG value={eventUrl} size={168} level="M" />
               </div>
-              <div className="space-y-3 text-sm">
+              <div className="space-y-4 text-sm">
                 <p className="text-muted-foreground">
                   Put this QR code on sponsor signage, social posts, and printed material. It points to{" "}
                   <span className="font-mono text-xs text-foreground">{eventUrl}</span>.
                 </p>
+                <div className="max-w-xs">
+                  <Label htmlFor="sponsorName" className="text-xs">Sponsor name on the assets</Label>
+                  <Input
+                    id="sponsorName"
+                    value={sponsorName}
+                    onChange={(e) => setSponsorName(e.target.value)}
+                    placeholder="e.g. Redstone Insurance Group"
+                    className="mt-1"
+                  />
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  <Button variant="outline" onClick={downloadBanner}>
+                    <Download className="h-4 w-4 mr-2" /> Leaderboard banner (1200x300)
+                  </Button>
+                  <Button variant="outline" onClick={downloadTile}>
+                    <Download className="h-4 w-4 mr-2" /> Sponsor tile (800x800)
+                  </Button>
+                  <Button variant="outline" onClick={downloadQr}>
+                    <Download className="h-4 w-4 mr-2" /> QR code PNG
+                  </Button>
+                  <Button onClick={downloadAll}>
+                    <Download className="h-4 w-4 mr-2" /> Download all assets
+                  </Button>
+                </div>
                 <ul className="space-y-1.5 text-foreground/90">
-                  <li>• Upload your sponsor's logo under Sponsors → Leaderboard Branding.</li>
+                  <li>• Hand these three files straight to your sponsor as their placement proof.</li>
+                  <li>• Upload your sponsor's own logo under Sponsors → Leaderboard Branding.</li>
                   <li>• Sponsor logos flow into printables, cart signs, and confirmation emails.</li>
                   <li>• Send the post-event recap report as proof of impressions.</li>
                 </ul>
                 <Button variant="outline" onClick={() => copy(eventUrl, "Event link")}>
                   <Copy className="h-4 w-4 mr-2" /> Copy Event Link
                 </Button>
+              </div>
+              {/* Hidden canvas source for the QR PNG export */}
+              <div ref={qrRef} className="hidden">
+                <QRCodeCanvas value={eventUrl} size={800} level="M" includeMargin />
               </div>
             </CardContent>
           </Card>

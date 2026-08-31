@@ -6,7 +6,7 @@ const PRICE_CENTS = 50000;
 /** Creates a $500 one-time Stripe Checkout session to remove TeeVents branding. */
 export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { tournamentId: string; origin?: string }) => {
+  .inputValidator((input: { tournamentId: string; origin?: string; returnPath?: string }) => {
     if (!input?.tournamentId) throw new Error("tournamentId is required");
     return input;
   })
@@ -32,6 +32,10 @@ export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
     if (!membership) throw new Error("Not authorized for this tournament");
 
     const origin = (data.origin || "https://www.teevents.golf").replace(/\/$/, "");
+    // Organizers can buy from the Leaderboard Branding card or the Upgrade page —
+    // send them back to whichever surface they started from.
+    const rawReturn = typeof data.returnPath === "string" ? data.returnPath : "";
+    const returnPath = /^\/[A-Za-z0-9\-_/]*$/.test(rawReturn) ? rawReturn : "/dashboard/upgrade";
     const body = new URLSearchParams({
       mode: "payment",
       "payment_method_types[0]": "card",
@@ -40,8 +44,8 @@ export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
       "line_items[0][price_data][unit_amount]": String(PRICE_CENTS),
       "line_items[0][price_data][product_data][name]": "TeeVents – Remove TeeVents Branding",
       "line_items[0][price_data][product_data][description]": `For: ${(t as any).title}`,
-      success_url: `${origin}/dashboard/upgrade?branding_session_id={CHECKOUT_SESSION_ID}&tournament_id=${t.id}`,
-      cancel_url: `${origin}/dashboard/upgrade?branding_canceled=1&tournament_id=${t.id}`,
+      success_url: `${origin}${returnPath}?branding_session_id={CHECKOUT_SESSION_ID}&tournament_id=${t.id}`,
+      cancel_url: `${origin}${returnPath}?branding_canceled=1&tournament_id=${t.id}`,
       "metadata[type]": "branding_removal",
       "metadata[tournament_id]": String(t.id),
       "metadata[user_id]": String(context.userId),
@@ -230,3 +234,89 @@ export const getBrandingStatus = createServerFn({ method: "POST" })
     };
   });
 
+
+/**
+ * Safety net for the Stripe redirect: if an organizer closes the tab before
+ * returning from Checkout, the payment is still real. This re-checks every
+ * Checkout session we started for the tournament and applies the removal when
+ * Stripe reports it paid. Called on mount by the Leaderboard Branding card.
+ */
+export const reconcileBrandingPayment = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { tournamentId: string }) => {
+    if (!input?.tournamentId) throw new Error("tournamentId is required");
+    return input;
+  })
+  .handler(async ({ data, context }: any) => {
+    const stripeKey = process.env["STRIPE_SECRET_KEY"];
+    if (!stripeKey) return { removed: false, reconciled: false };
+
+    const { data: t } = await context.supabase
+      .from("tournaments")
+      .select("id, branding_removed")
+      .eq("id", data.tournamentId)
+      .maybeSingle();
+    if (!t) throw new Error("Tournament not found");
+    if ((t as any).branding_removed) return { removed: true, reconciled: false };
+
+    const { data: started } = await context.supabase
+      .from("branding_audit_log")
+      .select("stripe_session_id, created_at")
+      .eq("tournament_id", data.tournamentId)
+      .eq("action", "checkout_started")
+      .order("created_at", { ascending: false })
+      .limit(5);
+    const sessionIds = (started || [])
+      .map((r: any) => r.stripe_session_id)
+      .filter((id: any): id is string => typeof id === "string" && id.length > 0);
+    if (sessionIds.length === 0) return { removed: false, reconciled: false };
+
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    for (const sessionId of sessionIds) {
+      const resp = await fetch(
+        `https://api.stripe.com/v1/checkout/sessions/${sessionId}?expand[]=payment_intent.latest_charge`,
+        { headers: { Authorization: `Bearer ${stripeKey}` } },
+      );
+      if (!resp.ok) continue;
+      const session: any = await resp.json();
+      if (session.payment_status !== "paid") continue;
+
+      const pi = typeof session.payment_intent === "object" ? session.payment_intent : null;
+      const charge = pi && typeof pi.latest_charge === "object" ? pi.latest_charge : null;
+      const receiptUrl: string | null = charge?.receipt_url ?? null;
+      const paymentIntentId: string | null =
+        pi?.id ?? (typeof session.payment_intent === "string" ? session.payment_intent : null);
+
+      await supabaseAdmin
+        .from("tournaments")
+        .update({
+          branding_removed: true,
+          branding_removed_paid: true,
+          branding_removed_paid_at: new Date().toISOString(),
+          branding_removed_at: new Date().toISOString(),
+          branding_removed_by: session.metadata?.user_id ?? context.userId,
+          branding_payment_session_id: session.id ?? sessionId,
+          branding_payment_intent_id: paymentIntentId,
+          branding_receipt_url: receiptUrl,
+        } as any)
+        .eq("id", data.tournamentId);
+
+      await supabaseAdmin.from("branding_audit_log").insert({
+        tournament_id: data.tournamentId,
+        actor_id: session.metadata?.user_id ?? context.userId,
+        actor_email: session.customer_details?.email ?? context.claims?.email ?? null,
+        actor_type: "organizer",
+        action: "payment_confirmed",
+        amount_cents: session.amount_total ?? PRICE_CENTS,
+        stripe_session_id: session.id ?? sessionId,
+        stripe_payment_intent_id: paymentIntentId,
+        receipt_url: receiptUrl,
+        details: { branding: "disabled", source: "reconcile" },
+      } as any);
+
+      return { removed: true, reconciled: true, receiptUrl };
+    }
+
+    return { removed: false, reconciled: false };
+  });

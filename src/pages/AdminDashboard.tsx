@@ -18,6 +18,7 @@ import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminSignups from "@/components/admin/AdminSignups";
 import AdminPasswordResetHelper from "@/components/admin/AdminPasswordResetHelper";
 import AdminAccounting from "@/components/admin/AdminAccounting";
+import AdminRevenue from "@/components/admin/AdminRevenue";
 import AdminTransactions from "@/components/admin/AdminTransactions";
 import AdminRoutingMonitor from "@/components/admin/AdminRoutingMonitor";
 import AdminEmailScripts from "@/components/admin/AdminEmailScripts";
@@ -61,7 +62,7 @@ const AdminDashboard = () => {
     if (t === "signups") return "signups" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "notification-center" | "password-reset" | "link-health" | "sample-requests" | "lead-magnets">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "revenue" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "notification-center" | "password-reset" | "link-health" | "sample-requests" | "lead-magnets">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
   const { count: unreadNotifications, refresh: refreshNotificationCount } = useAdminNotificationCount();
   const [linkFailures, setLinkFailures] = useState(0);
@@ -998,6 +999,7 @@ const AdminDashboard = () => {
                   ["sample-requests", "Sample Requests", FileText],
                   ["lead-magnets", "Content Hub", BookOpen],
                   ["accounting", "Accounting", DollarSign],
+                  ["revenue", "Revenue Dashboard", DollarSign],
                   ["group-trips", "Group Trips", Plane],
                    ["feature-flags", "Feature Flags", KeyRound],
                    ["feature-guide", "Feature Guide PDF", FileText],
@@ -2094,6 +2096,7 @@ const AdminDashboard = () => {
 
           {/* Accounting Tab */}
           {activeTab === "accounting" && <AdminAccounting />}
+          {activeTab === "revenue" && <AdminRevenue />}
 
           {/* Feature Flags Tab */}
           {activeTab === "feature-flags" && <AdminFeatureFlags />}

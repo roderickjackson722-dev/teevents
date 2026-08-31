@@ -8,8 +8,13 @@ import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { Award, Upload, Loader2, X, DollarSign, Check } from "lucide-react";
-import { createBrandingRemovalCheckout, getBrandingStatus } from "@/lib/brandingRemoval.functions";
+import { Award, Upload, Loader2, X, DollarSign, Check, Users } from "lucide-react";
+import {
+  createBrandingRemovalCheckout,
+  getBrandingStatus,
+  verifyBrandingRemoval,
+  reconcileBrandingPayment,
+} from "@/lib/brandingRemoval.functions";
 
 
 interface Props {
@@ -44,8 +49,35 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
     if (!tournamentId) return;
     (async () => {
       try {
+        // Returning from Stripe Checkout: confirm the payment right here.
+        const params = new URLSearchParams(window.location.search);
+        const sid = params.get("branding_session_id");
+        if (sid) {
+          const v: any = await verifyBrandingRemoval({ data: { sessionId: sid } });
+          if (v?.verified) {
+            setBrandingRemoved(true);
+            toast({ title: "Payment confirmed — TeeVents branding removed for this event" });
+          }
+          params.delete("branding_session_id");
+          params.delete("tournament_id");
+          const qs = params.toString();
+          window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+        } else if (params.get("branding_canceled")) {
+          toast({ title: "Checkout canceled — no charge was made" });
+          params.delete("branding_canceled");
+          params.delete("tournament_id");
+          const qs = params.toString();
+          window.history.replaceState({}, "", window.location.pathname + (qs ? `?${qs}` : ""));
+        }
+
         const res: any = await getBrandingStatus({ data: { tournamentId } });
-        setBrandingRemoved(!!res?.removed);
+        if (res?.removed) {
+          setBrandingRemoved(true);
+          return;
+        }
+        // Safety net for abandoned redirects — a completed Stripe payment still applies.
+        const rec: any = await reconcileBrandingPayment({ data: { tournamentId } });
+        setBrandingRemoved(!!rec?.removed);
       } catch {
         /* non-blocking */
       }
@@ -56,9 +88,17 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
     setBrandingLoading(true);
     try {
       const res: any = await createBrandingRemovalCheckout({
-        data: { tournamentId, origin: window.location.origin },
+        data: {
+          tournamentId,
+          origin: window.location.origin,
+          returnPath: window.location.pathname,
+        },
       });
-      if (res?.url) window.location.href = res.url;
+      if (res?.url) {
+        window.location.href = res.url;
+        return;
+      }
+      toast({ title: "Could not start checkout", variant: "destructive" });
     } catch (e: any) {
       toast({ title: "Could not start checkout", description: e?.message, variant: "destructive" });
     } finally {
@@ -135,9 +175,16 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
             The "Presented by" space on your live leaderboard and mobile scoring can be sold as a sponsorship
             opportunity. Use this space to recognize your title sponsor and increase your event revenue.
           </p>
-          <Button asChild size="sm" variant="outline" className="mt-3">
-            <Link to="/help/step-by-step">Learn More</Link>
-          </Button>
+          <div className="flex flex-wrap gap-2 mt-3">
+            <Button asChild size="sm">
+              <Link to={`/dashboard/sponsors?tournament=${tournamentId}`}>
+                <Users className="h-4 w-4 mr-2" /> Manage Sponsors &amp; Tiers
+              </Link>
+            </Button>
+            <Button asChild size="sm" variant="outline">
+              <Link to="/help/step-by-step">Learn More</Link>
+            </Button>
+          </div>
         </div>
 
         <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">

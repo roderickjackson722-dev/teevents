@@ -13,15 +13,16 @@ import { Loader2, FileText, Download, Users, DollarSign, Trophy, Award } from "l
 import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 import { formatCents } from "@/lib/formatCurrency";
 import { toast } from "sonner";
+import { buildLeaderboard } from "@/lib/liveLeaderboardRows";
 
 interface TournamentRow {
   id: string;
   title: string;
-  tournament_date: string | null;
+  date: string | null;
   course_name: string | null;
-  format: string | null;
-  holes: number | null;
+  scoring_format: string | null;
   course_par: number | null;
+  hole_pars: number[] | null;
 }
 
 interface LeaderRow {
@@ -47,6 +48,9 @@ const PostEventReport = () => {
   const [tx, setTx] = useState<any[]>([]);
   const [leaders, setLeaders] = useState<LeaderRow[]>([]);
   const [sponsors, setSponsors] = useState<SponsorRow[]>([]);
+  const [sponsorRegs, setSponsorRegs] = useState<{ count: number; pledged: number; collected: number }>({
+    count: 0, pledged: 0, collected: 0,
+  });
 
   const tournament = tournaments.find((t) => t.id === selected) || null;
 
@@ -54,7 +58,7 @@ const PostEventReport = () => {
     if (!org) return;
     supabase
       .from("tournaments")
-      .select("id, title, tournament_date, course_name, format, holes, course_par")
+      .select("id, title, date, course_name, scoring_format, course_par, hole_pars")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
@@ -68,16 +72,48 @@ const PostEventReport = () => {
   useEffect(() => {
     if (!selected || !org) return;
     setLoading(true);
+    const t = tournaments.find((x) => x.id === selected) || null;
     Promise.all([
       supabase.from("tournament_registrations").select("*").eq("tournament_id", selected),
       supabase.from("platform_transactions").select("*").eq("tournament_id", selected),
-      supabase.from("tournament_scores").select("registration_id, strokes").eq("tournament_id", selected),
+      supabase
+        .from("tournament_scores")
+        .select("registration_id, hole_number, strokes, round_number")
+        .eq("tournament_id", selected),
       supabase.from("tournament_sponsors").select("name, tier, amount, is_paid").eq("tournament_id", selected),
-    ]).then(([regRes, txRes, scoreRes, sponRes]) => {
+      supabase
+        .from("sponsor_registrations")
+        .select("company_name, tier_id, amount_cents, payment_status, sponsorship_tiers(name)")
+        .eq("tournament_id", selected),
+    ]).then(([regRes, txRes, scoreRes, sponRes, sponRegRes]) => {
       const registrations = (regRes.data || []) as any[];
       setRegs(registrations);
       setTx((txRes.data || []) as any[]);
-      setSponsors((sponRes.data || []) as unknown as SponsorRow[]);
+
+      // Sponsors: manual roster plus anything that came through public sponsor registration.
+      const manual = (sponRes.data || []) as unknown as SponsorRow[];
+      const sponsorRegistrations = (sponRegRes.data || []) as any[];
+      const active = sponsorRegistrations.filter(
+        (r) => !["refunded", "cancelled", "failed"].includes(String(r.payment_status || "").toLowerCase()),
+      );
+      setSponsorRegs({
+        count: active.length,
+        pledged: active.reduce((n, r) => n + Number(r.amount_cents || 0), 0) / 100,
+        collected:
+          active
+            .filter((r) => String(r.payment_status || "").toLowerCase() === "paid")
+            .reduce((n, r) => n + Number(r.amount_cents || 0), 0) / 100,
+      });
+      const manualNames = new Set(manual.map((m) => String(m.name || "").trim().toLowerCase()));
+      const fromRegs: SponsorRow[] = active
+        .filter((r) => !manualNames.has(String(r.company_name || "").trim().toLowerCase()))
+        .map((r) => ({
+          name: r.company_name || "Sponsor",
+          tier: r.sponsorship_tiers?.name || null,
+          amount: Number(r.amount_cents || 0) / 100,
+          is_paid: String(r.payment_status || "").toLowerCase() === "paid",
+        }));
+      setSponsors([...manual, ...fromRegs]);
 
       const nameById = new Map<string, string>();
       registrations.forEach((r) => {
@@ -86,22 +122,31 @@ const PostEventReport = () => {
           r.player_name || [r.first_name, r.last_name].filter(Boolean).join(" ") || r.email || "Player",
         );
       });
-      const agg = new Map<string, { strokes: number; holes: number }>();
-      ((scoreRes.data || []) as any[]).forEach((s) => {
-        const cur = agg.get(s.registration_id) || { strokes: 0, holes: 0 };
-        cur.strokes += Number(s.strokes) || 0;
-        cur.holes += 1;
-        agg.set(s.registration_id, cur);
-      });
-      const par = tournaments.find((t) => t.id === selected)?.course_par ?? null;
-      const rows: LeaderRow[] = Array.from(agg.entries())
-        .map(([id, v]) => ({
-          name: nameById.get(id) || "Player",
-          holesPlayed: v.holes,
-          strokes: v.strokes,
-          toPar: par != null ? v.strokes - par : null,
-        }))
-        .sort((a, b) => a.strokes - b.strokes);
+      // Use the same engine as the live leaderboard so standings match exactly.
+      const scoresData = ((scoreRes.data || []) as any[]).map((s2) => ({
+        ...s2,
+        tournament_registrations: (() => {
+          const reg = registrations.find((r) => r.id === s2.registration_id);
+          return reg
+            ? {
+                first_name: reg.first_name,
+                last_name: reg.last_name,
+                group_number: reg.group_number ?? null,
+                team_name: reg.team_name ?? null,
+              }
+            : null;
+        })(),
+      }));
+      const built = buildLeaderboard(scoresData, {
+        scoring_format: t?.scoring_format || "stroke_play",
+        course_par: t?.course_par || 72,
+      } as any, t?.hole_pars || null);
+      const rows: LeaderRow[] = built.map((r: any) => ({
+        name: r.name || nameById.get(r.registration_id) || "Player",
+        holesPlayed: Number(r.thru) || 0,
+        strokes: Number(r.total) || 0,
+        toPar: r.parPlayed != null ? Number(r.total) - Number(r.parPlayed) : null,
+      }));
       setLeaders(rows);
       setLoading(false);
     });
@@ -135,9 +180,9 @@ const PostEventReport = () => {
     const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
     lines.push("Section,Metric,Value");
     lines.push(["Overview", "Tournament", tournament.title].map(esc).join(","));
-    lines.push(["Overview", "Date", tournament.tournament_date || "—"].map(esc).join(","));
+    lines.push(["Overview", "Date", tournament.date || "—"].map(esc).join(","));
     lines.push(["Overview", "Course", tournament.course_name || "—"].map(esc).join(","));
-    lines.push(["Overview", "Format", tournament.format || "—"].map(esc).join(","));
+    lines.push(["Overview", "Format", tournament.scoring_format || "—"].map(esc).join(","));
     lines.push(["Registration", "Total registrations", registration.total].map(esc).join(","));
     lines.push(["Registration", "Paid registrations", registration.paidCount].map(esc).join(","));
     lines.push(["Registration", "Unpaid registrations", registration.unpaid].map(esc).join(","));
@@ -154,6 +199,10 @@ const PostEventReport = () => {
     leaders.forEach((l, i) =>
       lines.push([i + 1, l.name, l.holesPlayed, l.strokes, l.toPar ?? "—"].map(esc).join(",")),
     );
+    lines.push("");
+    lines.push(["Sponsors", "Registrations", sponsorRegs.count].map(esc).join(","));
+    lines.push(["Sponsors", "Pledged", `$${sponsorRegs.pledged.toLocaleString()}`].map(esc).join(","));
+    lines.push(["Sponsors", "Collected", `$${sponsorRegs.collected.toLocaleString()}`].map(esc).join(","));
     lines.push("");
     lines.push("Sponsor,Tier,Amount,Paid");
     sponsors.forEach((s) =>
@@ -183,10 +232,10 @@ const PostEventReport = () => {
       };
       line("Post-Tournament Report", 18, true);
       line(tournament.title, 13, true);
-      line(`${tournament.tournament_date || "Date TBD"} · ${tournament.course_name || "Course TBD"}`);
+      line(`${tournament.date || "Date TBD"} · ${tournament.course_name || "Course TBD"}`);
       y += 8;
       line("Event Overview", 13, true);
-      line(`Format: ${tournament.format || "—"}   Holes: ${tournament.holes ?? "—"}   Par: ${tournament.course_par ?? "—"}`);
+      line(`Format: ${tournament.scoring_format || "—"}   Par: ${tournament.course_par ?? "—"}`);
       y += 8;
       line("Registration", 13, true);
       line(`Total registrations: ${registration.total}`);
@@ -257,10 +306,10 @@ const PostEventReport = () => {
           <Card>
             <CardHeader><CardTitle className="text-base">Event Overview</CardTitle></CardHeader>
             <CardContent className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-              <div><p className="text-muted-foreground text-xs">Date</p><p className="font-semibold">{tournament.tournament_date || "—"}</p></div>
+              <div><p className="text-muted-foreground text-xs">Date</p><p className="font-semibold">{tournament.date || "—"}</p></div>
               <div><p className="text-muted-foreground text-xs">Course</p><p className="font-semibold">{tournament.course_name || "—"}</p></div>
-              <div><p className="text-muted-foreground text-xs">Format</p><p className="font-semibold">{tournament.format || "—"}</p></div>
-              <div><p className="text-muted-foreground text-xs">Holes / Par</p><p className="font-semibold">{tournament.holes ?? "—"} / {tournament.course_par ?? "—"}</p></div>
+              <div><p className="text-muted-foreground text-xs">Format</p><p className="font-semibold">{tournament.scoring_format || "—"}</p></div>
+              <div><p className="text-muted-foreground text-xs">Course Par</p><p className="font-semibold">{tournament.course_par ?? "—"}</p></div>
             </CardContent>
           </Card>
 
@@ -340,6 +389,12 @@ const PostEventReport = () => {
                     </TableBody>
                   </Table>
                   <p className="text-sm mt-3 font-semibold">Total sponsorship value: ${sponsorTotal.toLocaleString()}</p>
+                  {sponsorRegs.count > 0 && (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {sponsorRegs.count} sponsor registration{sponsorRegs.count === 1 ? "" : "s"} · pledged $
+                      {sponsorRegs.pledged.toLocaleString()} · collected ${sponsorRegs.collected.toLocaleString()}
+                    </p>
+                  )}
                 </>
               )}
             </CardContent>

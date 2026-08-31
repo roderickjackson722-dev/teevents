@@ -11265,6 +11265,9 @@ export type Database = {
           demo_test_converted_at: string | null
           description: string | null
           description_html: string | null
+          digital_sponsor_amount_cents: number | null
+          digital_sponsor_purchased: boolean
+          digital_sponsor_purchased_at: string | null
           display_order: number
           donation_allow_custom: boolean
           donation_custom_label: string | null
@@ -11590,6 +11593,9 @@ export type Database = {
           demo_test_converted_at?: string | null
           description?: string | null
           description_html?: string | null
+          digital_sponsor_amount_cents?: number | null
+          digital_sponsor_purchased?: boolean
+          digital_sponsor_purchased_at?: string | null
           display_order?: number
           donation_allow_custom?: boolean
           donation_custom_label?: string | null
@@ -11915,6 +11921,9 @@ export type Database = {
           demo_test_converted_at?: string | null
           description?: string | null
           description_html?: string | null
+          digital_sponsor_amount_cents?: number | null
+          digital_sponsor_purchased?: boolean
+          digital_sponsor_purchased_at?: string | null
           display_order?: number
           donation_allow_custom?: boolean
           donation_custom_label?: string | null

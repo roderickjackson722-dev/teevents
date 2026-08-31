@@ -474,9 +474,16 @@ const Tournaments = () => {
                     <Pencil className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                <span className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${statusColors[t.status] || statusColors.draft}`}>
-                  {t.status}
-                </span>
+                <div className="flex items-center gap-1.5 flex-shrink-0">
+                  {isPastTournament(t) && (
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                      Past event
+                    </span>
+                  )}
+                  <span className={`text-xs font-medium px-2 py-1 rounded-full capitalize ${statusColors[t.status] || statusColors.draft}`}>
+                    {t.status}
+                  </span>
+                </div>
               </div>
               {t.course_name && (
                 <p className="text-sm text-muted-foreground flex items-center gap-1.5 mb-1">

@@ -5,6 +5,8 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { CollegeScoringWorkspace } from "@/components/scoring/CollegeScoringWorkspace";
 import { CollegeEventSetupCard } from "@/components/scoring/CollegeEventSetupCard";
 import { ScoringAdminsCard } from "@/components/scoring/ScoringAdminsCard";
+import { CollegePairingsCard } from "@/components/scoring/CollegePairingsCard";
+import { CollegeOutputsCard } from "@/components/scoring/CollegeOutputsCard";
 import { createOrgAdapter, type ScoringEvent } from "@/lib/collegeScoringAdapter";
 
 /**
@@ -33,6 +35,11 @@ const CollegeScoring = () => {
       .catch(() => setEvents([]));
   }, [adapter]);
 
+  const currentEvent = useMemo(
+    () => events.find((e) => e.id === currentEventId) || null,
+    [events, currentEventId],
+  );
+
   if (loading || !adapter) {
     return (
       <div className="flex items-center justify-center py-20">
@@ -56,6 +63,8 @@ const CollegeScoring = () => {
       <Tabs defaultValue="scoring" className="space-y-6">
         <TabsList>
           <TabsTrigger value="scoring">Score Entry &amp; Standings</TabsTrigger>
+          <TabsTrigger value="pairings">Pairings &amp; Formats</TabsTrigger>
+          <TabsTrigger value="outputs">Printables, QR &amp; Leaderboard</TabsTrigger>
           <TabsTrigger value="admins">Scoring Admins</TabsTrigger>
         </TabsList>
 
@@ -75,6 +84,22 @@ const CollegeScoring = () => {
               );
             }}
           />
+        </TabsContent>
+
+        <TabsContent value="pairings">
+          {currentEvent ? (
+            <CollegePairingsCard event={currentEvent} />
+          ) : (
+            <p className="text-sm text-muted-foreground">Select an event on the Score Entry tab first.</p>
+          )}
+        </TabsContent>
+
+        <TabsContent value="outputs">
+          {currentEvent ? (
+            <CollegeOutputsCard event={currentEvent} />
+          ) : (
+            <p className="text-sm text-muted-foreground">Select an event on the Score Entry tab first.</p>
+          )}
         </TabsContent>
 
         <TabsContent value="admins">

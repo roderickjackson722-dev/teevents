@@ -8,24 +8,37 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 
-/* ─── Four core pricing options ─── */
+/* ─── Core pricing options ─── */
 const planCards = [
   {
     icon: Sparkles,
-    title: "Pay as You Grow",
+    title: "No Cost To Start",
     price: "$0",
     unit: "to start",
     badge: "Most popular",
     highlight: false,
     desc: "5% platform fee per paid transaction. No upfront cost — you only pay when you get paid.",
     features: [
-      "Full tournament platform included",
-      "Registration, payments & payouts",
+      "Full tournament management platform",
+      "Branded tournament website",
+      "Online registration & Stripe payments",
+      "QR check-in from any phone",
+      "Pairings, tee sheets & drag-and-drop scheduling",
+      "Player management, waitlist & CSV import",
+      "Volunteer coordination & shift scheduling",
+      "Printables — scorecards, cart signs, name badges",
+      "Email confirmations & basic reporting",
+      "Financial dashboard & Stripe payouts",
+      "Public search listing on teevents.golf",
       "10 manual entries included",
       "No monthly subscription",
     ],
-    cta: "Get Started",
-    ctaTo: "/get-started",
+    exclusions: [
+      "Live leaderboard (add-on — $199/event)",
+      "Mobile scoring (add-on — $199/event)",
+    ],
+    cta: "Select No Cost To Start",
+    ctaTo: "/checkout/no-cost-to-start",
     note: "Stripe processing fees apply.",
   },
   {
@@ -42,68 +55,30 @@ const planCards = [
       "Unlimited transactions",
       "One-time, per event",
     ],
-    cta: "Buy in Dashboard",
-    ctaTo: "/dashboard/upgrade",
+    exclusions: [],
+    cta: "Select Flat-Rate Pro",
+    ctaTo: "/checkout/flat-rate-pro",
     note: "Purchased per tournament.",
   },
   {
-    icon: Megaphone,
-    title: "Branding Removal + Digital Sponsor",
-    price: "$499",
-    unit: "per event",
-    badge: "Resell for $5k–$10k",
-    highlight: false,
-    desc: "A turnkey digital sponsorship package — including full TeeVents branding removal — that you can resell to a title sponsor.",
-    features: [
-      "TeeVents logo & tagline hidden",
-      "Custom \"Presented by\" text and logo",
-      "Leaderboard & website placement",
-      "Sponsor QR code, asset kit & outreach email",
-    ],
-    cta: "Buy in Dashboard",
-    ctaTo: "/dashboard/sponsorship-tools",
-    note: "Under Sponsorship Tools.",
-  },
-  {
     icon: GraduationCap,
-    title: "College Golf Scoring",
-    price: "$199",
-    unit: "1 division",
+    title: "College Golf Scoring & Leaderboard",
+    price: "from $199",
+    unit: "per event",
     badge: "New",
     highlight: false,
-    desc: "High-speed score validation and entry for college events: divisions, teams (best 4 of 5), and scoring admins.",
+    desc: "Live mobile scoring with no app download, QR scoring codes, monitor leaderboard display, custom printables and pairings templates for collegiate events.",
     features: [
-      "1 division — $199",
-      "2 divisions — $375",
-      "3 divisions — $550",
-      "4 divisions — $720",
+      "Live mobile scoring — no app download",
+      "QR scoring codes & leaderboard URL",
+      "Team rosters & flexible counting scores",
+      "Custom printables & pairings templates",
     ],
+    exclusions: [],
     cta: "Learn More",
-    ctaTo: "/dashboard/college-scoring",
-    note: "Per event, based on divisions.",
+    ctaTo: "/college-golf-scoring",
+    note: "Full details and pricing on the next page.",
   },
-];
-
-/* ─── Free tier features ─── */
-const freeFeatures = [
-  "Full tournament management platform",
-  "Branded tournament website",
-  "Online registration & Stripe payments",
-  "QR check-in from any phone",
-  "Pairings, tee sheets & drag-and-drop scheduling",
-  "Player management, waitlist & CSV import",
-  "Volunteer coordination & shift scheduling",
-  "Printables — scorecards, cart signs, name badges",
-  "Email confirmations & basic reporting",
-  "Financial dashboard & Stripe payouts",
-  "Public search listing on teevents.golf",
-  "10 manual entries included",
-];
-
-/* ─── Not included on the Free plan ─── */
-const freeExclusions = [
-  "Live leaderboard (add-on — $199/event)",
-  "Mobile scoring (add-on — $199/event)",
 ];
 
 /* ─── Paid add-ons (per event, one-time) ─── */
@@ -112,33 +87,46 @@ const addons = [
     icon: BarChart3,
     title: "Live Leaderboard & Mobile Scoring",
     price: 199,
+    to: "/checkout/live-leaderboard",
     desc: "Real-time public leaderboard plus scoring from any phone for every group.",
   },
   {
     icon: Users,
     title: "Unlimited Manual Entries",
     price: 199,
+    to: "/checkout/unlimited-manual-entries",
     desc: "Remove the 10-entry cap. Add unlimited manual player registrations, sponsors, and side-event entries.",
   },
   {
     icon: Gavel,
     title: "Auction & Raffle",
     price: 199,
+    to: "/checkout/auction-raffle",
     desc: "Silent auction and 50/50 raffle with mobile bidding and auto-draw at close.",
   },
   {
     icon: LayoutTemplate,
     title: "Custom Event Page Build Out",
     price: 199,
-    desc: "Our team builds out a fully customized event page tailored to your tournament — layout, colors, content placement, and branding. We handle the setup so you don't have to.",
+    to: "/checkout/custom-event-page",
+    desc: "Our team builds out a fully customized event page tailored to your tournament — layout, colors, content placement, and branding.",
+  },
+  {
+    icon: Megaphone,
+    title: "Branding Removal + Digital Sponsor",
+    price: 499,
+    to: "/checkout/branding-removal",
+    desc: "TeeVents branding hidden, custom \"Presented by\" logo and a turnkey digital sponsor package you can resell for $5k–$10k.",
   },
   {
     icon: Globe,
     title: "Custom Domain",
     price: 99,
+    to: "/checkout/custom-domain",
     desc: "Brand your tournament URL (e.g. golf.yourclub.com) instead of a teevents.golf link.",
   },
 ];
+
 
 
 /* ─── Fee reference table ─── */

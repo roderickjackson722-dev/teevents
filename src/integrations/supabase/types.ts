@@ -10374,6 +10374,7 @@ export type Database = {
           created_at: string
           custom_answers: Json
           dietary_restrictions: string | null
+          division_id: string | null
           donation_amount_cents: number
           drives_used: number
           email: string
@@ -10405,11 +10406,15 @@ export type Database = {
           skins_opt_in: boolean | null
           starting_hole: number | null
           status: string
+          status_reason: string | null
+          status_updated_at: string | null
           strokes_per_hole: Json | null
           survey_completed_at: string | null
           survey_response_token: string | null
           team_handicap: number | null
           team_handicap_percentage: number | null
+          team_id: string | null
+          team_score_count: number
           tee_time: string | null
           tier_id: string | null
           tournament_id: string
@@ -10426,6 +10431,7 @@ export type Database = {
           created_at?: string
           custom_answers?: Json
           dietary_restrictions?: string | null
+          division_id?: string | null
           donation_amount_cents?: number
           drives_used?: number
           email: string
@@ -10457,11 +10463,15 @@ export type Database = {
           skins_opt_in?: boolean | null
           starting_hole?: number | null
           status?: string
+          status_reason?: string | null
+          status_updated_at?: string | null
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
           survey_response_token?: string | null
           team_handicap?: number | null
           team_handicap_percentage?: number | null
+          team_id?: string | null
+          team_score_count?: number
           tee_time?: string | null
           tier_id?: string | null
           tournament_id: string
@@ -10478,6 +10488,7 @@ export type Database = {
           created_at?: string
           custom_answers?: Json
           dietary_restrictions?: string | null
+          division_id?: string | null
           donation_amount_cents?: number
           drives_used?: number
           email?: string
@@ -10509,11 +10520,15 @@ export type Database = {
           skins_opt_in?: boolean | null
           starting_hole?: number | null
           status?: string
+          status_reason?: string | null
+          status_updated_at?: string | null
           strokes_per_hole?: Json | null
           survey_completed_at?: string | null
           survey_response_token?: string | null
           team_handicap?: number | null
           team_handicap_percentage?: number | null
+          team_id?: string | null
+          team_score_count?: number
           tee_time?: string | null
           tier_id?: string | null
           tournament_id?: string
@@ -10533,6 +10548,13 @@ export type Database = {
             columns: ["promoter_id"]
             isOneToOne: false
             referencedRelation: "team_promoters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_registrations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_teams"
             referencedColumns: ["id"]
           },
           {
@@ -10683,6 +10705,69 @@ export type Database = {
           },
           {
             foreignKeyName: "tournament_scores_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_scoring_admins: {
+        Row: {
+          all_events: boolean
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          last_login_at: string | null
+          name: string
+          organization_id: string
+          passcode: string
+          scoring_only: boolean
+          session_token: string | null
+          tournament_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          all_events?: boolean
+          created_at?: string
+          email: string
+          id?: string
+          is_active?: boolean
+          last_login_at?: string | null
+          name: string
+          organization_id: string
+          passcode: string
+          scoring_only?: boolean
+          session_token?: string | null
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          all_events?: boolean
+          created_at?: string
+          email?: string
+          id?: string
+          is_active?: boolean
+          last_login_at?: string | null
+          name?: string
+          organization_id?: string
+          passcode?: string
+          scoring_only?: boolean
+          session_token?: string | null
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_scoring_admins_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_scoring_admins_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
@@ -10965,6 +11050,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "tournament_surveys_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_teams: {
+        Row: {
+          created_at: string
+          division_id: string | null
+          id: string
+          team_name: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          division_id?: string | null
+          id?: string
+          team_name: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          division_id?: string | null
+          id?: string
+          team_name?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_teams_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
@@ -11269,6 +11389,7 @@ export type Database = {
           digital_sponsor_purchased: boolean
           digital_sponsor_purchased_at: string | null
           display_order: number
+          divisions: Json
           donation_allow_custom: boolean
           donation_custom_label: string | null
           donation_goal_cents: number | null
@@ -11286,6 +11407,7 @@ export type Database = {
           early_signup_enabled: boolean
           early_signup_label: string | null
           end_date: string | null
+          event_title: string | null
           external_link: string | null
           flat_rate_admin_override: boolean
           flat_rate_amount_cents: number
@@ -11425,6 +11547,7 @@ export type Database = {
           schedule_info: string | null
           schedule_info_html: string | null
           scoring_format: string
+          scoring_rounds: number
           setup_checklist_dismissed: boolean
           shootout_rounds: Json | null
           show_branding_badge: boolean
@@ -11597,6 +11720,7 @@ export type Database = {
           digital_sponsor_purchased?: boolean
           digital_sponsor_purchased_at?: string | null
           display_order?: number
+          divisions?: Json
           donation_allow_custom?: boolean
           donation_custom_label?: string | null
           donation_goal_cents?: number | null
@@ -11614,6 +11738,7 @@ export type Database = {
           early_signup_enabled?: boolean
           early_signup_label?: string | null
           end_date?: string | null
+          event_title?: string | null
           external_link?: string | null
           flat_rate_admin_override?: boolean
           flat_rate_amount_cents?: number
@@ -11753,6 +11878,7 @@ export type Database = {
           schedule_info?: string | null
           schedule_info_html?: string | null
           scoring_format?: string
+          scoring_rounds?: number
           setup_checklist_dismissed?: boolean
           shootout_rounds?: Json | null
           show_branding_badge?: boolean
@@ -11925,6 +12051,7 @@ export type Database = {
           digital_sponsor_purchased?: boolean
           digital_sponsor_purchased_at?: string | null
           display_order?: number
+          divisions?: Json
           donation_allow_custom?: boolean
           donation_custom_label?: string | null
           donation_goal_cents?: number | null
@@ -11942,6 +12069,7 @@ export type Database = {
           early_signup_enabled?: boolean
           early_signup_label?: string | null
           end_date?: string | null
+          event_title?: string | null
           external_link?: string | null
           flat_rate_admin_override?: boolean
           flat_rate_amount_cents?: number
@@ -12081,6 +12209,7 @@ export type Database = {
           schedule_info?: string | null
           schedule_info_html?: string | null
           scoring_format?: string
+          scoring_rounds?: number
           setup_checklist_dismissed?: boolean
           shootout_rounds?: Json | null
           show_branding_badge?: boolean
@@ -13506,6 +13635,99 @@ export type Database = {
       save_league_team_scores: {
         Args: { _code: string; _scores: Json }
         Returns: Json
+      }
+      scoring_admin_can_access: {
+        Args: { _token: string; _tournament_id: string }
+        Returns: boolean
+      }
+      scoring_admin_context: {
+        Args: { _token: string }
+        Returns: {
+          all_events: boolean
+          created_at: string
+          email: string
+          id: string
+          is_active: boolean
+          last_login_at: string | null
+          name: string
+          organization_id: string
+          passcode: string
+          scoring_only: boolean
+          session_token: string | null
+          tournament_id: string | null
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "tournament_scoring_admins"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      scoring_admin_events: {
+        Args: { _token: string }
+        Returns: {
+          date: string
+          divisions: Json
+          event_title: string
+          id: string
+          scoring_rounds: number
+          title: string
+        }[]
+      }
+      scoring_admin_login: {
+        Args: { _code: string; _email: string }
+        Returns: {
+          admin_name: string
+          all_events: boolean
+          organization_id: string
+          token: string
+          tournament_id: string
+        }[]
+      }
+      scoring_admin_roster: {
+        Args: { _token: string; _tournament_id: string }
+        Returns: {
+          division_id: string
+          first_name: string
+          group_label: string
+          group_number: number
+          last_name: string
+          registration_id: string
+          status: string
+          status_reason: string
+          team_id: string
+          team_name: string
+        }[]
+      }
+      scoring_admin_save_round: {
+        Args: {
+          _registration_id: string
+          _round_number: number
+          _scores: Json
+          _token: string
+          _tournament_id: string
+        }
+        Returns: boolean
+      }
+      scoring_admin_scores: {
+        Args: { _token: string; _tournament_id: string }
+        Returns: {
+          hole_number: number
+          registration_id: string
+          round_number: number
+          strokes: number
+        }[]
+      }
+      scoring_admin_set_status: {
+        Args: {
+          _reason?: string
+          _registration_id: string
+          _status: string
+          _token: string
+          _tournament_id: string
+        }
+        Returns: boolean
       }
       scoring_code_group_ids: {
         Args: { _code: string; _round_number?: number; _tournament_id: string }

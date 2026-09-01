@@ -48,16 +48,28 @@ serve(async (req) => {
     const next = { ...current };
     for (const a of addons) next[a] = true;
 
-    // Bundle unlocks everything
+    // Legacy bundle purchases unlock everything
     if (next["bundle"]) {
       next["custom_domain"] = true;
       next["unlimited_manual_entries"] = true;
       next["auction_raffle"] = true;
       next["custom_event_page"] = true;
-      next["priority_support"] = true;
+      next["live_leaderboard"] = true;
     }
 
     const update: Record<string, unknown> = { paid_features: next };
+
+    // College Golf Scoring unlocks by number of purchased divisions.
+    if (addons.includes("college_scoring")) {
+      const divisions = Math.min(4, Math.max(1, parseInt(session.metadata?.divisions || "1", 10)));
+      update["college_scoring_paid"] = true;
+      update["college_scoring_purchased"] = true;
+      update["college_scoring_divisions"] = divisions;
+      update["college_scoring_divisions_purchased"] = divisions;
+      update["college_scoring_paid_at"] = new Date().toISOString();
+      update["college_scoring_purchase_date"] = new Date().toISOString();
+    }
+
 
     // SMS Blast plans toggle dedicated columns (1 credit = 1 text message).
     if (addons.includes("sms_unlimited")) {

@@ -217,8 +217,8 @@ const Plans = () => {
       {/* 2. PRICING */}
       <section id="pricing" className="bg-primary/5 py-20">
         <div className="container mx-auto px-4 max-w-6xl">
-          {/* Four core options */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-16">
+          {/* Core options */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
             {planCards.map((p, i) => (
               <motion.div
                 key={p.title}
@@ -246,7 +246,7 @@ const Plans = () => {
                   <span className="text-xs ml-1.5 text-muted-foreground">{p.unit}</span>
                 </div>
                 <p className="text-sm text-muted-foreground leading-relaxed mb-4">{p.desc}</p>
-                <ul className="space-y-2 mb-6">
+                <ul className="space-y-2 mb-4">
                   {p.features.map((f) => (
                     <li key={f} className="flex items-start gap-2 text-sm text-foreground/80">
                       <Check className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
@@ -254,6 +254,16 @@ const Plans = () => {
                     </li>
                   ))}
                 </ul>
+                {p.exclusions.length > 0 && (
+                  <ul className="space-y-2 mb-6">
+                    {p.exclusions.map((f) => (
+                      <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
+                        <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                        <span>{f}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
                 <div className="mt-auto">
                   <Link
                     to={p.ctaTo}
@@ -271,62 +281,19 @@ const Plans = () => {
             ))}
           </div>
 
-          {/* Free tier card */}
-          <div className="grid md:grid-cols-2 gap-8 items-start mb-14">
+          {/* Add-on features */}
+          <div className="mb-14">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="bg-card rounded-2xl border-2 border-primary p-8 shadow-lg"
-            >
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-3">
-                <Sparkles className="h-3.5 w-3.5" /> Free forever
-              </div>
-              <h3 className="text-3xl font-display font-bold text-foreground mb-1">Free</h3>
-              <div className="mb-4">
-                <span className="text-5xl font-display font-bold text-foreground">$0</span>
-                <span className="text-sm ml-2 text-muted-foreground">/ tournament</span>
-              </div>
-              <p className="text-xs font-semibold text-primary mb-6">
-                5% platform fee per paid transaction + Stripe processing
-              </p>
-
-              <ul className="space-y-2.5 mb-8">
-                {freeFeatures.map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm text-foreground/80">
-                    <Check className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <ul className="space-y-2.5 mb-8">
-                {freeExclusions.map((f) => (
-                  <li key={f} className="flex items-start gap-3 text-sm text-muted-foreground">
-                    <X className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                    <span>{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <Link
-                to="/get-started"
-                className="block w-full text-center bg-primary text-primary-foreground px-6 py-3.5 rounded-md font-semibold text-sm tracking-wider uppercase hover:bg-primary/90 transition-colors"
-              >
-                Get Started
-              </Link>
-            </motion.div>
-
-            {/* Add-ons */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-card rounded-2xl border border-border p-8"
+              className="bg-card rounded-2xl border border-border p-8 max-w-4xl mx-auto"
             >
               <div className="mb-6">
                 <h3 className="text-2xl font-display font-bold text-foreground">Add-on Features</h3>
-                <p className="text-sm text-muted-foreground">One-time, per event. Unlock only what you need.</p>
+                <p className="text-sm text-muted-foreground">
+                  One-time, per event. Select an add-on to go straight to checkout.
+                </p>
               </div>
 
               <ul className="divide-y divide-border">
@@ -341,6 +308,12 @@ const Plans = () => {
                         <p className="font-display font-bold text-foreground whitespace-nowrap">${a.price}</p>
                       </div>
                       <p className="text-xs text-muted-foreground leading-snug">{a.desc}</p>
+                      <Link
+                        to={a.to}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-primary mt-1 hover:underline"
+                      >
+                        Select &amp; check out <ArrowRight className="h-3 w-3" />
+                      </Link>
                     </div>
                   </li>
                 ))}
@@ -348,20 +321,23 @@ const Plans = () => {
 
               <div className="mt-6 rounded-lg border-2 border-secondary bg-secondary/10 p-4">
                 <div className="flex items-baseline justify-between gap-3 mb-1">
-                  <p className="font-display font-bold text-foreground">College Golf Scoring</p>
+                  <p className="font-display font-bold text-foreground">College Golf Scoring &amp; Leaderboard</p>
                   <p className="font-display font-bold text-secondary text-xl">from $199</p>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Priced by divisions: 1 — $199, 2 — $375, 3 — $550, 4 — $720.
+                  Live mobile scoring, QR codes, monitor leaderboard display, custom printables and pairings
+                  templates.
                 </p>
+                <Link
+                  to="/college-golf-scoring"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary mt-2 hover:underline"
+                >
+                  Learn More <ArrowRight className="h-3 w-3" />
+                </Link>
               </div>
-
-
-              <p className="text-xs text-muted-foreground mt-4 text-center">
-                Purchase add-ons from your dashboard once you've created a tournament.
-              </p>
             </motion.div>
           </div>
+
 
           {/* Fee reference table */}
           <motion.div

@@ -20,7 +20,7 @@ interface Row {
 }
 
 /**
- * Dashboard → Payments: pay the one-time $299 Flat-Rate Pro fee for a single
+ * Dashboard → Payments: pay the one-time $399 Flat-Rate Pro fee for a single
  * tournament and see the other paid upgrades available for that event.
  */
 const TournamentPayment = () => {
@@ -59,7 +59,7 @@ const TournamentPayment = () => {
             <Receipt className="h-6 w-6 text-primary" /> Tournament Payments
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Pay the one-time $299 Flat-Rate Pro fee for an event and skip the 5% platform fee on
+            Pay the one-time $399 Flat-Rate Pro fee for an event and skip the 5% platform fee on
             every transaction for that tournament.
           </p>
         </div>
@@ -95,7 +95,7 @@ const TournamentPayment = () => {
             <CardContent className="grid sm:grid-cols-2 gap-4">
               <div className="rounded-lg border border-border p-4 space-y-2">
                 <p className="font-semibold text-sm flex items-center gap-2">
-                  <Award className="h-4 w-4 text-primary" /> Branding Removal — $500
+                  <Award className="h-4 w-4 text-primary" /> Branding Removal + Digital Sponsor — $499
                 </p>
                 <p className="text-xs text-muted-foreground">
                   One-time per event. Removes the TeeVents logo and tagline from your live leaderboard
@@ -109,7 +109,7 @@ const TournamentPayment = () => {
               </div>
               <div className="rounded-lg border border-border p-4 space-y-2">
                 <p className="font-semibold text-sm flex items-center gap-2">
-                  <Sparkles className="h-4 w-4 text-secondary" /> Digital Sponsor package — $799
+                  <Sparkles className="h-4 w-4 text-secondary" /> Digital Sponsor benefits included
                 </p>
                 <p className="text-xs text-muted-foreground">
                   One-time per event. The full turnkey sponsorship package most organizers resell to a

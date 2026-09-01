@@ -51,6 +51,7 @@ import SponsorshipTools from "./pages/dashboard/SponsorshipTools";
 import TournamentPayment from "./pages/dashboard/TournamentPayment";
 import Store from "./pages/dashboard/Store";
 import LeaderboardScoring from "./pages/dashboard/LeaderboardScoring";
+import CollegeScoring from "./pages/dashboard/CollegeScoring";
 import CRM from "./pages/dashboard/CRM";
 import CourseDetails from "./pages/dashboard/CourseDetails";
 import WaitlistPage from "./pages/dashboard/Waitlist";
@@ -195,6 +196,7 @@ import TournamentSearch from "./pages/TournamentSearch";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
 import TeamHomepage from "./pages/TeamHomepage";
 import ScoreLogin from "./pages/ScoreLogin";
+import ScoreAdmin from "./pages/ScoreAdmin";
 import GroupScoring from "./pages/GroupScoring";
 import LeagueTeamScoring from "./pages/LeagueTeamScoring";
 import LeagueEventLeaderboard from "./pages/LeagueEventLeaderboard";
@@ -290,6 +292,7 @@ const App = () => (
           <Route path="/dashboard/store" element={<DashboardLayout><PlanGate feature="store"><Store /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/leaderboard" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
           <Route path="/dashboard/scoring" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
+          <Route path="/dashboard/college-scoring" element={<DashboardLayout><CollegeScoring /></DashboardLayout>} />
           <Route path="/dashboard/crm" element={<DashboardLayout><CRM /></DashboardLayout>} />
           <Route path="/dashboard/course-details" element={<DashboardLayout><CourseDetails /></DashboardLayout>} />
           <Route path="/dashboard/quick-actions" element={<DashboardLayout><QuickActionsPage /></DashboardLayout>} />
@@ -351,6 +354,7 @@ const App = () => (
           <Route path="/league-score/:code" element={<LeagueTeamScoring />} />
           <Route path="/league-leaderboard/:eventId" element={<LeagueEventLeaderboard />} />
 
+          <Route path="/score-admin" element={<ScoreAdmin />} />
           <Route path="/score/:slug" element={<ScoreLogin />} />
           <Route path="/score/:slug/:code" element={<GroupScoring />} />
           <Route path="/sample/dashboard/:token" element={<SampleTournamentDashboard />} />

@@ -143,9 +143,10 @@ export function CollegeScoringWorkspace({ adapter, lockedEventId, setupSlot }: P
       teamStandings(
         divisionId ? players.filter((p) => (p.division_id || "") === divisionId) : players,
         index,
-        rounds
+        rounds,
+        Math.max(1, event?.countingScores || 4)
       ),
-    [players, index, rounds, divisionId]
+    [players, index, rounds, divisionId, event?.countingScores]
   );
 
   const saveEntry = async (

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Check, ArrowRight, Loader2, Sparkles, Globe, Users, Gavel, LayoutTemplate, Phone, Building2 } from "lucide-react";
+import { Check, ArrowRight, Loader2, Sparkles, Globe, Users, Gavel, LayoutTemplate, BarChart3, GraduationCap, Building2 } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -20,21 +20,18 @@ interface TournamentRow {
 }
 
 const ADDONS: { key: AddonKey; label: string; price: number; desc: string; icon: any }[] = [
+  { key: "live_leaderboard", label: "Live Leaderboard & Mobile Scoring", price: 199, desc: "Real-time public leaderboard plus scoring from any phone.", icon: BarChart3 },
+  { key: "unlimited_manual_entries", label: "Unlimited Manual Entries", price: 199, desc: "Pay as You Grow includes 10 — remove the cap.", icon: Users },
+  { key: "auction_raffle", label: "Auction & Raffle", price: 199, desc: "Silent auction and 50/50 raffle with auto-draw", icon: Gavel },
+  { key: "custom_event_page", label: "Custom Event Page Build Out", price: 199, desc: "Our team will work with you to build out a fully customized event page tailored to your tournament. This includes custom layout adjustments, color coordination, content placement, and branding to make your event page stand out. We'll handle the setup so you don't have to.", icon: LayoutTemplate },
   { key: "custom_domain", label: "Custom Domain", price: 99, desc: "Brand your tournament URL (golf.yourclub.com)", icon: Globe },
-  { key: "unlimited_manual_entries", label: "Unlimited Manual Entries", price: 149, desc: "Free tier includes 10 — remove the cap.", icon: Users },
-  { key: "auction_raffle", label: "Auction & Raffle", price: 149, desc: "Silent auction and 50/50 raffle with auto-draw", icon: Gavel },
-  { key: "custom_event_page", label: "Custom Event Page Build Out", price: 99, desc: "Our team will work with you to build out a fully customized event page tailored to your tournament. This includes custom layout adjustments, color coordination, content placement, and branding to make your event page stand out. We'll handle the setup so you don't have to.", icon: LayoutTemplate },
-  { key: "priority_support", label: "Priority Support", price: 99, desc: "Phone support, dedicated manager, 2-hr response", icon: Phone },
 ];
-const BUNDLE_PRICE = 399;
-const INDIVIDUAL_TOTAL = ADDONS.reduce((s, a) => s + a.price, 0);
 
 const UpgradeFeaturesPage = () => {
   const { org } = useOrgContext();
   const [tournaments, setTournaments] = useState<TournamentRow[]>([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<AddonKey>>(new Set());
-  const [wantsBundle, setWantsBundle] = useState(false);
   const [loading, setLoading] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
   const addons = useTournamentAddons(selectedTournamentId);
@@ -172,23 +169,17 @@ const UpgradeFeaturesPage = () => {
     if (next.has(k)) next.delete(k);
     else next.add(k);
     setSelected(next);
-    if (next.size > 0) setWantsBundle(false);
   };
 
-  const toggleBundle = () => {
-    const nb = !wantsBundle;
-    setWantsBundle(nb);
-    if (nb) setSelected(new Set());
-  };
+
 
   const total = useMemo(() => {
-    if (wantsBundle) return BUNDLE_PRICE;
     return Array.from(selected).reduce((s, k) => s + (ADDONS.find((a) => a.key === k)?.price ?? 0), 0);
-  }, [selected, wantsBundle]);
+  }, [selected]);
 
   const handlePurchase = async () => {
     if (!selectedTournamentId) return toast.error("Pick a tournament first");
-    const toPurchase = wantsBundle ? ["bundle"] : Array.from(selected);
+    const toPurchase = Array.from(selected);
     if (toPurchase.length === 0) return toast.error("Select at least one add-on");
     setLoading(true);
     try {
@@ -235,7 +226,6 @@ const UpgradeFeaturesPage = () => {
               onChange={(e) => {
                 setSelectedTournamentId(e.target.value);
                 setSelected(new Set());
-                setWantsBundle(false);
               }}
             >
               {tournaments.map((t) => (
@@ -246,7 +236,7 @@ const UpgradeFeaturesPage = () => {
             </select>
           </div>
 
-          {/* Flat-Rate Pro: $299 once instead of the 5% platform fee */}
+          {/* Flat-Rate Pro: $399 once instead of the 5% platform fee */}
           <FlatRateProCard tournamentId={selectedTournamentId} />
 
 
@@ -273,7 +263,7 @@ const UpgradeFeaturesPage = () => {
             {!quota.unlimited && quota.used >= quota.totalLimit && (
               <p className="text-xs text-muted-foreground mt-3">
                 You have used your 10 free manual entries. Additional manual entries will incur a 5% platform fee.
-                Unlock unlimited entries below for a one-time $149.
+                Unlock unlimited entries below for a one-time $199.
               </p>
             )}
           </div>
@@ -294,7 +284,7 @@ const UpgradeFeaturesPage = () => {
                   >
                     <Checkbox
                       checked={owned || isChecked}
-                      disabled={owned || wantsBundle}
+                      disabled={owned}
                       onCheckedChange={() => toggle(a.key)}
                       className="mt-1"
                     />
@@ -320,27 +310,28 @@ const UpgradeFeaturesPage = () => {
               })}
             </ul>
 
-            {/* Bundle */}
-            <div
-              className={`mt-4 rounded-lg border-2 p-4 flex items-start gap-3 cursor-pointer ${
-                wantsBundle ? "border-secondary bg-secondary/10" : "border-secondary/40"
-              }`}
-              onClick={toggleBundle}
-            >
-              <Checkbox
-                checked={addons.flags.bundle || wantsBundle}
-                disabled={addons.flags.bundle}
-                onCheckedChange={toggleBundle}
-                className="mt-1"
-              />
+            {/* College Golf Scoring add-on */}
+            <div className="mt-4 rounded-lg border-2 border-secondary/40 p-4 flex items-start gap-3">
+              <div className="flex-shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
+                <GraduationCap className="h-4 w-4" />
+              </div>
               <div className="flex-1">
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="font-display font-bold text-foreground">Bundle — all add-ons</p>
-                  <p className="font-display font-bold text-secondary text-lg">${BUNDLE_PRICE}</p>
+                  <p className="font-display font-bold text-foreground">College Golf Scoring</p>
+                  <p className="font-display font-bold text-secondary text-lg">from $199</p>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Includes every add-on. Save ${INDIVIDUAL_TOTAL - BUNDLE_PRICE} vs. individual purchase.
+                  High-speed score validation and entry for college events — divisions, teams (best 4 of 5),
+                  WD/DQ handling, and scoring admins. Priced by divisions: 1 — $199, 2 — $375, 3 — $550, 4 — $720.
                 </p>
+                {selectedTournamentId && (
+                  <Link
+                    to={`/dashboard/tournaments/${selectedTournamentId}/addons/college-scoring`}
+                    className="text-xs font-semibold text-primary underline mt-2 inline-flex items-center gap-1"
+                  >
+                    Learn More <ArrowRight className="h-3 w-3" />
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -359,10 +350,11 @@ const UpgradeFeaturesPage = () => {
           <div className="bg-card rounded-xl border border-border p-6 mb-6">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="font-semibold text-foreground">Remove TeeVents Branding — $500</p>
+                <p className="font-semibold text-foreground">Branding Removal + Digital Sponsor — $499</p>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Hides the TeeVents logo and tagline from your live leaderboard and mobile scoring pages.
-                  One-time fee for this tournament.
+                  Hides the TeeVents logo and tagline from your live leaderboard and mobile scoring pages and
+                  unlocks the full Digital Sponsor package you can resell for $5,000–$10,000. One-time fee for
+                  this tournament.
                 </p>
                 {!brandingRemoved && (
                   <p className="text-xs text-muted-foreground mt-2 italic">
@@ -383,7 +375,7 @@ const UpgradeFeaturesPage = () => {
                 ) : (
                   <Button size="sm" onClick={handleBrandingPurchase} disabled={brandingLoading}>
                     {brandingLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                    Remove for $500
+                    Buy for $499
                   </Button>
                 )}
               </div>

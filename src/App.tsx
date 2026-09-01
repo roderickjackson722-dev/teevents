@@ -94,6 +94,8 @@ import AdminPlatformHealth from "./pages/admin/PlatformHealth";
 import AdminEmailNotifications from "./pages/admin/EmailNotifications";
 import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
 import AdminSmsSettings from "./pages/admin/SmsSettings";
+import AdminCollegeScoringSettings from "./pages/admin/CollegeScoringSettings";
+import CollegeScoringAddon from "./pages/dashboard/CollegeScoringAddon";
 import DashboardMessages from "./pages/dashboard/Messages";
 
 import AdminUsersEvents from "./pages/admin/UsersEvents";
@@ -293,6 +295,7 @@ const App = () => (
           <Route path="/dashboard/leaderboard" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
           <Route path="/dashboard/scoring" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
           <Route path="/dashboard/college-scoring" element={<DashboardLayout><CollegeScoring /></DashboardLayout>} />
+          <Route path="/dashboard/tournaments/:id/addons/college-scoring" element={<DashboardLayout><CollegeScoringAddon /></DashboardLayout>} />
           <Route path="/dashboard/crm" element={<DashboardLayout><CRM /></DashboardLayout>} />
           <Route path="/dashboard/course-details" element={<DashboardLayout><CourseDetails /></DashboardLayout>} />
           <Route path="/dashboard/quick-actions" element={<DashboardLayout><QuickActionsPage /></DashboardLayout>} />
@@ -434,6 +437,7 @@ const App = () => (
            <Route path="/admin/email-notifications" element={<AdminEmailNotifications />} />
            <Route path="/admin/scheduled-emails" element={<AdminScheduledEmails />} />
            <Route path="/admin/sms-settings" element={<AdminSmsSettings />} />
+           <Route path="/admin/college-scoring" element={<AdminCollegeScoringSettings />} />
 
            <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />

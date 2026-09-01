@@ -28,7 +28,7 @@ export const getDigitalSponsorStatus = createServerFn({ method: "POST" })
     };
   });
 
-/** Creates the Stripe Checkout session for the one-time $799 Digital Sponsor package. */
+/** Creates the Stripe Checkout session for the one-time $499 Branding Removal + Digital Sponsor package. */
 export const createDigitalSponsorCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string; origin: string; returnPath?: string }) => {
@@ -65,8 +65,8 @@ export const createDigitalSponsorCheckout = createServerFn({ method: "POST" })
           price_data: {
             currency: "usd",
             product_data: {
-              name: "TeeVents Digital Sponsor Package — One Event",
-              description: `Turnkey digital sponsorship package for: ${t.title}`,
+              name: "TeeVents Branding Removal + Digital Sponsor Package — One Event",
+              description: `Turnkey digital sponsorship package with TeeVents branding removal for: ${t.title}`,
             },
             unit_amount: amount,
           },
@@ -123,7 +123,12 @@ export const verifyDigitalSponsorPayment = createServerFn({ method: "POST" })
         digital_sponsor_purchased: true,
         digital_sponsor_purchased_at: new Date().toISOString(),
         digital_sponsor_amount_cents: session.amount_total ?? DIGITAL_SPONSOR_AMOUNT_CENTS,
-      })
+        // The $499 package bundles TeeVents branding removal.
+        branding_removed: true,
+        branding_removed_paid: true,
+        branding_removed_paid_at: new Date().toISOString(),
+        branding_removed_at: new Date().toISOString(),
+      } as any)
       .eq("id", tournamentId);
 
     // Platform revenue line for the Admin → Revenue Dashboard.

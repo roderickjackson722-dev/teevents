@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const PRICE_CENTS = 50000;
+const PRICE_CENTS = 49900;
 
-/** Creates a $500 one-time Stripe Checkout session to remove TeeVents branding. */
+/** Creates a $499 one-time Stripe Checkout session for Branding Removal + Digital Sponsor. */
 export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string; origin?: string; returnPath?: string }) => {
@@ -42,7 +42,7 @@ export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
       "line_items[0][quantity]": "1",
       "line_items[0][price_data][currency]": "usd",
       "line_items[0][price_data][unit_amount]": String(PRICE_CENTS),
-      "line_items[0][price_data][product_data][name]": "TeeVents – Remove TeeVents Branding",
+      "line_items[0][price_data][product_data][name]": "TeeVents – Branding Removal + Digital Sponsor",
       "line_items[0][price_data][product_data][description]": `For: ${(t as any).title}`,
       success_url: `${origin}${returnPath}?branding_session_id={CHECKOUT_SESSION_ID}&tournament_id=${t.id}`,
       cancel_url: `${origin}${returnPath}?branding_canceled=1&tournament_id=${t.id}`,
@@ -123,6 +123,10 @@ export const verifyBrandingRemoval = createServerFn({ method: "POST" })
         branding_payment_session_id: session.id ?? data.sessionId,
         branding_payment_intent_id: paymentIntentId,
         branding_receipt_url: receiptUrl,
+        // The $499 package bundles the Digital Sponsor benefits.
+        digital_sponsor_purchased: true,
+        digital_sponsor_purchased_at: new Date().toISOString(),
+        digital_sponsor_amount_cents: session.amount_total ?? PRICE_CENTS,
       } as any)
       .eq("id", tournamentId);
 

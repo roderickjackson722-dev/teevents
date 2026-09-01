@@ -9,23 +9,28 @@ const corsHeaders = {
 
 /**
  * purchase-addons
- * Body: { tournament_id: string, addons: string[] }
- *   addons ⊆ ["custom_domain","unlimited_manual_entries","auction_raffle","custom_event_page","priority_support","bundle"]
+ * Body: { tournament_id: string, addons: string[], divisions?: number, discount_code?: string }
+ *   addons ⊆ ["live_leaderboard","unlimited_manual_entries","auction_raffle","custom_event_page",
+ *             "custom_domain","college_scoring","sms_100","sms_unlimited"]
  * Creates a Stripe Checkout session for the selected add-ons.
  */
 const PRICES: Record<string, { name: string; cents: number }> = {
+  live_leaderboard: { name: "Live Leaderboard & Mobile Scoring", cents: 19900 },
+  unlimited_manual_entries: { name: "Unlimited Manual Entries", cents: 19900 },
+  auction_raffle: { name: "Auction & Raffle", cents: 19900 },
+  custom_event_page: { name: "Custom Event Page Build Out", cents: 19900 },
   custom_domain: { name: "Custom Domain", cents: 9900 },
-  unlimited_manual_entries: { name: "Unlimited Manual Entries", cents: 14900 },
-  auction_raffle: { name: "Auction & Raffle", cents: 14900 },
-  custom_event_page: { name: "Custom Event Page Build Out", cents: 9900 },
-  priority_support: { name: "Priority Support", cents: 9900 },
-  bundle: { name: "All Add-ons Bundle", cents: 39900 },
+  college_scoring: { name: "College Golf Scoring", cents: 19900 },
   sms_100: { name: "SMS Blasts – 100 Text Messages", cents: 2900 },
   sms_unlimited: { name: "SMS Blasts – Unlimited Text Messages", cents: 9900 },
 };
 
-// SMS plans are standalone; the All Add-ons Bundle never includes them.
+// College Golf Scoring is priced by the number of divisions (1–4).
+const COLLEGE_SCORING_CENTS: Record<number, number> = { 1: 19900, 2: 37500, 3: 55000, 4: 72000 };
+
+// SMS plans are standalone add-ons.
 const SMS_KEYS = ["sms_100", "sms_unlimited"];
+
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -41,7 +46,7 @@ serve(async (req) => {
     if (userErr || !userData.user) throw new Error("Not authenticated");
     const user = userData.user;
 
-    const { tournament_id, addons } = await req.json();
+    const { tournament_id, addons, divisions, discount_code } = await req.json();
     if (!tournament_id) throw new Error("tournament_id is required");
     if (!Array.isArray(addons) || addons.length === 0) throw new Error("addons must be a non-empty array");
 
@@ -68,25 +73,57 @@ serve(async (req) => {
       .maybeSingle();
     if (!membership) throw new Error("You are not a member of this organization");
 
-    // If bundle chosen, collapse to just bundle line item
     const smsAddons: string[] = addons.filter((a: string) => SMS_KEYS.includes(a));
     const nonSms: string[] = addons.filter((a: string) => !SMS_KEYS.includes(a));
-    const finalAddons: string[] = [
-      ...(nonSms.includes("bundle") ? ["bundle"] : nonSms),
-      ...smsAddons,
-    ];
+    const finalAddons: string[] = [...nonSms, ...smsAddons];
+
+    // Admin price overrides
+    const { data: overrideRows } = await supabaseAdmin
+      .from("admin_addon_pricing")
+      .select("addon_key, price_cents");
+    const overrides: Record<string, number> = {};
+    for (const r of overrideRows ?? []) overrides[(r as any).addon_key] = (r as any).price_cents;
+
+    // Optional discount code
+    let discountPercent = 0;
+    if (discount_code) {
+      const { data: code } = await supabaseAdmin
+        .from("addon_discount_codes")
+        .select("discount_percent, addon_key, expires_at")
+        .eq("code", String(discount_code).trim().toUpperCase())
+        .maybeSingle();
+      const notExpired = !(code as any)?.expires_at ||
+        new Date((code as any).expires_at) > new Date();
+      if (code && notExpired) {
+        discountPercent = Math.min(100, Math.max(0, (code as any).discount_percent ?? 0));
+      }
+    }
+
+    const divisionCount = Math.min(4, Math.max(1, Math.round(Number(divisions) || 1)));
+    const priceFor = (k: string) => {
+      let cents = PRICES[k].cents;
+      if (k === "college_scoring") {
+        cents = overrides[`college_scoring_${divisionCount}`] ?? COLLEGE_SCORING_CENTS[divisionCount];
+      } else if (overrides[k] != null) {
+        cents = overrides[k];
+      }
+      return Math.max(0, Math.round(cents * (1 - discountPercent / 100)));
+    };
 
     const line_items = finalAddons.map((k) => ({
       price_data: {
         currency: "usd",
         product_data: {
-          name: `TeeVents – ${PRICES[k].name}`,
+          name: `TeeVents – ${PRICES[k].name}${
+            k === "college_scoring" ? ` (${divisionCount} division${divisionCount > 1 ? "s" : ""})` : ""
+          }`,
           description: `For: ${t.title}`,
         },
-        unit_amount: PRICES[k].cents,
+        unit_amount: priceFor(k),
       },
       quantity: 1,
     }));
+
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2025-08-27.basil",
@@ -106,6 +143,9 @@ serve(async (req) => {
         organization_id: t.organization_id,
         user_id: user.id,
         addons: finalAddons.join(","),
+        divisions: String(divisionCount),
+        discount_percent: String(discountPercent),
+
       },
     });
 

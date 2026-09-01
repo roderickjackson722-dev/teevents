@@ -268,10 +268,11 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
         <div className="rounded-lg border border-border bg-background/40 p-4 space-y-3">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-semibold text-sm">Remove TeeVents branding — $500 per event</p>
+              <p className="font-semibold text-sm">Branding Removal + Digital Sponsor — $499 per event</p>
               <p className="text-xs text-muted-foreground mt-1">
                 One-time fee for this event. Hides the TeeVents logo and tagline from your live leaderboard
-                and mobile scoring pages, leaving the space entirely to your own sponsor.
+                and mobile scoring pages, and unlocks the full Digital Sponsor package you can resell to a
+                title sponsor for $5,000–$10,000.
               </p>
             </div>
             {brandingRemoved ? (
@@ -292,16 +293,17 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
           <p className="font-semibold text-sm">Digital sponsorship &amp; technology pricing</p>
           <ul className="space-y-1.5 text-xs text-foreground/90">
             <li>
-              <span className="font-semibold">Digital Sponsor package — $799 per event.</span>{" "}
-              The full turnkey sponsorship kit (leaderboard and website placement, printables, emails,
-              QR code, recap report) most organizers resell to a title sponsor for $5,000–$10,000.
+              <span className="font-semibold">Branding Removal + Digital Sponsor — $499 per event.</span>{" "}
+              Removes the TeeVents logo and tagline and includes the full turnkey sponsorship kit
+              (leaderboard and website placement, printables, emails, QR code, recap report) that most
+              organizers resell to a title sponsor for $5,000–$10,000.
             </li>
             <li>
-              <span className="font-semibold">Branding Removal — $500 per event.</span>{" "}
-              Removes the TeeVents logo and tagline from the live leaderboard and mobile scoring pages.
+              <span className="font-semibold">Live Leaderboard &amp; Mobile Scoring — $199 per event.</span>{" "}
+              Real-time public leaderboard plus scoring from any phone.
             </li>
             <li>
-              <span className="font-semibold">Flat-Rate Pro — $299 per event.</span>{" "}
+              <span className="font-semibold">Flat-Rate Pro — $399 per event.</span>{" "}
               Replaces the 5% platform fee on every transaction for this tournament.
             </li>
             <li>
@@ -312,12 +314,12 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
           <div className="flex flex-wrap gap-2">
             <Button asChild variant="outline" size="sm">
               <Link to={`/dashboard/sponsorship-tools?tournament_id=${tournamentId}`}>
-                Digital Sponsor — $799
+                Branding + Digital Sponsor — $499
               </Link>
             </Button>
             <Button asChild variant="outline" size="sm">
               <Link to={`/dashboard/tournament-payment?tournament_id=${tournamentId}`}>
-                Flat-Rate Pro — $299
+                Flat-Rate Pro — $399
               </Link>
             </Button>
           </div>

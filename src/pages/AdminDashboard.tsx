@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, UserPlus, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt, Megaphone, Sparkles, Shield, CalendarClock, BookOpen, Gauge
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, UserPlus, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt, Megaphone, Sparkles, Shield, CalendarClock, BookOpen, Gauge, GraduationCap
 } from "lucide-react";
 import AdminNotificationCenter, { useAdminNotificationCount } from "@/components/admin/AdminNotificationCenter";
 import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";
@@ -847,6 +847,13 @@ const AdminDashboard = () => {
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <Mail className="h-4 w-4" /> SMS Settings
+                </button>
+
+                <button
+                  onClick={() => navigate("/admin/college-scoring")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <GraduationCap className="h-4 w-4" /> College Scoring Add-on
                 </button>
 
                 <button

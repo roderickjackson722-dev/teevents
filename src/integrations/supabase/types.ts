@@ -134,6 +134,60 @@ export type Database = {
           },
         ]
       }
+      addon_discount_codes: {
+        Row: {
+          addon_key: string | null
+          code: string
+          created_at: string
+          created_by: string | null
+          discount_percent: number | null
+          expires_at: string | null
+          id: string
+        }
+        Insert: {
+          addon_key?: string | null
+          code: string
+          created_at?: string
+          created_by?: string | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+        }
+        Update: {
+          addon_key?: string | null
+          code?: string
+          created_at?: string
+          created_by?: string | null
+          discount_percent?: number | null
+          expires_at?: string | null
+          id?: string
+        }
+        Relationships: []
+      }
+      admin_addon_pricing: {
+        Row: {
+          addon_key: string
+          id: string
+          price_cents: number
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          addon_key: string
+          id?: string
+          price_cents: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          addon_key?: string
+          id?: string
+          price_cents?: number
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       admin_audit_log: {
         Row: {
           action: string
@@ -3298,6 +3352,8 @@ export type Database = {
           description: string | null
           end_date: string | null
           event_confirmation_email_config: Json | null
+          events_limit: number | null
+          events_used: number | null
           flight_based_on: string
           flight_method: string
           flights_enabled: boolean
@@ -3320,6 +3376,12 @@ export type Database = {
           show_schedule: boolean
           show_standings: boolean
           start_date: string | null
+          subscription_end_date: string | null
+          subscription_reminder_sent_0d: boolean | null
+          subscription_reminder_sent_30d: boolean | null
+          subscription_reminder_sent_7d: boolean | null
+          subscription_start_date: string | null
+          subscription_status: string | null
           tagline: string | null
           updated_at: string
           welcome_message: string | null
@@ -3336,6 +3398,8 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           event_confirmation_email_config?: Json | null
+          events_limit?: number | null
+          events_used?: number | null
           flight_based_on?: string
           flight_method?: string
           flights_enabled?: boolean
@@ -3358,6 +3422,12 @@ export type Database = {
           show_schedule?: boolean
           show_standings?: boolean
           start_date?: string | null
+          subscription_end_date?: string | null
+          subscription_reminder_sent_0d?: boolean | null
+          subscription_reminder_sent_30d?: boolean | null
+          subscription_reminder_sent_7d?: boolean | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
           tagline?: string | null
           updated_at?: string
           welcome_message?: string | null
@@ -3374,6 +3444,8 @@ export type Database = {
           description?: string | null
           end_date?: string | null
           event_confirmation_email_config?: Json | null
+          events_limit?: number | null
+          events_used?: number | null
           flight_based_on?: string
           flight_method?: string
           flights_enabled?: boolean
@@ -3396,6 +3468,12 @@ export type Database = {
           show_schedule?: boolean
           show_standings?: boolean
           start_date?: string | null
+          subscription_end_date?: string | null
+          subscription_reminder_sent_0d?: boolean | null
+          subscription_reminder_sent_30d?: boolean | null
+          subscription_reminder_sent_7d?: boolean | null
+          subscription_start_date?: string | null
+          subscription_status?: string | null
           tagline?: string | null
           updated_at?: string
           welcome_message?: string | null
@@ -11312,6 +11390,13 @@ export type Database = {
           branding_removed_paid: boolean
           branding_removed_paid_at: string | null
           captain_label: string | null
+          college_scoring_divisions: number | null
+          college_scoring_divisions_purchased: number | null
+          college_scoring_enabled: boolean | null
+          college_scoring_paid: boolean | null
+          college_scoring_paid_at: string | null
+          college_scoring_purchase_date: string | null
+          college_scoring_purchased: boolean | null
           confirmation_email_config: Json | null
           contact_email: string | null
           contact_name: string | null
@@ -11643,6 +11728,13 @@ export type Database = {
           branding_removed_paid?: boolean
           branding_removed_paid_at?: string | null
           captain_label?: string | null
+          college_scoring_divisions?: number | null
+          college_scoring_divisions_purchased?: number | null
+          college_scoring_enabled?: boolean | null
+          college_scoring_paid?: boolean | null
+          college_scoring_paid_at?: string | null
+          college_scoring_purchase_date?: string | null
+          college_scoring_purchased?: boolean | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_name?: string | null
@@ -11974,6 +12066,13 @@ export type Database = {
           branding_removed_paid?: boolean
           branding_removed_paid_at?: string | null
           captain_label?: string | null
+          college_scoring_divisions?: number | null
+          college_scoring_divisions_purchased?: number | null
+          college_scoring_enabled?: boolean | null
+          college_scoring_paid?: boolean | null
+          college_scoring_paid_at?: string | null
+          college_scoring_purchase_date?: string | null
+          college_scoring_purchased?: boolean | null
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_name?: string | null

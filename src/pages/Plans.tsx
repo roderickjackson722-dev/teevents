@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import {
   Check, ArrowRight, Shield, Lock, CreditCard, Smartphone, Sparkles,
   Globe, Users, BarChart3, Award, MessageSquare, Trophy,
-  Package, Phone, Gavel, LayoutTemplate, BadgeDollarSign, EyeOff, Megaphone,
+  Package, Gavel, LayoutTemplate, BadgeDollarSign, Megaphone, GraduationCap, X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -21,7 +21,7 @@ const planCards = [
     features: [
       "Full tournament platform included",
       "Registration, payments & payouts",
-      "Live leaderboard & mobile scoring",
+      "10 manual entries included",
       "No monthly subscription",
     ],
     cta: "Get Started",
@@ -31,15 +31,15 @@ const planCards = [
   {
     icon: BadgeDollarSign,
     title: "Flat-Rate Pro",
-    price: "$299",
+    price: "$399",
     unit: "per event",
     badge: "Best value",
     highlight: true,
     desc: "Pay once per tournament and we drop the 5% platform fee on every transaction.",
     features: [
       "No 5% platform fee",
+      "Unlimited manual entries",
       "Unlimited transactions",
-      "Every standard feature included",
       "One-time, per event",
     ],
     cta: "Buy in Dashboard",
@@ -47,40 +47,40 @@ const planCards = [
     note: "Purchased per tournament.",
   },
   {
-    icon: EyeOff,
-    title: "Branding Removal",
-    price: "$500",
+    icon: Megaphone,
+    title: "Branding Removal + Digital Sponsor",
+    price: "$499",
     unit: "per event",
-    badge: null,
+    badge: "Resell for $5k–$10k",
     highlight: false,
-    desc: "Remove TeeVents branding from your live leaderboard and mobile scoring pages.",
+    desc: "A turnkey digital sponsorship package — including full TeeVents branding removal — that you can resell to a title sponsor.",
     features: [
       "TeeVents logo & tagline hidden",
       "Custom \"Presented by\" text and logo",
-      "Applies to leaderboard & scoring",
-      "One-time, per event",
-    ],
-    cta: "Buy in Dashboard",
-    ctaTo: "/dashboard/leaderboard",
-    note: "Under Leaderboard Branding.",
-  },
-  {
-    icon: Megaphone,
-    title: "Digital Sponsor",
-    price: "$799",
-    unit: "flat fee",
-    badge: "Resell for $5k–$10k",
-    highlight: false,
-    desc: "A turnkey digital sponsorship package you can resell to a title sponsor for $5,000–$10,000.",
-    features: [
       "Leaderboard & website placement",
-      "Logo on emails and printables",
-      "Sponsor QR code & asset kit",
-      "Outreach email template included",
+      "Sponsor QR code, asset kit & outreach email",
     ],
     cta: "Buy in Dashboard",
     ctaTo: "/dashboard/sponsorship-tools",
     note: "Under Sponsorship Tools.",
+  },
+  {
+    icon: GraduationCap,
+    title: "College Golf Scoring",
+    price: "$199",
+    unit: "1 division",
+    badge: "New",
+    highlight: false,
+    desc: "High-speed score validation and entry for college events: divisions, teams (best 4 of 5), and scoring admins.",
+    features: [
+      "1 division — $199",
+      "2 divisions — $375",
+      "3 divisions — $550",
+      "4 divisions — $720",
+    ],
+    cta: "Learn More",
+    ctaTo: "/dashboard/college-scoring",
+    note: "Per event, based on divisions.",
   },
 ];
 
@@ -89,8 +89,7 @@ const freeFeatures = [
   "Full tournament management platform",
   "Branded tournament website",
   "Online registration & Stripe payments",
-  "Live leaderboard (included)",
-  "QR check-in & scoring from any phone",
+  "QR check-in from any phone",
   "Pairings, tee sheets & drag-and-drop scheduling",
   "Player management, waitlist & CSV import",
   "Volunteer coordination & shift scheduling",
@@ -98,47 +97,49 @@ const freeFeatures = [
   "Email confirmations & basic reporting",
   "Financial dashboard & Stripe payouts",
   "Public search listing on teevents.golf",
-  "10 free manual entries per tournament",
+  "10 manual entries included",
+];
+
+/* ─── Not included on the Free plan ─── */
+const freeExclusions = [
+  "Live leaderboard (add-on — $199/event)",
+  "Mobile scoring (add-on — $199/event)",
 ];
 
 /* ─── Paid add-ons (per event, one-time) ─── */
 const addons = [
+  {
+    icon: BarChart3,
+    title: "Live Leaderboard & Mobile Scoring",
+    price: 199,
+    desc: "Real-time public leaderboard plus scoring from any phone for every group.",
+  },
+  {
+    icon: Users,
+    title: "Unlimited Manual Entries",
+    price: 199,
+    desc: "Remove the 10-entry cap. Add unlimited manual player registrations, sponsors, and side-event entries.",
+  },
+  {
+    icon: Gavel,
+    title: "Auction & Raffle",
+    price: 199,
+    desc: "Silent auction and 50/50 raffle with mobile bidding and auto-draw at close.",
+  },
+  {
+    icon: LayoutTemplate,
+    title: "Custom Event Page Build Out",
+    price: 199,
+    desc: "Our team builds out a fully customized event page tailored to your tournament — layout, colors, content placement, and branding. We handle the setup so you don't have to.",
+  },
   {
     icon: Globe,
     title: "Custom Domain",
     price: 99,
     desc: "Brand your tournament URL (e.g. golf.yourclub.com) instead of a teevents.golf link.",
   },
-  {
-    icon: Users,
-    title: "Unlimited Manual Entries",
-    price: 149,
-    desc: "Remove the 10-entry cap. Add unlimited manual player registrations, sponsors, and side-event entries.",
-  },
-  {
-    icon: Gavel,
-    title: "Auction & Raffle",
-    price: 149,
-    desc: "Silent auction and 50/50 raffle with mobile bidding and auto-draw at close.",
-  },
-  {
-    icon: LayoutTemplate,
-    title: "Custom Event Page Build Out",
-    price: 99,
-    desc: "Our team will work with you to build out a fully customized event page tailored to your tournament. This includes custom layout adjustments, color coordination, content placement, and branding to make your event page stand out. We'll handle the setup so you don't have to.",
-  },
-
-  {
-    icon: Phone,
-    title: "Priority Support",
-    price: 99,
-    desc: "Phone support, dedicated account manager, and a 2-hour response SLA on tournament week.",
-  },
 ];
 
-const BUNDLE_TOTAL = addons.reduce((s, a) => s + a.price, 0); // 595
-const BUNDLE_PRICE = 399;
-const BUNDLE_SAVINGS = BUNDLE_TOTAL - BUNDLE_PRICE;
 
 /* ─── Fee reference table ─── */
 const feeRows = [
@@ -155,7 +156,7 @@ const whyChooseUs = [
   { icon: Trophy, title: "Built for golf", desc: "8 scoring formats, sponsor portals, pairings, and printables — nothing generic." },
   { icon: Shield, title: "PCI Level 1 payments", desc: "Bank-level Stripe security. We never hold your money." },
   { icon: BarChart3, title: "No monthly subscriptions", desc: "Start free. Buy add-ons only for the tournaments that need them." },
-  { icon: MessageSquare, title: "Real human support", desc: "Talk to golf-industry pros, not chatbots. Priority support add-on available." },
+  { icon: MessageSquare, title: "Real human support", desc: "Talk to golf-industry pros, not chatbots — before, during, and after your event." },
   { icon: Award, title: "Fundraising friendly", desc: "Nonprofit-ready receipts, donation totals, and organizer-controlled refunds." },
 ];
 
@@ -311,6 +312,15 @@ const Plans = () => {
                 ))}
               </ul>
 
+              <ul className="space-y-2.5 mb-8">
+                {freeExclusions.map((f) => (
+                  <li key={f} className="flex items-start gap-3 text-sm text-muted-foreground">
+                    <X className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+
               <Link
                 to="/get-started"
                 className="block w-full text-center bg-primary text-primary-foreground px-6 py-3.5 rounded-md font-semibold text-sm tracking-wider uppercase hover:bg-primary/90 transition-colors"
@@ -350,13 +360,14 @@ const Plans = () => {
 
               <div className="mt-6 rounded-lg border-2 border-secondary bg-secondary/10 p-4">
                 <div className="flex items-baseline justify-between gap-3 mb-1">
-                  <p className="font-display font-bold text-foreground">Bundle — all add-ons</p>
-                  <p className="font-display font-bold text-secondary text-xl">${BUNDLE_PRICE}</p>
+                  <p className="font-display font-bold text-foreground">College Golf Scoring</p>
+                  <p className="font-display font-bold text-secondary text-xl">from $199</p>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Save ${BUNDLE_SAVINGS} vs. buying individually (${BUNDLE_TOTAL} total).
+                  Priced by divisions: 1 — $199, 2 — $375, 3 — $550, 4 — $720.
                 </p>
               </div>
+
 
               <p className="text-xs text-muted-foreground mt-4 text-center">
                 Purchase add-ons from your dashboard once you've created a tournament.
@@ -449,7 +460,7 @@ const Plans = () => {
                   Real-time scoring, live leaderboards, skins, handicaps, and season stats.
                 </p>
                 <p className="text-sm mt-2">
-                  <strong>$199/year</strong> flat fee (unlimited golfers) or <strong>$10/golfer/year</strong>.
+                  <strong>$399/year</strong> flat fee for up to 24 events (unlimited golfers). Your year starts on the date of your first league event, and renews one year later.
                 </p>
               </div>
               <Link
@@ -508,7 +519,7 @@ const Plans = () => {
               Ready to run a professional tournament?
             </h2>
             <p className="text-primary-foreground/70 mb-8">
-              Get started free. Add on custom domain, auction, SMS blasts, or priority support only if and when you need them.
+              Get started free. Add live leaderboard, mobile scoring, auction, or SMS blasts only if and when you need them.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link

@@ -56,6 +56,24 @@ function emailHtml(leagueName: string, renewsOn: string, stage: Stage) {
 </body></html>`;
 }
 
+/** Email of the organization owner (falls back to any admin member). */
+async function ownerEmail(admin: any, organizationId: string): Promise<string | null> {
+  const { data: members } = await admin
+    .from("org_members")
+    .select("user_id, role")
+    .eq("organization_id", organizationId)
+    .in("role", ["owner", "admin"])
+    .limit(5);
+  const sorted = (members ?? []).sort((a: any, b: any) =>
+    a.role === "owner" ? -1 : b.role === "owner" ? 1 : 0,
+  );
+  for (const m of sorted) {
+    const { data } = await admin.auth.admin.getUserById(m.user_id);
+    if (data?.user?.email) return data.user.email as string;
+  }
+  return null;
+}
+
 async function run() {
   const supabaseUrl = process.env["SUPABASE_URL"]!;
   const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
@@ -67,7 +85,7 @@ async function run() {
   const { data: leagues, error } = await admin
     .from("golf_leagues")
     .select(
-      "id, name, contact_email, subscription_end_date, subscription_status, subscription_reminder_sent_30d, subscription_reminder_sent_7d, subscription_reminder_sent_0d",
+      "id, league_name, organization_id, subscription_end_date, subscription_status, subscription_reminder_sent_30d, subscription_reminder_sent_7d, subscription_reminder_sent_0d",
     )
     .not("subscription_end_date", "is", null)
     .limit(500);
@@ -91,7 +109,7 @@ async function run() {
     if (stage === null) continue;
     if (l[FLAG[stage]]) continue;
 
-    const to = l.contact_email;
+    const to = await ownerEmail(admin, l.organization_id);
     if (!to) continue;
 
     const renewsOn = end.toLocaleDateString("en-US", {
@@ -110,9 +128,9 @@ async function run() {
         reply_to: TEAM_INBOX,
         subject:
           stage === 0
-            ? `${l.name}: your TeeVents league subscription renews today`
-            : `${l.name}: your TeeVents league subscription renews in ${stage} days`,
-        html: emailHtml(l.name, renewsOn, stage),
+            ? `${l.league_name}: your TeeVents league subscription renews today`
+            : `${l.league_name}: your TeeVents league subscription renews in ${stage} days`,
+        html: emailHtml(l.league_name, renewsOn, stage),
       }),
     })
       .then((r) => r.ok)
@@ -125,7 +143,7 @@ async function run() {
         .eq("id", l.id);
     }
 
-    results.push({ league: l.name, stage, status: ok ? "sent" : "failed" });
+    results.push({ league: l.league_name, stage, status: ok ? "sent" : "failed" });
   }
 
   return json({

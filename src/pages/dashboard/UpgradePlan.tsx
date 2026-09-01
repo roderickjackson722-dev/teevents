@@ -169,7 +169,6 @@ const UpgradeFeaturesPage = () => {
     if (next.has(k)) next.delete(k);
     else next.add(k);
     setSelected(next);
-    if (next.size > 0) setWantsBundle(false);
   };
 
 
@@ -227,7 +226,6 @@ const UpgradeFeaturesPage = () => {
               onChange={(e) => {
                 setSelectedTournamentId(e.target.value);
                 setSelected(new Set());
-                setWantsBundle(false);
               }}
             >
               {tournaments.map((t) => (

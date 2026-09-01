@@ -13,7 +13,7 @@ import {
 type Status = Awaited<ReturnType<typeof getFlatRateStatus>>;
 
 /**
- * Flat-Rate Pro — $299 once per event removes the 5% platform fee on every
+ * Flat-Rate Pro — $399 once per event removes the 5% platform fee on every
  * transaction for that tournament. Alternative to "Pay as You Grow".
  */
 const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
@@ -70,7 +70,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
   }, [searchParams]);
 
   const price = useMemo(
-    () => `$${((status?.amount_cents ?? 29900) / 100).toLocaleString("en-US")}`,
+    () => `$${((status?.amount_cents ?? 39900) / 100).toLocaleString("en-US")}`,
     [status],
   );
   const active = !!status?.flat_rate_enabled;

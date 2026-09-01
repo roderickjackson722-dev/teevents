@@ -33,6 +33,7 @@ import { Route as TeamSlugStarterRouteImport } from './routes/team/$slug.starter
 import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes/api/public/hooks/check-tournament-links'
 import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
 import { Route as ApiPublicHooksPlatformHealthMonitorRouteImport } from './routes/api/public/hooks/platform-health-monitor'
+import { Route as ApiPublicHooksProcessLeagueRenewalsRouteImport } from './routes/api/public/hooks/process-league-renewals'
 import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
 import { Route as ApiPublicHooksTournamentPageCanaryRouteImport } from './routes/api/public/hooks/tournament-page-canary'
 
@@ -166,6 +167,12 @@ const ApiPublicHooksPlatformHealthMonitorRoute =
     path: '/api/public/hooks/platform-health-monitor',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksProcessLeagueRenewalsRoute =
+  ApiPublicHooksProcessLeagueRenewalsRouteImport.update({
+    id: '/api/public/hooks/process-league-renewals',
+    path: '/api/public/hooks/process-league-renewals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessScheduledEmailsRoute =
   ApiPublicHooksProcessScheduledEmailsRouteImport.update({
     id: '/api/public/hooks/process-scheduled-emails',
@@ -204,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
+  '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
@@ -232,6 +240,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
+  '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
@@ -261,6 +270,7 @@ export interface FileRoutesById {
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
+  '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
@@ -291,6 +301,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
+    | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
   fileRoutesByTo: FileRoutesByTo
@@ -319,6 +330,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
+    | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
   id:
@@ -347,6 +359,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/check-tournament-links'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
+    | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
   fileRoutesById: FileRoutesById
@@ -375,6 +388,7 @@ export interface RootRouteChildren {
   ApiPublicHooksCheckTournamentLinksRoute: typeof ApiPublicHooksCheckTournamentLinksRoute
   ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
   ApiPublicHooksPlatformHealthMonitorRoute: typeof ApiPublicHooksPlatformHealthMonitorRoute
+  ApiPublicHooksProcessLeagueRenewalsRoute: typeof ApiPublicHooksProcessLeagueRenewalsRoute
   ApiPublicHooksProcessScheduledEmailsRoute: typeof ApiPublicHooksProcessScheduledEmailsRoute
   ApiPublicHooksTournamentPageCanaryRoute: typeof ApiPublicHooksTournamentPageCanaryRoute
 }
@@ -549,6 +563,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPlatformHealthMonitorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-league-renewals': {
+      id: '/api/public/hooks/process-league-renewals'
+      path: '/api/public/hooks/process-league-renewals'
+      fullPath: '/api/public/hooks/process-league-renewals'
+      preLoaderRoute: typeof ApiPublicHooksProcessLeagueRenewalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-scheduled-emails': {
       id: '/api/public/hooks/process-scheduled-emails'
       path: '/api/public/hooks/process-scheduled-emails'
@@ -606,6 +627,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksLeadMagnetFollowupsRoute,
   ApiPublicHooksPlatformHealthMonitorRoute:
     ApiPublicHooksPlatformHealthMonitorRoute,
+  ApiPublicHooksProcessLeagueRenewalsRoute:
+    ApiPublicHooksProcessLeagueRenewalsRoute,
   ApiPublicHooksProcessScheduledEmailsRoute:
     ApiPublicHooksProcessScheduledEmailsRoute,
   ApiPublicHooksTournamentPageCanaryRoute:

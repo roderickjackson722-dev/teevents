@@ -11390,6 +11390,7 @@ export type Database = {
           branding_removed_paid: boolean
           branding_removed_paid_at: string | null
           captain_label: string | null
+          college_counting_scores: number
           college_scoring_divisions: number | null
           college_scoring_divisions_purchased: number | null
           college_scoring_enabled: boolean | null
@@ -11397,6 +11398,7 @@ export type Database = {
           college_scoring_paid_at: string | null
           college_scoring_purchase_date: string | null
           college_scoring_purchased: boolean | null
+          college_team_size: number
           confirmation_email_config: Json | null
           contact_email: string | null
           contact_name: string | null
@@ -11570,6 +11572,7 @@ export type Database = {
           organization_id: string
           paid_features: Json
           pairings_config: Json
+          pairings_group_size: number
           pairings_locked: boolean
           pairings_locked_at: string | null
           pairings_page_config: Json | null
@@ -11728,6 +11731,7 @@ export type Database = {
           branding_removed_paid?: boolean
           branding_removed_paid_at?: string | null
           captain_label?: string | null
+          college_counting_scores?: number
           college_scoring_divisions?: number | null
           college_scoring_divisions_purchased?: number | null
           college_scoring_enabled?: boolean | null
@@ -11735,6 +11739,7 @@ export type Database = {
           college_scoring_paid_at?: string | null
           college_scoring_purchase_date?: string | null
           college_scoring_purchased?: boolean | null
+          college_team_size?: number
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_name?: string | null
@@ -11908,6 +11913,7 @@ export type Database = {
           organization_id: string
           paid_features?: Json
           pairings_config?: Json
+          pairings_group_size?: number
           pairings_locked?: boolean
           pairings_locked_at?: string | null
           pairings_page_config?: Json | null
@@ -12066,6 +12072,7 @@ export type Database = {
           branding_removed_paid?: boolean
           branding_removed_paid_at?: string | null
           captain_label?: string | null
+          college_counting_scores?: number
           college_scoring_divisions?: number | null
           college_scoring_divisions_purchased?: number | null
           college_scoring_enabled?: boolean | null
@@ -12073,6 +12080,7 @@ export type Database = {
           college_scoring_paid_at?: string | null
           college_scoring_purchase_date?: string | null
           college_scoring_purchased?: boolean | null
+          college_team_size?: number
           confirmation_email_config?: Json | null
           contact_email?: string | null
           contact_name?: string | null
@@ -12246,6 +12254,7 @@ export type Database = {
           organization_id?: string
           paid_features?: Json
           pairings_config?: Json
+          pairings_group_size?: number
           pairings_locked?: boolean
           pairings_locked_at?: string | null
           pairings_page_config?: Json | null

@@ -25,6 +25,10 @@ export interface ScoringEvent {
   date: string | null;
   divisions: Division[];
   rounds: number;
+  /** Players per team (college events); defaults to 5. */
+  teamSize: number;
+  /** How many player scores count toward the team total; defaults to 4. */
+  countingScores: number;
 }
 
 export interface ScoringAdapter {
@@ -70,7 +74,7 @@ export function createOrgAdapter(organizationId: string): ScoringAdapter {
     async listEvents() {
       const { data, error } = await (supabase as any)
         .from("tournaments")
-        .select("id, title, event_title, date, divisions, scoring_rounds")
+        .select("id, title, event_title, date, divisions, scoring_rounds, college_team_size, college_counting_scores")
         .eq("organization_id", organizationId)
         .eq("archived", false)
         .order("date", { ascending: true, nullsFirst: false });
@@ -82,6 +86,8 @@ export function createOrgAdapter(organizationId: string): ScoringAdapter {
         date: t.date ?? null,
         divisions: parseDivisions(t.divisions),
         rounds: Math.max(1, Number(t.scoring_rounds) || 1),
+        teamSize: Math.max(1, Number(t.college_team_size) || 5),
+        countingScores: Math.max(1, Number(t.college_counting_scores) || 4),
       }));
     },
     async loadRoster(tournamentId) {
@@ -184,6 +190,8 @@ export function createTokenAdapter(token: string): ScoringAdapter {
         date: t.date ?? null,
         divisions: parseDivisions(t.divisions),
         rounds: Math.max(1, Number(t.scoring_rounds) || 1),
+        teamSize: Math.max(1, Number(t.college_team_size) || 5),
+        countingScores: Math.max(1, Number(t.college_counting_scores) || 4),
       }));
     },
     async loadRoster(tournamentId) {

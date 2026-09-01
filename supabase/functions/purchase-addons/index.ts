@@ -143,6 +143,9 @@ serve(async (req) => {
         organization_id: t.organization_id,
         user_id: user.id,
         addons: finalAddons.join(","),
+        divisions: String(divisionCount),
+        discount_percent: String(discountPercent),
+
       },
     });
 

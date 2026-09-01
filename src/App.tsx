@@ -121,6 +121,8 @@ import AcceptTeamInvitation from "./pages/AcceptTeamInvitation";
 import ForcePasswordChange from "./pages/ForcePasswordChange";
 import Nonprofits from "./pages/Nonprofits";
 import Plans from "./pages/Plans";
+import Checkout from "./pages/Checkout";
+import CollegeGolfScoring from "./pages/CollegeGolfScoring";
 import GolfLeagues from "./pages/GolfLeagues";
 import EnterprisePricing from "./pages/EnterprisePricing";
 import SampleOrganizer from "./pages/SampleOrganizer";
@@ -379,6 +381,8 @@ const App = () => (
           <Route path="/force-password-change" element={<ForcePasswordChange />} />
            <Route path="/nonprofits" element={<Nonprofits />} />
           <Route path="/plans" element={<Plans />} />
+          <Route path="/checkout/:item" element={<Checkout />} />
+          <Route path="/college-golf-scoring" element={<CollegeGolfScoring />} />
           <Route path="/golf-leagues" element={<GolfLeagues />} />
            <Route path="/how-it-works" element={<Navigate to="/plans" replace />} />
            <Route path="/pricing" element={<Navigate to="/plans" replace />} />

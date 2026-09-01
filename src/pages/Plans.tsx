@@ -61,7 +61,7 @@ const planCards = [
       "One-time, per event",
     ],
     cta: "Buy in Dashboard",
-    ctaTo: "/dashboard/sponsors",
+    ctaTo: "/dashboard/leaderboard",
     note: "Under Leaderboard Branding.",
   },
   {

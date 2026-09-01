@@ -24,7 +24,7 @@ export const notifyAdminNewTournament = createServerFn({ method: "POST" })
 
     const { data: t } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, tournament_date, course_name, location, organization_id, created_at")
+      .select("id, title, slug, date, course_name, location, organization_id, created_at")
       .eq("id", data.tournamentId)
       .maybeSingle();
     if (!t) return { sent: false };
@@ -42,7 +42,7 @@ export const notifyAdminNewTournament = createServerFn({ method: "POST" })
       ["Tournament", (t as any).title || "Untitled"],
       ["Organization", (org as any)?.name || "—"],
       ["Organizer contact", (org as any)?.contact_email || "—"],
-      ["Date", (t as any).tournament_date || "Not set"],
+      ["Date", (t as any).date || "Not set"],
       ["Course", (t as any).course_name || "Not set"],
       ["Location", (t as any).location || "Not set"],
       ["Created by (user id)", userId],

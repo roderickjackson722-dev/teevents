@@ -34,6 +34,8 @@ interface Props {
 export function CollegeEventSetupCard({ event, onChanged }: Props) {
   const [eventTitle, setEventTitle] = useState(event.eventTitle || "");
   const [rounds, setRounds] = useState(String(event.rounds));
+  const [teamSize, setTeamSize] = useState(String(event.teamSize ?? 5));
+  const [countingScores, setCountingScores] = useState(String(event.countingScores ?? 4));
   const [divisions, setDivisions] = useState<Division[]>(event.divisions);
   const [newDivision, setNewDivision] = useState("");
   const [teams, setTeams] = useState<TeamRow[]>([]);
@@ -46,6 +48,8 @@ export function CollegeEventSetupCard({ event, onChanged }: Props) {
   useEffect(() => {
     setEventTitle(event.eventTitle || "");
     setRounds(String(event.rounds));
+    setTeamSize(String(event.teamSize ?? 5));
+    setCountingScores(String(event.countingScores ?? 4));
     setDivisions(event.divisions);
   }, [event.id, event.eventTitle, event.rounds, event.divisions]);
 
@@ -91,6 +95,14 @@ export function CollegeEventSetupCard({ event, onChanged }: Props) {
         event_title: eventTitle || null,
         divisions,
         scoring_rounds: Math.max(1, Math.min(6, parseInt(rounds, 10) || 1)),
+        college_team_size: Math.max(1, parseInt(teamSize, 10) || 5),
+        college_counting_scores: Math.max(
+          1,
+          Math.min(
+            Math.max(1, parseInt(teamSize, 10) || 5),
+            parseInt(countingScores, 10) || 4,
+          ),
+        ),
       })
       .eq("id", event.id);
     setSaving(false);
@@ -144,7 +156,7 @@ export function CollegeEventSetupCard({ event, onChanged }: Props) {
       .update({
         team_id: teamId || null,
         division_id: team?.division_id ?? null,
-        team_score_count: 5,
+        team_score_count: Math.max(1, parseInt(countingScores, 10) || 4),
       })
       .eq("id", registrationId);
     if (error) {
@@ -186,6 +198,31 @@ export function CollegeEventSetupCard({ event, onChanged }: Props) {
               onChange={(e) => setRounds(e.target.value)}
             />
           </div>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="space-y-1">
+            <Label>Players per team</Label>
+            <Input
+              type="number"
+              min={1}
+              value={teamSize}
+              onChange={(e) => setTeamSize(e.target.value)}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label>Counting scores</Label>
+            <Input
+              type="number"
+              min={1}
+              value={countingScores}
+              onChange={(e) => setCountingScores(e.target.value)}
+            />
+          </div>
+          <p className="text-xs text-muted-foreground sm:self-end sm:pb-2">
+            Example: 5 players play and the best 4 scores count toward the team total. Rosters can hold as many
+            players as your event needs.
+          </p>
         </div>
 
         <div className="space-y-2">

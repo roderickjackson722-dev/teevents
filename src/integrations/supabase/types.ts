@@ -11572,6 +11572,7 @@ export type Database = {
           organization_id: string
           paid_features: Json
           pairings_config: Json
+          pairings_group_size: number
           pairings_locked: boolean
           pairings_locked_at: string | null
           pairings_page_config: Json | null
@@ -11912,6 +11913,7 @@ export type Database = {
           organization_id: string
           paid_features?: Json
           pairings_config?: Json
+          pairings_group_size?: number
           pairings_locked?: boolean
           pairings_locked_at?: string | null
           pairings_page_config?: Json | null
@@ -12252,6 +12254,7 @@ export type Database = {
           organization_id?: string
           paid_features?: Json
           pairings_config?: Json
+          pairings_group_size?: number
           pairings_locked?: boolean
           pairings_locked_at?: string | null
           pairings_page_config?: Json | null

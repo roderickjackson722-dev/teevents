@@ -6,7 +6,8 @@ export type AddonKey =
   | "unlimited_manual_entries"
   | "auction_raffle"
   | "custom_event_page"
-  | "priority_support"
+  | "live_leaderboard"
+  | "college_scoring"
   | "bundle";
 
 export interface AddonFlags {
@@ -14,7 +15,8 @@ export interface AddonFlags {
   unlimited_manual_entries: boolean;
   auction_raffle: boolean;
   custom_event_page: boolean;
-  priority_support: boolean;
+  live_leaderboard: boolean;
+  college_scoring: boolean;
   bundle: boolean;
 }
 
@@ -23,9 +25,11 @@ const DEFAULT: AddonFlags = {
   unlimited_manual_entries: false,
   auction_raffle: false,
   custom_event_page: false,
-  priority_support: false,
+  live_leaderboard: false,
+  college_scoring: false,
   bundle: false,
 };
+
 
 /** Reads paid_features + manual entry quota columns for a tournament. */
 export function useTournamentAddons(tournamentId: string | null | undefined) {

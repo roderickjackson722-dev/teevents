@@ -1,6 +1,6 @@
-/** Server-only helpers for the per-event Digital Sponsor package ($799 flat fee). */
+/** Server-only helpers for the per-event Digital Sponsor package ($499 flat fee, includes branding removal). */
 
-export const DIGITAL_SPONSOR_AMOUNT_CENTS = 79900;
+export const DIGITAL_SPONSOR_AMOUNT_CENTS = 49900;
 
 export async function assertOrgMemberForDigitalSponsor(
   supabase: any,

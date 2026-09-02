@@ -61,7 +61,7 @@ const Tournaments = () => {
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [form, setForm] = useState({ date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+  const [form, setForm] = useState({ title: "", date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
   const [deleteTarget, setDeleteTarget] = useState<Tournament | null>(null);
   const [deleteConfirmed, setDeleteConfirmed] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -107,9 +107,9 @@ const Tournaments = () => {
     if (!org || demoGuard()) return;
     setCreating(true);
 
-    const title = form.course_name
-      ? `${form.course_name} Tournament`
-      : `${org.orgName || "My"} Golf Tournament`;
+    // The organizer's own event name drives the title AND the public URL slug.
+    // Never fall back to the course name.
+    const title = form.title.trim() || `${org.orgName || "My"} Golf Tournament`;
 
     const { data: created, error } = await supabase.from("tournaments").insert({
       organization_id: org.orgId,
@@ -130,7 +130,7 @@ const Tournaments = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Tournament created!", description: "Let's walk through the setup step by step." });
-      setForm({ date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
+      setForm({ title: "", date: "", end_date: "", location: "", course_name: "", scoring_format: "scramble_4" });
       setDialogOpen(false);
       fetchTournaments();
       // Walk the organizer through the full setup for the new event.
@@ -258,6 +258,18 @@ const Tournaments = () => {
               <DialogTitle className="font-display">Create Tournament</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleCreate} className="space-y-4 mt-4">
+              <div>
+                <Label htmlFor="title">Tournament Name</Label>
+                <Input
+                  id="title"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="e.g. The ATL Fourball Golf Classic"
+                />
+                <p className="text-xs text-muted-foreground mt-1">
+                  This becomes your public web address, so use your event name — not the course name.
+                </p>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label htmlFor="date">Start Date</Label>

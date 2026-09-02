@@ -92,7 +92,7 @@ export default function Signup() {
                   </div>
                   <h3 className="font-bold text-lg">Golf Tournaments</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Single- or multi-day events, sponsors, registration, live scoring, and payouts.
+                    Single or multi-day events, sponsors, registration, live scoring, and payouts.
                   </p>
                 </button>
 
@@ -106,7 +106,7 @@ export default function Signup() {
                   </div>
                   <h3 className="font-bold text-lg">Golf Leagues</h3>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Season-long play, weekly events, standings, skins, and handicaps.
+                    Season long play, weekly events, standings, skins, and handicaps.
                   </p>
                   <p className="text-xs mt-2 font-medium text-primary">$399/year + 5% platform fee</p>
                 </button>

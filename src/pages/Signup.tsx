@@ -108,7 +108,7 @@ export default function Signup() {
                   <p className="text-sm text-muted-foreground mt-1">
                     Season-long play, weekly events, standings, skins, and handicaps.
                   </p>
-                  <p className="text-xs mt-2 font-medium text-primary">$199/year + 5% platform fee</p>
+                  <p className="text-xs mt-2 font-medium text-primary">$399/year + 5% platform fee</p>
                 </button>
               </div>
 

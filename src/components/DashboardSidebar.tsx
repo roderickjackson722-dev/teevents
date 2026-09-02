@@ -88,7 +88,9 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Leaderboard & Live Scoring", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Enter scores and manage the live leaderboard" },
       { title: "Scoring Settings", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, handicap allowances, skins, flights, and payouts" },
-      { title: "College Golf Scoring", url: "/dashboard/college-scoring", icon: GraduationCap, feature: null, description: "Divisions, teams (best 4 of 5), fast score entry, WD/DQ, and scoring admins" },
+      // College Golf Scoring is an approval-only add-on: it is injected at
+      // runtime for tournaments where it has been paid for / approved.
+
       { title: "Stress Test", url: "/dashboard/stress-test", icon: Gauge, feature: null, description: "Simulate 70 players to test check-in, scoring, and leaderboard load" },
     ],
   },
@@ -198,6 +200,8 @@ export function DashboardSidebar() {
   const [searchParams] = useSearchParams();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
   const [tournamentId, setTournamentId] = useState<string | null>(null);
+  // College Golf Scoring is only shown when approved/paid for this tournament.
+  const [collegeScoringApproved, setCollegeScoringApproved] = useState(false);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
 
@@ -219,33 +223,40 @@ export function DashboardSidebar() {
   };
 
   useEffect(() => {
-    if (!org) { setTournamentSlug(null); setTournamentId(null); return; }
+    if (!org) {
+      setTournamentSlug(null);
+      setTournamentId(null);
+      setCollegeScoringApproved(false);
+      return;
+    }
+    const apply = (data: any) => {
+      setTournamentSlug(data?.slug ?? null);
+      setTournamentId(data?.id ?? null);
+      setCollegeScoringApproved(
+        Boolean(data?.college_scoring_enabled) || Boolean(data?.college_scoring_paid),
+      );
+    };
+    const cols = "id, slug, college_scoring_enabled, college_scoring_paid";
     // When a specific tournament is selected, its slug drives the public page
     // link — never the org's latest tournament.
     if (selectedTournamentId) {
       supabase
         .from("tournaments")
-        .select("id, slug")
+        .select(cols)
         .eq("id", selectedTournamentId)
         .maybeSingle()
-        .then(({ data }) => {
-          setTournamentSlug((data as any)?.slug ?? null);
-          setTournamentId((data as any)?.id ?? null);
-        });
+        .then(({ data }) => apply(data));
       return;
     }
     supabase
       .from("tournaments")
-      .select("id, slug")
+      .select(cols)
       .eq("organization_id", org.orgId)
       .not("slug", "is", null)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => {
-        setTournamentSlug((data as any)?.slug ?? null);
-        setTournamentId((data as any)?.id ?? null);
-      });
+      .then(({ data }) => apply(data));
   }, [org, selectedTournamentId]);
 
   const isOwner = !org || org.role === "owner";
@@ -372,6 +383,13 @@ export function DashboardSidebar() {
               items = [
                 ...cat.items,
                 { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age and request it by email" },
+              ];
+            }
+            // Approval-only add-on: never shown on default platforms.
+            if (cat.label === "Leaderboard & Live Scoring" && collegeScoringApproved) {
+              items = [
+                ...items,
+                { title: "College Golf Scoring", url: "/dashboard/college-scoring", icon: GraduationCap, feature: null, description: "Divisions, teams (best 4 of 5), fast score entry, WD/DQ, and scoring admins" },
               ];
             }
             if (cat.label === "Content & Media" && tournamentSlug) {

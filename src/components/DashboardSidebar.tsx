@@ -385,6 +385,13 @@ export function DashboardSidebar() {
                 { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age and request it by email" },
               ];
             }
+            // Approval-only add-on: never shown on default platforms.
+            if (cat.label === "Leaderboard & Live Scoring" && collegeScoringApproved) {
+              items = [
+                ...items,
+                { title: "College Golf Scoring", url: "/dashboard/college-scoring", icon: GraduationCap, feature: null, description: "Divisions, teams (best 4 of 5), fast score entry, WD/DQ, and scoring admins" },
+              ];
+            }
             if (cat.label === "Content & Media" && tournamentSlug) {
               items = [
                 { title: "View Live Tournament Page", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },

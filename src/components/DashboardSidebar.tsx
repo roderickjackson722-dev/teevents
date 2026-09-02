@@ -88,7 +88,9 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Leaderboard & Live Scoring", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Enter scores and manage the live leaderboard" },
       { title: "Scoring Settings", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, handicap allowances, skins, flights, and payouts" },
-      { title: "College Golf Scoring", url: "/dashboard/college-scoring", icon: GraduationCap, feature: null, description: "Divisions, teams (best 4 of 5), fast score entry, WD/DQ, and scoring admins" },
+      // College Golf Scoring is an approval-only add-on: it is injected at
+      // runtime for tournaments where it has been paid for / approved.
+
       { title: "Stress Test", url: "/dashboard/stress-test", icon: Gauge, feature: null, description: "Simulate 70 players to test check-in, scoring, and leaderboard load" },
     ],
   },

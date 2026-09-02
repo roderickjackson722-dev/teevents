@@ -200,6 +200,8 @@ export function DashboardSidebar() {
   const [searchParams] = useSearchParams();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
   const [tournamentId, setTournamentId] = useState<string | null>(null);
+  // College Golf Scoring is only shown when approved/paid for this tournament.
+  const [collegeScoringApproved, setCollegeScoringApproved] = useState(false);
   const [openCategories, setOpenCategories] = useState<Record<string, boolean>>({});
 
 

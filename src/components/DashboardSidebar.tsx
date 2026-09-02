@@ -223,33 +223,40 @@ export function DashboardSidebar() {
   };
 
   useEffect(() => {
-    if (!org) { setTournamentSlug(null); setTournamentId(null); return; }
+    if (!org) {
+      setTournamentSlug(null);
+      setTournamentId(null);
+      setCollegeScoringApproved(false);
+      return;
+    }
+    const apply = (data: any) => {
+      setTournamentSlug(data?.slug ?? null);
+      setTournamentId(data?.id ?? null);
+      setCollegeScoringApproved(
+        Boolean(data?.college_scoring_enabled) || Boolean(data?.college_scoring_paid),
+      );
+    };
+    const cols = "id, slug, college_scoring_enabled, college_scoring_paid";
     // When a specific tournament is selected, its slug drives the public page
     // link — never the org's latest tournament.
     if (selectedTournamentId) {
       supabase
         .from("tournaments")
-        .select("id, slug")
+        .select(cols)
         .eq("id", selectedTournamentId)
         .maybeSingle()
-        .then(({ data }) => {
-          setTournamentSlug((data as any)?.slug ?? null);
-          setTournamentId((data as any)?.id ?? null);
-        });
+        .then(({ data }) => apply(data));
       return;
     }
     supabase
       .from("tournaments")
-      .select("id, slug")
+      .select(cols)
       .eq("organization_id", org.orgId)
       .not("slug", "is", null)
       .order("created_at", { ascending: false })
       .limit(1)
       .maybeSingle()
-      .then(({ data }) => {
-        setTournamentSlug((data as any)?.slug ?? null);
-        setTournamentId((data as any)?.id ?? null);
-      });
+      .then(({ data }) => apply(data));
   }, [org, selectedTournamentId]);
 
   const isOwner = !org || org.role === "owner";

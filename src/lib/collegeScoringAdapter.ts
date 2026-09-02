@@ -29,6 +29,10 @@ export interface ScoringEvent {
   teamSize: number;
   /** How many player scores count toward the team total; defaults to 4. */
   countingScores: number;
+  /** True when the College Golf Scoring add-on is paid for (or admin-enabled) on this event. */
+  entitled: boolean;
+  /** Number of divisions covered by the purchase (0 = none). */
+  divisionsPurchased: number;
 }
 
 export interface ScoringAdapter {
@@ -74,7 +78,9 @@ export function createOrgAdapter(organizationId: string): ScoringAdapter {
     async listEvents() {
       const { data, error } = await (supabase as any)
         .from("tournaments")
-        .select("id, title, event_title, date, divisions, scoring_rounds, college_team_size, college_counting_scores")
+        .select(
+          "id, title, event_title, date, divisions, scoring_rounds, college_team_size, college_counting_scores, college_scoring_paid, college_scoring_enabled, college_scoring_divisions, college_scoring_divisions_purchased, paid_features",
+        )
         .eq("organization_id", organizationId)
         .eq("archived", false)
         .order("date", { ascending: true, nullsFirst: false });
@@ -88,6 +94,15 @@ export function createOrgAdapter(organizationId: string): ScoringAdapter {
         rounds: Math.max(1, Number(t.scoring_rounds) || 1),
         teamSize: Math.max(1, Number(t.college_team_size) || 5),
         countingScores: Math.max(1, Number(t.college_counting_scores) || 4),
+        entitled:
+          !!t.college_scoring_paid ||
+          !!t.college_scoring_enabled ||
+          !!t.paid_features?.college_scoring ||
+          !!t.paid_features?.bundle,
+        divisionsPurchased: Math.max(
+          0,
+          Number(t.college_scoring_divisions_purchased ?? t.college_scoring_divisions) || 0,
+        ),
       }));
     },
     async loadRoster(tournamentId) {
@@ -192,6 +207,8 @@ export function createTokenAdapter(token: string): ScoringAdapter {
         rounds: Math.max(1, Number(t.scoring_rounds) || 1),
         teamSize: Math.max(1, Number(t.college_team_size) || 5),
         countingScores: Math.max(1, Number(t.college_counting_scores) || 4),
+        entitled: true,
+        divisionsPurchased: parseDivisions(t.divisions).length,
       }));
     },
     async loadRoster(tournamentId) {

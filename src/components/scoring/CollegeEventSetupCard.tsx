@@ -25,13 +25,15 @@ interface TeamRow {
 interface Props {
   event: ScoringEvent;
   onChanged: () => void;
+  /** Division cap from the purchased add-on tier (undefined = no cap known). */
+  maxDivisions?: number;
 }
 
 /**
  * Organizer-only setup: grand event title, divisions, rounds, teams, and
  * assigning each player to a team + division.
  */
-export function CollegeEventSetupCard({ event, onChanged }: Props) {
+export function CollegeEventSetupCard({ event, onChanged, maxDivisions }: Props) {
   const [eventTitle, setEventTitle] = useState(event.eventTitle || "");
   const [rounds, setRounds] = useState(String(event.rounds));
   const [teamSize, setTeamSize] = useState(String(event.teamSize ?? 5));

@@ -117,6 +117,12 @@ export function CollegeEventSetupCard({ event, onChanged }: Props) {
   const addDivision = () => {
     const name = newDivision.trim();
     if (!name) return;
+    if (maxDivisions && divisions.length >= maxDivisions) {
+      toast.error(
+        `Your College Golf Scoring add-on covers ${maxDivisions} division${maxDivisions === 1 ? "" : "s"}. Upgrade to add more.`,
+      );
+      return;
+    }
     const id = divisionIdFromName(name);
     if (divisions.some((d) => d.id === id)) return;
     setDivisions([...divisions, { id, name }]);

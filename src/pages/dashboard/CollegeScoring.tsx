@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Link } from "react-router-dom";
+import { GraduationCap, Loader2, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { CollegeScoringWorkspace } from "@/components/scoring/CollegeScoringWorkspace";
@@ -15,15 +18,29 @@ import { createOrgAdapter, type ScoringEvent } from "@/lib/collegeScoringAdapter
  */
 const CollegeScoring = () => {
   const { org, loading } = useOrgContext();
-  const adapter = useMemo(() => (org ? createOrgAdapter(org.orgId) : null), [org?.orgId]);
+  const baseAdapter = useMemo(() => (org ? createOrgAdapter(org.orgId) : null), [org?.orgId]);
+  const [allEvents, setAllEvents] = useState<ScoringEvent[]>([]);
+  const [eventsLoaded, setEventsLoaded] = useState(false);
   const [events, setEvents] = useState<ScoringEvent[]>([]);
   const [currentEventId, setCurrentEventId] = useState("");
 
+  /** Only events with a paid (or admin-enabled) College Golf Scoring add-on are scoreable. */
+  const adapter = useMemo(
+    () =>
+      baseAdapter
+        ? { ...baseAdapter, listEvents: async () => (await baseAdapter.listEvents()).filter((e) => e.entitled) }
+        : null,
+    [baseAdapter],
+  );
+
   useEffect(() => {
-    if (!adapter) return;
-    adapter
+    if (!baseAdapter) return;
+    baseAdapter
       .listEvents()
-      .then((list) => {
+      .then((full) => {
+        setAllEvents(full);
+        setEventsLoaded(true);
+        const list = full.filter((e) => e.entitled);
         setEvents(list);
         try {
           const stored = localStorage.getItem("collegeScoringEventId") || "";
@@ -32,8 +49,12 @@ const CollegeScoring = () => {
           setCurrentEventId(list[0]?.id || "");
         }
       })
-      .catch(() => setEvents([]));
-  }, [adapter]);
+      .catch(() => {
+        setAllEvents([]);
+        setEvents([]);
+        setEventsLoaded(true);
+      });
+  }, [baseAdapter]);
 
   const currentEvent = useMemo(
     () => events.find((e) => e.id === currentEventId) || null,
@@ -44,6 +65,47 @@ const CollegeScoring = () => {
     return (
       <div className="flex items-center justify-center py-20">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  if (eventsLoaded && events.length === 0) {
+    const upsellId = allEvents[0]?.id;
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
+            College Golf Scoring
+          </h1>
+          <p className="text-muted-foreground mt-1 text-sm">
+            A per-event add-on for multi-division team scoring.
+          </p>
+        </div>
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-4 w-4" /> Add-on required
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              None of your events have the College Golf Scoring &amp; Leaderboard add-on yet. Unlock it for an
+              event to set up divisions, teams (best 4 of 5), fast score entry and scoring admins.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {upsellId ? (
+                <Button asChild>
+                  <Link to={`/dashboard/tournaments/${upsellId}/addons/college-scoring`}>
+                    <GraduationCap className="h-4 w-4 mr-2" /> Unlock for an event
+                  </Link>
+                </Button>
+              ) : null}
+              <Button variant="outline" asChild>
+                <Link to="/college-golf-scoring">See what&apos;s included</Link>
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -76,6 +138,7 @@ const CollegeScoring = () => {
               return (
                 <CollegeEventSetupCard
                   event={event}
+                  maxDivisions={event.divisionsPurchased || undefined}
                   onChanged={() => {
                     reload();
                     adapter.listEvents().then(setEvents).catch(() => {});

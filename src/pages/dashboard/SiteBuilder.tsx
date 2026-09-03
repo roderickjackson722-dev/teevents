@@ -242,6 +242,10 @@ interface SiteSettings {
   site_secondary_color: string | null;
   site_hero_image_url: string | null;
   site_hero_opacity: number | null;
+  site_hero_fit?: string | null;
+  site_hero_position?: string | null;
+  site_hero_blur?: boolean | null;
+
   contact_email: string | null;
   contact_phone: string | null;
   schedule_info: string | null;

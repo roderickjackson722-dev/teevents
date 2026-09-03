@@ -145,11 +145,13 @@ const CollegeScoringSettings = ({ embedded = false }: { embedded?: boolean } = {
   );
 
   return (
-    <div className="min-h-screen bg-background py-8">
-      <div className="container mx-auto px-4 max-w-5xl space-y-6">
-        <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
-          <ArrowLeft className="h-4 w-4 mr-1" /> Back to Admin
-        </Button>
+    <div className={embedded ? "" : "min-h-screen bg-background py-8"}>
+      <div className={embedded ? "space-y-6" : "container mx-auto px-4 max-w-5xl space-y-6"}>
+        {!embedded && (
+          <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back to Admin
+          </Button>
+        )}
 
         <div>
           <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground flex items-center gap-2">

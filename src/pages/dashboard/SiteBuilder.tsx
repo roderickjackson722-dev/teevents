@@ -302,6 +302,9 @@ const SiteBuilder = () => {
   const [cropperOpen, setCropperOpen] = useState(false);
   const [pendingFileSrc, setPendingFileSrc] = useState<string | null>(null);
   const [pendingType, setPendingType] = useState<"logo" | "hero">("hero");
+  // Natural pixel size of the uploaded hero image, used to warn about low-res uploads
+  const [heroDims, setHeroDims] = useState<{ w: number; h: number } | null>(null);
+
   const cropAspect: AspectRatioOption = pendingType === "logo" ? "1:1" : "16:9";
 
   const startCrop = async (file: File, type: "logo" | "hero") => {

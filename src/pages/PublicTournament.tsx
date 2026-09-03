@@ -1513,6 +1513,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
+      {isPreview && (
+        <div className="bg-amber-500 text-black text-center text-xs sm:text-sm font-semibold px-3 py-2">
+          Organizer preview — this page is not published yet. Turn on <strong>Publish</strong> in the
+          Public Page Editor to make it visible to everyone.
+        </div>
+      )}
       {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}
       {showConfirmation && (
         <div className="fixed top-14 left-0 right-0 z-40">

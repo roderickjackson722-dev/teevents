@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Building2, CalendarRange, FileSpreadsheet, FileText, Lock, Volleyball } from "lucide-react";
+import { Building2, CalendarRange, FileSpreadsheet, FileText, Lock, Receipt, Volleyball } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 /**
@@ -11,6 +11,7 @@ const ITEMS = [
   { to: "/admin/seasons", label: "Season Management", desc: "Create seasons, add teams, view standings.", Icon: CalendarRange },
   { to: "/admin/facilities", label: "Facility Management", desc: "Add facilities, schedule games.", Icon: Building2 },
   { to: "/admin/financial-reports", label: "Financial Reports", desc: "Generate GAAP/GASB reports.", Icon: FileSpreadsheet },
+  { to: "/admin/invoices", label: "Invoice", desc: "Create, edit and export RFP sample invoices.", Icon: Receipt },
   { to: "/admin/transition-plan", label: "Transition Plan", desc: "Data export and knowledge transfer plan.", Icon: FileText },
 ];
 

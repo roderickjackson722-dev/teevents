@@ -443,6 +443,13 @@ const App = () => (
            <Route path="/admin/sms-settings" element={<AdminSmsSettings />} />
            <Route path="/admin/college-scoring" element={<AdminCollegeScoringSettings />} />
 
+           {/* Private RFP features — admin-only, not linked from any public or organizer navigation */}
+           <Route path="/admin/sports" element={<RfpSportsManagement />} />
+           <Route path="/admin/seasons" element={<RfpSeasonManagement />} />
+           <Route path="/admin/facilities" element={<RfpFacilityManagement />} />
+           <Route path="/admin/financial-reports" element={<RfpFinancialReports />} />
+           <Route path="/admin/transition-plan" element={<RfpTransitionPlan />} />
+
            <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />
            <Route path="/help" element={<HelpCenter />} />

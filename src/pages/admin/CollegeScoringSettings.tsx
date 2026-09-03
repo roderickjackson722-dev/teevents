@@ -32,7 +32,7 @@ interface CodeRow {
 }
 
 /** Admin → College Golf Scoring: availability, pricing overrides, and discount codes. */
-const CollegeScoringSettings = ({ embedded = false }: { embedded?: boolean } = {}) => {
+const CollegeScoringSettings = ({ embedded = false }: { embedded?: boolean }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [rows, setRows] = useState<Row[]>([]);

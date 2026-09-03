@@ -14,6 +14,7 @@ import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import AdminFeatureGuide from "@/components/admin/AdminFeatureGuide";
 import NewTournamentAlertBanner from "@/components/admin/NewTournamentAlertBanner";
+import RfpFeaturesPanel from "@/components/admin/RfpFeaturesPanel";
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminSignups from "@/components/admin/AdminSignups";
 import AdminPasswordResetHelper from "@/components/admin/AdminPasswordResetHelper";

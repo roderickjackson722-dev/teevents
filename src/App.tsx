@@ -100,6 +100,7 @@ import RfpSeasonManagement from "./pages/admin/rfp/SeasonManagement";
 import RfpFacilityManagement from "./pages/admin/rfp/FacilityManagement";
 import RfpFinancialReports from "./pages/admin/rfp/FinancialReports";
 import RfpTransitionPlan from "./pages/admin/rfp/TransitionPlan";
+import RfpInvoiceManagement from "./pages/admin/rfp/InvoiceManagement";
 import CollegeScoringAddon from "./pages/dashboard/CollegeScoringAddon";
 import DashboardMessages from "./pages/dashboard/Messages";
 
@@ -454,6 +455,7 @@ const App = () => (
            <Route path="/admin/facilities" element={<RfpFacilityManagement />} />
            <Route path="/admin/financial-reports" element={<RfpFinancialReports />} />
            <Route path="/admin/transition-plan" element={<RfpTransitionPlan />} />
+          <Route path="/admin/invoices" element={<RfpInvoiceManagement />} />
 
            <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />

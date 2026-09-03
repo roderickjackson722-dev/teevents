@@ -7766,6 +7766,95 @@ export type Database = {
         }
         Relationships: []
       }
+      rfp_invoice_line_items: {
+        Row: {
+          created_at: string
+          duration: string
+          id: string
+          invoice_id: string
+          rate_cents: number
+          service_date: string
+          service_type: string
+          sort_order: number
+          total_cents: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          duration?: string
+          id?: string
+          invoice_id: string
+          rate_cents?: number
+          service_date?: string
+          service_type: string
+          sort_order?: number
+          total_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          duration?: string
+          id?: string
+          invoice_id?: string
+          rate_cents?: number
+          service_date?: string
+          service_type?: string
+          sort_order?: number
+          total_cents?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfp_invoice_line_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "rfp_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfp_invoices: {
+        Row: {
+          bill_to: string | null
+          created_at: string
+          id: string
+          invoice_date: string
+          invoice_number: string
+          notes: string | null
+          payment_terms: string
+          po_reference: string | null
+          status: string
+          total_amount_cents: number
+          updated_at: string
+        }
+        Insert: {
+          bill_to?: string | null
+          created_at?: string
+          id?: string
+          invoice_date?: string
+          invoice_number: string
+          notes?: string | null
+          payment_terms?: string
+          po_reference?: string | null
+          status?: string
+          total_amount_cents?: number
+          updated_at?: string
+        }
+        Update: {
+          bill_to?: string | null
+          created_at?: string
+          id?: string
+          invoice_date?: string
+          invoice_number?: string
+          notes?: string | null
+          payment_terms?: string
+          po_reference?: string | null
+          status?: string
+          total_amount_cents?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       sales_leads: {
         Row: {
           calendly_link: string | null

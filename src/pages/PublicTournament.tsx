@@ -225,6 +225,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   }>>([]);
    const [loading, setLoading] = useState(true);
    const [notFound, setNotFound] = useState(false);
+   // True when the page is only visible because the signed-in organizer owns it
+   // (the event is not published yet). Shows a preview banner instead of an error.
+   const [isPreview, setIsPreview] = useState(false);
    const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
    const [mobileNavOpen, setMobileNavOpen] = useState(false);
    const [sponsorIndex, setSponsorIndex] = useState(0);

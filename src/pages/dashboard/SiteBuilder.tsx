@@ -871,17 +871,15 @@ const SiteBuilder = () => {
                   {SITE_TEMPLATES.map((tpl) => (
                     <button
                       key={tpl.id}
-                      onClick={() => {
+                      onClick={() =>
                         // Picking a template also applies its branding colors so the
                         // whole public page (hero, buttons, headings) matches it.
-                        setSettings((prev) => prev ? ({
-                          ...prev,
+                        updateFields({
                           template: tpl.id,
                           site_primary_color: tpl.colors.primary,
                           site_secondary_color: tpl.colors.secondary,
-                        }) : prev);
-                        setDirty(true);
-                      }}
+                        })
+                      }
                       className={`relative text-left rounded-lg border-2 overflow-hidden transition-all ${
                         (settings.template || "classic") === tpl.id
                           ? "border-primary ring-1 ring-primary/30"

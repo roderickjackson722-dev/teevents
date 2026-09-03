@@ -817,6 +817,12 @@ const SiteBuilder = () => {
                         src={settings.site_hero_image_url}
                         alt="Hero"
                         className="w-full h-32 object-cover"
+                        onLoad={(e) =>
+                          setHeroDims({
+                            w: e.currentTarget.naturalWidth,
+                            h: e.currentTarget.naturalHeight,
+                          })
+                        }
                       />
                     </div>
                   ) : (
@@ -840,7 +846,86 @@ const SiteBuilder = () => {
                       {settings.site_hero_image_url ? "Change Image" : "Upload Hero Image"}
                     </span>
                   </label>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    For a sharp background, upload at least 1920 × 1080 px (landscape). Small or
+                    portrait images get stretched and look blurry.
+                  </p>
+                  {heroDims && (
+                    <p
+                      className={`mt-1 text-xs ${heroDims.w < 1600 ? "text-destructive font-medium" : "text-muted-foreground"}`}
+                    >
+                      Current image: {heroDims.w} × {heroDims.h} px
+                      {heroDims.w < 1600
+                        ? " — too small for a full-width background. Upload a larger file to remove the blur."
+                        : " — good resolution."}
+                    </p>
+                  )}
                 </div>
+              </div>
+
+              {/* Hero image framing */}
+              <div className="space-y-3 pt-2 border-t border-border">
+                <div>
+                  <Label className="text-sm">Image Fit</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Choose whether the image fills the hero area or shows in full.
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {[
+                      { id: "cover", label: "Fill area", hint: "Crops edges, no gaps" },
+                      { id: "contain", label: "Show whole image", hint: "Nothing cropped" },
+                    ].map((opt) => {
+                      const active = ((settings as any).site_hero_fit ?? "cover") === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => updateField("site_hero_fit" as any, opt.id)}
+                          className={`rounded-md border p-2 text-left transition-colors ${active ? "border-primary bg-primary/10" : "border-border hover:bg-muted"}`}
+                        >
+                          <span className="block text-sm font-medium text-foreground">{opt.label}</span>
+                          <span className="block text-xs text-muted-foreground">{opt.hint}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div>
+                  <Label className="text-sm">Focal Point</Label>
+                  <p className="text-xs text-muted-foreground mb-2">
+                    Which part of the image stays visible when it's cropped on mobile.
+                  </p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {["top", "center", "bottom"].map((pos) => {
+                      const active = ((settings as any).site_hero_position ?? "center") === pos;
+                      return (
+                        <button
+                          key={pos}
+                          type="button"
+                          onClick={() => updateField("site_hero_position" as any, pos)}
+                          className={`rounded-md border px-2 py-1.5 text-sm capitalize transition-colors ${active ? "border-primary bg-primary/10 font-medium" : "border-border hover:bg-muted"}`}
+                        >
+                          {pos}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {((settings as any).site_hero_fit ?? "cover") === "contain" && (
+                  <label className="flex items-start gap-2">
+                    <input
+                      type="checkbox"
+                      className="mt-1"
+                      checked={!!(settings as any).site_hero_blur}
+                      onChange={(e) => updateField("site_hero_blur" as any, e.target.checked)}
+                    />
+                    <span className="text-xs text-muted-foreground">
+                      Fill the empty space with a soft blurred copy of the image instead of a solid color.
+                    </span>
+                  </label>
+                )}
               </div>
 
               {/* Background Transparency — always visible, controls current image */}
@@ -866,19 +951,39 @@ const SiteBuilder = () => {
                   style={{ backgroundColor: settings.site_primary_color || "#1a5c38" }}
                 >
                   {settings.site_hero_image_url && (
-                    <div
-                      className="absolute inset-0 bg-cover bg-center"
-                      style={{
-                        backgroundImage: `url(${settings.site_hero_image_url})`,
-                        opacity: (settings.site_hero_opacity ?? 100) / 100,
-                      }}
-                    />
+                    <div className="absolute inset-0" style={{ opacity: (settings.site_hero_opacity ?? 100) / 100 }}>
+                      {((settings as any).site_hero_fit ?? "cover") === "contain" &&
+                        !!(settings as any).site_hero_blur && (
+                          <img
+                            src={settings.site_hero_image_url}
+                            alt=""
+                            aria-hidden="true"
+                            className="absolute inset-0 h-full w-full object-cover scale-110 blur-xl"
+                          />
+                        )}
+                      <img
+                        src={settings.site_hero_image_url}
+                        alt=""
+                        aria-hidden="true"
+                        className="absolute inset-0 h-full w-full"
+                        style={{
+                          objectFit: ((settings as any).site_hero_fit ?? "cover") === "contain" ? "contain" : "cover",
+                          objectPosition:
+                            ((settings as any).site_hero_position ?? "center") === "top"
+                              ? "center top"
+                              : ((settings as any).site_hero_position ?? "center") === "bottom"
+                                ? "center bottom"
+                                : "center center",
+                        }}
+                      />
+                    </div>
                   )}
                   <div className="relative z-10 h-full flex items-center justify-center text-white text-xs font-semibold tracking-wide drop-shadow">
                     {settings.site_hero_image_url ? "LIVE PREVIEW" : "Upload an image to preview"}
                   </div>
                 </div>
               </div>
+
 
               {/* Template Selector */}
               <div>

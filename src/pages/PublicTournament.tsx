@@ -708,8 +708,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
   if (notFound || !tournament) {
-    // Shown as a friendly pop-up card (not a scary "not found" page) because in
-    // sample mode the page usually loads fine after a quick reload.
+    // Most often this page simply hasn't been published yet, so the message
+    // explains the exact step an organizer needs to take.
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-xl">
@@ -717,16 +717,26 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             ⛳
           </div>
           <h1 className="mb-2 text-xl font-display font-bold text-foreground">
-            Just a moment — loading this tournament page
+            This tournament page isn't published yet
           </h1>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Organizers: your page stays private until you turn on <strong>Publish</strong>. Go to your
+            dashboard → <strong>Public Page Editor</strong>, switch <strong>Publish</strong> on, then press
+            <strong> Save</strong>. Your link goes live right away.
+          </p>
           <p className="mb-5 text-sm text-muted-foreground">
-            We couldn't load the page on the first try. This is common in sample mode — tap reload
-            and the live tournament page will open right up.
+            Guests: this event isn't live yet — please check back, or reload in case the page was just published.
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <a
+              href="/dashboard/public-page"
+              className="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-secondary/80"
+            >
+              Open Public Page Editor
+            </a>
             <button
               onClick={() => window.location.reload()}
-              className="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-secondary/80"
+              className="inline-flex items-center justify-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
             >
               Reload page
             </button>

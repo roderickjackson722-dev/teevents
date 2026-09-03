@@ -1608,16 +1608,38 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           backgroundColor: primary,
         }}
       >
-        {/* Background image — on mobile the full image is shown (contain) below the fixed nav so the top isn't clipped */}
-        {tournament.site_hero_image_url && (
-          <div
-            className="absolute inset-x-0 bottom-0 top-14 sm:top-0 bg-contain bg-top sm:bg-cover sm:bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `url(${tournament.site_hero_image_url})`,
-              opacity: (tournament.site_hero_opacity ?? 100) / 100,
-            }}
-          />
-        )}
+        {/* Background image — organizer chooses fill vs. show-whole-image and focal point */}
+        {tournament.site_hero_image_url && (() => {
+          const fit = (tournament as any).site_hero_fit === "contain" ? "contain" : "cover";
+          const posKey = (tournament as any).site_hero_position || "center";
+          const objectPosition =
+            posKey === "top" ? "center top" : posKey === "bottom" ? "center bottom" : "center center";
+          const showBlurBackdrop = fit === "contain" && (tournament as any).site_hero_blur !== false;
+          return (
+            <div
+              className="absolute inset-0 overflow-hidden"
+              style={{ opacity: (tournament.site_hero_opacity ?? 100) / 100 }}
+            >
+              {showBlurBackdrop && (
+                <img
+                  src={tournament.site_hero_image_url}
+                  alt=""
+                  aria-hidden="true"
+                  className="absolute inset-0 h-full w-full object-cover scale-110 blur-2xl"
+                />
+              )}
+              <img
+                src={tournament.site_hero_image_url}
+                alt={heroTitle}
+                fetchPriority="high"
+                decoding="async"
+                className="absolute inset-0 h-full w-full"
+                style={{ objectFit: fit, objectPosition }}
+              />
+            </div>
+          );
+        })()}
+
 
         {/* Overlay */}
         <div className="absolute inset-0" style={{ background: style.heroOverlay }} />

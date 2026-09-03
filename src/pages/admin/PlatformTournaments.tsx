@@ -85,18 +85,22 @@ export default function PlatformTournaments() {
 
     const [{ data: orgs }, { data: regs }, { data: spons }] = await Promise.all([
       supabase.from("organizations").select("id, name, plan, feature_overrides, fee_override").in("id", orgIds.length ? orgIds : ["00000000-0000-0000-0000-000000000000"]) as any,
-      supabase.from("tournament_registrations").select("tournament_id, payment_status, amount_paid_cents").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
+      supabase.from("tournament_registrations").select("tournament_id, payment_status").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
       supabase.from("tournament_sponsors").select("tournament_id").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
     ]);
 
     const orgMap: Record<string, any> = {};
     for (const o of (orgs as any[]) || []) orgMap[o.id] = o;
 
+    // Registrations have no per-row paid amount; value paid entries at the tournament's entry fee.
+    const feeMap: Record<string, number> = {};
+    for (const t of list) feeMap[t.id] = Number((t as any).registration_fee_cents || 0);
+
     const regAgg: Record<string, { count: number; paid: number; revenue: number }> = {};
     for (const r of (regs as any[]) || []) {
       const a = regAgg[r.tournament_id] ||= { count: 0, paid: 0, revenue: 0 };
       a.count++;
-      if (r.payment_status === "paid") { a.paid++; a.revenue += r.amount_paid_cents || 0; }
+      if (r.payment_status === "paid") { a.paid++; a.revenue += feeMap[r.tournament_id] || 0; }
     }
     const sponsorCount: Record<string, number> = {};
     for (const s of (spons as any[]) || []) sponsorCount[s.tournament_id] = (sponsorCount[s.tournament_id] || 0) + 1;

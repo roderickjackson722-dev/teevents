@@ -48,7 +48,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    const gross = Number(reg.amount_paid_cents || tournament.registration_fee_cents || 0);
+    const gross = Number(tournament.registration_fee_cents || 0);
     const isPaid = reg.payment_status === "paid";
     const method = String(reg.payment_method || "manual");
     const paymentLabel = method === "check" ? "Check" : method === "cash" ? "Cash" : "Manual / Offline";

@@ -374,3 +374,113 @@ export const getFinancialReport = createServerFn({ method: "POST" })
 
     return { lines };
   });
+
+/* --------------------------------- invoices -------------------------------- */
+
+export interface RfpInvoiceLine {
+  id?: string;
+  service_type: string;
+  service_date: string;
+  duration: string;
+  rate_cents: number;
+  total_cents: number;
+  sort_order?: number;
+}
+
+export interface RfpInvoice {
+  id: string;
+  invoice_number: string;
+  po_reference: string | null;
+  invoice_date: string;
+  bill_to: string | null;
+  payment_terms: string;
+  notes: string | null;
+  total_amount_cents: number;
+  status: string;
+  line_items?: RfpInvoiceLine[];
+}
+
+export const listInvoices = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }: any) => {
+    const admin = await adminOnly(context);
+    const [{ data: invoices }, { data: lines }] = await Promise.all([
+      admin.from("rfp_invoices").select("*").order("created_at", { ascending: false }),
+      admin.from("rfp_invoice_line_items").select("*").order("sort_order"),
+    ]);
+    const byInvoice = new Map<string, any[]>();
+    ((lines || []) as any[]).forEach((l) => {
+      const arr = byInvoice.get(l.invoice_id) || [];
+      arr.push(l);
+      byInvoice.set(l.invoice_id, arr);
+    });
+    return {
+      invoices: ((invoices || []) as any[]).map((inv) => ({
+        ...inv,
+        line_items: byInvoice.get(inv.id) || [],
+      })) as RfpInvoice[],
+    };
+  });
+
+export const saveInvoice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: any) => d)
+  .handler(async ({ data, context }: any) => {
+    const admin = await adminOnly(context);
+    const lines: RfpInvoiceLine[] = (data.line_items || []).filter(
+      (l: RfpInvoiceLine) => String(l.service_type || "").trim().length > 0,
+    );
+    const total = lines.reduce((s, l) => s + (Number(l.total_cents) || 0), 0);
+    const row = {
+      invoice_number: String(data.invoice_number || "").trim(),
+      po_reference: data.po_reference || null,
+      invoice_date: data.invoice_date || new Date().toISOString().slice(0, 10),
+      bill_to: data.bill_to || null,
+      payment_terms: data.payment_terms || "Net 30",
+      notes: data.notes || null,
+      status: data.status || "draft",
+      total_amount_cents: total,
+    };
+    if (!row.invoice_number) throw new Error("Invoice number is required.");
+
+    let invoiceId = data.id as string | undefined;
+    if (invoiceId) {
+      const { error } = await admin.from("rfp_invoices").update(row).eq("id", invoiceId);
+      if (error) throw new Error(error.message);
+      await admin.from("rfp_invoice_line_items").delete().eq("invoice_id", invoiceId);
+    } else {
+      const { data: inserted, error } = await admin
+        .from("rfp_invoices")
+        .insert(row)
+        .select("id")
+        .single();
+      if (error) throw new Error(error.message);
+      invoiceId = inserted.id;
+    }
+
+    if (lines.length) {
+      const { error } = await admin.from("rfp_invoice_line_items").insert(
+        lines.map((l, i) => ({
+          invoice_id: invoiceId,
+          service_type: String(l.service_type).trim(),
+          service_date: l.service_date || row.invoice_date,
+          duration: String(l.duration || ""),
+          rate_cents: Number(l.rate_cents) || 0,
+          total_cents: Number(l.total_cents) || 0,
+          sort_order: i,
+        })),
+      );
+      if (error) throw new Error(error.message);
+    }
+    return { ok: true, id: invoiceId, total_amount_cents: total };
+  });
+
+export const deleteInvoice = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((d: { id: string }) => d)
+  .handler(async ({ data, context }: any) => {
+    const admin = await adminOnly(context);
+    const { error } = await admin.from("rfp_invoices").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

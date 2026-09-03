@@ -225,6 +225,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   }>>([]);
    const [loading, setLoading] = useState(true);
    const [notFound, setNotFound] = useState(false);
+   // True when the page is only visible because the signed-in organizer owns it
+   // (the event is not published yet). Shows a preview banner instead of an error.
+   const [isPreview, setIsPreview] = useState(false);
    const [nonprofitInfo, setNonprofitInfo] = useState<{ isNonprofit: boolean; nonprofitName?: string; ein?: string; platformFeeRate?: number }>({ isNonprofit: false });
    const [mobileNavOpen, setMobileNavOpen] = useState(false);
    const [sponsorIndex, setSponsorIndex] = useState(0);
@@ -319,18 +322,23 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (!slug) return;
     // Resolve via security-definer RPC: returns the published tournament row
     // (custom_slug takes precedence) with internal-only fields stripped out.
-    (supabase as any)
-      .rpc("get_public_tournament_site", { _slug: slug })
-      .then(async ({ data, error }: { data: any; error: any }) => {
+    const handleSite = async ({ data, error }: { data: any; error: any }): Promise<void> => {
         if (error || !data) {
           // The first lookup can fail transiently (e.g. an auth token still in
           // flight while previewing from a sample dashboard). Retry once
           // automatically before telling the visitor anything is wrong.
           const retry = await (supabase as any).rpc("get_public_tournament_site", { _slug: slug });
-          if (retry?.error || !retry?.data) { setNotFound(true); setLoading(false); return; }
-          setTournament(retry.data as unknown as TournamentSite);
-          setLoading(false);
-          return;
+          if (!retry?.error && retry?.data) return handleSite({ data: retry.data, error: null });
+          // Organizer preview: RLS only lets workspace members read their own
+          // event, so an unpublished page still renders for the organizer.
+          const { data: own } = await supabase
+            .from("tournaments")
+            .select("*")
+            .or(`slug.eq.${slug},custom_slug.eq.${slug}`)
+            .limit(1)
+            .maybeSingle();
+          if (own) { setIsPreview(true); return handleSite({ data: own, error: null }); }
+          setNotFound(true); setLoading(false); return;
         }
         const t = data as unknown as TournamentSite;
         setTournament(t);
@@ -399,7 +407,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         }
 
         setLoading(false);
-      });
+    };
+    (supabase as any)
+      .rpc("get_public_tournament_site", { _slug: slug })
+      .then(handleSite);
   }, [slug]);
 
   useEffect(() => {
@@ -697,8 +708,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }
   if (notFound || !tournament) {
-    // Shown as a friendly pop-up card (not a scary "not found" page) because in
-    // sample mode the page usually loads fine after a quick reload.
+    // Most often this page simply hasn't been published yet, so the message
+    // explains the exact step an organizer needs to take.
     return (
       <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <div className="w-full max-w-md rounded-2xl border border-border bg-card p-6 text-center shadow-xl">
@@ -706,16 +717,26 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             ⛳
           </div>
           <h1 className="mb-2 text-xl font-display font-bold text-foreground">
-            Just a moment — loading this tournament page
+            This tournament page isn't published yet
           </h1>
+          <p className="mb-3 text-sm text-muted-foreground">
+            Organizers: your page stays private until you turn on <strong>Publish</strong>. Go to your
+            dashboard → <strong>Public Page Editor</strong>, switch <strong>Publish</strong> on, then press
+            <strong> Save</strong>. Your link goes live right away.
+          </p>
           <p className="mb-5 text-sm text-muted-foreground">
-            We couldn't load the page on the first try. This is common in sample mode — tap reload
-            and the live tournament page will open right up.
+            Guests: this event isn't live yet — please check back, or reload in case the page was just published.
           </p>
           <div className="flex flex-col gap-2 sm:flex-row sm:justify-center">
+            <a
+              href="/dashboard/public-page-editor"
+              className="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-secondary/80"
+            >
+              Open Public Page Editor
+            </a>
             <button
               onClick={() => window.location.reload()}
-              className="inline-flex items-center justify-center rounded-md bg-secondary px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-secondary/80"
+              className="inline-flex items-center justify-center rounded-md border border-border px-4 py-2 text-sm font-semibold text-foreground transition-colors hover:bg-muted"
             >
               Reload page
             </button>
@@ -1492,6 +1513,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
+      {isPreview && (
+        <div className="bg-amber-500 text-black text-center text-xs sm:text-sm font-semibold px-3 py-2">
+          Organizer preview — this page is not published yet. Turn on <strong>Publish</strong> in the
+          Public Page Editor to make it visible to everyone.
+        </div>
+      )}
       {/* ===== REGISTRATION CONFIRMATION BANNER (top of page) ===== */}
       {showConfirmation && (
         <div className="fixed top-14 left-0 right-0 z-40">

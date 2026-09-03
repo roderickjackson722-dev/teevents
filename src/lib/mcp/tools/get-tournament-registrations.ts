@@ -25,7 +25,7 @@ export default defineTool({
     }
     const { data, error } = await userClient(ctx)
       .from("tournament_registrations")
-      .select("id, first_name, last_name, email, phone, group_number, payment_status, amount_paid_cents, created_at")
+      .select("id, first_name, last_name, email, phone, group_number, payment_status, created_at")
       .eq("tournament_id", tournament_id)
       .order("created_at", { ascending: false })
       .limit(limit);

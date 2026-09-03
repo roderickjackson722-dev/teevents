@@ -85,7 +85,7 @@ export default function PlatformTournaments() {
 
     const [{ data: orgs }, { data: regs }, { data: spons }] = await Promise.all([
       supabase.from("organizations").select("id, name, plan, feature_overrides, fee_override").in("id", orgIds.length ? orgIds : ["00000000-0000-0000-0000-000000000000"]) as any,
-      supabase.from("tournament_registrations").select("tournament_id, payment_status, amount_paid_cents").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
+      supabase.from("tournament_registrations").select("tournament_id, payment_status").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
       supabase.from("tournament_sponsors").select("tournament_id").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
     ]);
 

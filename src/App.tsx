@@ -95,6 +95,11 @@ import AdminEmailNotifications from "./pages/admin/EmailNotifications";
 import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
 import AdminSmsSettings from "./pages/admin/SmsSettings";
 import AdminCollegeScoringSettings from "./pages/admin/CollegeScoringSettings";
+import RfpSportsManagement from "./pages/admin/rfp/SportsManagement";
+import RfpSeasonManagement from "./pages/admin/rfp/SeasonManagement";
+import RfpFacilityManagement from "./pages/admin/rfp/FacilityManagement";
+import RfpFinancialReports from "./pages/admin/rfp/FinancialReports";
+import RfpTransitionPlan from "./pages/admin/rfp/TransitionPlan";
 import CollegeScoringAddon from "./pages/dashboard/CollegeScoringAddon";
 import DashboardMessages from "./pages/dashboard/Messages";
 

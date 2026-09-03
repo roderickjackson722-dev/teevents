@@ -870,7 +870,7 @@ const AdminDashboard = () => {
                   ["requests", "Access Requests", Users],
                   ["password-reset", "Password Reset Helper", KeyRound],
                   ["emails", "Auto-Approve Emails", Mail],
-                  ["college", "College Hub", School],
+                  
                   ["sponsorship-pages", "Sponsorship Pages", Target],
                 ] as const).map(([key, label, Icon]) => (
                   <button

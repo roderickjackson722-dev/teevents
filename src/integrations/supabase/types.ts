@@ -11769,6 +11769,10 @@ export type Database = {
           branding_removed_paid: boolean
           branding_removed_paid_at: string | null
           captain_label: string | null
+          clippd_api_key: string | null
+          clippd_integration_enabled: boolean
+          clippd_last_sync: string | null
+          clippd_tournament_id: string | null
           college_counting_scores: number
           college_scoring_divisions: number | null
           college_scoring_divisions_purchased: number | null
@@ -12114,6 +12118,10 @@ export type Database = {
           branding_removed_paid?: boolean
           branding_removed_paid_at?: string | null
           captain_label?: string | null
+          clippd_api_key?: string | null
+          clippd_integration_enabled?: boolean
+          clippd_last_sync?: string | null
+          clippd_tournament_id?: string | null
           college_counting_scores?: number
           college_scoring_divisions?: number | null
           college_scoring_divisions_purchased?: number | null
@@ -12459,6 +12467,10 @@ export type Database = {
           branding_removed_paid?: boolean
           branding_removed_paid_at?: string | null
           captain_label?: string | null
+          clippd_api_key?: string | null
+          clippd_integration_enabled?: boolean
+          clippd_last_sync?: string | null
+          clippd_tournament_id?: string | null
           college_counting_scores?: number
           college_scoring_divisions?: number | null
           college_scoring_divisions_purchased?: number | null

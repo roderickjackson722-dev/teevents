@@ -407,7 +407,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         }
 
         setLoading(false);
-      });
+    };
+    (supabase as any)
+      .rpc("get_public_tournament_site", { _slug: slug })
+      .then(handleSite);
   }, [slug]);
 
   useEffect(() => {

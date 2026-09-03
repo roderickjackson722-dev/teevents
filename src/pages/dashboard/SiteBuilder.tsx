@@ -365,7 +365,10 @@ const SiteBuilder = () => {
         site_primary_color: settings.site_primary_color,
         site_secondary_color: settings.site_secondary_color,
         site_hero_image_url: settings.site_hero_image_url,
-        site_hero_opacity: settings.site_hero_opacity ?? 100,
+        site_hero_fit: (settings as any).site_hero_fit ?? "cover",
+        site_hero_position: (settings as any).site_hero_position ?? "center",
+        site_hero_blur: (settings as any).site_hero_blur ?? false,
+
         contact_email: settings.contact_email,
         contact_phone: settings.contact_phone,
         contact_name: (settings as any).contact_name ?? null,

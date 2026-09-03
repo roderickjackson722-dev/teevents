@@ -11655,8 +11655,11 @@ export type Database = {
           site_button_radius: number | null
           site_font_family: string | null
           site_heading_font_size: number | null
+          site_hero_blur: boolean
+          site_hero_fit: string
           site_hero_image_url: string | null
           site_hero_opacity: number
+          site_hero_position: string
           site_hero_subtitle: string | null
           site_hero_title: string | null
           site_logo_color_mode: string
@@ -11996,8 +11999,11 @@ export type Database = {
           site_button_radius?: number | null
           site_font_family?: string | null
           site_heading_font_size?: number | null
+          site_hero_blur?: boolean
+          site_hero_fit?: string
           site_hero_image_url?: string | null
           site_hero_opacity?: number
+          site_hero_position?: string
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
           site_logo_color_mode?: string
@@ -12337,8 +12343,11 @@ export type Database = {
           site_button_radius?: number | null
           site_font_family?: string | null
           site_heading_font_size?: number | null
+          site_hero_blur?: boolean
+          site_hero_fit?: string
           site_hero_image_url?: string | null
           site_hero_opacity?: number
+          site_hero_position?: string
           site_hero_subtitle?: string | null
           site_hero_title?: string | null
           site_logo_color_mode?: string

@@ -95,6 +95,7 @@ import AdminEmailNotifications from "./pages/admin/EmailNotifications";
 import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
 import AdminSmsSettings from "./pages/admin/SmsSettings";
 import AdminCollegeScoringSettings from "./pages/admin/CollegeScoringSettings";
+import AdminCollegeHub from "./pages/admin/CollegeHub";
 import RfpSportsManagement from "./pages/admin/rfp/SportsManagement";
 import RfpSeasonManagement from "./pages/admin/rfp/SeasonManagement";
 import RfpFacilityManagement from "./pages/admin/rfp/FacilityManagement";
@@ -420,6 +421,7 @@ const App = () => (
              <Route path="/admin/competitors" element={<AdminCompetitors />} />
              <Route path="/admin/branding-footer" element={<AdminBrandingFooter />} />
              <Route path="/admin/post-event-email" element={<AdminPostEventEmail />} />
+             <Route path="/admin/college-hub" element={<AdminCollegeHub />} />
              <Route path="/admin/college-hub/bookings" element={<CollegeHubBookings />} />
 
             <Route path="/admin/college-hub/surveys" element={<CollegeHubSurveys />} />

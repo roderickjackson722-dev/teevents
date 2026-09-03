@@ -4,6 +4,7 @@ import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
   Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, UserPlus, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt, Megaphone, Sparkles, Shield, CalendarClock, BookOpen, Gauge, GraduationCap
+  , Link2
 } from "lucide-react";
 import AdminNotificationCenter, { useAdminNotificationCount } from "@/components/admin/AdminNotificationCenter";
 import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";
@@ -852,13 +853,6 @@ const AdminDashboard = () => {
                 </button>
 
                 <button
-                  onClick={() => navigate("/admin/college-scoring")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <GraduationCap className="h-4 w-4" /> College Scoring Add-on
-                </button>
-
-                <button
                   onClick={() => navigate("/admin/platform-tournaments")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
@@ -877,7 +871,7 @@ const AdminDashboard = () => {
                   ["requests", "Access Requests", Users],
                   ["password-reset", "Password Reset Helper", KeyRound],
                   ["emails", "Auto-Approve Emails", Mail],
-                  ["college", "College Hub", School],
+                  
                   ["sponsorship-pages", "Sponsorship Pages", Target],
                 ] as const).map(([key, label, Icon]) => (
                   <button
@@ -912,6 +906,43 @@ const AdminDashboard = () => {
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <Trophy className="h-4 w-4" /> Course Database
+                </button>
+              </div>
+            </div>
+
+            {/* College Hub: college events, the scoring add-on and Clippd sync in one place */}
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">College Hub</div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => navigate("/admin/college-hub")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <School className="h-4 w-4" /> College Hub
+                </button>
+                <button
+                  onClick={() => navigate("/admin/college-hub?tab=scoring")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <GraduationCap className="h-4 w-4" /> College Scoring Add-on
+                </button>
+                <button
+                  onClick={() => navigate("/admin/college-hub?tab=clippd")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Link2 className="h-4 w-4" /> Scoreboard / Clippd
+                </button>
+                <button
+                  onClick={() => navigate("/admin/college-hub/bookings")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Calendar className="h-4 w-4" /> Bookings
+                </button>
+                <button
+                  onClick={() => navigate("/admin/college-hub/surveys")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <FileText className="h-4 w-4" /> Surveys
                 </button>
               </div>
             </div>

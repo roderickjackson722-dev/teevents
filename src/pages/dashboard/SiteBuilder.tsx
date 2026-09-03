@@ -603,13 +603,18 @@ const SiteBuilder = () => {
               {settings.site_published ? "Published" : "Publish"}
             </span>
           </label>
-          {publicUrl && settings.site_published && (
+          {publicUrl && (
             <Button variant="outline" size="sm" asChild className="shrink-0">
               <Link to={publicUrl} target="_blank">
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
-                View Site
+                {settings.site_published ? "View Site" : "View Live Preview"}
               </Link>
             </Button>
+          )}
+          {!settings.site_published && (
+            <span className="text-xs text-muted-foreground">
+              Only you can see the preview until you turn on Publish and save.
+            </span>
           )}
           <Button onClick={handleSave} disabled={saving} className="shrink-0">
             {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}

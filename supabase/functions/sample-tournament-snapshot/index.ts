@@ -42,7 +42,7 @@ Deno.serve(async (req) => {
     const tId = t.id;
     const [orgRes, regsRes, sponsorsRes, scoresRes, txRes, volRes] = await Promise.all([
       supabase.from("organizations").select("id, name, dashboard_name, logo_url").eq("id", t.organization_id).maybeSingle(),
-      supabase.from("tournament_registrations").select("id, first_name, last_name, email, handicap, payment_status, amount_paid_cents, created_at, shirt_size, dietary_restrictions").eq("tournament_id", tId).limit(300),
+      supabase.from("tournament_registrations").select("id, first_name, last_name, email, handicap, payment_status, created_at, shirt_size, dietary_restrictions").eq("tournament_id", tId).limit(300),
       supabase.from("tournament_sponsors").select("id, name, logo_url").eq("tournament_id", tId).limit(100),
       supabase.from("tournament_scores").select("*").eq("tournament_id", tId).limit(200),
       supabase.from("platform_transactions").select("id, amount_cents, platform_fee_cents, status, created_at, description").eq("tournament_id", tId).limit(200),

@@ -4,6 +4,7 @@ import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
   Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, UserPlus, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt, Megaphone, Sparkles, Shield, CalendarClock, BookOpen, Gauge, GraduationCap
+  , Link2
 } from "lucide-react";
 import AdminNotificationCenter, { useAdminNotificationCount } from "@/components/admin/AdminNotificationCenter";
 import AdminFlyerTemplates from "@/components/admin/AdminFlyerTemplates";

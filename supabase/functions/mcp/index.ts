@@ -59,7 +59,7 @@ var get_tournament_registrations_default = defineTool2({
     if (!ctx.isAuthenticated()) {
       return { content: [{ type: "text", text: "Not authenticated" }], isError: true };
     }
-    const { data, error } = await userClient2(ctx).from("tournament_registrations").select("id, first_name, last_name, email, phone, group_number, payment_status, amount_paid_cents, created_at").eq("tournament_id", tournament_id).order("created_at", { ascending: false }).limit(limit);
+    const { data, error } = await userClient2(ctx).from("tournament_registrations").select("id, first_name, last_name, email, phone, group_number, payment_status, created_at").eq("tournament_id", tournament_id).order("created_at", { ascending: false }).limit(limit);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {
       content: [{ type: "text", text: JSON.stringify(data, null, 2) }],

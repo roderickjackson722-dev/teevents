@@ -14,6 +14,7 @@ import AdminAnalytics from "@/components/admin/AdminAnalytics";
 import AdminDemoScript from "@/components/admin/AdminDemoScript";
 import AdminFeatureGuide from "@/components/admin/AdminFeatureGuide";
 import NewTournamentAlertBanner from "@/components/admin/NewTournamentAlertBanner";
+import RfpFeaturesPanel from "@/components/admin/RfpFeaturesPanel";
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminSignups from "@/components/admin/AdminSignups";
 import AdminPasswordResetHelper from "@/components/admin/AdminPasswordResetHelper";
@@ -794,6 +795,7 @@ const AdminDashboard = () => {
       <section className="bg-golf-cream min-h-[70vh] py-8">
         <div className="container mx-auto px-4 max-w-5xl">
           <NewTournamentAlertBanner />
+          <RfpFeaturesPanel />
           {/* Tabs */}
           <div className="mb-8 border-b border-border pb-2 space-y-3">
             <div>

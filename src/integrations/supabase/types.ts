@@ -3153,6 +3153,106 @@ export type Database = {
         }
         Relationships: []
       }
+      facilities: {
+        Row: {
+          address: string | null
+          capacity: number | null
+          created_at: string
+          facility_type: string
+          id: string
+          is_active: boolean
+          name: string
+          notes: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          capacity?: number | null
+          created_at?: string
+          facility_type?: string
+          id?: string
+          is_active?: boolean
+          name: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          capacity?: number | null
+          created_at?: string
+          facility_type?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          notes?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      facility_bookings: {
+        Row: {
+          booking_type: string
+          created_at: string
+          end_time: string
+          facility_id: string
+          id: string
+          season_id: string | null
+          start_time: string
+          status: string
+          title: string | null
+          tournament_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          booking_type?: string
+          created_at?: string
+          end_time: string
+          facility_id: string
+          id?: string
+          season_id?: string | null
+          start_time: string
+          status?: string
+          title?: string | null
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          booking_type?: string
+          created_at?: string
+          end_time?: string
+          facility_id?: string
+          id?: string
+          season_id?: string | null
+          start_time?: string
+          status?: string
+          title?: string | null
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "facility_bookings_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facility_bookings_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "facility_bookings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_payouts: {
         Row: {
           created_at: string
@@ -8168,6 +8268,151 @@ export type Database = {
           },
         ]
       }
+      season_standings: {
+        Row: {
+          created_at: string
+          id: string
+          losses: number
+          points: number
+          runs_allowed: number
+          runs_scored: number
+          season_id: string
+          team_id: string
+          ties: number
+          updated_at: string
+          wins: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          losses?: number
+          points?: number
+          runs_allowed?: number
+          runs_scored?: number
+          season_id: string
+          team_id: string
+          ties?: number
+          updated_at?: string
+          wins?: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          losses?: number
+          points?: number
+          runs_allowed?: number
+          runs_scored?: number
+          season_id?: string
+          team_id?: string
+          ties?: number
+          updated_at?: string
+          wins?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_standings_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "season_standings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "season_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      season_teams: {
+        Row: {
+          coach_email: string | null
+          coach_name: string | null
+          created_at: string
+          division: string | null
+          id: string
+          season_id: string
+          team_name: string
+          updated_at: string
+        }
+        Insert: {
+          coach_email?: string | null
+          coach_name?: string | null
+          created_at?: string
+          division?: string | null
+          id?: string
+          season_id: string
+          team_name: string
+          updated_at?: string
+        }
+        Update: {
+          coach_email?: string | null
+          coach_name?: string | null
+          created_at?: string
+          division?: string | null
+          id?: string
+          season_id?: string
+          team_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "season_teams_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      seasons: {
+        Row: {
+          created_at: string
+          end_date: string | null
+          id: string
+          name: string
+          season_type: string
+          sport_type: string
+          start_date: string | null
+          status: string
+          tournament_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name: string
+          season_type?: string
+          sport_type?: string
+          start_date?: string | null
+          status?: string
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_date?: string | null
+          id?: string
+          name?: string
+          season_type?: string
+          sport_type?: string
+          start_date?: string | null
+          status?: string
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "seasons_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       security_activity_log: {
         Row: {
           action_details: Json | null
@@ -9067,6 +9312,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      sport_settings: {
+        Row: {
+          created_at: string
+          field_name: string
+          id: string
+          innings_or_halves: number
+          is_active: boolean
+          label: string
+          max_players_per_team: number
+          min_players_per_team: number
+          period_name: string
+          scoring_type: string
+          sport_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          field_name?: string
+          id?: string
+          innings_or_halves?: number
+          is_active?: boolean
+          label: string
+          max_players_per_team?: number
+          min_players_per_team?: number
+          period_name?: string
+          scoring_type?: string
+          sport_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          field_name?: string
+          id?: string
+          innings_or_halves?: number
+          is_active?: boolean
+          label?: string
+          max_players_per_team?: number
+          min_players_per_team?: number
+          period_name?: string
+          scoring_type?: string
+          sport_type?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       stripe_onboarding_logs: {
         Row: {
@@ -11689,6 +11979,7 @@ export type Database = {
           sponsor_logo_display_size: string
           sponsor_parking_info: string | null
           sponsorship_day_of_email_config: Json | null
+          sport_type: string
           state: string | null
           status: string
           store_section_title: string | null
@@ -12033,6 +12324,7 @@ export type Database = {
           sponsor_logo_display_size?: string
           sponsor_parking_info?: string | null
           sponsorship_day_of_email_config?: Json | null
+          sport_type?: string
           state?: string | null
           status?: string
           store_section_title?: string | null
@@ -12377,6 +12669,7 @@ export type Database = {
           sponsor_logo_display_size?: string
           sponsor_parking_info?: string | null
           sponsorship_day_of_email_config?: Json | null
+          sport_type?: string
           state?: string | null
           status?: string
           store_section_title?: string | null

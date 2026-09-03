@@ -322,18 +322,23 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     if (!slug) return;
     // Resolve via security-definer RPC: returns the published tournament row
     // (custom_slug takes precedence) with internal-only fields stripped out.
-    (supabase as any)
-      .rpc("get_public_tournament_site", { _slug: slug })
-      .then(async ({ data, error }: { data: any; error: any }) => {
+    const handleSite = async ({ data, error }: { data: any; error: any }): Promise<void> => {
         if (error || !data) {
           // The first lookup can fail transiently (e.g. an auth token still in
           // flight while previewing from a sample dashboard). Retry once
           // automatically before telling the visitor anything is wrong.
           const retry = await (supabase as any).rpc("get_public_tournament_site", { _slug: slug });
-          if (retry?.error || !retry?.data) { setNotFound(true); setLoading(false); return; }
-          setTournament(retry.data as unknown as TournamentSite);
-          setLoading(false);
-          return;
+          if (!retry?.error && retry?.data) return handleSite({ data: retry.data, error: null });
+          // Organizer preview: RLS only lets workspace members read their own
+          // event, so an unpublished page still renders for the organizer.
+          const { data: own } = await supabase
+            .from("tournaments")
+            .select("*")
+            .or(`slug.eq.${slug},custom_slug.eq.${slug}`)
+            .limit(1)
+            .maybeSingle();
+          if (own) { setIsPreview(true); return handleSite({ data: own, error: null }); }
+          setNotFound(true); setLoading(false); return;
         }
         const t = data as unknown as TournamentSite;
         setTournament(t);

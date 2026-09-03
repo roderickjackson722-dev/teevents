@@ -794,6 +794,7 @@ const AdminDashboard = () => {
       <section className="bg-golf-cream min-h-[70vh] py-8">
         <div className="container mx-auto px-4 max-w-5xl">
           <NewTournamentAlertBanner />
+          <RfpFeaturesPanel />
           {/* Tabs */}
           <div className="mb-8 border-b border-border pb-2 space-y-3">
             <div>

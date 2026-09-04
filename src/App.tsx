@@ -103,6 +103,11 @@ import RfpFinancialReports from "./pages/admin/rfp/FinancialReports";
 import RfpTransitionPlan from "./pages/admin/rfp/TransitionPlan";
 import RfpInvoiceManagement from "./pages/admin/rfp/InvoiceManagement";
 import RfpClippdIntegration from "./pages/admin/rfp/ClippdIntegration";
+import RfpRegistrationManagement from "./pages/admin/rfp/RegistrationManagement";
+import RfpPaymentManagement from "./pages/admin/rfp/PaymentManagement";
+import RfpScheduleManagement from "./pages/admin/rfp/ScheduleManagement";
+import RfpCommunicationTools from "./pages/admin/rfp/CommunicationTools";
+import RfpPublicRegistration from "./pages/rfp/PublicRegistration";
 import CollegeScoringAddon from "./pages/dashboard/CollegeScoringAddon";
 import DashboardMessages from "./pages/dashboard/Messages";
 

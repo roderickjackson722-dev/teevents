@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { Building2, CalendarRange, FileSpreadsheet, FileText, Link2, Lock, Receipt, Volleyball } from "lucide-react";
+import { Building2, CalendarClock, CalendarRange, CreditCard, FileSpreadsheet, FileText, Lock, Mail, Receipt, UserPlus, Volleyball } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 /**
@@ -9,10 +9,13 @@ import { Card } from "@/components/ui/card";
 const ITEMS = [
   { to: "/admin/sports", label: "Sports Management", desc: "Add/edit sport types and settings.", Icon: Volleyball },
   { to: "/admin/seasons", label: "Season Management", desc: "Create seasons, add teams, view standings.", Icon: CalendarRange },
+  { to: "/admin/registrations", label: "Participant Registration", desc: "Forms, participant records, and the private sign-up link.", Icon: UserPlus },
+  { to: "/admin/registration-payments", label: "Payment Management", desc: "Transactions, refunds, and financial exports.", Icon: CreditCard },
+  { to: "/admin/scheduling", label: "Scheduling & Team Admin", desc: "Games, practices, rosters and coaches.", Icon: CalendarClock },
+  { to: "/admin/communications", label: "Communication Tools", desc: "Bulk email and text messages to participants.", Icon: Mail },
   { to: "/admin/facilities", label: "Facility Management", desc: "Add facilities, schedule games.", Icon: Building2 },
   { to: "/admin/financial-reports", label: "Financial Reports", desc: "Generate GAAP/GASB reports.", Icon: FileSpreadsheet },
   { to: "/admin/invoices", label: "Invoice", desc: "Create, edit and export RFP sample invoices.", Icon: Receipt },
-  { to: "/admin/clippd", label: "Scoreboard / Clippd", desc: "Configure private score sync and exports.", Icon: Link2 },
   { to: "/admin/transition-plan", label: "Transition Plan", desc: "Data export and knowledge transfer plan.", Icon: FileText },
 ];
 

@@ -465,6 +465,11 @@ const App = () => (
            <Route path="/admin/transition-plan" element={<RfpTransitionPlan />} />
             <Route path="/admin/invoices" element={<RfpInvoiceManagement />} />
             <Route path="/admin/clippd" element={<RfpClippdIntegration />} />
+            <Route path="/admin/registrations" element={<RfpRegistrationManagement />} />
+            <Route path="/admin/registration-payments" element={<RfpPaymentManagement />} />
+            <Route path="/admin/scheduling" element={<RfpScheduleManagement />} />
+            <Route path="/admin/communications" element={<RfpCommunicationTools />} />
+            <Route path="/rfp/register/:slug" element={<RfpPublicRegistration />} />
 
            <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />

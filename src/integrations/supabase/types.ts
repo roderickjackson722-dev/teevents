@@ -7766,6 +7766,75 @@ export type Database = {
         }
         Relationships: []
       }
+      rfp_communications: {
+        Row: {
+          communication_type: string
+          created_at: string
+          error_message: string | null
+          id: string
+          message: string
+          recipient_count: number
+          recipient_type: string
+          scheduled_for: string | null
+          season_id: string | null
+          sender_id: string | null
+          sent_at: string | null
+          status: string
+          subject: string | null
+          team_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          communication_type?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message: string
+          recipient_count?: number
+          recipient_type?: string
+          scheduled_for?: string | null
+          season_id?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          communication_type?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          message?: string
+          recipient_count?: number
+          recipient_type?: string
+          scheduled_for?: string | null
+          season_id?: string | null
+          sender_id?: string | null
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfp_communications_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfp_communications_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "season_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rfp_invoice_line_items: {
         Row: {
           created_at: string
@@ -7854,6 +7923,238 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      rfp_registration_forms: {
+        Row: {
+          created_at: string
+          form_config: Json
+          id: string
+          is_active: boolean
+          name: string
+          season_id: string | null
+          sport_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          form_config?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          season_id?: string | null
+          sport_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          form_config?: Json
+          id?: string
+          is_active?: boolean
+          name?: string
+          season_id?: string | null
+          sport_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfp_registration_forms_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfp_registration_forms_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sport_settings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfp_registrations: {
+        Row: {
+          created_at: string
+          date_of_birth: string | null
+          form_id: string | null
+          id: string
+          notes: string | null
+          participant_email: string
+          participant_name: string
+          participant_phone: string | null
+          payment_amount_cents: number
+          payment_status: string
+          refund_amount_cents: number
+          refund_status: string
+          registration_date: string
+          responses: Json
+          season_id: string | null
+          sport_id: string | null
+          stripe_payment_intent_id: string | null
+          stripe_session_id: string | null
+          stripe_transfer_id: string | null
+          team_id: string | null
+          updated_at: string
+          waiver_signed: boolean
+        }
+        Insert: {
+          created_at?: string
+          date_of_birth?: string | null
+          form_id?: string | null
+          id?: string
+          notes?: string | null
+          participant_email: string
+          participant_name: string
+          participant_phone?: string | null
+          payment_amount_cents?: number
+          payment_status?: string
+          refund_amount_cents?: number
+          refund_status?: string
+          registration_date?: string
+          responses?: Json
+          season_id?: string | null
+          sport_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          stripe_transfer_id?: string | null
+          team_id?: string | null
+          updated_at?: string
+          waiver_signed?: boolean
+        }
+        Update: {
+          created_at?: string
+          date_of_birth?: string | null
+          form_id?: string | null
+          id?: string
+          notes?: string | null
+          participant_email?: string
+          participant_name?: string
+          participant_phone?: string | null
+          payment_amount_cents?: number
+          payment_status?: string
+          refund_amount_cents?: number
+          refund_status?: string
+          registration_date?: string
+          responses?: Json
+          season_id?: string | null
+          sport_id?: string | null
+          stripe_payment_intent_id?: string | null
+          stripe_session_id?: string | null
+          stripe_transfer_id?: string | null
+          team_id?: string | null
+          updated_at?: string
+          waiver_signed?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfp_registrations_form_id_fkey"
+            columns: ["form_id"]
+            isOneToOne: false
+            referencedRelation: "rfp_registration_forms"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfp_registrations_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfp_registrations_sport_id_fkey"
+            columns: ["sport_id"]
+            isOneToOne: false
+            referencedRelation: "sport_settings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfp_registrations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "season_teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rfp_schedule_events: {
+        Row: {
+          created_at: string
+          end_time: string
+          event_date: string
+          event_type: string
+          facility_id: string | null
+          id: string
+          notes: string | null
+          opponent_team_id: string | null
+          season_id: string | null
+          start_time: string
+          status: string
+          team_id: string | null
+          title: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          end_time: string
+          event_date: string
+          event_type?: string
+          facility_id?: string | null
+          id?: string
+          notes?: string | null
+          opponent_team_id?: string | null
+          season_id?: string | null
+          start_time: string
+          status?: string
+          team_id?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          end_time?: string
+          event_date?: string
+          event_type?: string
+          facility_id?: string | null
+          id?: string
+          notes?: string | null
+          opponent_team_id?: string | null
+          season_id?: string | null
+          start_time?: string
+          status?: string
+          team_id?: string | null
+          title?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rfp_schedule_events_facility_id_fkey"
+            columns: ["facility_id"]
+            isOneToOne: false
+            referencedRelation: "facilities"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfp_schedule_events_opponent_team_id_fkey"
+            columns: ["opponent_team_id"]
+            isOneToOne: false
+            referencedRelation: "season_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfp_schedule_events_season_id_fkey"
+            columns: ["season_id"]
+            isOneToOne: false
+            referencedRelation: "seasons"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rfp_schedule_events_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "season_teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       sales_leads: {
         Row: {
@@ -8458,9 +8759,13 @@ export type Database = {
       seasons: {
         Row: {
           created_at: string
+          description: string | null
           end_date: string | null
           id: string
           name: string
+          public_slug: string | null
+          registration_fee_cents: number
+          registration_open: boolean
           season_type: string
           sport_type: string
           start_date: string | null
@@ -8470,9 +8775,13 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          description?: string | null
           end_date?: string | null
           id?: string
           name: string
+          public_slug?: string | null
+          registration_fee_cents?: number
+          registration_open?: boolean
           season_type?: string
           sport_type?: string
           start_date?: string | null
@@ -8482,9 +8791,13 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          description?: string | null
           end_date?: string | null
           id?: string
           name?: string
+          public_slug?: string | null
+          registration_fee_cents?: number
+          registration_open?: boolean
           season_type?: string
           sport_type?: string
           start_date?: string | null

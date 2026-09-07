@@ -152,6 +152,118 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
     return res.json();
   }, []);
 
+  // ---- Actions merged in from the old "Platform Tournaments" dashboard tab ----
+  async function togglePublished(t: Row) {
+    try {
+      await callAdminApi("toggle-tournament-published", { tournament_id: t.id, site_published: !t.site_published });
+      setRows((prev) => prev.map((r) => (r.id === t.id ? { ...r, site_published: !t.site_published } : r)));
+      toast.success(!t.site_published ? "Tournament published" : "Tournament unpublished");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update");
+    }
+  }
+
+  async function toggleRegistration(t: Row) {
+    try {
+      await callAdminApi("toggle-tournament-registration", { tournament_id: t.id, registration_open: !t.registration_open });
+      setRows((prev) => prev.map((r) => (r.id === t.id ? { ...r, registration_open: !t.registration_open } : r)));
+      toast.success(!t.registration_open ? "Registration opened" : "Registration closed");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update");
+    }
+  }
+
+  async function updateOrgPlan(orgId: string, plan: string) {
+    setUpdatingPlan(orgId);
+    try {
+      await callAdminApi("update-org-plan", { organization_id: orgId, plan });
+      setRows((prev) => prev.map((r) => (r.organization_id === orgId ? { ...r, org_plan: plan } : r)));
+      toast.success("Plan updated");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update plan");
+    } finally {
+      setUpdatingPlan(null);
+    }
+  }
+
+  async function setPaymentOverride(id: string, value: PaymentOverride) {
+    await callAdminApi("set-payment-override", { tournament_id: id, payment_method_override: value });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, payment_method_override: value } : r)));
+    toast.success("Payment routing updated");
+  }
+
+  async function togglePublicSearch(id: string, value: boolean) {
+    await callAdminApi("toggle-public-search", { tournament_id: id, show_in_public_search: value });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, show_in_public_search: value } : r)));
+    toast.success(value ? "Listed on public search" : "Removed from public search");
+  }
+
+  async function toggleManagedByTeevents(id: string, value: boolean) {
+    await callAdminApi("toggle-managed-by-teevents", { tournament_id: id, managed_by_teevents: value });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, managed_by_teevents: value } : r)));
+    toast.success(value ? "Marked as Managed by TeeVents" : "Managed flag removed");
+  }
+
+  async function resetOrganizerPassword(orgId: string) {
+    const email = window.prompt("Enter the email address for the account to reset:");
+    if (!email) return;
+    setResettingPassword(orgId);
+    try {
+      const { error } = await supabase.functions.invoke("admin-reset-password", {
+        body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password` },
+      });
+      if (error) throw error;
+      toast.success(`Reset link sent to ${email}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send reset email");
+    } finally {
+      setResettingPassword(null);
+    }
+  }
+
+  async function issueTempPassword(orgId: string) {
+    const email = window.prompt("Enter the email address to issue a temporary password for:");
+    if (!email) return;
+    const sendChoice = confirm(
+      "Click OK to email the temporary password to the user, or Cancel to just display it here (you'll share it manually).",
+    );
+    setTempPwdOrgId(orgId);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-set-temp-password", {
+        body: { email: email.trim().toLowerCase(), send_email: sendChoice },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      if (sendChoice) {
+        toast.success(`Temporary password sent to ${email}`);
+      } else {
+        window.prompt(`Temporary password for ${email} (copy now — will not be shown again):`, (data as any).temp_password);
+        toast.success("Temporary password issued");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Failed to issue temporary password");
+    } finally {
+      setTempPwdOrgId(null);
+    }
+  }
+
+  async function deleteTournament(id: string) {
+    if (deletingId !== id || deleteStep === 0) { setDeletingId(id); setDeleteStep(1); return; }
+    if (deleteStep === 1) { setDeleteStep(2); return; }
+    try {
+      setDeleteStep(3);
+      await callAdminApi("delete-tournament", { tournament_id: id });
+      setRows((prev) => prev.filter((r) => r.id !== id));
+      toast.success("Tournament deleted permanently");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to delete tournament");
+    }
+    setDeletingId(null);
+    setDeleteStep(0);
+  }
+
+
+
   async function togglePassFees(t: Row) {
     setTogglingFees(t.id);
     try {

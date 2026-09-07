@@ -399,10 +399,10 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
   const slugOf = (r: Row) => r.custom_slug || r.slug || r.id;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}><ArrowLeft className="h-4 w-4 mr-1" /> Admin</Button>
+    <div className={embedded ? "" : "min-h-screen bg-background"}>
+      <div className={embedded ? "mb-4" : "border-b bg-card"}>
+        <div className={`${embedded ? "" : "max-w-7xl mx-auto px-4 py-4"} flex items-center gap-3 flex-wrap`}>
+          {!embedded && <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}><ArrowLeft className="h-4 w-4 mr-1" /> Admin</Button>}
           <h1 className="text-xl font-semibold">Platform Tournaments</h1>
           <Badge variant="secondary" className="ml-2">All tournaments using TeeVents</Badge>
           <div className="ml-auto">
@@ -412,6 +412,16 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
           </div>
         </div>
       </div>
+
+      <AdminTournamentEditModal
+        open={!!editing}
+        onOpenChange={(o) => { if (!o) setEditing(null); }}
+        tournament={editing as any}
+        onSavePaymentOverride={setPaymentOverride}
+        onTogglePublicSearch={togglePublicSearch}
+        onToggleManagedByTeevents={toggleManagedByTeevents}
+      />
+
 
       <AdminCreateTournamentDialog
         open={createOpen}

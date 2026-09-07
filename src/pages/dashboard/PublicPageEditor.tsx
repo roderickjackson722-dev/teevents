@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useAdminLink } from "@/hooks/useAdminLink";
+import { pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 /**
  * "Public Page Editor" entry point. Resolves the tournament to edit and sends
@@ -31,11 +32,9 @@ const PublicPageEditor = () => {
       .select("id")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle()
       .then(({ data }) => {
         if (cancelled) return;
-        const id = (data as any)?.id;
+        const id = pickTournamentId(((data || []) as { id: string }[]), null);
         navigate(
           id
             ? buildLink(`/dashboard/tournaments/${id}/site-builder`)

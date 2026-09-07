@@ -5,6 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 import { useAdminLink } from "@/hooks/useAdminLink";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -53,18 +54,22 @@ export default function QuickActionsPage() {
   const [selected, setSelected] = useState<string[]>(DEFAULT_QUICK_ACTIONS);
   const [open, setOpen] = useState(false);
   const [slug, setSlug] = useState<string | null>(null);
+  const [selectedTournamentId] = useTournamentIdParam();
 
   useEffect(() => {
     if (!org) return;
     setSelected(loadQuickActions(org.orgId));
     supabase
       .from("tournaments")
-      .select("slug")
+      .select("id, slug")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .then(({ data }) => setSlug(data?.[0]?.slug ?? null));
-  }, [org]);
+      .then(({ data }) => {
+        const list = (data || []) as { id: string; slug: string | null }[];
+        const id = pickTournamentId(list, selectedTournamentId);
+        setSlug(list.find((t) => t.id === id)?.slug ?? list[0]?.slug ?? null);
+      });
+  }, [org, selectedTournamentId]);
 
   const toggle = (id: string) =>
     setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));

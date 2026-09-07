@@ -3,11 +3,13 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import SetupChecklist from "@/components/SetupChecklist";
 import { Loader2 } from "lucide-react";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 export default function SetupChecklistPage() {
   const { org } = useOrgContext();
   const [tournamentId, setTournamentId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [selectedTournamentId] = useTournamentIdParam();
 
   useEffect(() => {
     if (!org) return;
@@ -16,13 +18,12 @@ export default function SetupChecklistPage() {
       .select("id")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
-      .limit(1)
-      .maybeSingle()
       .then(({ data }) => {
-        setTournamentId(data?.id ?? null);
+        const list = (data || []) as { id: string }[];
+        setTournamentId(pickTournamentId(list, selectedTournamentId) || null);
         setLoading(false);
       });
-  }, [org]);
+  }, [org, selectedTournamentId]);
 
   if (loading) {
     return (

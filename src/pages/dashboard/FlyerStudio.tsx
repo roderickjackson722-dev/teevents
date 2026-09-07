@@ -12,6 +12,7 @@ import {
   FileImage, ExternalLink, Download, Copy, Palette, Image as ImageIcon,
 } from "lucide-react";
 import { format } from "date-fns";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 interface Tournament {
   id: string;
@@ -45,6 +46,7 @@ const FlyerStudio = () => {
   const [loading, setLoading] = useState(true);
   const [customMessage, setCustomMessage] = useState("");
   const qrRef = useRef<HTMLDivElement>(null);
+  const [selectedTournamentId] = useTournamentIdParam();
 
   useEffect(() => {
     if (!org) return;
@@ -54,21 +56,22 @@ const FlyerStudio = () => {
           .from("tournaments")
           .select("id, slug, title, date, location, course_name")
           .eq("organization_id", org.orgId)
-          .order("created_at", { ascending: false })
-          .limit(1)
-          .single(),
+          .order("created_at", { ascending: false }),
         supabase
           .from("flyer_templates")
           .select("*")
           .eq("is_active", true)
           .order("sort_order", { ascending: true }),
       ]);
-      if (tourRes.data) setTournament(tourRes.data);
+      const list = ((tourRes.data || []) as Tournament[]);
+      const pickedId = pickTournamentId(list, selectedTournamentId);
+      const picked = list.find((t) => t.id === pickedId) || list[0] || null;
+      if (picked) setTournament(picked);
       setTemplates((tplRes.data as DbTemplate[]) || []);
       setLoading(false);
     };
     fetchAll();
-  }, [org]);
+  }, [org, selectedTournamentId]);
 
   const registrationUrl = tournament?.slug ? `https://${DOMAIN}/t/${tournament.slug}` : "";
   const shortLink = tournament?.slug ? `teev.vent/${tournament.slug}` : "";

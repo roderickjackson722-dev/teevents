@@ -33,6 +33,7 @@ interface ClickStats {
 }
 
 import { sharePreviewUrl } from "@/lib/shareLinks";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 
 const DOMAIN = "www.teevents.golf";
 
@@ -40,6 +41,7 @@ const DOMAIN = "www.teevents.golf";
 const SharePromote = () => {
   const { org } = useOrgContext();
   const { toast } = useToast();
+  const [selectedTournamentId] = useTournamentIdParam();
   const [tournament, setTournament] = useState<Tournament | null>(null);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<ClickStats>({ total: 0, qr_code: 0, short_link: 0, social: 0, email: 0, mobile: 0, desktop: 0, tablet: 0 });
@@ -54,12 +56,13 @@ const SharePromote = () => {
       .select("id, slug, title, date, location, course_name")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
-      .limit(1)
       .then(({ data }) => {
-        if (data?.[0]) setTournament(data[0]);
+        const list = (data || []) as Tournament[];
+        const id = pickTournamentId(list, selectedTournamentId);
+        setTournament(list.find((t) => t.id === id) || list[0] || null);
         setLoading(false);
       });
-  }, [org]);
+  }, [org, selectedTournamentId]);
 
   const fetchStats = useCallback(async () => {
     if (!tournament) return;

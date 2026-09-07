@@ -217,6 +217,9 @@ export default function SampleInvoicePanel() {
         <div><Label>Department / division</Label><Input value={receiverDept} onChange={(e) => setReceiverDept(e.target.value)} /></div>
         <div><Label>Attention line</Label><Input value={receiverAttn} onChange={(e) => setReceiverAttn(e.target.value)} /></div>
         <div><Label>Recipient email</Label><Input value={receiverEmail} onChange={(e) => setReceiverEmail(e.target.value)} /></div>
+        <div><Label>Sender company name</Label><Input value={senderCompany} onChange={(e) => setSenderCompany(e.target.value)} /></div>
+        <div><Label>Sender email</Label><Input value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)} /></div>
+        <div className="md:col-span-2"><Label>Sender address</Label><Textarea rows={3} value={senderAddress} onChange={(e) => setSenderAddress(e.target.value)} /></div>
       </div>
 
       {/* On-screen preview */}

@@ -13,11 +13,13 @@ import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ClipboardList, Plus, Trash2, BarChart3, Star } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 export default function Surveys() {
   const { org, loading: orgLoading } = useOrgContext();
   const queryClient = useQueryClient();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  // Follow the event chosen in the dashboard header (shared ?tournament_id=).
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [questionDialog, setQuestionDialog] = useState(false);
   const [questionForm, setQuestionForm] = useState({ question: "", type: "rating" });

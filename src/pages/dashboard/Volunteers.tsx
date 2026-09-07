@@ -14,12 +14,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Users, Plus, Trash2, UserCheck, UserPlus, Clock, CheckCircle2, Download, Pencil } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 export default function Volunteers() {
   const { org, loading: orgLoading } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  // Follow the event chosen in the dashboard header (shared ?tournament_id=).
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [assignRoleId, setAssignRoleId] = useState<string | null>(null);

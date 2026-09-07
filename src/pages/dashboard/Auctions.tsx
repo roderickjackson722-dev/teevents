@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Eye, Gavel, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { TabTitleInput } from "@/components/dashboard/TabTitleInput";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 interface AuctionRow {
   id: string;
@@ -58,7 +59,8 @@ export default function Auctions() {
   const { org, loading } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const qc = useQueryClient();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  // Follow the event chosen in the dashboard header (shared ?tournament_id=).
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AuctionRow | null>(null);
   const [form, setForm] = useState(emptyForm);

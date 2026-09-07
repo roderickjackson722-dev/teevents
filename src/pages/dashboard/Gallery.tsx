@@ -9,12 +9,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { ImagePlus, Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 export default function Gallery() {
   const { org, loading: orgLoading } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  // Follow the event chosen in the dashboard header (shared ?tournament_id=).
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [uploading, setUploading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
   const [cropOpen, setCropOpen] = useState(false);

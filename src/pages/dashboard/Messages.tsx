@@ -17,6 +17,7 @@ import { MessageSquare, Send, Users, Clock, CalendarIcon, Timer, Phone, CreditCa
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 /** Variables organizers can drop into a text. Mirrors the email template variables. */
 const SMS_VARIABLES: { token: string; label: string }[] = [
@@ -75,7 +76,8 @@ export default function Messages() {
   const { org, loading: orgLoading } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
-  const [selectedTournament, setSelectedTournament] = useState<string>("");
+  // Follow the event chosen in the dashboard header (shared ?tournament_id=).
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [message, setMessage] = useState("");
   const [sendMode, setSendMode] = useState<"now" | "schedule">("now");
   const [scheduleDate, setScheduleDate] = useState<Date>();

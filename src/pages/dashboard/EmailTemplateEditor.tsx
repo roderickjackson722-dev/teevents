@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
+import { useTournamentIdParam, pickTournamentId, getPreferredTournamentId } from "@/hooks/useTournamentIdParam";
 import {
   Mail, Save, Eye, Send, Loader2, Palette, Type, Image, Layout,
   RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil, CalendarClock, ShoppingBag,
@@ -382,7 +383,8 @@ export default function EmailTemplateEditor() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [tournaments, setTournaments] = useState<any[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState<string>("");
+  // Follow the event chosen in the dashboard header (shared ?tournament_id=).
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   /** Which round's tee times / hole assignments this send uses (0-based day index). */
   const [emailRound, setEmailRound] = useState<number>(0);
   const [registrations, setRegistrations] = useState<any[]>([]);
@@ -503,7 +505,7 @@ export default function EmailTemplateEditor() {
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
-      const tid = data?.[0]?.id;
+      const tid = pickTournamentId((data || []) as any[], getPreferredTournamentId());
       if (tid) {
         setSelectedTournament(tid);
         const t = (data || []).find((x: any) => x.id === tid);

@@ -13,6 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Trophy, Loader2, Clock, Shuffle, ArrowDownAZ, Printer, Users, Download } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 interface Registration {
   id: string;
@@ -34,7 +35,8 @@ interface TeeGroup {
 export default function TeeSheet() {
   const { org, loading: orgLoading } = useOrgContext();
   const { demoGuard } = useDemoMode();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  // Follow the event chosen in the dashboard header (shared ?tournament_id=).
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [startFormat, setStartFormat] = useState<"tee_times" | "shotgun">("shotgun");
   const [firstTeeTime, setFirstTeeTime] = useState("08:00");
   const [interval, setInterval] = useState(10); // minutes between groups

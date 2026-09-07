@@ -7,6 +7,7 @@ import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 import { useAdminLink } from "@/hooks/useAdminLink";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -57,6 +58,8 @@ const Tournaments = () => {
   const { demoGuard } = useDemoMode();
   const loadUserTournaments = useServerFn(getUserTournaments);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
+  // Follow the event chosen in the dashboard header (shared ?tournament_id=).
+  const [selectedTournament] = useTournamentIdParam();
   const [sharedTournaments, setSharedTournaments] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [creating, setCreating] = useState(false);
@@ -83,6 +86,9 @@ const Tournaments = () => {
   useEffect(() => {
     fetchTournaments();
   }, [org]);
+
+  // The event the header picker is on; never silently the newest one.
+  const activeTournamentId = pickTournamentId(tournaments as any, selectedTournament);
 
   // Deep link from Settings → "Start a new tournament" opens the create dialog.
   useEffect(() => {
@@ -440,7 +446,7 @@ const Tournaments = () => {
             <TabsTrigger value="course" className="gap-2"><MapPin className="h-4 w-4" /> Course Setup</TabsTrigger>
           </TabsList>
           <TabsContent value="details">
-            <EventDetailsForm tournamentId={tournaments[0].id} onSaved={fetchTournaments} />
+            <EventDetailsForm key={activeTournamentId} tournamentId={activeTournamentId} onSaved={fetchTournaments} />
           </TabsContent>
           <TabsContent value="course">
             <CourseDetails />

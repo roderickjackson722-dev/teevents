@@ -16,6 +16,8 @@ import { Plus, Trash2, Eye, Send, Download, Printer, Loader2, Pencil } from "luc
 import { toast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import { formatTournamentDate } from "@/lib/formatDate";
+import SampleInvoicePanel from "@/components/admin/SampleInvoicePanel";
+
 
 type Invoice = {
   id: string;

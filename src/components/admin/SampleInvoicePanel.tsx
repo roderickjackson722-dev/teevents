@@ -3,6 +3,7 @@ import jsPDF from "jspdf";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Download, Printer, FileText } from "lucide-react";
@@ -41,6 +42,10 @@ export default function SampleInvoicePanel() {
   const [receiverAttn, setReceiverAttn] = useState("Attn: Contract Administrator");
   const [receiverEmail, setReceiverEmail] = useState("procurement@arlingtonva.us");
 
+  const [senderCompany, setSenderCompany] = useState("TeeVents Golf Management");
+  const [senderAddress, setSenderAddress] = useState("2651 Satellite Blvd #54\nDuluth, GA 30096");
+  const [senderEmail, setSenderEmail] = useState("info@teevents.golf");
+
   const invoiceNumber = "SAMPLE-N1487-001";
   const invoiceDate = new Date().toISOString().slice(0, 10);
   const total = SAMPLE_ITEMS.reduce((s, i) => s + i.quantity * i.unit_price_cents, 0);
@@ -75,10 +80,16 @@ export default function SampleInvoicePanel() {
     doc.text("SAMPLE INVOICE", M, y);
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text("TeeVents Golf Management", W - M, y - 4, { align: "right" });
-    doc.text("2651 Satellite Blvd #54, Duluth, GA 30096", W - M, y + 10, { align: "right" });
-    doc.text("info@teevents.golf", W - M, y + 22, { align: "right" });
-    y += 34;
+    doc.text(senderCompany, W - M, y - 4, { align: "right" });
+    const addrLines = senderAddress.split("\n").filter(Boolean);
+    doc.text(addrLines[0] ?? "", W - M, y + 10, { align: "right" });
+    doc.text(addrLines[1] ?? "", W - M, y + 22, { align: "right" });
+    if (addrLines[2]) {
+      doc.text(addrLines[2], W - M, y + 34, { align: "right" });
+      y += 12;
+    }
+    doc.text(senderEmail, W - M, y + 34, { align: "right" });
+    y += 46;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.text("SPECIMEN — FOR RFP ILLUSTRATION ONLY. NOT A REQUEST FOR PAYMENT.", M, y);
@@ -206,6 +217,9 @@ export default function SampleInvoicePanel() {
         <div><Label>Department / division</Label><Input value={receiverDept} onChange={(e) => setReceiverDept(e.target.value)} /></div>
         <div><Label>Attention line</Label><Input value={receiverAttn} onChange={(e) => setReceiverAttn(e.target.value)} /></div>
         <div><Label>Recipient email</Label><Input value={receiverEmail} onChange={(e) => setReceiverEmail(e.target.value)} /></div>
+        <div><Label>Sender company name</Label><Input value={senderCompany} onChange={(e) => setSenderCompany(e.target.value)} /></div>
+        <div><Label>Sender email</Label><Input value={senderEmail} onChange={(e) => setSenderEmail(e.target.value)} /></div>
+        <div className="md:col-span-2"><Label>Sender address</Label><Textarea rows={3} value={senderAddress} onChange={(e) => setSenderAddress(e.target.value)} /></div>
       </div>
 
       {/* On-screen preview */}
@@ -226,10 +240,10 @@ export default function SampleInvoicePanel() {
                 SPECIMEN — FOR RFP ILLUSTRATION ONLY. NOT A REQUEST FOR PAYMENT.
               </div>
             </div>
-            <div className="text-right text-xs">
-              <div className="font-semibold">TeeVents Golf Management</div>
-              <div>2651 Satellite Blvd #54, Duluth, GA 30096</div>
-              <div>info@teevents.golf</div>
+            <div className="text-right text-xs whitespace-pre-line">
+              <div className="font-semibold">{senderCompany}</div>
+              <div>{senderAddress}</div>
+              <div>{senderEmail}</div>
             </div>
           </div>
           <div className="flex justify-between text-xs border-t pt-3">

@@ -42,6 +42,10 @@ export default function SampleInvoicePanel() {
   const [receiverAttn, setReceiverAttn] = useState("Attn: Contract Administrator");
   const [receiverEmail, setReceiverEmail] = useState("procurement@arlingtonva.us");
 
+  const [senderCompany, setSenderCompany] = useState("TeeVents Golf Management");
+  const [senderAddress, setSenderAddress] = useState("2651 Satellite Blvd #54\nDuluth, GA 30096");
+  const [senderEmail, setSenderEmail] = useState("info@teevents.golf");
+
   const invoiceNumber = "SAMPLE-N1487-001";
   const invoiceDate = new Date().toISOString().slice(0, 10);
   const total = SAMPLE_ITEMS.reduce((s, i) => s + i.quantity * i.unit_price_cents, 0);

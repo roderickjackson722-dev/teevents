@@ -122,6 +122,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
       org_plan: orgMap[t.organization_id || ""]?.plan || "base",
       org_feature_overrides: orgMap[t.organization_id || ""]?.feature_overrides || null,
       org_fee_override: orgMap[t.organization_id || ""]?.fee_override ?? null,
+      org_stripe_account_id: orgMap[t.organization_id || ""]?.stripe_account_id || null,
       registrations_count: regAgg[t.id]?.count || 0,
       paid_count: regAgg[t.id]?.paid || 0,
       revenue_cents: regAgg[t.id]?.revenue || 0,

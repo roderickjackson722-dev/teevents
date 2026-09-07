@@ -443,6 +443,9 @@ export default function TournamentInvoices() {
         <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> New Invoice</Button>
       </div>
 
+      <SampleInvoicePanel />
+
+
       <div className="flex flex-wrap gap-2 items-center">
         <Select value={statusFilter} onValueChange={setStatusFilter}>
           <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>

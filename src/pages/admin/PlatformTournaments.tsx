@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye, ChevronDown, ChevronUp, Pencil, KeyRound, Trash2, X, Globe } from "lucide-react";
 import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
 import SampleModePanel from "@/components/admin/SampleModePanel";
+import AdminTournamentEditModal, { type PaymentOverride } from "@/components/admin/AdminTournamentEditModal";
 import { toast } from "sonner";
 
 type Row = {
@@ -40,9 +41,13 @@ type Row = {
   org_plan?: string | null;
   org_feature_overrides?: Record<string, boolean> | null;
   org_fee_override?: number | null;
+  show_in_public_search?: boolean | null;
+  payment_method_override?: PaymentOverride | null;
+  max_players?: number | null;
+  org_stripe_account_id?: string | null;
 };
 
-export default function PlatformTournaments() {
+export default function PlatformTournaments({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -57,6 +62,12 @@ export default function PlatformTournaments() {
   const [attaching, setAttaching] = useState<string | null>(null);
   const [sampleFor, setSampleFor] = useState<Row | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [updatingPlan, setUpdatingPlan] = useState<string | null>(null);
+  const [resettingPassword, setResettingPassword] = useState<string | null>(null);
+  const [tempPwdOrgId, setTempPwdOrgId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteStep, setDeleteStep] = useState(0);
   const [togglingFees, setTogglingFees] = useState<string | null>(null);
 
 

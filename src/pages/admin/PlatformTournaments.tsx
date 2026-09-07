@@ -6,10 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye, ChevronDown, ChevronUp } from "lucide-react";
+import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye, ChevronDown, ChevronUp, Pencil, KeyRound, Trash2, X, Globe } from "lucide-react";
 import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
 import SampleModePanel from "@/components/admin/SampleModePanel";
+import AdminTournamentEditModal, { type PaymentOverride } from "@/components/admin/AdminTournamentEditModal";
 import { toast } from "sonner";
 
 type Row = {
@@ -40,9 +41,13 @@ type Row = {
   org_plan?: string | null;
   org_feature_overrides?: Record<string, boolean> | null;
   org_fee_override?: number | null;
+  show_in_public_search?: boolean | null;
+  payment_method_override?: PaymentOverride | null;
+  max_players?: number | null;
+  org_stripe_account_id?: string | null;
 };
 
-export default function PlatformTournaments() {
+export default function PlatformTournaments({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -57,6 +62,12 @@ export default function PlatformTournaments() {
   const [attaching, setAttaching] = useState<string | null>(null);
   const [sampleFor, setSampleFor] = useState<Row | null>(null);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [updatingPlan, setUpdatingPlan] = useState<string | null>(null);
+  const [resettingPassword, setResettingPassword] = useState<string | null>(null);
+  const [tempPwdOrgId, setTempPwdOrgId] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deleteStep, setDeleteStep] = useState(0);
   const [togglingFees, setTogglingFees] = useState<string | null>(null);
 
 
@@ -75,7 +86,7 @@ export default function PlatformTournaments() {
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants, show_in_public_search, payment_method_override, max_players")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];
@@ -84,7 +95,7 @@ export default function PlatformTournaments() {
     const tIds = list.map((t) => t.id);
 
     const [{ data: orgs }, { data: regs }, { data: spons }] = await Promise.all([
-      supabase.from("organizations").select("id, name, plan, feature_overrides, fee_override").in("id", orgIds.length ? orgIds : ["00000000-0000-0000-0000-000000000000"]) as any,
+      supabase.from("organizations").select("id, name, plan, feature_overrides, fee_override, stripe_account_id").in("id", orgIds.length ? orgIds : ["00000000-0000-0000-0000-000000000000"]) as any,
       supabase.from("tournament_registrations").select("tournament_id, payment_status").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
       supabase.from("tournament_sponsors").select("tournament_id").in("tournament_id", tIds.length ? tIds : ["00000000-0000-0000-0000-000000000000"]) as any,
     ]);
@@ -111,6 +122,7 @@ export default function PlatformTournaments() {
       org_plan: orgMap[t.organization_id || ""]?.plan || "base",
       org_feature_overrides: orgMap[t.organization_id || ""]?.feature_overrides || null,
       org_fee_override: orgMap[t.organization_id || ""]?.fee_override ?? null,
+      org_stripe_account_id: orgMap[t.organization_id || ""]?.stripe_account_id || null,
       registrations_count: regAgg[t.id]?.count || 0,
       paid_count: regAgg[t.id]?.paid || 0,
       revenue_cents: regAgg[t.id]?.revenue || 0,
@@ -139,6 +151,118 @@ export default function PlatformTournaments() {
     }
     return res.json();
   }, []);
+
+  // ---- Actions merged in from the old "Platform Tournaments" dashboard tab ----
+  async function togglePublished(t: Row) {
+    try {
+      await callAdminApi("toggle-tournament-published", { tournament_id: t.id, site_published: !t.site_published });
+      setRows((prev) => prev.map((r) => (r.id === t.id ? { ...r, site_published: !t.site_published } : r)));
+      toast.success(!t.site_published ? "Tournament published" : "Tournament unpublished");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update");
+    }
+  }
+
+  async function toggleRegistration(t: Row) {
+    try {
+      await callAdminApi("toggle-tournament-registration", { tournament_id: t.id, registration_open: !t.registration_open });
+      setRows((prev) => prev.map((r) => (r.id === t.id ? { ...r, registration_open: !t.registration_open } : r)));
+      toast.success(!t.registration_open ? "Registration opened" : "Registration closed");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update");
+    }
+  }
+
+  async function updateOrgPlan(orgId: string, plan: string) {
+    setUpdatingPlan(orgId);
+    try {
+      await callAdminApi("update-org-plan", { organization_id: orgId, plan });
+      setRows((prev) => prev.map((r) => (r.organization_id === orgId ? { ...r, org_plan: plan } : r)));
+      toast.success("Plan updated");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to update plan");
+    } finally {
+      setUpdatingPlan(null);
+    }
+  }
+
+  async function setPaymentOverride(id: string, value: PaymentOverride) {
+    await callAdminApi("set-payment-override", { tournament_id: id, payment_method_override: value });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, payment_method_override: value } : r)));
+    toast.success("Payment routing updated");
+  }
+
+  async function togglePublicSearch(id: string, value: boolean) {
+    await callAdminApi("toggle-public-search", { tournament_id: id, show_in_public_search: value });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, show_in_public_search: value } : r)));
+    toast.success(value ? "Listed on public search" : "Removed from public search");
+  }
+
+  async function toggleManagedByTeevents(id: string, value: boolean) {
+    await callAdminApi("toggle-managed-by-teevents", { tournament_id: id, managed_by_teevents: value });
+    setRows((prev) => prev.map((r) => (r.id === id ? { ...r, managed_by_teevents: value } : r)));
+    toast.success(value ? "Marked as Managed by TeeVents" : "Managed flag removed");
+  }
+
+  async function resetOrganizerPassword(orgId: string) {
+    const email = window.prompt("Enter the email address for the account to reset:");
+    if (!email) return;
+    setResettingPassword(orgId);
+    try {
+      const { error } = await supabase.functions.invoke("admin-reset-password", {
+        body: { email: email.trim().toLowerCase(), redirect_url: `${window.location.origin}/reset-password` },
+      });
+      if (error) throw error;
+      toast.success(`Reset link sent to ${email}`);
+    } catch (e: any) {
+      toast.error(e.message || "Failed to send reset email");
+    } finally {
+      setResettingPassword(null);
+    }
+  }
+
+  async function issueTempPassword(orgId: string) {
+    const email = window.prompt("Enter the email address to issue a temporary password for:");
+    if (!email) return;
+    const sendChoice = confirm(
+      "Click OK to email the temporary password to the user, or Cancel to just display it here (you'll share it manually).",
+    );
+    setTempPwdOrgId(orgId);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-set-temp-password", {
+        body: { email: email.trim().toLowerCase(), send_email: sendChoice },
+      });
+      if (error) throw error;
+      if ((data as any)?.error) throw new Error((data as any).error);
+      if (sendChoice) {
+        toast.success(`Temporary password sent to ${email}`);
+      } else {
+        window.prompt(`Temporary password for ${email} (copy now — will not be shown again):`, (data as any).temp_password);
+        toast.success("Temporary password issued");
+      }
+    } catch (e: any) {
+      toast.error(e.message || "Failed to issue temporary password");
+    } finally {
+      setTempPwdOrgId(null);
+    }
+  }
+
+  async function deleteTournament(id: string) {
+    if (deletingId !== id || deleteStep === 0) { setDeletingId(id); setDeleteStep(1); return; }
+    if (deleteStep === 1) { setDeleteStep(2); return; }
+    try {
+      setDeleteStep(3);
+      await callAdminApi("delete-tournament", { tournament_id: id });
+      setRows((prev) => prev.filter((r) => r.id !== id));
+      toast.success("Tournament deleted permanently");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to delete tournament");
+    }
+    setDeletingId(null);
+    setDeleteStep(0);
+  }
+
+
 
   async function togglePassFees(t: Row) {
     setTogglingFees(t.id);
@@ -275,10 +399,10 @@ export default function PlatformTournaments() {
   const slugOf = (r: Row) => r.custom_slug || r.slug || r.id;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b bg-card">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}><ArrowLeft className="h-4 w-4 mr-1" /> Admin</Button>
+    <div className={embedded ? "" : "min-h-screen bg-background"}>
+      <div className={embedded ? "mb-4" : "border-b bg-card"}>
+        <div className={`${embedded ? "" : "max-w-7xl mx-auto px-4 py-4"} flex items-center gap-3 flex-wrap`}>
+          {!embedded && <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}><ArrowLeft className="h-4 w-4 mr-1" /> Admin</Button>}
           <h1 className="text-xl font-semibold">Platform Tournaments</h1>
           <Badge variant="secondary" className="ml-2">All tournaments using TeeVents</Badge>
           <div className="ml-auto">
@@ -288,6 +412,16 @@ export default function PlatformTournaments() {
           </div>
         </div>
       </div>
+
+      <AdminTournamentEditModal
+        open={!!editing}
+        onOpenChange={(o) => { if (!o) setEditing(null); }}
+        tournament={editing as any}
+        onSavePaymentOverride={setPaymentOverride}
+        onTogglePublicSearch={togglePublicSearch}
+        onToggleManagedByTeevents={toggleManagedByTeevents}
+      />
+
 
       <AdminCreateTournamentDialog
         open={createOpen}
@@ -439,6 +573,27 @@ export default function PlatformTournaments() {
                                 </Button>
                               </>
                             )}
+                            <Button variant="outline" size="sm" onClick={() => togglePublished(r)} title="Publish / unpublish the public site">
+                              <Globe className="h-3.5 w-3.5 mr-1" />{r.site_published ? "Unpublish" : "Publish"}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => toggleRegistration(r)} title="Open / close registration">
+                              {r.registration_open ? "Close Reg" : "Open Reg"}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => setEditing(r)} title="Edit payment routing, public search, managed flag">
+                              <Pencil className="h-3.5 w-3.5 mr-1" />Edit
+                            </Button>
+                            {deletingId === r.id && deleteStep > 0 ? (
+                              <>
+                                <Button variant="destructive" size="sm" onClick={() => deleteTournament(r.id)} disabled={deleteStep === 3}>
+                                  {deleteStep === 3 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : deleteStep === 1 ? "Confirm Delete?" : "Really delete — permanent"}
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => { setDeletingId(null); setDeleteStep(0); }}><X className="h-3.5 w-3.5" /></Button>
+                              </>
+                            ) : (
+                              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteTournament(r.id)} title="Delete tournament permanently">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"
@@ -453,6 +608,39 @@ export default function PlatformTournaments() {
                       {expanded === r.id && (
                         <TableRow className="bg-muted/30 hover:bg-muted/30">
                           <TableCell colSpan={10} className="p-6">
+                            {r.organization_id && (
+                              <div className="flex flex-wrap items-center gap-3 mb-4">
+                                <span className="text-sm font-medium">Organizer plan</span>
+                                <select
+                                  className="h-9 rounded-md border bg-background px-2 text-sm"
+                                  value={r.org_plan || "base"}
+                                  disabled={updatingPlan === r.organization_id}
+                                  onChange={(e) => updateOrgPlan(r.organization_id!, e.target.value)}
+                                >
+                                  <option value="free">Base ($0)</option>
+                                  <option value="base">Base ($0)</option>
+                                  <option value="pro">Pro ($399 / tournament)</option>
+                                  <option value="starter">Legacy Starter</option>
+                                  <option value="premium">Legacy Premium</option>
+                                  <option value="enterprise">Enterprise — unlimited concurrent tournaments</option>
+                                </select>
+                                {updatingPlan === r.organization_id && <Loader2 className="h-4 w-4 animate-spin" />}
+                                <span className="text-xs text-muted-foreground">Enterprise lets one login run unlimited tournaments at the same time.</span>
+                                <Button variant="outline" size="sm" onClick={() => resetOrganizerPassword(r.organization_id!)} disabled={resettingPassword === r.organization_id}>
+                                  {resettingPassword === r.organization_id ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <KeyRound className="h-3.5 w-3.5 mr-1" />}
+                                  Send Password Reset
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => issueTempPassword(r.organization_id!)} disabled={tempPwdOrgId === r.organization_id}>
+                                  {tempPwdOrgId === r.organization_id ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <KeyRound className="h-3.5 w-3.5 mr-1" />}
+                                  Temporary Password
+                                </Button>
+                                {r.show_in_public_search && <Badge variant="secondary">In public search</Badge>}
+                                {r.payment_method_override && r.payment_method_override !== "default" && (
+                                  <Badge variant="outline">Routing: {r.payment_method_override === "force_stripe" ? "Force Stripe" : "Force Platform"}</Badge>
+                                )}
+                                {r.org_stripe_account_id && <Badge variant="secondary">Stripe connected</Badge>}
+                              </div>
+                            )}
                             <div className="flex flex-wrap items-center gap-3">
                               <button
                                 onClick={() => togglePassFees(r)}

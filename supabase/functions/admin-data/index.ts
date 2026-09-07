@@ -239,7 +239,7 @@ Deno.serve(async (req) => {
         if (!body.organization_id || !body.plan) {
           return jsonRes({ error: "Missing organization_id or plan" }, 400);
         }
-        const validPlans = ["free", "starter", "premium"];
+        const validPlans = ["free", "base", "starter", "premium", "pro", "enterprise"];
         if (!validPlans.includes(body.plan)) {
           return jsonRes({ error: "Invalid plan" }, 400);
         }

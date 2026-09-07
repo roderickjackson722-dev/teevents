@@ -1,3 +1,4 @@
+import DashboardEventSwitcher from "@/components/DashboardEventSwitcher";
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -280,6 +281,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                     <span className="truncate text-base md:text-lg font-display font-bold text-foreground">
                       {displayName}
                     </span>
+                    <DashboardEventSwitcher orgId={orgContext.orgId} />
                   </div>
                 )}
               </div>

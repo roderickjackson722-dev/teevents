@@ -50,8 +50,9 @@ export default function SampleInvoicePanel() {
     for (let p = 1; p <= pages; p++) {
       doc.setPage(p);
       doc.saveGraphicsState();
-      // @ts-expect-error GState exists at runtime in jsPDF
-      doc.setGState(new (doc as any).GState({ opacity: 0.12 }));
+      // GState exists at runtime in jsPDF
+      (doc as any).setGState(new (doc as any).GState({ opacity: 0.12 }));
+
       doc.setFont("helvetica", "bold");
       doc.setFontSize(96);
       doc.setTextColor(120, 120, 120);

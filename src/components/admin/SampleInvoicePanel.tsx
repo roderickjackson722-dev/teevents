@@ -80,10 +80,16 @@ export default function SampleInvoicePanel() {
     doc.text("SAMPLE INVOICE", M, y);
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
-    doc.text("TeeVents Golf Management", W - M, y - 4, { align: "right" });
-    doc.text("2651 Satellite Blvd #54, Duluth, GA 30096", W - M, y + 10, { align: "right" });
-    doc.text("info@teevents.golf", W - M, y + 22, { align: "right" });
-    y += 34;
+    doc.text(senderCompany, W - M, y - 4, { align: "right" });
+    const addrLines = senderAddress.split("\n").filter(Boolean);
+    doc.text(addrLines[0] ?? "", W - M, y + 10, { align: "right" });
+    doc.text(addrLines[1] ?? "", W - M, y + 22, { align: "right" });
+    if (addrLines[2]) {
+      doc.text(addrLines[2], W - M, y + 34, { align: "right" });
+      y += 12;
+    }
+    doc.text(senderEmail, W - M, y + 34, { align: "right" });
+    y += 46;
     doc.setFont("helvetica", "bold");
     doc.setFontSize(9);
     doc.text("SPECIMEN — FOR RFP ILLUSTRATION ONLY. NOT A REQUEST FOR PAYMENT.", M, y);

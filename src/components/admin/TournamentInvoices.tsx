@@ -16,6 +16,8 @@ import { Plus, Trash2, Eye, Send, Download, Printer, Loader2, Pencil } from "luc
 import { toast } from "@/hooks/use-toast";
 import jsPDF from "jspdf";
 import { formatTournamentDate } from "@/lib/formatDate";
+import SampleInvoicePanel from "@/components/admin/SampleInvoicePanel";
+
 
 type Invoice = {
   id: string;
@@ -442,6 +444,9 @@ export default function TournamentInvoices() {
         </div>
         <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> New Invoice</Button>
       </div>
+
+      <SampleInvoicePanel />
+
 
       <div className="flex flex-wrap gap-2 items-center">
         <Select value={statusFilter} onValueChange={setStatusFilter}>

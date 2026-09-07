@@ -86,7 +86,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants, show_in_public_search, payment_method_override, max_players")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];

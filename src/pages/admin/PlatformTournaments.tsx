@@ -598,6 +598,39 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                       {expanded === r.id && (
                         <TableRow className="bg-muted/30 hover:bg-muted/30">
                           <TableCell colSpan={10} className="p-6">
+                            {r.organization_id && (
+                              <div className="flex flex-wrap items-center gap-3 mb-4">
+                                <span className="text-sm font-medium">Organizer plan</span>
+                                <select
+                                  className="h-9 rounded-md border bg-background px-2 text-sm"
+                                  value={r.org_plan || "base"}
+                                  disabled={updatingPlan === r.organization_id}
+                                  onChange={(e) => updateOrgPlan(r.organization_id!, e.target.value)}
+                                >
+                                  <option value="free">Base ($0)</option>
+                                  <option value="base">Base ($0)</option>
+                                  <option value="pro">Pro ($399 / tournament)</option>
+                                  <option value="starter">Legacy Starter</option>
+                                  <option value="premium">Legacy Premium</option>
+                                  <option value="enterprise">Enterprise — unlimited concurrent tournaments</option>
+                                </select>
+                                {updatingPlan === r.organization_id && <Loader2 className="h-4 w-4 animate-spin" />}
+                                <span className="text-xs text-muted-foreground">Enterprise lets one login run unlimited tournaments at the same time.</span>
+                                <Button variant="outline" size="sm" onClick={() => resetOrganizerPassword(r.organization_id!)} disabled={resettingPassword === r.organization_id}>
+                                  {resettingPassword === r.organization_id ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <KeyRound className="h-3.5 w-3.5 mr-1" />}
+                                  Send Password Reset
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => issueTempPassword(r.organization_id!)} disabled={tempPwdOrgId === r.organization_id}>
+                                  {tempPwdOrgId === r.organization_id ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : <KeyRound className="h-3.5 w-3.5 mr-1" />}
+                                  Temporary Password
+                                </Button>
+                                {r.show_in_public_search && <Badge variant="secondary">In public search</Badge>}
+                                {r.payment_method_override && r.payment_method_override !== "default" && (
+                                  <Badge variant="outline">Routing: {r.payment_method_override === "force_stripe" ? "Force Stripe" : "Force Platform"}</Badge>
+                                )}
+                                {r.org_stripe_account_id && <Badge variant="secondary">Stripe connected</Badge>}
+                              </div>
+                            )}
                             <div className="flex flex-wrap items-center gap-3">
                               <button
                                 onClick={() => togglePassFees(r)}

@@ -503,7 +503,7 @@ export default function EmailTemplateEditor() {
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
-      const tid = data?.[0]?.id;
+      const tid = pickTournamentId((data || []) as any[], selectedTournamentRef.current);
       if (tid) {
         setSelectedTournament(tid);
         const t = (data || []).find((x: any) => x.id === tid);

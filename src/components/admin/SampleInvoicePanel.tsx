@@ -237,10 +237,10 @@ export default function SampleInvoicePanel() {
                 SPECIMEN — FOR RFP ILLUSTRATION ONLY. NOT A REQUEST FOR PAYMENT.
               </div>
             </div>
-            <div className="text-right text-xs">
-              <div className="font-semibold">TeeVents Golf Management</div>
-              <div>2651 Satellite Blvd #54, Duluth, GA 30096</div>
-              <div>info@teevents.golf</div>
+            <div className="text-right text-xs whitespace-pre-line">
+              <div className="font-semibold">{senderCompany}</div>
+              <div>{senderAddress}</div>
+              <div>{senderEmail}</div>
             </div>
           </div>
           <div className="flex justify-between text-xs border-t pt-3">

@@ -563,6 +563,27 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                                 </Button>
                               </>
                             )}
+                            <Button variant="outline" size="sm" onClick={() => togglePublished(r)} title="Publish / unpublish the public site">
+                              <Globe className="h-3.5 w-3.5 mr-1" />{r.site_published ? "Unpublish" : "Publish"}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => toggleRegistration(r)} title="Open / close registration">
+                              {r.registration_open ? "Close Reg" : "Open Reg"}
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={() => setEditing(r)} title="Edit payment routing, public search, managed flag">
+                              <Pencil className="h-3.5 w-3.5 mr-1" />Edit
+                            </Button>
+                            {deletingId === r.id && deleteStep > 0 ? (
+                              <>
+                                <Button variant="destructive" size="sm" onClick={() => deleteTournament(r.id)} disabled={deleteStep === 3}>
+                                  {deleteStep === 3 ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : deleteStep === 1 ? "Confirm Delete?" : "Really delete — permanent"}
+                                </Button>
+                                <Button variant="ghost" size="sm" onClick={() => { setDeletingId(null); setDeleteStep(0); }}><X className="h-3.5 w-3.5" /></Button>
+                              </>
+                            ) : (
+                              <Button variant="ghost" size="sm" className="text-destructive" onClick={() => deleteTournament(r.id)} title="Delete tournament permanently">
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                            )}
                             <Button
                               variant="ghost"
                               size="sm"

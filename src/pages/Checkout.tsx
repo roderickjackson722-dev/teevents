@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight, BadgeDollarSign, BarChart3, Check, CreditCard, Gavel, Globe,
-  GraduationCap, LayoutTemplate, Loader2, Lock, Megaphone, ShieldCheck, Sparkles, Users,
+  GraduationCap, LayoutTemplate, Loader2, Lock, Megaphone, ShieldCheck, Smartphone, Sparkles, Users,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";

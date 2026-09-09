@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import {
   Check, ArrowRight, Shield, Lock, CreditCard, Smartphone, Sparkles,
   Globe, Users, BarChart3, Award, MessageSquare, Trophy,
-  Package, Gavel, LayoutTemplate, BadgeDollarSign, Megaphone, X,
+  Package, Gavel, LayoutTemplate, Megaphone, X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -17,7 +17,7 @@ const planCards = [
     unit: "to start",
     badge: "Most popular",
     highlight: false,
-    desc: "5% platform fee per paid transaction. No upfront cost — you only pay when you get paid.",
+    desc: "Free for you. A 5% service fee is included in each player's registration total, so you keep 100% of your event revenue.",
     features: [
       "Full tournament management platform",
       "Branded tournament website",
@@ -36,26 +36,7 @@ const planCards = [
     exclusions: [],
     cta: "Select No Cost To Start",
     ctaTo: "/checkout/no-cost-to-start",
-    note: "Stripe processing fees apply.",
-  },
-  {
-    icon: BadgeDollarSign,
-    title: "Flat-Rate Pro",
-    price: "$399",
-    unit: "per event",
-    badge: "Best value",
-    highlight: true,
-    desc: "Pay once per tournament and we drop the 5% platform fee on every transaction.",
-    features: [
-      "No 5% platform fee",
-      "Unlimited manual entries",
-      "Unlimited transactions",
-      "One-time, per event",
-    ],
-    exclusions: [],
-    cta: "Select Flat-Rate Pro",
-    ctaTo: "/checkout/flat-rate-pro",
-    note: "Purchased per tournament.",
+    note: "Stripe processing fees apply. For events where you prefer no percentage fee, contact us at info@teevents.golf to explore a custom flat-rate plan.",
   },
 ];
 
@@ -63,52 +44,45 @@ const planCards = [
 const addons = [
   {
     icon: BarChart3,
-    title: "Live Leaderboard",
+    title: "Live Leaderboard + Mobile Scoring",
     price: 199,
     to: "/checkout/live-leaderboard",
-    desc: "Real-time public leaderboard that updates as scores are posted.",
-  },
-  {
-    icon: Smartphone,
-    title: "Mobile Scoring",
-    price: 199,
-    to: "/checkout/mobile-scoring",
-    desc: "Let every group enter scores straight from their phone — no app download required.",
+    desc: "Combined package: real-time public leaderboard with mobile scoring from any phone — no app download required.",
   },
   {
     icon: Users,
     title: "Unlimited Manual Entries",
     price: 199,
     to: "/checkout/unlimited-manual-entries",
-    desc: "Remove the 10-entry cap. Add unlimited manual player registrations, sponsors, and side-event entries.",
+    desc: "Remove the 10-entry cap; add unlimited manual player registrations, sponsors, and side-event entries.",
   },
   {
     icon: Gavel,
-    title: "Auction & Raffle",
-    price: 199,
+    title: "Auction Dashboard",
+    price: 99,
     to: "/checkout/auction-raffle",
-    desc: "Silent auction and 50/50 raffle with mobile bidding and auto-draw at close.",
+    desc: "Mobile bidding dashboard with auto-draw at close and real-time bid tracking.",
   },
   {
     icon: LayoutTemplate,
-    title: "Custom Event Page Build Out",
+    title: "Full-Service Page Build Out",
     price: 199,
     to: "/checkout/custom-event-page",
-    desc: "Our team builds out a fully customized event page tailored to your tournament — layout, colors, content placement, and branding.",
+    desc: "We design a custom event page for you — layout, colors, content, and branding so everything is ready to go.",
   },
   {
     icon: Megaphone,
     title: "Branding Removal + Digital Sponsor",
     price: 499,
     to: "/checkout/branding-removal",
-    desc: "TeeVents branding hidden, custom \"Presented by\" logo and a turnkey digital sponsor package you can resell for $5k–$10k.",
+    desc: "TeeVents branding hidden; custom \"Presented by\" logo and a turnkey digital sponsor package you can resell for $5k–$10k.",
   },
   {
     icon: Globe,
     title: "Custom Domain",
     price: 99,
     to: "/checkout/custom-domain",
-    desc: "Brand your tournament URL (e.g. golf.yourclub.com) instead of a teevents.golf link.",
+    desc: "Brand your tournament URL (e.g., golfyourclub.com) instead of a teevents.golf link.",
   },
 ];
 
@@ -203,7 +177,7 @@ const Plans = () => {
       <section id="pricing" className="bg-primary/5 py-20">
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Core options */}
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+          <div className="grid gap-6 mb-16 max-w-md mx-auto">
             {planCards.map((p, i) => (
               <motion.div
                 key={p.title}

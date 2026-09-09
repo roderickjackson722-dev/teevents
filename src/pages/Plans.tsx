@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import {
   Check, ArrowRight, Shield, Lock, CreditCard, Smartphone, Sparkles,
   Globe, Users, BarChart3, Award, MessageSquare, Trophy,
-  Package, Gavel, LayoutTemplate, BadgeDollarSign, Megaphone, GraduationCap, X,
+  Package, Gavel, LayoutTemplate, BadgeDollarSign, Megaphone, X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
@@ -33,10 +33,7 @@ const planCards = [
       "10 manual entries included",
       "No monthly subscription",
     ],
-    exclusions: [
-      "Live leaderboard (add-on — $199/event)",
-      "Mobile scoring (add-on — $199/event)",
-    ],
+    exclusions: [],
     cta: "Select No Cost To Start",
     ctaTo: "/checkout/no-cost-to-start",
     note: "Stripe processing fees apply.",
@@ -60,35 +57,23 @@ const planCards = [
     ctaTo: "/checkout/flat-rate-pro",
     note: "Purchased per tournament.",
   },
-  {
-    icon: GraduationCap,
-    title: "College Golf Scoring & Leaderboard",
-    price: "from $199",
-    unit: "per event",
-    badge: "New",
-    highlight: false,
-    desc: "Live mobile scoring with no app download, QR scoring codes, monitor leaderboard display, custom printables and pairings templates for collegiate events.",
-    features: [
-      "Live mobile scoring — no app download",
-      "QR scoring codes & leaderboard URL",
-      "Team rosters & flexible counting scores",
-      "Custom printables & pairings templates",
-    ],
-    exclusions: [],
-    cta: "Learn More",
-    ctaTo: "/college-golf-scoring",
-    note: "Full details and pricing on the next page.",
-  },
 ];
 
 /* ─── Paid add-ons (per event, one-time) ─── */
 const addons = [
   {
     icon: BarChart3,
-    title: "Live Leaderboard & Mobile Scoring",
+    title: "Live Leaderboard",
     price: 199,
     to: "/checkout/live-leaderboard",
-    desc: "Real-time public leaderboard plus scoring from any phone for every group.",
+    desc: "Real-time public leaderboard that updates as scores are posted.",
+  },
+  {
+    icon: Smartphone,
+    title: "Mobile Scoring",
+    price: 199,
+    to: "/checkout/mobile-scoring",
+    desc: "Let every group enter scores straight from their phone — no app download required.",
   },
   {
     icon: Users,
@@ -318,23 +303,6 @@ const Plans = () => {
                   </li>
                 ))}
               </ul>
-
-              <div className="mt-6 rounded-lg border-2 border-secondary bg-secondary/10 p-4">
-                <div className="flex items-baseline justify-between gap-3 mb-1">
-                  <p className="font-display font-bold text-foreground">College Golf Scoring &amp; Leaderboard</p>
-                  <p className="font-display font-bold text-secondary text-xl">from $199</p>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Live mobile scoring, QR codes, monitor leaderboard display, custom printables and pairings
-                  templates.
-                </p>
-                <Link
-                  to="/college-golf-scoring"
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-primary mt-2 hover:underline"
-                >
-                  Learn More <ArrowRight className="h-3 w-3" />
-                </Link>
-              </div>
             </motion.div>
           </div>
 

@@ -13,7 +13,7 @@ export const FREE_MANUAL_ENTRIES = 10;
 export const ADDON_PRICE_CENTS: Record<string, number> = {
   live_leaderboard: 19900,
   unlimited_manual_entries: 19900,
-  auction_raffle: 19900,
+  auction_raffle: 9900,
   custom_event_page: 19900,
   custom_domain: 9900,
 };

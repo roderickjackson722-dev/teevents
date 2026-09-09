@@ -36,7 +36,7 @@ const TEE_OPTIONS = ["Black", "Blue", "White", "Red", "Gold", "Green", "Silver",
 export default function CourseDetails() {
   const queryClient = useQueryClient();
   const { org } = useOrgContext();
-  const [tournamentId, setTournamentId] = useTournamentIdParam();
+  const [selectedTournamentId, setTournamentId] = useTournamentIdParam();
 
   const { data: tournaments } = useQuery({
     queryKey: ["course-details-tournaments", org?.orgId],

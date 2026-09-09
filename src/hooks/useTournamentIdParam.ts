@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { sortTournamentsForPicker } from "@/lib/tournamentOrder";
 
@@ -34,25 +34,35 @@ export function useTournamentIdParam(): [string, (id: string) => void] {
   const [searchParams, setSearchParams] = useSearchParams();
   const urlId = searchParams.get("tournament_id") || "";
   const [selected, setSelected] = useState<string>(() => urlId || readStored());
+  const hydrated = useRef(false);
 
-  // Sync in from URL changes (e.g. navigating from another tab).
+  // Sync in from URL changes (e.g. navigating from another tab, or the header
+  // switcher clearing the selection with "All events").
   useEffect(() => {
-    if (urlId && urlId !== selected) {
-      setSelected(urlId);
-      writeStored(urlId);
+    if (urlId) {
+      if (urlId !== selected) {
+        setSelected(urlId);
+        writeStored(urlId);
+      }
+    } else if (hydrated.current && selected) {
+      // The param was explicitly removed after mount: honour the clear.
+      setSelected("");
+      writeStored("");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [urlId]);
 
-  // Hydrate the URL from the remembered selection so links keep the context.
+  // On first mount only, hydrate the URL from the remembered selection so links
+  // keep the context. Never re-hydrate later, or clearing would bounce back.
   useEffect(() => {
+    hydrated.current = true;
     if (!urlId && selected) {
       const next = new URLSearchParams(searchParams);
       next.set("tournament_id", selected);
       setSearchParams(next, { replace: true });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [urlId, selected]);
+  }, []);
 
   const set = useCallback(
     (id: string) => {

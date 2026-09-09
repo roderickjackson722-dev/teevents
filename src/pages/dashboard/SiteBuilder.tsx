@@ -1786,6 +1786,14 @@ const SiteBuilder = () => {
                 )}
               </div>
 
+              <AdminDefaultSlugEditor
+                tournamentId={settings.id}
+                currentSlug={settings.slug}
+                onSaved={(newSlug) => setSettings({ ...settings, slug: newSlug })}
+              />
+
+
+
               {/* Custom URL Slug */}
               <CustomSlugEditor
                 tournamentId={settings.id}

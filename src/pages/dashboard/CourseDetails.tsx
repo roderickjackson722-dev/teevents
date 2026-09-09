@@ -52,11 +52,19 @@ export default function CourseDetails() {
     enabled: !!org,
   });
 
+  // Course setup always works on one event. When nothing is selected ("All
+  // events" in the header) fall back locally instead of rewriting the shared
+  // selection, which would snap the header switcher back.
+  const tournamentId =
+    selectedTournamentId && tournaments?.some((t) => t.id === selectedTournamentId)
+      ? selectedTournamentId
+      : tournaments?.[0]?.id || "";
+
   useEffect(() => {
-    if (tournaments && tournaments.length > 0 && !tournaments.some((t) => t.id === tournamentId)) {
+    if (selectedTournamentId && tournaments && tournaments.length > 0 && !tournaments.some((t) => t.id === selectedTournamentId)) {
       setTournamentId(tournaments[0].id);
     }
-  }, [tournaments, tournamentId]);
+  }, [tournaments, selectedTournamentId]);
 
   const handleTournamentChange = (id: string) => {
     setTournamentId(id);

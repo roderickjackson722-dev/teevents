@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 import {
   Check, ArrowRight, Shield, Lock, CreditCard, Smartphone, Sparkles,
   Globe, Users, BarChart3, Award, MessageSquare, Trophy,
-  Package, Gavel, LayoutTemplate, BadgeDollarSign, Megaphone, X,
+  Package, Gavel, LayoutTemplate, Megaphone, X,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";

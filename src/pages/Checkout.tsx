@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight, BadgeDollarSign, BarChart3, Check, CreditCard, Gavel, Globe,
-  GraduationCap, LayoutTemplate, Loader2, Lock, Megaphone, ShieldCheck, Sparkles, Users,
+  GraduationCap, LayoutTemplate, Loader2, Lock, Megaphone, ShieldCheck, Smartphone, Sparkles, Users,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
@@ -79,14 +79,25 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
   },
   "live-leaderboard": {
     slug: "live-leaderboard",
-    title: "Live Leaderboard & Mobile Scoring",
+    title: "Live Leaderboard",
     priceCents: 19900,
     unit: "per event",
     icon: BarChart3,
     flow: "addon",
     addonKey: "live_leaderboard",
-    desc: "Real-time public leaderboard plus scoring from any phone for every group.",
-    features: ["Live public leaderboard", "Mobile scoring — no app download", "QR scoring codes", "Monitor display view"],
+    desc: "Real-time public leaderboard that updates as scores are posted.",
+    features: ["Live public leaderboard", "Auto-refresh as scores come in", "Monitor display view", "Shareable public URL"],
+  },
+  "mobile-scoring": {
+    slug: "mobile-scoring",
+    title: "Mobile Scoring",
+    priceCents: 19900,
+    unit: "per event",
+    icon: Smartphone,
+    flow: "addon",
+    addonKey: "live_leaderboard",
+    desc: "Let every group enter scores straight from their phone — no app download required.",
+    features: ["Phone-based score entry", "No app download required", "QR scoring codes", "Works on any device"],
   },
   "unlimited-manual-entries": {
     slug: "unlimited-manual-entries",

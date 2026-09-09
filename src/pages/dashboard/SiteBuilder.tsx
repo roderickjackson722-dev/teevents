@@ -31,6 +31,7 @@ import { SITE_TEMPLATES } from "@/lib/siteTemplates";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
 import { Badge } from "@/components/ui/badge";
 import CustomSlugEditor from "@/components/CustomSlugEditor";
+import AdminDefaultSlugEditor from "@/components/AdminDefaultSlugEditor";
 import { DomainInstructions } from "@/components/dashboard/DomainInstructions";
 import { ImageCropperDialog, fileToDataUrl, AspectRatioOption } from "@/components/ui/image-cropper-dialog";
 import { Slider } from "@/components/ui/slider";
@@ -1785,6 +1786,14 @@ const SiteBuilder = () => {
                   <p className="text-sm text-muted-foreground italic">Slug will be generated when you save.</p>
                 )}
               </div>
+
+              <AdminDefaultSlugEditor
+                tournamentId={settings.id}
+                currentSlug={settings.slug}
+                onSaved={(newSlug) => setSettings({ ...settings, slug: newSlug })}
+              />
+
+
 
               {/* Custom URL Slug */}
               <CustomSlugEditor

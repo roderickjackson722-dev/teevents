@@ -46,12 +46,18 @@ interface Tournament {
   player_roster_fields: unknown;
 }
 
+interface TabAttachment {
+  name: string;
+  url: string;
+}
+
 interface TournamentTab {
   id: string;
   title: string;
   content_type: string;
   content: string | null;
   file_url: string | null;
+  attachments?: TabAttachment[] | null;
   sort_order: number;
   is_visible: boolean;
 }

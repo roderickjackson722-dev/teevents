@@ -588,8 +588,29 @@ const CollegeTournament = () => {
                       className="prose prose-sm md:prose-base max-w-none"
                       dangerouslySetInnerHTML={{ __html: sanitizeHtml(tab.content) }}
                     />
-                  ) : (
+                  ) : (Array.isArray(tab.attachments) ? tab.attachments : []).length === 0 ? (
                     <p className="text-muted-foreground italic">Content coming soon.</p>
+                  ) : null}
+
+                  {(Array.isArray(tab.attachments) ? tab.attachments : []).length > 0 && (
+                    <div className="mt-6 border-t border-border pt-4">
+                      <h4 className="font-semibold text-sm mb-3">Downloads</h4>
+                      <ul className="space-y-2">
+                        {(tab.attachments || []).map(att => (
+                          <li key={att.url}>
+                            <a
+                              href={att.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download
+                              className="inline-flex items-center gap-2 text-primary hover:underline"
+                            >
+                              <FileText className="h-4 w-4 shrink-0" /> {att.name}
+                            </a>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
                   )}
                 </div>
               </TabsContent>

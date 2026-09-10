@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import SEO from "@/components/SEO";
 import logoBlack from "@/assets/logo-black.png";
+import DemoRosterPairingsTab from "@/components/sample-tournament/DemoRosterPairingsTab";
 import {
   sampleTournamentFull as t,
   samplePlayers,

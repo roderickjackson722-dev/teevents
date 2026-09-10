@@ -1728,9 +1728,47 @@ const CollegeTournamentHub = () => {
                                                   Edit Content
                                                 </Button>
                                               </div>
-                                            )}
-                                          </div>
-                                        )}
+                                             )}
+
+                                            <div className="mt-3 border-t border-border pt-3 space-y-2">
+                                              <p className="text-xs font-semibold text-foreground">Downloadable files</p>
+                                              {(Array.isArray(tab.attachments) ? tab.attachments : []).length > 0 ? (
+                                                <ul className="space-y-1">
+                                                  {(tab.attachments || []).map(att => (
+                                                    <li key={att.url} className="flex items-center gap-2 text-sm">
+                                                      <FileText className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                                                      <a href={att.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline truncate">
+                                                        {att.name}
+                                                      </a>
+                                                      <button
+                                                        onClick={() => removeAttachment(tab, att.url)}
+                                                        className="ml-auto text-muted-foreground hover:text-destructive"
+                                                        title="Remove file"
+                                                      >
+                                                        <Trash2 className="h-3.5 w-3.5" />
+                                                      </button>
+                                                    </li>
+                                                  ))}
+                                                </ul>
+                                              ) : (
+                                                <p className="text-xs text-muted-foreground italic">No files attached yet.</p>
+                                              )}
+                                              <Input
+                                                type="file"
+                                                multiple
+                                                accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.ppt,.pptx,.txt,.png,.jpg,.jpeg"
+                                                onChange={e => {
+                                                  if (e.target.files?.length) handleAttachmentUpload(tab, e.target.files);
+                                                  e.target.value = "";
+                                                }}
+                                                className="text-sm"
+                                              />
+                                              <p className="text-xs text-muted-foreground">
+                                                Visitors see these as clickable downloads under this tab&apos;s content.
+                                              </p>
+                                            </div>
+                                           </div>
+                                         )}
                                       </div>
                                     )}
                                   </Draggable>

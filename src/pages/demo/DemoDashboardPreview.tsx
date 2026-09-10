@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SEO from "@/components/SEO";
+import DemoRosterPairingsTab, { type DemoRosterPlayer } from "@/components/sample-tournament/DemoRosterPairingsTab";
 
 export default function DemoDashboardPreview() {
   const { token } = useParams();
   const [demo, setDemo] = useState<any>(null);
+  const [players, setPlayers] = useState<DemoRosterPlayer[]>([]);
   const [counts, setCounts] = useState({ players: 0, sponsors: 0, scores: 0 });
 
   useEffect(() => {
@@ -16,6 +18,20 @@ export default function DemoDashboardPreview() {
       const { data: d } = await supabase.from("demo_tournaments").select("*").eq("public_token", token).maybeSingle();
       if (!d) return;
       setDemo(d);
+      const { data: rows } = await supabase
+        .from("demo_players")
+        .select("id,name,email,handicap,shirt_size")
+        .eq("demo_tournament_id", d.id)
+        .order("name");
+      setPlayers(
+        (rows || []).map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          email: r.email,
+          handicap: r.handicap,
+          shirt_size: r.shirt_size,
+        })),
+      );
       const [{ count: pc }, { count: sc }, { count: scc }] = await Promise.all([
         supabase.from("demo_players").select("id", { count: "exact", head: true }).eq("demo_tournament_id", d.id),
         supabase.from("demo_sponsors").select("*", { count: "exact", head: true }).eq("demo_tournament_id", d.id),
@@ -43,6 +59,18 @@ export default function DemoDashboardPreview() {
           <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Score Entries</div><div className="text-2xl font-bold">{counts.scores}</div></CardContent></Card>
           <Card><CardContent className="p-4"><div className="text-xs text-muted-foreground">Projected Revenue</div><div className="text-2xl font-bold">${revenue.toFixed(0)}</div></CardContent></Card>
         </div>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Players &amp; Pairings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Manage your roster and drag players between holes to build foursomes. Changes here are just for the demo.
+            </p>
+            <DemoRosterPairingsTab players={players.length > 0 ? players : undefined} />
+          </CardContent>
+        </Card>
 
         <Card>
           <CardHeader><CardTitle>What you'd see here</CardTitle></CardHeader>

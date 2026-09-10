@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Sheet, SheetContent, SheetTrigger, SheetTitle, SheetHeader } from "@/components/ui/sheet";
 import SEO from "@/components/SEO";
 import logoBlack from "@/assets/logo-black.png";
+import DemoRosterPairingsTab from "@/components/sample-tournament/DemoRosterPairingsTab";
 import {
   sampleTournamentFull as t,
   samplePlayers,
@@ -280,7 +281,12 @@ const SampleDashboard = () => {
               case "planning-guide": return <PlanningGuideTab />;
               case "printables": return <PrintablesTab />;
               case "registration": return <PlayersTab />;
-              case "players": return <PlayersTab />;
+              case "players": return (
+                <div className="space-y-4">
+                  <SectionHeader title="Players & Pairings" badge="base" count={`${samplePlayers.length} players`} />
+                  <DemoRosterPairingsTab />
+                </div>
+              );
               case "check-in": return <CheckInTab />;
               case "waitlist": return <WaitlistTab />;
               case "leaderboard":

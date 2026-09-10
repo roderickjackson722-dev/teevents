@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SEO from "@/components/SEO";
+import DemoRosterPairingsTab, { type DemoRosterPlayer } from "@/components/sample-tournament/DemoRosterPairingsTab";
 
 export default function DemoDashboardPreview() {
   const { token } = useParams();
   const [demo, setDemo] = useState<any>(null);
+  const [players, setPlayers] = useState<DemoRosterPlayer[]>([]);
   const [counts, setCounts] = useState({ players: 0, sponsors: 0, scores: 0 });
 
   useEffect(() => {
@@ -16,6 +18,20 @@ export default function DemoDashboardPreview() {
       const { data: d } = await supabase.from("demo_tournaments").select("*").eq("public_token", token).maybeSingle();
       if (!d) return;
       setDemo(d);
+      const { data: rows } = await supabase
+        .from("demo_players")
+        .select("id,name,email,handicap,shirt_size")
+        .eq("demo_tournament_id", d.id)
+        .order("name");
+      setPlayers(
+        (rows || []).map((r: any) => ({
+          id: r.id,
+          name: r.name,
+          email: r.email,
+          handicap: r.handicap,
+          shirt_size: r.shirt_size,
+        })),
+      );
       const [{ count: pc }, { count: sc }, { count: scc }] = await Promise.all([
         supabase.from("demo_players").select("id", { count: "exact", head: true }).eq("demo_tournament_id", d.id),
         supabase.from("demo_sponsors").select("*", { count: "exact", head: true }).eq("demo_tournament_id", d.id),

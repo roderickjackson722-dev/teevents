@@ -288,42 +288,6 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
           </div>
         </div>
 
-        {/* Current pricing for the digital sponsorship and technology upgrades */}
-        <div className="rounded-lg border border-secondary/40 bg-secondary/5 p-4 space-y-3">
-          <p className="font-semibold text-sm">Digital sponsorship &amp; technology pricing</p>
-          <ul className="space-y-1.5 text-xs text-foreground/90">
-            <li>
-              <span className="font-semibold">Branding Removal + Digital Sponsor — $499 per event.</span>{" "}
-              Removes the TeeVents logo and tagline and includes the full turnkey sponsorship kit
-              (leaderboard and website placement, printables, emails, QR code, recap report) that most
-              organizers resell to a title sponsor for $5,000–$10,000.
-            </li>
-            <li>
-              <span className="font-semibold">Live Leaderboard &amp; Mobile Scoring — $199 per event.</span>{" "}
-              Real-time public leaderboard plus scoring from any phone.
-            </li>
-            <li>
-              <span className="font-semibold">Flat-Rate Pro — $399 per event.</span>{" "}
-              Replaces the 5% platform fee on every transaction for this tournament.
-            </li>
-            <li>
-              <span className="font-semibold">Pay as You Grow — $0 upfront.</span>{" "}
-              The default: a 5% platform fee only on money you actually collect.
-            </li>
-          </ul>
-          <div className="flex flex-wrap gap-2">
-            <Button asChild variant="outline" size="sm">
-              <Link to={`/dashboard/sponsorship-tools?tournament_id=${tournamentId}`}>
-                Branding + Digital Sponsor — $499
-              </Link>
-            </Button>
-            <Button asChild variant="outline" size="sm">
-              <Link to={`/dashboard/tournament-payment?tournament_id=${tournamentId}`}>
-                Flat-Rate Pro — $399
-              </Link>
-            </Button>
-          </div>
-        </div>
 
         <div className="flex justify-end pt-2 border-t">
           <Button onClick={handleSave} disabled={saving}>

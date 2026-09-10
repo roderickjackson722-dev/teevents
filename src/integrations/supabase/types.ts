@@ -1511,6 +1511,7 @@ export type Database = {
       }
       college_tournament_tabs: {
         Row: {
+          attachments: Json
           content: string | null
           content_type: string
           created_at: string
@@ -1522,6 +1523,7 @@ export type Database = {
           tournament_id: string
         }
         Insert: {
+          attachments?: Json
           content?: string | null
           content_type?: string
           created_at?: string
@@ -1533,6 +1535,7 @@ export type Database = {
           tournament_id: string
         }
         Update: {
+          attachments?: Json
           content?: string | null
           content_type?: string
           created_at?: string

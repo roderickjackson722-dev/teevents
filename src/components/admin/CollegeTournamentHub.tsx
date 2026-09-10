@@ -92,6 +92,12 @@ interface Player {
   custom_answers: Record<string, string> | null;
 }
 
+export interface TabAttachment {
+  name: string;
+  url: string;
+  size?: number;
+}
+
 interface TournamentTab {
   id: string;
   tournament_id: string;
@@ -99,6 +105,7 @@ interface TournamentTab {
   content_type: string;
   content: string | null;
   file_url: string | null;
+  attachments?: TabAttachment[] | null;
   sort_order: number;
   is_visible: boolean;
 }

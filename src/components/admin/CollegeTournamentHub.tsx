@@ -596,6 +596,50 @@ const CollegeTournamentHub = () => {
     toast({ title: "File uploaded" });
   };
 
+  /** Downloadable attachments shown alongside a tab's rich text content. */
+  const handleAttachmentUpload = async (tab: TournamentTab, files: FileList) => {
+    const existing: TabAttachment[] = Array.isArray(tab.attachments) ? tab.attachments : [];
+    const uploaded: TabAttachment[] = [];
+    for (const file of Array.from(files)) {
+      const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "-");
+      const path = `college/${expandedId}/tab-${tab.id}/${Date.now()}-${safeName}`;
+      const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+      if (upErr) {
+        toast({ title: `Could not upload ${file.name}`, description: upErr.message, variant: "destructive" });
+        continue;
+      }
+      const { data: { publicUrl } } = supabase.storage.from("tournament-assets").getPublicUrl(path);
+      uploaded.push({ name: file.name, url: publicUrl, size: file.size });
+    }
+    if (uploaded.length === 0) return;
+    const { error } = await supabase
+      .from("college_tournament_tabs")
+      .update({ attachments: [...existing, ...uploaded] } as any)
+      .eq("id", tab.id);
+    if (error) {
+      toast({ title: "Files could not be saved", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (expandedId) fetchTournamentData(expandedId);
+    toast({ title: uploaded.length === 1 ? "File added" : `${uploaded.length} files added` });
+  };
+
+  const removeAttachment = async (tab: TournamentTab, url: string) => {
+    const existing: TabAttachment[] = Array.isArray(tab.attachments) ? tab.attachments : [];
+    const next = existing.filter(a => a.url !== url);
+    const { error } = await supabase
+      .from("college_tournament_tabs")
+      .update({ attachments: next } as any)
+      .eq("id", tab.id);
+    if (error) {
+      toast({ title: "Could not remove file", description: error.message, variant: "destructive" });
+      return;
+    }
+    if (expandedId) fetchTournamentData(expandedId);
+    toast({ title: "File removed" });
+  };
+
+
   // Registration Fields CRUD
   const saveRegFields = async (fields: RegistrationField[]) => {
     if (!expandedId) return;

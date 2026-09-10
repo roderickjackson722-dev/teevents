@@ -61,6 +61,18 @@ export default function DemoDashboardPreview() {
         </div>
 
         <Card>
+          <CardHeader>
+            <CardTitle>Players &amp; Pairings</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-sm text-muted-foreground mb-4">
+              Manage your roster and drag players between holes to build foursomes. Changes here are just for the demo.
+            </p>
+            <DemoRosterPairingsTab players={players.length > 0 ? players : undefined} />
+          </CardContent>
+        </Card>
+
+        <Card>
           <CardHeader><CardTitle>What you'd see here</CardTitle></CardHeader>
           <CardContent className="text-sm text-muted-foreground space-y-2">
             <p>This is a read-only preview of the organizer dashboard. In your real tournament you'll get the full TeeVents dashboard with:</p>

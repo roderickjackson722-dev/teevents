@@ -1,0 +1,1 @@
+ALTER TABLE public.college_tournament_tabs ADD COLUMN IF NOT EXISTS attachments jsonb NOT NULL DEFAULT '[]'::jsonb;

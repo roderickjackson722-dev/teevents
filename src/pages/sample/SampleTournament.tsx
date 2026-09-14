@@ -6,10 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Calendar, MapPin, Trophy, ExternalLink, LayoutDashboard, Tv, ArrowRight, Sparkles } from "lucide-react";
+import { Calendar, MapPin, Trophy, ExternalLink, LayoutDashboard, Tv, ArrowRight, Sparkles, Smartphone } from "lucide-react";
 import { formatScore } from "@/lib/sampleMockData";
 import { toast } from "sonner";
 import SEO from "@/components/SEO";
+import SampleGuidedTour from "@/components/sample/SampleGuidedTour";
 
 interface Sample {
   id: string;
@@ -23,6 +24,10 @@ interface Sample {
   scoring_format: string | null;
   registration_fee_cents: number;
   team_fee_cents: number;
+  primary_color: string | null;
+  secondary_color: string | null;
+  prospect_name: string | null;
+  guided_tour: boolean | null;
 }
 
 export default function SampleTournament() {

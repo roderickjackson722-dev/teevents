@@ -85,7 +85,10 @@ async function handle() {
   // 2 + 3. Anon-key database access — mirrors what the browser can see.
   const supabaseUrl = process.env["SUPABASE_URL"] || process.env["VITE_SUPABASE_URL"];
   const anonKey =
-    process.env["SUPABASE_ANON_KEY"] || process.env["VITE_SUPABASE_PUBLISHABLE_KEY"];
+    process.env["SUPABASE_PUBLISHABLE_KEY"] ||
+    process.env["SUPABASE_ANON_KEY"] ||
+    process.env["VITE_SUPABASE_PUBLISHABLE_KEY"] ||
+    process.env["VITE_SUPABASE_ANON_KEY"];
 
   if (!supabaseUrl || !anonKey) {
     add("anon_client", "Anon Supabase credentials not configured for the canary");

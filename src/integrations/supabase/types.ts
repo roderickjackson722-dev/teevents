@@ -8466,19 +8466,27 @@ export type Database = {
           crm_status: string | null
           description: string | null
           event_date: string | null
+          guided_tour: boolean
           hero_image_url: string | null
           id: string
+          is_sample: boolean
           last_accessed_at: string | null
           last_contacted_at: string | null
           location: string | null
           logo_url: string | null
+          primary_color: string | null
           prospect_company: string | null
           prospect_email: string | null
           prospect_name: string | null
           prospect_source: string | null
           registration_fee_cents: number | null
+          sample_created_by: string | null
+          sample_share_link: string | null
           scoring_format: string | null
+          secondary_color: string | null
           team_fee_cents: number | null
+          tour_completed: boolean
+          tour_completed_at: string | null
           tournament_name: string
           unique_slug: string
           updated_at: string
@@ -8491,19 +8499,27 @@ export type Database = {
           crm_status?: string | null
           description?: string | null
           event_date?: string | null
+          guided_tour?: boolean
           hero_image_url?: string | null
           id?: string
+          is_sample?: boolean
           last_accessed_at?: string | null
           last_contacted_at?: string | null
           location?: string | null
           logo_url?: string | null
+          primary_color?: string | null
           prospect_company?: string | null
           prospect_email?: string | null
           prospect_name?: string | null
           prospect_source?: string | null
           registration_fee_cents?: number | null
+          sample_created_by?: string | null
+          sample_share_link?: string | null
           scoring_format?: string | null
+          secondary_color?: string | null
           team_fee_cents?: number | null
+          tour_completed?: boolean
+          tour_completed_at?: string | null
           tournament_name: string
           unique_slug: string
           updated_at?: string
@@ -8516,19 +8532,27 @@ export type Database = {
           crm_status?: string | null
           description?: string | null
           event_date?: string | null
+          guided_tour?: boolean
           hero_image_url?: string | null
           id?: string
+          is_sample?: boolean
           last_accessed_at?: string | null
           last_contacted_at?: string | null
           location?: string | null
           logo_url?: string | null
+          primary_color?: string | null
           prospect_company?: string | null
           prospect_email?: string | null
           prospect_name?: string | null
           prospect_source?: string | null
           registration_fee_cents?: number | null
+          sample_created_by?: string | null
+          sample_share_link?: string | null
           scoring_format?: string | null
+          secondary_color?: string | null
           team_fee_cents?: number | null
+          tour_completed?: boolean
+          tour_completed_at?: string | null
           tournament_name?: string
           unique_slug?: string
           updated_at?: string
@@ -13731,19 +13755,27 @@ export type Database = {
           crm_status: string | null
           description: string | null
           event_date: string | null
+          guided_tour: boolean
           hero_image_url: string | null
           id: string
+          is_sample: boolean
           last_accessed_at: string | null
           last_contacted_at: string | null
           location: string | null
           logo_url: string | null
+          primary_color: string | null
           prospect_company: string | null
           prospect_email: string | null
           prospect_name: string | null
           prospect_source: string | null
           registration_fee_cents: number | null
+          sample_created_by: string | null
+          sample_share_link: string | null
           scoring_format: string | null
+          secondary_color: string | null
           team_fee_cents: number | null
+          tour_completed: boolean
+          tour_completed_at: string | null
           tournament_name: string
           unique_slug: string
           updated_at: string
@@ -13769,19 +13801,27 @@ export type Database = {
           crm_status: string | null
           description: string | null
           event_date: string | null
+          guided_tour: boolean
           hero_image_url: string | null
           id: string
+          is_sample: boolean
           last_accessed_at: string | null
           last_contacted_at: string | null
           location: string | null
           logo_url: string | null
+          primary_color: string | null
           prospect_company: string | null
           prospect_email: string | null
           prospect_name: string | null
           prospect_source: string | null
           registration_fee_cents: number | null
+          sample_created_by: string | null
+          sample_share_link: string | null
           scoring_format: string | null
+          secondary_color: string | null
           team_fee_cents: number | null
+          tour_completed: boolean
+          tour_completed_at: string | null
           tournament_name: string
           unique_slug: string
           updated_at: string
@@ -14345,6 +14385,10 @@ export type Database = {
       }
       mark_demo_lead_started: {
         Args: { _id: string; _role: string; _user_agent: string }
+        Returns: undefined
+      }
+      mark_sample_tour_completed: {
+        Args: { _slug: string }
         Returns: undefined
       }
       member_submit_score: {

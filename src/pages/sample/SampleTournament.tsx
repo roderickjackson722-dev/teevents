@@ -324,6 +324,16 @@ export default function SampleTournament() {
           </CardContent>
         </Card>
       </div>
+
+      {sample.guided_tour && slug && (
+        <SampleGuidedTour
+          slug={slug}
+          customerName={sample.prospect_name}
+          eventName={sample.tournament_name}
+          primaryColor={primary}
+          secondaryColor={secondary}
+        />
+      )}
     </div>
   );
 }

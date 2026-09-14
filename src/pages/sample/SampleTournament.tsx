@@ -119,8 +119,8 @@ export default function SampleTournament() {
                     <tr key={l.id} className="border-b">
                       <td className="py-2 pr-3 font-semibold">{l.position}</td>
                       <td className="py-2 pr-3">{l.player_name}</td>
-                      <td className="py-2 pr-3">{formatScore(l.gross_score)}</td>
-                      <td className="py-2 pr-3">{formatScore(l.net_score)}</td>
+                      <td className="py-2 pr-3">{l.gross_score}</td>
+                      <td className="py-2 pr-3">{l.net_score}</td>
                       <td className="py-2 pr-3">{l.thru}</td>
                     </tr>
                   ))}

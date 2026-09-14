@@ -14,6 +14,7 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, Send, Copy, RotateCw, Save, Eye, Ban } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
+import SampleWizard from "@/components/admin/SampleWizard";
 
 interface DemoTournamentRow {
   id: string;
@@ -664,6 +665,8 @@ export default function DemoConverter() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+        <SampleWizard />
+
         <Card>
           <CardHeader>
             <CardTitle>Create Demo Tournament</CardTitle>

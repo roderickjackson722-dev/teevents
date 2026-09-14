@@ -64,18 +64,20 @@ export default function SampleTournament() {
   if (!sample) return <div className="min-h-screen flex items-center justify-center">Mockup not found</div>;
 
   const heroBg = sample.hero_image_url || "https://images.unsplash.com/photo-1592919505780-303950717480?w=1600";
+  const primary = sample.primary_color || "#1a5c38";
+  const secondary = sample.secondary_color || "#F5A623";
 
   return (
     <div className="min-h-screen bg-background">
       <SEO title={`${sample.tournament_name} – Sample`} description={sample.description || ""} />
       {/* Demo banner */}
-      <div className="bg-[#1a5c38] text-white text-center text-sm py-2 px-4">
+      <div className="text-white text-center text-sm py-2 px-4" style={{ backgroundColor: primary }}>
         This is a <strong>custom TeeVents mockup</strong> created for {sample.tournament_name} •{" "}
         <a href="https://teevents.golf" className="underline">Learn more about TeeVents</a>
       </div>
 
       {/* Hero */}
-      <div className="relative h-[400px] bg-cover bg-center" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url(${heroBg})` }}>
+      <div data-tour="event-page" className="relative h-[400px] bg-cover bg-center" style={{ backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.7)), url(${heroBg})` }}>
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white text-center px-4">
           {sample.logo_url && <img src={sample.logo_url} alt="" className="h-24 mb-4 object-contain" />}
           <h1 className="text-4xl md:text-5xl font-bold mb-3">{sample.tournament_name}</h1>
@@ -83,11 +85,79 @@ export default function SampleTournament() {
             {sample.event_date && <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{new Date(sample.event_date).toLocaleDateString("en-US", { dateStyle: "long" })}</span>}
             {sample.location && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{sample.location}</span>}
           </div>
-          <Button className="mt-6 bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90" onClick={() => toast.message("This is a demo", { description: "On a real TeeVents tournament, this opens registration." })}>
-            Open Registration
-          </Button>
+          <div data-tour="registration" className="mt-6 inline-flex flex-col items-center gap-1 rounded-lg p-1">
+            <Button style={{ backgroundColor: secondary, color: primary }} className="hover:opacity-90" onClick={() => toast.message("This is a demo", { description: "On a real TeeVents tournament, this opens registration — players sign up, pay, and get a confirmation email." })}>
+              Register — ${(sample.registration_fee_cents / 100).toFixed(0)}
+            </Button>
+            <span className="text-xs text-white/80">Sign up, pay, and get a confirmation email in one step</span>
+          </div>
         </div>
       </div>
+
+      {/* Live leaderboard + mobile scoring (tour anchors) */}
+      <div className="container mx-auto px-4 pt-8 max-w-5xl grid gap-6 md:grid-cols-3">
+        <Card data-tour="leaderboard" className="md:col-span-2">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2" style={{ color: primary }}>
+              <Trophy className="h-5 w-5" /> Live Leaderboard
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="border-b">
+                  <tr className="text-left">
+                    <th className="py-2 pr-3">Pos</th>
+                    <th className="py-2 pr-3">Player</th>
+                    <th className="py-2 pr-3">Gross</th>
+                    <th className="py-2 pr-3">Net</th>
+                    <th className="py-2 pr-3">Thru</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {leaderboard.map((l) => (
+                    <tr key={l.id} className="border-b">
+                      <td className="py-2 pr-3 font-semibold">{l.position}</td>
+                      <td className="py-2 pr-3">{l.player_name}</td>
+                      <td className="py-2 pr-3">{formatScore(l.gross_score)}</td>
+                      <td className="py-2 pr-3">{formatScore(l.net_score)}</td>
+                      <td className="py-2 pr-3">{l.thru}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <p className="text-xs text-muted-foreground mt-3">Updates in real time as scores come in — display it on a monitor at your event.</p>
+          </CardContent>
+        </Card>
+
+        {/* Mobile scoring mockup */}
+        <div data-tour="mobile-scoring" className="flex flex-col items-center">
+          <div className="mx-auto w-[220px] rounded-[2rem] border-8 border-neutral-800 bg-neutral-900 p-2 shadow-xl">
+            <div className="rounded-[1.4rem] bg-white overflow-hidden">
+              <div className="px-3 py-2 text-white text-xs font-semibold" style={{ backgroundColor: primary }}>
+                {sample.tournament_name}
+              </div>
+              <div className="p-3 space-y-2">
+                <div className="text-xs text-muted-foreground">Hole 7 • Par 4</div>
+                {(participants.slice(0, 4).length ? participants.slice(0, 4) : [{ id: "a", name: "John Smith" }, { id: "b", name: "Marcus Johnson" }]).map((p: any, i: number) => (
+                  <div key={p.id} className="flex items-center justify-between border rounded-md px-2 py-1.5">
+                    <span className="text-xs truncate">{p.name}</span>
+                    <span className="text-sm font-bold" style={{ color: primary }}>{4 + (i % 2)}</span>
+                  </div>
+                ))}
+                <button className="w-full rounded-md py-2 text-xs font-bold" style={{ backgroundColor: secondary, color: primary }}>
+                  Save Scores
+                </button>
+              </div>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-3 text-center flex items-center gap-1">
+            <Smartphone className="h-3 w-3" /> Score from any phone — no app download
+          </p>
+        </div>
+      </div>
+
 
       {/* BIG Dashboard Preview CTA */}
       <div className="container mx-auto px-4 py-6 max-w-5xl">

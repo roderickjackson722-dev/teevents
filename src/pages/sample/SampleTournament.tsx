@@ -159,8 +159,8 @@ export default function SampleTournament() {
       </div>
 
 
-      {/* BIG Dashboard Preview CTA */}
-      <div className="container mx-auto px-4 py-6 max-w-5xl">
+      {/* BIG Dashboard Preview CTA — hidden while the guided tour keeps things focused */}
+      <div className={`container mx-auto px-4 py-6 max-w-5xl ${sample.guided_tour ? "hidden" : ""}`}>
         <div className="relative overflow-hidden rounded-2xl border-2 border-[#F5A623] bg-gradient-to-r from-[#1a5c38] via-[#1a5c38] to-[#0f3d24] p-6 md:p-8 shadow-2xl">
           <div className="absolute -top-10 -right-10 opacity-10">
             <LayoutDashboard className="h-48 w-48 text-[#F5A623]" />

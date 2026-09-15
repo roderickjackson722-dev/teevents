@@ -52,11 +52,17 @@ export default function SampleGuidedTour({
       popoverClass: "teevents-tour",
       steps: [
         {
+          popover: {
+            title: `Welcome${customerName ? `, ${customerName}` : ""}!`,
+            description: `We've built a custom TeeVents sample for <strong>${eventName}</strong>. This tour covers the four most common experiences, then shows the organizer dashboard where everything is managed.`,
+            nextBtnText: "Start Tour →",
+          },
+        },
+        {
           element: "[data-tour='event-page']",
           popover: {
-            title: `1. Welcome${customerName ? `, ${customerName}` : ""}!`,
+            title: "1. Your custom event page",
             description: `This is the custom event page we built for <strong>${eventName}</strong>. Your logo, colors, event details, and calls to action match the live TeeVents experience.`,
-            nextBtnText: "Start Tour →",
             side: "bottom",
             align: "center",
           },

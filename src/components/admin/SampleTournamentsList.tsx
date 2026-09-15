@@ -16,6 +16,8 @@ import {
 } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { Textarea } from "@/components/ui/textarea";
+import { buildSampleShareEmailHtml, defaultSampleEmailMessage } from "@/lib/sampleShareEmail";
 import {
   Copy,
   ExternalLink,
@@ -113,6 +115,16 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
   });
   const [liveTournaments, setLiveTournaments] = useState<{ id: string; title: string }[]>([]);
 
+  const [emailTarget, setEmailTarget] = useState<SampleRow | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailForm, setEmailForm] = useState({
+    to: "",
+    subject: "",
+    heading: "",
+    button_label: "View Your Sample Event Page",
+    message: "",
+  });
+
   async function load() {
     setLoading(true);
     const { data, error } = await supabase
@@ -150,6 +162,60 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
       .update({ shared_at: new Date().toISOString(), conversion_status: r.conversion_status === "created" ? "sent" : r.conversion_status } as never)
       .eq("id", r.id);
     await load();
+  }
+
+  function openEmail(r: SampleRow) {
+    setEmailTarget(r);
+    setEmailForm({
+      to: r.prospect_email || "",
+      subject: `Your sample event page – ${r.tournament_name}`,
+      heading: `Your Sample Event Page – ${r.tournament_name}`,
+      button_label: "View Your Sample Event Page",
+      message: defaultSampleEmailMessage({ customerName: r.prospect_name, eventName: r.tournament_name }),
+    });
+  }
+
+  async function sendEmail() {
+    if (!emailTarget) return;
+    if (!emailForm.to.trim() || !emailForm.subject.trim() || !emailForm.message.trim()) {
+      toast({ title: "Add a recipient, subject and message", variant: "destructive" });
+      return;
+    }
+    setSendingEmail(true);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
+      setSendingEmail(false);
+      toast({ title: "Please sign in again", variant: "destructive" });
+      return;
+    }
+    const res = await fetch("/api/public/sample-share-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        sample_id: emailTarget.id,
+        to: emailForm.to.trim(),
+        subject: emailForm.subject.trim(),
+        heading: emailForm.heading.trim() || emailForm.subject.trim(),
+        button_label: emailForm.button_label.trim(),
+        message: emailForm.message,
+        link: linkFor(emailTarget),
+      }),
+    });
+    const payload = (await res.json().catch(() => ({}))) as { error?: string; detail?: string };
+    setSendingEmail(false);
+    if (!res.ok) {
+      toast({
+        title: "Email not sent",
+        description: payload.detail || payload.error || "Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({ title: "Email sent", description: `Sent to ${emailForm.to.trim()}` });
+    const target = emailTarget;
+    setEmailTarget(null);
+    await markShared(target);
   }
 
   function openEdit(r: SampleRow) {
@@ -386,19 +452,9 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
                                 <ExternalLink className="h-3 w-3 mr-1" /> Preview
                               </a>
                             </Button>
-                            {r.prospect_email && (
-                              <Button size="sm" variant="outline" asChild onClick={() => markShared(r)}>
-                                <a
-                                  href={`mailto:${r.prospect_email}?subject=${encodeURIComponent(
-                                    `Your sample event page – ${r.tournament_name}`,
-                                  )}&body=${encodeURIComponent(
-                                    `Hi ${r.prospect_name || "there"},\n\nHere's the sample event page I built for ${r.tournament_name}: ${linkFor(r)}\n\nTake a look and let me know what you think. If you want, I can hop on a quick call to walk you through it.\n\n— Roderick`,
-                                  )}`}
-                                >
-                                  <Mail className="h-3 w-3 mr-1" /> Email
-                                </a>
-                              </Button>
-                            )}
+                            <Button size="sm" variant="outline" onClick={() => openEmail(r)}>
+                              <Mail className="h-3 w-3 mr-1" /> Email
+                            </Button>
                             {r.prospect_phone && (
                               <Button size="sm" variant="outline" asChild onClick={() => markShared(r)}>
                                 <a
@@ -435,6 +491,95 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
           )}
         </CardContent>
       </Card>
+
+      {/* Preview, edit and send the customer email */}
+      <Dialog open={!!emailTarget} onOpenChange={(o) => !o && setEmailTarget(null)}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Email the sample link</DialogTitle>
+            <DialogDescription>
+              Review and edit the wording, see exactly what the customer will receive, then send it from
+              info@notifications.teevents.golf.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-3">
+              <div>
+                <Label>To</Label>
+                <Input
+                  type="email"
+                  value={emailForm.to}
+                  onChange={(e) => setEmailForm({ ...emailForm, to: e.target.value })}
+                  placeholder="customer@example.com"
+                />
+              </div>
+              <div>
+                <Label>Subject</Label>
+                <Input
+                  value={emailForm.subject}
+                  onChange={(e) => setEmailForm({ ...emailForm, subject: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Headline in the email</Label>
+                <Input
+                  value={emailForm.heading}
+                  onChange={(e) => setEmailForm({ ...emailForm, heading: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Button text</Label>
+                <Input
+                  value={emailForm.button_label}
+                  onChange={(e) => setEmailForm({ ...emailForm, button_label: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Message</Label>
+                <Textarea
+                  rows={12}
+                  value={emailForm.message}
+                  onChange={(e) => setEmailForm({ ...emailForm, message: e.target.value })}
+                />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  The sample link and button are added automatically below your message.
+                </p>
+              </div>
+            </div>
+            <div>
+              <Label>Preview</Label>
+              <div className="mt-1 rounded-lg border border-border bg-white p-3">
+                <div
+                  className="text-sm"
+                  dangerouslySetInnerHTML={{
+                    __html: buildSampleShareEmailHtml({
+                      heading: emailForm.heading || emailForm.subject,
+                      message: emailForm.message,
+                      link: emailTarget ? linkFor(emailTarget) : "",
+                      buttonLabel: emailForm.button_label,
+                      logoUrl: emailTarget?.logo_url,
+                      primaryColor: emailTarget?.primary_color,
+                      secondaryColor: emailTarget?.secondary_color,
+                    }),
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEmailTarget(null)}>
+              Cancel
+            </Button>
+            <Button
+              className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90"
+              onClick={sendEmail}
+              disabled={sendingEmail}
+            >
+              <Mail className="h-4 w-4 mr-1" /> {sendingEmail ? "Sending…" : "Send Email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit sample */}
       <Dialog open={!!editTarget} onOpenChange={(o) => !o && setEditTarget(null)}>

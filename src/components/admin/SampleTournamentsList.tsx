@@ -162,6 +162,60 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
     await load();
   }
 
+  function openEmail(r: SampleRow) {
+    setEmailTarget(r);
+    setEmailForm({
+      to: r.prospect_email || "",
+      subject: `Your sample event page – ${r.tournament_name}`,
+      heading: `Your Sample Event Page – ${r.tournament_name}`,
+      button_label: "View Your Sample Event Page",
+      message: defaultSampleEmailMessage({ customerName: r.prospect_name, eventName: r.tournament_name }),
+    });
+  }
+
+  async function sendEmail() {
+    if (!emailTarget) return;
+    if (!emailForm.to.trim() || !emailForm.subject.trim() || !emailForm.message.trim()) {
+      toast({ title: "Add a recipient, subject and message", variant: "destructive" });
+      return;
+    }
+    setSendingEmail(true);
+    const { data: sessionData } = await supabase.auth.getSession();
+    const token = sessionData.session?.access_token;
+    if (!token) {
+      setSendingEmail(false);
+      toast({ title: "Please sign in again", variant: "destructive" });
+      return;
+    }
+    const res = await fetch("/api/public/sample-share-email", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        sample_id: emailTarget.id,
+        to: emailForm.to.trim(),
+        subject: emailForm.subject.trim(),
+        heading: emailForm.heading.trim() || emailForm.subject.trim(),
+        button_label: emailForm.button_label.trim(),
+        message: emailForm.message,
+        link: linkFor(emailTarget),
+      }),
+    });
+    const payload = (await res.json().catch(() => ({}))) as { error?: string; detail?: string };
+    setSendingEmail(false);
+    if (!res.ok) {
+      toast({
+        title: "Email not sent",
+        description: payload.detail || payload.error || "Please try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    toast({ title: "Email sent", description: `Sent to ${emailForm.to.trim()}` });
+    const target = emailTarget;
+    setEmailTarget(null);
+    await markShared(target);
+  }
+
   function openEdit(r: SampleRow) {
     setEditTarget(r);
     setEditForm({

@@ -64,6 +64,7 @@ export default function DemoConverter() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [demos, setDemos] = useState<DemoTournamentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sampleReload, setSampleReload] = useState(0);
 
   // Focus mode: work on a single demo tournament at a time
   const [focusId, setFocusId] = useState<string | null>(null);

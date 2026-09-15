@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle2, CreditCard, Users } from "lucide-react";
+import { CheckCircle2, CreditCard, Handshake, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -196,6 +196,47 @@ export default function SampleRegistrationPreview({
               style={{ color: primaryColor }}
             />
             This sample never charges a card or saves entered information.
+          </div>
+
+          <div className="mt-6 rounded-lg border border-border bg-muted/30 p-5">
+            <div className="mb-3 flex items-start gap-3">
+              <div
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md"
+                style={{ backgroundColor: primaryColor, color: secondaryColor }}
+              >
+                <Handshake className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-foreground">
+                  Sponsorship
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Title sponsor package
+                </p>
+              </div>
+            </div>
+            <div className="text-2xl font-bold" style={{ color: primaryColor }}>
+              $5,000
+            </div>
+            <ul className="mt-3 space-y-1.5 text-xs text-muted-foreground">
+              <li>Logo on the event page, leaderboard, and mobile scoring</li>
+              <li>“This event is sponsored by” placement all day</li>
+              <li>Foursome entry and on-course signage</li>
+            </ul>
+            <Button
+              type="button"
+              variant="outline"
+              className="mt-4 w-full font-bold"
+              style={{ borderColor: primaryColor, color: primaryColor }}
+              onClick={() =>
+                toast.success("Sample sponsorship selected", {
+                  description:
+                    "A live event collects sponsor details, logo upload, and payment here.",
+                })
+              }
+            >
+              Become a Sponsor
+            </Button>
           </div>
         </aside>
       </div>

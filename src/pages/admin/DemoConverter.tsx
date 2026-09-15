@@ -696,7 +696,7 @@ export default function DemoConverter() {
             {loading ? (
               <div>Loading…</div>
             ) : demos.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No demo tournaments yet. Create one above.</div>
+              <div className="text-sm text-muted-foreground">No legacy demo tournaments.</div>
             ) : (
               <Table>
                 <TableHeader>

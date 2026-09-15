@@ -4,4 +4,4 @@
 - [x] New full /admin/college-hub page (college events, scoring add-on, Clippd sync, bookings, surveys)
 - [x] Match customer samples to the live TeeVents event, registration, leaderboard, and organizer dashboard experience
 - [x] Carry customer colors throughout samples and explain color customization
-- [ ] Verify the complete guided sample click-through on desktop and mobile
+- [x] Verify the complete guided sample click-through on desktop and mobile

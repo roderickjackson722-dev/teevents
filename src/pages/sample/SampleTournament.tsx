@@ -290,15 +290,6 @@ export default function SampleTournament() {
           </p>
         </div>
       </div>
-              </div>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-3 text-center flex items-center gap-1">
-            <Smartphone className="h-3 w-3" /> Score from any phone — no app
-            download
-          </p>
-        </div>
-      </div>
 
       <SampleOrganizerDashboardTeaser
         slug={slug || sample.unique_slug}

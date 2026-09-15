@@ -9,7 +9,12 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import { ArrowRight, HelpCircle, PlayCircle } from "lucide-react";
+import {
+  ArrowRight,
+  HelpCircle,
+  LayoutDashboard,
+  PlayCircle,
+} from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Props {
@@ -102,7 +107,7 @@ export default function SampleGuidedTour({
           popover: {
             title: "5. Your organizer dashboard",
             description:
-              "These four areas are the most common. Your matching TeeVents dashboard has more options, including rosters, drag-and-drop pairings, sponsors, finances, messaging, and printables.",
+              "These four areas are the most common. Your matching TeeVents dashboard has more options, including rosters, drag-and-drop pairings, sponsors, finances, messaging, and printables. <strong>You can open the full dashboard and click around it yourself</strong> — we'll give you the link on the next screen.",
             side: "top",
             align: "center",
             doneBtnText: "See next steps →",
@@ -191,9 +196,22 @@ export default function SampleGuidedTour({
             <DialogDescription className="text-center text-base pt-1">
               Those are the 4 main things you'll use most for {eventName}.
               Everything else is optional and can be turned on when you need it.
+              Want to look around more? You can open the full organizer
+              dashboard for this sample and click through it yourself.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2 pt-2">
+            <a href={`/sample/${slug}/dashboard`} target="_blank" rel="noreferrer">
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full font-semibold"
+                style={{ borderColor: primaryColor || "#1a5c38", color: primaryColor || "#1a5c38" }}
+              >
+                <LayoutDashboard className="h-4 w-4 mr-2" /> View the Full
+                Dashboard
+              </Button>
+            </a>
             <a
               href="https://teevents.golf/get-started"
               target="_blank"

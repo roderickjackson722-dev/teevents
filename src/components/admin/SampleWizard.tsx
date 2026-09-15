@@ -31,7 +31,7 @@ interface Built {
   eventName: string;
 }
 
-export default function SampleWizard() {
+export default function SampleWizard({ onCreated }: { onCreated?: () => void } = {}) {
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
   const [built, setBuilt] = useState<Built | null>(null);

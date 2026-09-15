@@ -138,6 +138,7 @@ export default function SampleWizard({ onCreated }: { onCreated?: () => void } =
 
       setBuilt({ slug, link, customerName: f.customer_name, eventName: f.event_name });
       setStep(4);
+      onCreated?.();
       toast({ title: "Sample created", description: "Copy the link and send it to your customer." });
     } catch (e: any) {
       toast({ title: "Could not create sample", description: e.message, variant: "destructive" });

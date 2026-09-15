@@ -28,6 +28,7 @@ import { Route as ApiPublicNewsletterSendRouteImport } from './routes/api/public
 import { Route as ApiPublicNewsletterUnsubscribeRouteImport } from './routes/api/public/newsletter-unsubscribe'
 import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/api/public/post-event-organizer-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
+import { Route as ApiPublicSampleShareEmailRouteImport } from './routes/api/public/sample-share-email'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 import { Route as TeamSlugStarterRouteImport } from './routes/team/$slug.starter'
 import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes/api/public/hooks/check-tournament-links'
@@ -140,6 +141,12 @@ const ApiPublicSampleRequestRoute = ApiPublicSampleRequestRouteImport.update({
   path: '/api/public/sample-request',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSampleShareEmailRoute =
+  ApiPublicSampleShareEmailRouteImport.update({
+    id: '/api/public/sample-share-email',
+    path: '/api/public/sample-share-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
   id: '/s/sassurvey/share',
   path: '/s/sassurvey/share',
@@ -213,6 +220,7 @@ export interface FileRoutesByFullPath {
   '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
+  '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
@@ -243,6 +251,7 @@ export interface FileRoutesByTo {
   '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
+  '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
@@ -274,6 +283,7 @@ export interface FileRoutesById {
   '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
+  '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
@@ -306,6 +316,7 @@ export interface FileRouteTypes {
     | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
+    | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
@@ -336,6 +347,7 @@ export interface FileRouteTypes {
     | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
+    | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
@@ -366,6 +378,7 @@ export interface FileRouteTypes {
     | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
     | '/api/public/sample-request'
+    | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
     | '/api/public/hooks/check-tournament-links'
@@ -397,6 +410,7 @@ export interface RootRouteChildren {
   ApiPublicNewsletterUnsubscribeRoute: typeof ApiPublicNewsletterUnsubscribeRoute
   ApiPublicPostEventOrganizerEmailRoute: typeof ApiPublicPostEventOrganizerEmailRoute
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
+  ApiPublicSampleShareEmailRoute: typeof ApiPublicSampleShareEmailRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
   ApiPublicHooksCheckTournamentLinksRoute: typeof ApiPublicHooksCheckTournamentLinksRoute
   ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
@@ -542,6 +556,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSampleRequestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/sample-share-email': {
+      id: '/api/public/sample-share-email'
+      path: '/api/public/sample-share-email'
+      fullPath: '/api/public/sample-share-email'
+      preLoaderRoute: typeof ApiPublicSampleShareEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/s/sassurvey/share': {
       id: '/s/sassurvey/share'
       path: '/s/sassurvey/share'
@@ -641,6 +662,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicNewsletterUnsubscribeRoute: ApiPublicNewsletterUnsubscribeRoute,
   ApiPublicPostEventOrganizerEmailRoute: ApiPublicPostEventOrganizerEmailRoute,
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
+  ApiPublicSampleShareEmailRoute: ApiPublicSampleShareEmailRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,
   ApiPublicHooksCheckTournamentLinksRoute:
     ApiPublicHooksCheckTournamentLinksRoute,

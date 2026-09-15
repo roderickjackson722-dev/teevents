@@ -8461,6 +8461,10 @@ export type Database = {
       sample_tournaments: {
         Row: {
           admin_id: string | null
+          conversion_notes: string | null
+          conversion_status: string
+          converted_at: string | null
+          converted_tournament_id: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null
@@ -8478,12 +8482,14 @@ export type Database = {
           prospect_company: string | null
           prospect_email: string | null
           prospect_name: string | null
+          prospect_phone: string | null
           prospect_source: string | null
           registration_fee_cents: number | null
           sample_created_by: string | null
           sample_share_link: string | null
           scoring_format: string | null
           secondary_color: string | null
+          shared_at: string | null
           team_fee_cents: number | null
           tour_completed: boolean
           tour_completed_at: string | null
@@ -8494,6 +8500,10 @@ export type Database = {
         }
         Insert: {
           admin_id?: string | null
+          conversion_notes?: string | null
+          conversion_status?: string
+          converted_at?: string | null
+          converted_tournament_id?: string | null
           created_at?: string
           crm_notes?: string | null
           crm_status?: string | null
@@ -8511,12 +8521,14 @@ export type Database = {
           prospect_company?: string | null
           prospect_email?: string | null
           prospect_name?: string | null
+          prospect_phone?: string | null
           prospect_source?: string | null
           registration_fee_cents?: number | null
           sample_created_by?: string | null
           sample_share_link?: string | null
           scoring_format?: string | null
           secondary_color?: string | null
+          shared_at?: string | null
           team_fee_cents?: number | null
           tour_completed?: boolean
           tour_completed_at?: string | null
@@ -8527,6 +8539,10 @@ export type Database = {
         }
         Update: {
           admin_id?: string | null
+          conversion_notes?: string | null
+          conversion_status?: string
+          converted_at?: string | null
+          converted_tournament_id?: string | null
           created_at?: string
           crm_notes?: string | null
           crm_status?: string | null
@@ -8544,12 +8560,14 @@ export type Database = {
           prospect_company?: string | null
           prospect_email?: string | null
           prospect_name?: string | null
+          prospect_phone?: string | null
           prospect_source?: string | null
           registration_fee_cents?: number | null
           sample_created_by?: string | null
           sample_share_link?: string | null
           scoring_format?: string | null
           secondary_color?: string | null
+          shared_at?: string | null
           team_fee_cents?: number | null
           tour_completed?: boolean
           tour_completed_at?: string | null
@@ -13750,6 +13768,10 @@ export type Database = {
         Args: { _id: string }
         Returns: {
           admin_id: string | null
+          conversion_notes: string | null
+          conversion_status: string
+          converted_at: string | null
+          converted_tournament_id: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null
@@ -13767,12 +13789,14 @@ export type Database = {
           prospect_company: string | null
           prospect_email: string | null
           prospect_name: string | null
+          prospect_phone: string | null
           prospect_source: string | null
           registration_fee_cents: number | null
           sample_created_by: string | null
           sample_share_link: string | null
           scoring_format: string | null
           secondary_color: string | null
+          shared_at: string | null
           team_fee_cents: number | null
           tour_completed: boolean
           tour_completed_at: string | null
@@ -13796,6 +13820,10 @@ export type Database = {
         Args: never
         Returns: {
           admin_id: string | null
+          conversion_notes: string | null
+          conversion_status: string
+          converted_at: string | null
+          converted_tournament_id: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null
@@ -13813,12 +13841,14 @@ export type Database = {
           prospect_company: string | null
           prospect_email: string | null
           prospect_name: string | null
+          prospect_phone: string | null
           prospect_source: string | null
           registration_fee_cents: number | null
           sample_created_by: string | null
           sample_share_link: string | null
           scoring_format: string | null
           secondary_color: string | null
+          shared_at: string | null
           team_fee_cents: number | null
           tour_completed: boolean
           tour_completed_at: string | null

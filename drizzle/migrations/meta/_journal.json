@@ -8,6 +8,13 @@
       "when": 1789399814803,
       "tag": "0000_sample_tour_branding",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789479845154,
+      "tag": "0001_sample_conversion_tracking",
+      "breakpoints": true
     }
   ]
 }

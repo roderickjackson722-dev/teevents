@@ -20,6 +20,7 @@ import {
   LayoutDashboard,
   Smartphone,
   Palette,
+  ArrowRight,
 } from "lucide-react";
 import SEO from "@/components/SEO";
 import SampleGuidedTour from "@/components/sample/SampleGuidedTour";

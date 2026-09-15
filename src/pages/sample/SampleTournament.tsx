@@ -27,6 +27,7 @@ import SampleGuidedTour from "@/components/sample/SampleGuidedTour";
 import SampleRegistrationPreview from "@/components/sample/SampleRegistrationPreview";
 import SampleOrganizerDashboardTeaser from "@/components/sample/SampleOrganizerDashboardTeaser";
 import SampleLeaderboard from "@/components/sample/SampleLeaderboard";
+import SampleSponsorStrip from "@/components/sample/SampleSponsorStrip";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 
 interface Sample {
@@ -205,6 +206,11 @@ export default function SampleTournament() {
           data-tour="leaderboard"
           className="md:col-span-2 overflow-hidden rounded-lg shadow-sm"
         >
+          <SampleSponsorStrip
+            primaryColor={primary}
+            secondaryColor={secondary}
+            className="rounded-t-lg border-b-0"
+          />
           <SampleLeaderboard
             eventName={sample.tournament_name}
             rows={leaderboard}
@@ -215,7 +221,8 @@ export default function SampleTournament() {
           />
           <p className="border border-t-0 border-border bg-card px-4 py-3 text-xs text-muted-foreground">
             Updates in real time as scores come in — open the matching TV
-            display on any monitor.
+            display on any monitor. Sponsor logos shown here are a paid
+            placement organizers can sell.
           </p>
         </div>
 
@@ -268,6 +275,12 @@ export default function SampleTournament() {
                 >
                   Save Scores
                 </button>
+                <SampleSponsorStrip
+                  primaryColor={primary}
+                  secondaryColor={secondary}
+                  size="sm"
+                  className="rounded-md"
+                />
               </div>
             </div>
           </div>

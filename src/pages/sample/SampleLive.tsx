@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import SampleLeaderboard from "@/components/sample/SampleLeaderboard";
+import SampleSponsorStrip from "@/components/sample/SampleSponsorStrip";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import SEO from "@/components/SEO";
 
@@ -54,6 +55,11 @@ export default function SampleLive() {
       >
         SAMPLE TV DISPLAY · Scores update automatically on a live TeeVents event
       </div>
+      <SampleSponsorStrip
+        primaryColor={primary}
+        secondaryColor={secondary}
+        className="border-x-0 border-t-0"
+      />
       <SampleLeaderboard
         eventName={sample.tournament_name}
         rows={leaderboard}

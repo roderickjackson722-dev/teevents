@@ -113,6 +113,16 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
   });
   const [liveTournaments, setLiveTournaments] = useState<{ id: string; title: string }[]>([]);
 
+  const [emailTarget, setEmailTarget] = useState<SampleRow | null>(null);
+  const [sendingEmail, setSendingEmail] = useState(false);
+  const [emailForm, setEmailForm] = useState({
+    to: "",
+    subject: "",
+    heading: "",
+    button_label: "View Your Sample Event Page",
+    message: "",
+  });
+
   async function load() {
     setLoading(true);
     const { data, error } = await supabase

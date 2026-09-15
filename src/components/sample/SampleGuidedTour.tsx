@@ -2,7 +2,13 @@ import { useCallback, useEffect, useState } from "react";
 import { driver, type Driver } from "driver.js";
 import "driver.js/dist/driver.css";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { ArrowRight, HelpCircle, PlayCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -16,8 +22,8 @@ interface Props {
 }
 
 /**
- * Guided 6-step tour for customer samples: welcome → event page → registration
- * → leaderboard → mobile scoring → call to action.
+ * Guided 6-step tour for customer samples: event page → registration → leaderboard
+ * → mobile scoring → organizer dashboard → call to action.
  */
 export default function SampleGuidedTour({
   slug,
@@ -48,7 +54,7 @@ export default function SampleGuidedTour({
         {
           popover: {
             title: `Welcome${customerName ? `, ${customerName}` : ""}!`,
-            description: `We've built a custom sample for <strong>${eventName}</strong>. Let's take a quick tour of the 4 main things you'll use most.`,
+            description: `We've built a custom TeeVents sample for <strong>${eventName}</strong>. This tour covers the four most common experiences, then shows the organizer dashboard where everything is managed.`,
             nextBtnText: "Start Tour →",
           },
         },
@@ -56,8 +62,7 @@ export default function SampleGuidedTour({
           element: "[data-tour='event-page']",
           popover: {
             title: "1. Your custom event page",
-            description:
-              "This is your event page—branded with your logo, colors, and event details. This is what your players will see when they register.",
+            description: `This is the custom event page we built for <strong>${eventName}</strong>. Your logo, colors, event details, and calls to action match the live TeeVents experience.`,
             side: "bottom",
             align: "center",
           },
@@ -67,7 +72,7 @@ export default function SampleGuidedTour({
           popover: {
             title: "2. Registration",
             description:
-              "When players click 'Register,' they'll see this simple form. They can sign up, pay, and get a confirmation email—all in one step.",
+              "Players choose an individual or team entry, answer contact, handicap, apparel, dietary, and event questions, review the fee, then continue to secure payment.",
             side: "bottom",
             align: "center",
           },
@@ -93,10 +98,13 @@ export default function SampleGuidedTour({
           },
         },
         {
+          element: "[data-tour='organizer-dashboard']",
           popover: {
-            title: "That's it!",
+            title: "5. Your organizer dashboard",
             description:
-              "Those are the 4 main things you'll use most. Everything else is optional and can be turned on when you need it. Ready to get started with your real event?",
+              "These four areas are the most common. Your matching TeeVents dashboard has more options, including rosters, drag-and-drop pairings, sponsors, finances, messaging, and printables.",
+            side: "top",
+            align: "center",
             doneBtnText: "See next steps →",
             onNextClick: () => {
               lastStep = true;
@@ -109,7 +117,9 @@ export default function SampleGuidedTour({
         if (lastStep) {
           setReachedEnd(true);
           setFinalOpen(true);
-          supabase.rpc("mark_sample_tour_completed", { _slug: slug }).then(() => {});
+          supabase
+            .rpc("mark_sample_tour_completed", { _slug: slug })
+            .then(() => {});
         }
         try {
           localStorage.setItem(`sample-tour-${slug}`, "seen");
@@ -121,7 +131,10 @@ export default function SampleGuidedTour({
 
     // Brand the tour buttons.
     document.documentElement.style.setProperty("--tv-tour-primary", primary);
-    document.documentElement.style.setProperty("--tv-tour-secondary", secondary);
+    document.documentElement.style.setProperty(
+      "--tv-tour-secondary",
+      secondary,
+    );
     d.drive();
   }, [slug, customerName, eventName, primaryColor, secondaryColor]);
 
@@ -172,18 +185,27 @@ export default function SampleGuidedTour({
       <Dialog open={finalOpen} onOpenChange={setFinalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-center text-2xl">Ready to get started?</DialogTitle>
+            <DialogTitle className="text-center text-2xl">
+              Ready to get started?
+            </DialogTitle>
             <DialogDescription className="text-center text-base pt-1">
-              Those are the 4 main things you'll use most for {eventName}. Everything else is optional and can be
-              turned on when you need it.
+              Those are the 4 main things you'll use most for {eventName}.
+              Everything else is optional and can be turned on when you need it.
             </DialogDescription>
           </DialogHeader>
           <div className="flex flex-col gap-2 pt-2">
-            <a href="https://teevents.golf/get-started" target="_blank" rel="noreferrer">
+            <a
+              href="https://teevents.golf/get-started"
+              target="_blank"
+              rel="noreferrer"
+            >
               <Button
                 size="lg"
                 className="w-full font-bold"
-                style={{ backgroundColor: secondaryColor || "#F5A623", color: primaryColor || "#1a5c38" }}
+                style={{
+                  backgroundColor: secondaryColor || "#F5A623",
+                  color: primaryColor || "#1a5c38",
+                }}
               >
                 Yes, Let's Get Started <ArrowRight className="h-4 w-4 ml-2" />
               </Button>

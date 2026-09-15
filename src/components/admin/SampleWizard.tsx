@@ -106,6 +106,7 @@ export default function SampleWizard({ onCreated }: { onCreated?: () => void } =
           secondary_color: f.secondary_color,
           prospect_name: f.customer_name || null,
           prospect_email: f.prospect_email || null,
+          prospect_phone: f.prospect_phone || null,
           prospect_company: f.organization_name || null,
           sample_share_link: link,
           guided_tour: true,

@@ -31,7 +31,7 @@ interface Built {
   eventName: string;
 }
 
-export default function SampleWizard() {
+export default function SampleWizard({ onCreated }: { onCreated?: () => void } = {}) {
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
   const [built, setBuilt] = useState<Built | null>(null);
@@ -106,6 +106,7 @@ export default function SampleWizard() {
           secondary_color: f.secondary_color,
           prospect_name: f.customer_name || null,
           prospect_email: f.prospect_email || null,
+          prospect_phone: f.prospect_phone || null,
           prospect_company: f.organization_name || null,
           sample_share_link: link,
           guided_tour: true,
@@ -137,6 +138,7 @@ export default function SampleWizard() {
 
       setBuilt({ slug, link, customerName: f.customer_name, eventName: f.event_name });
       setStep(4);
+      onCreated?.();
       toast({ title: "Sample created", description: "Copy the link and send it to your customer." });
     } catch (e: any) {
       toast({ title: "Could not create sample", description: e.message, variant: "destructive" });

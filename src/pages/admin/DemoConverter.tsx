@@ -15,6 +15,7 @@ import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, 
 import { Switch } from "@/components/ui/switch";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 import SampleWizard from "@/components/admin/SampleWizard";
+import SampleTournamentsList from "@/components/admin/SampleTournamentsList";
 
 interface DemoTournamentRow {
   id: string;
@@ -63,6 +64,7 @@ export default function DemoConverter() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [demos, setDemos] = useState<DemoTournamentRow[]>([]);
   const [loading, setLoading] = useState(true);
+  const [sampleReload, setSampleReload] = useState(0);
 
   // Focus mode: work on a single demo tournament at a time
   const [focusId, setFocusId] = useState<string | null>(null);
@@ -665,94 +667,15 @@ export default function DemoConverter() {
       </div>
 
       <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        <SampleWizard />
+        <SampleWizard onCreated={() => setSampleReload((n) => n + 1)} />
+
+        <SampleTournamentsList reloadKey={sampleReload} />
 
         <Card>
           <CardHeader>
-            <CardTitle>Create Demo Tournament</CardTitle>
+            <CardTitle>Legacy Demo Tournaments</CardTitle>
             <CardDescription>
-              Creates a fully functional, real tournament under your <strong>Demo Sandbox</strong> organization with 12 mock players pre-loaded. Every dashboard tab works exactly like a live tournament.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label>Tournament Name</Label>
-                <Input value={form.tournament_name} onChange={(e) => setForm({ ...form, tournament_name: e.target.value })} placeholder="Spring Charity Classic" />
-              </div>
-              <div>
-                <Label>Event Date</Label>
-                <Input type="date" value={form.event_date} onChange={(e) => setForm({ ...form, event_date: e.target.value })} />
-              </div>
-              <div>
-                <Label>Location</Label>
-                <Input value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} placeholder="Pebble Beach, CA" />
-              </div>
-              <div>
-                <Label>Course</Label>
-                <Input value={form.course_name} onChange={(e) => setForm({ ...form, course_name: e.target.value })} placeholder="Pebble Beach Golf Links" />
-              </div>
-              <div>
-                <Label>Registration Fee ($)</Label>
-                <Input type="number" value={form.registration_fee_dollars} onChange={(e) => setForm({ ...form, registration_fee_dollars: e.target.value })} />
-              </div>
-              <div>
-                <Label>Scoring Format</Label>
-                <Select value={form.scoring_format} onValueChange={(v) => setForm({ ...form, scoring_format: v })}>
-                  <SelectTrigger><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    {SCORING_FORMATS.map((s) => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-border space-y-2">
-              <Label>Hero Image (optional)</Label>
-              <div className="text-xs text-muted-foreground">JPG, PNG, or WebP. Max 5MB. Recommended 16:9 (1920×1080).</div>
-              <div className="flex flex-wrap items-start gap-3">
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp"
-                  className="hidden"
-                  onChange={onFileChosen}
-                />
-                <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()}>
-                  <Upload className="h-4 w-4 mr-1" /> Choose File
-                </Button>
-                {croppedPreviewUrl ? (
-                  <div className="relative">
-                    <img src={croppedPreviewUrl} alt="Hero preview" className="w-64 h-36 object-cover rounded border border-border" />
-                    <Button type="button" size="sm" variant="ghost" className="absolute top-1 right-1 h-6 w-6 p-0 bg-background/80" onClick={clearImage}>
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="w-64 h-36 rounded border border-dashed border-border flex items-center justify-center text-muted-foreground text-xs">
-                    <ImageIcon className="h-4 w-4 mr-1" /> No image
-                  </div>
-                )}
-                {rawImageSrc && (
-                  <Button type="button" variant="ghost" size="sm" onClick={() => setCropOpen(true)}>
-                    Re-crop
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            <Button onClick={createDemo} disabled={creating} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold">
-              <Sparkles className="h-4 w-4 mr-2" />
-              {creating ? "Creating…" : "Create Demo Tournament"}
-            </Button>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Your Demo Tournaments</CardTitle>
-            <CardDescription>
-              Select a tournament to focus on it, then use <strong>Edit Details</strong> to update what the prospect sees.
+              Older screen-share demo tournaments. Select one to focus on it, then use <strong>Edit Details</strong> to update what the prospect sees.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -773,7 +696,7 @@ export default function DemoConverter() {
             {loading ? (
               <div>Loading…</div>
             ) : demos.length === 0 ? (
-              <div className="text-sm text-muted-foreground">No demo tournaments yet. Create one above.</div>
+              <div className="text-sm text-muted-foreground">No legacy demo tournaments.</div>
             ) : (
               <Table>
                 <TableHeader>

@@ -6,11 +6,14 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Calendar, MapPin, Trophy, ExternalLink, LayoutDashboard, Tv, ArrowRight, Sparkles, Smartphone } from "lucide-react";
+import { Calendar, MapPin, Trophy, ExternalLink, LayoutDashboard, Smartphone, Palette } from "lucide-react";
 import { formatScore } from "@/lib/sampleMockData";
-import { toast } from "sonner";
 import SEO from "@/components/SEO";
 import SampleGuidedTour from "@/components/sample/SampleGuidedTour";
+import SampleRegistrationPreview from "@/components/sample/SampleRegistrationPreview";
+import SampleOrganizerDashboardTeaser from "@/components/sample/SampleOrganizerDashboardTeaser";
+import SampleLeaderboard from "@/components/sample/SampleLeaderboard";
+import { TeeventsFooter } from "@/components/TeeventsFooter";
 
 interface Sample {
   id: string;
@@ -85,51 +88,37 @@ export default function SampleTournament() {
             {sample.event_date && <span className="flex items-center gap-1"><Calendar className="h-4 w-4" />{new Date(sample.event_date).toLocaleDateString("en-US", { dateStyle: "long" })}</span>}
             {sample.location && <span className="flex items-center gap-1"><MapPin className="h-4 w-4" />{sample.location}</span>}
           </div>
-          <div data-tour="registration" className="mt-6 inline-flex flex-col items-center gap-1 rounded-lg p-1">
-            <Button style={{ backgroundColor: secondary, color: primary }} className="hover:opacity-90" onClick={() => toast.message("This is a demo", { description: "On a real TeeVents tournament, this opens registration — players sign up, pay, and get a confirmation email." })}>
+          <div className="mt-6 inline-flex flex-col items-center gap-1 rounded-lg p-1">
+            <Button asChild style={{ backgroundColor: secondary, color: primary }} className="hover:opacity-90">
+              <a href="#sample-registration">
               Register — ${(sample.registration_fee_cents / 100).toFixed(0)}
+              </a>
             </Button>
             <span className="text-xs text-white/80">Sign up, pay, and get a confirmation email in one step</span>
           </div>
         </div>
       </div>
 
+      <div className="border-b border-border bg-card px-4 py-3">
+        <p className="mx-auto flex max-w-5xl items-center justify-center gap-2 text-center text-sm text-muted-foreground">
+          <Palette className="h-4 w-4 shrink-0" style={{ color: primary }} />
+          Your logo, primary color, and accent color can all be customized by the organizer.
+        </p>
+      </div>
+
+      <SampleRegistrationPreview
+        eventName={sample.tournament_name}
+        feeCents={sample.registration_fee_cents}
+        primaryColor={primary}
+        secondaryColor={secondary}
+      />
+
       {/* Live leaderboard + mobile scoring (tour anchors) */}
       <div className="container mx-auto px-4 pt-8 max-w-5xl grid gap-6 md:grid-cols-3">
-        <Card data-tour="leaderboard" className="md:col-span-2">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2" style={{ color: primary }}>
-              <Trophy className="h-5 w-5" /> Live Leaderboard
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm">
-                <thead className="border-b">
-                  <tr className="text-left">
-                    <th className="py-2 pr-3">Pos</th>
-                    <th className="py-2 pr-3">Player</th>
-                    <th className="py-2 pr-3">Gross</th>
-                    <th className="py-2 pr-3">Net</th>
-                    <th className="py-2 pr-3">Thru</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {leaderboard.map((l) => (
-                    <tr key={l.id} className="border-b">
-                      <td className="py-2 pr-3 font-semibold">{l.position}</td>
-                      <td className="py-2 pr-3">{l.player_name}</td>
-                      <td className="py-2 pr-3">{l.gross_score}</td>
-                      <td className="py-2 pr-3">{l.net_score}</td>
-                      <td className="py-2 pr-3">{l.thru}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <p className="text-xs text-muted-foreground mt-3">Updates in real time as scores come in — display it on a monitor at your event.</p>
-          </CardContent>
-        </Card>
+        <div data-tour="leaderboard" className="md:col-span-2 overflow-hidden rounded-lg shadow-sm">
+          <SampleLeaderboard eventName={sample.tournament_name} rows={leaderboard} logoUrl={sample.logo_url} primaryColor={primary} secondaryColor={secondary} compact />
+          <p className="border border-t-0 border-border bg-card px-4 py-3 text-xs text-muted-foreground">Updates in real time as scores come in — open the matching TV display on any monitor.</p>
+        </div>
 
         {/* Mobile scoring mockup */}
         <div data-tour="mobile-scoring" className="flex flex-col items-center">
@@ -139,7 +128,7 @@ export default function SampleTournament() {
                 {sample.tournament_name}
               </div>
               <div className="p-3 space-y-2">
-                <div className="text-xs text-muted-foreground">Hole 7 • Par 4</div>
+                  <div className="flex items-center justify-between text-xs text-muted-foreground"><span>Hole 7 • Par 4</span><span className="rounded px-1.5 py-0.5 font-bold" style={{ backgroundColor: `${secondary}33`, color: primary }}>Mobile scoring</span></div>
                 {(participants.slice(0, 4).length ? participants.slice(0, 4) : [{ id: "a", name: "John Smith" }, { id: "b", name: "Marcus Johnson" }]).map((p: any, i: number) => (
                   <div key={p.id} className="flex items-center justify-between border rounded-md px-2 py-1.5">
                     <span className="text-xs truncate">{p.name}</span>
@@ -159,41 +148,15 @@ export default function SampleTournament() {
       </div>
 
 
-      {/* BIG Dashboard Preview CTA — hidden while the guided tour keeps things focused */}
-      <div className={`container mx-auto px-4 py-6 max-w-5xl ${sample.guided_tour ? "hidden" : ""}`}>
-        <div className="relative overflow-hidden rounded-2xl border-2 border-[#F5A623] bg-gradient-to-r from-[#1a5c38] via-[#1a5c38] to-[#0f3d24] p-6 md:p-8 shadow-2xl">
-          <div className="absolute -top-10 -right-10 opacity-10">
-            <LayoutDashboard className="h-48 w-48 text-[#F5A623]" />
-          </div>
-          <div className="relative flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6">
-            <div className="flex-1">
-              <div className="inline-flex items-center gap-1.5 bg-[#F5A623] text-[#1a5c38] px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider mb-2">
-                <Sparkles className="h-3.5 w-3.5" /> See It In Action
-              </div>
-              <h2 className="text-2xl md:text-3xl font-bold text-white mb-2">
-                See What Your Organizer Dashboard Looks Like
-              </h2>
-              <p className="text-white/80 text-sm md:text-base">
-                Step inside the back-end of {sample.tournament_name} and see every feature you'll use to run your tournament — players, sponsors, leaderboard, finances and more.
-              </p>
-            </div>
-            <Link to={`/sample/${slug}/dashboard`} className="w-full md:w-auto flex-shrink-0">
-              <Button size="lg" className="w-full md:w-auto bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-bold text-base md:text-lg px-6 md:px-8 py-6 shadow-lg">
-                <LayoutDashboard className="h-5 w-5 mr-2" />
-                Open Organizer Dashboard
-                <ArrowRight className="h-5 w-5 ml-2" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-        <div className="mt-3 flex justify-center">
-          <Link to={`/sample/${slug}/live`}>
-            <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
-              <Tv className="h-4 w-4 mr-1" /> Or preview the Live TV Leaderboard
-            </Button>
-          </Link>
-        </div>
-      </div>
+      <SampleOrganizerDashboardTeaser
+        slug={slug || sample.unique_slug}
+        eventName={sample.tournament_name}
+        eventDate={sample.event_date}
+        playerCount={participants.length}
+        revenueCents={participants.length * sample.registration_fee_cents}
+        primaryColor={primary}
+        secondaryColor={secondary}
+      />
 
       {/* Auto-popup encouraging dashboard preview */}
       <Dialog open={showDashIntro} onOpenChange={setShowDashIntro}>
@@ -258,30 +221,7 @@ export default function SampleTournament() {
             <Card>
               <CardHeader><CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" />Live Leaderboard</CardTitle></CardHeader>
               <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="border-b">
-                      <tr className="text-left">
-                        <th className="py-2 pr-3">Pos</th>
-                        <th className="py-2 pr-3">Team / Player</th>
-                        <th className="py-2 pr-3">Gross</th>
-                        <th className="py-2 pr-3">Net</th>
-                        <th className="py-2 pr-3">Thru</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {leaderboard.map(l => (
-                        <tr key={l.id} className="border-b">
-                          <td className="py-2 pr-3 font-semibold">{l.position}</td>
-                          <td className="py-2 pr-3">{l.player_name}</td>
-                          <td className="py-2 pr-3">{formatScore(l.gross_score)}</td>
-                          <td className="py-2 pr-3">{formatScore(l.net_score)}</td>
-                          <td className="py-2 pr-3">{l.thru}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                  <SampleLeaderboard eventName={sample.tournament_name} rows={leaderboard} logoUrl={sample.logo_url} primaryColor={primary} secondaryColor={secondary} compact />
               </CardContent>
             </Card>
           </TabsContent>
@@ -324,6 +264,8 @@ export default function SampleTournament() {
           </CardContent>
         </Card>
       </div>
+
+      <TeeventsFooter tournament={{ is_pro: false }} />
 
       {sample.guided_tour && slug && (
         <SampleGuidedTour

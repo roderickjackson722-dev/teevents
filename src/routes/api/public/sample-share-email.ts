@@ -4,6 +4,7 @@
 // Platform admins only.
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
+import { buildSampleShareEmailHtml } from "@/lib/sampleShareEmail";
 
 const SENDER = "TeeVents Golf Management <info@notifications.teevents.golf>";
 
@@ -16,44 +17,6 @@ function json(payload: unknown, status = 200) {
       "Access-Control-Allow-Headers": "content-type, authorization",
     },
   });
-}
-
-function esc(v: unknown) {
-  return String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
-
-export function buildSampleShareEmailHtml(opts: {
-  heading: string;
-  message: string;
-  link: string;
-  buttonLabel?: string;
-  logoUrl?: string | null;
-  primaryColor?: string | null;
-  secondaryColor?: string | null;
-}) {
-  const primary = opts.primaryColor || "#1a5c38";
-  const secondary = opts.secondaryColor || "#F5A623";
-  const paragraphs = opts.message
-    .split(/\n{2,}/)
-    .map((p) => `<p style="margin:0 0 14px 0;line-height:1.6;">${esc(p).replace(/\n/g, "<br/>")}</p>`)
-    .join("");
-  return `
-  <div style="font-family:Arial,Helvetica,sans-serif;max-width:600px;margin:0 auto;color:#374151;">
-    <div style="background:${esc(primary)};color:#ffffff;padding:20px 24px;border-radius:8px 8px 0 0;">
-      ${opts.logoUrl ? `<img src="${esc(opts.logoUrl)}" alt="" style="max-height:44px;margin-bottom:10px;display:block;" />` : ""}
-      <h2 style="margin:0;font-size:20px;">${esc(opts.heading)}</h2>
-    </div>
-    <div style="border:1px solid #e5e7eb;border-top:none;padding:24px;border-radius:0 0 8px 8px;">
-      ${paragraphs}
-      <p style="margin:24px 0;">
-        <a href="${esc(opts.link)}" style="display:inline-block;background:${esc(secondary)};color:${esc(primary)};padding:14px 28px;border-radius:6px;text-decoration:none;font-weight:bold;">
-          ${esc(opts.buttonLabel || "View Your Sample Event Page")}
-        </a>
-      </p>
-      <p style="font-size:13px;color:#6b7280;word-break:break-all;">Or paste this link into your browser: ${esc(opts.link)}</p>
-      <p style="margin-top:24px;font-size:13px;color:#6b7280;">TeeVents Golf Management • info@teevents.golf</p>
-    </div>
-  </div>`;
 }
 
 async function handle(request: Request) {

@@ -15,6 +15,7 @@ import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, 
 import { Switch } from "@/components/ui/switch";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
 import SampleWizard from "@/components/admin/SampleWizard";
+import SampleTournamentsList from "@/components/admin/SampleTournamentsList";
 
 interface DemoTournamentRow {
   id: string;

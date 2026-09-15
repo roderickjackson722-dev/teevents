@@ -137,7 +137,7 @@ export default function SampleDashboardPreview() {
   useEffect(() => {
     if (!slug) return;
     (async () => {
-      const { data: s } = await supabase.from("sample_tournaments").select("id,admin_id,unique_slug,tournament_name,event_date,location,description,logo_url,hero_image_url,scoring_format,registration_fee_cents,team_fee_cents,view_count,last_accessed_at,created_at,updated_at").eq("unique_slug", slug).maybeSingle();
+      const { data: s } = await supabase.from("sample_tournaments").select("id,admin_id,unique_slug,tournament_name,event_date,location,description,logo_url,hero_image_url,scoring_format,registration_fee_cents,team_fee_cents,primary_color,secondary_color,view_count,last_accessed_at,created_at,updated_at").eq("unique_slug", slug).maybeSingle();
       if (!s) { setLoading(false); return; }
       setSample(s);
       const [{ data: p }, { data: sp }, { data: lb }] = await Promise.all([
@@ -169,7 +169,7 @@ export default function SampleDashboardPreview() {
   return (
     <div className="min-h-screen flex flex-col w-full bg-background">
       {/* Sample-mode banner (mirrors useDemoMode banner in real DashboardLayout) */}
-      <div className="bg-secondary text-secondary-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50 flex-wrap">
+      <div className="px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50 flex-wrap" style={{ backgroundColor: sample.secondary_color || "#F5A623", color: sample.primary_color || "#1a5c38" }}>
         <Eye className="h-4 w-4 flex-shrink-0" />
         <span>You're viewing a sample dashboard — this is what your real dashboard looks like.</span>
         <Link
@@ -184,7 +184,7 @@ export default function SampleDashboardPreview() {
         {/* Sidebar nav content — shared between desktop aside and mobile sheet */}
         {(() => null)()}
         {/* Desktop sidebar */}
-        <aside className="hidden md:flex flex-col w-64 bg-primary text-primary-foreground border-r border-border overflow-y-auto max-h-[calc(100vh-44px)] sticky top-[44px]">
+        <aside className="hidden md:flex flex-col w-64 text-primary-foreground border-r border-border overflow-y-auto max-h-[calc(100vh-44px)] sticky top-[44px]" style={{ backgroundColor: sample.primary_color || "#1a5c38" }}>
           <SidebarNavContent activeNav={activeNav} onSelect={(t) => setActiveNav(t)} />
         </aside>
 
@@ -200,7 +200,7 @@ export default function SampleDashboardPreview() {
 
         {/* Main */}
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-16 flex items-center justify-between border-b-2 border-secondary bg-secondary/15 px-3 sm:px-4 gap-2">
+          <header className="h-16 flex items-center justify-between border-b-2 px-3 sm:px-4 gap-2" style={{ borderColor: sample.secondary_color || "#F5A623", backgroundColor: `${sample.secondary_color || "#F5A623"}18` }}>
             <div className="flex items-center gap-2 min-w-0">
               <button
                 onClick={() => setMobileNavOpen(true)}

@@ -7,7 +7,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Calendar, MapPin, Trophy, ExternalLink, LayoutDashboard, Smartphone, Palette } from "lucide-react";
-import { formatScore } from "@/lib/sampleMockData";
 import SEO from "@/components/SEO";
 import SampleGuidedTour from "@/components/sample/SampleGuidedTour";
 import SampleRegistrationPreview from "@/components/sample/SampleRegistrationPreview";

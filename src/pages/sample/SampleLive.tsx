@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { formatScore } from "@/lib/sampleMockData";
+import SampleLeaderboard from "@/components/sample/SampleLeaderboard";
+import { TeeventsFooter } from "@/components/TeeventsFooter";
+import SEO from "@/components/SEO";
 
 export default function SampleLive() {
   const { slug } = useParams<{ slug: string }>();
@@ -11,7 +13,7 @@ export default function SampleLive() {
   useEffect(() => {
     if (!slug) return;
     (async () => {
-      const { data: s } = await supabase.from("sample_tournaments").select("id,admin_id,unique_slug,tournament_name,event_date,location,description,logo_url,hero_image_url,scoring_format,registration_fee_cents,team_fee_cents,view_count,last_accessed_at,created_at,updated_at").eq("unique_slug", slug).maybeSingle();
+      const { data: s } = await supabase.from("sample_tournaments").select("id,admin_id,unique_slug,tournament_name,event_date,location,description,logo_url,hero_image_url,scoring_format,registration_fee_cents,team_fee_cents,primary_color,secondary_color,view_count,last_accessed_at,created_at,updated_at").eq("unique_slug", slug).maybeSingle();
       if (!s) return;
       setSample(s);
       const { data: lb } = await supabase.from("sample_leaderboard").select("*").eq("sample_tournament_id", s.id).order("position");
@@ -19,39 +21,19 @@ export default function SampleLive() {
     })();
   }, [slug]);
 
-  if (!sample) return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading...</div>;
+  if (!sample) return <div className="min-h-screen bg-[#1a5c38] text-white flex items-center justify-center">Loading...</div>;
+
+  const primary = sample.primary_color || "#1a5c38";
+  const secondary = sample.secondary_color || "#F5A623";
 
   return (
-    <div className="min-h-screen bg-black text-white p-6">
-      <div className="max-w-5xl mx-auto">
-        <div className="text-center mb-6 border-b border-white/20 pb-4">
-          <h1 className="text-4xl md:text-5xl font-bold text-[#F5A623]">{sample.tournament_name}</h1>
-          <div className="text-sm text-white/60 mt-1">LIVE LEADERBOARD</div>
-        </div>
-        <table className="w-full text-xl">
-          <thead className="border-b-2 border-[#F5A623]">
-            <tr className="text-left">
-              <th className="py-3">POS</th>
-              <th>TEAM</th>
-              <th className="text-right">GROSS</th>
-              <th className="text-right">NET</th>
-              <th className="text-right">THRU</th>
-            </tr>
-          </thead>
-          <tbody>
-            {leaderboard.map(l => (
-              <tr key={l.id} className="border-b border-white/10">
-                <td className="py-3 font-bold text-[#F5A623]">{l.position}</td>
-                <td className="font-semibold">{l.player_name}</td>
-                <td className="text-right">{formatScore(l.gross_score)}</td>
-                <td className="text-right">{formatScore(l.net_score)}</td>
-                <td className="text-right">{l.thru}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <div className="text-center text-white/40 text-xs mt-6">Powered by TeeVents</div>
+    <div className="min-h-screen" style={{ backgroundColor: primary }}>
+      <SEO title={`${sample.tournament_name} Live Leaderboard – Sample`} description="Branded sample live leaderboard" noIndex />
+      <div className="px-4 py-2 text-center text-xs font-semibold" style={{ backgroundColor: secondary, color: primary }}>
+        SAMPLE TV DISPLAY · Scores update automatically on a live TeeVents event
       </div>
+      <SampleLeaderboard eventName={sample.tournament_name} rows={leaderboard} logoUrl={sample.logo_url} primaryColor={primary} secondaryColor={secondary} />
+      <TeeventsFooter tournament={{ is_pro: false }} />
     </div>
   );
 }

@@ -16,8 +16,8 @@ interface Props {
 }
 
 /**
- * Guided 6-step tour for customer samples: welcome → event page → registration
- * → leaderboard → mobile scoring → call to action.
+ * Guided 6-step tour for customer samples: event page → registration → leaderboard
+ * → mobile scoring → organizer dashboard → call to action.
  */
 export default function SampleGuidedTour({
   slug,
@@ -46,18 +46,12 @@ export default function SampleGuidedTour({
       popoverClass: "teevents-tour",
       steps: [
         {
-          popover: {
-            title: `Welcome${customerName ? `, ${customerName}` : ""}!`,
-            description: `We've built a custom sample for <strong>${eventName}</strong>. Let's take a quick tour of the 4 main things you'll use most.`,
-            nextBtnText: "Start Tour →",
-          },
-        },
-        {
           element: "[data-tour='event-page']",
           popover: {
-            title: "1. Your custom event page",
+            title: `1. Welcome${customerName ? `, ${customerName}` : ""}!`,
             description:
-              "This is your event page—branded with your logo, colors, and event details. This is what your players will see when they register.",
+              `This is the custom event page we built for <strong>${eventName}</strong>. Your logo, colors, event details, and calls to action match the live TeeVents experience.`,
+            nextBtnText: "Start Tour →",
             side: "bottom",
             align: "center",
           },
@@ -67,7 +61,7 @@ export default function SampleGuidedTour({
           popover: {
             title: "2. Registration",
             description:
-              "When players click 'Register,' they'll see this simple form. They can sign up, pay, and get a confirmation email—all in one step.",
+              "Players choose an individual or team entry, answer contact, handicap, apparel, dietary, and event questions, review the fee, then continue to secure payment.",
             side: "bottom",
             align: "center",
           },
@@ -93,10 +87,13 @@ export default function SampleGuidedTour({
           },
         },
         {
+          element: "[data-tour='organizer-dashboard']",
           popover: {
-            title: "That's it!",
+            title: "5. Your organizer dashboard",
             description:
-              "Those are the 4 main things you'll use most. Everything else is optional and can be turned on when you need it. Ready to get started with your real event?",
+              "These four areas are the most common. Your matching TeeVents dashboard has more options, including rosters, drag-and-drop pairings, sponsors, finances, messaging, and printables.",
+            side: "top",
+            align: "center",
             doneBtnText: "See next steps →",
             onNextClick: () => {
               lastStep = true;

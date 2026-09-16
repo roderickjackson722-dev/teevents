@@ -75,13 +75,19 @@ export default function LeagueTeamsTab({ leagueId }: { leagueId: string }) {
 
   const loadPairings = async (evId: string) => {
     if (!evId) { setPairings([]); return; }
-    const { data } = await (supabase as any)
-      .from("league_team_pairings")
-      .select("id, team_name, scoring_code, player1_id, player2_id, holes")
-      .eq("event_id", evId)
-      .order("created_at");
-    setPairings(data || []);
+    const [{ data }, { data: codes }] = await Promise.all([
+      (supabase as any)
+        .from("league_team_pairings")
+        .select("id, team_name, player1_id, player2_id, holes")
+        .eq("event_id", evId)
+        .order("created_at"),
+      // scoring_code is only readable by league staff through this RPC
+      (supabase as any).rpc("get_league_team_scoring_codes", { _event_id: evId }),
+    ]);
+    const codeById = new Map<string, string>((codes || []).map((c: any) => [c.id, c.scoring_code]));
+    setPairings((data || []).map((p: any) => ({ ...p, scoring_code: codeById.get(p.id) ?? null })));
   };
+
 
   useEffect(() => {
     loadPairings(eventId);

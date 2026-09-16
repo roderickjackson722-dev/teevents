@@ -46,7 +46,7 @@ const CollegeScoringAddon = () => {
         )
         .eq("id", tournamentId)
         .maybeSingle(),
-      supabase.from("admin_addon_pricing").select("addon_key, price_cents"),
+      (supabase as any).rpc("get_addon_pricing"),
     ]);
     setTitle(t?.title ?? "");
     setPaid(!!t?.college_scoring_paid);

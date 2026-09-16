@@ -63,6 +63,7 @@
     "@tiptap/react": "^3.31.3",
     "@tiptap/starter-kit": "^3.31.3",
     "@types/dompurify": "^3.2.0",
+    "ajv": "^8.20.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
@@ -77,6 +78,7 @@
     "jszip": "^3.10.1",
     "lucide-react": "^0.462.0",
     "next-themes": "^0.3.0",
+    "picomatch": "^4.0.7",
     "qrcode.react": "^4.2.0",
     "react": "^18.3.1",
     "react-day-picker": "^8.10.1",
@@ -132,9 +134,6 @@
     "browserslist": "4.28.9",
     "js-yaml": "4.3.2",
     "dompurify": "3.4.15",
-    "fflate": "0.8.3",
-    "picomatch": "4.0.7",
-    "eslint/ajv": "6.15.0",
-    "@eslint/eslintrc/ajv": "6.15.0"
+    "fflate": "0.8.3"
   }
 }

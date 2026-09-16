@@ -354,17 +354,14 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         if (cancelled) return;
         setAddons((data as AddonRow[]) || []);
       });
-    // Load auto-apply promo codes
+    // Load auto-apply promo codes (scoped RPC — full promo rows are not publicly readable)
     (supabase as any)
-      .from("tournament_promo_codes")
-      .select("code, discount_type, discount_value, expires_at, max_uses, current_uses, auto_apply, applies_to, applies_to_custom, alert_enabled, alert_html, show_alert_on_top, show_alert_at_checkout")
-      .eq("tournament_id", tournamentId)
-      .eq("is_active", true)
-      .eq("auto_apply", true)
+      .rpc("get_auto_apply_promo_codes", { _tournament_id: tournamentId })
       .then(({ data }: any) => {
         if (cancelled) return;
         setAutoPromos(data || []);
       });
+
     return () => { cancelled = true; };
   }, [tournamentId]);
 
@@ -485,29 +482,25 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
     setPromoError(null);
     setValidatingPromo(true);
     try {
-      const { data: promo } = await supabase
-        .from("tournament_promo_codes")
-        .select("code, discount_type, discount_value, is_active, expires_at, max_uses, current_uses")
-        .eq("tournament_id", tournamentId)
-        .eq("code", code)
-        .eq("is_active", true)
-        .maybeSingle();
+      // Server-side validation: only the code's discount is returned, never full promo rows
+      const { data: rows } = await (supabase as any).rpc("validate_tournament_promo_code", {
+        _tournament_id: tournamentId,
+        _code: code,
+      });
+      const promo = Array.isArray(rows) ? rows[0] : rows;
       if (!promo) {
-        setPromoError("Invalid or inactive promo code");
+        setPromoError("Invalid, expired, or fully used promo code");
         setAppliedPromo(null);
         return;
       }
-      if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
-        setPromoError("This promo code has expired");
-        setAppliedPromo(null);
-        return;
-      }
-      if (promo.max_uses && (promo.current_uses ?? 0) >= promo.max_uses) {
-        setPromoError("This promo code has reached its usage limit");
-        setAppliedPromo(null);
-        return;
-      }
-      setAppliedPromo({ code: promo.code, discount_type: promo.discount_type, discount_value: Number(promo.discount_value) });
+      setAppliedPromo({
+        code: promo.code,
+        discount_type: promo.discount_type,
+        discount_value: Number(promo.discount_value),
+        alert_html: promo.alert_html ?? null,
+        show_alert_on_top: promo.show_alert_on_top !== false,
+      });
+
     } finally {
       setValidatingPromo(false);
     }

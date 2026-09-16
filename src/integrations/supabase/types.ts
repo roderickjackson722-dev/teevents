@@ -13925,6 +13925,13 @@ export type Database = {
       }
       generate_league_team_scoring_code: { Args: never; Returns: string }
       generate_team_login_code: { Args: never; Returns: string }
+      get_addon_pricing: {
+        Args: never
+        Returns: {
+          addon_key: string
+          price_cents: number
+        }[]
+      }
       get_age_update_target: {
         Args: { _token: string }
         Returns: {
@@ -13953,6 +13960,20 @@ export type Database = {
           type: string
           winner_email: string
           winner_name: string
+        }[]
+      }
+      get_auto_apply_promo_codes: {
+        Args: { _tournament_id: string }
+        Returns: {
+          alert_enabled: boolean
+          alert_html: string
+          applies_to: string
+          applies_to_custom: string
+          code: string
+          discount_type: string
+          discount_value: number
+          show_alert_at_checkout: boolean
+          show_alert_on_top: boolean
         }[]
       }
       get_college_invitation_by_token: {
@@ -14044,6 +14065,14 @@ export type Database = {
           total_gross: number
           total_net: number
           wins: number
+        }[]
+      }
+      get_league_team_scoring_codes: {
+        Args: { _event_id: string }
+        Returns: {
+          id: string
+          scoring_code: string
+          team_name: string
         }[]
       }
       get_live_scoring_group: {
@@ -14700,6 +14729,16 @@ export type Database = {
           id: string
           is_active: boolean
           tournament_id: string
+        }[]
+      }
+      validate_tournament_promo_code: {
+        Args: { _code: string; _tournament_id: string }
+        Returns: {
+          alert_html: string
+          code: string
+          discount_type: string
+          discount_value: number
+          show_alert_on_top: boolean
         }[]
       }
     }

@@ -20,7 +20,7 @@ export default function DemoDashboardPreview() {
       setDemo(d);
       const { data: rows } = await supabase
         .from("demo_players")
-        .select("id,name,email,handicap,shirt_size")
+        .select("id,name,handicap,shirt_size")
         .eq("demo_tournament_id", d.id)
         .order("name");
       setPlayers(

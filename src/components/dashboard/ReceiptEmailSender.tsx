@@ -105,6 +105,41 @@ export default function ReceiptEmailSender({
   const [receiptNumber, setReceiptNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Credit card (Stripe)");
 
+  // Nonprofit details used by the tax-deductible donation receipt.
+  const [orgInfo, setOrgInfo] = useState<{ name: string; nonprofit_name: string; ein: string; address: string }>({
+    name: "",
+    nonprofit_name: "",
+    ein: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    if (!tournamentId) return;
+    let active = true;
+    (async () => {
+      const { data: t } = await supabase
+        .from("tournaments")
+        .select("organization_id")
+        .eq("id", tournamentId)
+        .maybeSingle();
+      const orgId = (t as any)?.organization_id;
+      if (!orgId) return;
+      const { data: o } = await supabase
+        .from("organizations")
+        .select("name, nonprofit_name, ein, mailing_address")
+        .eq("id", orgId)
+        .maybeSingle();
+      if (!active || !o) return;
+      setOrgInfo({
+        name: (o as any).name || "",
+        nonprofit_name: (o as any).nonprofit_name || "",
+        ein: (o as any).ein || "",
+        address: (o as any).mailing_address || "",
+      });
+    })();
+    return () => { active = false; };
+  }, [tournamentId]);
+
   useEffect(() => {
     if (!tournamentId) return;
     let active = true;

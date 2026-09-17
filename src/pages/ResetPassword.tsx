@@ -76,9 +76,40 @@ const ResetPassword = () => {
     // Listen for the PASSWORD_RECOVERY / SIGNED_IN events from the magic link
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY" || (event === "SIGNED_IN" && session)) {
+        setLinkError(null);
         setReady(true);
       }
     });
+
+    // A recovery session may already be established by the Supabase client
+    // (it consumes the URL hash itself), or by an earlier hit on the same link.
+    const sessionFallback = async (tries = 8): Promise<boolean> => {
+      for (let i = 0; i < tries; i++) {
+        const { data } = await supabase.auth.getSession();
+        if (data.session) return true;
+        if (cancelled) return false;
+        await new Promise((r) => setTimeout(r, 400));
+      }
+      return false;
+    };
+
+    const settle = async (error: string | null) => {
+      if (cancelled) return;
+      if (!error) {
+        setLinkError(null);
+        setReady(true);
+        return;
+      }
+      // Token errors are common when a link is opened twice or pre-fetched by an
+      // email scanner. If we still have a valid session, let them set a password.
+      if (await sessionFallback(3)) {
+        if (cancelled) return;
+        setLinkError(null);
+        setReady(true);
+        return;
+      }
+      if (!cancelled) setLinkError(error);
+    };
 
     (async () => {
       const url = new URL(window.location.href);
@@ -86,7 +117,7 @@ const ResetPassword = () => {
 
       const errorDescription = url.searchParams.get("error_description") || hashParams.get("error_description");
       if (errorDescription) {
-        setLinkError(errorDescription);
+        await settle(errorDescription);
         return;
       }
 
@@ -98,10 +129,7 @@ const ResetPassword = () => {
           access_token: accessToken,
           refresh_token: refreshToken,
         });
-        if (!cancelled) {
-          if (error) setLinkError(error.message);
-          else setReady(true);
-        }
+        await settle(error?.message ?? null);
         return;
       }
 
@@ -109,10 +137,7 @@ const ResetPassword = () => {
       const code = url.searchParams.get("code");
       if (code) {
         const { error } = await supabase.auth.exchangeCodeForSession(code);
-        if (!cancelled) {
-          if (error) setLinkError(error.message);
-          else setReady(true);
-        }
+        await settle(error?.message ?? null);
         return;
       }
 
@@ -124,16 +149,28 @@ const ResetPassword = () => {
           type: (linkType as "recovery") || "recovery",
           token_hash: tokenHash,
         });
-        if (!cancelled) {
-          if (error) setLinkError(error.message);
-          else setReady(true);
-        }
+        await settle(error?.message ?? null);
         return;
       }
 
-      // 4) Already signed in via an earlier redirect (e.g. page refresh)
-      const { data } = await supabase.auth.getSession();
-      if (!cancelled && data.session) setReady(true);
+      // 4) Six-digit / raw token links: ?token=...&email=...
+      const rawToken = url.searchParams.get("token");
+      const tokenEmail = url.searchParams.get("email");
+      if (rawToken && tokenEmail) {
+        const { error } = await supabase.auth.verifyOtp({
+          type: "recovery",
+          token: rawToken,
+          email: tokenEmail,
+        });
+        await settle(error?.message ?? null);
+        return;
+      }
+
+      // 5) Already signed in via an earlier redirect (e.g. page refresh)
+      const hasSession = await sessionFallback();
+      if (cancelled) return;
+      if (hasSession) setReady(true);
+      else setLinkError("We couldn't find a valid reset link.");
     })();
 
     return () => {
@@ -141,6 +178,29 @@ const ResetPassword = () => {
       subscription.unsubscribe();
     };
   }, []);
+
+  const [resendEmail, setResendEmail] = useState("");
+  const [resending, setResending] = useState(false);
+
+  const resendLink = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const target = resendEmail.trim().toLowerCase();
+    if (!target) return;
+    setResending(true);
+    const { error } = await supabase.auth.resetPasswordForEmail(target, {
+      redirectTo: `${window.location.origin}/reset-password${leagueSlug ? `?league=${encodeURIComponent(leagueSlug)}` : ""}`,
+    });
+    setResending(false);
+    if (error) {
+      toast({ title: "Couldn't send the link", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({
+      title: "New link sent",
+      description: `Check ${target} for a fresh password reset link. Open it in the same browser and only click it once.`,
+    });
+  };
+
 
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -182,19 +242,48 @@ const ResetPassword = () => {
           </div>
 
           {!ready ? (
-            <p className="text-center text-muted-foreground text-sm">
-              {linkError
-                ? `This reset link is no longer valid (${linkError}). `
-                : "Verifying your reset link… If this takes too long, "}
-              request a new reset from the{" "}
-              <a
-                href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
-                className="text-primary font-semibold hover:underline"
-              >
-                sign in page
-              </a>.
-            </p>
+            linkError ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center">
+                  This reset link has already been used or has expired. Enter your email and we'll send you a
+                  fresh one right now.
+                </p>
+                <form onSubmit={resendLink} className="space-y-3">
+                  <div>
+                    <Label htmlFor="resend-email">Email</Label>
+                    <Input
+                      id="resend-email"
+                      type="email"
+                      autoComplete="email"
+                      value={resendEmail}
+                      onChange={(e) => setResendEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={resending}>
+                    {resending && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Send me a new link
+                  </Button>
+                </form>
+                <p className="text-xs text-muted-foreground text-center">
+                  Open the link once, in the same browser you requested it from. Or{" "}
+                  <a
+                    href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    sign in
+                  </a>{" "}
+                  if you remember your password.
+                </p>
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> Verifying your reset link…
+              </p>
+            )
           ) : (
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="password">New Password</Label>

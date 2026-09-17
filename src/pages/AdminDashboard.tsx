@@ -1051,7 +1051,13 @@ const AdminDashboard = () => {
                   >
                     <Icon className="h-4 w-4" /> {label}
                   </button>
-                ))}
+                 ))}
+                <button
+                  onClick={() => navigate("/admin/step-by-step")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <BookOpen className="h-4 w-4" /> Step-by-Step Instructions
+                </button>
               </div>
             </div>
           </div>

@@ -27,6 +27,7 @@ import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { dayCfgOf, parsePairingsConfig, roundDateFor, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
+import ReceiptEmailSender, { RECEIPT_TYPE_LABELS, type ReceiptType } from "@/components/dashboard/ReceiptEmailSender";
 import ScheduledEmailCard from "@/components/dashboard/ScheduledEmailCard";
 
 interface EmailConfig {
@@ -400,11 +401,13 @@ export default function EmailTemplateEditor() {
   const initialTemplate: TemplateKind = (() => {
     if (typeof window === "undefined") return "confirmation";
     const q = new URLSearchParams(window.location.search).get("template");
-    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of" || q === "sponsorship_day_of" || q === "pairings_update" || q === "tee_times" || q === "survey"
+    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of" || q === "sponsorship_day_of" || q === "pairings_update" || q === "tee_times" || q === "survey" || q === "receipt"
       ? (q as TemplateKind)
       : "confirmation";
   })();
   const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
+  /** Which receipt the organizer is editing — each type keeps its own wording. */
+  const [receiptType, setReceiptType] = useState<ReceiptType>("registration");
   // Last rich-text field the organizer touched — variable chips insert there.
   const [lastRichField, setLastRichField] = useState<"body_text" | "closing_text" | "schedule_override">("body_text");
   const [config, setConfig] = useState<EmailConfig>(
@@ -505,6 +508,7 @@ export default function EmailTemplateEditor() {
     if (k === "pairings_update") return DEFAULT_PAIRINGS_UPDATE_CONFIG;
     if (k === "tee_times") return DEFAULT_TEE_TIMES_CONFIG;
     if (k === "survey") return DEFAULT_SURVEY_CONFIG;
+    if (k === "receipt") return { ...DEFAULT_RECEIPT_CONFIG, ...(RECEIPT_TYPE_DEFAULTS[receiptType] || {}) };
 
     return DEFAULT_CONFIG;
   };
@@ -522,13 +526,25 @@ export default function EmailTemplateEditor() {
     setSentAt(t?.day_before_sent_at || null);
   };
 
-  const loadConfigFor = (t: any, kind: TemplateKind) => {
-    const stored = t?.[CONFIG_KEY[kind]];
+  const loadConfigFor = (t: any, kind: TemplateKind, rType: ReceiptType = receiptType) => {
+    // Receipts keep one saved section per receipt type inside receipt_email_config.
+    const stored = kind === "receipt"
+      ? (t?.receipt_email_config as any)?.[rType]
+      : t?.[CONFIG_KEY[kind]];
+    const defaults = kind === "receipt"
+      ? { ...DEFAULT_RECEIPT_CONFIG, ...(RECEIPT_TYPE_DEFAULTS[rType] || {}) }
+      : defaultsForKind(kind);
     if (stored) {
-      const loaded = { ...defaultsForKind(kind), ...(stored as any) };
+      const loaded = { ...defaults, ...(stored as any) };
       setConfig(kind === "day_before" ? normalizeDayBefore(loaded) : loaded);
     }
-    else setConfig(defaultsForKind(kind));
+    else setConfig(defaults);
+  };
+
+  const handleReceiptTypeChange = (rType: ReceiptType) => {
+    setReceiptType(rType);
+    const t = tournaments.find((x: any) => x.id === selectedTournament);
+    loadConfigFor(t, "receipt", rType);
   };
 
   const moveSection = (id: string, dir: -1 | 1) => {

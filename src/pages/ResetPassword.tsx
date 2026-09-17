@@ -242,19 +242,48 @@ const ResetPassword = () => {
           </div>
 
           {!ready ? (
-            <p className="text-center text-muted-foreground text-sm">
-              {linkError
-                ? `This reset link is no longer valid (${linkError}). `
-                : "Verifying your reset link… If this takes too long, "}
-              request a new reset from the{" "}
-              <a
-                href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
-                className="text-primary font-semibold hover:underline"
-              >
-                sign in page
-              </a>.
-            </p>
+            linkError ? (
+              <div className="space-y-4">
+                <p className="text-sm text-muted-foreground text-center">
+                  This reset link has already been used or has expired. Enter your email and we'll send you a
+                  fresh one right now.
+                </p>
+                <form onSubmit={resendLink} className="space-y-3">
+                  <div>
+                    <Label htmlFor="resend-email">Email</Label>
+                    <Input
+                      id="resend-email"
+                      type="email"
+                      autoComplete="email"
+                      value={resendEmail}
+                      onChange={(e) => setResendEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={resending}>
+                    {resending && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Send me a new link
+                  </Button>
+                </form>
+                <p className="text-xs text-muted-foreground text-center">
+                  Open the link once, in the same browser you requested it from. Or{" "}
+                  <a
+                    href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
+                    className="text-primary font-semibold hover:underline"
+                  >
+                    sign in
+                  </a>{" "}
+                  if you remember your password.
+                </p>
+              </div>
+            ) : (
+              <p className="text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
+                <Loader2 className="h-4 w-4 animate-spin" /> Verifying your reset link…
+              </p>
+            )
           ) : (
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="password">New Password</Label>

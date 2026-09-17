@@ -8,12 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Copy, Download, FileText, Loader2, Receipt, Send } from "lucide-react";
 
-export type ReceiptType = "registration" | "addon" | "sponsorship";
+export type ReceiptType = "registration" | "addon" | "sponsorship" | "tax_deductible";
 
 export const RECEIPT_TYPE_LABELS: Record<ReceiptType, string> = {
   registration: "Registration",
   addon: "Add-On / Extras",
   sponsorship: "Sponsorship",
+  tax_deductible: "Tax-Deductible Donation",
 };
 
 /** platform_transactions.type values that belong to each receipt type. */
@@ -21,6 +22,7 @@ const TX_TYPES: Record<ReceiptType, string[]> = {
   registration: ["registration"],
   addon: ["addon_purchase", "store_purchase", "side_event_ticket", "director_shop_order", "event_ticket", "auction", "raffle"],
   sponsorship: ["sponsorship", "donation", "vendor_booth_fee", "vendor_registration"],
+  tax_deductible: ["donation", "sponsorship", "registration"],
 };
 
 interface Props {
@@ -103,6 +105,41 @@ export default function ReceiptEmailSender({
   const [receiptNumber, setReceiptNumber] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Credit card (Stripe)");
 
+  // Nonprofit details used by the tax-deductible donation receipt.
+  const [orgInfo, setOrgInfo] = useState<{ name: string; nonprofit_name: string; ein: string; address: string }>({
+    name: "",
+    nonprofit_name: "",
+    ein: "",
+    address: "",
+  });
+
+  useEffect(() => {
+    if (!tournamentId) return;
+    let active = true;
+    (async () => {
+      const { data: t } = await supabase
+        .from("tournaments")
+        .select("organization_id")
+        .eq("id", tournamentId)
+        .maybeSingle();
+      const orgId = (t as any)?.organization_id;
+      if (!orgId) return;
+      const { data: o } = await supabase
+        .from("organizations")
+        .select("name, nonprofit_name, ein, mailing_address")
+        .eq("id", orgId)
+        .maybeSingle();
+      if (!active || !o) return;
+      setOrgInfo({
+        name: (o as any).name || "",
+        nonprofit_name: (o as any).nonprofit_name || "",
+        ein: (o as any).ein || "",
+        address: (o as any).mailing_address || "",
+      });
+    })();
+    return () => { active = false; };
+  }, [tournamentId]);
+
   useEffect(() => {
     if (!tournamentId) return;
     let active = true;
@@ -172,6 +209,9 @@ export default function ReceiptEmailSender({
     processing_fee: processingFee,
     receipt_total: total,
     payment_method: paymentMethod,
+    nonprofit_name: orgInfo.nonprofit_name || orgInfo.name || baseVars.organization_name || "",
+    ein: orgInfo.ein || "",
+    org_address: orgInfo.address || "",
     payer_name: recipientName,
     first_name: recipientMode === "manual" ? (payerName || baseVars.first_name || "") : (selectedReg?.first_name || payerName || ""),
     last_name: recipientMode === "manual" ? "" : (selectedReg?.last_name || ""),
@@ -241,6 +281,7 @@ export default function ReceiptEmailSender({
                 <SelectItem value="registration">{RECEIPT_TYPE_LABELS.registration}</SelectItem>
                 <SelectItem value="addon">{RECEIPT_TYPE_LABELS.addon}</SelectItem>
                 <SelectItem value="sponsorship">{RECEIPT_TYPE_LABELS.sponsorship}</SelectItem>
+                <SelectItem value="tax_deductible">{RECEIPT_TYPE_LABELS.tax_deductible}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground mt-1">Each type keeps its own saved wording.</p>

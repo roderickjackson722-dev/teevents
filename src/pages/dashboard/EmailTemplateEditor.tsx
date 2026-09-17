@@ -92,7 +92,7 @@ const DAY_BEFORE_SECTIONS: { id: string; label: string; hint: string }[] = [
 ];
 const DEFAULT_SECTION_ORDER = DAY_BEFORE_SECTIONS.map((s) => s.id);
 
-type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of" | "sponsorship_day_of" | "pairings_update" | "tee_times" | "survey";
+type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of" | "sponsorship_day_of" | "pairings_update" | "tee_times" | "survey" | "receipt";
 
 
 const DEFAULT_CONFIG: EmailConfig = {
@@ -265,6 +265,43 @@ const DEFAULT_SURVEY_CONFIG: EmailConfig = {
   show_event_details: false,
 };
 
+/**
+ * Itemized payment receipt. The amounts (item, service fee, processing /
+ * credit card fee, total) are auto-filled from the real payment on the Send tab
+ * and can be edited before sending.
+ */
+const DEFAULT_RECEIPT_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "Your receipt for {{event_name}}",
+  header_title: "Payment Receipt",
+  greeting: "Hi {{payer_name}},",
+  body_text:
+    "Thank you for your payment for {{event_name}}. Here is your receipt for your records.\n\nReceipt #: {{receipt_number}}\nDate: {{receipt_date}}\nPaid by: {{payment_method}}\n\nItem: {{receipt_item}}\nAmount: {{receipt_subtotal}}\nService fee: {{service_fee}}\nProcessing / credit card fee: {{processing_fee}}\n\nTotal charged: {{receipt_total}}",
+  closing_text:
+    "Please keep this receipt for your records. If anything looks incorrect, reply to this email and we'll take care of it.",
+  footer_text: "Thank you for your support! ⛳",
+  show_event_details: true,
+  show_button: false,
+};
+
+const RECEIPT_TYPE_DEFAULTS: Record<string, Partial<EmailConfig>> = {
+  registration: {},
+  addon: {
+    subject: "Your receipt for your {{event_name}} add-ons",
+    header_title: "Add-On Purchase Receipt",
+    body_text:
+      "Thank you for your add-on purchase for {{event_name}}. Here is your receipt for your records.\n\nReceipt #: {{receipt_number}}\nDate: {{receipt_date}}\nPaid by: {{payment_method}}\n\nItem: {{receipt_item}}\nAmount: {{receipt_subtotal}}\nService fee: {{service_fee}}\nProcessing / credit card fee: {{processing_fee}}\n\nTotal charged: {{receipt_total}}",
+  },
+  sponsorship: {
+    subject: "Your sponsorship receipt for {{event_name}}",
+    header_title: "Sponsorship Receipt",
+    body_text:
+      "Thank you for your generous sponsorship of {{event_name}}. Here is your receipt for your records.\n\nReceipt #: {{receipt_number}}\nDate: {{receipt_date}}\nPaid by: {{payment_method}}\n\nSponsorship: {{receipt_item}}\nAmount: {{receipt_subtotal}}\nService fee: {{service_fee}}\nProcessing / credit card fee: {{processing_fee}}\n\nTotal charged: {{receipt_total}}",
+    closing_text:
+      "Please keep this receipt for your records. If you need a tax donation receipt as well, just reply to this email and we'll send one over.",
+  },
+};
+
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
   sponsor: "Sponsor Confirmation",
@@ -276,6 +313,7 @@ const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   pairings_update: "Updated Hole Assignments / Pairings",
   tee_times: "Tee Times & Pairings (individual players)",
   survey: "Post-Event Survey Invitation",
+  receipt: "Payment Receipt",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
@@ -289,6 +327,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   pairings_update: "Updated Hole Assignments",
   tee_times: "Your Tee Time",
   survey: "We'd Love Your Feedback",
+  receipt: "Payment Receipt",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -302,6 +341,7 @@ const CONFIG_KEY: Record<TemplateKind, string> = {
   pairings_update: "pairings_update_email_config",
   tee_times: "tee_times_email_config",
   survey: "survey_email_config",
+  receipt: "receipt_email_config",
 };
 
 
@@ -342,6 +382,15 @@ const VARIABLE_TAGS = [
   { label: "Contact Phone", value: "{{contact_phone}}" },
   { label: "Contact Email", value: "{{contact_email}}" },
   { label: "Organization Name", value: "{{organization_name}}" },
+  { label: "Receipt: Paid By", value: "{{payer_name}}" },
+  { label: "Receipt: Number", value: "{{receipt_number}}" },
+  { label: "Receipt: Date", value: "{{receipt_date}}" },
+  { label: "Receipt: Item", value: "{{receipt_item}}" },
+  { label: "Receipt: Amount", value: "{{receipt_subtotal}}" },
+  { label: "Receipt: Service Fee", value: "{{service_fee}}" },
+  { label: "Receipt: Processing Fee", value: "{{processing_fee}}" },
+  { label: "Receipt: Total Charged", value: "{{receipt_total}}" },
+  { label: "Receipt: Payment Method", value: "{{payment_method}}" },
 ];
 
 export default function EmailTemplateEditor() {

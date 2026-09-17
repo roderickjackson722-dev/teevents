@@ -404,6 +404,9 @@ const VARIABLE_TAGS = [
   { label: "Receipt: Processing Fee", value: "{{processing_fee}}" },
   { label: "Receipt: Total Charged", value: "{{receipt_total}}" },
   { label: "Receipt: Payment Method", value: "{{payment_method}}" },
+  { label: "Receipt: Nonprofit Name", value: "{{nonprofit_name}}" },
+  { label: "Receipt: EIN", value: "{{ein}}" },
+  { label: "Receipt: Org Address", value: "{{org_address}}" },
 ];
 
 export default function EmailTemplateEditor() {

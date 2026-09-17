@@ -419,7 +419,11 @@ export default function EmailTemplateEditor() {
   })();
   const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
   /** Which receipt the organizer is editing — each type keeps its own wording. */
-  const [receiptType, setReceiptType] = useState<ReceiptType>("registration");
+  const [receiptType, setReceiptType] = useState<ReceiptType>(() => {
+    if (typeof window === "undefined") return "registration";
+    const q = new URLSearchParams(window.location.search).get("receipt_type");
+    return q === "addon" || q === "sponsorship" || q === "tax_deductible" ? (q as ReceiptType) : "registration";
+  });
   // Last rich-text field the organizer touched — variable chips insert there.
   const [lastRichField, setLastRichField] = useState<"body_text" | "closing_text" | "schedule_override">("body_text");
   const [config, setConfig] = useState<EmailConfig>(
@@ -782,6 +786,9 @@ export default function EmailTemplateEditor() {
       processing_fee: "$12.30",
       receipt_total: "$432.30",
       payment_method: "Credit card (Stripe)",
+      nonprofit_name: org?.orgName || "Your Organization",
+      ein: "12-3456789",
+      org_address: "123 Main St, Your City, ST 00000",
       survey_link: sampleReg?.survey_response_token
         ? `https://www.teevents.golf/survey/${sampleReg.survey_response_token}`
         : `${homepage}` ,
@@ -1180,6 +1187,7 @@ export default function EmailTemplateEditor() {
               <SelectItem value="registration">{RECEIPT_TYPE_LABELS.registration}</SelectItem>
               <SelectItem value="addon">{RECEIPT_TYPE_LABELS.addon}</SelectItem>
               <SelectItem value="sponsorship">{RECEIPT_TYPE_LABELS.sponsorship}</SelectItem>
+              <SelectItem value="tax_deductible">{RECEIPT_TYPE_LABELS.tax_deductible}</SelectItem>
             </SelectContent>
           </Select>
           <span className="text-xs text-muted-foreground">

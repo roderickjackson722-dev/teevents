@@ -18,12 +18,22 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
+    // Recover messages left in 'processing' by a previous run that timed out (>15 min).
+    const staleCutoff = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    await supabase
+      .from("tournament_messages")
+      .update({ status: "scheduled" })
+      .eq("status", "processing")
+      .lte("scheduled_for", staleCutoff);
+
     // Find all scheduled messages that are due
     const { data: dueMessages, error: fetchError } = await supabase
       .from("tournament_messages")
       .select("*")
       .eq("status", "scheduled")
-      .lte("scheduled_for", new Date().toISOString());
+      .lte("scheduled_for", new Date().toISOString())
+      .order("scheduled_for", { ascending: true })
+      .limit(20);
 
     if (fetchError) throw new Error(`Failed to fetch scheduled messages: ${fetchError.message}`);
     if (!dueMessages || dueMessages.length === 0) {

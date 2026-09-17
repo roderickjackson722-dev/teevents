@@ -51,13 +51,19 @@ Deno.serve(async (req) => {
     const twilioAuth = btoa(`${accountSid}:${authToken}`);
 
     let totalProcessed = 0;
+    const startedAt = Date.now();
+    const TIME_BUDGET_MS = 90_000; // stop before the worker wall-clock limit
+    const BATCH_SIZE = 10; // concurrent Twilio requests
 
     for (const msg of dueMessages) {
+      if (Date.now() - startedAt > TIME_BUDGET_MS) break; // remaining rows stay 'scheduled'
+
       // Mark as processing to prevent duplicate sends
       await supabase
         .from("tournament_messages")
         .update({ status: "processing" })
         .eq("id", msg.id);
+
 
       // Fetch recipients
       const { data: registrations } = await supabase

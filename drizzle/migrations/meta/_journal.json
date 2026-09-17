@@ -22,6 +22,13 @@
       "when": 1789562304383,
       "tag": "0002_security_fix_selected_findings",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789669592240,
+      "tag": "0003_add_receipt_email_config",
+      "breakpoints": true
     }
   ]
 }

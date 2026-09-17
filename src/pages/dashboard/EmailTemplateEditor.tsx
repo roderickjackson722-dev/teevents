@@ -27,6 +27,7 @@ import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { dayCfgOf, parsePairingsConfig, roundDateFor, startingHoleLabelForGroup, teeTimeForGroup } from "@/lib/pairingsConfig";
 import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
+import ReceiptEmailSender, { RECEIPT_TYPE_LABELS, type ReceiptType } from "@/components/dashboard/ReceiptEmailSender";
 import ScheduledEmailCard from "@/components/dashboard/ScheduledEmailCard";
 
 interface EmailConfig {
@@ -92,7 +93,7 @@ const DAY_BEFORE_SECTIONS: { id: string; label: string; hint: string }[] = [
 ];
 const DEFAULT_SECTION_ORDER = DAY_BEFORE_SECTIONS.map((s) => s.id);
 
-type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of" | "sponsorship_day_of" | "pairings_update" | "tee_times" | "survey";
+type TemplateKind = "confirmation" | "sponsor" | "vendor" | "post_event" | "day_before" | "sponsor_day_of" | "sponsorship_day_of" | "pairings_update" | "tee_times" | "survey" | "receipt";
 
 
 const DEFAULT_CONFIG: EmailConfig = {
@@ -265,6 +266,43 @@ const DEFAULT_SURVEY_CONFIG: EmailConfig = {
   show_event_details: false,
 };
 
+/**
+ * Itemized payment receipt. The amounts (item, service fee, processing /
+ * credit card fee, total) are auto-filled from the real payment on the Send tab
+ * and can be edited before sending.
+ */
+const DEFAULT_RECEIPT_CONFIG: EmailConfig = {
+  ...DEFAULT_CONFIG,
+  subject: "Your receipt for {{event_name}}",
+  header_title: "Payment Receipt",
+  greeting: "Hi {{payer_name}},",
+  body_text:
+    "Thank you for your payment for {{event_name}}. Here is your receipt for your records.\n\nReceipt #: {{receipt_number}}\nDate: {{receipt_date}}\nPaid by: {{payment_method}}\n\nItem: {{receipt_item}}\nAmount: {{receipt_subtotal}}\nService fee: {{service_fee}}\nProcessing / credit card fee: {{processing_fee}}\n\nTotal charged: {{receipt_total}}",
+  closing_text:
+    "Please keep this receipt for your records. If anything looks incorrect, reply to this email and we'll take care of it.",
+  footer_text: "Thank you for your support! ⛳",
+  show_event_details: true,
+  show_button: false,
+};
+
+const RECEIPT_TYPE_DEFAULTS: Record<string, Partial<EmailConfig>> = {
+  registration: {},
+  addon: {
+    subject: "Your receipt for your {{event_name}} add-ons",
+    header_title: "Add-On Purchase Receipt",
+    body_text:
+      "Thank you for your add-on purchase for {{event_name}}. Here is your receipt for your records.\n\nReceipt #: {{receipt_number}}\nDate: {{receipt_date}}\nPaid by: {{payment_method}}\n\nItem: {{receipt_item}}\nAmount: {{receipt_subtotal}}\nService fee: {{service_fee}}\nProcessing / credit card fee: {{processing_fee}}\n\nTotal charged: {{receipt_total}}",
+  },
+  sponsorship: {
+    subject: "Your sponsorship receipt for {{event_name}}",
+    header_title: "Sponsorship Receipt",
+    body_text:
+      "Thank you for your generous sponsorship of {{event_name}}. Here is your receipt for your records.\n\nReceipt #: {{receipt_number}}\nDate: {{receipt_date}}\nPaid by: {{payment_method}}\n\nSponsorship: {{receipt_item}}\nAmount: {{receipt_subtotal}}\nService fee: {{service_fee}}\nProcessing / credit card fee: {{processing_fee}}\n\nTotal charged: {{receipt_total}}",
+    closing_text:
+      "Please keep this receipt for your records. If you need a tax donation receipt as well, just reply to this email and we'll send one over.",
+  },
+};
+
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   confirmation: "Player / Registrant Confirmation",
   sponsor: "Sponsor Confirmation",
@@ -276,6 +314,7 @@ const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   pairings_update: "Updated Hole Assignments / Pairings",
   tee_times: "Tee Times & Pairings (individual players)",
   survey: "Post-Event Survey Invitation",
+  receipt: "Payment Receipt",
 };
 
 const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
@@ -289,6 +328,7 @@ const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   pairings_update: "Updated Hole Assignments",
   tee_times: "Your Tee Time",
   survey: "We'd Love Your Feedback",
+  receipt: "Payment Receipt",
 };
 
 const CONFIG_KEY: Record<TemplateKind, string> = {
@@ -302,6 +342,7 @@ const CONFIG_KEY: Record<TemplateKind, string> = {
   pairings_update: "pairings_update_email_config",
   tee_times: "tee_times_email_config",
   survey: "survey_email_config",
+  receipt: "receipt_email_config",
 };
 
 
@@ -342,6 +383,15 @@ const VARIABLE_TAGS = [
   { label: "Contact Phone", value: "{{contact_phone}}" },
   { label: "Contact Email", value: "{{contact_email}}" },
   { label: "Organization Name", value: "{{organization_name}}" },
+  { label: "Receipt: Paid By", value: "{{payer_name}}" },
+  { label: "Receipt: Number", value: "{{receipt_number}}" },
+  { label: "Receipt: Date", value: "{{receipt_date}}" },
+  { label: "Receipt: Item", value: "{{receipt_item}}" },
+  { label: "Receipt: Amount", value: "{{receipt_subtotal}}" },
+  { label: "Receipt: Service Fee", value: "{{service_fee}}" },
+  { label: "Receipt: Processing Fee", value: "{{processing_fee}}" },
+  { label: "Receipt: Total Charged", value: "{{receipt_total}}" },
+  { label: "Receipt: Payment Method", value: "{{payment_method}}" },
 ];
 
 export default function EmailTemplateEditor() {
@@ -351,11 +401,13 @@ export default function EmailTemplateEditor() {
   const initialTemplate: TemplateKind = (() => {
     if (typeof window === "undefined") return "confirmation";
     const q = new URLSearchParams(window.location.search).get("template");
-    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of" || q === "sponsorship_day_of" || q === "pairings_update" || q === "tee_times" || q === "survey"
+    return q === "post_event" || q === "day_before" || q === "sponsor" || q === "vendor" || q === "sponsor_day_of" || q === "sponsorship_day_of" || q === "pairings_update" || q === "tee_times" || q === "survey" || q === "receipt"
       ? (q as TemplateKind)
       : "confirmation";
   })();
   const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
+  /** Which receipt the organizer is editing — each type keeps its own wording. */
+  const [receiptType, setReceiptType] = useState<ReceiptType>("registration");
   // Last rich-text field the organizer touched — variable chips insert there.
   const [lastRichField, setLastRichField] = useState<"body_text" | "closing_text" | "schedule_override">("body_text");
   const [config, setConfig] = useState<EmailConfig>(
@@ -456,6 +508,7 @@ export default function EmailTemplateEditor() {
     if (k === "pairings_update") return DEFAULT_PAIRINGS_UPDATE_CONFIG;
     if (k === "tee_times") return DEFAULT_TEE_TIMES_CONFIG;
     if (k === "survey") return DEFAULT_SURVEY_CONFIG;
+    if (k === "receipt") return { ...DEFAULT_RECEIPT_CONFIG, ...(RECEIPT_TYPE_DEFAULTS[receiptType] || {}) };
 
     return DEFAULT_CONFIG;
   };
@@ -473,13 +526,25 @@ export default function EmailTemplateEditor() {
     setSentAt(t?.day_before_sent_at || null);
   };
 
-  const loadConfigFor = (t: any, kind: TemplateKind) => {
-    const stored = t?.[CONFIG_KEY[kind]];
+  const loadConfigFor = (t: any, kind: TemplateKind, rType: ReceiptType = receiptType) => {
+    // Receipts keep one saved section per receipt type inside receipt_email_config.
+    const stored = kind === "receipt"
+      ? (t?.receipt_email_config as any)?.[rType]
+      : t?.[CONFIG_KEY[kind]];
+    const defaults = kind === "receipt"
+      ? { ...DEFAULT_RECEIPT_CONFIG, ...(RECEIPT_TYPE_DEFAULTS[rType] || {}) }
+      : defaultsForKind(kind);
     if (stored) {
-      const loaded = { ...defaultsForKind(kind), ...(stored as any) };
+      const loaded = { ...defaults, ...(stored as any) };
       setConfig(kind === "day_before" ? normalizeDayBefore(loaded) : loaded);
     }
-    else setConfig(defaultsForKind(kind));
+    else setConfig(defaults);
+  };
+
+  const handleReceiptTypeChange = (rType: ReceiptType) => {
+    setReceiptType(rType);
+    const t = tournaments.find((x: any) => x.id === selectedTournament);
+    loadConfigFor(t, "receipt", rType);
   };
 
   const moveSection = (id: string, dir: -1 | 1) => {
@@ -501,7 +566,7 @@ export default function EmailTemplateEditor() {
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, pairings_update_email_config, tee_times_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url, pairings_config")
+        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, pairings_update_email_config, tee_times_email_config, receipt_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url, pairings_config")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -694,6 +759,17 @@ export default function EmailTemplateEditor() {
       sponsor_tier: "Sponsor",
       organization_name: org?.orgName || "",
       contact_email: t?.contact_email || t?.org_contact_email || "",
+      // Receipt placeholders — the Send tab replaces these with the real payment.
+      payer_name: sampleReg ? `${sampleReg.first_name || ""} ${sampleReg.last_name || ""}`.trim() : "John Doe",
+      receipt_type: RECEIPT_TYPE_LABELS[receiptType],
+      receipt_number: "RCPT-2026-A1B2C3",
+      receipt_date: "June 1, 2026",
+      receipt_item: `${RECEIPT_TYPE_LABELS[receiptType]} — ${t?.title || "Sample Tournament"}`,
+      receipt_subtotal: "$400.00",
+      service_fee: "$20.00",
+      processing_fee: "$12.30",
+      receipt_total: "$432.30",
+      payment_method: "Credit card (Stripe)",
       survey_link: sampleReg?.survey_response_token
         ? `https://www.teevents.golf/survey/${sampleReg.survey_response_token}`
         : `${homepage}` ,
@@ -731,7 +807,11 @@ export default function EmailTemplateEditor() {
   const saveTemplate = async () => {
     if (!selectedTournament) return;
     setSaving(true);
-    const update: Record<string, any> = { [configKey]: config as any };
+    const currentTournament: any = tournaments.find((x: any) => x.id === selectedTournament) || {};
+    // Receipts are stored per receipt type inside the one receipt_email_config column.
+    const update: Record<string, any> = templateKind === "receipt"
+      ? { receipt_email_config: { ...(currentTournament.receipt_email_config || {}), [receiptType]: config } }
+      : { [configKey]: config as any };
     const { error } = await supabase
       .from("tournaments")
       .update(update as any)
@@ -742,7 +822,7 @@ export default function EmailTemplateEditor() {
     } else {
       toast.success(`${TEMPLATE_LABELS[templateKind]} saved`);
       setTournaments(prev => prev.map(t =>
-        t.id === selectedTournament ? { ...t, [configKey]: config } : t
+        t.id === selectedTournament ? { ...t, ...update } : t
       ));
     }
   };
@@ -997,6 +1077,7 @@ export default function EmailTemplateEditor() {
               <SelectItem value="pairings_update">{TEMPLATE_LABELS.pairings_update}</SelectItem>
               <SelectItem value="tee_times">{TEMPLATE_LABELS.tee_times}</SelectItem>
               <SelectItem value="survey">{TEMPLATE_LABELS.survey}</SelectItem>
+              <SelectItem value="receipt">{TEMPLATE_LABELS.receipt}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -1073,8 +1154,27 @@ export default function EmailTemplateEditor() {
             ? "Send event-day details to your sponsors — pick sponsors, add parking info and custom notes, preview, then send from the Send tab."
             : templateKind === "day_before"
             ? "This reminder is NOT sent on registration. Choose a send date and time below, or send it now — nothing goes out until you schedule or send it."
+            : templateKind === "receipt"
+            ? "An itemized receipt you can send for a registration, an add-on purchase, or a sponsorship. Pick the payment on the Send tab and the amounts, fees, and total fill in automatically — then send it, copy it, or download it to use outside TeeVents."
             : "Sent automatically when a player registers for this tournament."}
       </div>
+
+      {templateKind === "receipt" && (
+        <div className="bg-card rounded-lg border p-4 flex flex-wrap items-center gap-3">
+          <Label className="text-sm text-muted-foreground">Receipt for</Label>
+          <Select value={receiptType} onValueChange={(v) => handleReceiptTypeChange(v as ReceiptType)}>
+            <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="registration">{RECEIPT_TYPE_LABELS.registration}</SelectItem>
+              <SelectItem value="addon">{RECEIPT_TYPE_LABELS.addon}</SelectItem>
+              <SelectItem value="sponsorship">{RECEIPT_TYPE_LABELS.sponsorship}</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground">
+            Each receipt type saves its own subject and wording.
+          </span>
+        </div>
+      )}
 
       {templateKind === "day_before" && (
         <div className="bg-card rounded-lg border p-5 space-y-4">
@@ -1718,7 +1818,23 @@ export default function EmailTemplateEditor() {
               <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and will apply automatically to future {templateKind} confirmations. Bulk resend from this screen currently supports registrants only — use the {templateKind === "sponsor" ? "Sponsors" : "Vendors"} page to manage individual {templateKind} records.
             </div>
           )}
-          {templateKind !== "sponsor" && templateKind !== "vendor" && templateKind !== "sponsor_day_of" && templateKind !== "sponsorship_day_of" && (
+          {templateKind === "receipt" && selectedTournament && (
+            <ReceiptEmailSender
+              tournamentId={selectedTournament}
+              receiptType={receiptType}
+              onReceiptTypeChange={handleReceiptTypeChange}
+              subjectTemplate={config.subject}
+              baseVars={previewVars}
+              renderHtml={(vars) =>
+                renderEmailHtml(
+                  config,
+                  { ...previewVars, ...vars },
+                  config.header_title || TEMPLATE_HEADERS[templateKind],
+                )
+              }
+            />
+          )}
+          {templateKind !== "receipt" && templateKind !== "sponsor" && templateKind !== "vendor" && templateKind !== "sponsor_day_of" && templateKind !== "sponsorship_day_of" && (
           <>
           <div className="bg-card rounded-lg border p-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">

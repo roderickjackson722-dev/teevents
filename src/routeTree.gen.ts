@@ -27,6 +27,7 @@ import { Route as ApiPublicLeaguePaymentConfirmRouteImport } from './routes/api/
 import { Route as ApiPublicNewsletterSendRouteImport } from './routes/api/public/newsletter-send'
 import { Route as ApiPublicNewsletterUnsubscribeRouteImport } from './routes/api/public/newsletter-unsubscribe'
 import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/api/public/post-event-organizer-email'
+import { Route as ApiPublicReceiptEmailRouteImport } from './routes/api/public/receipt-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as ApiPublicSampleShareEmailRouteImport } from './routes/api/public/sample-share-email'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
@@ -136,6 +137,11 @@ const ApiPublicPostEventOrganizerEmailRoute =
     path: '/api/public/post-event-organizer-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicReceiptEmailRoute = ApiPublicReceiptEmailRouteImport.update({
+  id: '/api/public/receipt-email',
+  path: '/api/public/receipt-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSampleRequestRoute = ApiPublicSampleRequestRouteImport.update({
   id: '/api/public/sample-request',
   path: '/api/public/sample-request',
@@ -219,6 +225,7 @@ export interface FileRoutesByFullPath {
   '/api/public/newsletter-send': typeof ApiPublicNewsletterSendRoute
   '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
+  '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -250,6 +257,7 @@ export interface FileRoutesByTo {
   '/api/public/newsletter-send': typeof ApiPublicNewsletterSendRoute
   '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
+  '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -282,6 +290,7 @@ export interface FileRoutesById {
   '/api/public/newsletter-send': typeof ApiPublicNewsletterSendRoute
   '/api/public/newsletter-unsubscribe': typeof ApiPublicNewsletterUnsubscribeRoute
   '/api/public/post-event-organizer-email': typeof ApiPublicPostEventOrganizerEmailRoute
+  '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -315,6 +324,7 @@ export interface FileRouteTypes {
     | '/api/public/newsletter-send'
     | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
+    | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
@@ -346,6 +356,7 @@ export interface FileRouteTypes {
     | '/api/public/newsletter-send'
     | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
+    | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
@@ -377,6 +388,7 @@ export interface FileRouteTypes {
     | '/api/public/newsletter-send'
     | '/api/public/newsletter-unsubscribe'
     | '/api/public/post-event-organizer-email'
+    | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
@@ -409,6 +421,7 @@ export interface RootRouteChildren {
   ApiPublicNewsletterSendRoute: typeof ApiPublicNewsletterSendRoute
   ApiPublicNewsletterUnsubscribeRoute: typeof ApiPublicNewsletterUnsubscribeRoute
   ApiPublicPostEventOrganizerEmailRoute: typeof ApiPublicPostEventOrganizerEmailRoute
+  ApiPublicReceiptEmailRoute: typeof ApiPublicReceiptEmailRoute
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   ApiPublicSampleShareEmailRoute: typeof ApiPublicSampleShareEmailRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
@@ -549,6 +562,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicPostEventOrganizerEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/receipt-email': {
+      id: '/api/public/receipt-email'
+      path: '/api/public/receipt-email'
+      fullPath: '/api/public/receipt-email'
+      preLoaderRoute: typeof ApiPublicReceiptEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/sample-request': {
       id: '/api/public/sample-request'
       path: '/api/public/sample-request'
@@ -661,6 +681,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicNewsletterSendRoute: ApiPublicNewsletterSendRoute,
   ApiPublicNewsletterUnsubscribeRoute: ApiPublicNewsletterUnsubscribeRoute,
   ApiPublicPostEventOrganizerEmailRoute: ApiPublicPostEventOrganizerEmailRoute,
+  ApiPublicReceiptEmailRoute: ApiPublicReceiptEmailRoute,
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   ApiPublicSampleShareEmailRoute: ApiPublicSampleShareEmailRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,

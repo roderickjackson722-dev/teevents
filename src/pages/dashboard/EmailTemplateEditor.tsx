@@ -822,7 +822,7 @@ export default function EmailTemplateEditor() {
     } else {
       toast.success(`${TEMPLATE_LABELS[templateKind]} saved`);
       setTournaments(prev => prev.map(t =>
-        t.id === selectedTournament ? { ...t, [configKey]: config } : t
+        t.id === selectedTournament ? { ...t, ...update } : t
       ));
     }
   };

@@ -12347,6 +12347,7 @@ export type Database = {
           raffle_tab_title: string | null
           rain_date_policy: string | null
           rain_date_policy_type: string | null
+          receipt_email_config: Json | null
           refund_deadline_days: number | null
           refund_partial_percent: number | null
           refund_policy: string | null
@@ -12696,6 +12697,7 @@ export type Database = {
           raffle_tab_title?: string | null
           rain_date_policy?: string | null
           rain_date_policy_type?: string | null
+          receipt_email_config?: Json | null
           refund_deadline_days?: number | null
           refund_partial_percent?: number | null
           refund_policy?: string | null
@@ -13045,6 +13047,7 @@ export type Database = {
           raffle_tab_title?: string | null
           rain_date_policy?: string | null
           rain_date_policy_type?: string | null
+          receipt_email_config?: Json | null
           refund_deadline_days?: number | null
           refund_partial_percent?: number | null
           refund_policy?: string | null

@@ -209,6 +209,9 @@ export default function ReceiptEmailSender({
     processing_fee: processingFee,
     receipt_total: total,
     payment_method: paymentMethod,
+    nonprofit_name: orgInfo.nonprofit_name || orgInfo.name || baseVars.organization_name || "",
+    ein: orgInfo.ein || "",
+    org_address: orgInfo.address || "",
     payer_name: recipientName,
     first_name: recipientMode === "manual" ? (payerName || baseVars.first_name || "") : (selectedReg?.first_name || payerName || ""),
     last_name: recipientMode === "manual" ? "" : (selectedReg?.last_name || ""),
@@ -278,6 +281,7 @@ export default function ReceiptEmailSender({
                 <SelectItem value="registration">{RECEIPT_TYPE_LABELS.registration}</SelectItem>
                 <SelectItem value="addon">{RECEIPT_TYPE_LABELS.addon}</SelectItem>
                 <SelectItem value="sponsorship">{RECEIPT_TYPE_LABELS.sponsorship}</SelectItem>
+                <SelectItem value="tax_deductible">{RECEIPT_TYPE_LABELS.tax_deductible}</SelectItem>
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground mt-1">Each type keeps its own saved wording.</p>

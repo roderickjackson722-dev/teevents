@@ -205,6 +205,15 @@ const ResetPassword = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData.session) {
+      toast({
+        title: "A fresh reset link is required",
+        description: "Enter your email below and we’ll send a new secure link.",
+        variant: "destructive",
+      });
+      return;
+    }
     if (password !== confirmPassword) {
       toast({ title: "Passwords don't match", variant: "destructive" });
       return;
@@ -241,50 +250,13 @@ const ResetPassword = () => {
             </p>
           </div>
 
-          {!ready ? (
-            linkError ? (
-              <div className="space-y-4">
-                <p className="text-sm text-muted-foreground text-center">
-                  This reset link has already been used or has expired. Enter your email and we'll send you a
-                  fresh one right now.
-                </p>
-                <form onSubmit={resendLink} className="space-y-3">
-                  <div>
-                    <Label htmlFor="resend-email">Email</Label>
-                    <Input
-                      id="resend-email"
-                      type="email"
-                      autoComplete="email"
-                      value={resendEmail}
-                      onChange={(e) => setResendEmail(e.target.value)}
-                      placeholder="you@example.com"
-                      required
-                    />
-                  </div>
-                  <Button type="submit" className="w-full" disabled={resending}>
-                    {resending && <Loader2 className="h-4 w-4 animate-spin" />}
-                    Send me a new link
-                  </Button>
-                </form>
-                <p className="text-xs text-muted-foreground text-center">
-                  Open the link once, in the same browser you requested it from. Or{" "}
-                  <a
-                    href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
-                    className="text-primary font-semibold hover:underline"
-                  >
-                    sign in
-                  </a>{" "}
-                  if you remember your password.
-                </p>
-              </div>
-            ) : (
-              <p className="text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> Verifying your reset link…
-              </p>
-            )
-          ) : (
+          {!ready && !linkError && (
+            <p className="mb-4 text-center text-muted-foreground text-sm flex items-center justify-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" /> Verifying your reset link…
+            </p>
+          )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <Label htmlFor="password">New Password</Label>
                 <Input
@@ -309,11 +281,47 @@ const ResetPassword = () => {
                   minLength={6}
                 />
               </div>
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading || !ready}>
                 {loading && <Loader2 className="h-4 w-4 animate-spin" />}
-                Update Password
+                {ready ? "Update Password" : "Waiting for secure reset link"}
               </Button>
-            </form>
+          </form>
+
+          {linkError && (
+            <div className="mt-6 space-y-4 border-t border-border pt-5">
+              <p className="text-sm text-muted-foreground text-center">
+                This reset link has already been used or has expired. Enter your email and we'll send you a
+                fresh one right now.
+              </p>
+              <form onSubmit={resendLink} className="space-y-3">
+                <div>
+                  <Label htmlFor="resend-email">Email</Label>
+                  <Input
+                    id="resend-email"
+                    type="email"
+                    autoComplete="email"
+                    value={resendEmail}
+                    onChange={(e) => setResendEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={resending}>
+                  {resending && <Loader2 className="h-4 w-4 animate-spin" />}
+                  Send me a new link
+                </Button>
+              </form>
+              <p className="text-xs text-muted-foreground text-center">
+                Open the new link in the same browser. Or{" "}
+                <a
+                  href={leagueSlug ? `/league/${leagueSlug}/score` : "/get-started"}
+                  className="text-primary font-semibold hover:underline"
+                >
+                  sign in
+                </a>{" "}
+                if you remember your password.
+              </p>
+            </div>
           )}
 
           {leagueSlug && (

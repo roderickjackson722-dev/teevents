@@ -78,8 +78,9 @@ Deno.serve(async (req) => {
 
       let successCount = 0;
       let failCount = 0;
+      let timedOut = false;
 
-      for (const recipient of recipients) {
+      const sendOne = async (recipient: any) => {
         try {
           const body = new URLSearchParams({ To: recipient.phone, From: fromPhone, Body: msg.body });
           const res = await fetch(twilioUrl, {
@@ -92,12 +93,20 @@ Deno.serve(async (req) => {
         } catch {
           failCount++;
         }
+      };
+
+      for (let i = 0; i < recipients.length; i += BATCH_SIZE) {
+        if (Date.now() - startedAt > TIME_BUDGET_MS) {
+          timedOut = true;
+          break;
+        }
+        await Promise.all(recipients.slice(i, i + BATCH_SIZE).map(sendOne));
       }
 
       await supabase
         .from("tournament_messages")
         .update({
-          status: failCount === 0 ? "sent" : "partial",
+          status: timedOut || failCount > 0 ? "partial" : "sent",
           recipient_count: successCount,
           sent_at: new Date().toISOString(),
         })

@@ -22,7 +22,7 @@ interface TournamentRow {
 const ADDONS: { key: AddonKey; label: string; price: number; desc: string; icon: any }[] = [
   { key: "live_leaderboard", label: "Live Leaderboard & Mobile Scoring", price: 199, desc: "Real-time public leaderboard plus scoring from any phone.", icon: BarChart3 },
   { key: "unlimited_manual_entries", label: "Unlimited Manual Entries", price: 199, desc: "Pay as You Grow includes 10 — remove the cap.", icon: Users },
-  { key: "auction_raffle", label: "Auction & Raffle", price: 199, desc: "Silent auction and 50/50 raffle with auto-draw", icon: Gavel },
+  { key: "auction_raffle", label: "Auction Dashboard", price: 99, desc: "Silent auction and 50/50 raffle with auto-draw", icon: Gavel },
   { key: "custom_event_page", label: "Custom Event Page Build Out", price: 199, desc: "Our team will work with you to build out a fully customized event page tailored to your tournament. This includes custom layout adjustments, color coordination, content placement, and branding to make your event page stand out. We'll handle the setup so you don't have to.", icon: LayoutTemplate },
   { key: "custom_domain", label: "Custom Domain", price: 99, desc: "Brand your tournament URL (golf.yourclub.com)", icon: Globe },
 ];

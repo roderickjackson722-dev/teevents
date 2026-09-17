@@ -413,7 +413,8 @@ const App = () => (
            <Route path="/sales-hub/demo-talk-track" element={<DemoTalkTrack />} />
            <Route path="/sales/demo-agenda" element={<DemoAgenda />} />
            <Route path="/admin/study-sheet" element={<Navigate to="/admin" replace />} />
-           <Route path="/admin/payouts" element={<AdminPayouts />} />
+            <Route path="/admin/payouts" element={<AdminPayouts />} />
+            <Route path="/admin/step-by-step" element={<AdminStepByStepInstructions />} />
            <Route path="/admin/demo-converter" element={<DemoConverter />} />
             <Route path="/admin/demo-converter/:id" element={<DemoPreparation />} />
             <Route path="/admin/sales-hub/demo-agenda" element={<DemoAgendaEditor />} />

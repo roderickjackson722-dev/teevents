@@ -56,6 +56,13 @@ export default function DemoRosterPairingsTab({ players }: { players?: DemoRoste
   const [holes, setHoles] = useState<Record<number, string[]>>(seed.holes);
   const [unassigned, setUnassigned] = useState<string[]>(seed.unassigned);
 
+  // Re-seed when the roster changes (e.g. demo players arrive from an async fetch),
+  // otherwise the board keeps stale ids and renders empty.
+  useEffect(() => {
+    setHoles(seed.holes);
+    setUnassigned(seed.unassigned);
+  }, [seed]);
+
   const byId = useMemo(() => {
     const m = new Map<string, DemoRosterPlayer>();
     roster.forEach((p) => m.set(p.id, p));

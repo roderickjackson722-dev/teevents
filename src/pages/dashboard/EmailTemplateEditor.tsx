@@ -301,6 +301,18 @@ const RECEIPT_TYPE_DEFAULTS: Record<string, Partial<EmailConfig>> = {
     closing_text:
       "Please keep this receipt for your records. If you need a tax donation receipt as well, just reply to this email and we'll send one over.",
   },
+  // 501(c)(3) acknowledgement letter wording — organizers can edit every line.
+  tax_deductible: {
+    subject: "Your tax-deductible donation receipt for {{event_name}}",
+    header_title: "Tax-Deductible Donation Receipt",
+    greeting: "Dear {{payer_name}},",
+    body_text:
+      "Thank you for your generous contribution in support of {{event_name}}.\n\nOrganization: {{nonprofit_name}}\nEIN: {{ein}}\n{{org_address}}\n\nReceipt #: {{receipt_number}}\nDate of contribution: {{receipt_date}}\nDescription: {{receipt_item}}\n\nContribution amount: {{receipt_total}}\n\nNo goods or services were provided in exchange for this contribution.",
+    closing_text:
+      "{{nonprofit_name}} is a tax-exempt organization under Section 501(c)(3) of the Internal Revenue Code. This contribution is tax-deductible to the extent allowed by law. Please retain this receipt for your tax records.",
+    footer_text: "Thank you for your generous support! ⛳",
+    show_event_details: false,
+  },
 };
 
 const TEMPLATE_LABELS: Record<TemplateKind, string> = {

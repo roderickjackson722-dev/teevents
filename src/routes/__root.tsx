@@ -41,6 +41,6 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Raleway:wght@300;400;500;600;700&display=swap" },
     ],
   }),
-  errorComponent: ErrorComponent,
+  errorComponent: ErrorComponent as unknown as ErrorRouteComponent,
   component: () => <RootDocument><Outlet /></RootDocument>,
 });

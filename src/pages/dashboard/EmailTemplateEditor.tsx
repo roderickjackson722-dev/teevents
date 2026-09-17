@@ -1818,7 +1818,23 @@ export default function EmailTemplateEditor() {
               <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and will apply automatically to future {templateKind} confirmations. Bulk resend from this screen currently supports registrants only — use the {templateKind === "sponsor" ? "Sponsors" : "Vendors"} page to manage individual {templateKind} records.
             </div>
           )}
-          {templateKind !== "sponsor" && templateKind !== "vendor" && templateKind !== "sponsor_day_of" && templateKind !== "sponsorship_day_of" && (
+          {templateKind === "receipt" && selectedTournament && (
+            <ReceiptEmailSender
+              tournamentId={selectedTournament}
+              receiptType={receiptType}
+              onReceiptTypeChange={handleReceiptTypeChange}
+              subjectTemplate={config.subject}
+              baseVars={previewVars}
+              renderHtml={(vars) =>
+                renderEmailHtml(
+                  config,
+                  { ...previewVars, ...vars },
+                  config.header_title || TEMPLATE_HEADERS[templateKind],
+                )
+              }
+            />
+          )}
+          {templateKind !== "receipt" && templateKind !== "sponsor" && templateKind !== "vendor" && templateKind !== "sponsor_day_of" && templateKind !== "sponsorship_day_of" && (
           <>
           <div className="bg-card rounded-lg border p-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">

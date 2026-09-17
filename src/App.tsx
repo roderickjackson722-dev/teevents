@@ -150,6 +150,7 @@ import Features from "./pages/Features";
 import DemoTalkTrack from "./pages/DemoTalkTrack";
 import DemoAgenda from "./pages/sales/DemoAgenda";
 import StudySheet from "./pages/admin/StudySheet";
+import AdminStepByStepInstructions from "./pages/admin/StepByStepInstructions";
 import AdminPayouts from "./pages/admin/Payouts";
 import DemoConverter from "./pages/admin/DemoConverter";
 import DemoAgendaEditor from "./pages/admin/DemoAgendaEditor";

@@ -1077,6 +1077,7 @@ export default function EmailTemplateEditor() {
               <SelectItem value="pairings_update">{TEMPLATE_LABELS.pairings_update}</SelectItem>
               <SelectItem value="tee_times">{TEMPLATE_LABELS.tee_times}</SelectItem>
               <SelectItem value="survey">{TEMPLATE_LABELS.survey}</SelectItem>
+              <SelectItem value="receipt">{TEMPLATE_LABELS.receipt}</SelectItem>
             </SelectContent>
           </Select>
           <Button
@@ -1153,8 +1154,27 @@ export default function EmailTemplateEditor() {
             ? "Send event-day details to your sponsors — pick sponsors, add parking info and custom notes, preview, then send from the Send tab."
             : templateKind === "day_before"
             ? "This reminder is NOT sent on registration. Choose a send date and time below, or send it now — nothing goes out until you schedule or send it."
+            : templateKind === "receipt"
+            ? "An itemized receipt you can send for a registration, an add-on purchase, or a sponsorship. Pick the payment on the Send tab and the amounts, fees, and total fill in automatically — then send it, copy it, or download it to use outside TeeVents."
             : "Sent automatically when a player registers for this tournament."}
       </div>
+
+      {templateKind === "receipt" && (
+        <div className="bg-card rounded-lg border p-4 flex flex-wrap items-center gap-3">
+          <Label className="text-sm text-muted-foreground">Receipt for</Label>
+          <Select value={receiptType} onValueChange={(v) => handleReceiptTypeChange(v as ReceiptType)}>
+            <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="registration">{RECEIPT_TYPE_LABELS.registration}</SelectItem>
+              <SelectItem value="addon">{RECEIPT_TYPE_LABELS.addon}</SelectItem>
+              <SelectItem value="sponsorship">{RECEIPT_TYPE_LABELS.sponsorship}</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-xs text-muted-foreground">
+            Each receipt type saves its own subject and wording.
+          </span>
+        </div>
+      )}
 
       {templateKind === "day_before" && (
         <div className="bg-card rounded-lg border p-5 space-y-4">

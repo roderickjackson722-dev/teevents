@@ -8,12 +8,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { Copy, Download, FileText, Loader2, Receipt, Send } from "lucide-react";
 
-export type ReceiptType = "registration" | "addon" | "sponsorship";
+export type ReceiptType = "registration" | "addon" | "sponsorship" | "tax_deductible";
 
 export const RECEIPT_TYPE_LABELS: Record<ReceiptType, string> = {
   registration: "Registration",
   addon: "Add-On / Extras",
   sponsorship: "Sponsorship",
+  tax_deductible: "Tax-Deductible Donation",
 };
 
 /** platform_transactions.type values that belong to each receipt type. */
@@ -21,6 +22,7 @@ const TX_TYPES: Record<ReceiptType, string[]> = {
   registration: ["registration"],
   addon: ["addon_purchase", "store_purchase", "side_event_ticket", "director_shop_order", "event_ticket", "auction", "raffle"],
   sponsorship: ["sponsorship", "donation", "vendor_booth_fee", "vendor_registration"],
+  tax_deductible: ["donation", "sponsorship", "registration"],
 };
 
 interface Props {

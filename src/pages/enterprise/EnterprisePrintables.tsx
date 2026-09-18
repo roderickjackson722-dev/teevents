@@ -52,7 +52,7 @@ export default function EnterprisePrintables() {
     setAccent(event.site_secondary_color || "#c8a84e");
     setShowSkins(Boolean(settings?.skinsGross || settings?.skinsNet));
     (async () => {
-      const [regRes, groupRes, skinRes] = await Promise.all([
+      const [regRes, groupRes, gameRes] = await Promise.all([
         (supabase.from("tournament_registrations") as any)
           .select("id, first_name, last_name, email, group_number, group_position, group_label, scoring_code, group_scoring_code, handicap_index, tee_time, flight_id")
           .eq("tournament_id", event.id)
@@ -60,20 +60,36 @@ export default function EnterprisePrintables() {
         (supabase.from("registration_groups") as any)
           .select("id, group_number, team_name, tee_time, cart_sign_names, starting_hole")
           .eq("tournament_id", event.id),
-        (supabase.from("division_skin_winners") as any)
-          .select("hole_number, winner_name, winning_score, is_net")
+        (supabase.from("division_skins_games") as any)
+          .select("id, skin_format")
           .eq("tournament_id", event.id),
       ]);
-      setRegs((regRes.data || []) as RegRow[]);
+      const rows = (regRes.data || []) as RegRow[];
+      setRegs(rows);
       setGroups((groupRes.data || []) as RegistrationGroupRow[]);
-      setSkins(
-        ((skinRes.data || []) as any[]).map((s) => ({
-          hole: s.hole_number,
-          winner: s.winner_name || "—",
-          score: s.winning_score ?? "—",
-          net: Boolean(s.is_net),
-        })),
-      );
+
+      const games = (gameRes.data || []) as { id: string; skin_format: string }[];
+      if (games.length) {
+        const { data: winners } = await (supabase.from("division_skin_winners") as any)
+          .select("hole_number, score, registration_id, skins_game_id")
+          .in("skins_game_id", games.map((g) => g.id));
+        const nameOf = (id: string | null) => {
+          const r = rows.find((x) => x.id === id);
+          return r ? `${r.first_name} ${r.last_name}`.trim() : "—";
+        };
+        setSkins(
+          ((winners || []) as any[])
+            .map((w) => ({
+              hole: w.hole_number,
+              winner: nameOf(w.registration_id),
+              score: w.score ?? "—",
+              net: games.find((g) => g.id === w.skins_game_id)?.skin_format === "net",
+            }))
+            .sort((a, b) => a.hole - b.hole),
+        );
+      } else {
+        setSkins([]);
+      }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [event?.id]);

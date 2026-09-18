@@ -43,6 +43,13 @@
       "when": 1789693797086,
       "tag": "0005_enterprise_deuces_opt_in",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1789701987870,
+      "tag": "0006_fix_score_edit_history_ambiguous_id",
+      "breakpoints": true
     }
   ]
 }

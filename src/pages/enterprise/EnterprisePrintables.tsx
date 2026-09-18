@@ -30,6 +30,8 @@ interface RegRow extends Registration {
   handicap_index?: number | null;
   tee_time?: string | null;
   group_label?: string | null;
+  scoring_code?: string | null;
+  group_scoring_code?: string | null;
 }
 
 export default function EnterprisePrintables() {

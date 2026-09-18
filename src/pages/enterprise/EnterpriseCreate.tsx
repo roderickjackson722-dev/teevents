@@ -302,6 +302,31 @@ export default function EnterpriseCreate() {
     });
     await Promise.all(updates);
 
+    // Give every confirmed group a shared 6-character scoring code so the
+    // printed scorecard QR / sign-in works the moment pairings are set.
+    const newCode = () => {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      return Array.from({ length: 6 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+    };
+    const { data: codeRows } = await (supabase.from("tournament_registrations") as any)
+      .select("group_number, group_scoring_code")
+      .eq("tournament_id", eventId);
+    const used = new Set<string>((codeRows || []).map((r: any) => r.group_scoring_code).filter(Boolean));
+    const haveCode = new Set<number>(
+      (codeRows || []).filter((r: any) => r.group_scoring_code && r.group_number != null).map((r: any) => r.group_number),
+    );
+    for (const g of groups) {
+      if (!g.playerIds.length || haveCode.has(g.number)) continue;
+      let code = newCode();
+      while (used.has(code)) code = newCode();
+      used.add(code);
+      await (supabase.from("tournament_registrations") as any)
+        .update({ group_scoring_code: code, scoring_code: code })
+        .eq("tournament_id", eventId)
+        .eq("group_number", g.number);
+    }
+
+
     // Keep pairings_config in sync so printables, emails and the public tee
     // sheet show the same starting holes.
     const { data: existing } = await (supabase.from("tournaments") as any)

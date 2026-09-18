@@ -2803,6 +2803,68 @@ export type Database = {
           },
         ]
       }
+      enterprise_roster: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          email: string | null
+          first_name: string
+          ghin_number: string | null
+          handicap_index: number | null
+          id: string
+          is_active: boolean
+          last_name: string
+          member_id: string | null
+          notes: string | null
+          organization_id: string
+          phone: string | null
+          tee_set: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name: string
+          ghin_number?: string | null
+          handicap_index?: number | null
+          id?: string
+          is_active?: boolean
+          last_name: string
+          member_id?: string | null
+          notes?: string | null
+          organization_id: string
+          phone?: string | null
+          tee_set?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          first_name?: string
+          ghin_number?: string | null
+          handicap_index?: number | null
+          id?: string
+          is_active?: boolean
+          last_name?: string
+          member_id?: string | null
+          notes?: string | null
+          organization_id?: string
+          phone?: string | null
+          tee_set?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_roster_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_access_requests: {
         Row: {
           created_at: string
@@ -12235,6 +12297,8 @@ export type Database = {
           early_signup_enabled: boolean
           early_signup_label: string | null
           end_date: string | null
+          enterprise_event_type: string | null
+          enterprise_settings: Json
           event_title: string | null
           external_link: string | null
           flat_rate_admin_override: boolean
@@ -12262,6 +12326,7 @@ export type Database = {
           image_url: string | null
           is_converted_from_sample: boolean
           is_demo: boolean
+          is_enterprise: boolean
           is_pro: boolean
           is_sample: boolean
           leaderboard_design: Json
@@ -12585,6 +12650,8 @@ export type Database = {
           early_signup_enabled?: boolean
           early_signup_label?: string | null
           end_date?: string | null
+          enterprise_event_type?: string | null
+          enterprise_settings?: Json
           event_title?: string | null
           external_link?: string | null
           flat_rate_admin_override?: boolean
@@ -12612,6 +12679,7 @@ export type Database = {
           image_url?: string | null
           is_converted_from_sample?: boolean
           is_demo?: boolean
+          is_enterprise?: boolean
           is_pro?: boolean
           is_sample?: boolean
           leaderboard_design?: Json
@@ -12935,6 +13003,8 @@ export type Database = {
           early_signup_enabled?: boolean
           early_signup_label?: string | null
           end_date?: string | null
+          enterprise_event_type?: string | null
+          enterprise_settings?: Json
           event_title?: string | null
           external_link?: string | null
           flat_rate_admin_override?: boolean
@@ -12962,6 +13032,7 @@ export type Database = {
           image_url?: string | null
           is_converted_from_sample?: boolean
           is_demo?: boolean
+          is_enterprise?: boolean
           is_pro?: boolean
           is_sample?: boolean
           leaderboard_design?: Json

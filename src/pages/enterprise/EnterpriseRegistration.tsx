@@ -16,7 +16,7 @@ import { toast } from "sonner";
 import type { EnterpriseRegistrationSettings } from "@/lib/enterprise";
 
 type QuestionType = "text" | "choice" | "tee_time";
-interface CustomQuestion { id: string; label: string; type: QuestionType; options?: string; required?: boolean }
+interface CustomQuestion { id: string; label: string; kind: QuestionType; options: string[] }
 
 export default function EnterpriseRegistration() {
   const { events, event, settings, loading, selectEvent, saveSettings } = useEnterpriseEvent();
@@ -30,7 +30,7 @@ export default function EnterpriseRegistration() {
   useEffect(() => {
     if (!settings || !event) return;
     setReg(settings.registration);
-    setQuestions(((settings.registration as any).customQuestions || []) as CustomQuestion[]);
+    setQuestions((settings.registration.questions || []) as CustomQuestion[]);
     setFee(((event.registration_fee_cents || 0) / 100).toString());
     setMaxPlayers(event.max_players ? String(event.max_players) : "");
     setCloseAt(event.registration_close_at ? event.registration_close_at.slice(0, 16) : "");
@@ -43,7 +43,7 @@ export default function EnterpriseRegistration() {
     if (!reg) return;
     setSaving(true);
     await saveSettings(
-      { registration: { ...reg, customQuestions: questions } as EnterpriseRegistrationSettings },
+      { registration: { ...reg, questions, maxPlayers: maxPlayers ? Number(maxPlayers) : null, closeAt, paid: Number(fee) > 0, feeCents: Math.round((Number(fee) || 0) * 100) } },
       {
         registration_fee_cents: Math.round((Number(fee) || 0) * 100),
         max_players: maxPlayers ? Number(maxPlayers) : null,
@@ -105,9 +105,8 @@ export default function EnterpriseRegistration() {
                 {flag("requireFullTeam", "Require full team", "Players must fill every spot on a team.")}
                 {flag("requireGhin", "Require GHIN", "Handicap must come from a GHIN lookup.")}
                 {flag("allowWaitlist", "Allow waitlist", "Keep taking sign-ups once the field is full.")}
-                {flag("hidePlayersRegistered", "Hide players registered", "Don't show the field publicly.")}
-                {flag("allowManualHandicap", "Allow manual handicap", "Players can type a handicap instead of a GHIN.")}
-                {flag("collectPhone", "Collect phone number")}
+                {flag("hideRegisteredPlayers", "Hide players registered", "Don't show the field publicly.")}
+                {flag("enabled", "Registration open", "Turn sign-ups on or off.")}
               </CardContent>
             </Card>
 
@@ -118,7 +117,7 @@ export default function EnterpriseRegistration() {
                   size="sm"
                   variant="outline"
                   onClick={() =>
-                    setQuestions((q) => [...q, { id: crypto.randomUUID(), label: "", type: "text", required: false }])
+                    setQuestions((q) => [...q, { id: crypto.randomUUID(), label: "", kind: "text", options: [] }])
                   }
                 >
                   <Plus className="mr-1.5 h-4 w-4" /> Add question
@@ -134,8 +133,8 @@ export default function EnterpriseRegistration() {
                       onChange={(e) => setQuestions((list) => list.map((x, j) => (j === i ? { ...x, label: e.target.value } : x)))}
                     />
                     <Select
-                      value={q.type}
-                      onValueChange={(v) => setQuestions((list) => list.map((x, j) => (j === i ? { ...x, type: v as QuestionType } : x)))}
+                      value={q.kind}
+                      onValueChange={(v) => setQuestions((list) => list.map((x, j) => (j === i ? { ...x, kind: v as QuestionType } : x)))}
                     >
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
@@ -153,12 +152,12 @@ export default function EnterpriseRegistration() {
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
-                    {q.type === "choice" && (
+                    {q.kind === "choice" && (
                       <Textarea
                         className="sm:col-span-3"
                         placeholder="One choice per line"
-                        value={q.options || ""}
-                        onChange={(e) => setQuestions((list) => list.map((x, j) => (j === i ? { ...x, options: e.target.value } : x)))}
+                        value={(q.options || []).join("\n")}
+                        onChange={(e) => setQuestions((list) => list.map((x, j) => (j === i ? { ...x, options: e.target.value.split("\n") } : x)))}
                       />
                     )}
                   </div>

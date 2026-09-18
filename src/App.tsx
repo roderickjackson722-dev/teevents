@@ -297,6 +297,19 @@ const App = () => (
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />
           <Route path="/dashboard/webpage-layout" element={<DashboardLayout><WebpageLayout /></DashboardLayout>} />
           <Route path="/dashboard/leagues" element={<DashboardLayout><Leagues /></DashboardLayout>} />
+          <Route path="/dashboard/tee-sheet" element={<DashboardLayout><TeeSheet /></DashboardLayout>} />
+          <Route path="/enterprise" element={<EnterpriseHome />} />
+          <Route path="/enterprise/create" element={<EnterpriseCreate />} />
+          <Route path="/enterprise/roster" element={<EnterpriseRoster />} />
+          <Route path="/enterprise/courses" element={<EnterpriseCourses />} />
+          <Route path="/enterprise/leagues" element={<EnterpriseLeagues />} />
+          <Route path="/enterprise/printables" element={<EnterprisePrintables />} />
+          <Route path="/enterprise/registration" element={<EnterpriseRegistration />} />
+          <Route path="/enterprise/leaderboard-settings" element={<EnterpriseLeaderboardSettings />} />
+          <Route path="/enterprise/skins" element={<EnterpriseSkins />} />
+          <Route path="/enterprise/communications" element={<EnterpriseCommunications />} />
+          <Route path="/enterprise/automations" element={<EnterpriseAutomations />} />
+          <Route path="/enterprise/resources/:section" element={<EnterpriseResources />} />
           <Route path="/dashboard/leagues/:leagueId" element={<DashboardLayout><LeagueManage /></DashboardLayout>} />
           <Route path="/dashboard/leagues/:leagueId/manage" element={<DashboardLayout><LeagueManage /></DashboardLayout>} />
           <Route path="/league/:slug" element={<PublicLeague />} />

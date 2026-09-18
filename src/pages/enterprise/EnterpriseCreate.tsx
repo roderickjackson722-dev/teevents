@@ -364,6 +364,9 @@ export default function EnterpriseCreate() {
         registration_open: settings.registration.enabled,
         site_published: true,
         live_leaderboard_enabled: true,
+        day_of_page_enabled: true,
+        day_of_page_mode: "live",
+
       },
       { ...settings, wizardStep: 4 },
     );

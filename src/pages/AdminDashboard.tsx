@@ -856,6 +856,28 @@ const AdminDashboard = () => {
               </div>
             </div>
 
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Enterprise</div>
+              <div className="flex flex-wrap gap-2">
+                {([
+                  ["/enterprise", "Enterprise Dashboard", Trophy],
+                  ["/enterprise/admin", "Enterprise Admin Portal", Shield],
+                  ["/enterprise/create", "Create Enterprise Event", UserPlus],
+                  ["/enterprise/roster", "Club Roster", Users],
+                ] as const).map(([path, label, Icon]) => (
+                  <button
+                    key={path}
+                    onClick={() => navigate(path)}
+                    className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                  >
+                    <Icon className="h-4 w-4" /> {label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+
+
 
             <div>
               <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">TeeVents Operations</div>

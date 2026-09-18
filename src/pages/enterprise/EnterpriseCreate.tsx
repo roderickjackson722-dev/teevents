@@ -356,7 +356,18 @@ export default function EnterpriseCreate() {
   const publish = async () => {
     const eventId = id || (await persist());
     if (!eventId) return;
-    await persist({ status: "ready", registration_open: settings.registration.enabled }, { ...settings, wizardStep: 4 });
+    // Publishing also turns the event page and live scoring on, so the QR code
+    // printed on the scorecards works right away.
+    await persist(
+      {
+        status: "ready",
+        registration_open: settings.registration.enabled,
+        site_published: true,
+        live_leaderboard_enabled: true,
+      },
+      { ...settings, wizardStep: 4 },
+    );
+
     setStatus("ready");
     toast.success("Event published and ready.");
     navigate("/enterprise");

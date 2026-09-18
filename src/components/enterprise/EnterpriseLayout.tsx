@@ -59,8 +59,10 @@ const NAV: NavGroup[] = [
       { label: "My Roster", to: "/enterprise/roster", icon: Users },
       { label: "Communications", to: "/enterprise/communications", icon: Mail },
       { label: "Automations", to: "/enterprise/automations", icon: Zap },
+      { label: "Admin Portal", to: "/enterprise/admin", icon: ShieldCheck },
     ],
   },
+
   {
     label: "Resources",
     items: [
@@ -71,10 +73,11 @@ const NAV: NavGroup[] = [
     ],
   },
   {
-    label: "Admin",
+    label: "Platform Admin",
     adminOnly: true,
-    items: [{ label: "Admin Portal", to: "/admin", icon: ShieldCheck }],
+    items: [{ label: "TeeVents Admin", to: "/admin", icon: ShieldCheck }],
   },
+
 ];
 
 const SidebarNav = ({ isAdmin, onNavigate }: { isAdmin: boolean; onNavigate?: () => void }) => {

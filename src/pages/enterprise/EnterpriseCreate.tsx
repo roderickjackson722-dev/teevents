@@ -302,6 +302,26 @@ export default function EnterpriseCreate() {
     });
     await Promise.all(updates);
 
+    // The database assigns a shared 6-character group code, but rows written in
+    // parallel can each mint their own. Normalize every group to one code so the
+    // printed scorecard QR and sign-in work for the whole pairing.
+    const { data: codeRows } = await (supabase.from("tournament_registrations") as any)
+      .select("group_number, group_scoring_code")
+      .eq("tournament_id", eventId);
+    const byGroup = new Map<number, string>();
+    (codeRows || []).forEach((r: any) => {
+      if (r.group_number == null || !r.group_scoring_code) return;
+      if (!byGroup.has(r.group_number)) byGroup.set(r.group_number, r.group_scoring_code);
+    });
+    for (const [groupNumber, code] of byGroup) {
+      await (supabase.from("tournament_registrations") as any)
+        .update({ group_scoring_code: code, scoring_code: code })
+        .eq("tournament_id", eventId)
+        .eq("group_number", groupNumber);
+    }
+
+
+
     // Keep pairings_config in sync so printables, emails and the public tee
     // sheet show the same starting holes.
     const { data: existing } = await (supabase.from("tournaments") as any)
@@ -336,7 +356,21 @@ export default function EnterpriseCreate() {
   const publish = async () => {
     const eventId = id || (await persist());
     if (!eventId) return;
-    await persist({ status: "ready", registration_open: settings.registration.enabled }, { ...settings, wizardStep: 4 });
+    // Publishing also turns the event page and live scoring on, so the QR code
+    // printed on the scorecards works right away.
+    await persist(
+      {
+        status: "ready",
+        registration_open: settings.registration.enabled,
+        site_published: true,
+        live_leaderboard_enabled: true,
+        day_of_page_enabled: true,
+        day_of_page_mode: "live",
+
+      },
+      { ...settings, wizardStep: 4 },
+    );
+
     setStatus("ready");
     toast.success("Event published and ready.");
     navigate("/enterprise");
@@ -816,6 +850,8 @@ export default function EnterpriseCreate() {
               </Button>
               {id && (
                 <>
+                  <Button asChild variant="outline"><Link to={`/dashboard?tournament_id=${id}`}>Open in main dashboard</Link></Button>
+                  <Button asChild variant="outline"><Link to={`/dashboard/scoring?tournament_id=${id}`}>Enter scores</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/registration?tournament_id=${id}`}>Registration page</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/leaderboard-settings?tournament_id=${id}`}>Leaderboard settings</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/printables?tournament_id=${id}`}>Print scorecards</Link></Button>
@@ -824,6 +860,7 @@ export default function EnterpriseCreate() {
                   )}
                 </>
               )}
+
             </div>
           </CardContent>
         </Card>

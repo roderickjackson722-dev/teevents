@@ -34,6 +34,7 @@ import EnterpriseSkins from "./pages/enterprise/EnterpriseSkins";
 import EnterpriseCommunications from "./pages/enterprise/EnterpriseCommunications";
 import EnterpriseAutomations from "./pages/enterprise/EnterpriseAutomations";
 import EnterpriseResources from "./pages/enterprise/EnterpriseResources";
+import EnterpriseAdmin from "./pages/enterprise/EnterpriseAdmin";
 import TeeSheet from "./pages/dashboard/TeeSheet";
 import Tournaments from "./pages/dashboard/Tournaments";
 import QuickActionsPage from "./pages/dashboard/QuickActions";
@@ -310,6 +311,7 @@ const App = () => (
           <Route path="/enterprise/communications" element={<EnterpriseCommunications />} />
           <Route path="/enterprise/automations" element={<EnterpriseAutomations />} />
           <Route path="/enterprise/resources/:section" element={<EnterpriseResources />} />
+          <Route path="/enterprise/admin" element={<EnterpriseAdmin />} />
           <Route path="/dashboard/leagues/:leagueId" element={<DashboardLayout><LeagueManage /></DashboardLayout>} />
           <Route path="/dashboard/leagues/:leagueId/manage" element={<DashboardLayout><LeagueManage /></DashboardLayout>} />
           <Route path="/league/:slug" element={<PublicLeague />} />

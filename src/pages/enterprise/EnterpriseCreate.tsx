@@ -816,6 +816,8 @@ export default function EnterpriseCreate() {
               </Button>
               {id && (
                 <>
+                  <Button asChild variant="outline"><Link to={`/dashboard?tournament_id=${id}`}>Open in main dashboard</Link></Button>
+                  <Button asChild variant="outline"><Link to={`/dashboard/scoring?tournament_id=${id}`}>Enter scores</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/registration?tournament_id=${id}`}>Registration page</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/leaderboard-settings?tournament_id=${id}`}>Leaderboard settings</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/printables?tournament_id=${id}`}>Print scorecards</Link></Button>
@@ -824,6 +826,7 @@ export default function EnterpriseCreate() {
                   )}
                 </>
               )}
+
             </div>
           </CardContent>
         </Card>

@@ -11250,6 +11250,7 @@ export type Database = {
           covered_fees: boolean
           created_at: string
           custom_answers: Json
+          deuces_opt_in: boolean
           dietary_restrictions: string | null
           division_id: string | null
           donation_amount_cents: number
@@ -11307,6 +11308,7 @@ export type Database = {
           covered_fees?: boolean
           created_at?: string
           custom_answers?: Json
+          deuces_opt_in?: boolean
           dietary_restrictions?: string | null
           division_id?: string | null
           donation_amount_cents?: number
@@ -11364,6 +11366,7 @@ export type Database = {
           covered_fees?: boolean
           created_at?: string
           custom_answers?: Json
+          deuces_opt_in?: boolean
           dietary_restrictions?: string | null
           division_id?: string | null
           donation_amount_cents?: number

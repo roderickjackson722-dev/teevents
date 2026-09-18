@@ -29,6 +29,13 @@
       "when": 1789669592240,
       "tag": "0003_add_receipt_email_config",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789691400963,
+      "tag": "0004_enterprise_section",
+      "breakpoints": true
     }
   ]
 }

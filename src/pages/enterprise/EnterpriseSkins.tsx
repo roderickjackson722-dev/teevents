@@ -14,8 +14,8 @@ interface PlayerRow {
   id: string;
   first_name: string;
   last_name: string;
-  in_skins: boolean | null;
-  in_deuces: boolean | null;
+  skins_opt_in: boolean | null;
+  deuces_opt_in: boolean | null;
 }
 
 export default function EnterpriseSkins() {
@@ -26,19 +26,19 @@ export default function EnterpriseSkins() {
   useEffect(() => {
     if (!event) return;
     (supabase.from("tournament_registrations") as any)
-      .select("id, first_name, last_name, in_skins, in_deuces")
+      .select("id, first_name, last_name, skins_opt_in, deuces_opt_in")
       .eq("tournament_id", event.id)
       .order("last_name")
       .then(({ data }: any) => setPlayers((data || []) as PlayerRow[]));
   }, [event]);
 
-  const toggle = async (id: string, field: "in_skins" | "in_deuces", value: boolean) => {
+  const toggle = async (id: string, field: "skins_opt_in" | "deuces_opt_in", value: boolean) => {
     setPlayers((p) => p.map((x) => (x.id === id ? { ...x, [field]: value } : x)));
     const { error } = await (supabase.from("tournament_registrations") as any).update({ [field]: value }).eq("id", id);
     if (error) toast.error(error.message);
   };
 
-  const setAll = async (field: "in_skins" | "in_deuces", value: boolean) => {
+  const setAll = async (field: "skins_opt_in" | "deuces_opt_in", value: boolean) => {
     if (!event) return;
     setBusy(true);
     setPlayers((p) => p.map((x) => ({ ...x, [field]: value })));
@@ -97,10 +97,10 @@ export default function EnterpriseSkins() {
             <CardHeader className="flex flex-row flex-wrap items-center justify-between gap-2 pb-3">
               <CardTitle className="text-base">Players ({players.length})</CardTitle>
               <div className="flex flex-wrap gap-2">
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => setAll("in_skins", true)}>All in skins</Button>
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => setAll("in_skins", false)}>Clear skins</Button>
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => setAll("in_deuces", true)}>All in deuces</Button>
-                <Button size="sm" variant="outline" disabled={busy} onClick={() => setAll("in_deuces", false)}>Clear deuces</Button>
+                <Button size="sm" variant="outline" disabled={busy} onClick={() => setAll("skins_opt_in", true)}>All in skins</Button>
+                <Button size="sm" variant="outline" disabled={busy} onClick={() => setAll("skins_opt_in", false)}>Clear skins</Button>
+                <Button size="sm" variant="outline" disabled={busy} onClick={() => setAll("deuces_opt_in", true)}>All in deuces</Button>
+                <Button size="sm" variant="outline" disabled={busy} onClick={() => setAll("deuces_opt_in", false)}>Clear deuces</Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -117,10 +117,10 @@ export default function EnterpriseSkins() {
                     <div key={p.id} className="flex items-center gap-4 py-2 text-sm">
                       <span className="flex-1">{p.first_name} {p.last_name}</span>
                       <span className="flex w-16 justify-center">
-                        <Checkbox checked={Boolean(p.in_skins)} onCheckedChange={(v) => toggle(p.id, "in_skins", Boolean(v))} />
+                        <Checkbox checked={Boolean(p.skins_opt_in)} onCheckedChange={(v) => toggle(p.id, "skins_opt_in", Boolean(v))} />
                       </span>
                       <span className="flex w-16 justify-center">
-                        <Checkbox checked={Boolean(p.in_deuces)} onCheckedChange={(v) => toggle(p.id, "in_deuces", Boolean(v))} />
+                        <Checkbox checked={Boolean(p.deuces_opt_in)} onCheckedChange={(v) => toggle(p.id, "deuces_opt_in", Boolean(v))} />
                       </span>
                     </div>
                   ))}

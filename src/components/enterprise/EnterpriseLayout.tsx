@@ -15,6 +15,7 @@ import {
   Gift,
   ShieldCheck,
   Menu,
+  ChevronDown,
   ChevronRight,
   Loader2,
 } from "lucide-react";
@@ -22,6 +23,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
@@ -62,7 +69,6 @@ const NAV: NavGroup[] = [
       { label: "Admin Portal", to: "/enterprise/admin", icon: ShieldCheck },
     ],
   },
-
   {
     label: "Resources",
     items: [
@@ -77,12 +83,17 @@ const NAV: NavGroup[] = [
     adminOnly: true,
     items: [{ label: "TeeVents Admin", to: "/admin", icon: ShieldCheck }],
   },
-
 ];
 
-const SidebarNav = ({ isAdmin, onNavigate }: { isAdmin: boolean; onNavigate?: () => void }) => {
-  const { pathname, search } = useLocation();
-  const current = `${pathname}${search}`;
+/** Group is active when any of its items matches the current path. */
+const groupActive = (group: NavGroup, pathname: string) =>
+  group.items.some((item) => {
+    const base = item.to.split("?")[0];
+    return base === "/enterprise" ? pathname === "/enterprise" : pathname.startsWith(base);
+  });
+
+const MobileNav = ({ isAdmin, onNavigate }: { isAdmin: boolean; onNavigate?: () => void }) => {
+  const { pathname } = useLocation();
   return (
     <nav className="space-y-6 p-4">
       {NAV.filter((g) => !g.adminOnly || isAdmin).map((group) => (
@@ -92,7 +103,8 @@ const SidebarNav = ({ isAdmin, onNavigate }: { isAdmin: boolean; onNavigate?: ()
           </p>
           <ul className="space-y-1">
             {group.items.map((item) => {
-              const active = current === item.to || (item.to !== "/enterprise" && pathname.startsWith(item.to.split("?")[0]));
+              const base = item.to.split("?")[0];
+              const active = base === "/enterprise" ? pathname === "/enterprise" : pathname.startsWith(base);
               const Icon = item.icon;
               return (
                 <li key={item.to}>
@@ -133,11 +145,12 @@ interface Props {
 }
 
 /**
- * Enterprise shell: brand sidebar, breadcrumbs and a wide content column.
- * Deliberately much lighter than the full organizer dashboard layout.
+ * Enterprise shell: clubhouse-style top navigation with dropdown menus,
+ * a brand bar, breadcrumbs and a wide centered content column.
  */
 export default function EnterpriseLayout({ children, title, description, crumbs = [], actions }: Props) {
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const { org, loading } = useOrgContext();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -156,74 +169,146 @@ export default function EnterpriseLayout({ children, title, description, crumbs 
     })();
   }, [navigate]);
 
+  const groups = NAV.filter((g) => !g.adminOnly || isAdmin);
+  const initials = (org?.orgName || "TV")
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((w) => w[0]?.toUpperCase())
+    .join("");
+
   return (
     <div className="min-h-screen bg-muted/30">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-60 flex-col overflow-y-auto bg-primary lg:flex">
-        <div className="px-5 pt-6">
-          <Link to="/enterprise" className="block">
-            <p className="text-lg font-bold text-primary-foreground">TeeVents</p>
-            <p className="text-xs font-semibold uppercase tracking-widest text-secondary">Enterprise</p>
-          </Link>
-        </div>
-        <SidebarNav isAdmin={isAdmin} />
-      </aside>
+      {/* Brand bar with top navigation */}
+      <header className="sticky top-0 z-40 bg-primary text-primary-foreground shadow-lg">
+        <div className="mx-auto max-w-7xl px-4 md:px-6">
+          <div className="flex h-16 items-center justify-between gap-4 md:h-20">
+            <div className="flex items-center gap-3">
+              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+                <SheetTrigger asChild>
+                  <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 lg:hidden" aria-label="Open menu">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-64 overflow-y-auto bg-primary p-0">
+                  <div className="px-5 pt-6">
+                    <p className="text-lg font-bold text-primary-foreground">TeeVents</p>
+                    <p className="text-xs font-semibold uppercase tracking-widest text-secondary">Enterprise</p>
+                  </div>
+                  <MobileNav isAdmin={isAdmin} onNavigate={() => setMobileOpen(false)} />
+                </SheetContent>
+              </Sheet>
 
-      <div className="lg:pl-60">
-        <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
-          <div className="flex items-center gap-3 px-4 py-3 md:px-6">
-            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden" aria-label="Open menu">
-                  <Menu className="h-5 w-5" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-64 overflow-y-auto bg-primary p-0">
-                <div className="px-5 pt-6">
-                  <p className="text-lg font-bold text-primary-foreground">TeeVents</p>
-                  <p className="text-xs font-semibold uppercase tracking-widest text-secondary">Enterprise</p>
+              <Link to="/enterprise" className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary shadow-inner">
+                  <div className="h-5 w-5 rounded-full border-2 border-primary" />
                 </div>
-                <SidebarNav isAdmin={isAdmin} onNavigate={() => setMobileOpen(false)} />
-              </SheetContent>
-            </Sheet>
-
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                <Link to="/enterprise" className="hover:text-primary">Enterprise</Link>
-                {crumbs.map((c) => (
-                  <span key={c.label} className="flex items-center gap-1">
-                    <ChevronRight className="h-3 w-3" />
-                    {c.to ? (
-                      <Link to={c.to} className="hover:text-primary">{c.label}</Link>
-                    ) : (
-                      <span className="truncate text-foreground">{c.label}</span>
-                    )}
+                <span className="text-xl font-semibold tracking-tight md:text-2xl">
+                  TeeVents{" "}
+                  <span className="ml-1 font-sans text-xs font-semibold uppercase tracking-widest text-secondary">
+                    Enterprise
                   </span>
-                ))}
+                </span>
+              </Link>
+            </div>
+
+            {/* Desktop top nav */}
+            <nav className="hidden items-center gap-1 lg:flex">
+              {groups.map((group) => {
+                const active = groupActive(group, pathname);
+                if (group.items.length === 1) {
+                  return (
+                    <Link
+                      key={group.label}
+                      to={group.items[0].to}
+                      className={cn(
+                        "rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        active
+                          ? "border-b-2 border-secondary text-primary-foreground"
+                          : "text-primary-foreground/80 hover:text-primary-foreground",
+                      )}
+                    >
+                      {group.label}
+                    </Link>
+                  );
+                }
+                return (
+                  <DropdownMenu key={group.label}>
+                    <DropdownMenuTrigger asChild>
+                      <button
+                        className={cn(
+                          "flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                          active
+                            ? "border-b-2 border-secondary text-primary-foreground"
+                            : "text-primary-foreground/80 hover:text-primary-foreground",
+                        )}
+                      >
+                        {group.label}
+                        <ChevronDown className="h-4 w-4" />
+                      </button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-56">
+                      {group.items.map((item) => {
+                        const Icon = item.icon;
+                        return (
+                          <DropdownMenuItem key={item.to} onClick={() => navigate(item.to)}>
+                            <Icon className="mr-2 h-4 w-4 text-primary" />
+                            {item.label}
+                          </DropdownMenuItem>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                );
+              })}
+            </nav>
+
+            {/* Org identity */}
+            <div className="flex items-center gap-3">
+              <div className="hidden text-right sm:block">
+                <p className="text-[11px] text-primary-foreground/70">Logged in as</p>
+                <p className="max-w-40 truncate text-sm font-semibold">{org?.dashboardName || org?.orgName || "…"}</p>
               </div>
-              {title && <h1 className="truncate text-xl font-bold text-foreground md:text-2xl">{title}</h1>}
+              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary-foreground/20 bg-primary-foreground/10">
+                <span className="text-sm font-bold">{initials}</span>
+              </div>
             </div>
-
-            <div className="hidden shrink-0 items-center gap-2 sm:flex">{actions}</div>
           </div>
-          {org && (
-            <div className="border-t border-border/60 px-4 py-1.5 text-xs text-muted-foreground md:px-6">
-              {org.dashboardName || org.orgName}
-            </div>
-          )}
-        </header>
+        </div>
+      </header>
 
-        <main className="px-4 py-5 md:px-6 md:py-7">
-          {description && <p className="mb-5 max-w-3xl text-sm text-muted-foreground">{description}</p>}
-          {actions && <div className="mb-4 flex flex-wrap gap-2 sm:hidden">{actions}</div>}
-          {loading || !checkedSession ? (
-            <div className="flex items-center gap-2 py-20 text-muted-foreground">
-              <Loader2 className="h-5 w-5 animate-spin" /> Loading your enterprise workspace…
+      {/* Page sub-header: breadcrumbs, title, actions */}
+      <div className="border-b border-border bg-background">
+        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <Link to="/enterprise" className="hover:text-primary">Enterprise</Link>
+              {crumbs.map((c) => (
+                <span key={c.label} className="flex items-center gap-1">
+                  <ChevronRight className="h-3 w-3" />
+                  {c.to ? (
+                    <Link to={c.to} className="hover:text-primary">{c.label}</Link>
+                  ) : (
+                    <span className="truncate text-foreground">{c.label}</span>
+                  )}
+                </span>
+              ))}
             </div>
-          ) : (
-            children
-          )}
-        </main>
+            {title && <h1 className="truncate text-2xl text-primary md:text-3xl">{title}</h1>}
+            {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
+          </div>
+          {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
+        </div>
       </div>
+
+      <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
+        {loading || !checkedSession ? (
+          <div className="flex items-center gap-2 py-20 text-muted-foreground">
+            <Loader2 className="h-5 w-5 animate-spin" /> Loading your enterprise workspace…
+          </div>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }

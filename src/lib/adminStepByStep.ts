@@ -6,6 +6,9 @@ import shotTransactions from "@/assets/help/transactions.png";
 import shotSponsors from "@/assets/help/sponsors.png";
 import shotPageEditor from "@/assets/help/public-page-editor.png";
 import shotPrintables from "@/assets/help/printables.png";
+import shotShareQr from "@/assets/help/share-promote-qr.png";
+import shotShareSocial from "@/assets/help/share-promote-social.png";
+import shotShareAnalytics from "@/assets/help/share-promote-analytics.png";
 
 export interface AdminGuideStep {
   text: string;
@@ -27,6 +30,58 @@ export interface AdminGuide {
 }
 
 export const ADMIN_GUIDES: AdminGuide[] = [
+  {
+    key: "share-and-promote",
+    title: "Share your event with trackable links",
+    category: "Marketing",
+    summary:
+      "Grab your event's QR code, copy ready-made share links for Facebook, LinkedIn, text and email, and watch which ones bring players in.",
+    path: "Marketing → Share & Promote",
+    steps: [
+      {
+        text: "In the organizer dashboard, open the Marketing group in the left menu and click Share & Promote. Make sure the right event is selected in the picker at the top of the screen.",
+      },
+      {
+        text: "On the QR Code tab you'll find your branded tournament QR code. Download it as PNG for flyers and posters, SVG for designers, or JPG for websites — or click Copy Link to use the same address in text.",
+        image: shotShareQr,
+        imageCaption:
+          "The QR Code tab: tournament QR code, the players' Team Homepage QR, and every share link with a copy button.",
+      },
+      {
+        text: "In the Share Links box on the same tab, copy the link you need — Registration Page, QR Code Link, Facebook, LinkedIn, Text Message or Email. Each link carries a ?ref= tag (like ?ref=facebook) so you can tell where every visitor came from.",
+      },
+      {
+        text: "Tip: for text messages and social posts, use the Text / Social Preview Link at the top of the box. It makes the message preview show your event's own name and image instead of a generic TeeVents description.",
+      },
+      {
+        text: "Open the Social & Email tab for ready-made posts. Facebook, LinkedIn, an email template and a text message are already written with your event name, date, course and link filled in — click Copy Caption or Copy Message, then paste and post.",
+        image: shotShareSocial,
+        imageCaption: "Ready-to-send captions for Facebook, LinkedIn, email and text messages.",
+      },
+      {
+        text: "Open the Analytics tab to see what's working: QR scans, link clicks, social and email clicks, total clicks, and a mobile / desktop / tablet breakdown.",
+        image: shotShareAnalytics,
+        imageCaption: "The Analytics tab tracks every scan and click by source and device.",
+      },
+    ],
+    tips: [
+      "The Team Homepage QR is for your players — it opens their mobile page with the alpha list, tee times, live leaderboard and scoring entry.",
+      "Downloads are print-ready: the PNG renders at about 300 DPI, so it stays sharp on printed flyers and table tents.",
+      "Counts update as people click, so check Analytics a day or two after each email blast or post.",
+    ],
+    troubleshooting: [
+      {
+        issue: "The QR code or links show the wrong event.",
+        solution:
+          "Use the event picker at the top of the dashboard to switch to the event you want to promote.",
+      },
+      {
+        issue: "The Analytics tab shows zeros.",
+        solution:
+          "Counts only start after people use your links — share them first, then give it a little time.",
+      },
+    ],
+  },
   {
     key: "tax-deductible-receipts",
     title: "Send a tax-deductible donation receipt",

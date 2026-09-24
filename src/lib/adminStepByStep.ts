@@ -63,7 +63,7 @@ export const ADMIN_GUIDES: AdminGuide[] = [
         image: shotShareAnalytics,
         imageCaption: "The Analytics tab tracks every scan and click by source and device.",
       },
-ec{    ],
+    ],
     tips: [
       "The Team Homepage QR is for your players — it opens their mobile page with the alpha list, tee times, live leaderboard and scoring entry.",
       "Downloads are print-ready: the PNG renders at about 300 DPI, so it stays sharp on printed flyers and table tents.",

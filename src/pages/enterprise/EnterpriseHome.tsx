@@ -322,7 +322,7 @@ export default function EnterpriseHome() {
                     <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
                       <Users className="h-4 w-4" />
                       {counts[row.id] || 0}
-                      {row.max_players ? `/${row.max_players}` : ""} players
+                      {(row as { max_players?: number | null }).max_players ? `/${(row as { max_players?: number | null }).max_players}` : ""} players
                     </span>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>

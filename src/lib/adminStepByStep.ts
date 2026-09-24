@@ -6,6 +6,9 @@ import shotTransactions from "@/assets/help/transactions.png";
 import shotSponsors from "@/assets/help/sponsors.png";
 import shotPageEditor from "@/assets/help/public-page-editor.png";
 import shotPrintables from "@/assets/help/printables.png";
+import shotShareQr from "@/assets/help/share-promote-qr.png";
+import shotShareSocial from "@/assets/help/share-promote-social.png";
+import shotShareAnalytics from "@/assets/help/share-promote-analytics.png";
 
 export interface AdminGuideStep {
   text: string;

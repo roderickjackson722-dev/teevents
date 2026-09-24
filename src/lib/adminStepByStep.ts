@@ -82,6 +82,7 @@ export const ADMIN_GUIDES: AdminGuide[] = [
       },
     ],
   },
+  {
     key: "tax-deductible-receipts",
     title: "Send a tax-deductible donation receipt",
     category: "Receipts & Emails",

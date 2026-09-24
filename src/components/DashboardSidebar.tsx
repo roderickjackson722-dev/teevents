@@ -136,6 +136,7 @@ const categories: SidebarCategory[] = [
     color: "border-l-green-400 bg-green-400/5",
     items: [
       { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null, description: "QR codes, short URLs, social templates" },
+      { title: "Team Referral Links", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Give each team member a personal sign-up link and see who registered through it" },
       { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio", description: "Canva‑integrated flyers" },
       { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize confirmation and reminder emails and send them" },
       { title: "Email Send Log", url: "/dashboard/email-log", icon: Mail, feature: null, description: "See every email sent, delivery results, and resend failures" },

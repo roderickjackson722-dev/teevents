@@ -152,6 +152,7 @@ import Checkout from "./pages/Checkout";
 import CollegeGolfScoring from "./pages/CollegeGolfScoring";
 import GolfLeagues from "./pages/GolfLeagues";
 import EnterprisePricing from "./pages/EnterprisePricing";
+import EnterpriseDemoPage from "./pages/EnterpriseDemoPage";
 import SampleOrganizer from "./pages/SampleOrganizer";
 import SampleDashboard from "./pages/SampleDashboard";
 import InteractiveDemo from "./pages/InteractiveDemo";
@@ -432,6 +433,8 @@ const App = () => (
            <Route path="/how-it-works" element={<Navigate to="/plans" replace />} />
            <Route path="/pricing" element={<Navigate to="/plans" replace />} />
            <Route path="/enterprise-pricing" element={<EnterprisePricing />} />
+           <Route path="/enterprise-demo" element={<EnterpriseDemoPage />} />
+           <Route path="/enterprise-demo/:slug" element={<EnterpriseDemoPage />} />
            <Route path="/sample-organizer" element={<SampleDashboard />} />
            <Route path="/sample-organizer-public" element={<SampleOrganizer />} />
             <Route path="/sample-dashboard" element={<SampleDashboard />} />

@@ -2,19 +2,29 @@ import { useMemo, useState } from "react";
 import { MapPin, Trophy, Smartphone, Flag, Minus, Plus } from "lucide-react";
 
 const PARS = [4, 5, 3, 4, 4, 3, 5, 4, 4];
-const START: Record<string, number[]> = {
-  "Mike Johnson": [4, 5, 2, 4, 5, 3, 4, 0, 0],
-  "Sarah Lee": [5, 4, 3, 4, 4, 3, 5, 4, 0],
-  "David Kim": [4, 6, 3, 3, 4, 3, 5, 0, 0],
-  "Chris Evans": [5, 5, 4, 4, 4, 2, 5, 4, 3],
+const SEED = [
+  [4, 5, 2, 4, 5, 3, 4, 0, 0],
+  [5, 4, 3, 4, 4, 3, 5, 4, 0],
+  [4, 6, 3, 3, 4, 3, 5, 0, 0],
+  [5, 5, 4, 4, 4, 2, 5, 4, 3],
+];
+
+export type EnterpriseDemoConfig = {
+  club_name?: string; event_name?: string; location?: string | null; logo_url?: string | null;
+  primary_color?: string | null; accent_color?: string | null; events?: string[]; players?: string[];
 };
 
 type Tab = "course" | "leaderboard" | "scoring";
 
-const EnterpriseDemo = () => {
+const EnterpriseDemo = ({ config = {} }: { config?: EnterpriseDemoConfig }) => {
+  const club = config.club_name || "Pinehurst Ridge Golf Club";
+  const eventName = config.event_name || "Member-Guest Classic";
+  const events = config.events?.length ? config.events : ["Member-Guest Classic — Oct 12", "Tuesday Night Men's League — Weekly", "Ladies 9-Hole League — Weekly", "Club Championship — Nov 2"];
+  const names = config.players?.length ? config.players : ["Mike Johnson", "Sarah Lee", "David Kim", "Chris Evans"];
   const [tab, setTab] = useState<Tab>("course");
-  const [scores, setScores] = useState(START);
-  const [player, setPlayer] = useState("Mike Johnson");
+  const [scores, setScores] = useState<Record<string, number[]>>(() =>
+    Object.fromEntries(names.map((n, i) => [n, [...SEED[i % SEED.length]]])));
+  const [player, setPlayer] = useState(names[0]);
   const [hole, setHole] = useState(7);
 
   const board = useMemo(
@@ -42,9 +52,11 @@ const EnterpriseDemo = () => {
 
   return (
     <div className="max-w-5xl mx-auto mt-10 rounded-xl border border-border bg-card shadow-sm overflow-hidden">
-      <div className="bg-primary px-6 py-4 text-center">
-        <p className="text-xs uppercase tracking-widest text-secondary font-bold">Try the Enterprise demo</p>
-        <p className="text-primary-foreground font-display text-xl">Pinehurst Ridge Golf Club — Member-Guest Classic</p>
+      <div className="bg-primary px-6 py-4 text-center" style={config.primary_color ? { backgroundColor: config.primary_color } : undefined}>
+        {config.logo_url && <img src={config.logo_url} alt={club} className="mx-auto mb-2 h-12 object-contain" />}
+        <p className="text-xs uppercase tracking-widest text-secondary font-bold" style={config.accent_color ? { color: config.accent_color } : undefined}>Try the Enterprise demo</p>
+        <p className="text-primary-foreground font-display text-xl">{club} — {eventName}</p>
+        {config.location && <p className="text-primary-foreground/80 text-xs">{config.location}</p>}
       </div>
       <div className="flex border-b border-border overflow-x-auto">
         {tabs.map((t) => (
@@ -59,10 +71,10 @@ const EnterpriseDemo = () => {
         {tab === "course" && (
           <div className="grid md:grid-cols-2 gap-6">
             <div>
-              <h4 className="font-display text-2xl font-bold text-foreground mb-2">Pinehurst Ridge Golf Club</h4>
+              <h4 className="font-display text-2xl font-bold text-foreground mb-2">{club}</h4>
               <p className="text-muted-foreground text-sm mb-4">Your club's own branded page listing every tournament and league for the season — registration, sponsors and results in one place.</p>
               <ul className="space-y-2 text-sm">
-                {["Member-Guest Classic — Oct 12", "Tuesday Night Men's League — Weekly", "Ladies 9-Hole League — Weekly", "Club Championship — Nov 2"].map((e) => (
+                {events.map((e) => (
                   <li key={e} className="flex items-center gap-2 rounded-md border border-border p-3 text-foreground"><Flag className="h-4 w-4 text-secondary" /> {e}</li>
                 ))}
               </ul>

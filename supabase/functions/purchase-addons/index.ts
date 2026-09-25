@@ -15,10 +15,10 @@ const corsHeaders = {
  * Creates a Stripe Checkout session for the selected add-ons.
  */
 const PRICES: Record<string, { name: string; cents: number }> = {
-  live_leaderboard: { name: "Live Leaderboard & Mobile Scoring", cents: 19900 },
-  unlimited_manual_entries: { name: "Unlimited Manual Entries", cents: 19900 },
+  live_leaderboard: { name: "Live Leaderboard & Mobile Scoring", cents: 9900 },
+  unlimited_manual_entries: { name: "Unlimited Manual Entries", cents: 9900 },
   auction_raffle: { name: "Auction Dashboard", cents: 9900 },
-  custom_event_page: { name: "Full-Service Page Build Out", cents: 19900 },
+  custom_event_page: { name: "Full-Service Page Build Out", cents: 9900 },
   custom_domain: { name: "Custom Domain", cents: 9900 },
   college_scoring: { name: "College Golf Scoring", cents: 19900 },
   sms_100: { name: "SMS Blasts – 100 Text Messages", cents: 2900 },

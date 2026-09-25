@@ -313,7 +313,7 @@ Thank you for considering it,
             <Megaphone className="h-6 w-6 text-primary" /> Sponsorship Tools
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Resell a turnkey digital sponsorship package for $5,000–$10,000. You pay a one-time $499, which also removes TeeVents branding from your leaderboard and mobile scoring pages.
+            Resell a turnkey digital sponsorship package for $10,000. You pay a one-time $99, which also removes TeeVents branding from your leaderboard and mobile scoring pages.
           </p>
         </div>
         {tournaments.length > 0 && (
@@ -341,7 +341,7 @@ Thank you for considering it,
             <CardHeader>
               <CardTitle className="flex items-center gap-2 flex-wrap">
                 <Sparkles className="h-5 w-5 text-secondary" />
-                Branding Removal + Digital Sponsor — {formatCents(status?.amount_cents ?? 49900)} flat fee
+                Branding Removal + Digital Sponsor — {formatCents(status?.amount_cents ?? 9900)} flat fee
                 {status?.purchased && (
                   <Badge className="gap-1"><CheckCircle2 className="h-3.5 w-3.5" /> Active</Badge>
                 )}
@@ -351,7 +351,7 @@ Thank you for considering it,
               <p className="text-sm text-muted-foreground">
                 Everything you need to package, pitch, and deliver a premium digital sponsorship for{" "}
                 <span className="font-semibold text-foreground">{tournament?.title}</span>. Most organizers
-                resell this placement to a title sponsor for <span className="font-semibold text-foreground">$5,000–$10,000</span>.
+                 resell this placement to a title sponsor for <span className="font-semibold text-foreground">$10,000</span>.
               </p>
 
               <ul className="grid sm:grid-cols-2 gap-x-6 gap-y-2">
@@ -376,7 +376,7 @@ Thank you for considering it,
                 ) : (
                   <Button size="lg" onClick={handlePurchase} disabled={purchasing}>
                     {purchasing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                    Purchase — {formatCents(status?.amount_cents ?? 49900)}
+                     Purchase — {formatCents(status?.amount_cents ?? 9900)}
                   </Button>
                 )}
               </div>

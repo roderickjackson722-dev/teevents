@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-/** Current Flat-Rate Pro state for one tournament. */
+/** Current Per-Event payment state for one tournament. */
 export const getFlatRateStatus = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string }) => {
@@ -25,11 +25,11 @@ export const getFlatRateStatus = createServerFn({ method: "POST" })
       flat_rate_paid_at: t.flat_rate_paid_at ?? null,
       admin_override: !!t.flat_rate_admin_override,
       override_reason: t.flat_rate_override_reason ?? null,
-      amount_cents: t.flat_rate_amount_cents ?? FLAT_RATE_AMOUNT_CENTS,
+      amount_cents: FLAT_RATE_AMOUNT_CENTS,
     };
   });
 
-/** Creates the Stripe Checkout session for the one-time $299 flat fee. */
+/** Creates the Stripe Checkout session for the one-time $150 Per-Event fee. */
 export const createFlatRateCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string; origin: string }) => {
@@ -45,7 +45,7 @@ export const createFlatRateCheckout = createServerFn({ method: "POST" })
       context.userId,
       data.tournamentId,
     );
-    if (t.flat_rate_enabled) throw new Error("Flat-Rate Pro is already active for this event");
+    if (t.flat_rate_enabled) throw new Error("Per-Event pricing is already active for this event");
 
     const key = process.env["STRIPE_SECRET_KEY"];
     if (!key) throw new Error("Stripe is not configured");
@@ -53,7 +53,7 @@ export const createFlatRateCheckout = createServerFn({ method: "POST" })
     const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" as any });
 
     const origin = data.origin || "https://teevents.golf";
-    const amount = t.flat_rate_amount_cents ?? FLAT_RATE_AMOUNT_CENTS;
+    const amount = FLAT_RATE_AMOUNT_CENTS;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -62,7 +62,7 @@ export const createFlatRateCheckout = createServerFn({ method: "POST" })
           price_data: {
             currency: "usd",
             product_data: {
-              name: "TeeVents Flat-Rate Pro — One Event",
+              name: "TeeVents Per-Event — One Tournament",
               description: `Removes the 5% platform fee for: ${t.title}`,
             },
             unit_amount: amount,
@@ -91,7 +91,7 @@ export const createFlatRateCheckout = createServerFn({ method: "POST" })
     return { url: session.url };
   });
 
-/** Confirms the Stripe session and activates Flat-Rate Pro for the event. */
+/** Confirms the Stripe session and activates Per-Event pricing for the event. */
 export const verifyFlatRatePayment = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { sessionId: string }) => {
@@ -149,7 +149,7 @@ export const verifyFlatRatePayment = createServerFn({ method: "POST" })
     return { verified: true as const, tournament_id: tournamentId };
   });
 
-/** Platform-admin only: grant or revoke Flat-Rate Pro with no charge. */
+/** Platform-admin only: grant or revoke Per-Event pricing with no charge. */
 export const setFlatRateOverride = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string; enabled: boolean; reason?: string }) => {

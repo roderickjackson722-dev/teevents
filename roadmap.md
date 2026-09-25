@@ -5,9 +5,11 @@
 - [x] Match customer samples to the live TeeVents event, registration, leaderboard, and organizer dashboard experience
 - [x] Carry customer colors throughout samples and explain color customization
 - [x] Verify the complete guided sample click-through on desktop and mobile
-- [ ] Enterprise sales brief (PDF + Word) vs Golf Genius / Live Tourney
-- [ ] Enterprise staff: role-limited nav, staff land in Enterprise
-- [ ] Enterprise registration: live Stripe status + recent payments/balance
-- [ ] Organizer dashboard Clubhouse restyle (frame + home)
-- [ ] Publish-and-verify enterprise event walkthrough
-- [ ] Team Referrals summary card on tournament dashboard + enterprise
+- [x] Enterprise sales brief (PDF + Word) vs Golf Genius / Live Tourney
+- [x] Enterprise staff: role-limited nav, staff land in Enterprise
+- [x] Enterprise registration: live Stripe status + recent payments/balance
+- [x] Organizer dashboard Clubhouse restyle (frame + home)
+- [x] Publish-and-verify enterprise event walkthrough
+- [x] Team Referrals summary card on tournament dashboard + enterprise
+- [ ] Organizer dashboard restyle step 2: move side menu to top menus (awaiting user OK on frame/home look)
+- [ ] $1 live-mode Stripe test on an enterprise event (needs a real card payment)

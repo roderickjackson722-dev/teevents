@@ -138,7 +138,7 @@ export default function Signup() {
           </Card>
         )}
 
-        {step === "details" && ( interest && (
+        {step === "details" && interest && (
           <Card>
             <CardContent className="p-8 space-y-5">
               <div>
@@ -201,9 +201,6 @@ export default function Signup() {
 
               <div className="flex justify-between pt-2">
                 <Button variant="ghost" onClick={() => {
-                  // If we came in with a param, going back should take us to the interest step
-                  // but we should probably clear the param or handle it.
-                  // For now, let's just go back to interest.
                   setStep("interest");
                 }}>
                   <ArrowLeft className="h-4 w-4 mr-1" /> Back
@@ -218,7 +215,7 @@ export default function Signup() {
               </p>
             </CardContent>
           </Card>
-        ))}
+        )}
 
         {step === "sent" && (
           <Card>

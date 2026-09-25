@@ -20,6 +20,7 @@ import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminSignups from "@/components/admin/AdminSignups";
 import AdminVetting from "@/components/admin/AdminVetting";
 import AdminSiteRegistrations from "@/components/admin/AdminSiteRegistrations";
+import AdminEnterpriseDemos from "@/components/admin/AdminEnterpriseDemos";
 import AdminPasswordResetHelper from "@/components/admin/AdminPasswordResetHelper";
 import AdminAccounting from "@/components/admin/AdminAccounting";
 import AdminRevenue from "@/components/admin/AdminRevenue";
@@ -67,9 +68,10 @@ const AdminDashboard = () => {
     if (t === "signups") return "signups" as const;
     if (t === "vetting") return "vetting" as const;
     if (t === "site-registrations") return "site-registrations" as const;
+    if (t === "enterprise-demos") return "enterprise-demos" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "revenue" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "vetting" | "site-registrations" | "notification-center" | "password-reset" | "link-health" | "sample-requests" | "lead-magnets">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "revenue" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "vetting" | "site-registrations" | "enterprise-demos" | "notification-center" | "password-reset" | "link-health" | "sample-requests" | "lead-magnets">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
   const { count: unreadNotifications, refresh: refreshNotificationCount } = useAdminNotificationCount();
   const [linkFailures, setLinkFailures] = useState(0);
@@ -891,6 +893,7 @@ const AdminDashboard = () => {
                   ["signups", "Signup Backlog", UserPlus],
                   ["vetting", "Vetting", ShieldCheck],
                   ["site-registrations", "Site Registrations", Users],
+                  ["enterprise-demos", "Enterprise Demos", Trophy],
                   ["requests", "Access Requests", Users],
                   ["password-reset", "Password Reset Helper", KeyRound],
                   ["emails", "Auto-Approve Emails", Mail],
@@ -1781,6 +1784,7 @@ const AdminDashboard = () => {
           {activeTab === "signups" && <AdminSignups />}
           {activeTab === "vetting" && <AdminVetting />}
           {activeTab === "site-registrations" && <AdminSiteRegistrations />}
+          {activeTab === "enterprise-demos" && <AdminEnterpriseDemos />}
 
           {/* Transactions Tab */}
           {activeTab === "transactions" && <AdminTransactions />}

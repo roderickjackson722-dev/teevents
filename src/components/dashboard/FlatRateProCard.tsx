@@ -13,8 +13,7 @@ import {
 type Status = Awaited<ReturnType<typeof getFlatRateStatus>>;
 
 /**
- * Flat-Rate Pro — $399 once per event removes the 5% platform fee on every
- * transaction for that tournament. Alternative to "Pay as You Grow".
+ * Per-Event — $150 once per tournament removes the 5% platform fee.
  */
 const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -27,7 +26,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
     try {
       setStatus(await getFlatRateStatus({ data: { tournamentId: id } }));
     } catch (err: any) {
-      toast.error(err?.message || "Could not load Flat-Rate Pro status");
+      toast.error(err?.message || "Could not load Per-Event pricing status");
       setStatus(null);
     } finally {
       setLoading(false);
@@ -50,7 +49,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
         try {
           const res = await verifyFlatRatePayment({ data: { sessionId } });
           if (res.verified) {
-            toast.success("Flat-Rate Pro is active — no 5% platform fee on this event.");
+            toast.success("Per-Event pricing is active — no 5% platform fee on this event.");
             if (res.tournament_id) await loadStatus(res.tournament_id);
           } else {
             toast.message("Payment is still processing. Refresh in a moment.");
@@ -59,7 +58,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
           toast.error(err?.message || "Could not confirm the payment");
         }
       } else {
-        toast.message("Checkout canceled — this event is still on Pay as You Grow.");
+        toast.message("Checkout canceled — this event is still on No Cost to Start.");
       }
       const next = new URLSearchParams(searchParams);
       next.delete("flat_rate_session_id");
@@ -70,7 +69,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
   }, [searchParams]);
 
   const price = useMemo(
-    () => `$${((status?.amount_cents ?? 39900) / 100).toLocaleString("en-US")}`,
+    () => `$${((status?.amount_cents ?? 15000) / 100).toLocaleString("en-US")}`,
     [status],
   );
   const active = !!status?.flat_rate_enabled;
@@ -99,7 +98,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
         <div className="flex-1">
           <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-lg md:text-xl font-display font-bold text-foreground">
-              Flat-Rate Pro — {price} per event
+              Per-Event — {price} per tournament
             </h2>
             {active && (
               <Badge className="gap-1">
@@ -129,13 +128,13 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
               <div className="text-sm font-semibold text-secondary flex items-center gap-2">
                 <ShieldCheck className="h-4 w-4" />
                 {status?.admin_override
-                  ? "Flat-Rate Pro granted for this event."
+                  ? "Per-Event pricing granted for this event."
                   : `Purchased${status?.flat_rate_paid_at ? ` on ${new Date(status.flat_rate_paid_at).toLocaleDateString()}` : ""}.`}
               </div>
             ) : (
               <Button onClick={handlePurchase} disabled={purchasing || !tournamentId} size="lg">
                 {purchasing && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                Purchase Flat-Rate Pro
+                Select Per-Event
               </Button>
             )}
           </div>
@@ -144,7 +143,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
             <Percent className="h-4 w-4 text-muted-foreground mt-0.5" />
             <p className="text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">Current plan:</span>{" "}
-              {active ? "Flat-Rate Pro (no 5% platform fee)" : "Pay as You Grow (5% platform fee)"}
+              {active ? "Per-Event (no 5% platform fee)" : "No Cost to Start (5% service fee covered by players)"}
             </p>
           </div>
         </div>

@@ -28,7 +28,7 @@ export const getDigitalSponsorStatus = createServerFn({ method: "POST" })
     };
   });
 
-/** Creates the Stripe Checkout session for the one-time $499 Branding Removal + Digital Sponsor package. */
+/** Creates the Stripe Checkout session for the one-time $99 Branding Removal + Digital Sponsor package. */
 export const createDigitalSponsorCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string; origin: string; returnPath?: string }) => {
@@ -56,7 +56,7 @@ export const createDigitalSponsorCheckout = createServerFn({ method: "POST" })
 
     const origin = data.origin || "https://teevents.golf";
     const returnPath = data.returnPath || "/dashboard/sponsorship-tools";
-    const amount = t.digital_sponsor_amount_cents ?? DIGITAL_SPONSOR_AMOUNT_CENTS;
+    const amount = DIGITAL_SPONSOR_AMOUNT_CENTS;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -123,7 +123,7 @@ export const verifyDigitalSponsorPayment = createServerFn({ method: "POST" })
         digital_sponsor_purchased: true,
         digital_sponsor_purchased_at: new Date().toISOString(),
         digital_sponsor_amount_cents: session.amount_total ?? DIGITAL_SPONSOR_AMOUNT_CENTS,
-        // The $499 package bundles TeeVents branding removal.
+        // The package bundles TeeVents branding removal.
         branding_removed: true,
         branding_removed_paid: true,
         branding_removed_paid_at: new Date().toISOString(),

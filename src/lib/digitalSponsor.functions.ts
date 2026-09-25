@@ -24,7 +24,7 @@ export const getDigitalSponsorStatus = createServerFn({ method: "POST" })
       title: t.title as string,
       purchased: !!t.digital_sponsor_purchased,
       purchased_at: t.digital_sponsor_purchased_at ?? null,
-      amount_cents: t.digital_sponsor_amount_cents ?? DIGITAL_SPONSOR_AMOUNT_CENTS,
+      amount_cents: DIGITAL_SPONSOR_AMOUNT_CENTS,
     };
   });
 

@@ -337,6 +337,7 @@ const Plans = () => {
           </motion.div>
 
            <EnterpriseDemo />
+           <p className="text-center mt-4"><a href="/enterprise-demo" className="text-sm font-semibold text-primary underline">Open the full Enterprise demo</a></p>
            {/* Comparison */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

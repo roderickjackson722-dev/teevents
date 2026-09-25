@@ -17,6 +17,34 @@ export default function TeamLogin() {
   const [emailLoading, setEmailLoading] = useState(false);
   const [codeLoading, setCodeLoading] = useState(false);
 
+  /** Staff of clubs running Enterprise events land in the Enterprise section. */
+  const goHome = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: m } = await supabase
+          .from("org_members")
+          .select("organization_id")
+          .eq("user_id", user.id)
+          .limit(1)
+          .maybeSingle();
+        if (m?.organization_id) {
+          const { count } = await (supabase.from("tournaments") as any)
+            .select("id", { count: "exact", head: true })
+            .eq("organization_id", m.organization_id)
+            .eq("is_enterprise", true);
+          if ((count || 0) > 0) {
+            navigate("/enterprise");
+            return;
+          }
+        }
+      }
+    } catch {
+      /* fall through */
+    }
+    navigate("/dashboard");
+  };
+
   const submitEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!email.trim() || !password) {
@@ -33,7 +61,7 @@ export default function TeamLogin() {
       toast.error(error.message || "Could not sign you in");
       return;
     }
-    navigate("/dashboard");
+    await goHome();
   };
 
   const submitCode = async (e: React.FormEvent) => {
@@ -52,7 +80,7 @@ export default function TeamLogin() {
       });
       if (error) throw new Error(error.message);
       toast.success(`Signed in as ${result.email}`);
-      navigate("/dashboard");
+      await goHome();
     } catch (err) {
       toast.error(err instanceof Error ? err.message : "Login failed");
     } finally {

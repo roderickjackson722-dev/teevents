@@ -213,6 +213,7 @@ import UnderstandingPayoutTiming from "./pages/help/UnderstandingPayoutTiming";
 import FindingStripePayouts from "./pages/help/FindingStripePayouts";
 import UploadingImages from "./pages/help/UploadingImages";
 import CompareEventbrite from "./pages/CompareEventbrite";
+import CompareTeeventsVsEventbrite from "./pages/CompareTeeventsVsEventbrite";
 import CompareGolfGenius from "./pages/CompareGolfGenius";
 import PinSheets from "./pages/dashboard/PinSheets";
 import Compare from "./pages/Compare";
@@ -517,7 +518,8 @@ const App = () => (
            <Route path="/help/finding-stripe-payouts" element={<FindingStripePayouts />} />
           <Route path="/help/uploading-images" element={<UploadingImages />} />
            <Route path="/compare" element={<Compare />} />
-           <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
+            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
+            <Route path="/compare/teevents-vs-eventbrite" element={<CompareTeeventsVsEventbrite />} />
            <Route path="/compare/golf-genius-vs-teevents" element={<CompareGolfGenius />} />
            <Route path="/admin/sales-hub/compare-golf-genius" element={<CompareGolfGenius />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />

@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-const PRICE_CENTS = 49900;
+const PRICE_CENTS = 9900;
 
-/** Creates a $499 one-time Stripe Checkout session for Branding Removal + Digital Sponsor. */
+/** Creates a $99 one-time Stripe Checkout session for Branding Removal + Digital Sponsor. */
 export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { tournamentId: string; origin?: string; returnPath?: string }) => {
@@ -123,7 +123,7 @@ export const verifyBrandingRemoval = createServerFn({ method: "POST" })
         branding_payment_session_id: session.id ?? data.sessionId,
         branding_payment_intent_id: paymentIntentId,
         branding_receipt_url: receiptUrl,
-        // The $499 package bundles the Digital Sponsor benefits.
+        // The package bundles the Digital Sponsor benefits.
         digital_sponsor_purchased: true,
         digital_sponsor_purchased_at: new Date().toISOString(),
         digital_sponsor_amount_cents: session.amount_total ?? PRICE_CENTS,

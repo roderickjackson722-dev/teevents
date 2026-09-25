@@ -3,18 +3,18 @@
  * Admin overrides live in public.admin_addon_pricing (addon_key → price_cents).
  */
 
-export const FLAT_RATE_PRO_CENTS = 39900; // $399 per event, no 5% platform fee
-export const BRANDING_SPONSOR_CENTS = 49900; // Branding Removal + Digital Sponsor
+export const FLAT_RATE_PRO_CENTS = 15000; // $150 per event, no 5% platform fee
+export const BRANDING_SPONSOR_CENTS = 9900; // Branding Removal + Digital Sponsor
 export const LEAGUE_ANNUAL_CENTS = 39900; // $399/year golf league subscription
 export const LEAGUE_EVENT_LIMIT = 24;
 export const FREE_MANUAL_ENTRIES = 10;
 
-/** Standard per-event add-ons ($199 each). */
+/** Standard per-event add-ons ($99 each). */
 export const ADDON_PRICE_CENTS: Record<string, number> = {
-  live_leaderboard: 19900,
-  unlimited_manual_entries: 19900,
+  live_leaderboard: 9900,
+  unlimited_manual_entries: 9900,
   auction_raffle: 9900,
-  custom_event_page: 19900,
+  custom_event_page: 9900,
   custom_domain: 9900,
 };
 

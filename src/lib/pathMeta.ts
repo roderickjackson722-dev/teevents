@@ -42,7 +42,7 @@ const STATIC: Record<string, { title: string; description: string }> = {
   "/events": { title: "Upcoming Events | TeeVents", description: "Discover and register for upcoming golf tournaments and charity events." },
   "/reviews": { title: "Reviews | TeeVents", description: "See what tournament organizers say about TeeVents — real reviews from nonprofits and corporations running golf events." },
   "/contact": { title: "Contact Us | TeeVents", description: "Get in touch with TeeVents for golf tournament planning, platform questions, or consulting inquiries." },
-  "/plans": { title: "Simple, Transparent Pricing | TeeVents", description: "The complete golf tournament management platform is free. Add paid add-ons per event only when you need them. No monthly fees, no hidden charges." },
+  "/plans": { title: "Simple Golf Tournament Pricing | TeeVents", description: "Start at no cost, choose $150 per-event pricing, run a $399 league, or get unlimited Enterprise events for $2,500 per year." },
   "/enterprise-pricing": { title: "Enterprise Pricing | TeeVents", description: "White-label and volume plans for associations, management companies, and multi-event organizers." },
   "/features": { title: "All Features | TeeVents Golf Tournament Software", description: "Explore every TeeVents feature in tournament-day order — from planning and registration through live scoring and post-event reporting." },
   "/faq": { title: "FAQ | TeeVents", description: "Answers to common questions about TeeVents golf tournament management — payments, fees, payouts, and support." },

@@ -1,6 +1,6 @@
-/** Server-only helpers for the per-event Flat-Rate Pro option ($399, no 5% fee). */
+/** Server-only helpers for the $150 Per-Event option with no 5% fee. */
 
-export const FLAT_RATE_AMOUNT_CENTS = 39900;
+export const FLAT_RATE_AMOUNT_CENTS = 15000;
 
 export async function assertOrgMemberForTournament(
   supabase: any,

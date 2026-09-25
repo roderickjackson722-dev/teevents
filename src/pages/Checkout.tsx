@@ -20,7 +20,7 @@ import { createFlatRateCheckout } from "@/lib/flatRate.functions";
 import { createBrandingRemovalCheckout } from "@/lib/brandingRemoval.functions";
 import { COLLEGE_SCORING_CENTS, collegeScoringKey, dollars } from "@/lib/addonPricing";
 
-type Flow = "free" | "flat_rate" | "branding_sponsor" | "addon" | "college_scoring";
+type Flow = "free" | "per_event" | "branding_sponsor" | "addon" | "college_scoring";
 
 interface CheckoutItem {
   slug: string;
@@ -52,24 +52,24 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
       "10 manual entries included",
     ],
   },
-  "flat-rate-pro": {
-    slug: "flat-rate-pro",
-    title: "Flat-Rate Pro",
-    priceCents: 39900,
+  "per-event": {
+    slug: "per-event",
+    title: "Per-Event",
+    priceCents: 15000,
     unit: "per event",
     icon: BadgeDollarSign,
-    flow: "flat_rate",
-    desc: "Pay once per tournament and we drop the 5% platform fee on every transaction.",
+    flow: "per_event",
+    desc: "Pay once per tournament and keep 100% of your registration revenue with no TeeVents transaction fee.",
     features: ["No 5% platform fee", "Unlimited manual entries", "Unlimited transactions", "One-time, per event"],
   },
   "branding-removal": {
     slug: "branding-removal",
     title: "Branding Removal + Digital Sponsor",
-    priceCents: 49900,
+    priceCents: 9900,
     unit: "per event",
     icon: Megaphone,
     flow: "branding_sponsor",
-    desc: "Remove TeeVents branding and hand a title sponsor a turnkey digital package you can resell for $5k–$10k.",
+    desc: "Remove TeeVents branding and give a title sponsor a turnkey digital package you can resell for $10k.",
     features: [
       "TeeVents logo & tagline hidden",
       'Custom "Presented by" text and logo',
@@ -80,7 +80,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
   "live-leaderboard": {
     slug: "live-leaderboard",
     title: "Live Leaderboard + Mobile Scoring",
-    priceCents: 19900,
+    priceCents: 9900,
     unit: "per event",
     icon: BarChart3,
     flow: "addon",
@@ -91,7 +91,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
   "mobile-scoring": {
     slug: "mobile-scoring",
     title: "Live Leaderboard + Mobile Scoring",
-    priceCents: 19900,
+    priceCents: 9900,
     unit: "per event",
     icon: Smartphone,
     flow: "addon",
@@ -102,7 +102,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
   "unlimited-manual-entries": {
     slug: "unlimited-manual-entries",
     title: "Unlimited Manual Entries",
-    priceCents: 19900,
+    priceCents: 9900,
     unit: "per event",
     icon: Users,
     flow: "addon",
@@ -124,7 +124,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
   "custom-event-page": {
     slug: "custom-event-page",
     title: "Full-Service Page Build Out",
-    priceCents: 19900,
+    priceCents: 9900,
     unit: "per event",
     icon: LayoutTemplate,
     flow: "addon",
@@ -238,7 +238,7 @@ const Checkout = () => {
     setBusy(true);
     try {
       const origin = window.location.origin;
-      if (item.flow === "flat_rate") {
+      if (item.flow === "per_event") {
         const res = await createFlatRateCheckout({ data: { tournamentId, origin } });
         if (res?.url) window.location.href = res.url;
       } else if (item.flow === "branding_sponsor") {

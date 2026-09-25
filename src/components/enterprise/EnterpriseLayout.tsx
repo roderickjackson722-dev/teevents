@@ -35,13 +35,19 @@ interface NavItem {
   label: string;
   to: string;
   icon: typeof Trophy;
+  /** Hidden for limited staff roles (scoring only / viewer). */
+  fullOnly?: boolean;
 }
 
 interface NavGroup {
   label: string;
   items: NavItem[];
   adminOnly?: boolean;
+  fullOnly?: boolean;
 }
+
+/** Staff roles that only see the day-to-day event screens. */
+const LIMITED_ROLES = ["scoring_only", "viewer"];
 
 const NAV: NavGroup[] = [
   {
@@ -50,6 +56,7 @@ const NAV: NavGroup[] = [
   },
   {
     label: "Create",
+    fullOnly: true,
     items: [
       { label: "Single Tournament", to: "/enterprise/create?type=single_round", icon: PlusCircle },
       { label: "Multi-Round", to: "/enterprise/create?type=multi_round", icon: PlusCircle },
@@ -64,9 +71,9 @@ const NAV: NavGroup[] = [
       { label: "Leagues", to: "/enterprise/leagues", icon: Flag },
       { label: "My Courses", to: "/enterprise/courses", icon: MapPin },
       { label: "My Roster", to: "/enterprise/roster", icon: Users },
-      { label: "Communications", to: "/enterprise/communications", icon: Mail },
-      { label: "Automations", to: "/enterprise/automations", icon: Zap },
-      { label: "Admin Portal", to: "/enterprise/admin", icon: ShieldCheck },
+      { fullOnly: true, label: "Communications", to: "/enterprise/communications", icon: Mail },
+      { fullOnly: true, label: "Automations", to: "/enterprise/automations", icon: Zap },
+      { fullOnly: true, label: "Admin Portal", to: "/enterprise/admin", icon: ShieldCheck },
     ],
   },
   {
@@ -92,11 +99,19 @@ const groupActive = (group: NavGroup, pathname: string) =>
     return base === "/enterprise" ? pathname === "/enterprise" : pathname.startsWith(base);
   });
 
-const MobileNav = ({ isAdmin, onNavigate }: { isAdmin: boolean; onNavigate?: () => void }) => {
+/** Nav filtered by platform admin + org staff role. */
+export const visibleNav = (isAdmin: boolean, role?: string | null): NavGroup[] => {
+  const limited = !isAdmin && LIMITED_ROLES.includes(role || "");
+  return NAV.filter((g) => (!g.adminOnly || isAdmin) && (!limited || !g.fullOnly))
+    .map((g) => ({ ...g, items: g.items.filter((i) => !limited || !i.fullOnly) }))
+    .filter((g) => g.items.length > 0);
+};
+
+const MobileNav = ({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?: () => void }) => {
   const { pathname } = useLocation();
   return (
     <nav className="space-y-6 p-4">
-      {NAV.filter((g) => !g.adminOnly || isAdmin).map((group) => (
+      {groups.map((group) => (
         <div key={group.label}>
           <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wider text-primary-foreground/60">
             {group.label}
@@ -169,7 +184,7 @@ export default function EnterpriseLayout({ children, title, description, crumbs 
     })();
   }, [navigate]);
 
-  const groups = NAV.filter((g) => !g.adminOnly || isAdmin);
+  const groups = visibleNav(isAdmin, org?.role);
   const initials = (org?.orgName || "TV")
     .split(/\s+/)
     .slice(0, 2)
@@ -194,7 +209,7 @@ export default function EnterpriseLayout({ children, title, description, crumbs 
                     <p className="text-lg font-bold text-primary-foreground">TeeVents</p>
                     <p className="text-xs font-semibold uppercase tracking-widest text-secondary">Enterprise</p>
                   </div>
-                  <MobileNav isAdmin={isAdmin} onNavigate={() => setMobileOpen(false)} />
+                  <MobileNav groups={groups} onNavigate={() => setMobileOpen(false)} />
                 </SheetContent>
               </Sheet>
 

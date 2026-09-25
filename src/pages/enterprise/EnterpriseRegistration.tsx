@@ -13,6 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Copy, ExternalLink, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import TeamReferralsSummary from "@/components/dashboard/TeamReferralsSummary";
 import EnterprisePaymentsCard from "@/components/enterprise/EnterprisePaymentsCard";
 import type { EnterpriseRegistrationSettings } from "@/lib/enterprise";
 
@@ -196,6 +197,7 @@ export default function EnterpriseRegistration() {
             </Card>
 
             <EnterprisePaymentsCard tournamentId={event.id} />
+            <TeamReferralsSummary tournamentId={event.id} />
           </div>
         </div>
       )}

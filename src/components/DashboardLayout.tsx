@@ -284,7 +284,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                       </span>
                       <span className="hidden md:block h-0.5 w-10 bg-secondary" />
                     </span>
-                    <span className="text-foreground"><DashboardEventSwitcher orgId={orgContext.orgId} /></span>
+                    <DashboardEventSwitcher orgId={orgContext.orgId} />
                   </div>
                 )}
               </div>

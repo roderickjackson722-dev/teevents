@@ -47,7 +47,7 @@ export default function DashboardEventSwitcher({ orgId }: { orgId: string }) {
       aria-label="Switch event"
       value={selected}
       onChange={(e) => onChange(e.target.value)}
-      className="h-9 max-w-[220px] shrink-0 truncate rounded-md border border-secondary/60 bg-background px-2 text-sm font-medium"
+      className="h-9 max-w-[220px] shrink-0 truncate rounded-md border border-secondary/60 bg-background text-foreground px-2 text-sm font-medium"
     >
       <option value="">All events</option>
       {list.map((t) => (

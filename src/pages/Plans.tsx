@@ -37,7 +37,7 @@ const planCards = [
     ],
     exclusions: [],
     cta: "Select No Cost to Start",
-    ctaTo: "/checkout/no-cost-to-start",
+    ctaTo: "/signup?interest=tournament",
     note: "No monthly subscription.",
   },
   {
@@ -57,7 +57,7 @@ const planCards = [
     ],
     exclusions: [],
     cta: "Select Per-Event",
-    ctaTo: "/checkout/per-event",
+    ctaTo: "/signup?interest=tournament",
     note: "Standard card processing fees still apply.",
   },
   {
@@ -76,7 +76,7 @@ const planCards = [
     ],
     exclusions: [],
     cta: "Select Per-League",
-    ctaTo: "/golf-leagues",
+    ctaTo: "/signup?interest=league",
     note: "One league, one season-long price.",
   },
 ];
@@ -160,7 +160,7 @@ const Plans = () => {
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
               <Link
-                to="/get-started"
+                to="/signup?interest=tournament"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
                  Get Started <ArrowRight className="h-4 w-4" />

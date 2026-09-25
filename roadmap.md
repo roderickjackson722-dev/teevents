@@ -13,5 +13,5 @@
 - [x] Team Referrals summary card on tournament dashboard + enterprise
 - [ ] Organizer dashboard restyle step 2: move side menu to top menus (awaiting user OK on frame/home look)
 - [ ] $1 live-mode Stripe test on an enterprise event (needs a real card payment)
-- [ ] Rename team referral “Code” to “Personal Link” in organizer-facing views and exports
+- [x] Rename team referral “Code” to “Personal Link” in organizer-facing views and exports
 - [ ] Verify a personal link attributes a registration to the correct team member and tournament

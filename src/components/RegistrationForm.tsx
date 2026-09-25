@@ -740,7 +740,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         notes: i === 0 ? groupNotes || null : null,
         is_captain: allowGroup && players.length > 1 ? i === 0 : false,
 
-        referral_code_used: referralCode,
+            referral_code_used: promoterId ? referralCode : null,
         promoter_id: promoterId,
         flight_id: selectedFlight,
         // Attach the donation to the first (captain) registration row only

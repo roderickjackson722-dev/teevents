@@ -303,12 +303,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       });
       const promoter = Array.isArray(rows) ? rows[0] : null;
       if (!promoter) return;
-      // Store ref code for 30 days, but never overwrite existing attribution for this tournament
+      // Store the latest valid personal link for 30 days. A newly shared link must
+      // take precedence over an older team member's link for the same tournament.
       const storageKey = `tv_ref_${tournament.id}`;
-      const existing = localStorage.getItem(storageKey);
-      if (!existing) {
-        localStorage.setItem(storageKey, JSON.stringify({ code: ref, ts: Date.now() }));
-      }
+      localStorage.setItem(storageKey, JSON.stringify({ code: ref, ts: Date.now() }));
       // Log the click (anonymous)
       supabase.from("referral_clicks").insert({
         promoter_id: promoter.id,

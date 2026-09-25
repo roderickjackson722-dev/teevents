@@ -267,19 +267,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="flex flex-1 min-w-0 w-full overflow-hidden">
           <DashboardSidebar />
           <div className="flex-1 flex flex-col min-w-0 w-full">
-             <header className="h-16 flex items-center justify-between border-b-2 border-secondary bg-secondary/15 px-4">
+             <header className="h-16 md:h-20 flex items-center justify-between border-b-2 border-secondary bg-primary px-4 text-primary-foreground shadow-lg">
               <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3 sm:flex min-w-0">
                 <SidebarTrigger
                   aria-label={sidebarOpen ? "Collapse menu" : "Expand menu"}
                   title={sidebarOpen ? "Collapse menu" : "Expand menu"}
-                  className="shrink-0 border border-secondary/60 bg-background/60 hover:bg-background"
+                  className="shrink-0 border border-secondary/60 bg-primary-foreground/10 text-primary-foreground hover:bg-primary-foreground/20 hover:text-primary-foreground"
                 />
                 {orgContext && (
                   <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                     <OpenDashboardButton href={dashboardHref} />
-                    <span className="hidden sm:inline text-foreground/30">|</span>
-                    <span className="truncate text-base md:text-lg font-display font-bold text-foreground">
-                      {displayName}
+                    <span className="hidden sm:inline text-primary-foreground/30">|</span>
+                    <span className="min-w-0">
+                      <span className="block truncate text-base md:text-xl font-display font-bold text-primary-foreground">
+                        {displayName}
+                      </span>
+                      <span className="hidden md:block h-0.5 w-10 bg-secondary" />
                     </span>
                     <DashboardEventSwitcher orgId={orgContext.orgId} />
                   </div>
@@ -289,7 +292,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               {isAdminOverride && (
                 <Link
                   to="/admin"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to Admin
@@ -308,7 +311,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 </a>
               </div>
             )}
-            <main className="flex-1 bg-golf-cream p-3 sm:p-4 md:p-6 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
+            <main className="flex-1 bg-muted/30 p-3 sm:p-4 md:p-8 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
               {children}
             </main>
           </div>

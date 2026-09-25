@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,9 @@ type Interest = "tournament" | "league";
 
 export default function Signup() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  
   const [step, setStep] = useState<Step>("interest");
   const [loading, setLoading] = useState(false);
 
@@ -28,6 +30,14 @@ export default function Signup() {
   const [primaryGoal, setPrimaryGoal] = useState("");
   const [heardFrom, setHeardFrom] = useState("");
   const [heardFromOther, setHeardFromOther] = useState("");
+
+  useEffect(() => {
+    const interestParam = searchParams.get("interest");
+    if (interestParam === "tournament" || interestParam === "league") {
+      setInterest(interestParam as Interest);
+      setStep("details");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async () => {
     if (!interest || !fullName.trim() || !email.trim()) {
@@ -50,7 +60,7 @@ export default function Signup() {
         },
       });
       if (error) throw error;
-      // Remember intended workspace type for post-login
+      
       try {
         localStorage.setItem("teevents.pendingWorkspace", JSON.stringify({
           interest_area: interest,
@@ -128,7 +138,7 @@ export default function Signup() {
           </Card>
         )}
 
-        {step === "details" && (
+        {step === "details" && ( interest && (
           <Card>
             <CardContent className="p-8 space-y-5">
               <div>
@@ -190,7 +200,12 @@ export default function Signup() {
               </div>
 
               <div className="flex justify-between pt-2">
-                <Button variant="ghost" onClick={() => setStep("interest")}>
+                <Button variant="ghost" onClick={() => {
+                  // If we came in with a param, going back should take us to the interest step
+                  // but we should probably clear the param or handle it.
+                  // For now, let's just go back to interest.
+                  setStep("interest");
+                }}>
                   <ArrowLeft className="h-4 w-4 mr-1" /> Back
                 </Button>
                 <Button onClick={handleSubmit} disabled={loading}>
@@ -203,7 +218,7 @@ export default function Signup() {
               </p>
             </CardContent>
           </Card>
-        )}
+        ))}
 
         {step === "sent" && (
           <Card>

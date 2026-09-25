@@ -280,8 +280,8 @@ const Plans = () => {
             >
               <div className="mb-6">
                 <h3 className="text-2xl font-display font-bold text-foreground">Add-on Features</h3>
-                <p className="text-sm text-muted-foreground">
-                  One-time, per event. Select an add-on to go straight to checkout.
+                 <p className="text-sm text-muted-foreground">
+                   All $99 each, one-time per event. Select an add-on to go straight to checkout.
                 </p>
               </div>
 
@@ -365,7 +365,7 @@ const Plans = () => {
                    ["Events Included", "Pay as you go", "Pay as you go", "Unlimited"],
                    ["Live Leaderboard + Mobile Scoring", "Add-on: $99", "Add-on: $99", "Included"],
                    ["Best For", "Non-profits, first-time organizers", "Organizers who want predictable costs", "Courses & clubs running 10+ events"],
-                 ].map((row) => <tr key={row[0]} className="border-b border-border/60 last:border-0">{row.map((cell, index) => <td key={cell} className={`p-3 ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{cell}</td>)}</tr>)}</tbody>
+                 ].map((row) => <tr key={row[0]} className="border-b border-border/60 last:border-0">{row.map((cell, index) => <td key={`${row[0]}-${index}`} className={`p-3 ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{cell}</td>)}</tr>)}</tbody>
                </table>
             </div>
           </motion.div>

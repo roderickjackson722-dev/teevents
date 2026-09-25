@@ -15,3 +15,7 @@
 - [ ] $1 live-mode Stripe test on an enterprise event (needs a real card payment)
 - [x] Rename team referral “Code” to “Personal Link” in organizer-facing views and exports
 - [x] Verify a personal link attributes a registration to the correct team member and tournament
+
+- [ ] Run a temporary end-to-end team personal-link registration and live-scoring sync test, then clean up
+- [ ] Run a real $1 Enterprise registration and confirm organizer-account settlement (requires secure card completion)
+- [ ] Replace the pricing page with No Cost, Per-Event, Per-League, $99 add-ons, and Enterprise pricing

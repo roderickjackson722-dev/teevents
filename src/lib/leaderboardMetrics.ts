@@ -33,6 +33,11 @@ export function reportLeaderboardMetric(metric: LeaderboardMetricInput) {
   if (!enabled || isTestEnv() || typeof window === "undefined") return;
   void (async () => {
     try {
+      // Public leaderboards also use this helper. Do not call an authenticated
+      // telemetry function until a browser session exists.
+      const { supabase } = await import("@/integrations/supabase/client");
+      const { data } = await supabase.auth.getSession();
+      if (!data.session?.access_token) return;
       const { logLeaderboardMetric } = await import("./leaderboardMetrics.functions");
       await (logLeaderboardMetric as any)({ data: metric });
     } catch {

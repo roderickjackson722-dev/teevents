@@ -272,12 +272,11 @@ export default function TeamPerformance() {
 
   const exportPromotersCsv = () => {
     const rows = [
-      ["Name", "Email", "Role", "Code", "Link", "Registrations", "Revenue", "Clicks", "Conversion %", "Active"],
+      ["Name", "Email", "Role", "Personal Link", "Registrations", "Revenue", "Clicks", "Conversion %", "Active"],
       ...sortedLeaderboard.map((p) => [
         p.promoter.name,
         p.promoter.email,
         p.promoter.role || "",
-        p.promoter.unique_ref_code,
         buildRefUrl(origin, slug, p.promoter.unique_ref_code),
         String(p.registrations),
         (p.revenueCents / 100).toFixed(2),
@@ -509,7 +508,7 @@ export default function TeamPerformance() {
                     <TableHead>Name</TableHead>
                     <TableHead>Email</TableHead>
                     <TableHead>Role</TableHead>
-                    <TableHead>Code</TableHead>
+                    <TableHead>Personal Link</TableHead>
                     <TableHead className="text-right">Regs</TableHead>
                     <TableHead className="text-right">Revenue</TableHead>
                     <TableHead>Status</TableHead>
@@ -521,7 +520,16 @@ export default function TeamPerformance() {
                         <TableCell className="font-medium">{p.promoter.name}</TableCell>
                         <TableCell className="text-sm">{p.promoter.email}</TableCell>
                         <TableCell><Badge variant="outline">{p.promoter.role || "—"}</Badge></TableCell>
-                        <TableCell className="font-mono text-xs">{p.promoter.unique_ref_code}</TableCell>
+                        <TableCell className="max-w-[260px]">
+                          <button
+                            type="button"
+                            className="block w-full truncate text-left font-mono text-xs text-primary hover:underline"
+                            onClick={() => copyLink(p.promoter.unique_ref_code)}
+                            title={buildRefUrl(origin, slug, p.promoter.unique_ref_code)}
+                          >
+                            {buildRefUrl(origin, slug, p.promoter.unique_ref_code)}
+                          </button>
+                        </TableCell>
                         <TableCell className="text-right">{p.registrations}</TableCell>
                         <TableCell className="text-right">{fmtUsd(p.revenueCents)}</TableCell>
                         <TableCell>{p.promoter.is_active ? <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300">Active</Badge> : <Badge variant="secondary">Inactive</Badge>}</TableCell>

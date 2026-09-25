@@ -18,6 +18,8 @@ import NewTournamentAlertBanner from "@/components/admin/NewTournamentAlertBanne
 import RfpFeaturesPanel from "@/components/admin/RfpFeaturesPanel";
 import AdminNotifications from "@/components/admin/AdminNotifications";
 import AdminSignups from "@/components/admin/AdminSignups";
+import AdminVetting from "@/components/admin/AdminVetting";
+import AdminSiteRegistrations from "@/components/admin/AdminSiteRegistrations";
 import AdminPasswordResetHelper from "@/components/admin/AdminPasswordResetHelper";
 import AdminAccounting from "@/components/admin/AdminAccounting";
 import AdminRevenue from "@/components/admin/AdminRevenue";
@@ -63,9 +65,11 @@ const AdminDashboard = () => {
     const t = params.get("tab");
     if (t === "notification-center") return "notification-center" as const;
     if (t === "signups") return "signups" as const;
+    if (t === "vetting") return "vetting" as const;
+    if (t === "site-registrations") return "site-registrations" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "revenue" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "notification-center" | "password-reset" | "link-health" | "sample-requests" | "lead-magnets">(initialTab);
+  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "revenue" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "vetting" | "site-registrations" | "notification-center" | "password-reset" | "link-health" | "sample-requests" | "lead-magnets">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
   const { count: unreadNotifications, refresh: refreshNotificationCount } = useAdminNotificationCount();
   const [linkFailures, setLinkFailures] = useState(0);
@@ -885,6 +889,8 @@ const AdminDashboard = () => {
                 {([
                   ["teevents-managed", "TeeVents Managed Tournaments", Trophy],
                   ["signups", "Signup Backlog", UserPlus],
+                  ["vetting", "Vetting", ShieldCheck],
+                  ["site-registrations", "Site Registrations", Users],
                   ["requests", "Access Requests", Users],
                   ["password-reset", "Password Reset Helper", KeyRound],
                   ["emails", "Auto-Approve Emails", Mail],
@@ -1773,6 +1779,8 @@ const AdminDashboard = () => {
           {activeTab === "password-reset" && <AdminPasswordResetHelper />}
           {activeTab === "notifications" && <AdminNotifications />}
           {activeTab === "signups" && <AdminSignups />}
+          {activeTab === "vetting" && <AdminVetting />}
+          {activeTab === "site-registrations" && <AdminSiteRegistrations />}
 
           {/* Transactions Tab */}
           {activeTab === "transactions" && <AdminTransactions />}

@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Trophy, Flag, Loader2, CheckCircle2, ArrowLeft, Mail, ShieldAlert } from "lucide-react";
@@ -309,13 +308,12 @@ export default function Signup() {
                   </div>
                   <div>
                     <Label>Will this platform be used for paid registrations? <Req /></Label>
-                    <div className="flex items-center gap-3 mt-2">
-                      <span className={`text-sm ${f.paid_registrations === false ? "font-semibold" : "text-muted-foreground"}`}>No</span>
-                      <Switch checked={f.paid_registrations === true} onCheckedChange={(v) => set("paid_registrations", v)} />
-                      <span className={`text-sm ${f.paid_registrations === true ? "font-semibold" : "text-muted-foreground"}`}>Yes</span>
-                      {f.paid_registrations === null && (
-                        <Button type="button" size="sm" variant="outline" onClick={() => set("paid_registrations", false)}>No</Button>
-                      )}
+                    <div className="flex gap-2 mt-2">
+                      {[true, false].map((v) => (
+                        <Button key={String(v)} type="button" variant={f.paid_registrations === v ? "default" : "outline"} onClick={() => set("paid_registrations", v)}>
+                          {v ? "Yes" : "No"}
+                        </Button>
+                      ))}
                     </div>
                     <Err msg={show("paid_registrations")} />
                   </div>

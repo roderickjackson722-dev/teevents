@@ -101,7 +101,7 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Pricing & Commitment",
         rows: [
-          { feature: "Pricing Model", competitor: "Annual subscription + per-golfer fees", teevents: "$0 upfront + 5% platform fee", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Pricing Model", competitor: "Annual subscription + fees", teevents: "$0 upfront + 5% platform fee", cStatus: "warn", tvStatus: "yes" },
           { feature: "Contract", competitor: "Annual contract required", teevents: "No long-term commitment", cStatus: "no", tvStatus: "yes" },
           { feature: "Setup Fees", competitor: "Often charged at onboarding", teevents: "None", cStatus: "warn", tvStatus: "yes" },
         ],
@@ -118,7 +118,7 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Experience",
         rows: [
-          { feature: "Learning Curve", competitor: "Steeper — designed for course pros", teevents: "Low — intuitive dashboard", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Learning Curve", competitor: "Steeper — for pros", teevents: "Low — intuitive dashboard", cStatus: "warn", tvStatus: "yes" },
           { feature: "Onboarding Time", competitor: "Hours to days", teevents: "Published in under 60 seconds", cStatus: "warn", tvStatus: "yes" },
         ],
       },
@@ -179,8 +179,8 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Pricing",
         rows: [
-          { feature: "Platform Fee", competitor: "Free + optional donor tips", teevents: "5% platform fee", cStatus: "yes", tvStatus: "warn" },
-          { feature: "Pro Tournament Tools", competitor: "Not available at any price", teevents: "$399 per tournament (one-time)", cStatus: "no", tvStatus: "yes" },
+          { feature: "Platform Fee", competitor: "Free + optional tips", teevents: "5% platform fee", cStatus: "yes", tvStatus: "warn" },
+          { feature: "Pro Tournament Tools", competitor: "Not available", teevents: "$399 per tournament (one-time)", cStatus: "no", tvStatus: "yes" },
           { feature: "Payment Processing", competitor: "2.9% + $0.30", teevents: "2.9% + $0.30 (Stripe)", cStatus: "warn", tvStatus: "warn" },
         ],
       },
@@ -294,19 +294,18 @@ const Compare = () => {
           <p className="text-center text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
             Compare TeeVents to:
           </p>
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="flex flex-wrap justify-center gap-2">
             {COMPARISONS.map((c) => (
               <button
                 key={c.id}
                 onClick={() => handleSelect(c.id)}
-                className={`min-h-24 rounded-lg border p-4 text-left transition-all ${
+                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   selectedId === c.id
-                    ? "border-secondary bg-primary text-primary-foreground shadow-md"
-                    : "border-border bg-background text-foreground hover:border-secondary"
+                    ? "bg-[#1a5c38] text-white shadow-md"
+                    : "bg-background border hover:border-[#1a5c38]"
                 }`}
               >
-                <span className="block text-xs font-semibold uppercase text-secondary">Compare</span>
-                <span className="mt-1 block font-display text-base font-bold">TeeVents vs. {c.name}</span>
+                {c.name}
               </button>
             ))}
           </div>
@@ -330,27 +329,24 @@ const Compare = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {selected.sections.map((section) => (
+                {selected.sections.flatMap((section) => [
                   <tr key={section.category} className="border-b border-border bg-muted/20">
                     <td colSpan={3} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
                       {section.category}
                     </td>
-                  </tr>
-                )).concat(
-                  selected.sections.flatMap((section) =>
-                    section.rows.map((row) => (
-                      <TableRow key={row.feature} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                        <TableCell className="p-4 font-medium text-foreground">{row.feature}</TableCell>
-                        <TableCell className="p-4 text-center text-muted-foreground">
-                          <StatusIcon status={row.cStatus} /> {row.competitor}
-                        </TableCell>
-                        <TableCell className="p-4 text-center font-semibold text-primary bg-primary/5">
-                          <StatusIcon status={row.tvStatus} /> {row.teevents}
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )
-                )}
+                  </tr>,
+                  ...section.rows.map((row) => (
+                    <TableRow key={row.feature} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                      <TableCell className="p-4 font-medium text-foreground">{row.feature}</TableCell>
+                      <TableCell className="p-4 text-center text-muted-foreground">
+                        <StatusIcon status={row.cStatus} /> {row.competitor}
+                      </TableCell>
+                      <TableCell className="p-4 text-center font-semibold text-primary bg-primary/5">
+                        <StatusIcon status={row.tvStatus} /> {row.teevents}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ])}
               </TableBody>
             </Table>
           </div>

@@ -7,6 +7,8 @@ import {
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
+import EnterpriseDemo from "@/components/pricing/EnterpriseDemo";
+import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
 
 /* ─── Core pricing options ─── */
 const planCards = [
@@ -342,9 +344,9 @@ const Plans = () => {
              <p className="font-semibold text-primary-foreground mb-6">
                Run 10 events, and it pays for itself. Run more? You save more.
             </p>
-             <a href="mailto:info@teevents.golf?subject=TeeVents%20Enterprise" className="inline-flex items-center gap-2 rounded-md bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:bg-secondary/90">
+             <EnterpriseInquiryDialog><button type="button" className="inline-flex items-center gap-2 rounded-md bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:bg-secondary/90">
                Contact us at info@teevents.golf <ArrowRight className="h-4 w-4" />
-             </a>
+             </button></EnterpriseInquiryDialog>
              </div>
           </motion.div>
 
@@ -420,12 +422,11 @@ const Plans = () => {
                Our Enterprise plan gives you unlimited events for $2,500/year — and includes Live Leaderboard + Mobile Scoring, normally a $99 add-on per event. Run 10 events, and it pays for itself. Run more? You save more.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-               <a
-                 href="mailto:info@teevents.golf?subject=TeeVents%20Enterprise"
+               <EnterpriseInquiryDialog><button type="button"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
                  Contact us at info@teevents.golf <ArrowRight className="h-4 w-4" />
-               </a>
+               </button></EnterpriseInquiryDialog>
               <Link
                 to="/request-sample"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"

@@ -223,6 +223,11 @@ const ResetPassword = () => {
     if (error) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
+      if (isNewSignup) {
+        import("@/lib/vetting.functions")
+          .then(({ markVettingEmailVerified }) => markVettingEmailVerified())
+          .catch(() => {});
+      }
       toast({
         title: isNewSignup ? "Welcome to TeeVents!" : "Password updated!",
         description: leagueSlug

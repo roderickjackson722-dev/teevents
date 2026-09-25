@@ -64,6 +64,13 @@
       "when": 1790292313349,
       "tag": "0008_fix_enterprise_roster_rls_arg_order",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1790349194872,
+      "tag": "0009_tiered_signup_vetting",
+      "breakpoints": true
     }
   ]
 }

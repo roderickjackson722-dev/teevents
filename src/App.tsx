@@ -158,6 +158,7 @@ import InteractiveDemo from "./pages/InteractiveDemo";
 import VisitTracker from "./components/VisitTracker";
 import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
+import VerifyAccount from "./pages/VerifyAccount";
 import FAQ from "./pages/FAQ";
 import Features from "./pages/Features";
 // SalesHub moved into AdminDashboard
@@ -437,6 +438,7 @@ const App = () => (
             <Route path="/interactive-demo" element={<InteractiveDemo />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
+           <Route path="/verify-account" element={<VerifyAccount />} />
            <Route path="/faq" element={<FAQ />} />
            <Route path="/features" element={<Features />} />
            <Route path="/sales-hub" element={<Navigate to="/admin" replace />} />

@@ -1,159 +1,194 @@
-// Unified signup: creates auth user, stores vetting answers, emails a magic
-// password-setup link. No password required at signup time — user sets one
-// after clicking the emailed link.
+// Tiered signup: Tier 1 automated checks (disposable email, hCaptcha, IP
+// blacklist/rate limit/velocity), Tier 2 business questions, Tier 3 flagging
+// for manual review. Clean signups get instant access via a set-password
+// (email verification) link. Flagged signups are held until an admin approves.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { sendAndLog } from "../_shared/emailLogger.ts";
+import {
+  ADMIN_EMAIL, button, esc, firstName, isDisposable, sendVettingEmail, shell,
+} from "../_shared/vetting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers":
-    "authorization, x-client-info, apikey, content-type",
+  "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+const json = (b: unknown, status = 200) =>
+  new Response(JSON.stringify(b), { status, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+
+const ROLES = ["Tournament Director", "Club Manager", "Event Coordinator", "Coach", "League Manager", "Other"];
+const EVENTS = ["1-2", "3-5", "6-10", "10+"];
+const SOURCES = ["Facebook", "Instagram", "LinkedIn", "Google Search", "Word of Mouth", "Golf Course", "Other"];
+
+async function websiteReachable(url: string): Promise<boolean> {
+  try {
+    const u = new URL(url);
+    if (!/^https?:$/.test(u.protocol)) return false;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 6000);
+    let res = await fetch(u.toString(), { method: "HEAD", redirect: "follow", signal: ctrl.signal }).catch(() => null);
+    if (!res || res.status >= 400) {
+      res = await fetch(u.toString(), { method: "GET", redirect: "follow", signal: ctrl.signal }).catch(() => null);
+    }
+    clearTimeout(t);
+    return !!res && res.status < 500 && res.status !== 404;
+  } catch {
+    return false;
+  }
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  if (req.method === "GET") {
+    return json({ hcaptcha_site_key: Deno.env.get("HCAPTCHA_SITE_KEY") || null });
+  }
   try {
-    const body = await req.json();
-    const {
-      email,
-      full_name,
-      phone,
-      organization_name,
-      interest_area, // 'tournament' | 'league'
-      heard_from,
-      heard_from_other,
-      primary_goal,
-      origin,
-    } = body;
+    const b = await req.json();
+    const s = (v: unknown, max = 500) => String(v ?? "").trim().slice(0, max);
+    const full_legal_name = s(b.full_legal_name, 120);
+    const email = s(b.email, 255).toLowerCase();
+    const phone_number = s(b.phone_number, 30);
+    const organization_name = s(b.organization_name, 150);
+    let organization_website = s(b.organization_website, 300);
+    const role = s(b.role, 60);
+    const events_per_year = s(b.events_per_year, 10);
+    const event_description = s(b.event_description, 2000);
+    const paid_registrations = b.paid_registrations === true;
+    const referral_source = s(b.referral_source, 60) || null;
+    const interest_area = b.interest_area === "league" ? "league" : "tournament";
+    const origin = s(b.origin, 200);
 
-    if (!email || !full_name || !interest_area) {
-      throw new Error("Missing required fields");
+    if (!full_legal_name || !email || !phone_number || !organization_name || !organization_website ||
+      !role || !events_per_year || !event_description || typeof b.paid_registrations !== "boolean") {
+      return json({ error: "Please complete every required field." }, 400);
+    }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return json({ error: "Please enter a valid email address." }, 400);
+    if (phone_number.replace(/\D/g, "").length < 10) return json({ error: "Please enter a valid phone number." }, 400);
+    if (!ROLES.includes(role) || !EVENTS.includes(events_per_year) || (referral_source && !SOURCES.includes(referral_source))) {
+      return json({ error: "Invalid selection." }, 400);
+    }
+    if (!/^https?:\/\//i.test(organization_website)) organization_website = `https://${organization_website}`;
+
+    // Tier 1: disposable email
+    if (isDisposable(email)) {
+      return json({ error: "Disposable or temporary email addresses aren't accepted. Please use your organization email." }, 400);
     }
 
-    const supabaseAdmin = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-    );
+    // Tier 1: hCaptcha (enforced when configured)
+    const hSecret = Deno.env.get("HCAPTCHA_SECRET_KEY");
+    if (hSecret) {
+      const token = s(b.captcha_token, 5000);
+      if (!token) return json({ error: "Please complete the human verification." }, 400);
+      const vr = await fetch("https://api.hcaptcha.com/siteverify", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ secret: hSecret, response: token }),
+      }).then((r) => r.json()).catch(() => ({ success: false }));
+      if (!vr.success) return json({ error: "Human verification failed. Please try again." }, 400);
+    }
 
-    const normalizedEmail = String(email).trim().toLowerCase();
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const fwd = req.headers.get("x-forwarded-for") || "";
+    const ip = (req.headers.get("cf-connecting-ip") || fwd.split(",")[0] || "unknown").trim();
 
-    // Create user (or reuse existing). email_confirm=true so recovery link works.
-    const tempPassword = crypto.randomUUID() + "Aa1!";
+    // Tier 1: IP blacklist → block
+    const { data: black } = await admin.from("security_ip_blacklist").select("id").eq("ip_address", ip).maybeSingle();
+    if (black) return json({ error: "Signups from your network are blocked. Contact info@teevents.golf." }, 403);
+
+    // Tier 1: rate limit (5 signups / hour / IP)
+    const { data: rl } = await admin.rpc("check_auth_rate_limit", {
+      _ip: ip, _action: "signup", _max: 5, _window_seconds: 3600,
+    });
+    if ((rl as any)?.allowed === false) {
+      return json({ error: "Too many signup attempts from your network. Please try again later." }, 429);
+    }
+
+    // Tier 3: flag rules
+    const flags: string[] = [];
+    if (ip !== "unknown") {
+      const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
+      const { count } = await admin.from("signup_vetting").select("id", { count: "exact", head: true })
+        .eq("ip_address", ip).gte("created_at", since);
+      if ((count ?? 0) >= 3) flags.push("IP reputation: 3+ signups from this IP in 24 hours");
+      const { count: flaggedCount } = await admin.from("security_flags").select("id", { count: "exact", head: true })
+        .eq("ip_address", ip);
+      if ((flaggedCount ?? 0) > 0) flags.push("IP reputation: IP has prior security flags");
+    }
+    if (events_per_year === "10+") flags.push("High volume: plans to run 10+ events");
+    if (!(await websiteReachable(organization_website))) flags.push("Organization website could not be verified");
+
+    const flagged = flags.length > 0;
+    const status = flagged ? "flagged" : "approved";
+
+    // Create or reuse auth user
     let userId: string | null = null;
-    const { data: created, error: createErr } = await supabaseAdmin.auth.admin.createUser({
-      email: normalizedEmail,
-      password: tempPassword,
-      email_confirm: true,
-      user_metadata: { full_name: String(full_name).trim(), phone: phone || null },
+    const { data: created, error: createErr } = await admin.auth.admin.createUser({
+      email, password: crypto.randomUUID() + "Aa1!", email_confirm: true,
+      user_metadata: { full_name: full_legal_name, phone: phone_number },
     });
     if (createErr) {
-      // Likely already exists — look them up
-      const { data: list } = await supabaseAdmin.auth.admin.listUsers({ page: 1, perPage: 200 });
-      const found = list?.users?.find((u: any) => (u.email || "").toLowerCase() === normalizedEmail);
+      const { data: list } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+      const found = list?.users?.find((u: any) => (u.email || "").toLowerCase() === email);
       if (!found) throw createErr;
       userId = found.id;
     } else {
       userId = created.user?.id ?? null;
     }
-    if (!userId) throw new Error("Could not resolve user id");
+    if (!userId) throw new Error("Could not create account");
 
-    // Persist vetting (best-effort; ignore duplicate errors)
-    await supabaseAdmin.from("signup_vetting").insert({
-      user_id: userId,
-      email: normalizedEmail,
-      full_name: String(full_name).trim(),
-      phone: phone || null,
-      interest_area,
-      organization_name: organization_name || null,
-      heard_from: heard_from || null,
-      heard_from_other: heard_from_other || null,
-      primary_goal: primary_goal || null,
-      vetting_status: "approved",
-    });
+    // Hold flagged accounts until approved
+    if (flagged) await admin.auth.admin.updateUserById(userId, { ban_duration: "876000h" });
 
-    // Generate recovery link → email
+    const { data: row, error: insErr } = await admin.from("signup_vetting").insert({
+      user_id: userId, email, full_name: full_legal_name, phone: phone_number,
+      full_legal_name, phone_number, organization_name, organization_website, role,
+      events_per_year, event_description, paid_registrations, referral_source,
+      heard_from: referral_source, interest_area, vetting_status: status, flag_reasons: flags,
+      ip_address: ip, email_verified: false,
+    }).select("id, review_token").single();
+    if (insErr) throw insErr;
+
     const siteOrigin = origin || req.headers.get("origin") || "https://www.teevents.golf";
-    const redirectTo = `${siteOrigin}/reset-password?new=1&type=${encodeURIComponent(interest_area)}`;
-    const { data: linkData, error: linkErr } = await supabaseAdmin.auth.admin.generateLink({
-      type: "recovery",
-      email: normalizedEmail,
-      options: { redirectTo },
-    });
-    if (linkErr) throw linkErr;
-    const actionLink = linkData?.properties?.action_link;
-    if (!actionLink) throw new Error("Failed to generate action link");
+    const name = firstName(full_legal_name);
 
-    const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
-    if (RESEND_API_KEY) {
-      const firstName = String(full_name).trim().split(/\s+/)[0] || "there";
-      const label = interest_area === "league" ? "League" : "Tournament";
-      const html = `
-        <div style="font-family: Arial, sans-serif; max-width:600px; margin:0 auto; padding:24px; color:#111827;">
-          <div style="text-align:center; margin-bottom:24px;">
-            <h1 style="color:#1a5c38; margin:0;">Welcome to TeeVents</h1>
-          </div>
-          <p style="font-size:16px;">Hi ${firstName},</p>
-          <p style="font-size:16px;">Welcome to TeeVents! You're almost ready to start managing your ${label}.</p>
-          <p style="font-size:16px;">Click the button below to set your password and access your dashboard:</p>
-          <div style="text-align:center; margin:28px 0;">
-            <a href="${actionLink}" style="background:#F5A623; color:#1a5c38; padding:14px 28px; border-radius:8px; font-weight:bold; text-decoration:none; display:inline-block;">
-              Set My Password &amp; Log In
-            </a>
-          </div>
-          <p style="font-size:14px; color:#6b7280;">This link expires in 24 hours. If the button doesn't work, copy and paste this URL into your browser:</p>
-          <p style="font-size:12px; color:#6b7280; word-break:break-all;">${actionLink}</p>
-          <p style="font-size:16px; margin-top:24px;">Once logged in, you can:</p>
-          <ul style="font-size:15px; color:#111827;">
-            <li>Set up your first ${label.toLowerCase()}</li>
-            <li>Invite team members</li>
-            <li>Connect your Stripe account for payouts</li>
+    if (!flagged) {
+      const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
+        type: "recovery", email,
+        options: { redirectTo: `${siteOrigin}/reset-password?new=1&type=${interest_area}` },
+      });
+      if (linkErr) throw linkErr;
+      const actionLink = link?.properties?.action_link!;
+      await sendVettingEmail(admin, email, "Welcome to TeeVents — Verify Your Email",
+        shell("Welcome to TeeVents", `<p style="font-size:16px;">Hi ${esc(name)},</p>
+          <p style="font-size:16px;">Thanks for signing up. Please verify your email and set your password to access your dashboard:</p>
+          ${button(actionLink, "Verify Email &amp; Set Password")}
+          <p style="font-size:14px;color:#6b7280;">This link expires in 24 hours.</p>`),
+        "vetting-welcome-verify", { vetting_id: row.id });
+    } else {
+      const docsLink = `${siteOrigin}/verify-account?token=${row.review_token}`;
+      await sendVettingEmail(admin, email, "TeeVents — We need a little more information",
+        shell("Help us verify your account", `<p style="font-size:16px;">Hi ${esc(name)},</p>
+          <p style="font-size:16px;">Thanks for signing up for TeeVents. Before we activate your account, we need to confirm your organization. Please provide:</p>
+          <ul style="font-size:15px;">
+            <li>A link to a verifiable business social profile (e.g., LinkedIn company page)</li>
+            <li>Your business registration number or tax ID</li>
+            <li>A recent utility bill or bank statement in the organization's name</li>
           </ul>
-          <p style="font-size:16px;">If you have any questions, just reply to this email.</p>
-          <p style="font-size:16px; margin-top:24px;">Best,<br/>Rod Jackson<br/><span style="color:#6b7280;">TeeVents Golf Management</span></p>
-        </div>`;
+          ${button(docsLink, "Submit Verification Details")}
+          <p style="font-size:14px;color:#6b7280;">You'll receive an email as soon as your account is reviewed.</p>`),
+        "vetting-manual-review-request", { vetting_id: row.id });
 
-      await sendAndLog(
-        supabaseAdmin,
-        RESEND_API_KEY,
-        {
-          from: "TeeVents Golf Management <info@notifications.teevents.golf>",
-          to: [normalizedEmail],
-          subject: "Welcome to TeeVents — Complete Your Registration",
-          html,
-          reply_to: "info@teevents.golf",
-        },
-        {
-          templateName: "signup-welcome-set-password",
-          source: "signup-with-vetting",
-          metadata: { interest_area, full_name },
-        },
-      );
+      await sendVettingEmail(admin, ADMIN_EMAIL, `🚩 Signup flagged for review – ${full_legal_name}`,
+        shell("New account flagged for review", `
+          <p><b>${esc(full_legal_name)}</b> · ${esc(email)} · ${esc(phone_number)}</p>
+          <p>${esc(organization_name)} · <a href="${esc(organization_website)}">${esc(organization_website)}</a></p>
+          <p>Role: ${esc(role)} · Events/yr: ${esc(events_per_year)} · Paid registrations: ${paid_registrations ? "Yes" : "No"}</p>
+          <p><b>Reasons:</b></p><ul>${flags.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
+          ${button("https://www.teevents.golf/admin?tab=vetting", "Open Vetting Panel")}`),
+        "admin-vetting-flagged", { vetting_id: row.id });
     }
 
-    // Fire admin notification (non-blocking)
-    supabaseAdmin.functions.invoke("notify-new-signup", {
-      body: {
-        email: normalizedEmail,
-        full_name,
-        phone,
-        planning_status: null,
-        roles: [],
-        role_other: null,
-        heard_from,
-        heard_from_other,
-        vetting_status: "approved",
-      },
-    }).catch(() => {});
-
-    return new Response(JSON.stringify({ ok: true }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 200,
-    });
+    return json({ ok: true, status });
   } catch (e: any) {
     console.error("[signup-with-vetting]", e?.message || e);
-    return new Response(JSON.stringify({ error: e?.message || "Unknown error" }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-      status: 400,
-    });
+    return json({ error: e?.message || "Unknown error" }, 400);
   }
 });

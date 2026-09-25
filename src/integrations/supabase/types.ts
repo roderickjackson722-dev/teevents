@@ -9337,53 +9337,113 @@ export type Database = {
       signup_vetting: {
         Row: {
           created_at: string
+          doc_file_path: string | null
+          doc_social_url: string | null
+          doc_tax_id: string | null
+          docs_submitted_at: string | null
           email: string
+          email_verified: boolean
+          event_description: string | null
+          events_per_year: string | null
+          flag_reasons: string[]
+          full_legal_name: string | null
           full_name: string | null
           heard_from: string | null
           heard_from_other: string | null
           id: string
           interest_area: string | null
+          ip_address: string | null
           organization_name: string | null
+          organization_website: string | null
+          paid_registrations: boolean | null
           phone: string | null
+          phone_number: string | null
           planning_status: string | null
           primary_goal: string | null
+          referral_source: string | null
+          review_token: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          role: string | null
           role_other: string | null
           roles: string[] | null
+          signup_date: string
           user_id: string
+          vetting_notes: string | null
           vetting_status: string
         }
         Insert: {
           created_at?: string
+          doc_file_path?: string | null
+          doc_social_url?: string | null
+          doc_tax_id?: string | null
+          docs_submitted_at?: string | null
           email: string
+          email_verified?: boolean
+          event_description?: string | null
+          events_per_year?: string | null
+          flag_reasons?: string[]
+          full_legal_name?: string | null
           full_name?: string | null
           heard_from?: string | null
           heard_from_other?: string | null
           id?: string
           interest_area?: string | null
+          ip_address?: string | null
           organization_name?: string | null
+          organization_website?: string | null
+          paid_registrations?: boolean | null
           phone?: string | null
+          phone_number?: string | null
           planning_status?: string | null
           primary_goal?: string | null
+          referral_source?: string | null
+          review_token?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role?: string | null
           role_other?: string | null
           roles?: string[] | null
+          signup_date?: string
           user_id: string
+          vetting_notes?: string | null
           vetting_status?: string
         }
         Update: {
           created_at?: string
+          doc_file_path?: string | null
+          doc_social_url?: string | null
+          doc_tax_id?: string | null
+          docs_submitted_at?: string | null
           email?: string
+          email_verified?: boolean
+          event_description?: string | null
+          events_per_year?: string | null
+          flag_reasons?: string[]
+          full_legal_name?: string | null
           full_name?: string | null
           heard_from?: string | null
           heard_from_other?: string | null
           id?: string
           interest_area?: string | null
+          ip_address?: string | null
           organization_name?: string | null
+          organization_website?: string | null
+          paid_registrations?: boolean | null
           phone?: string | null
+          phone_number?: string | null
           planning_status?: string | null
           primary_goal?: string | null
+          referral_source?: string | null
+          review_token?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          role?: string | null
           role_other?: string | null
           roles?: string[] | null
+          signup_date?: string
           user_id?: string
+          vetting_notes?: string | null
           vetting_status?: string
         }
         Relationships: []

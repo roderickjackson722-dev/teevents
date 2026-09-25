@@ -14,10 +14,17 @@ import logo from "@/assets/logo-black.png";
 type Step = "interest" | "details" | "sent";
 type Interest = "tournament" | "league";
 
+const planLabels: Record<string, string> = {
+  "no-cost": "No Cost to Start",
+  "per-event": "Per-Event",
+  "per-league": "Per-League",
+};
+
 export default function Signup() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
+  const selectedPlan = searchParams.get("plan") || "";
   
   const [step, setStep] = useState<Step>("interest");
   const [loading, setLoading] = useState(false);
@@ -33,8 +40,14 @@ export default function Signup() {
 
   useEffect(() => {
     const interestParam = searchParams.get("interest");
-    if (interestParam === "tournament" || interestParam === "league") {
-      setInterest(interestParam as Interest);
+    const planParam = searchParams.get("plan");
+    const planInterest: Interest | null = planParam === "per-league"
+      ? "league"
+      : planParam === "no-cost" || planParam === "per-event"
+        ? "tournament"
+        : null;
+    if (planInterest || interestParam === "tournament" || interestParam === "league") {
+      setInterest(planInterest || interestParam as Interest);
       setStep("details");
     }
   }, [searchParams]);
@@ -65,6 +78,7 @@ export default function Signup() {
         localStorage.setItem("teevents.pendingWorkspace", JSON.stringify({
           interest_area: interest,
           organization_name: orgName.trim() || null,
+          selected_plan: selectedPlan || null,
         }));
       } catch {}
       setStep("sent");
@@ -143,7 +157,11 @@ export default function Signup() {
             <CardContent className="p-8 space-y-5">
               <div>
                 <h1 className="text-2xl font-bold">Tell us about you</h1>
-                <p className="text-muted-foreground text-sm">A few quick questions and we'll email you a link to set your password.</p>
+                <p className="text-muted-foreground text-sm">
+                  {planLabels[selectedPlan]
+                    ? `${planLabels[selectedPlan]} selected. A few quick questions and we'll email you a link to set your password.`
+                    : "A few quick questions and we'll email you a link to set your password."}
+                </p>
               </div>
 
               <div className="grid md:grid-cols-2 gap-4">
@@ -200,11 +218,15 @@ export default function Signup() {
               </div>
 
               <div className="flex justify-between pt-2">
-                <Button variant="ghost" onClick={() => {
-                  setStep("interest");
-                }}>
-                  <ArrowLeft className="h-4 w-4 mr-1" /> Back
-                </Button>
+                {planLabels[selectedPlan] ? (
+                  <Button variant="ghost" asChild>
+                    <Link to="/plans"><ArrowLeft className="h-4 w-4 mr-1" /> Back to pricing</Link>
+                  </Button>
+                ) : (
+                  <Button variant="ghost" onClick={() => setStep("interest")}>
+                    <ArrowLeft className="h-4 w-4 mr-1" /> Back
+                  </Button>
+                )}
                 <Button onClick={handleSubmit} disabled={loading}>
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   Create my account

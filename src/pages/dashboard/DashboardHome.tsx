@@ -11,6 +11,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
 import UpcomingRemindersWidget from "@/components/dashboard/UpcomingRemindersWidget";
 import EventTimeline from "@/components/dashboard/EventTimeline";
+import TeamReferralsSummary from "@/components/dashboard/TeamReferralsSummary";
 import SetupChecklist from "@/components/SetupChecklist";
 import { toast } from "sonner";
 
@@ -112,11 +113,13 @@ const DashboardHome = () => {
 
   return (
     <div>
-      <div className="mb-8 bg-secondary/15 border border-secondary/30 rounded-xl p-6">
-        <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground">
+      <div className="relative mb-8 overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-lg md:p-8">
+        <p className="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">Clubhouse</p>
+        <h1 className="mt-1 font-display text-3xl font-bold md:text-4xl">
           Event Checklist &amp; Timeline
         </h1>
-        <p className="text-muted-foreground mt-1 text-base">
+        <span className="mt-3 block h-0.5 w-16 bg-secondary" />
+        <p className="mt-3 text-base text-primary-foreground/80">
           {latestTournament
             ? `Track tasks and key due dates for ${latestTournament.title}.`
             : "Track tasks and key due dates for your tournament."}
@@ -242,6 +245,12 @@ const DashboardHome = () => {
             </div>
           ) : null}
         </motion.div>
+      )}
+
+      {latestTournament && (
+        <div className="mb-8">
+          <TeamReferralsSummary tournamentId={latestTournament.id} />
+        </div>
       )}
     </div>
   );

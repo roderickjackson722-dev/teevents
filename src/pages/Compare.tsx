@@ -294,18 +294,19 @@ const Compare = () => {
           <p className="text-center text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
             Compare TeeVents to:
           </p>
-          <div className="flex flex-wrap justify-center gap-2">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {COMPARISONS.map((c) => (
               <button
                 key={c.id}
                 onClick={() => handleSelect(c.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
+                className={`min-h-24 rounded-lg border p-4 text-left transition-all ${
                   selectedId === c.id
-                    ? "bg-[#1a5c38] text-white shadow-md"
-                    : "bg-background border hover:border-[#1a5c38]"
+                    ? "border-secondary bg-primary text-primary-foreground shadow-md"
+                    : "border-border bg-background text-foreground hover:border-secondary"
                 }`}
               >
-                {c.name}
+                <span className="block text-xs font-semibold uppercase text-secondary">Compare</span>
+                <span className="mt-1 block font-display text-base font-bold">TeeVents vs. {c.name}</span>
               </button>
             ))}
           </div>

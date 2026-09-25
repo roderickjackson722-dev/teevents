@@ -37,7 +37,7 @@ const planCards = [
     ],
     exclusions: [],
     cta: "Select No Cost to Start",
-    ctaTo: "/signup?interest=tournament",
+    ctaTo: "/signup?plan=no-cost",
     note: "No monthly subscription.",
   },
   {
@@ -57,7 +57,7 @@ const planCards = [
     ],
     exclusions: [],
     cta: "Select Per-Event",
-    ctaTo: "/signup?interest=tournament",
+    ctaTo: "/signup?plan=per-event",
     note: "Standard card processing fees still apply.",
   },
   {
@@ -76,7 +76,7 @@ const planCards = [
     ],
     exclusions: [],
     cta: "Select Per-League",
-    ctaTo: "/signup?interest=league",
+    ctaTo: "/signup?plan=per-league",
     note: "One league, one season-long price.",
   },
 ];

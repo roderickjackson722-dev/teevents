@@ -350,6 +350,7 @@ const Plans = () => {
              </div>
           </motion.div>
 
+           <EnterpriseDemo />
            {/* Comparison */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}

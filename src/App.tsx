@@ -519,12 +519,12 @@ const App = () => (
            <Route path="/help/finding-stripe-payouts" element={<FindingStripePayouts />} />
           <Route path="/help/uploading-images" element={<UploadingImages />} />
            <Route path="/compare" element={<Compare />} />
-            <Route path="/compare/eventbrite-vs-teevents" element={<CompareEventbrite />} />
-            <Route path="/compare/teevents-vs-eventbrite" element={<CompareTeeventsVsEventbrite />} />
-            <Route path="/compare/teevents-vs-zeffy" element={<CompareTeeventsVsPlatform platform="zeffy" />} />
-            <Route path="/compare/teevents-vs-givebutter" element={<CompareTeeventsVsPlatform platform="givebutter" />} />
-            <Route path="/compare/teevents-vs-google-forms" element={<CompareTeeventsVsPlatform platform="google-forms" />} />
-           <Route path="/compare/golf-genius-vs-teevents" element={<CompareGolfGenius />} />
+            <Route path="/compare/eventbrite-vs-teevents" element={<Navigate to="/compare?v=eventbrite" replace />} />
+            <Route path="/compare/teevents-vs-eventbrite" element={<Navigate to="/compare?v=eventbrite" replace />} />
+            <Route path="/compare/teevents-vs-zeffy" element={<Navigate to="/compare?v=zeffy" replace />} />
+            <Route path="/compare/teevents-vs-givebutter" element={<Navigate to="/compare?v=givebutter" replace />} />
+            <Route path="/compare/teevents-vs-google-forms" element={<Navigate to="/compare?v=google-forms" replace />} />
+           <Route path="/compare/golf-genius-vs-teevents" element={<Navigate to="/compare?v=golf-genius" replace />} />
            <Route path="/admin/sales-hub/compare-golf-genius" element={<CompareGolfGenius />} />
             <Route path="/compare/eventbrite-vs-teevents/pdf" element={<CompareEventbritePdf />} />
              <Route path="/sales-flyer" element={<SalesFlyer />} />

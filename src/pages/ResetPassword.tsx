@@ -1,3 +1,4 @@
+import { markVettingEmailVerified } from "@/lib/vetting.functions";
 import { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -224,9 +225,7 @@ const ResetPassword = () => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     } else {
       if (isNewSignup) {
-        import("@/lib/vetting.functions")
-          .then(({ markVettingEmailVerified }) => markVettingEmailVerified())
-          .catch(() => {});
+        markVettingEmailVerified().catch(() => {});
       }
       toast({
         title: isNewSignup ? "Welcome to TeeVents!" : "Password updated!",

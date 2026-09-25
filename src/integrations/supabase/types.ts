@@ -2803,6 +2803,60 @@ export type Database = {
           },
         ]
       }
+      enterprise_demos: {
+        Row: {
+          accent_color: string | null
+          club_name: string
+          created_at: string
+          created_by: string | null
+          event_name: string
+          events: string[]
+          id: string
+          location: string | null
+          logo_url: string | null
+          players: string[]
+          primary_color: string | null
+          recipient_email: string | null
+          recipient_name: string | null
+          slug: string
+          view_count: number
+        }
+        Insert: {
+          accent_color?: string | null
+          club_name: string
+          created_at?: string
+          created_by?: string | null
+          event_name?: string
+          events?: string[]
+          id?: string
+          location?: string | null
+          logo_url?: string | null
+          players?: string[]
+          primary_color?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          slug?: string
+          view_count?: number
+        }
+        Update: {
+          accent_color?: string | null
+          club_name?: string
+          created_at?: string
+          created_by?: string | null
+          event_name?: string
+          events?: string[]
+          id?: string
+          location?: string | null
+          logo_url?: string | null
+          players?: string[]
+          primary_color?: string | null
+          recipient_email?: string | null
+          recipient_name?: string | null
+          slug?: string
+          view_count?: number
+        }
+        Relationships: []
+      }
       enterprise_roster: {
         Row: {
           created_at: string
@@ -14156,6 +14210,19 @@ export type Database = {
       }
       get_demo_conversion_discount: { Args: { _token: string }; Returns: Json }
       get_demo_prep_share: { Args: { _token: string }; Returns: Json }
+      get_enterprise_demo: {
+        Args: { _slug: string }
+        Returns: {
+          accent_color: string
+          club_name: string
+          event_name: string
+          events: string[]
+          location: string
+          logo_url: string
+          players: string[]
+          primary_color: string
+        }[]
+      }
       get_group_scoring_roster: {
         Args: { _code: string; _round_number?: number; _tournament_id: string }
         Returns: {

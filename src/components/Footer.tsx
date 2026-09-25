@@ -53,9 +53,41 @@ const Footer = () => {
             <Link to="/compare/eventbrite-vs-teevents" className="hover:text-secondary transition-colors">Compare</Link>
             <Link to="/login" className="hover:text-secondary transition-colors">Organizer Login</Link>
           </div>
-        </div>
+          </div>
 
-        <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col items-center gap-3 text-xs text-primary-foreground/40">
+          {/* Comparisons — clickable platform boxes */}
+          <div className="mt-10">
+            <h4 className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/60 mb-4">
+              Comparisons
+            </h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl">
+              <Link
+                to="/compare/teevents-vs-eventbrite"
+                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
+              >
+                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
+                  TeeVents vs. Eventbrite
+                </p>
+                <p className="text-xs text-primary-foreground/50 mt-1">
+                  Flat pricing vs. per-ticket fees — see the savings.
+                </p>
+              </Link>
+              <Link
+                to="/compare/golf-genius-vs-teevents"
+                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
+              >
+                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
+                  TeeVents vs. Golf Genius
+                </p>
+                <p className="text-xs text-primary-foreground/50 mt-1">
+                  Full event platform at a fraction of the cost.
+                </p>
+              </Link>
+            </div>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col items-center gap-3 text-xs text-primary-foreground/40">
+
           <p className="text-primary-foreground/60 italic">Built by golf tournament managers, for golf tournament managers.</p>
           <div className="flex gap-4">
             <Link to="/privacy-policy" className="hover:text-secondary transition-colors">Privacy Policy</Link>

@@ -158,20 +158,6 @@ const Plans = () => {
             <p className="text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
               Choose the pricing that fits your event — start at $0, pay once per event, or run unlimited events with Enterprise.
             </p>
-            <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to="/signup?interest=tournament"
-                className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
-              >
-                 Get Started <ArrowRight className="h-4 w-4" />
-              </Link>
-              <a
-                href="#pricing"
-                className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
-              >
-                See What's Included
-              </a>
-            </div>
           </motion.div>
         </div>
       </section>

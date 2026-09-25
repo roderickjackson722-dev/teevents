@@ -50,73 +50,9 @@ const Footer = () => {
             <Link to="/events" className="hover:text-secondary transition-colors">Events</Link>
             <Link to="/reviews" className="hover:text-secondary transition-colors">Reviews</Link>
             <Link to="/contact" className="hover:text-secondary transition-colors">Contact</Link>
-            <Link to="/compare/eventbrite-vs-teevents" className="hover:text-secondary transition-colors">Compare</Link>
+            <Link to="/compare" className="hover:text-secondary transition-colors">Compare</Link>
             <Link to="/login" className="hover:text-secondary transition-colors">Organizer Login</Link>
           </div>
-          </div>
-
-          {/* Comparisons — clickable platform boxes */}
-          <div className="mt-10">
-            <h4 className="text-sm font-semibold uppercase tracking-wider text-primary-foreground/60 mb-4">
-              Comparisons
-            </h4>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 max-w-3xl">
-              <Link
-                to="/compare/teevents-vs-eventbrite"
-                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
-              >
-                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
-                  TeeVents vs. Eventbrite
-                </p>
-                <p className="text-xs text-primary-foreground/50 mt-1">
-                  Flat pricing vs. per-ticket fees — see the savings.
-                </p>
-              </Link>
-              <Link
-                to="/compare/golf-genius-vs-teevents"
-                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
-              >
-                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
-                  TeeVents vs. Golf Genius
-                </p>
-                <p className="text-xs text-primary-foreground/50 mt-1">
-                  Full event platform at a fraction of the cost.
-                </p>
-              </Link>
-              <Link
-                to="/compare/teevents-vs-zeffy"
-                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
-              >
-                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
-                  TeeVents vs. Zeffy
-                </p>
-                <p className="text-xs text-primary-foreground/50 mt-1">
-                  Donation forms vs. a full golf tournament platform.
-                </p>
-              </Link>
-              <Link
-                to="/compare/teevents-vs-givebutter"
-                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
-              >
-                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
-                  TeeVents vs. GiveButter
-                </p>
-                <p className="text-xs text-primary-foreground/50 mt-1">
-                  Fundraising campaigns vs. golf-built event tools.
-                </p>
-              </Link>
-              <Link
-                to="/compare/teevents-vs-google-forms"
-                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
-              >
-                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
-                  TeeVents vs. Google Forms
-                </p>
-                <p className="text-xs text-primary-foreground/50 mt-1">
-                  Spreadsheets vs. payments, pairings and scoring.
-                </p>
-              </Link>
-            </div>
           </div>
 
           <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col items-center gap-3 text-xs text-primary-foreground/40">

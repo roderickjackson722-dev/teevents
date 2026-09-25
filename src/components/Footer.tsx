@@ -83,6 +83,39 @@ const Footer = () => {
                   Full event platform at a fraction of the cost.
                 </p>
               </Link>
+              <Link
+                to="/compare/teevents-vs-zeffy"
+                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
+              >
+                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
+                  TeeVents vs. Zeffy
+                </p>
+                <p className="text-xs text-primary-foreground/50 mt-1">
+                  Donation forms vs. a full golf tournament platform.
+                </p>
+              </Link>
+              <Link
+                to="/compare/teevents-vs-givebutter"
+                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
+              >
+                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
+                  TeeVents vs. GiveButter
+                </p>
+                <p className="text-xs text-primary-foreground/50 mt-1">
+                  Fundraising campaigns vs. golf-built event tools.
+                </p>
+              </Link>
+              <Link
+                to="/compare/teevents-vs-google-forms"
+                className="group rounded-lg border border-primary-foreground/15 bg-primary-foreground/5 p-4 transition-colors hover:border-secondary hover:bg-primary-foreground/10"
+              >
+                <p className="font-display font-semibold text-primary-foreground group-hover:text-secondary transition-colors">
+                  TeeVents vs. Google Forms
+                </p>
+                <p className="text-xs text-primary-foreground/50 mt-1">
+                  Spreadsheets vs. payments, pairings and scoring.
+                </p>
+              </Link>
             </div>
           </div>
 

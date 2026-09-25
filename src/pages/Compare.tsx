@@ -1,5 +1,5 @@
-import { useMemo, useState } from "react";
-import { Link } from "react-router-dom";
+import { useMemo, useState, useEffect } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Check, X, AlertTriangle, ArrowRight, Calendar } from "lucide-react";
 import Layout from "@/components/Layout";
@@ -93,6 +93,63 @@ const COMPARISONS: Comparison[] = [
     ],
   },
   {
+    id: "golf-genius",
+    name: "Golf Genius",
+    tagline: "TeeVents gives you everything Golf Genius offers — at a fraction of the cost.",
+    hookCtaTitle: "Ready to Switch from Golf Genius?",
+    sections: [
+      {
+        category: "Pricing & Commitment",
+        rows: [
+          { feature: "Pricing Model", competitor: "Annual subscription + fees", teevents: "$0 upfront + 5% platform fee", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Contract", competitor: "Annual contract required", teevents: "No long-term commitment", cStatus: "no", tvStatus: "yes" },
+          { feature: "Setup Fees", competitor: "Often charged at onboarding", teevents: "None", cStatus: "warn", tvStatus: "yes" },
+        ],
+      },
+      {
+        category: "Tournament Features",
+        rows: [
+          { feature: "Pin Sheets (Hole Locations)", competitor: "Not native", teevents: "Built-in PDF generator", cStatus: "no", tvStatus: "yes" },
+          { feature: "Auctions & Raffles", competitor: "Limited / add-on", teevents: "Native silent auction + raffle", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Sponsorship Portal", competitor: "Basic logo placement", teevents: "Full asset delivery + ROI reports", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Volunteer Management", competitor: "Not native", teevents: "Built-in QR check-in & scheduling", cStatus: "no", tvStatus: "yes" },
+        ],
+      },
+      {
+        category: "Experience",
+        rows: [
+          { feature: "Learning Curve", competitor: "Steeper — for pros", teevents: "Low — intuitive dashboard", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Onboarding Time", competitor: "Hours to days", teevents: "Published in under 60 seconds", cStatus: "warn", tvStatus: "yes" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "zeffy",
+    name: "Zeffy",
+    tagline: "Zeffy handles donations. TeeVents runs your whole golf tournament.",
+    hookCtaTitle: "Ready for Professional Golf Tools?",
+    sections: [
+      {
+        category: "Golf-Specific Features",
+        rows: [
+          { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, real-time", cStatus: "no", tvStatus: "yes" },
+          { feature: "Mobile Scoring", competitor: "Not available", teevents: "Yes — no app download required", cStatus: "no", tvStatus: "yes" },
+          { feature: "Pairings & Tee Times", competitor: "No", teevents: "Drag-and-drop scheduling", cStatus: "no", tvStatus: "yes" },
+          { feature: "Skins & Handicaps", competitor: "No", teevents: "Native golf calculations", cStatus: "no", tvStatus: "yes" },
+        ],
+      },
+      {
+        category: "Tournament Management",
+        rows: [
+          { feature: "Sponsorship Packages", competitor: "Limited", teevents: "Yes — dedicated sponsor portal", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Auction with mobile bidding", competitor: "Basic", teevents: "Yes — native auctions", cStatus: "warn", tvStatus: "yes" },
+          { feature: "Branded tournament website", competitor: "Basic form page", teevents: "Full custom event site", cStatus: "no", tvStatus: "yes" },
+        ],
+      },
+    ],
+  },
+  {
     id: "givebutter",
     name: "Givebutter",
     tagline: "Givebutter is a general fundraising platform. TeeVents is purpose-built for golf tournaments.",
@@ -122,67 +179,9 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Pricing",
         rows: [
-          { feature: "Platform Fee", competitor: "Free + optional donor tips", teevents: "5% platform fee", cStatus: "yes", tvStatus: "warn" },
-          { feature: "Pro Tournament Tools", competitor: "Not available at any price", teevents: "$399 per tournament (one-time)", cStatus: "no", tvStatus: "yes" },
+          { feature: "Platform Fee", competitor: "Free + optional tips", teevents: "5% platform fee", cStatus: "yes", tvStatus: "warn" },
+          { feature: "Pro Tournament Tools", competitor: "Not available", teevents: "$399 per tournament (one-time)", cStatus: "no", tvStatus: "yes" },
           { feature: "Payment Processing", competitor: "2.9% + $0.30", teevents: "2.9% + $0.30 (Stripe)", cStatus: "warn", tvStatus: "warn" },
-        ],
-      },
-      {
-        category: "Payouts",
-        rows: [
-          { feature: "Who Holds Funds", competitor: "Givebutter holds & disburses", teevents: "Stripe holds — TeeVents never touches", cStatus: "no", tvStatus: "yes" },
-          { feature: "Payout Speed", competitor: "Scheduled disbursements", teevents: "Automatic, 3-7 business days", cStatus: "warn", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Best For",
-        rows: [
-          { feature: "Pure Charity Fundraising", competitor: "Excellent", teevents: "Good", cStatus: "yes", tvStatus: "yes" },
-          { feature: "Golf Tournaments with Scoring", competitor: "Not built for it", teevents: "Purpose-built", cStatus: "no", tvStatus: "yes" },
-          { feature: "Sponsor Management", competitor: "Basic", teevents: "Full sponsor portal", cStatus: "warn", tvStatus: "yes" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "venmo",
-    name: "Venmo",
-    tagline: "Venmo is a payment app. TeeVents is a complete tournament management platform.",
-    hookCtaTitle: "Stop Chasing Venmo Payments — Run a Real Tournament",
-    sections: [
-      {
-        category: "Registration & Player Management",
-        rows: [
-          { feature: "Online Registration Form", competitor: "Not available", teevents: "Branded, customizable form", cStatus: "no", tvStatus: "yes" },
-          { feature: "Player Database", competitor: "Manual spreadsheet", teevents: "Built-in player list with CSV export", cStatus: "no", tvStatus: "yes" },
-          { feature: "Waitlist Management", competitor: "Not available", teevents: "Automated 24-hour claim window", cStatus: "no", tvStatus: "yes" },
-          { feature: "Group / Foursome Registration", competitor: "Not supported", teevents: "Native group registration", cStatus: "no", tvStatus: "yes" },
-          { feature: "Automated Receipts", competitor: "Basic transaction record only", teevents: "Branded confirmation emails", cStatus: "warn", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Tournament Operations",
-        rows: [
-          { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, real-time", cStatus: "no", tvStatus: "yes" },
-          { feature: "Pairings & Tee Times", competitor: "Not available", teevents: "Drag-and-drop", cStatus: "no", tvStatus: "yes" },
-          { feature: "Sponsor Management", competitor: "Not available", teevents: "Full sponsor portal", cStatus: "no", tvStatus: "yes" },
-          { feature: "Volunteer Coordination", competitor: "Not available", teevents: "Shift scheduling + check-in", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Pricing & Payments",
-        rows: [
-          { feature: "Fee on $100 Payment", competitor: "1.9% + $0.10 (business profile)", teevents: "5% platform + 2.9% + $0.30 Stripe", cStatus: "yes", tvStatus: "warn" },
-          { feature: "What You Get", competitor: "Just the payment", teevents: "Full tournament platform", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Refund Handling", competitor: "Manual, peer-to-peer", teevents: "Built-in refund workflow", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Reporting & Compliance",
-        rows: [
-          { feature: "Financial Reports", competitor: "Basic transaction list", teevents: "Full revenue, fees, payouts dashboard", cStatus: "warn", tvStatus: "yes" },
-          { feature: "1099-K Handling", competitor: "May trigger personal 1099-K", teevents: "Routed through organizer Stripe account", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Professional Appearance", competitor: "Looks like a friend collecting cash", teevents: "Branded, professional event site", cStatus: "no", tvStatus: "yes" },
         ],
       },
     ],
@@ -210,16 +209,6 @@ const COMPARISONS: Comparison[] = [
           { feature: "Scoring (8 Formats)", competitor: "Not available", teevents: "Stroke, Stableford, Scramble, more", cStatus: "no", tvStatus: "yes" },
           { feature: "Sponsor Management", competitor: "Not available", teevents: "Full sponsor portal", cStatus: "no", tvStatus: "yes" },
           { feature: "Volunteer Check-in", competitor: "Not available", teevents: "QR code + shift scheduling", cStatus: "no", tvStatus: "yes" },
-          { feature: "Auctions & Raffles", competitor: "Not available", teevents: "Built-in auction system", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Data Management",
-        rows: [
-          { feature: "Player Database", competitor: "Spreadsheet only", teevents: "Searchable, exportable database", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Waitlist Management", competitor: "Manual", teevents: "Automated queue + claim window", cStatus: "no", tvStatus: "yes" },
-          { feature: "Financial Reporting", competitor: "Manual reconciliation", teevents: "Full revenue + fee dashboard", cStatus: "no", tvStatus: "yes" },
-          { feature: "CSV Export", competitor: "Yes", teevents: "Yes", cStatus: "yes", tvStatus: "yes" },
         ],
       },
       {
@@ -241,21 +230,39 @@ const StatusIcon = ({ status }: { status: Status }) => {
 };
 
 const Compare = () => {
-  const [selectedId, setSelectedId] = useState<string>(COMPARISONS[0].id);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const v = searchParams.get("v");
+  
+  const [selectedId, setSelectedId] = useState<string>(() => {
+    if (v && COMPARISONS.some(c => c.id === v)) return v;
+    return COMPARISONS[0].id;
+  });
+
+  useEffect(() => {
+    if (v && COMPARISONS.some(c => c.id === v)) {
+      setSelectedId(v);
+    }
+  }, [v]);
+
   const selected = useMemo(() => COMPARISONS.find((c) => c.id === selectedId)!, [selectedId]);
+
+  const handleSelect = (id: string) => {
+    setSelectedId(id);
+    setSearchParams({ v: id });
+  };
 
   return (
     <Layout>
       <SEO
         title="Compare Golf Tournament Software"
-        description="Compare TeeVents to Eventbrite, Givebutter, Venmo, and Google Forms. See why TeeVents is the smarter choice for golf tournaments."
+        description="Compare TeeVents to Eventbrite, Golf Genius, Zeffy, Givebutter, and Google Forms. See why TeeVents is the smarter choice for golf tournaments."
         path="/compare"
       />
 
       {/* Hero */}
       <section className="bg-golf-green-dark text-primary-foreground pt-28 pb-16">
         <div className="container mx-auto px-4 text-center max-w-3xl">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} key={selected.id}>
             <h1 className="text-3xl md:text-5xl font-display font-bold mb-4 break-words">
               {selected.name} vs. TeeVents
             </h1>
@@ -271,7 +278,7 @@ const Compare = () => {
                 <Calendar className="h-4 w-4" /> Request a Sample
               </Link>
               <Link
-                to="/get-started"
+                to="/signup?interest=tournament"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider hover:bg-primary-foreground/10 transition-colors"
               >
                 Start a Tournament for Free <ArrowRight className="h-4 w-4" />
@@ -291,7 +298,7 @@ const Compare = () => {
             {COMPARISONS.map((c) => (
               <button
                 key={c.id}
-                onClick={() => setSelectedId(c.id)}
+                onClick={() => handleSelect(c.id)}
                 className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   selectedId === c.id
                     ? "bg-[#1a5c38] text-white shadow-md"
@@ -312,107 +319,64 @@ const Compare = () => {
             Feature-by-Feature Comparison
           </h2>
 
-          {/* Desktop / tablet table */}
-          <div className="hidden md:block rounded-xl border border-border overflow-hidden shadow-sm">
+          <div className="rounded-xl border border-border overflow-hidden shadow-sm">
             <Table>
               <TableHeader>
                 <TableRow className="bg-muted/50">
-                  <TableHead className="w-[30%] font-bold text-foreground">Feature</TableHead>
-                  <TableHead className="w-[35%] text-center">
-                    <span className="text-red-600 font-bold">{selected.name}</span>
-                  </TableHead>
-                  <TableHead className="w-[35%] text-center">
-                    <span className="font-bold" style={{ color: "#1a5c38" }}>TeeVents</span>
-                  </TableHead>
+                  <TableHead className="w-[40%] font-bold text-foreground p-4">Feature</TableHead>
+                  <TableHead className="w-[30%] text-center p-4">{selected.name}</TableHead>
+                  <TableHead className="w-[30%] text-center p-4 bg-primary/5 text-primary font-bold">TeeVents</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {selected.sections.map((section) => (
-                  <>
-                    <TableRow key={`${selected.id}-${section.category}`} className="bg-muted/30">
-                      <TableCell colSpan={3} className="font-bold text-foreground text-sm uppercase tracking-wider py-3">
-                        {section.category}
+                {selected.sections.flatMap((section) => [
+                  <tr key={section.category} className="border-b border-border bg-muted/20">
+                    <td colSpan={3} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                      {section.category}
+                    </td>
+                  </tr>,
+                  ...section.rows.map((row) => (
+                    <TableRow key={row.feature} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
+                      <TableCell className="p-4 font-medium text-foreground">{row.feature}</TableCell>
+                      <TableCell className="p-4 text-center text-muted-foreground">
+                        <StatusIcon status={row.cStatus} /> {row.competitor}
+                      </TableCell>
+                      <TableCell className="p-4 text-center font-semibold text-primary bg-primary/5">
+                        <StatusIcon status={row.tvStatus} /> {row.teevents}
                       </TableCell>
                     </TableRow>
-                    {section.rows.map((row) => (
-                      <TableRow key={`${selected.id}-${section.category}-${row.feature}`}>
-                        <TableCell className="font-medium text-foreground">{row.feature}</TableCell>
-                        <TableCell className="text-center text-muted-foreground">
-                          <StatusIcon status={row.cStatus} />
-                          {row.competitor}
-                        </TableCell>
-                        <TableCell className="text-center font-medium" style={{ color: "#1a5c38" }}>
-                          <StatusIcon status={row.tvStatus} />
-                          {row.teevents}
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </>
-                ))}
+                  ))
+                ])}
               </TableBody>
             </Table>
           </div>
 
-          {/* Mobile stacked layout */}
-          <div className="md:hidden space-y-6">
-            {selected.sections.map((section) => (
-              <div key={`m-${selected.id}-${section.category}`} className="rounded-xl border border-border overflow-hidden">
-                <div className="bg-muted/40 px-4 py-3 font-bold text-sm uppercase tracking-wider">
-                  {section.category}
-                </div>
-                <div className="divide-y">
-                  {section.rows.map((row) => (
-                    <div key={`m-${section.category}-${row.feature}`} className="p-4 space-y-2">
-                      <p className="font-semibold text-sm">{row.feature}</p>
-                      <div className="rounded-md bg-muted/30 p-2 text-sm">
-                        <p className="text-xs font-bold text-red-600 mb-1">{selected.name}</p>
-                        <div className="flex gap-2">
-                          <StatusIcon status={row.cStatus} />
-                          <span className="break-words">{row.competitor}</span>
-                        </div>
-                      </div>
-                      <div className="rounded-md p-2 text-sm" style={{ backgroundColor: "#f0f7f3" }}>
-                        <p className="text-xs font-bold mb-1" style={{ color: "#1a5c38" }}>TeeVents</p>
-                        <div className="flex gap-2" style={{ color: "#1a5c38" }}>
-                          <StatusIcon status={row.tvStatus} />
-                          <span className="break-words font-medium">{row.teevents}</span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
+          {/* Call to action */}
+          <div className="mt-16 bg-golf-green-dark rounded-2xl p-8 md:p-12 text-center text-primary-foreground relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-secondary" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
+              <h3 className="text-2xl md:text-4xl font-display font-bold mb-4">
+                {selected.hookCtaTitle}
+              </h3>
+              <p className="text-lg text-primary-foreground/70 mb-8 max-w-2xl mx-auto">
+                Join thousands of organizers who have simplified their tournament planning and increased their revenue with TeeVents.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/signup?interest=tournament"
+                  className="bg-secondary text-secondary-foreground px-10 py-4 rounded-md font-bold text-sm uppercase tracking-wider hover:bg-secondary/90 transition-all shadow-lg"
+                >
+                  Create My Tournament
+                </Link>
+                <Link
+                  to={BOOK_DEMO_URL}
+                  className="bg-white/10 text-primary-foreground border border-white/20 px-10 py-4 rounded-md font-bold text-sm uppercase tracking-wider hover:bg-white/20 transition-all"
+                >
+                  See a Demo
+                </Link>
               </div>
-            ))}
+            </motion.div>
           </div>
-        </div>
-      </section>
-
-      {/* Bottom CTA */}
-      <section className="py-16 bg-golf-green-dark">
-        <div className="container mx-auto px-4 text-center max-w-2xl">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-2xl md:text-4xl font-display font-bold text-primary-foreground mb-4 break-words">
-              {selected.hookCtaTitle}
-            </h2>
-            <p className="text-primary-foreground/70 mb-8">
-              Join hundreds of golf tournament organizers who chose TeeVents for golf-specific tools, transparent pricing, and faster payouts.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to={BOOK_DEMO_URL}
-                className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors"
-                style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
-              >
-                <Calendar className="h-4 w-4" /> Request a Sample
-              </Link>
-              <Link
-                to="/get-started"
-                className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider hover:bg-primary-foreground/10 transition-colors"
-              >
-                Start a Tournament for Free <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </motion.div>
         </div>
       </section>
     </Layout>

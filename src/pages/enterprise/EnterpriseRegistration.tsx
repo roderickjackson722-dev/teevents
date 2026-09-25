@@ -11,8 +11,9 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Copy, CreditCard, ExternalLink, Loader2, Plus, Save, Trash2 } from "lucide-react";
+import { Copy, ExternalLink, Loader2, Plus, Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import EnterprisePaymentsCard from "@/components/enterprise/EnterprisePaymentsCard";
 import type { EnterpriseRegistrationSettings } from "@/lib/enterprise";
 
 type QuestionType = "text" | "choice" | "tee_time";
@@ -194,17 +195,7 @@ export default function EnterpriseRegistration() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader className="pb-3"><CardTitle className="text-base">Taking payments</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground">
-                  Paid registration needs your payout account connected. Money goes straight to your account.
-                </p>
-                <Button asChild className="w-full bg-secondary text-primary hover:bg-secondary/90">
-                  <Link to="/dashboard/payout-settings"><CreditCard className="mr-1.5 h-4 w-4" /> Connect payout account</Link>
-                </Button>
-              </CardContent>
-            </Card>
+            <EnterprisePaymentsCard tournamentId={event.id} />
           </div>
         </div>
       )}

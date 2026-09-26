@@ -1,41 +1,34 @@
 import { ReactNode, useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
+  CalendarPlus,
+  ChevronRight,
+  Flag,
+  Gift,
+  Handshake,
   LayoutDashboard,
-  PlusCircle,
+  Loader2,
+  Mail,
+  MapPin,
+  Menu,
+  MessageSquare,
+  ShieldCheck,
+  Sparkles,
   Trophy,
   Users,
-  Flag,
-  MapPin,
-  Mail,
   Zap,
-  Handshake,
-  Sparkles,
-  MessageSquare,
-  Gift,
-  ShieldCheck,
-  Menu,
-  ChevronDown,
-  ChevronRight,
-  Loader2,
 } from "lucide-react";
+import logoAsset from "@/assets/teevents-logo-final.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 
 interface NavItem {
   label: string;
   to: string;
   icon: typeof Trophy;
-  /** Hidden for limited staff roles (scoring only / viewer). */
   fullOnly?: boolean;
 }
 
@@ -46,34 +39,27 @@ interface NavGroup {
   fullOnly?: boolean;
 }
 
-/** Staff roles that only see the day-to-day event screens. */
 const LIMITED_ROLES = ["scoring_only", "viewer"];
 
 const NAV: NavGroup[] = [
+  { label: "Dashboard", items: [{ label: "Home", to: "/enterprise", icon: LayoutDashboard }] },
   {
-    label: "Dashboard",
-    items: [{ label: "Home", to: "/enterprise", icon: LayoutDashboard }],
+    label: "Manage",
+    items: [
+      { label: "Tournaments", to: "/enterprise/tournaments", icon: Trophy },
+      { label: "Leagues", to: "/enterprise/leagues", icon: Flag },
+      { label: "My Courses", to: "/enterprise/courses", icon: MapPin },
+      { label: "My Roster", to: "/enterprise/roster", icon: Users },
+      { label: "Communications", to: "/enterprise/communications", icon: Mail, fullOnly: true },
+      { label: "Automations", to: "/enterprise/automations", icon: Zap, fullOnly: true },
+    ],
   },
   {
     label: "Create",
     fullOnly: true,
     items: [
-      { label: "Single Tournament", to: "/enterprise/create?type=single_round", icon: PlusCircle },
-      { label: "Multi-Round", to: "/enterprise/create?type=multi_round", icon: PlusCircle },
-      { label: "Ryder Cup", to: "/enterprise/create?type=ryder_cup", icon: PlusCircle },
-      { label: "Bracket", to: "/enterprise/create?type=match_bracket", icon: PlusCircle },
-      { label: "Round Robin", to: "/enterprise/create?type=round_robin", icon: PlusCircle },
-    ],
-  },
-  {
-    label: "Manage",
-    items: [
-      { label: "Leagues", to: "/enterprise/leagues", icon: Flag },
-      { label: "My Courses", to: "/enterprise/courses", icon: MapPin },
-      { label: "My Roster", to: "/enterprise/roster", icon: Users },
-      { fullOnly: true, label: "Communications", to: "/enterprise/communications", icon: Mail },
-      { fullOnly: true, label: "Automations", to: "/enterprise/automations", icon: Zap },
-      { fullOnly: true, label: "Admin Portal", to: "/enterprise/admin", icon: ShieldCheck },
+      { label: "New Tournament", to: "/enterprise/create", icon: CalendarPlus },
+      { label: "New League", to: "/enterprise/leagues?new=1", icon: Flag },
     ],
   },
   {
@@ -86,40 +72,43 @@ const NAV: NavGroup[] = [
     ],
   },
   {
-    label: "Platform Admin",
+    label: "Admin",
+    fullOnly: true,
+    items: [{ label: "Admin Portal", to: "/enterprise/admin", icon: ShieldCheck }],
+  },
+  {
+    label: "Platform",
     adminOnly: true,
     items: [{ label: "TeeVents Admin", to: "/admin", icon: ShieldCheck }],
   },
 ];
 
-/** Group is active when any of its items matches the current path. */
-const groupActive = (group: NavGroup, pathname: string) =>
-  group.items.some((item) => {
-    const base = item.to.split("?")[0];
-    return base === "/enterprise" ? pathname === "/enterprise" : pathname.startsWith(base);
-  });
-
-/** Nav filtered by platform admin + org staff role. */
 export const visibleNav = (isAdmin: boolean, role?: string | null): NavGroup[] => {
   const limited = !isAdmin && LIMITED_ROLES.includes(role || "");
-  return NAV.filter((g) => (!g.adminOnly || isAdmin) && (!limited || !g.fullOnly))
-    .map((g) => ({ ...g, items: g.items.filter((i) => !limited || !i.fullOnly) }))
-    .filter((g) => g.items.length > 0);
+  return NAV.filter((group) => (!group.adminOnly || isAdmin) && (!limited || !group.fullOnly))
+    .map((group) => ({ ...group, items: group.items.filter((item) => !limited || !item.fullOnly) }))
+    .filter((group) => group.items.length > 0);
 };
 
-const MobileNav = ({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?: () => void }) => {
+const itemIsActive = (to: string, pathname: string) => {
+  const base = to.split("?")[0];
+  if (base === "/enterprise") return pathname === "/enterprise";
+  if (base === "/enterprise/tournaments") return pathname === base;
+  return pathname.startsWith(base);
+};
+
+function EnterpriseNav({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?: () => void }) {
   const { pathname } = useLocation();
   return (
-    <nav className="space-y-6 p-4">
+    <nav className="space-y-6 px-3 py-5" aria-label="Enterprise navigation">
       {groups.map((group) => (
-        <div key={group.label}>
-          <p className="px-2 pb-2 text-xs font-bold uppercase tracking-wider text-primary-foreground/60">
+        <section key={group.label}>
+          <p className="px-3 pb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-sidebar-foreground/45">
             {group.label}
           </p>
           <ul className="space-y-1">
             {group.items.map((item) => {
-              const base = item.to.split("?")[0];
-              const active = base === "/enterprise" ? pathname === "/enterprise" : pathname.startsWith(base);
+              const active = itemIsActive(item.to, pathname);
               const Icon = item.icon;
               return (
                 <li key={item.to}>
@@ -127,24 +116,24 @@ const MobileNav = ({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?: ()
                     to={item.to}
                     onClick={onNavigate}
                     className={cn(
-                      "flex items-center gap-2.5 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                      "group flex min-h-10 items-center gap-3 rounded-md border-l-2 px-3 py-2 text-sm font-semibold transition-colors",
                       active
-                        ? "bg-secondary text-primary"
-                        : "text-primary-foreground/85 hover:bg-primary-foreground/10 hover:text-primary-foreground",
+                        ? "border-sidebar-primary bg-sidebar-accent text-sidebar-primary"
+                        : "border-transparent text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground",
                     )}
                   >
-                    <Icon className="h-4 w-4 shrink-0" />
+                    <Icon className={cn("h-4 w-4 shrink-0", active ? "text-sidebar-primary" : "text-sidebar-foreground/55 group-hover:text-sidebar-foreground")} />
                     <span className="truncate">{item.label}</span>
                   </Link>
                 </li>
               );
             })}
           </ul>
-        </div>
+        </section>
       ))}
     </nav>
   );
-};
+}
 
 export interface Crumb {
   label: string;
@@ -159,13 +148,8 @@ interface Props {
   actions?: ReactNode;
 }
 
-/**
- * Enterprise shell: clubhouse-style top navigation with dropdown menus,
- * a brand bar, breadcrumbs and a wide centered content column.
- */
 export default function EnterpriseLayout({ children, title, description, crumbs = [], actions }: Props) {
   const navigate = useNavigate();
-  const { pathname } = useLocation();
   const { org, loading } = useOrgContext();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -188,142 +172,80 @@ export default function EnterpriseLayout({ children, title, description, crumbs 
   const initials = (org?.orgName || "TV")
     .split(/\s+/)
     .slice(0, 2)
-    .map((w) => w[0]?.toUpperCase())
+    .map((word) => word[0]?.toUpperCase())
     .join("");
 
+  const Brand = () => (
+    <Link to="/enterprise" className="flex min-w-0 items-center gap-3">
+      <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-md bg-sidebar-foreground">
+        <img src={logoAsset.url} alt="TeeVents" className="h-9 w-9 object-contain" />
+      </span>
+      <span className="min-w-0">
+        <span className="block truncate font-display text-xl font-semibold text-sidebar-foreground">TeeVents</span>
+        <span className="block text-[10px] font-bold uppercase tracking-[0.22em] text-sidebar-primary">Enterprise</span>
+      </span>
+    </Link>
+  );
+
   return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Brand bar with top navigation */}
-      <header className="sticky top-0 z-40 bg-primary text-primary-foreground shadow-lg">
-        <div className="mx-auto max-w-7xl px-4 md:px-6">
-          <div className="flex h-16 items-center justify-between gap-4 md:h-20">
-            <div className="flex items-center gap-3">
-              <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-primary-foreground hover:bg-primary-foreground/10 lg:hidden" aria-label="Open menu">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-64 overflow-y-auto bg-primary p-0">
-                  <div className="px-5 pt-6">
-                    <p className="text-lg font-bold text-primary-foreground">TeeVents</p>
-                    <p className="text-xs font-semibold uppercase tracking-widest text-secondary">Enterprise</p>
-                  </div>
-                  <MobileNav groups={groups} onNavigate={() => setMobileOpen(false)} />
-                </SheetContent>
-              </Sheet>
+    <div className="enterprise-shell min-h-screen bg-golf-cream text-golf-charcoal">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar lg:flex">
+        <div className="border-b border-sidebar-border px-5 py-5"><Brand /></div>
+        <div className="min-h-0 flex-1 overflow-y-auto"><EnterpriseNav groups={groups} /></div>
+        <div className="border-t border-sidebar-border p-4">
+          <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
+            <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-sidebar-primary/45 bg-sidebar-accent text-sm font-bold text-sidebar-primary">{initials}</span>
+            <span className="min-w-0">
+              <span className="block text-[10px] text-sidebar-foreground/50">Signed in as</span>
+              <span className="block truncate text-sm font-semibold text-sidebar-foreground">{org?.dashboardName || org?.orgName || "TeeVents"}</span>
+            </span>
+          </div>
+        </div>
+      </aside>
 
-              <Link to="/enterprise" className="flex items-center gap-2.5">
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary shadow-inner">
-                  <div className="h-5 w-5 rounded-full border-2 border-primary" />
-                </div>
-                <span className="text-xl font-semibold tracking-tight md:text-2xl">
-                  TeeVents{" "}
-                  <span className="ml-1 font-sans text-xs font-semibold uppercase tracking-widest text-secondary">
-                    Enterprise
+      <div className="min-h-screen lg:ml-64">
+        <header className="sticky top-0 z-30 border-b border-border bg-background/95 backdrop-blur">
+          <div className="grid min-h-16 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 px-4 md:px-8">
+            <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon" className="border-primary text-primary lg:hidden" aria-label="Open Enterprise menu">
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-72 overflow-y-auto border-sidebar-border bg-sidebar p-0">
+                <div className="border-b border-sidebar-border px-5 py-5"><Brand /></div>
+                <EnterpriseNav groups={groups} onNavigate={() => setMobileOpen(false)} />
+              </SheetContent>
+            </Sheet>
+
+            <div className="min-w-0">
+              <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
+                <Link to="/enterprise" className="shrink-0 font-semibold hover:text-primary">Enterprise</Link>
+                {crumbs.map((crumb) => (
+                  <span key={crumb.label} className="flex min-w-0 items-center gap-1">
+                    <ChevronRight className="h-3 w-3 shrink-0" />
+                    {crumb.to ? <Link to={crumb.to} className="truncate hover:text-primary">{crumb.label}</Link> : <span className="truncate text-foreground">{crumb.label}</span>}
                   </span>
-                </span>
-              </Link>
+                ))}
+              </div>
+              {title && <h1 className="truncate font-display text-2xl font-semibold text-primary md:text-3xl">{title}</h1>}
+              {description && <p className="mt-0.5 hidden truncate text-sm text-muted-foreground md:block">{description}</p>}
             </div>
 
-            {/* Desktop top nav */}
-            <nav className="hidden items-center gap-1 lg:flex">
-              {groups.map((group) => {
-                const active = groupActive(group, pathname);
-                if (group.items.length === 1) {
-                  return (
-                    <Link
-                      key={group.label}
-                      to={group.items[0].to}
-                      className={cn(
-                        "rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                        active
-                          ? "border-b-2 border-secondary text-primary-foreground"
-                          : "text-primary-foreground/80 hover:text-primary-foreground",
-                      )}
-                    >
-                      {group.label}
-                    </Link>
-                  );
-                }
-                return (
-                  <DropdownMenu key={group.label}>
-                    <DropdownMenuTrigger asChild>
-                      <button
-                        className={cn(
-                          "flex items-center gap-1 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-                          active
-                            ? "border-b-2 border-secondary text-primary-foreground"
-                            : "text-primary-foreground/80 hover:text-primary-foreground",
-                        )}
-                      >
-                        {group.label}
-                        <ChevronDown className="h-4 w-4" />
-                      </button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="start" className="w-56">
-                      {group.items.map((item) => {
-                        const Icon = item.icon;
-                        return (
-                          <DropdownMenuItem key={item.to} onClick={() => navigate(item.to)}>
-                            <Icon className="mr-2 h-4 w-4 text-primary" />
-                            {item.label}
-                          </DropdownMenuItem>
-                        );
-                      })}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                );
-              })}
-            </nav>
-
-            {/* Org identity */}
-            <div className="flex items-center gap-3">
-              <div className="hidden text-right sm:block">
-                <p className="text-[11px] text-primary-foreground/70">Logged in as</p>
-                <p className="max-w-40 truncate text-sm font-semibold">{org?.dashboardName || org?.orgName || "…"}</p>
-              </div>
-              <div className="flex h-10 w-10 items-center justify-center rounded-full border border-primary-foreground/20 bg-primary-foreground/10">
-                <span className="text-sm font-bold">{initials}</span>
-              </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {actions && <div className="hidden flex-wrap items-center gap-2 sm:flex">{actions}</div>}
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-primary text-xs font-bold text-primary-foreground lg:hidden">{initials}</span>
             </div>
           </div>
-        </div>
-      </header>
+          {actions && <div className="flex flex-wrap gap-2 border-t border-border px-4 py-2 sm:hidden">{actions}</div>}
+        </header>
 
-      {/* Page sub-header: breadcrumbs, title, actions */}
-      <div className="border-b border-border bg-background">
-        <div className="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 md:flex-row md:items-center md:justify-between md:px-6">
-          <div className="min-w-0">
-            <div className="flex items-center gap-1 text-xs text-muted-foreground">
-              <Link to="/enterprise" className="hover:text-primary">Enterprise</Link>
-              {crumbs.map((c) => (
-                <span key={c.label} className="flex items-center gap-1">
-                  <ChevronRight className="h-3 w-3" />
-                  {c.to ? (
-                    <Link to={c.to} className="hover:text-primary">{c.label}</Link>
-                  ) : (
-                    <span className="truncate text-foreground">{c.label}</span>
-                  )}
-                </span>
-              ))}
-            </div>
-            {title && <h1 className="truncate text-2xl text-primary md:text-3xl">{title}</h1>}
-            {description && <p className="mt-0.5 text-sm text-muted-foreground">{description}</p>}
-          </div>
-          {actions && <div className="flex shrink-0 flex-wrap items-center gap-2">{actions}</div>}
-        </div>
+        <main className="mx-auto max-w-7xl px-4 py-6 md:px-8 md:py-8">
+          {loading || !checkedSession ? (
+            <div className="flex items-center gap-2 py-20 text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin" /> Loading your enterprise workspace…</div>
+          ) : children}
+        </main>
       </div>
-
-      <main className="mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-8">
-        {loading || !checkedSession ? (
-          <div className="flex items-center gap-2 py-20 text-muted-foreground">
-            <Loader2 className="h-5 w-5 animate-spin" /> Loading your enterprise workspace…
-          </div>
-        ) : (
-          children
-        )}
-      </main>
     </div>
   );
 }

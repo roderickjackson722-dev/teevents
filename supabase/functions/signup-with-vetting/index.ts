@@ -120,6 +120,7 @@ Deno.serve(async (req) => {
 
     // Create or reuse auth user
     let userId: string | null = null;
+    let isNewUser = true;
     const { data: created, error: createErr } = await admin.auth.admin.createUser({
       email, password: crypto.randomUUID() + "Aa1!", email_confirm: true,
       user_metadata: { full_name: full_legal_name, phone: phone_number },
@@ -129,13 +130,14 @@ Deno.serve(async (req) => {
       const found = list?.users?.find((u: any) => (u.email || "").toLowerCase() === email);
       if (!found) throw createErr;
       userId = found.id;
+      isNewUser = false;
     } else {
       userId = created.user?.id ?? null;
     }
     if (!userId) throw new Error("Could not create account");
 
-    // Hold flagged accounts until approved
-    if (flagged) await admin.auth.admin.updateUserById(userId, { ban_duration: "876000h" });
+    // Hold flagged accounts until approved — never suspend an existing account
+    if (flagged && isNewUser) await admin.auth.admin.updateUserById(userId, { ban_duration: "876000h" });
 
     const { data: row, error: insErr } = await admin.from("signup_vetting").insert({
       user_id: userId, email, full_name: full_legal_name, phone: phone_number,

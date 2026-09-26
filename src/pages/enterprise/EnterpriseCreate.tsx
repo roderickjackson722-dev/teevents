@@ -39,7 +39,7 @@ import {
 } from "@/lib/enterprise";
 import { parsePairingsConfig } from "@/lib/pairingsConfig";
 
-const STEPS = ["Event Info", "Player Details", "Add Players", "Pairings & Groups", "Complete"];
+const STEPS = ["Event Details", "Players", "Pairings", "Review & Publish"];
 const LETTERS = ["A", "B", "C"];
 
 interface PlayerRow {
@@ -69,10 +69,12 @@ export default function EnterpriseCreate() {
   const { org } = useOrgContext();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
-  const eventType = params.get("type") || "single_round";
+  const requestedType = params.get("type");
+  const initialType = ENTERPRISE_EVENT_TYPES.some((type) => type.value === requestedType) ? requestedType : "single_round";
   const tournamentId = params.get("tournament_id");
 
   const [step, setStep] = useState(0);
+  const [eventType, setEventType] = useState(initialType || "single_round");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [id, setId] = useState<string | null>(tournamentId);
@@ -116,9 +118,10 @@ export default function EnterpriseCreate() {
         setDate((data.date || "").slice(0, 10));
         setStatus(data.status || "draft");
         setSlug(data.slug || null);
+        if (data.enterprise_event_type) setEventType(data.enterprise_event_type);
         const parsed = parseEnterpriseSettings(data.enterprise_settings);
         setSettings(parsed);
-        setStep(Math.min(4, parsed.wizardStep || 0));
+        setStep(Math.min(3, parsed.wizardStep || 0));
         setTime(parsed.rounds[0]?.time || "08:00");
       }
       setLoading(false);
@@ -349,8 +352,8 @@ export default function EnterpriseCreate() {
 
   const nextStep = async () => {
     if (step === 0 && !title.trim()) { toast.error("Give your tournament a name."); return; }
-    if (step === 3) { await confirmPairings(); return; }
-    await goto(Math.min(4, step + 1));
+    if (step === 2) { await confirmPairings(); return; }
+    await goto(Math.min(3, step + 1));
   };
 
   const publish = async () => {
@@ -368,7 +371,7 @@ export default function EnterpriseCreate() {
         day_of_page_mode: "live",
 
       },
-      { ...settings, wizardStep: 4 },
+      { ...settings, wizardStep: 3 },
     );
 
     setStatus("ready");
@@ -386,10 +389,34 @@ export default function EnterpriseCreate() {
 
   return (
     <EnterpriseLayout
-      title={title || `New ${eventTypeLabel(eventType)}`}
+      title={title || "New Tournament"}
       crumbs={[{ label: "Events", to: "/enterprise" }, { label: id ? "Edit Event" : "Create Event" }]}
       actions={saving ? <span className="flex items-center gap-1.5 text-xs text-muted-foreground"><Loader2 className="h-3.5 w-3.5 animate-spin" /> Saving…</span> : undefined}
     >
+      {!tournamentId && (
+        <section className="mb-6">
+          <p className="mb-2 text-xs font-bold uppercase tracking-[0.14em] text-secondary">Choose tournament type</p>
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-5">
+            {ENTERPRISE_EVENT_TYPES.map((type) => (
+              <Button
+                key={type.value}
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setEventType(type.value);
+                  const next = new URLSearchParams(params);
+                  next.set("type", type.value);
+                  setParams(next, { replace: true });
+                }}
+                className={`h-auto min-h-16 justify-start whitespace-normal px-3 py-3 text-left ${eventType === type.value ? "border-secondary bg-secondary text-secondary-foreground hover:bg-secondary/90" : "border-primary/25 text-primary hover:border-primary hover:bg-primary/5"}`}
+              >
+                <span><span className="block font-semibold">{type.label}</span><span className="mt-0.5 block text-xs font-normal opacity-75">{type.blurb}</span></span>
+              </Button>
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* step rail */}
       <ol className="mb-5 flex flex-wrap gap-2">
         {STEPS.map((s, i) => (
@@ -525,7 +552,7 @@ export default function EnterpriseCreate() {
       )}
 
       {/* STEP 2 */}
-      {step === 1 && (
+      {step === 0 && (
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">Player Details</CardTitle></CardHeader>
           <CardContent className="grid gap-4 sm:grid-cols-2">
@@ -641,7 +668,7 @@ export default function EnterpriseCreate() {
       )}
 
       {/* STEP 3 */}
-      {step === 2 && (
+      {step === 1 && (
         <div className="space-y-4">
           <Tabs defaultValue="roster">
             <TabsList>
@@ -768,7 +795,7 @@ export default function EnterpriseCreate() {
       )}
 
       {/* STEP 4 */}
-      {step === 3 && (
+      {step === 2 && (
         <div className="space-y-4">
           <Card>
             <CardHeader className="pb-3"><CardTitle className="text-base">Pairing Setup</CardTitle></CardHeader>
@@ -817,7 +844,7 @@ export default function EnterpriseCreate() {
       )}
 
       {/* STEP 5 */}
-      {step === 4 && (
+      {step === 3 && (
         <Card>
           <CardHeader className="pb-3"><CardTitle className="text-base">Review &amp; Publish</CardTitle></CardHeader>
           <CardContent className="space-y-4">
@@ -870,16 +897,13 @@ export default function EnterpriseCreate() {
         <Button variant="outline" disabled={step === 0} onClick={() => goto(step - 1)}>
           <ArrowLeft className="mr-1.5 h-4 w-4" /> Back
         </Button>
-        {step < 4 && (
+        {step < 3 && (
           <Button onClick={nextStep} className="bg-secondary text-primary hover:bg-secondary/90">
-            {step === 3 ? "Confirm Pairings" : "Next"} <ArrowRight className="ml-1.5 h-4 w-4" />
+            {step === 2 ? "Confirm Pairings" : "Next"} <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
         )}
       </div>
 
-      {ENTERPRISE_EVENT_TYPES.every((t) => t.value !== eventType) && (
-        <p className="mt-3 text-xs text-muted-foreground">Unknown event type — saved as a single round.</p>
-      )}
     </EnterpriseLayout>
   );
 }

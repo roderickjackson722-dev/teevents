@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Plus, Trophy, Users } from "lucide-react";
+import LeagueForm from "@/components/leagues/LeagueForm";
 
 interface LeagueRow {
   id: string;
@@ -21,6 +22,7 @@ interface LeagueRow {
 
 export default function EnterpriseLeagues() {
   const { org } = useOrgContext();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [leagues, setLeagues] = useState<LeagueRow[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,7 @@ export default function EnterpriseLeagues() {
       crumbs={[{ label: "Leagues" }]}
       actions={
         <Button asChild className="bg-secondary text-primary hover:bg-secondary/90">
-          <Link to="/dashboard/leagues"><Plus className="mr-1.5 h-4 w-4" /> New league</Link>
+          <Link to="/enterprise/leagues?new=1"><Plus className="mr-1.5 h-4 w-4" /> New league</Link>
         </Button>
       }
     >
@@ -92,6 +94,23 @@ export default function EnterpriseLeagues() {
           )}
         </CardContent>
       </Card>
+      {searchParams.get("new") === "1" && (
+        <LeagueForm
+          onClose={() => setSearchParams({}, { replace: true })}
+          onSaved={() => {
+            setSearchParams({}, { replace: true });
+            setLoading(true);
+            (supabase.from("golf_leagues") as any)
+              .select("id, league_name, league_slug, season_year, start_date, end_date, publish_status, events_used, is_active")
+              .eq("organization_id", org?.orgId)
+              .order("created_at", { ascending: false })
+              .then(({ data }: { data: LeagueRow[] | null }) => {
+                setLeagues(data || []);
+                setLoading(false);
+              });
+          }}
+        />
+      )}
     </EnterpriseLayout>
   );
 }

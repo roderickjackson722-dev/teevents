@@ -5,7 +5,6 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +13,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -25,157 +23,191 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { MoreVertical, Filter, Plus, Loader2, Users, Trophy, CalendarDays, Flag, Gift } from "lucide-react";
+import { CalendarDays, CalendarPlus, CheckCircle2, CircleDollarSign, Clock3, FileBarChart, Flag, Loader2, MoreVertical, Plus, Search, Trophy, Users } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import {
-  ENTERPRISE_EVENT_TYPES,
-  ENTERPRISE_STATUSES,
-  enterpriseStatusOf,
-  eventTypeLabel,
-  gameTypeLabel,
-  parseEnterpriseSettings,
-  statusMeta,
-  type EnterpriseEventRow,
-} from "@/lib/enterprise";
+import { enterpriseStatusOf, gameTypeLabel, parseEnterpriseSettings, type EnterpriseEventRow } from "@/lib/enterprise";
 
-const PAGE_SIZE = 9;
+type DashboardFilter = "all" | "tournaments" | "leagues" | "drafts" | "completed";
 
-const SELECT_COLS =
-  "id, title, date, course_name, status, slug, scoring_format, enterprise_event_type, enterprise_settings, max_players";
+interface LeagueRow {
+  id: string;
+  league_name: string;
+  league_slug: string;
+  start_date: string | null;
+  end_date: string | null;
+  publish_status: string | null;
+  is_active: boolean;
+  member_count?: number;
+}
 
-/** Colored top bar per event status, echoing the clubhouse card design. */
-const statusBar: Record<string, string> = {
-  draft: "bg-muted-foreground/40",
-  ready: "bg-secondary",
-  in_progress: "bg-primary",
-  complete: "bg-muted-foreground/25",
+interface UnifiedRow {
+  id: string;
+  kind: "tournament" | "league";
+  title: string;
+  date: string | null;
+  course: string | null;
+  detail: string;
+  people: number;
+  status: "draft" | "active" | "complete";
+  sortDate: string;
+  tournament?: EnterpriseEventRow;
+  league?: LeagueRow;
+}
+
+const FILTERS: { value: DashboardFilter; label: string }[] = [
+  { value: "all", label: "All" },
+  { value: "tournaments", label: "Tournaments" },
+  { value: "leagues", label: "Leagues" },
+  { value: "drafts", label: "Drafts" },
+  { value: "completed", label: "Completed" },
+];
+
+const tournamentStatus = (status?: string | null): UnifiedRow["status"] => {
+  const normalized = enterpriseStatusOf(status);
+  if (normalized === "complete") return "complete";
+  if (normalized === "ready" || normalized === "in_progress") return "active";
+  return "draft";
 };
 
-export default function EnterpriseHome() {
+const statusClass: Record<UnifiedRow["status"], string> = {
+  draft: "bg-muted text-muted-foreground",
+  active: "bg-primary text-primary-foreground",
+  complete: "bg-secondary text-secondary-foreground",
+};
+
+const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
+
+export default function EnterpriseHome({ tournamentsOnly = false }: { tournamentsOnly?: boolean }) {
   const { org } = useOrgContext();
   const navigate = useNavigate();
   const [events, setEvents] = useState<EnterpriseEventRow[]>([]);
-  const [counts, setCounts] = useState<Record<string, number>>({});
-  const [leagueCount, setLeagueCount] = useState(0);
+  const [leagues, setLeagues] = useState<LeagueRow[]>([]);
+  const [eventCounts, setEventCounts] = useState<Record<string, number>>({});
+  const [leagueCounts, setLeagueCounts] = useState<Record<string, number>>({});
+  const [revenueCents, setRevenueCents] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<string>("single_round");
-  const [showFilters, setShowFilters] = useState(false);
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [filter, setFilter] = useState<DashboardFilter>(tournamentsOnly ? "tournaments" : "all");
   const [search, setSearch] = useState("");
-  const [page, setPage] = useState(1);
   const [deleteTarget, setDeleteTarget] = useState<EnterpriseEventRow | null>(null);
   const [busy, setBusy] = useState(false);
 
   const load = async () => {
     if (!org) return;
     setLoading(true);
-    const { data } = await (supabase.from("tournaments") as any)
-      .select(SELECT_COLS)
-      .eq("organization_id", org.orgId)
-      .eq("is_enterprise", true)
-      .order("created_at", { ascending: false });
-    const rows = (data || []) as EnterpriseEventRow[];
-    setEvents(rows);
+    const yearStart = `${new Date().getFullYear()}-01-01T00:00:00.000Z`;
+    const [eventResult, leagueResult, revenueResult] = await Promise.all([
+      (supabase.from("tournaments") as any)
+        .select("id, title, date, course_name, status, slug, scoring_format, enterprise_event_type, enterprise_settings, max_players")
+        .eq("organization_id", org.orgId)
+        .eq("is_enterprise", true)
+        .order("created_at", { ascending: false }),
+      (supabase.from("golf_leagues") as any)
+        .select("id, league_name, league_slug, start_date, end_date, publish_status, is_active")
+        .eq("organization_id", org.orgId)
+        .order("created_at", { ascending: false }),
+      (supabase.from("platform_transactions") as any)
+        .select("amount_cents, status, created_at")
+        .eq("organization_id", org.orgId)
+        .gte("created_at", yearStart),
+    ]);
 
-    if (rows.length) {
-      const { data: regs } = await (supabase.from("tournament_registrations") as any)
-        .select("tournament_id")
-        .in("tournament_id", rows.map((r) => r.id));
-      const map: Record<string, number> = {};
-      ((regs || []) as { tournament_id: string }[]).forEach((r) => {
-        map[r.tournament_id] = (map[r.tournament_id] || 0) + 1;
-      });
-      setCounts(map);
-    } else {
-      setCounts({});
-    }
+    const tournamentRows = (eventResult.data || []) as EnterpriseEventRow[];
+    const leagueRows = (leagueResult.data || []) as LeagueRow[];
+    setEvents(tournamentRows);
+    setLeagues(leagueRows);
+    setRevenueCents(((revenueResult.data || []) as { amount_cents: number; status: string | null }[])
+      .filter((row) => ["paid", "succeeded", "complete", "completed"].includes((row.status || "").toLowerCase()))
+      .reduce((sum, row) => sum + (row.amount_cents || 0), 0));
 
-    const { count: leagues } = await (supabase.from("golf_leagues") as any)
-      .select("id", { count: "exact", head: true })
-      .eq("organization_id", org.orgId);
-    setLeagueCount(leagues || 0);
-
+    const [registrationResult, memberResult] = await Promise.all([
+      tournamentRows.length
+        ? (supabase.from("tournament_registrations") as any).select("tournament_id").in("tournament_id", tournamentRows.map((row) => row.id))
+        : Promise.resolve({ data: [] }),
+      leagueRows.length
+        ? (supabase.from("league_members") as any).select("league_id").in("league_id", leagueRows.map((row) => row.id))
+        : Promise.resolve({ data: [] }),
+    ]);
+    const tournamentMap: Record<string, number> = {};
+    ((registrationResult.data || []) as { tournament_id: string }[]).forEach((row) => { tournamentMap[row.tournament_id] = (tournamentMap[row.tournament_id] || 0) + 1; });
+    const leagueMap: Record<string, number> = {};
+    ((memberResult.data || []) as { league_id: string }[]).forEach((row) => { leagueMap[row.league_id] = (leagueMap[row.league_id] || 0) + 1; });
+    setEventCounts(tournamentMap);
+    setLeagueCounts(leagueMap);
     setLoading(false);
   };
 
-  useEffect(() => {
-    load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [org]);
+  useEffect(() => { load(); }, [org]);
 
-  const filtered = useMemo(() => {
-    const q = search.trim().toLowerCase();
-    return events.filter((e) => {
-      if ((e.enterprise_event_type || "single_round") !== tab) return false;
-      if (statusFilter !== "all" && enterpriseStatusOf(e.status) !== statusFilter) return false;
-      if (q && !(e.title || "").toLowerCase().includes(q) && !(e.course_name || "").toLowerCase().includes(q)) return false;
+  const rows = useMemo<UnifiedRow[]>(() => {
+    const tournamentRows = events.map((event) => {
+      const settings = parseEnterpriseSettings(event.enterprise_settings);
+      return {
+        id: event.id,
+        kind: "tournament" as const,
+        title: event.title,
+        date: event.date,
+        course: event.course_name,
+        detail: `${gameTypeLabel(settings.gameType || event.scoring_format)} · ${settings.holes} holes`,
+        people: eventCounts[event.id] || 0,
+        status: tournamentStatus(event.status),
+        sortDate: event.date || "0000-00-00",
+        tournament: event,
+      };
+    });
+    const leagueRows = leagues.map((league) => {
+      const isPast = Boolean(league.end_date && new Date(`${league.end_date}T23:59:59`).getTime() < Date.now());
+      const status: UnifiedRow["status"] = isPast || !league.is_active ? "complete" : league.publish_status === "draft" ? "draft" : "active";
+      return {
+        id: league.id,
+        kind: "league" as const,
+        title: league.league_name,
+        date: league.start_date,
+        course: "Season-long league",
+        detail: league.end_date ? `Season through ${league.end_date}` : "Season schedule",
+        people: leagueCounts[league.id] || 0,
+        status,
+        sortDate: league.start_date || "0000-00-00",
+        league,
+      };
+    });
+    return [...tournamentRows, ...leagueRows].sort((a, b) => b.sortDate.localeCompare(a.sortDate));
+  }, [events, leagues, eventCounts, leagueCounts]);
+
+  const filteredRows = useMemo(() => {
+    const query = search.trim().toLowerCase();
+    return rows.filter((row) => {
+      if ((tournamentsOnly || filter === "tournaments") && row.kind !== "tournament") return false;
+      if (filter === "leagues" && row.kind !== "league") return false;
+      if (filter === "drafts" && row.status !== "draft") return false;
+      if (filter === "completed" && row.status !== "complete") return false;
+      if (query && !`${row.title} ${row.course || ""} ${row.detail}`.toLowerCase().includes(query)) return false;
       return true;
     });
-  }, [events, tab, statusFilter, search]);
+  }, [rows, filter, search, tournamentsOnly]);
 
-  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageRows = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-
-  useEffect(() => setPage(1), [tab, statusFilter, search]);
-
-  const totalPlayers = Object.values(counts).reduce((a, b) => a + b, 0);
-  const activeEvents = events.filter((e) => ["ready", "in_progress"].includes(enterpriseStatusOf(e.status))).length;
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const upcoming = rows.filter((row) => row.status !== "complete" && row.date && new Date(`${row.date}T00:00:00`) > today).length;
+  const active = rows.filter((row) => row.status === "active").length;
+  const completed = rows.filter((row) => row.status === "complete").length;
 
   const duplicate = async (row: EnterpriseEventRow) => {
     if (!org) return;
     setBusy(true);
-    const { data: full } = await (supabase.from("tournaments") as any)
-      .select("*")
-      .eq("id", row.id)
-      .maybeSingle();
-    if (!full) {
-      setBusy(false);
-      toast.error("Could not read that event.");
-      return;
-    }
-    const skip = new Set([
-      "id",
-      "created_at",
-      "updated_at",
-      "slug",
-      "custom_slug",
-      "custom_domain",
-      "registration_url",
-      "status",
-    ]);
+    const { data: full } = await (supabase.from("tournaments") as any).select("*").eq("id", row.id).maybeSingle();
+    if (!full) { setBusy(false); toast.error("Could not read that event."); return; }
+    const skip = new Set(["id", "created_at", "updated_at", "slug", "custom_slug", "custom_domain", "registration_url", "status"]);
     const copy: Record<string, unknown> = {};
-    Object.entries(full as Record<string, unknown>).forEach(([k, v]) => {
-      if (!skip.has(k)) copy[k] = v;
-    });
-    copy.title = `${row.title} (Copy)`;
-    copy.status = "draft";
-    copy.organization_id = org.orgId;
-    copy.is_enterprise = true;
-
-    const { data: created, error } = await (supabase.from("tournaments") as any)
-      .insert(copy)
-      .select("id")
-      .maybeSingle();
-    if (error || !created?.id) {
-      setBusy(false);
-      toast.error(error?.message || "Could not duplicate this event.");
-      return;
-    }
-
-    // Clone the player list so the copy is ready to pair.
-    const { data: regs } = await (supabase.from("tournament_registrations") as any)
-      .select("first_name, last_name, email, phone, handicap, handicap_index, group_number, group_position, group_label, starting_hole, team_id")
+    Object.entries(full as Record<string, unknown>).forEach(([key, value]) => { if (!skip.has(key)) copy[key] = value; });
+    Object.assign(copy, { title: `${row.title} (Copy)`, status: "draft", organization_id: org.orgId, is_enterprise: true });
+    const { data: created, error } = await (supabase.from("tournaments") as any).insert(copy).select("id").maybeSingle();
+    if (error || !created?.id) { setBusy(false); toast.error(error?.message || "Could not duplicate this event."); return; }
+    const { data: registrations } = await (supabase.from("tournament_registrations") as any)
+      .select("first_name, last_name, email, phone, handicap, handicap_index, group_number, group_position, group_label, starting_hole")
       .eq("tournament_id", row.id);
-    const players = ((regs || []) as Record<string, unknown>[]).map((r) => ({
-      ...r,
-      team_id: null,
-      tournament_id: created.id,
-      payment_status: "unpaid",
-      status: "active",
-    }));
+    const players = ((registrations || []) as Record<string, unknown>[]).map((registration) => ({ ...registration, tournament_id: created.id, payment_status: "unpaid", status: "active" }));
     if (players.length) await (supabase.from("tournament_registrations") as any).insert(players);
-
     setBusy(false);
     toast.success("Event duplicated as a draft.");
     load();
@@ -188,234 +220,138 @@ export default function EnterpriseHome() {
     setBusy(false);
     setDeleteTarget(null);
     if (error) toast.error(error.message);
-    else {
-      toast.success("Event deleted.");
-      load();
-    }
+    else { toast.success("Event deleted."); load(); }
   };
 
-  const menuLinks = (row: EnterpriseEventRow): { label: string; to: string }[] => {
-    const q = `?tournament_id=${row.id}`;
+  const menuLinks = (row: EnterpriseEventRow) => {
+    const query = `?tournament_id=${row.id}`;
     return [
-      { label: "Edit Event Information", to: `/enterprise/create${q}` },
-      { label: "Edit Teams", to: `/dashboard/players${q}` },
-      { label: "Edit Pairings / Handicaps", to: `/dashboard/tee-sheet${q}` },
-      { label: "Edit Tees", to: `/dashboard/course-details${q}` },
-      { label: "Edit Scores", to: `/dashboard/scoring${q}` },
-      { label: "Flights and Status", to: `/enterprise/leaderboard-settings${q}` },
-      { label: "Skins, Deuces and Putts", to: `/enterprise/skins${q}` },
-      { label: "Hole by Hole Settings", to: `/enterprise/leaderboard-settings${q}#event-options` },
-      { label: "Print Scorecards and Reports", to: `/enterprise/printables${q}` },
-      { label: "Send Email", to: `/enterprise/communications${q}` },
-      { label: "Post Scores", to: `/dashboard/scoring${q}` },
-      { label: "Update Payouts & Points", to: `/dashboard/scoring-payouts${q}` },
+      ["Edit Event Information", `/enterprise/create${query}`],
+      ["Edit Teams", `/dashboard/players${query}`],
+      ["Edit Pairings / Handicaps", `/dashboard/tee-sheet${query}`],
+      ["Edit Scores", `/dashboard/scoring${query}`],
+      ["Leaderboard Settings", `/enterprise/leaderboard-settings${query}`],
+      ["Skins, Deuces and Putts", `/enterprise/skins${query}`],
+      ["Print Scorecards and Reports", `/enterprise/printables${query}`],
+      ["Send Email", `/enterprise/communications${query}`],
     ];
   };
 
+  const title = tournamentsOnly ? "Tournaments" : "Enterprise Dashboard";
+  const description = tournamentsOnly ? "All single and multi-round tournaments." : "Your club's events, activity, and performance at a glance.";
+
   return (
-    <EnterpriseLayout
-      title="Tournament Dashboard"
-      description="Manage your club's events, players and leagues."
-      crumbs={[{ label: "Events" }]}
-      actions={
-        <Button asChild className="bg-secondary text-primary hover:bg-secondary/90">
-          <Link to="/enterprise/create?type=single_round">
-            <Plus className="mr-1.5 h-4 w-4" /> New Event
-          </Link>
-        </Button>
-      }
-    >
-      <Tabs value={tab} onValueChange={setTab} className="mb-4">
-        <TabsList className="flex h-auto w-full flex-wrap justify-start gap-1">
-          {ENTERPRISE_EVENT_TYPES.map((t) => (
-            <TabsTrigger key={t.value} value={t.value} className="text-xs sm:text-sm">
-              {t.label}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-      </Tabs>
-
-      <div className="mb-5 flex flex-wrap items-center gap-2">
-        <Button variant="outline" size="sm" onClick={() => setShowFilters((v) => !v)}>
-          <Filter className="mr-1.5 h-4 w-4" /> Filter
-        </Button>
-        {showFilters && (
-          <>
-            <Input
-              placeholder="Search name or course"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="h-9 w-full sm:w-56"
-            />
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="h-9 w-full sm:w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All statuses</SelectItem>
-                {ENTERPRISE_STATUSES.map((s) => (
-                  <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </>
-        )}
-        <span className="ml-auto text-xs text-muted-foreground">
-          {filtered.length} {filtered.length === 1 ? "event" : "events"}
-        </span>
-      </div>
-
-      {loading ? (
-        <div className="flex items-center gap-2 py-16 text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" /> Loading events…
-        </div>
-      ) : pageRows.length === 0 ? (
-        <div className="rounded-xl border-2 border-dashed border-border p-12 text-center">
-          <Trophy className="mx-auto mb-3 h-8 w-8 text-muted-foreground" />
-          <p className="font-semibold text-foreground">No {eventTypeLabel(tab).toLowerCase()} events yet</p>
-          <p className="mb-4 text-sm text-muted-foreground">Create one in four quick steps.</p>
-          <Button asChild className="bg-secondary text-primary hover:bg-secondary/90">
-            <Link to={`/enterprise/create?type=${tab}`}>
-              <Plus className="mr-1.5 h-4 w-4" /> Create {eventTypeLabel(tab)}
-            </Link>
-          </Button>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2 lg:grid-cols-3">
-          {pageRows.map((row) => {
-            const meta = statusMeta(row.status);
-            const settings = parseEnterpriseSettings(row.enterprise_settings);
-            const status = enterpriseStatusOf(row.status);
-            return (
-              <div
-                key={row.id}
-                className="group overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-shadow hover:shadow-md"
-              >
-                <div className={cn("h-2", statusBar[status] || "bg-muted-foreground/40")} />
-                <div className="p-5">
-                  <div className="mb-3 flex items-start justify-between gap-2">
-                    <span className="rounded bg-primary/10 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-primary">
-                      {eventTypeLabel(row.enterprise_event_type || "single_round")}
-                    </span>
-                    <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${meta.className}`}>
-                      {meta.label}
-                    </span>
-                  </div>
-
-                  <Link
-                    to={`/enterprise/create?tournament_id=${row.id}`}
-                    className="block text-lg text-primary transition-colors group-hover:text-secondary"
-                  >
-                    {row.title}
-                  </Link>
-                  <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground">
-                    <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                    <span className="truncate">
-                      {row.date || "No date set"} · {row.course_name || "No course"}
-                    </span>
-                  </p>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {gameTypeLabel(settings.gameType || row.scoring_format)} · {settings.holes} holes
-                  </p>
-
-                  <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
-                    <span className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                      <Users className="h-4 w-4" />
-                      {counts[row.id] || 0}
-                      {(row as { max_players?: number | null }).max_players ? `/${(row as { max_players?: number | null }).max_players}` : ""} players
-                    </span>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" aria-label={`Actions for ${row.title}`}>
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-64">
-                        <DropdownMenuLabel className="truncate">{row.title}</DropdownMenuLabel>
-                        {menuLinks(row).map((l) => (
-                          <DropdownMenuItem key={l.label} onClick={() => navigate(l.to)}>
-                            {l.label}
-                          </DropdownMenuItem>
-                        ))}
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem disabled={busy} onClick={() => duplicate(row)}>
-                          Duplicate Event
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive" onClick={() => setDeleteTarget(row)}>
-                          Delete
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+    <EnterpriseLayout title={title} description={description} crumbs={tournamentsOnly ? [{ label: "Tournaments" }] : [{ label: "Home" }]}>
+      {!tournamentsOnly && (
+        <>
+          <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Enterprise overview">
+            {[
+              { label: "Upcoming Events", value: upcoming, icon: CalendarDays },
+              { label: "Active Events", value: active, icon: Clock3 },
+              { label: "Completed Events", value: completed, icon: CheckCircle2 },
+              { label: "Revenue This Year", value: money.format(revenueCents / 100), icon: CircleDollarSign },
+            ].map((stat) => (
+              <div key={stat.label} className="rounded-md border border-border bg-card p-5 shadow-sm">
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-xs font-bold uppercase tracking-[0.12em] text-muted-foreground">{stat.label}</span>
+                  <span className="grid h-9 w-9 place-items-center rounded-md bg-primary/8 text-primary"><stat.icon className="h-4 w-4" /></span>
                 </div>
+                <p className="font-display text-3xl font-semibold text-primary">{stat.value}</p>
               </div>
-            );
-          })}
+            ))}
+          </section>
 
-          {/* Create-new card */}
-          <Link
-            to={`/enterprise/create?type=${tab}`}
-            className="group flex min-h-44 flex-col items-center justify-center rounded-xl border-2 border-dashed border-border p-8 transition-colors hover:border-primary/50 hover:bg-primary/5"
-          >
-            <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-              <Plus className="h-6 w-6" />
+          <section className="my-8 border-y border-border py-5">
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="mr-auto font-display text-xl font-semibold text-primary">Quick Actions</h2>
+              <Button asChild className="bg-secondary text-secondary-foreground hover:bg-secondary/90"><Link to="/enterprise/create"><Plus className="mr-1.5 h-4 w-4" /> New Tournament</Link></Button>
+              <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"><Link to="/enterprise/leagues?new=1"><Plus className="mr-1.5 h-4 w-4" /> New League</Link></Button>
+              <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"><Link to="/dashboard/finances"><FileBarChart className="mr-1.5 h-4 w-4" /> View Reports</Link></Button>
             </div>
-            <span className="font-semibold text-foreground">Start a new {eventTypeLabel(tab).toLowerCase()}</span>
-            <span className="mt-1 text-xs text-muted-foreground">Guided four-step setup</span>
-          </Link>
-        </div>
+          </section>
+        </>
       )}
 
-      {pageCount > 1 && (
-        <div className="mt-5 flex items-center justify-center gap-2">
-          <Button variant="outline" size="sm" disabled={page === 1} onClick={() => setPage((p) => p - 1)}>
-            Previous
-          </Button>
-          <span className="text-sm text-muted-foreground">Page {page} of {pageCount}</span>
-          <Button variant="outline" size="sm" disabled={page === pageCount} onClick={() => setPage((p) => p + 1)}>
-            Next
-          </Button>
+      <section>
+        <div className="mb-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.14em] text-secondary">Event portfolio</p>
+            <h2 className="font-display text-2xl font-semibold text-primary">{tournamentsOnly ? "All Tournaments" : "Recent Events"}</h2>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-[auto_minmax(220px,320px)] sm:items-center">
+            {!tournamentsOnly && (
+              <div className="flex max-w-full gap-1 overflow-x-auto rounded-md border border-border bg-card p-1">
+                {FILTERS.map((item) => (
+                  <Button key={item.value} type="button" size="sm" variant="ghost" onClick={() => setFilter(item.value)} className={cn("shrink-0", filter === item.value && "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground")}>{item.label}</Button>
+                ))}
+              </div>
+            )}
+            <div className="relative">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search events" className="bg-card pl-9" />
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* Club snapshot */}
-      <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-lg bg-primary p-5 text-primary-foreground shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-widest opacity-70">Active Events</p>
-          <p className="mt-1 text-2xl">{activeEvents}</p>
-        </div>
-        <div className="rounded-lg border border-border bg-card p-5 shadow-sm">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Registered Players</p>
-          <p className="mt-1 text-2xl text-primary">{totalPlayers}</p>
-        </div>
-        <Link to="/enterprise/leagues" className="rounded-lg border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            <Flag className="h-3.5 w-3.5" /> Leagues
-          </p>
-          <p className="mt-1 text-2xl text-primary">{leagueCount}</p>
-        </Link>
-        <Link to="/enterprise/resources/earn-300" className="group relative overflow-hidden rounded-lg border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md">
-          <p className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            <Gift className="h-3.5 w-3.5" /> Referral Credit
-          </p>
-          <p className="mt-1 text-2xl text-secondary">Earn $300</p>
-        </Link>
-      </div>
+        {loading ? (
+          <div className="flex items-center gap-2 py-16 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading events…</div>
+        ) : rows.length === 0 ? (
+          <div className="rounded-md border border-dashed border-primary/30 bg-card px-6 py-14 text-center">
+            <CalendarPlus className="mx-auto mb-3 h-9 w-9 text-secondary" />
+            <h3 className="font-display text-xl font-semibold text-primary">Ready to run your first event?</h3>
+            <Button asChild className="mt-4 bg-secondary text-secondary-foreground hover:bg-secondary/90"><Link to="/enterprise/create"><Plus className="mr-1.5 h-4 w-4" /> New Tournament</Link></Button>
+          </div>
+        ) : filteredRows.length === 0 ? (
+          <div className="rounded-md border border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">No events match this filter.</div>
+        ) : (
+          <div className="overflow-hidden rounded-md border border-border bg-card">
+            {filteredRows.map((row) => (
+              <article key={`${row.kind}-${row.id}`} className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-border p-4 last:border-b-0 md:grid-cols-[minmax(0,1.5fr)_minmax(180px,.8fr)_auto_auto] md:items-center md:px-5">
+                <div className="min-w-0">
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                    <span className={cn("rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]", row.kind === "tournament" ? "bg-primary/10 text-primary" : "bg-secondary/25 text-primary")}>{row.kind}</span>
+                    <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", statusClass[row.status])}>{row.status}</span>
+                  </div>
+                  <Link to={row.kind === "tournament" ? `/enterprise/create?tournament_id=${row.id}` : `/dashboard/leagues/${row.id}/manage`} className="block truncate font-display text-lg font-semibold text-foreground hover:text-primary">{row.title}</Link>
+                  <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-muted-foreground"><CalendarDays className="h-3.5 w-3.5 shrink-0" /> {row.date || "Date not set"} · {row.course || "Course not set"}</p>
+                </div>
+                <div className="hidden min-w-0 md:block">
+                  <p className="truncate text-sm font-medium text-foreground">{row.detail}</p>
+                  <p className="mt-1 flex items-center gap-1.5 text-sm text-muted-foreground"><Users className="h-3.5 w-3.5" /> {row.people} {row.kind === "league" ? "members" : "players"}</p>
+                </div>
+                <div className="hidden md:block"><span className={cn("rounded-full px-3 py-1 text-xs font-semibold capitalize", statusClass[row.status])}>{row.status}</span></div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={`Actions for ${row.title}`}><MoreVertical className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-64">
+                    <DropdownMenuLabel className="truncate">{row.title}</DropdownMenuLabel>
+                    {row.tournament ? (
+                      <>
+                        {menuLinks(row.tournament).map(([label, to]) => <DropdownMenuItem key={label} onClick={() => navigate(to)}>{label}</DropdownMenuItem>)}
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem disabled={busy} onClick={() => duplicate(row.tournament as EnterpriseEventRow)}>Duplicate Event</DropdownMenuItem>
+                        <DropdownMenuItem className="text-destructive" onClick={() => setDeleteTarget(row.tournament as EnterpriseEventRow)}>Delete</DropdownMenuItem>
+                      </>
+                    ) : (
+                      <>
+                        <DropdownMenuItem onClick={() => navigate(`/dashboard/leagues/${row.id}/manage`)}>Manage League</DropdownMenuItem>
+                        {row.league?.league_slug && <DropdownMenuItem onClick={() => navigate(`/league/${row.league?.league_slug}`)}>View Public Page</DropdownMenuItem>}
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <div className="col-span-2 flex items-center gap-4 text-xs text-muted-foreground md:hidden">
+                  <span>{row.detail}</span><span className="shrink-0">{row.people} {row.kind === "league" ? "members" : "players"}</span>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
+      </section>
 
-      <AlertDialog open={!!deleteTarget} onOpenChange={(o) => !o && setDeleteTarget(null)}>
+      <AlertDialog open={Boolean(deleteTarget)} onOpenChange={(open) => !open && setDeleteTarget(null)}>
         <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete this event?</AlertDialogTitle>
-            <AlertDialogDescription>
-              {deleteTarget?.title} and its players, pairings and scores will be removed. This cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={remove} className="bg-destructive text-destructive-foreground">
-              Delete event
-            </AlertDialogAction>
-          </AlertDialogFooter>
+          <AlertDialogHeader><AlertDialogTitle>Delete this event?</AlertDialogTitle><AlertDialogDescription>{deleteTarget?.title} and its players, pairings and scores will be removed. This cannot be undone.</AlertDialogDescription></AlertDialogHeader>
+          <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={remove} className="bg-destructive text-destructive-foreground">Delete event</AlertDialogAction></AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </EnterpriseLayout>

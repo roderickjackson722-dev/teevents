@@ -20,3 +20,4 @@
 - [ ] Run a real $1 Enterprise registration and confirm organizer-account settlement (requires secure card completion)
 - [x] Replace the pricing page with No Cost, Per-Event, Per-League, $99 add-ons, and Enterprise pricing
 - [x] Simplify pricing signup links and consolidate five platform choices on the Compare page
+- [ ] Redesign Enterprise dashboard with sidebar navigation, stats-first home, unified events, and in-wizard event types

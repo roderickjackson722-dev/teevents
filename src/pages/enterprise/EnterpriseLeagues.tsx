@@ -99,7 +99,15 @@ export default function EnterpriseLeagues() {
           onClose={() => setSearchParams({}, { replace: true })}
           onSaved={() => {
             setSearchParams({}, { replace: true });
-            window.location.reload();
+            setLoading(true);
+            (supabase.from("golf_leagues") as any)
+              .select("id, league_name, league_slug, season_year, start_date, end_date, publish_status, events_used, is_active")
+              .eq("organization_id", org?.orgId)
+              .order("created_at", { ascending: false })
+              .then(({ data }: { data: LeagueRow[] | null }) => {
+                setLeagues(data || []);
+                setLoading(false);
+              });
           }}
         />
       )}

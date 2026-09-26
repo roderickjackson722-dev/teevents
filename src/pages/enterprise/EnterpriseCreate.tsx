@@ -339,7 +339,7 @@ export default function EnterpriseCreate() {
     setSaving(false);
     toast.success("Pairings confirmed.");
     loadPlayers(eventId);
-    goto(4);
+    goto(3);
   };
 
   /* ---------------- navigation ---------------- */

@@ -38,6 +38,9 @@ import {
   type EnterpriseSettings,
 } from "@/lib/enterprise";
 import { parsePairingsConfig } from "@/lib/pairingsConfig";
+import { ALLOWANCE_OPTIONS, computeHandicaps } from "@/lib/courseHandicap";
+import { HandicapLabel } from "@/components/handicap/HandicapBadges";
+import { syncEventHandicaps } from "@/lib/handicapClient";
 
 const STEPS = ["Event Details", "Players", "Pairings", "Review & Publish"];
 const LETTERS = ["A", "B", "C"];
@@ -49,6 +52,7 @@ interface PlayerRow {
   email: string;
   phone: string | null;
   handicap_index: number | null;
+  ghin_id?: string | null;
   group_number: number | null;
   group_position: number | null;
   group_label: string | null;
@@ -85,7 +89,11 @@ export default function EnterpriseCreate() {
   const [status, setStatus] = useState("draft");
   const [slug, setSlug] = useState<string | null>(null);
   const [settings, setSettings] = useState<EnterpriseSettings>(defaultEnterpriseSettings());
-  const [courses, setCourses] = useState<{ id: string; course_name: string }[]>([]);
+  const [courses, setCourses] = useState<{ id: string; course_name: string; par_total: number | null; course_rating: number | null; slope_rating: number | null }[]>([]);
+  const [hcp, setHcp] = useState({ enabled: false, allowance: 100, customAllowance: false, courseRating: "", slope: "", par: "72", sync: false });
+  const [hcpDirty, setHcpDirty] = useState(false);
+  const [hcpSyncing, setHcpSyncing] = useState(false);
+  const updateHcp = (patch: Partial<typeof hcp>) => { setHcp((h) => ({ ...h, ...patch })); setHcpDirty(true); };
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [roster, setRoster] = useState<any[]>([]);
   const [rosterPicked, setRosterPicked] = useState<string[]>([]);
@@ -101,14 +109,14 @@ export default function EnterpriseCreate() {
     (async () => {
       const { data: courseRows } = await supabase
         .from("course_database")
-        .select("id, course_name")
+        .select("id, course_name, par_total, course_rating, slope_rating")
         .order("course_name")
         .limit(300);
       setCourses((courseRows || []) as any);
 
       if (!tournamentId) { setLoading(false); return; }
       const { data } = await (supabase.from("tournaments") as any)
-        .select("id, title, date, course_name, status, slug, enterprise_settings, enterprise_event_type, max_players, registration_fee_cents")
+        .select("id, title, date, course_name, status, slug, enterprise_settings, enterprise_event_type, max_players, registration_fee_cents, handicap_enabled, handicap_allowance_percentage, course_rating, slope_rating, course_par, handicap_sync_enabled")
         .eq("id", tournamentId)
         .maybeSingle();
       if (data) {
@@ -119,6 +127,16 @@ export default function EnterpriseCreate() {
         setStatus(data.status || "draft");
         setSlug(data.slug || null);
         if (data.enterprise_event_type) setEventType(data.enterprise_event_type);
+        const pct = data.handicap_allowance_percentage ?? 100;
+        setHcp({
+          enabled: !!data.handicap_enabled,
+          allowance: pct,
+          customAllowance: !ALLOWANCE_OPTIONS.includes(pct),
+          courseRating: data.course_rating != null ? String(data.course_rating) : "",
+          slope: data.slope_rating != null ? String(data.slope_rating) : "",
+          par: data.course_par != null ? String(data.course_par) : "72",
+          sync: !!data.handicap_sync_enabled,
+        });
         const parsed = parseEnterpriseSettings(data.enterprise_settings);
         setSettings(parsed);
         setStep(Math.min(3, parsed.wizardStep || 0));
@@ -132,7 +150,7 @@ export default function EnterpriseCreate() {
   useEffect(() => {
     if (!org) return;
     (supabase.from("enterprise_roster") as any)
-      .select("id, first_name, last_name, email, phone, handicap_index")
+      .select("id, first_name, last_name, email, phone, handicap_index, ghin_number, handicap_source")
       .eq("organization_id", org.orgId)
       .eq("is_active", true)
       .order("last_name")
@@ -141,7 +159,7 @@ export default function EnterpriseCreate() {
 
   const loadPlayers = useCallback(async (eventId: string) => {
     const { data } = await (supabase.from("tournament_registrations") as any)
-      .select("id, first_name, last_name, email, phone, handicap_index, group_number, group_position, group_label")
+      .select("id, first_name, last_name, email, phone, handicap_index, ghin_id, group_number, group_position, group_label")
       .eq("tournament_id", eventId)
       .order("last_name");
     setPlayers((data || []) as PlayerRow[]);
@@ -165,6 +183,12 @@ export default function EnterpriseCreate() {
       enterprise_settings: nextSettings as unknown as Record<string, unknown>,
       enterprise_event_type: eventType,
       is_enterprise: true,
+      handicap_enabled: hcp.enabled,
+      handicap_allowance_percentage: Math.max(0, Math.min(100, Number(hcp.allowance) || 100)),
+      course_rating: hcp.courseRating ? Number(hcp.courseRating) : null,
+      slope_rating: hcp.slope ? Math.round(Number(hcp.slope)) : null,
+      course_par: hcp.par ? Math.round(Number(hcp.par)) : null,
+      handicap_sync_enabled: hcp.sync,
       ...extra,
     };
 
@@ -190,7 +214,7 @@ export default function EnterpriseCreate() {
   };
 
   /* ---------------- players ---------------- */
-  const addPlayers = async (rows: { first_name: string; last_name: string; email?: string; phone?: string; handicap_index?: number | null }[]) => {
+  const addPlayers = async (rows: { first_name: string; last_name: string; email?: string; phone?: string; handicap_index?: number | null; ghin_id?: string | null; handicap_source?: string | null }[]) => {
     const eventId = id || (await persist());
     if (!eventId) return;
     const payload = rows.map((r) => ({
@@ -200,7 +224,10 @@ export default function EnterpriseCreate() {
       email: r.email?.trim() || tbdEmail(),
       phone: r.phone || null,
       handicap_index: r.handicap_index ?? null,
-      handicap: r.handicap_index ?? null,
+      handicap: r.handicap_index != null ? Math.round(r.handicap_index) : null,
+      ghin_id: r.ghin_id || null,
+      handicap_source: r.handicap_source || (r.handicap_index != null ? "manual" : "none"),
+      handicap_last_updated: r.handicap_index != null ? new Date().toISOString() : null,
       payment_status: "unpaid",
     }));
     const { error } = await (supabase.from("tournament_registrations") as any).insert(payload);
@@ -223,14 +250,60 @@ export default function EnterpriseCreate() {
     })));
 
   /* ---------------- pairings ---------------- */
+  const hcpSettings = useMemo(() => ({
+    courseRating: hcp.courseRating ? Number(hcp.courseRating) : null,
+    slopeRating: hcp.slope ? Number(hcp.slope) : null,
+    par: hcp.par ? Number(hcp.par) : 72,
+    allowancePercentage: Number(hcp.allowance) || 100,
+    holes: settings.holes,
+  }), [hcp, settings.holes]);
+
   const pairingPlayers: PairingPlayer[] = useMemo(
-    () => players.map((p) => ({
-      id: p.id,
-      name: `${p.first_name} ${p.last_name}`.trim(),
-      handicap: p.handicap_index,
-    })),
-    [players],
+    () => players.map((p) => {
+      const calc = hcp.enabled ? computeHandicaps(p.handicap_index, hcpSettings) : null;
+      return {
+        id: p.id,
+        name: `${p.first_name} ${p.last_name}`.trim(),
+        handicap: p.handicap_index,
+        courseHandicap: calc?.courseHandicap ?? null,
+        playingHandicap: calc?.playingHandicap ?? null,
+      };
+    }),
+    [players, hcp.enabled, hcpSettings],
   );
+
+  // Auto-save handicap settings shortly after the organizer stops typing.
+  useEffect(() => {
+    if (!hcpDirty || !id) return;
+    const t = setTimeout(() => { persist().then(() => setHcpDirty(false)); }, 800);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hcp, hcpDirty, id]);
+
+  const pickCourse = (name: string) => {
+    setCourseName(name);
+    const c = courses.find((x) => x.course_name === name);
+    if (c && (c.course_rating || c.slope_rating || c.par_total)) {
+      updateHcp({
+        courseRating: c.course_rating != null ? String(c.course_rating) : hcp.courseRating,
+        slope: c.slope_rating != null ? String(c.slope_rating) : hcp.slope,
+        par: c.par_total != null ? String(c.par_total) : hcp.par,
+      });
+    }
+  };
+
+  const runHandicapSync = async () => {
+    const eventId = id || (await persist());
+    if (!eventId) return;
+    setHcpSyncing(true);
+    try {
+      await persist();
+      const res = await syncEventHandicaps(eventId);
+      toast.success(res.message);
+      loadPlayers(eventId);
+    } catch (e: any) { toast.error(e.message); }
+    setHcpSyncing(false);
+  };
 
   useEffect(() => {
     if (step !== 3 || !players.length) return;
@@ -335,6 +408,17 @@ export default function EnterpriseCreate() {
     await (supabase.from("tournaments") as any)
       .update({ pairings_config: { ...cfg, labels: { ...cfg.labels, ...labels } } })
       .eq("id", eventId);
+
+    if (hcp.enabled) {
+      const rows = pairingPlayers
+        .filter((p) => p.handicap != null && p.courseHandicap != null && p.playingHandicap != null)
+        .map((p) => ({ event_id: eventId, player_id: p.id, handicap_index: p.handicap, course_handicap: p.courseHandicap, playing_handicap: p.playingHandicap, calculated_at: new Date().toISOString() }));
+      if (rows.length) {
+        await (supabase.from("course_handicaps") as any).upsert(rows, { onConflict: "event_id,player_id" });
+        await Promise.all(rows.map((r) => (supabase.from("tournament_registrations") as any)
+          .update({ course_handicap: r.course_handicap, playing_handicap: r.playing_handicap }).eq("id", r.player_id)));
+      }
+    }
 
     setSaving(false);
     toast.success("Pairings confirmed.");
@@ -449,7 +533,7 @@ export default function EnterpriseCreate() {
             </div>
             <div>
               <Label>Select Course</Label>
-              <Select value={courseName || undefined} onValueChange={setCourseName}>
+              <Select value={courseName || undefined} onValueChange={pickCourse}>
                 <SelectTrigger><SelectValue placeholder="Choose a course" /></SelectTrigger>
                 <SelectContent>
                   {courses.map((c) => (
@@ -667,6 +751,66 @@ export default function EnterpriseCreate() {
         </Card>
       )}
 
+      {step === 0 && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base">Handicap Settings</CardTitle>
+            <p className="text-xs text-muted-foreground">Changes save automatically.</p>
+          </CardHeader>
+          <CardContent className="grid gap-4 sm:grid-cols-2">
+            <label className="flex items-center justify-between gap-2 text-sm sm:col-span-2">
+              <span className="font-medium">Enable Handicaps <Hint text="Turns on Course and Playing Handicaps, net scores and the Gross / Net leaderboard toggle." /></span>
+              <Switch checked={hcp.enabled} onCheckedChange={(v) => updateHcp({ enabled: v })} />
+            </label>
+            {hcp.enabled && (
+              <>
+                <div>
+                  <Label><HandicapLabel kind="playing">Handicap Allowance</HandicapLabel></Label>
+                  <Select
+                    value={hcp.customAllowance ? "custom" : String(hcp.allowance)}
+                    onValueChange={(v) => v === "custom" ? updateHcp({ customAllowance: true }) : updateHcp({ customAllowance: false, allowance: Number(v) })}
+                  >
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {ALLOWANCE_OPTIONS.map((n) => <SelectItem key={n} value={String(n)}>{n}%</SelectItem>)}
+                      <SelectItem value="custom">Custom</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {hcp.customAllowance && (
+                    <Input className="mt-2" type="number" min={0} max={100} value={hcp.allowance}
+                      onChange={(e) => updateHcp({ allowance: Number(e.target.value) || 0 })} placeholder="Allowance %" />
+                  )}
+                </div>
+                <div>
+                  <Label>Course Rating <Hint text="USGA Course Rating for the tee being played, e.g. 71.2. Filled in automatically from saved courses." /></Label>
+                  <Input type="number" step="0.1" value={hcp.courseRating} onChange={(e) => updateHcp({ courseRating: e.target.value })} placeholder="71.2" />
+                </div>
+                <div>
+                  <Label>Slope Rating <Hint text="USGA Slope Rating for the tee, 55–155. 113 is average." /></Label>
+                  <Input type="number" step="1" value={hcp.slope} onChange={(e) => updateHcp({ slope: e.target.value })} placeholder="125" />
+                </div>
+                <div>
+                  <Label>Par</Label>
+                  <Input type="number" step="1" value={hcp.par} onChange={(e) => updateHcp({ par: e.target.value })} placeholder="72" />
+                </div>
+                <label className="flex items-center justify-between gap-2 text-sm sm:col-span-2">
+                  <span>Auto-Sync GHIN <Hint text="Refreshes every player's Handicap Index from GHIN once a day. You can also sync on demand." /></span>
+                  <Switch checked={hcp.sync} onCheckedChange={(v) => updateHcp({ sync: v })} />
+                </label>
+                <div className="flex flex-wrap items-center gap-3 rounded-md bg-muted p-3 text-xs text-muted-foreground sm:col-span-2">
+                  <span>
+                    Example: Index 12.4 → Course Handicap {computeHandicaps(12.4, hcpSettings).courseHandicap ?? "—"} · Playing Handicap {computeHandicaps(12.4, hcpSettings).playingHandicap ?? "—"}
+                  </span>
+                  <Button variant="outline" size="sm" className="ml-auto" onClick={runHandicapSync} disabled={hcpSyncing}>
+                    {hcpSyncing ? <Loader2 className="mr-1.5 h-4 w-4 animate-spin" /> : null} Sync All Handicaps
+                  </Button>
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
       {/* STEP 3 */}
       {step === 1 && (
         <div className="space-y-4">
@@ -712,6 +856,8 @@ export default function EnterpriseCreate() {
                             email: m.email || undefined,
                             phone: m.phone || undefined,
                             handicap_index: m.handicap_index,
+                            ghin_id: m.ghin_number || null,
+                            handicap_source: m.handicap_source || null,
                           })));
                           setRosterPicked([]);
                         }}

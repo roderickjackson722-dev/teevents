@@ -19,6 +19,8 @@ import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as TSlugRouteImport } from './routes/t/$slug'
 import { Route as TeamSlugRouteImport } from './routes/team/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
+import { Route as ApiGhinLookupRouteImport } from './routes/api/ghin/lookup'
+import { Route as ApiGhinSyncAllRouteImport } from './routes/api/ghin/sync-all'
 import { Route as ApiPublicLeadMagnetDownloadRouteImport } from './routes/api/public/lead-magnet-download'
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
 import { Route as ApiPublicLeagueEventRegistrationLinkRouteImport } from './routes/api/public/league-event-registration-link'
@@ -32,7 +34,10 @@ import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/
 import { Route as ApiPublicSampleShareEmailRouteImport } from './routes/api/public/sample-share-email'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 import { Route as TeamSlugStarterRouteImport } from './routes/team/$slug.starter'
+import { Route as ApiGhinSyncEventEventIdRouteImport } from './routes/api/ghin/sync-event.$eventId'
+import { Route as ApiGhinSyncLeagueLeagueIdRouteImport } from './routes/api/ghin/sync-league.$leagueId'
 import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes/api/public/hooks/check-tournament-links'
+import { Route as ApiPublicHooksHandicapDailySyncRouteImport } from './routes/api/public/hooks/handicap-daily-sync'
 import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
 import { Route as ApiPublicHooksPlatformHealthMonitorRouteImport } from './routes/api/public/hooks/platform-health-monitor'
 import { Route as ApiPublicHooksProcessLeagueRenewalsRouteImport } from './routes/api/public/hooks/process-league-renewals'
@@ -88,6 +93,16 @@ const TeamSlugRoute = TeamSlugRouteImport.update({
 const TournamentSlugRoute = TournamentSlugRouteImport.update({
   id: '/tournament/$slug',
   path: '/tournament/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGhinLookupRoute = ApiGhinLookupRouteImport.update({
+  id: '/api/ghin/lookup',
+  path: '/api/ghin/lookup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGhinSyncAllRoute = ApiGhinSyncAllRouteImport.update({
+  id: '/api/ghin/sync-all',
+  path: '/api/ghin/sync-all',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicLeadMagnetDownloadRoute =
@@ -163,10 +178,27 @@ const TeamSlugStarterRoute = TeamSlugStarterRouteImport.update({
   path: '/starter',
   getParentRoute: () => TeamSlugRoute,
 } as any)
+const ApiGhinSyncEventEventIdRoute = ApiGhinSyncEventEventIdRouteImport.update({
+  id: '/api/ghin/sync-event/$eventId',
+  path: '/api/ghin/sync-event/$eventId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiGhinSyncLeagueLeagueIdRoute =
+  ApiGhinSyncLeagueLeagueIdRouteImport.update({
+    id: '/api/ghin/sync-league/$leagueId',
+    path: '/api/ghin/sync-league/$leagueId',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksCheckTournamentLinksRoute =
   ApiPublicHooksCheckTournamentLinksRouteImport.update({
     id: '/api/public/hooks/check-tournament-links',
     path: '/api/public/hooks/check-tournament-links',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicHooksHandicapDailySyncRoute =
+  ApiPublicHooksHandicapDailySyncRouteImport.update({
+    id: '/api/public/hooks/handicap-daily-sync',
+    path: '/api/public/hooks/handicap-daily-sync',
     getParentRoute: () => rootRouteImport,
   } as any)
 const ApiPublicHooksLeadMagnetFollowupsRoute =
@@ -217,6 +249,8 @@ export interface FileRoutesByFullPath {
   '/team/$slug': typeof TeamSlugRouteWithChildren
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
+  '/api/ghin/lookup': typeof ApiGhinLookupRoute
+  '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
@@ -230,7 +264,10 @@ export interface FileRoutesByFullPath {
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
+  '/api/ghin/sync-event/$eventId': typeof ApiGhinSyncEventEventIdRoute
+  '/api/ghin/sync-league/$leagueId': typeof ApiGhinSyncLeagueLeagueIdRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
+  '/api/public/hooks/handicap-daily-sync': typeof ApiPublicHooksHandicapDailySyncRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
@@ -249,6 +286,8 @@ export interface FileRoutesByTo {
   '/team/$slug': typeof TeamSlugRouteWithChildren
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college': typeof CollegeIndexRoute
+  '/api/ghin/lookup': typeof ApiGhinLookupRoute
+  '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
@@ -262,7 +301,10 @@ export interface FileRoutesByTo {
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
+  '/api/ghin/sync-event/$eventId': typeof ApiGhinSyncEventEventIdRoute
+  '/api/ghin/sync-league/$leagueId': typeof ApiGhinSyncLeagueLeagueIdRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
+  '/api/public/hooks/handicap-daily-sync': typeof ApiPublicHooksHandicapDailySyncRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
@@ -282,6 +324,8 @@ export interface FileRoutesById {
   '/team/$slug': typeof TeamSlugRouteWithChildren
   '/tournament/$slug': typeof TournamentSlugRoute
   '/college/': typeof CollegeIndexRoute
+  '/api/ghin/lookup': typeof ApiGhinLookupRoute
+  '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
@@ -295,7 +339,10 @@ export interface FileRoutesById {
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
+  '/api/ghin/sync-event/$eventId': typeof ApiGhinSyncEventEventIdRoute
+  '/api/ghin/sync-league/$leagueId': typeof ApiGhinSyncLeagueLeagueIdRoute
   '/api/public/hooks/check-tournament-links': typeof ApiPublicHooksCheckTournamentLinksRoute
+  '/api/public/hooks/handicap-daily-sync': typeof ApiPublicHooksHandicapDailySyncRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
@@ -316,6 +363,8 @@ export interface FileRouteTypes {
     | '/team/$slug'
     | '/tournament/$slug'
     | '/college/'
+    | '/api/ghin/lookup'
+    | '/api/ghin/sync-all'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
@@ -329,7 +378,10 @@ export interface FileRouteTypes {
     | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
+    | '/api/ghin/sync-event/$eventId'
+    | '/api/ghin/sync-league/$leagueId'
     | '/api/public/hooks/check-tournament-links'
+    | '/api/public/hooks/handicap-daily-sync'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-league-renewals'
@@ -348,6 +400,8 @@ export interface FileRouteTypes {
     | '/team/$slug'
     | '/tournament/$slug'
     | '/college'
+    | '/api/ghin/lookup'
+    | '/api/ghin/sync-all'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
@@ -361,7 +415,10 @@ export interface FileRouteTypes {
     | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
+    | '/api/ghin/sync-event/$eventId'
+    | '/api/ghin/sync-league/$leagueId'
     | '/api/public/hooks/check-tournament-links'
+    | '/api/public/hooks/handicap-daily-sync'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-league-renewals'
@@ -380,6 +437,8 @@ export interface FileRouteTypes {
     | '/team/$slug'
     | '/tournament/$slug'
     | '/college/'
+    | '/api/ghin/lookup'
+    | '/api/ghin/sync-all'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
@@ -393,7 +452,10 @@ export interface FileRouteTypes {
     | '/api/public/sample-share-email'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
+    | '/api/ghin/sync-event/$eventId'
+    | '/api/ghin/sync-league/$leagueId'
     | '/api/public/hooks/check-tournament-links'
+    | '/api/public/hooks/handicap-daily-sync'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-league-renewals'
@@ -413,6 +475,8 @@ export interface RootRouteChildren {
   TeamSlugRoute: typeof TeamSlugRouteWithChildren
   TournamentSlugRoute: typeof TournamentSlugRoute
   CollegeIndexRoute: typeof CollegeIndexRoute
+  ApiGhinLookupRoute: typeof ApiGhinLookupRoute
+  ApiGhinSyncAllRoute: typeof ApiGhinSyncAllRoute
   ApiPublicLeadMagnetDownloadRoute: typeof ApiPublicLeadMagnetDownloadRoute
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
   ApiPublicLeagueEventRegistrationLinkRoute: typeof ApiPublicLeagueEventRegistrationLinkRoute
@@ -425,7 +489,10 @@ export interface RootRouteChildren {
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   ApiPublicSampleShareEmailRoute: typeof ApiPublicSampleShareEmailRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
+  ApiGhinSyncEventEventIdRoute: typeof ApiGhinSyncEventEventIdRoute
+  ApiGhinSyncLeagueLeagueIdRoute: typeof ApiGhinSyncLeagueLeagueIdRoute
   ApiPublicHooksCheckTournamentLinksRoute: typeof ApiPublicHooksCheckTournamentLinksRoute
+  ApiPublicHooksHandicapDailySyncRoute: typeof ApiPublicHooksHandicapDailySyncRoute
   ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
   ApiPublicHooksPlatformHealthMonitorRoute: typeof ApiPublicHooksPlatformHealthMonitorRoute
   ApiPublicHooksProcessLeagueRenewalsRoute: typeof ApiPublicHooksProcessLeagueRenewalsRoute
@@ -504,6 +571,20 @@ declare module '@tanstack/react-router' {
       path: '/tournament/$slug'
       fullPath: '/tournament/$slug'
       preLoaderRoute: typeof TournamentSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ghin/lookup': {
+      id: '/api/ghin/lookup'
+      path: '/api/ghin/lookup'
+      fullPath: '/api/ghin/lookup'
+      preLoaderRoute: typeof ApiGhinLookupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ghin/sync-all': {
+      id: '/api/ghin/sync-all'
+      path: '/api/ghin/sync-all'
+      fullPath: '/api/ghin/sync-all'
+      preLoaderRoute: typeof ApiGhinSyncAllRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/lead-magnet-download': {
@@ -597,11 +678,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TeamSlugStarterRouteImport
       parentRoute: typeof TeamSlugRoute
     }
+    '/api/ghin/sync-event/$eventId': {
+      id: '/api/ghin/sync-event/$eventId'
+      path: '/api/ghin/sync-event/$eventId'
+      fullPath: '/api/ghin/sync-event/$eventId'
+      preLoaderRoute: typeof ApiGhinSyncEventEventIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/ghin/sync-league/$leagueId': {
+      id: '/api/ghin/sync-league/$leagueId'
+      path: '/api/ghin/sync-league/$leagueId'
+      fullPath: '/api/ghin/sync-league/$leagueId'
+      preLoaderRoute: typeof ApiGhinSyncLeagueLeagueIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/check-tournament-links': {
       id: '/api/public/hooks/check-tournament-links'
       path: '/api/public/hooks/check-tournament-links'
       fullPath: '/api/public/hooks/check-tournament-links'
       preLoaderRoute: typeof ApiPublicHooksCheckTournamentLinksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hooks/handicap-daily-sync': {
+      id: '/api/public/hooks/handicap-daily-sync'
+      path: '/api/public/hooks/handicap-daily-sync'
+      fullPath: '/api/public/hooks/handicap-daily-sync'
+      preLoaderRoute: typeof ApiPublicHooksHandicapDailySyncRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/lead-magnet-followups': {
@@ -672,6 +774,8 @@ const rootRouteChildren: RootRouteChildren = {
   TeamSlugRoute: TeamSlugRouteWithChildren,
   TournamentSlugRoute: TournamentSlugRoute,
   CollegeIndexRoute: CollegeIndexRoute,
+  ApiGhinLookupRoute: ApiGhinLookupRoute,
+  ApiGhinSyncAllRoute: ApiGhinSyncAllRoute,
   ApiPublicLeadMagnetDownloadRoute: ApiPublicLeadMagnetDownloadRoute,
   ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,
   ApiPublicLeagueEventRegistrationLinkRoute:
@@ -685,8 +789,11 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   ApiPublicSampleShareEmailRoute: ApiPublicSampleShareEmailRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,
+  ApiGhinSyncEventEventIdRoute: ApiGhinSyncEventEventIdRoute,
+  ApiGhinSyncLeagueLeagueIdRoute: ApiGhinSyncLeagueLeagueIdRoute,
   ApiPublicHooksCheckTournamentLinksRoute:
     ApiPublicHooksCheckTournamentLinksRoute,
+  ApiPublicHooksHandicapDailySyncRoute: ApiPublicHooksHandicapDailySyncRoute,
   ApiPublicHooksLeadMagnetFollowupsRoute:
     ApiPublicHooksLeadMagnetFollowupsRoute,
   ApiPublicHooksPlatformHealthMonitorRoute:

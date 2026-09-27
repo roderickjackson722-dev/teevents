@@ -1688,6 +1688,51 @@ export type Database = {
         }
         Relationships: []
       }
+      course_handicaps: {
+        Row: {
+          calculated_at: string
+          course_handicap: number
+          event_id: string
+          handicap_index: number
+          id: string
+          player_id: string
+          playing_handicap: number
+        }
+        Insert: {
+          calculated_at?: string
+          course_handicap: number
+          event_id: string
+          handicap_index: number
+          id?: string
+          player_id: string
+          playing_handicap: number
+        }
+        Update: {
+          calculated_at?: string
+          course_handicap?: number
+          event_id?: string
+          handicap_index?: number
+          id?: string
+          player_id?: string
+          playing_handicap?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "course_handicaps_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "course_handicaps_player_id_fkey"
+            columns: ["player_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_tee_sets: {
         Row: {
           course_rating: number
@@ -2865,9 +2910,12 @@ export type Database = {
           first_name: string
           ghin_number: string | null
           handicap_index: number | null
+          handicap_last_updated: string | null
+          handicap_source: Database["public"]["Enums"]["handicap_source"]
           id: string
           is_active: boolean
           last_name: string
+          low_handicap_index: number | null
           member_id: string | null
           notes: string | null
           organization_id: string
@@ -2882,9 +2930,12 @@ export type Database = {
           first_name: string
           ghin_number?: string | null
           handicap_index?: number | null
+          handicap_last_updated?: string | null
+          handicap_source?: Database["public"]["Enums"]["handicap_source"]
           id?: string
           is_active?: boolean
           last_name: string
+          low_handicap_index?: number | null
           member_id?: string | null
           notes?: string | null
           organization_id: string
@@ -2899,9 +2950,12 @@ export type Database = {
           first_name?: string
           ghin_number?: string | null
           handicap_index?: number | null
+          handicap_last_updated?: string | null
+          handicap_source?: Database["public"]["Enums"]["handicap_source"]
           id?: string
           is_active?: boolean
           last_name?: string
+          low_handicap_index?: number | null
           member_id?: string | null
           notes?: string | null
           organization_id?: string
@@ -3577,6 +3631,7 @@ export type Database = {
           flight_method: string
           flights_enabled: boolean
           font_color: string | null
+          handicap_sync_enabled: boolean
           id: string
           is_active: boolean
           is_public: boolean
@@ -3623,6 +3678,7 @@ export type Database = {
           flight_method?: string
           flights_enabled?: boolean
           font_color?: string | null
+          handicap_sync_enabled?: boolean
           id?: string
           is_active?: boolean
           is_public?: boolean
@@ -3669,6 +3725,7 @@ export type Database = {
           flight_method?: string
           flights_enabled?: boolean
           font_color?: string | null
+          handicap_sync_enabled?: boolean
           id?: string
           is_active?: boolean
           is_public?: boolean
@@ -3749,6 +3806,109 @@ export type Database = {
           status?: string
           title?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      handicap_index_history: {
+        Row: {
+          handicap_index: number
+          id: string
+          league_member_id: string | null
+          organization_id: string | null
+          recorded_at: string
+          registration_id: string | null
+          roster_id: string | null
+          source: Database["public"]["Enums"]["handicap_source"]
+        }
+        Insert: {
+          handicap_index: number
+          id?: string
+          league_member_id?: string | null
+          organization_id?: string | null
+          recorded_at?: string
+          registration_id?: string | null
+          roster_id?: string | null
+          source?: Database["public"]["Enums"]["handicap_source"]
+        }
+        Update: {
+          handicap_index?: number
+          id?: string
+          league_member_id?: string | null
+          organization_id?: string | null
+          recorded_at?: string
+          registration_id?: string | null
+          roster_id?: string | null
+          source?: Database["public"]["Enums"]["handicap_source"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "handicap_index_history_league_member_id_fkey"
+            columns: ["league_member_id"]
+            isOneToOne: false
+            referencedRelation: "league_members"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handicap_index_history_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registrations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "handicap_index_history_roster_id_fkey"
+            columns: ["roster_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_roster"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      handicap_sync_logs: {
+        Row: {
+          created_at: string
+          errors: Json
+          failed: number
+          id: string
+          manual_remaining: number
+          organization_id: string | null
+          pending: boolean
+          scope: string
+          target_id: string | null
+          target_name: string | null
+          total: number
+          triggered_by: string
+          updated: number
+        }
+        Insert: {
+          created_at?: string
+          errors?: Json
+          failed?: number
+          id?: string
+          manual_remaining?: number
+          organization_id?: string | null
+          pending?: boolean
+          scope: string
+          target_id?: string | null
+          target_name?: string | null
+          total?: number
+          triggered_by?: string
+          updated?: number
+        }
+        Update: {
+          created_at?: string
+          errors?: Json
+          failed?: number
+          id?: string
+          manual_remaining?: number
+          organization_id?: string | null
+          pending?: boolean
+          scope?: string
+          target_id?: string | null
+          target_name?: string | null
+          total?: number
+          triggered_by?: string
+          updated?: number
         }
         Relationships: []
       }
@@ -4652,12 +4812,16 @@ export type Database = {
           course_handicap: number | null
           created_at: string
           email: string
+          ghin_id: string | null
           handicap_index: number | null
+          handicap_last_updated: string | null
+          handicap_source: Database["public"]["Enums"]["handicap_source"]
           handicap_updated_at: string | null
           id: string
           is_active: boolean
           join_date: string
           league_id: string
+          low_handicap_index: number | null
           member_name: string
           membership_fee_cents: number | null
           membership_fee_paid: boolean
@@ -4677,12 +4841,16 @@ export type Database = {
           course_handicap?: number | null
           created_at?: string
           email: string
+          ghin_id?: string | null
           handicap_index?: number | null
+          handicap_last_updated?: string | null
+          handicap_source?: Database["public"]["Enums"]["handicap_source"]
           handicap_updated_at?: string | null
           id?: string
           is_active?: boolean
           join_date?: string
           league_id: string
+          low_handicap_index?: number | null
           member_name: string
           membership_fee_cents?: number | null
           membership_fee_paid?: boolean
@@ -4702,12 +4870,16 @@ export type Database = {
           course_handicap?: number | null
           created_at?: string
           email?: string
+          ghin_id?: string | null
           handicap_index?: number | null
+          handicap_last_updated?: string | null
+          handicap_source?: Database["public"]["Enums"]["handicap_source"]
           handicap_updated_at?: string | null
           id?: string
           is_active?: boolean
           join_date?: string
           league_id?: string
+          low_handicap_index?: number | null
           member_name?: string
           membership_fee_cents?: number | null
           membership_fee_paid?: boolean
@@ -11372,6 +11544,7 @@ export type Database = {
           email: string
           first_name: string
           flight_id: string | null
+          ghin_id: string | null
           group_id: string | null
           group_label: string | null
           group_leader: boolean
@@ -11381,9 +11554,12 @@ export type Database = {
           group_scoring_code: string | null
           handicap: number | null
           handicap_index: number | null
+          handicap_last_updated: string | null
+          handicap_source: Database["public"]["Enums"]["handicap_source"]
           id: string
           is_captain: boolean
           last_name: string
+          low_handicap_index: number | null
           notes: string | null
           payment_method: string
           payment_status: string
@@ -11430,6 +11606,7 @@ export type Database = {
           email: string
           first_name: string
           flight_id?: string | null
+          ghin_id?: string | null
           group_id?: string | null
           group_label?: string | null
           group_leader?: boolean
@@ -11439,9 +11616,12 @@ export type Database = {
           group_scoring_code?: string | null
           handicap?: number | null
           handicap_index?: number | null
+          handicap_last_updated?: string | null
+          handicap_source?: Database["public"]["Enums"]["handicap_source"]
           id?: string
           is_captain?: boolean
           last_name: string
+          low_handicap_index?: number | null
           notes?: string | null
           payment_method?: string
           payment_status?: string
@@ -11488,6 +11668,7 @@ export type Database = {
           email?: string
           first_name?: string
           flight_id?: string | null
+          ghin_id?: string | null
           group_id?: string | null
           group_label?: string | null
           group_leader?: boolean
@@ -11497,9 +11678,12 @@ export type Database = {
           group_scoring_code?: string | null
           handicap?: number | null
           handicap_index?: number | null
+          handicap_last_updated?: string | null
+          handicap_source?: Database["public"]["Enums"]["handicap_source"]
           id?: string
           is_captain?: boolean
           last_name?: string
+          low_handicap_index?: number | null
           notes?: string | null
           payment_method?: string
           payment_status?: string
@@ -12326,6 +12510,7 @@ export type Database = {
           countdown_style: string
           course_name: string | null
           course_par: number | null
+          course_rating: number | null
           created_at: string
           created_by_admin_id: string | null
           custom_domain: string | null
@@ -12436,7 +12621,9 @@ export type Database = {
           golfers_register_first: boolean
           group_field_rules: Json | null
           handicap_allowance: number | null
+          handicap_allowance_percentage: number
           handicap_enabled: boolean | null
+          handicap_sync_enabled: boolean
           history: string | null
           hole_pars: Json | null
           id: string
@@ -12601,6 +12788,7 @@ export type Database = {
           skins_enabled: boolean
           skins_entry_fee_cents: number
           skins_mode: string
+          slope_rating: number | null
           slug: string | null
           sms_credits_limit: number
           sms_credits_used: number
@@ -12679,6 +12867,7 @@ export type Database = {
           countdown_style?: string
           course_name?: string | null
           course_par?: number | null
+          course_rating?: number | null
           created_at?: string
           created_by_admin_id?: string | null
           custom_domain?: string | null
@@ -12789,7 +12978,9 @@ export type Database = {
           golfers_register_first?: boolean
           group_field_rules?: Json | null
           handicap_allowance?: number | null
+          handicap_allowance_percentage?: number
           handicap_enabled?: boolean | null
+          handicap_sync_enabled?: boolean
           history?: string | null
           hole_pars?: Json | null
           id?: string
@@ -12954,6 +13145,7 @@ export type Database = {
           skins_enabled?: boolean
           skins_entry_fee_cents?: number
           skins_mode?: string
+          slope_rating?: number | null
           slug?: string | null
           sms_credits_limit?: number
           sms_credits_used?: number
@@ -13032,6 +13224,7 @@ export type Database = {
           countdown_style?: string
           course_name?: string | null
           course_par?: number | null
+          course_rating?: number | null
           created_at?: string
           created_by_admin_id?: string | null
           custom_domain?: string | null
@@ -13142,7 +13335,9 @@ export type Database = {
           golfers_register_first?: boolean
           group_field_rules?: Json | null
           handicap_allowance?: number | null
+          handicap_allowance_percentage?: number
           handicap_enabled?: boolean | null
+          handicap_sync_enabled?: boolean
           history?: string | null
           hole_pars?: Json | null
           id?: string
@@ -13307,6 +13502,7 @@ export type Database = {
           skins_enabled?: boolean
           skins_entry_fee_cents?: number
           skins_mode?: string
+          slope_rating?: number | null
           slug?: string | null
           sms_credits_limit?: number
           sms_credits_used?: number
@@ -14948,6 +15144,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      handicap_source: "ghin" | "manual" | "none"
       org_permission:
         | "manage_players"
         | "manage_registration"
@@ -15091,6 +15288,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      handicap_source: ["ghin", "manual", "none"],
       org_permission: [
         "manage_players",
         "manage_registration",

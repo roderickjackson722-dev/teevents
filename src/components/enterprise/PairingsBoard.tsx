@@ -8,6 +8,8 @@ export interface PairingPlayer {
   id: string;
   name: string;
   handicap: number | null;
+  courseHandicap?: number | null;
+  playingHandicap?: number | null;
 }
 
 export interface PairingGroup {
@@ -83,8 +85,15 @@ export default function PairingsBoard({
             }`}
           >
             <GripVertical className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-            <span className="truncate">{p?.name || "Player"}</span>
-            {p?.handicap != null && (
+            <span className="min-w-0 flex-1">
+              <span className="block truncate">{p?.name || "Player"}</span>
+              {p?.courseHandicap != null && (
+                <span className="block text-[11px] text-muted-foreground">
+                  Course Handicap: {p.courseHandicap} · Playing Handicap: {p.playingHandicap ?? p.courseHandicap}
+                </span>
+              )}
+            </span>
+            {p?.handicap != null && p?.courseHandicap == null && (
               <span className="ml-auto shrink-0 text-xs text-muted-foreground">{p.handicap}</span>
             )}
           </div>

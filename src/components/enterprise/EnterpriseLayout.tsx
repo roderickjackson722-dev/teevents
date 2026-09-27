@@ -16,8 +16,7 @@ import {
   Sparkles,
   Trophy,
   Users,
-  Zap,
-} from "lucide-react";
+  Zap, Gauge } from "lucide-react";
 import logoAsset from "@/assets/teevents-logo-final.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -50,6 +49,7 @@ const NAV: NavGroup[] = [
       { label: "Leagues", to: "/enterprise/leagues", icon: Flag },
       { label: "My Courses", to: "/enterprise/courses", icon: MapPin },
       { label: "My Roster", to: "/enterprise/roster", icon: Users },
+      { label: "Handicaps", to: "/enterprise/handicaps", icon: Gauge },
       { label: "Communications", to: "/enterprise/communications", icon: Mail, fullOnly: true },
       { label: "Automations", to: "/enterprise/automations", icon: Zap, fullOnly: true },
     ],

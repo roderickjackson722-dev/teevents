@@ -856,6 +856,8 @@ export default function EnterpriseCreate() {
                             email: m.email || undefined,
                             phone: m.phone || undefined,
                             handicap_index: m.handicap_index,
+                            ghin_id: m.ghin_number || null,
+                            handicap_source: m.handicap_source || null,
                           })));
                           setRosterPicked([]);
                         }}

@@ -1,5 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
-import type { GhinLookup, SyncSummary } from "@/lib/ghin.server";
+export type GhinLookup =
+  | { status: "ok"; index: number; lowIndex: number | null }
+  | { status: "pending" | "not_found" | "error"; message: string };
+export interface SyncSummary { total: number; updated: number; manualRemaining: number; failed: number; pending: boolean; errors: { player: string; message: string }[]; message: string }
 
 async function authed(path: string, init: RequestInit = {}) {
   const { data } = await supabase.auth.getSession();

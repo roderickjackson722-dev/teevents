@@ -78,6 +78,13 @@
       "when": 1790352356062,
       "tag": "0010_enterprise_demos",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1790527277514,
+      "tag": "0011_handicap_system",
+      "breakpoints": true
     }
   ]
 }

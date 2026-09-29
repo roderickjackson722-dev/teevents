@@ -306,7 +306,7 @@ export default function EnterpriseCreate() {
   };
 
   useEffect(() => {
-    if (step !== 3 || !players.length) return;
+    if (step !== 2 || !players.length) return;
     setGroups((prev) => {
       if (prev.length) return prev;
       const built = new Map<number, PairingGroup>();

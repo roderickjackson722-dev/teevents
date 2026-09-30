@@ -210,6 +210,7 @@ import CompareTeeventsVsPlatform from "./pages/CompareTeeventsVsPlatform";
 import CompareGolfGenius from "./pages/CompareGolfGenius";
 import PinSheets from "./pages/dashboard/PinSheets";
 import Compare from "./pages/Compare";
+import WhyTeeVents from "./pages/WhyTeeVents";
 import CompareEventbritePdf from "./pages/CompareEventbritePdf";
 import SalesFlyer from "./pages/SalesFlyer";
 import SponsorRegistration from "./pages/SponsorRegistration";
@@ -272,6 +273,7 @@ const App = () => (
           <Route path="/events" element={<Events />} />
           <Route path="/events/:slug" element={<EventDetail />} />
           <Route path="/reviews" element={<Reviews />} />
+          <Route path="/why-teevents" element={<WhyTeeVents />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />

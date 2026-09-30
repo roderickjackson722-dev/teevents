@@ -305,17 +305,6 @@ const Plans = () => {
                 </table>
               </div>
             </div>
-            <div className="mt-6 rounded-lg border-l-4 border-secondary bg-secondary/10 p-6">
-              <p className="font-display font-bold text-foreground mb-2">
-                "What if I only sell 80 spots instead of 100?"
-              </p>
-              <p className="text-sm text-foreground/80 leading-relaxed mb-2">
-                With a flat-fee competitor, you still pay upfront. With TeeVents, your cost is only $600 — and you can pass that entire fee to your players at checkout.
-              </p>
-              <p className="text-sm text-foreground/80 leading-relaxed">
-                Most players cover it because they expect a small service fee. You pay nothing out of pocket.
-              </p>
-            </div>
           </motion.div>
 
 

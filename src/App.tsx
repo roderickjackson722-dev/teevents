@@ -111,18 +111,7 @@ import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
 import AdminSmsSettings from "./pages/admin/SmsSettings";
 import AdminCollegeScoringSettings from "./pages/admin/CollegeScoringSettings";
 import AdminCollegeHub from "./pages/admin/CollegeHub";
-import RfpSportsManagement from "./pages/admin/rfp/SportsManagement";
-import RfpSeasonManagement from "./pages/admin/rfp/SeasonManagement";
-import RfpFacilityManagement from "./pages/admin/rfp/FacilityManagement";
-import RfpFinancialReports from "./pages/admin/rfp/FinancialReports";
-import RfpTransitionPlan from "./pages/admin/rfp/TransitionPlan";
-import RfpInvoiceManagement from "./pages/admin/rfp/InvoiceManagement";
 import RfpClippdIntegration from "./pages/admin/rfp/ClippdIntegration";
-import RfpRegistrationManagement from "./pages/admin/rfp/RegistrationManagement";
-import RfpPaymentManagement from "./pages/admin/rfp/PaymentManagement";
-import RfpScheduleManagement from "./pages/admin/rfp/ScheduleManagement";
-import RfpCommunicationTools from "./pages/admin/rfp/CommunicationTools";
-import RfpPublicRegistration from "./pages/rfp/PublicRegistration";
 import CollegeScoringAddon from "./pages/dashboard/CollegeScoringAddon";
 import DashboardMessages from "./pages/dashboard/Messages";
 
@@ -497,19 +486,8 @@ const App = () => (
            <Route path="/admin/sms-settings" element={<AdminSmsSettings />} />
            <Route path="/admin/college-scoring" element={<AdminCollegeScoringSettings />} />
 
-           {/* Private RFP features — admin-only, not linked from any public or organizer navigation */}
-           <Route path="/admin/sports" element={<RfpSportsManagement />} />
-           <Route path="/admin/seasons" element={<RfpSeasonManagement />} />
-           <Route path="/admin/facilities" element={<RfpFacilityManagement />} />
-           <Route path="/admin/financial-reports" element={<RfpFinancialReports />} />
-           <Route path="/admin/transition-plan" element={<RfpTransitionPlan />} />
-            <Route path="/admin/invoices" element={<RfpInvoiceManagement />} />
-            <Route path="/admin/clippd" element={<RfpClippdIntegration />} />
-            <Route path="/admin/registrations" element={<RfpRegistrationManagement />} />
-            <Route path="/admin/registration-payments" element={<RfpPaymentManagement />} />
-            <Route path="/admin/scheduling" element={<RfpScheduleManagement />} />
-            <Route path="/admin/communications" element={<RfpCommunicationTools />} />
-            <Route path="/rfp/register/:slug" element={<RfpPublicRegistration />} />
+           {/* RFP features archived to archive/rfp/ (bid not won) — Clippd stays for College Hub */}
+           <Route path="/admin/clippd" element={<RfpClippdIntegration />} />
 
            <Route path="/admin/users-events" element={<AdminUsersEvents />} />
            <Route path="/admin/league-promo-codes" element={<LeaguePromoCodes />} />

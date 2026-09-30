@@ -41,7 +41,6 @@ import { Route as ApiPublicHooksHandicapDailySyncRouteImport } from './routes/ap
 import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
 import { Route as ApiPublicHooksPlatformHealthMonitorRouteImport } from './routes/api/public/hooks/platform-health-monitor'
 import { Route as ApiPublicHooksProcessLeagueRenewalsRouteImport } from './routes/api/public/hooks/process-league-renewals'
-import { Route as ApiPublicHooksProcessRfpCommunicationsRouteImport } from './routes/api/public/hooks/process-rfp-communications'
 import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
 import { Route as ApiPublicHooksTournamentPageCanaryRouteImport } from './routes/api/public/hooks/tournament-page-canary'
 
@@ -219,12 +218,6 @@ const ApiPublicHooksProcessLeagueRenewalsRoute =
     path: '/api/public/hooks/process-league-renewals',
     getParentRoute: () => rootRouteImport,
   } as any)
-const ApiPublicHooksProcessRfpCommunicationsRoute =
-  ApiPublicHooksProcessRfpCommunicationsRouteImport.update({
-    id: '/api/public/hooks/process-rfp-communications',
-    path: '/api/public/hooks/process-rfp-communications',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const ApiPublicHooksProcessScheduledEmailsRoute =
   ApiPublicHooksProcessScheduledEmailsRouteImport.update({
     id: '/api/public/hooks/process-scheduled-emails',
@@ -271,7 +264,6 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
-  '/api/public/hooks/process-rfp-communications': typeof ApiPublicHooksProcessRfpCommunicationsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
@@ -308,7 +300,6 @@ export interface FileRoutesByTo {
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
-  '/api/public/hooks/process-rfp-communications': typeof ApiPublicHooksProcessRfpCommunicationsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
@@ -346,7 +337,6 @@ export interface FileRoutesById {
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
-  '/api/public/hooks/process-rfp-communications': typeof ApiPublicHooksProcessRfpCommunicationsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
@@ -385,7 +375,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-league-renewals'
-    | '/api/public/hooks/process-rfp-communications'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
   fileRoutesByTo: FileRoutesByTo
@@ -422,7 +411,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-league-renewals'
-    | '/api/public/hooks/process-rfp-communications'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
   id:
@@ -459,7 +447,6 @@ export interface FileRouteTypes {
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
     | '/api/public/hooks/process-league-renewals'
-    | '/api/public/hooks/process-rfp-communications'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
   fileRoutesById: FileRoutesById
@@ -496,7 +483,6 @@ export interface RootRouteChildren {
   ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
   ApiPublicHooksPlatformHealthMonitorRoute: typeof ApiPublicHooksPlatformHealthMonitorRoute
   ApiPublicHooksProcessLeagueRenewalsRoute: typeof ApiPublicHooksProcessLeagueRenewalsRoute
-  ApiPublicHooksProcessRfpCommunicationsRoute: typeof ApiPublicHooksProcessRfpCommunicationsRoute
   ApiPublicHooksProcessScheduledEmailsRoute: typeof ApiPublicHooksProcessScheduledEmailsRoute
   ApiPublicHooksTournamentPageCanaryRoute: typeof ApiPublicHooksTournamentPageCanaryRoute
 }
@@ -727,13 +713,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksProcessLeagueRenewalsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/public/hooks/process-rfp-communications': {
-      id: '/api/public/hooks/process-rfp-communications'
-      path: '/api/public/hooks/process-rfp-communications'
-      fullPath: '/api/public/hooks/process-rfp-communications'
-      preLoaderRoute: typeof ApiPublicHooksProcessRfpCommunicationsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/api/public/hooks/process-scheduled-emails': {
       id: '/api/public/hooks/process-scheduled-emails'
       path: '/api/public/hooks/process-scheduled-emails'
@@ -800,8 +779,6 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksPlatformHealthMonitorRoute,
   ApiPublicHooksProcessLeagueRenewalsRoute:
     ApiPublicHooksProcessLeagueRenewalsRoute,
-  ApiPublicHooksProcessRfpCommunicationsRoute:
-    ApiPublicHooksProcessRfpCommunicationsRoute,
   ApiPublicHooksProcessScheduledEmailsRoute:
     ApiPublicHooksProcessScheduledEmailsRoute,
   ApiPublicHooksTournamentPageCanaryRoute:

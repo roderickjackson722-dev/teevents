@@ -158,9 +158,27 @@ const Plans = () => {
             <p className="text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
               Choose the pricing that fits your event — start at $0, pay once per event, or run unlimited events with Enterprise.
             </p>
+            <p className="mt-5 text-base md:text-lg font-bold uppercase tracking-widest text-secondary">
+              Zero upfront cost. Player-funded. No risk.
+            </p>
           </motion.div>
         </div>
       </section>
+
+      {/* Zero-risk banner */}
+      <section className="bg-primary border-t border-secondary/30 py-10">
+        <div className="container mx-auto px-4 max-w-4xl text-center">
+          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
+            <h2 className="text-xl md:text-3xl font-display font-bold text-secondary mb-3">
+              Zero upfront cost. Player-funded. No risk.
+            </h2>
+            <p className="text-sm md:text-base text-primary-foreground/80 leading-relaxed">
+              You have no idea if you'll sell 50 spots or 150. Why risk paying upfront before you've sold a single ticket? With TeeVents, your platform cost is zero until your players register. We only get paid when you get paid.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
 
       {/* Why choose us */}
       <section className="bg-background py-16">
@@ -258,6 +276,49 @@ const Plans = () => {
             ))}
           </div>
 
+          {/* Which option is right for you? */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mb-16 max-w-5xl mx-auto"
+          >
+            <div className="text-center mb-6">
+              <h3 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-3">
+                Which Option Is Right for You?
+              </h3>
+              <p className="text-sm md:text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+                The real question isn't "Which is cheaper on paper?" — it's "Do you want to pay upfront, or do you want a zero-risk platform that pays for itself as you grow?"
+              </p>
+            </div>
+            <div className="rounded-lg border border-border bg-card p-6 overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[720px] text-sm">
+                  <thead><tr className="border-b border-border text-left"><th className="p-3"> </th><th className="p-3">No Cost to Start</th><th className="p-3 text-primary">Per-Event</th><th className="p-3 text-primary">Enterprise</th></tr></thead>
+                  <tbody>{[
+                    ["Upfront Cost", "$0", "$150 per tournament", "$2,500/year"],
+                    ["Transaction Fee", "5% (covered by players)", "0%", "0%"],
+                    ["Events Included", "Pay as you go", "Pay as you go", "Unlimited"],
+                    ["Live Leaderboard + Mobile Scoring", "Add-on: $99", "Add-on: $99", "Included"],
+                    ["Best For", "Nonprofits, first-time organizers", "Organizers who want predictable costs", "Courses & clubs running 10+ events"],
+                  ].map((row) => <tr key={row[0]} className="border-b border-border/60 last:border-0">{row.map((cell, index) => <td key={`${row[0]}-${index}`} className={`p-3 ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{cell}</td>)}</tr>)}</tbody>
+                </table>
+              </div>
+            </div>
+            <div className="mt-6 rounded-lg border-l-4 border-secondary bg-secondary/10 p-6">
+              <p className="font-display font-bold text-foreground mb-2">
+                "What if I only sell 80 spots instead of 100?"
+              </p>
+              <p className="text-sm text-foreground/80 leading-relaxed mb-2">
+                With a flat-fee competitor, you still pay upfront. With TeeVents, your cost is only $600 — and you can pass that entire fee to your players at checkout.
+              </p>
+              <p className="text-sm text-foreground/80 leading-relaxed">
+                Most players cover it because they expect a small service fee. You pay nothing out of pocket.
+              </p>
+            </div>
+          </motion.div>
+
+
           {/* Add-on features */}
           <div className="mb-14">
             <motion.div
@@ -269,8 +330,9 @@ const Plans = () => {
               <div className="mb-6">
                 <h3 className="text-2xl font-display font-bold text-foreground">Add-on Features</h3>
                  <p className="text-sm text-muted-foreground">
-                   All $99 each, one-time per event. Select an add-on to go straight to checkout.
+                   All $99 each. One-time, per event. Select an add-on to go straight to checkout.
                 </p>
+
               </div>
 
               <ul className="divide-y divide-border">
@@ -336,29 +398,17 @@ const Plans = () => {
              </div>
           </motion.div>
 
+           <div className="mt-14 text-center">
+             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-3">
+               <Building2 className="h-3.5 w-3.5" /> Try the Enterprise demo
+             </div>
+             <h3 className="text-xl md:text-2xl font-display font-bold text-foreground">
+               Pinehurst Ridge Golf Club — Member-Guest Classic
+             </h3>
+           </div>
            <EnterpriseDemo />
            <p className="text-center mt-4"><a href="/enterprise-demo" className="text-sm font-semibold text-primary underline">Open the full Enterprise demo</a></p>
-           {/* Comparison */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-             className="mt-10 rounded-lg border border-border bg-card p-6 max-w-5xl mx-auto overflow-hidden"
-          >
-             <h3 className="mb-5 text-center text-2xl font-display font-bold text-foreground">Compare your options</h3>
-             <div className="overflow-x-auto">
-               <table className="w-full min-w-[720px] text-sm">
-                 <thead><tr className="border-b border-border text-left"><th className="p-3"> </th><th className="p-3">No Cost to Start</th><th className="p-3 text-primary">Per-Event</th><th className="p-3 text-primary">Enterprise</th></tr></thead>
-                 <tbody>{[
-                   ["Upfront Cost", "$0", "$150 per tournament", "$2,500/year"],
-                   ["Transaction Fee", "5% (covered by players)", "0%", "0%"],
-                   ["Events Included", "Pay as you go", "Pay as you go", "Unlimited"],
-                   ["Live Leaderboard + Mobile Scoring", "Add-on: $99", "Add-on: $99", "Included"],
-                   ["Best For", "Non-profits, first-time organizers", "Organizers who want predictable costs", "Courses & clubs running 10+ events"],
-                 ].map((row) => <tr key={row[0]} className="border-b border-border/60 last:border-0">{row.map((cell, index) => <td key={`${row[0]}-${index}`} className={`p-3 ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{cell}</td>)}</tr>)}</tbody>
-               </table>
-            </div>
-          </motion.div>
+
 
           {/* Secure Payments */}
           <motion.div

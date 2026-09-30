@@ -11,6 +11,7 @@ import {
 
 const baseLinks = [
   { label: "Home", to: "/" },
+  { label: "Why TeeVents", to: "/why-teevents" },
   { label: "Plans & Pricing", to: "/plans" },
   { label: "Find a Tournament", to: "/tournaments/search" },
   { label: "Leagues", to: "/golf-leagues" },

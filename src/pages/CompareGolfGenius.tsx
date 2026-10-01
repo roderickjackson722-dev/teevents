@@ -21,8 +21,8 @@ const data: Section[] = [
   {
     category: "Tournament Features",
     rows: [
-      { feature: "Player Gifts / Merchandise Store", teevents: "Included in Pro", gg: "Requires TM Premium upgrade", tv: "yes", ggs: "warn" },
-      { feature: "Live Leaderboard & Mobile Scoring", teevents: "Included in Pro", gg: "Often gated behind premium tier", tv: "yes", ggs: "warn" },
+      { feature: "Player Gifts / Merchandise Store", teevents: "Included in Per-Event", gg: "Requires TM Premium upgrade", tv: "yes", ggs: "warn" },
+      { feature: "Live Leaderboard & Mobile Scoring", teevents: "Included in Per-Event", gg: "Often gated behind premium tier", tv: "yes", ggs: "warn" },
       { feature: "Pin Sheets (Hole Locations)", teevents: "Built-in PDF generator", gg: "Not native — third-party tool needed", tv: "yes", ggs: "no" },
       { feature: "Auctions & Raffles", teevents: "Native silent auction + raffle with auto-draw", gg: "Limited / add-on", tv: "yes", ggs: "warn" },
       { feature: "Sponsorship Portal", teevents: "Tiered packages, logo upload, custom sponsorship fields", gg: "Basic logo placement", tv: "yes", ggs: "warn" },

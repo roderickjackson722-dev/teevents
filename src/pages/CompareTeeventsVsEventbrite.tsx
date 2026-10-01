@@ -22,9 +22,9 @@ interface CompRow {
 const rows: CompRow[] = [
   { feature: "Dedicated account representative", eventbrite: "Not offered", teevents: "Included with every paid event" },
   { feature: "Cost per tournament", eventbrite: "3.7% + $1.79/ticket + 2.9% processing", teevents: "$299 flat" },
-  { feature: "$150 ticket (144 players)", eventbrite: "~$958", teevents: "$299" },
-  { feature: "$250 ticket (144 players)", eventbrite: "~$1,323", teevents: "$299" },
-  { feature: "$500 ticket (144 players)", eventbrite: "~$2,113", teevents: "$299" },
+  { feature: "$150 ticket (144 players)", eventbrite: "~$958", teevents: "$299 total Per-Event price" },
+  { feature: "$250 ticket (144 players)", eventbrite: "~$1,323", teevents: "$299 total Per-Event price" },
+  { feature: "$500 ticket (144 players)", eventbrite: "~$2,113", teevents: "$299 total Per-Event price" },
   { feature: "Payout timing", eventbrite: "After event (3-7 business days)", teevents: "Immediately" },
   { feature: "Live Leaderboard", eventbrite: "No", teevents: "Yes", isYesNo: true },
   { feature: "Mobile Scoring", eventbrite: "No", teevents: "Yes", isYesNo: true },

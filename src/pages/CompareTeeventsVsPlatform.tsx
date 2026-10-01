@@ -6,6 +6,7 @@ import SEO from "@/components/SEO";
 type Row = { feature: string; them: string; teevents: string; yesNo?: boolean };
 
 const golfRows: Row[] = [
+  { feature: "Dedicated account representative", them: "Not offered", teevents: "Included with every paid event" },
   { feature: "Live Leaderboard", them: "No", teevents: "Yes", yesNo: true },
   { feature: "Mobile Scoring", them: "No", teevents: "Yes", yesNo: true },
   { feature: "Pairings & Tee Times", them: "No", teevents: "Yes", yesNo: true },
@@ -22,7 +23,7 @@ export const PLATFORMS = {
     sub: "Zeffy is great for nonprofit fundraising forms — but it wasn't built to run a golf event.",
     callout: "Keep your fundraising — and add everything golf needs with TeeVents.",
     rows: [
-      { feature: "Cost to organizer", them: "$0 (asks donors for a voluntary tip)", teevents: "$0 to start or $150 flat" },
+      { feature: "Cost to organizer", them: "$0 (asks donors for a voluntary tip)", teevents: "$0 to start or $299 flat" },
       { feature: "Branded tournament website", them: "Basic form page", teevents: "Full custom event site" },
       { feature: "Sponsorship packages & hole signs", them: "Limited", teevents: "Yes" },
       { feature: "Auction with mobile bidding", them: "Basic", teevents: "Yes" },
@@ -35,7 +36,7 @@ export const PLATFORMS = {
     sub: "GiveButter is built for campaigns. TeeVents is built for tee times, scorecards and leaderboards.",
     callout: "One platform for registration, sponsors, scoring and payouts.",
     rows: [
-      { feature: "Cost to organizer", them: "Optional tips or platform fee + processing", teevents: "$0 to start or $150 flat" },
+      { feature: "Cost to organizer", them: "Optional tips or platform fee + processing", teevents: "$0 to start or $299 flat" },
       { feature: "Branded tournament website", them: "Campaign page", teevents: "Full custom event site" },
       { feature: "Sponsorship packages & hole signs", them: "Generic tiers", teevents: "Golf-specific packages" },
       { feature: "QR check-in on event day", them: "Limited", teevents: "Yes" },

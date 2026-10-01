@@ -20,10 +20,11 @@ interface CompRow {
 }
 
 const rows: CompRow[] = [
-  { feature: "Cost per tournament", eventbrite: "3.7% + $1.79/ticket + 2.9% processing", teevents: "$150 flat" },
-  { feature: "$150 ticket (144 players)", eventbrite: "~$958", teevents: "$150" },
-  { feature: "$250 ticket (144 players)", eventbrite: "~$1,323", teevents: "$150" },
-  { feature: "$500 ticket (144 players)", eventbrite: "~$2,113", teevents: "$150" },
+  { feature: "Dedicated account representative", eventbrite: "Not offered", teevents: "Included with every paid event" },
+  { feature: "Cost per tournament", eventbrite: "3.7% + $1.79/ticket + 2.9% processing", teevents: "$299 flat" },
+  { feature: "$150 ticket (144 players)", eventbrite: "~$958", teevents: "$299" },
+  { feature: "$250 ticket (144 players)", eventbrite: "~$1,323", teevents: "$299" },
+  { feature: "$500 ticket (144 players)", eventbrite: "~$2,113", teevents: "$299" },
   { feature: "Payout timing", eventbrite: "After event (3-7 business days)", teevents: "Immediately" },
   { feature: "Live Leaderboard", eventbrite: "No", teevents: "Yes", isYesNo: true },
   { feature: "Mobile Scoring", eventbrite: "No", teevents: "Yes", isYesNo: true },
@@ -42,7 +43,7 @@ const CompareTeeventsVsEventbrite = () => {
     <Layout>
       <SEO
         title="TeeVents vs. Eventbrite — Stop Paying Eventbrite Fees | TeeVents"
-        description="Side-by-side comparison: Eventbrite vs. TeeVents for golf tournaments. Flat $150 per tournament vs. 3.7% + per-ticket fees, faster payouts, and golf-specific features Eventbrite doesn't offer."
+        description="Side-by-side comparison: Eventbrite vs. TeeVents for golf tournaments. Flat $299 per tournament, dedicated setup help, faster payouts, and golf-specific features."
       />
 
       {/* Hero */}

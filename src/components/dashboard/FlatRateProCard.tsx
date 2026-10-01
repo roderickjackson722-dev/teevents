@@ -13,7 +13,7 @@ import {
 type Status = Awaited<ReturnType<typeof getFlatRateStatus>>;
 
 /**
- * Per-Event — $150 once per tournament removes the 5% platform fee.
+ * Per-Event pricing is returned by the server so grandfathered events keep their original amount.
  */
 const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -69,7 +69,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
   }, [searchParams]);
 
   const price = useMemo(
-    () => `$${((status?.amount_cents ?? 15000) / 100).toLocaleString("en-US")}`,
+    () => `$${((status?.amount_cents ?? 29900) / 100).toLocaleString("en-US")}`,
     [status],
   );
   const active = !!status?.flat_rate_enabled;
@@ -113,7 +113,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
           <ul className="mt-4 space-y-1.5 text-sm text-foreground/90">
             <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-secondary mt-0.5" /> No 5% platform fee on any transaction</li>
             <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-secondary mt-0.5" /> Unlimited transactions</li>
-            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-secondary mt-0.5" /> Same great features, no percentage fees</li>
+            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-secondary mt-0.5" /> Dedicated TeeVents representative and page build included</li>
           </ul>
           <p className="text-xs text-muted-foreground mt-3">
             Card processing fees from our payment processor still apply on every online payment.

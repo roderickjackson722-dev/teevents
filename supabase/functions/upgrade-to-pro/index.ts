@@ -10,8 +10,8 @@ const corsHeaders = {
 /**
  * upgrade-to-pro
  *
- * Creates a Stripe Checkout session for a one-time $399 charge that unlocks
- * Pro features for ONE specific tournament (per-tournament unlock model).
+ * Creates Stripe Checkout for a per-tournament upgrade. Grandfathered events
+ * keep their existing price; current-cohort events use the tracked $299 price.
  *
  * Body: { tournament_id: string }
  *
@@ -49,7 +49,7 @@ serve(async (req) => {
     // Verify caller belongs to the org that owns this tournament
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, organization_id, is_pro")
+      .select("id, title, organization_id, is_pro, pricing_version")
       .eq("id", tournament_id)
       .maybeSingle();
     if (tErr || !tournament) throw new Error("Tournament not found");
@@ -73,20 +73,23 @@ serve(async (req) => {
     });
 
     const origin = req.headers.get("origin") ?? "https://teevents.golf";
+    const currentPricing = tournament.pricing_version === "2026-10";
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       payment_method_types: ["card"],
       customer_email: user.email,
       line_items: [{
-        price_data: {
-          currency: "usd",
-          product_data: {
-            name: "TeeVents Pro — One Tournament",
-            description: `Unlocks Pro features for: ${tournament.title}`,
+        ...(currentPricing ? { price: "price_1ULsIR7UK8GxgadTNWqa8KCz" } : {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "TeeVents Pro — One Tournament",
+              description: `Unlocks Pro features for: ${tournament.title}`,
+            },
+            unit_amount: 39900,
           },
-          unit_amount: 39900,
-        },
+        }),
         quantity: 1,
       }],
       success_url: `${origin}/dashboard?upgrade_session_id={CHECKOUT_SESSION_ID}&tournament_id=${tournament.id}`,
@@ -96,6 +99,7 @@ serve(async (req) => {
         tournament_id: tournament.id,
         organization_id: tournament.organization_id,
         user_id: user.id,
+        pricing_version: currentPricing ? "2026-10" : "legacy",
       },
     });
 

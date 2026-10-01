@@ -142,7 +142,7 @@ const Plans = () => {
     <Layout>
       <SEO
         title="Simple, Transparent Pricing | TeeVents"
-        description="The complete golf tournament management platform is free. Add paid add-ons per event only when you need them. No monthly fees, no hidden charges."
+        description="Start at $0, pay $299 per event, $499 per league, or $2,999 per year for Enterprise. Every paid event includes a dedicated TeeVents representative."
         path="/plans"
       />
 

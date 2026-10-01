@@ -49,6 +49,12 @@ serve(async (req) => {
         pro_payment_intent_id: typeof session.payment_intent === "string"
           ? session.payment_intent
           : session.payment_intent?.id ?? null,
+        ...(session.metadata?.pricing_version === "2026-10" ? {
+          pricing_model: "per_event",
+          event_fee_paid: true,
+          platform_fee_percent: 0,
+          white_glove_requested: true,
+        } : {}),
       })
       .eq("id", tournamentId);
 

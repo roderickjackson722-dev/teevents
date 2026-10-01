@@ -76,7 +76,7 @@ export default function GolfLeagues() {
     <>
       <SEO
         title="Golf League Management Software | TeeVents"
-        description="Run your golf league with real-time scoring, live leaderboards, skins, handicap tracking, and season stats. $399/year for up to 24 events, unlimited golfers."
+        description="Run a complete golf league season for $499 with live scoring, standings, handicaps, and a dedicated TeeVents representative."
       />
       <Navbar />
       <main className="min-h-screen bg-background">
@@ -104,7 +104,7 @@ export default function GolfLeagues() {
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" onClick={subscribe} disabled={loading}>
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Start your league — $399/year
+                  Start your league — $499
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
                   <a href="#find-your-league">Find your league</a>
@@ -185,12 +185,12 @@ export default function GolfLeagues() {
               <CardHeader>
                 <CardTitle>Golf League — Annual</CardTitle>
                 <div className="mt-2">
-                  <span className="text-4xl font-bold">$399</span>
-                  <span className="text-muted-foreground">/year</span>
+                  <span className="text-4xl font-bold">$499</span>
+                  <span className="text-muted-foreground">/league</span>
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {["Up to 24 league events per year", "Unlimited golfers", "5% platform fee on paid registrations", "Live leaderboard & mobile scoring included", "Skins, standings & season stats", "Your year starts on your first league event date"].map((f) => (
+                {["Covers the entire league season", "Unlimited golfers", "No 5% platform fee", "Live leaderboard & mobile scoring included", "Dedicated TeeVents representative", "Skins, standings & season stats"].map((f) => (
                   <div key={f} className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span className="text-sm">{f}</span>
@@ -198,7 +198,7 @@ export default function GolfLeagues() {
                 ))}
                 <Button className="w-full mt-4" onClick={subscribe} disabled={loading}>
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Subscribe — $399/year
+                  Select Per-League — $499
                 </Button>
               </CardContent>
             </Card>

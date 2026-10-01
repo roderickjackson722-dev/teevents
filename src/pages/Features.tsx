@@ -461,7 +461,7 @@ const Features = () => {
             <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
               <Badge variant="secondary" className="text-sm">Free — included for everyone</Badge>
               <Badge className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 border-0 text-sm">
-                Pro — $399 per tournament
+                Per-Event — $299 per tournament
               </Badge>
             </div>
             <div className="mt-6 flex flex-wrap justify-center gap-3">

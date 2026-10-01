@@ -11,14 +11,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const enterpriseFeatures = [
-  "Everything in Pro — every feature unlocked",
-  "Unlimited tournaments — no per-event fee",
-  "White-label option (remove TeeVents branding from public pages)",
-  "Dedicated account manager — single point of contact",
-  "Custom integrations — API access, webhooks, CRM sync",
-  "SLA guarantee — 99.9% uptime, 1-hour priority response",
-  "Volume pricing — discounted rate for high-volume operators",
-  "Onboarding & migration support for your team",
+  "Unlimited tournaments and leagues",
+  "Live Leaderboard + Mobile Scoring included ($99 value per event)",
+  "Dedicated TeeVents account representative who builds every event for you",
+  "0% transaction fees",
+  "Custom branding",
+  "Priority support",
 ];
 
 const EnterprisePricing = () => {
@@ -61,7 +59,7 @@ const EnterprisePricing = () => {
     <Layout>
       <SEO
         title="Enterprise Pricing | TeeVents — White-Label & Volume Plans"
-        description="Custom TeeVents pricing for organizations running 5+ tournaments per year. White-label, dedicated account manager, custom integrations, and SLA guarantees."
+        description="TeeVents Enterprise is $2,999 per year for unlimited events, custom branding, zero platform fees, and a dedicated representative."
         path="/enterprise-pricing"
       />
 
@@ -77,10 +75,10 @@ const EnterprisePricing = () => {
               <Building2 className="h-3.5 w-3.5" /> Enterprise
             </div>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Built for organizations that run a calendar of events.
+              Running 10 tournaments or more per year?
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
-              5+ tournaments a year? White-label needs? Custom integrations? Let's talk.
+              $2,999/year — unlimited events, a dedicated representative, and everything your golf operation needs.
             </p>
           </motion.div>
         </div>
@@ -109,7 +107,7 @@ const EnterprisePricing = () => {
                   <Shield className="h-4 w-4 text-primary" /> Same trusted payment infrastructure
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Enterprise plans use the same PCI Level 1 Stripe Connect setup as Base and Pro. The 5% platform fee is the standard rate; volume discounts are available based on annual transaction volume.
+                  Enterprise plans use PCI Level 1 Stripe payments. Standard card processing applies, but TeeVents charges no transaction fee.
                 </p>
               </div>
             </div>
@@ -135,7 +133,7 @@ const EnterprisePricing = () => {
                     Talk to sales
                   </h2>
                   <p className="text-sm text-muted-foreground mb-4">
-                    Tell us about your events and we'll send a tailored quote.
+                    Tell us about your events and we’ll help you get started at $2,999/year.
                   </p>
 
                   <div>

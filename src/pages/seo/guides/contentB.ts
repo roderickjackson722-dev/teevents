@@ -503,7 +503,7 @@ export const pricing: GuideContent = {
     },
     {
       q: "Is there a monthly subscription?",
-      a: "No. There is no required recurring subscription; Pro is a one-time per-tournament unlock.",
+      a: "No monthly subscription is required. Per-Event and Per-League are one-time purchases; Enterprise is billed annually.",
     },
     {
       q: "Can I pass the fees to players?",

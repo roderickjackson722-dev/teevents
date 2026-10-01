@@ -18,7 +18,6 @@ const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min
         src={backgroundImage}
         alt=""
         aria-hidden="true"
-        fetchPriority="high"
         decoding="async"
         className="absolute inset-0 w-full h-full object-contain object-top sm:object-cover sm:object-center"
       />

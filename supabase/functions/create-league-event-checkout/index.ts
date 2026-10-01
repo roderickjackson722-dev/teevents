@@ -104,7 +104,10 @@ Deno.serve(async (req) => {
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
     const account = await requireConnectedAccount(supabaseAdmin, stripe, league.organization_id, "league-event");
-    const paidCurrentPlan = (league as any).pricing_version === "2026-10" && ["per_league", "enterprise"].includes((league as any).pricing_model);
+    const paidCurrentPlan = (league as any).pricing_version === "2026-10" && (
+      (league as any).pricing_model === "enterprise" ||
+      ((league as any).pricing_model === "per_league" && (league as any).league_fee_paid === true)
+    );
     const { platformFeeCents: feeCents, combinedFeesCents } = computeFees(amountCents, paidCurrentPlan);
     const passFee = !!(event as any).pass_platform_fee_to_player || (league as any).pass_platform_fee_to_members !== false;
     const chargeCents = passFee ? amountCents + combinedFeesCents : amountCents;

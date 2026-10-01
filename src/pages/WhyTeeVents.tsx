@@ -16,7 +16,7 @@ const rows: [string, string, string][] = [
   ["Dedicated rep who builds everything for you", "Self-serve only", "Included"],
   ["Custom leaderboard colors", "Generic template", "Full customization"],
   ["Event pages that look like websites", "Basic form", "Custom microsite"],
-  ["Upfront cost", "$199–$4,200/year", "$0 to start"],
+  ["Upfront cost", "$4,200/year", "$0 to start"],
   ["Who pays the fee?", "The organizer", "The players (typically)"],
   ["Sponsor highlights", "Basic or none", "Clickable logos + digital signage"],
   ["White-label branding", "Platform branding shows", "Remove our branding entirely"],

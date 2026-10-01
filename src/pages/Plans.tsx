@@ -113,7 +113,7 @@ const addons = [
     title: "Branding Removal + Digital Sponsor",
     price: 99,
     to: "/checkout/branding-removal",
-    desc: "TeeVents branding hidden; custom \"Presented by\" logo and a turnkey digital sponsor package you can resell for $10k.",
+    desc: "TeeVents branding hidden; custom \"Presented by\" logo and a turnkey digital sponsor package.",
   },
   {
     icon: Globe,

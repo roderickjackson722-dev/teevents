@@ -69,7 +69,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
     unit: "per event",
     icon: Megaphone,
     flow: "branding_sponsor",
-    desc: "Remove TeeVents branding and give a title sponsor a turnkey digital package you can resell for $10k.",
+    desc: "TeeVents branding hidden; custom Presented by logo and a turnkey digital sponsor package.",
     features: [
       "TeeVents logo & tagline hidden",
       'Custom "Presented by" text and logo',

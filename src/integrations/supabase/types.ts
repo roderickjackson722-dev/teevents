@@ -3619,6 +3619,8 @@ export type Database = {
           access_paid_at: string | null
           access_status: string
           allow_search: boolean
+          annual_fee_cents: number | null
+          assigned_rep_id: string | null
           banner_url: string | null
           created_at: string
           created_by: string | null
@@ -3637,11 +3639,14 @@ export type Database = {
           is_public: boolean
           leaderboard_show_gross: boolean
           leaderboard_show_net: boolean
+          league_fee_paid: boolean
           league_name: string
           league_slug: string
           logo_url: string | null
           organization_id: string
           pass_platform_fee_to_members: boolean
+          pricing_model: string
+          pricing_version: string
           primary_color: string | null
           publish_status: string
           season_year: number | null
@@ -3659,6 +3664,8 @@ export type Database = {
           tagline: string | null
           updated_at: string
           welcome_message: string | null
+          white_glove_completed: boolean
+          white_glove_requested: boolean
         }
         Insert: {
           accent_color?: string | null
@@ -3666,6 +3673,8 @@ export type Database = {
           access_paid_at?: string | null
           access_status?: string
           allow_search?: boolean
+          annual_fee_cents?: number | null
+          assigned_rep_id?: string | null
           banner_url?: string | null
           created_at?: string
           created_by?: string | null
@@ -3684,11 +3693,14 @@ export type Database = {
           is_public?: boolean
           leaderboard_show_gross?: boolean
           leaderboard_show_net?: boolean
+          league_fee_paid?: boolean
           league_name: string
           league_slug: string
           logo_url?: string | null
           organization_id: string
           pass_platform_fee_to_members?: boolean
+          pricing_model?: string
+          pricing_version?: string
           primary_color?: string | null
           publish_status?: string
           season_year?: number | null
@@ -3706,6 +3718,8 @@ export type Database = {
           tagline?: string | null
           updated_at?: string
           welcome_message?: string | null
+          white_glove_completed?: boolean
+          white_glove_requested?: boolean
         }
         Update: {
           accent_color?: string | null
@@ -3713,6 +3727,8 @@ export type Database = {
           access_paid_at?: string | null
           access_status?: string
           allow_search?: boolean
+          annual_fee_cents?: number | null
+          assigned_rep_id?: string | null
           banner_url?: string | null
           created_at?: string
           created_by?: string | null
@@ -3731,11 +3747,14 @@ export type Database = {
           is_public?: boolean
           leaderboard_show_gross?: boolean
           leaderboard_show_net?: boolean
+          league_fee_paid?: boolean
           league_name?: string
           league_slug?: string
           logo_url?: string | null
           organization_id?: string
           pass_platform_fee_to_members?: boolean
+          pricing_model?: string
+          pricing_version?: string
           primary_color?: string | null
           publish_status?: string
           season_year?: number | null
@@ -3753,6 +3772,8 @@ export type Database = {
           tagline?: string | null
           updated_at?: string
           welcome_message?: string | null
+          white_glove_completed?: boolean
+          white_glove_requested?: boolean
         }
         Relationships: [
           {
@@ -6263,7 +6284,12 @@ export type Database = {
         Row: {
           created_at: string
           dashboard_name: string | null
+          dedicated_rep_avatar_url: string | null
+          dedicated_rep_email: string | null
+          dedicated_rep_name: string | null
+          dedicated_rep_phone: string | null
           ein: string | null
+          enterprise_subscription_id: string | null
           feature_overrides: Json | null
           fee_override: number | null
           id: string
@@ -6281,6 +6307,7 @@ export type Database = {
           payout_method: string | null
           plan: string
           platform_fee_rate: number | null
+          pricing_model: string
           primary_color: string | null
           secondary_color: string | null
           status: string
@@ -6292,7 +6319,12 @@ export type Database = {
         Insert: {
           created_at?: string
           dashboard_name?: string | null
+          dedicated_rep_avatar_url?: string | null
+          dedicated_rep_email?: string | null
+          dedicated_rep_name?: string | null
+          dedicated_rep_phone?: string | null
           ein?: string | null
+          enterprise_subscription_id?: string | null
           feature_overrides?: Json | null
           fee_override?: number | null
           id?: string
@@ -6310,6 +6342,7 @@ export type Database = {
           payout_method?: string | null
           plan?: string
           platform_fee_rate?: number | null
+          pricing_model?: string
           primary_color?: string | null
           secondary_color?: string | null
           status?: string
@@ -6321,7 +6354,12 @@ export type Database = {
         Update: {
           created_at?: string
           dashboard_name?: string | null
+          dedicated_rep_avatar_url?: string | null
+          dedicated_rep_email?: string | null
+          dedicated_rep_name?: string | null
+          dedicated_rep_phone?: string | null
           ein?: string | null
+          enterprise_subscription_id?: string | null
           feature_overrides?: Json | null
           fee_override?: number | null
           id?: string
@@ -6339,6 +6377,7 @@ export type Database = {
           payout_method?: string | null
           plan?: string
           platform_fee_rate?: number | null
+          pricing_model?: string
           primary_color?: string | null
           secondary_color?: string | null
           status?: string
@@ -12474,7 +12513,9 @@ export type Database = {
           allowed_group_sizes: number[] | null
           archived: boolean
           archived_at: string | null
+          assigned_rep_id: string | null
           auction_tab_title: string | null
+          base_fee_cents: number | null
           branding_admin_override_at: string | null
           branding_footer_admin_override: boolean
           branding_footer_admin_show: boolean
@@ -12601,6 +12642,7 @@ export type Database = {
           end_date: string | null
           enterprise_event_type: string | null
           enterprise_settings: Json
+          event_fee_paid: boolean
           event_title: string | null
           external_link: string | null
           flat_rate_admin_override: boolean
@@ -12695,6 +12737,7 @@ export type Database = {
           payout_method: string | null
           pin_sheets_enabled: boolean
           pin_sheets_notes: string | null
+          platform_fee_percent: number
           post_event_email_config: Json | null
           post_event_email_opt_out: boolean
           post_event_email_sent: boolean
@@ -12705,6 +12748,8 @@ export type Database = {
           post_event_survey_sent_at: string | null
           presented_by: string | null
           presented_by_logo_url: string | null
+          pricing_model: string
+          pricing_version: string
           printable_font: string
           printable_layout: string
           printable_logo_url: string | null
@@ -12819,6 +12864,8 @@ export type Database = {
           vision_statement: string | null
           waitlist_deposit_cents: number | null
           waitlist_enabled: boolean
+          white_glove_completed: boolean
+          white_glove_requested: boolean
         }
         Insert: {
           about_us?: string | null
@@ -12831,7 +12878,9 @@ export type Database = {
           allowed_group_sizes?: number[] | null
           archived?: boolean
           archived_at?: string | null
+          assigned_rep_id?: string | null
           auction_tab_title?: string | null
+          base_fee_cents?: number | null
           branding_admin_override_at?: string | null
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
@@ -12958,6 +13007,7 @@ export type Database = {
           end_date?: string | null
           enterprise_event_type?: string | null
           enterprise_settings?: Json
+          event_fee_paid?: boolean
           event_title?: string | null
           external_link?: string | null
           flat_rate_admin_override?: boolean
@@ -13052,6 +13102,7 @@ export type Database = {
           payout_method?: string | null
           pin_sheets_enabled?: boolean
           pin_sheets_notes?: string | null
+          platform_fee_percent?: number
           post_event_email_config?: Json | null
           post_event_email_opt_out?: boolean
           post_event_email_sent?: boolean
@@ -13062,6 +13113,8 @@ export type Database = {
           post_event_survey_sent_at?: string | null
           presented_by?: string | null
           presented_by_logo_url?: string | null
+          pricing_model?: string
+          pricing_version?: string
           printable_font?: string
           printable_layout?: string
           printable_logo_url?: string | null
@@ -13176,6 +13229,8 @@ export type Database = {
           vision_statement?: string | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
+          white_glove_completed?: boolean
+          white_glove_requested?: boolean
         }
         Update: {
           about_us?: string | null
@@ -13188,7 +13243,9 @@ export type Database = {
           allowed_group_sizes?: number[] | null
           archived?: boolean
           archived_at?: string | null
+          assigned_rep_id?: string | null
           auction_tab_title?: string | null
+          base_fee_cents?: number | null
           branding_admin_override_at?: string | null
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
@@ -13315,6 +13372,7 @@ export type Database = {
           end_date?: string | null
           enterprise_event_type?: string | null
           enterprise_settings?: Json
+          event_fee_paid?: boolean
           event_title?: string | null
           external_link?: string | null
           flat_rate_admin_override?: boolean
@@ -13409,6 +13467,7 @@ export type Database = {
           payout_method?: string | null
           pin_sheets_enabled?: boolean
           pin_sheets_notes?: string | null
+          platform_fee_percent?: number
           post_event_email_config?: Json | null
           post_event_email_opt_out?: boolean
           post_event_email_sent?: boolean
@@ -13419,6 +13478,8 @@ export type Database = {
           post_event_survey_sent_at?: string | null
           presented_by?: string | null
           presented_by_logo_url?: string | null
+          pricing_model?: string
+          pricing_version?: string
           printable_font?: string
           printable_layout?: string
           printable_logo_url?: string | null
@@ -13533,6 +13594,8 @@ export type Database = {
           vision_statement?: string | null
           waitlist_deposit_cents?: number | null
           waitlist_enabled?: boolean
+          white_glove_completed?: boolean
+          white_glove_requested?: boolean
         }
         Relationships: [
           {

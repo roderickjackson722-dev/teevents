@@ -125,6 +125,9 @@ const Tournaments = () => {
       location: form.location || null,
       course_name: form.course_name || null,
       scoring_format: form.scoring_format,
+      pricing_version: "2026-10",
+      pricing_model: "free",
+      platform_fee_percent: 5,
     } as any).select("id").maybeSingle();
 
     if (!error && (created as any)?.id) {

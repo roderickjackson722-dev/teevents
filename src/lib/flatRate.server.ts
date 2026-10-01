@@ -1,6 +1,8 @@
-/** Server-only helpers for the $150 Per-Event option with no 5% fee. */
+/** Server-only helpers for grandfathered and current Per-Event pricing. */
 
-export const FLAT_RATE_AMOUNT_CENTS = 15000;
+export const LEGACY_FLAT_RATE_AMOUNT_CENTS = 15000;
+export const FLAT_RATE_AMOUNT_CENTS = 29900;
+export const PER_EVENT_STRIPE_PRICE_ID = "price_1ULsIR7UK8GxgadTNWqa8KCz";
 
 export async function assertOrgMemberForTournament(
   supabase: any,
@@ -10,7 +12,7 @@ export async function assertOrgMemberForTournament(
 ) {
   const { data: tournament } = await admin
     .from("tournaments")
-    .select("id, title, organization_id, flat_rate_enabled, flat_rate_paid, flat_rate_paid_at, flat_rate_admin_override, flat_rate_override_reason, flat_rate_amount_cents")
+    .select("id, title, organization_id, pricing_version, pricing_model, event_fee_paid, flat_rate_enabled, flat_rate_paid, flat_rate_paid_at, flat_rate_admin_override, flat_rate_override_reason, flat_rate_amount_cents")
     .eq("id", tournamentId)
     .maybeSingle();
   if (!tournament) throw new Error("Tournament not found");

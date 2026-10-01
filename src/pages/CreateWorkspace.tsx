@@ -71,6 +71,7 @@ export default function CreateWorkspace() {
         subdomain,
         plan: "free",
         workspace_type: interest,
+        pricing_model: interest === "league" ? "per_league" : "free",
       } as any);
       if (orgErr) throw orgErr;
       const { error: memErr } = await supabase.from("org_members").insert({

@@ -200,7 +200,12 @@ export default function EnterpriseHome({ tournamentsOnly = false }: { tournament
     const skip = new Set(["id", "created_at", "updated_at", "slug", "custom_slug", "custom_domain", "registration_url", "status"]);
     const copy: Record<string, unknown> = {};
     Object.entries(full as Record<string, unknown>).forEach(([key, value]) => { if (!skip.has(key)) copy[key] = value; });
-    Object.assign(copy, { title: `${row.title} (Copy)`, status: "draft", organization_id: org.orgId, is_enterprise: true });
+    Object.assign(copy, {
+      title: `${row.title} (Copy)`, status: "draft", organization_id: org.orgId, is_enterprise: true,
+      pricing_version: "2026-10", pricing_model: "enterprise", platform_fee_percent: 0,
+      event_fee_paid: false, flat_rate_enabled: false, flat_rate_paid: false,
+      white_glove_requested: true, white_glove_completed: false,
+    });
     const { data: created, error } = await (supabase.from("tournaments") as any).insert(copy).select("id").maybeSingle();
     if (error || !created?.id) { setBusy(false); toast.error(error?.message || "Could not duplicate this event."); return; }
     const { data: registrations } = await (supabase.from("tournament_registrations") as any)

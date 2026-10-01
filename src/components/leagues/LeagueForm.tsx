@@ -52,7 +52,7 @@ export default function LeagueForm({ onClose, onSaved, initial }: Props) {
     };
     const query = initial
       ? (supabase as any).from("golf_leagues").update(payload).eq("id", initial.id)
-      : (supabase as any).from("golf_leagues").insert(payload);
+      : (supabase as any).from("golf_leagues").insert({ ...payload, pricing_version: "2026-10", pricing_model: "per_league", annual_fee_cents: 49900, white_glove_requested: true });
     const { error } = await query;
     setSaving(false);
     if (error) {

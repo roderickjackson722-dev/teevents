@@ -118,7 +118,7 @@ serve(async (req) => {
         const subdomain = slugify(orgName) + "-" + Math.random().toString(36).slice(2, 6);
         orgId = crypto.randomUUID();
         const { error: oerr } = await admin.from("organizations").insert({
-          id: orgId, name: orgName, subdomain, plan: "free",
+          id: orgId, name: orgName, subdomain, plan: "free", pricing_model: "free",
         });
         if (oerr) throw new Error("Failed to create organization: " + oerr.message);
         const { error: merr } = await admin.from("org_members").insert({
@@ -135,7 +135,7 @@ serve(async (req) => {
       const subdomain = slugify(orgName) + "-" + Math.random().toString(36).slice(2, 6);
       orgId = crypto.randomUUID();
       const { error: oerr } = await admin.from("organizations").insert({
-        id: orgId, name: orgName, subdomain, plan: "free",
+        id: orgId, name: orgName, subdomain, plan: "free", pricing_model: "free",
       });
       if (oerr) throw new Error("Failed to create organization: " + oerr.message);
       const { error: merr } = await admin.from("org_members").insert({
@@ -150,6 +150,9 @@ serve(async (req) => {
       organization_id: orgId,
       managed_by_teevents: true,
       created_by_admin_id: adminUser.id,
+      pricing_version: "2026-10",
+      pricing_model: "free",
+      platform_fee_percent: 5,
     };
     if (date) tPayload.date = date;
     if (location) tPayload.location = String(location).trim();

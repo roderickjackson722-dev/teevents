@@ -153,7 +153,7 @@ const Index = () => {
             <span className="text-secondary">Management Platform</span>
           </h1>
           <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto font-medium">
-            From registration to payouts – everything you need to run a professional golf tournament in one place.
+            Choose the pricing that fits your event — start at $0, pay once per event, or run unlimited events with Enterprise.
           </p>
           <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-primary-foreground/75 max-w-2xl mx-auto leading-relaxed">
             No spreadsheets. No manual payments. No stress.
@@ -179,6 +179,24 @@ const Index = () => {
 
         </motion.div>
       </HeroSection>
+
+      <section className="bg-background py-16 md:py-20 border-b border-border">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <p className="text-xs font-bold uppercase tracking-widest text-secondary mb-3">Your Dedicated TeeVents Representative</p>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">We Build It For You.</h2>
+            <p className="mt-4 text-muted-foreground text-lg">Every paid event includes a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings—so you can focus on the tournament.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 mb-10">
+            {[
+              ["01", "You tell us about your event", "Share your logo, colors, event details, and pairings."],
+              ["02", "We build everything", "Your rep builds your custom event page, leaderboard, registration flow, and more."],
+              ["03", "You show up and run it", "Everything is ready to go. You focus on your players."],
+            ].map(([num, title, text]) => <div key={num} className="border-t-2 border-secondary pt-5"><p className="font-display text-3xl font-bold text-secondary">{num}</p><h3 className="mt-3 text-xl font-display font-bold">{title}</h3><p className="mt-2 text-sm text-muted-foreground">{text}</p></div>)}
+          </div>
+          <div className="text-center"><Link to="/plans" className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-md font-semibold">Learn More About Our White-Glove Service <ArrowRight className="h-4 w-4" /></Link></div>
+        </div>
+      </section>
 
       {/* Stats Bar */}
       <section className="bg-primary py-8 border-b border-primary-foreground/10">

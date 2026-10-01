@@ -13,7 +13,7 @@ const EnterpriseInquiryDialog = ({ children }: { children: ReactNode }) => {
     e.preventDefault();
     setSending(true);
     const { error } = await supabase.functions.invoke("send-enterprise-inquiry", {
-      body: { ...f, notes: `Requesting Enterprise plan ($2,500/year).\n${f.notes}` },
+      body: { ...f, notes: `Requesting Enterprise plan ($2,999/year).\n${f.notes}` },
     });
     setSending(false);
     if (error) {

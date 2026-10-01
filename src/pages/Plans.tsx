@@ -47,7 +47,7 @@ const planCards = [
     unit: "per tournament",
     badge: "Predictable pricing",
     highlight: true,
-    desc: "Pay once per event and keep 100% of your registration revenue. No transaction fees.",
+    desc: "Pay once per event and keep 100% of your registration revenue. No transaction fees. Everything included.",
     features: [
       'Everything in "No Cost to Start"',
       "No 5% platform fee",
@@ -113,7 +113,7 @@ const addons = [
     title: "Branding Removal + Digital Sponsor",
     price: 99,
     to: "/checkout/branding-removal",
-    desc: "TeeVents branding hidden; custom \"Presented by\" logo and a turnkey digital sponsor package you can resell for $10k.",
+    desc: "TeeVents branding hidden; custom \"Presented by\" logo and a turnkey digital sponsor package.",
   },
   {
     icon: Globe,
@@ -142,7 +142,7 @@ const Plans = () => {
     <Layout>
       <SEO
         title="Simple, Transparent Pricing | TeeVents"
-        description="The complete golf tournament management platform is free. Add paid add-ons per event only when you need them. No monthly fees, no hidden charges."
+        description="Start at $0, pay $299 per event, $499 per league, or $2,999 per year for Enterprise. Every paid event includes a dedicated TeeVents representative."
         path="/plans"
       />
 

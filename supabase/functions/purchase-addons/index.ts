@@ -60,7 +60,7 @@ serve(async (req) => {
     );
     const { data: t } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, organization_id, paid_features")
+      .select("id, title, organization_id, paid_features, pricing_version, pricing_model")
       .eq("id", tournament_id)
       .maybeSingle();
     if (!t) throw new Error("Tournament not found");
@@ -75,6 +75,10 @@ serve(async (req) => {
 
     const smsAddons: string[] = addons.filter((a: string) => SMS_KEYS.includes(a));
     const nonSms: string[] = addons.filter((a: string) => !SMS_KEYS.includes(a));
+    const includedPageBuild = (t as any).pricing_version === "2026-10" && ["per_event", "enterprise"].includes((t as any).pricing_model);
+    if (includedPageBuild && nonSms.includes("custom_event_page")) {
+      throw new Error("Full-Service Page Build Out is already included with this paid plan");
+    }
     const finalAddons: string[] = [...nonSms, ...smsAddons];
 
     // Admin price overrides

@@ -12,7 +12,8 @@ const data: Section[] = [
   {
     category: "Pricing & Commitment",
     rows: [
-      { feature: "Pricing Model", teevents: "$399 per tournament (one-time) + 5% platform fee", gg: "Annual subscription + per-golfer fees", tv: "yes", ggs: "warn" },
+      { feature: "Dedicated account representative", teevents: "Included with every paid event", gg: "Software onboarding", tv: "yes", ggs: "warn" },
+      { feature: "Pricing Model", teevents: "$299 per tournament (one-time) with no platform fee", gg: "Annual subscription + per-golfer fees", tv: "yes", ggs: "warn" },
       { feature: "Contract", teevents: "No long-term commitment — pay per tournament", gg: "Annual contract required", tv: "yes", ggs: "no" },
       { feature: "Setup Fees", teevents: "None", gg: "Often charged at onboarding", tv: "yes", ggs: "warn" },
     ],
@@ -20,8 +21,8 @@ const data: Section[] = [
   {
     category: "Tournament Features",
     rows: [
-      { feature: "Player Gifts / Merchandise Store", teevents: "Included in Pro", gg: "Requires TM Premium upgrade", tv: "yes", ggs: "warn" },
-      { feature: "Live Leaderboard & Mobile Scoring", teevents: "Included in Pro", gg: "Often gated behind premium tier", tv: "yes", ggs: "warn" },
+      { feature: "Player Gifts / Merchandise Store", teevents: "Included in Per-Event", gg: "Requires TM Premium upgrade", tv: "yes", ggs: "warn" },
+      { feature: "Live Leaderboard & Mobile Scoring", teevents: "Included in Per-Event", gg: "Often gated behind premium tier", tv: "yes", ggs: "warn" },
       { feature: "Pin Sheets (Hole Locations)", teevents: "Built-in PDF generator", gg: "Not native — third-party tool needed", tv: "yes", ggs: "no" },
       { feature: "Auctions & Raffles", teevents: "Native silent auction + raffle with auto-draw", gg: "Limited / add-on", tv: "yes", ggs: "warn" },
       { feature: "Sponsorship Portal", teevents: "Tiered packages, logo upload, custom sponsorship fields", gg: "Basic logo placement", tv: "yes", ggs: "warn" },

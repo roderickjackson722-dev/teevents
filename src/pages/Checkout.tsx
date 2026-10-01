@@ -55,12 +55,12 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
   "per-event": {
     slug: "per-event",
     title: "Per-Event",
-    priceCents: 15000,
+    priceCents: 29900,
     unit: "per event",
     icon: BadgeDollarSign,
     flow: "per_event",
     desc: "Pay once per tournament and keep 100% of your registration revenue with no TeeVents transaction fee.",
-    features: ["No 5% platform fee", "Unlimited manual entries", "Unlimited transactions", "One-time, per event"],
+    features: ["No 5% platform fee", "Unlimited manual entries", "Live Leaderboard + Mobile Scoring", "Dedicated TeeVents representative", "Full-Service Page Build Out", "Unlimited transactions"],
   },
   "branding-removal": {
     slug: "branding-removal",
@@ -69,7 +69,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
     unit: "per event",
     icon: Megaphone,
     flow: "branding_sponsor",
-    desc: "Remove TeeVents branding and give a title sponsor a turnkey digital package you can resell for $10k.",
+    desc: "TeeVents branding hidden; custom Presented by logo and a turnkey digital sponsor package.",
     features: [
       "TeeVents logo & tagline hidden",
       'Custom "Presented by" text and logo',

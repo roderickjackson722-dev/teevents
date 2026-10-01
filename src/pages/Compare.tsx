@@ -38,6 +38,7 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Golf-Specific Features",
         rows: [
+          { feature: "Dedicated account representative", competitor: "Not offered", teevents: "Included with every paid event", cStatus: "no", tvStatus: "yes" },
           { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, embeddable", cStatus: "no", tvStatus: "yes" },
           { feature: "Hole Sponsors", competitor: "Basic logo only", teevents: "Portal with asset delivery", cStatus: "no", tvStatus: "yes" },
           { feature: "Team Registration (Foursomes)", competitor: "Clunky workarounds", teevents: "Native group registration", cStatus: "warn", tvStatus: "yes" },
@@ -101,6 +102,7 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Pricing & Commitment",
         rows: [
+          { feature: "Dedicated account representative", competitor: "Self-serve software", teevents: "Builds every paid event page and leaderboard", cStatus: "no", tvStatus: "yes" },
           { feature: "Pricing Model", competitor: "Annual subscription + fees", teevents: "$0 upfront + 5% platform fee", cStatus: "warn", tvStatus: "yes" },
           { feature: "Contract", competitor: "Annual contract required", teevents: "No long-term commitment", cStatus: "no", tvStatus: "yes" },
           { feature: "Setup Fees", competitor: "Often charged at onboarding", teevents: "None", cStatus: "warn", tvStatus: "yes" },
@@ -133,6 +135,7 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Golf-Specific Features",
         rows: [
+          { feature: "Dedicated account representative", competitor: "Not offered", teevents: "Included with every paid event", cStatus: "no", tvStatus: "yes" },
           { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, real-time", cStatus: "no", tvStatus: "yes" },
           { feature: "Mobile Scoring", competitor: "Not available", teevents: "Yes — no app download required", cStatus: "no", tvStatus: "yes" },
           { feature: "Pairings & Tee Times", competitor: "No", teevents: "Drag-and-drop scheduling", cStatus: "no", tvStatus: "yes" },
@@ -158,6 +161,7 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Golf-Specific Features",
         rows: [
+          { feature: "Dedicated account representative", competitor: "Not offered", teevents: "Included with every paid event", cStatus: "no", tvStatus: "yes" },
           { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, real-time, embeddable", cStatus: "no", tvStatus: "yes" },
           { feature: "Pairings & Tee Times", competitor: "Not available", teevents: "Drag-and-drop, auto-notify", cStatus: "no", tvStatus: "yes" },
           { feature: "Handicap Tracking", competitor: "Not available", teevents: "Stored per player", cStatus: "no", tvStatus: "yes" },
@@ -180,7 +184,7 @@ const COMPARISONS: Comparison[] = [
         category: "Pricing",
         rows: [
           { feature: "Platform Fee", competitor: "Free + optional tips", teevents: "5% platform fee", cStatus: "yes", tvStatus: "warn" },
-          { feature: "Pro Tournament Tools", competitor: "Not available", teevents: "$399 per tournament (one-time)", cStatus: "no", tvStatus: "yes" },
+          { feature: "Pro Tournament Tools", competitor: "Not available", teevents: "$299 per tournament (one-time)", cStatus: "no", tvStatus: "yes" },
           { feature: "Payment Processing", competitor: "2.9% + $0.30", teevents: "2.9% + $0.30 (Stripe)", cStatus: "warn", tvStatus: "warn" },
         ],
       },
@@ -195,6 +199,7 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Registration & Payment",
         rows: [
+          { feature: "Dedicated account representative", competitor: "Not offered", teevents: "Included with every paid event", cStatus: "no", tvStatus: "yes" },
           { feature: "Built-in Payment Collection", competitor: "Not available", teevents: "Integrated Stripe checkout", cStatus: "no", tvStatus: "yes" },
           { feature: "Branded Registration Page", competitor: "Generic Google form", teevents: "Fully branded tournament site", cStatus: "no", tvStatus: "yes" },
           { feature: "Confirmation Emails", competitor: "Basic auto-reply", teevents: "Branded receipts to all participants", cStatus: "warn", tvStatus: "yes" },
@@ -214,7 +219,7 @@ const COMPARISONS: Comparison[] = [
       {
         category: "Cost vs. Value",
         rows: [
-          { feature: "Software Cost", competitor: "Free", teevents: "5% platform fee or $399/tournament Pro", cStatus: "yes", tvStatus: "warn" },
+          { feature: "Software Cost", competitor: "Free", teevents: "5% player-funded fee or $299/tournament", cStatus: "yes", tvStatus: "warn" },
           { feature: "Hours of Admin Work Saved", competitor: "0 — you do it all", teevents: "Dozens of hours per event", cStatus: "no", tvStatus: "yes" },
           { feature: "Risk of Errors", competitor: "High (manual everything)", teevents: "Low (automated workflows)", cStatus: "no", tvStatus: "yes" },
         ],

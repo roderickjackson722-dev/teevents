@@ -2,7 +2,7 @@ import type { GuideContent } from "./types";
 
 const CTA_HEADING = "Start your tournament on TeeVents";
 const CTA_TEXT =
-  "Build a branded event site, open registration, and collect payments directly to your own bank account. Base is $0 — Pro is a one-time $399 per tournament, with no annual contract.";
+  "Build a branded event site and collect payments directly. Start at $0, or choose Per-Event for $299 with a dedicated representative who builds it for you.";
 
 export const eventbriteForGolf: GuideContent = {
   slug: "eventbrite-for-golf-tournaments",
@@ -64,7 +64,7 @@ export const eventbriteForGolf: GuideContent = {
       heading: "Fees: comparing apples to apples",
       paragraphs: [
         "Eventbrite charges a per-ticket service fee plus payment processing, and those fees scale with every golfer you register. For a 144-player event at $150 a seat that adds up fast, and the money routes through Eventbrite before it reaches you.",
-        "TeeVents charges a flat 5 percent platform fee on paid transactions plus standard Stripe processing, and you can pass either or both to the player at checkout. Payments settle directly into your own Stripe account as the merchant of record — TeeVents never holds your funds. Pro features unlock for a one-time $399 per tournament, not an annual contract.",
+        "TeeVents starts at $0 with a 5 percent player-funded service fee. Per-Event is a one-time $299 with no TeeVents transaction fee and includes a dedicated representative who builds the event page, leaderboard, and pairings.",
       ],
       mockup: "pricing",
     },
@@ -246,7 +246,7 @@ export const bestSoftware: GuideContent = {
       heading: "What each pricing model really costs",
       paragraphs: [
         "Per-golfer pricing looks harmless at $5 to $12 a player until you multiply by 144 and add a second event. Annual subscriptions look predictable until you run only one tournament a year and pay for eleven idle months. Free platforms typically monetize with a donation prompt or a processing markup at checkout, which quietly moves the cost onto your donors.",
-        "TeeVents keeps this simple on purpose: Base is $0, Pro is a one-time $399 unlock for a specific tournament, and there is a 5 percent platform fee on paid transactions that you can pass to registrants. No annual contract, no per-golfer fee, and funds settle directly to your Stripe account.",
+        "TeeVents keeps this simple: start at $0 with a player-funded 5 percent service fee, or pay $299 per event with no TeeVents transaction fee and dedicated setup support.",
       ],
       mockup: "pricing",
     },
@@ -448,7 +448,7 @@ export const golfstatusAlternatives: GuideContent = {
     {
       heading: "Where TeeVents is different",
       paragraphs: [
-        "TeeVents is organizer-owned by design. Payments run through Stripe Connect direct charges, so you are the merchant of record and settlements land in your account on Stripe's normal schedule; the only money TeeVents keeps is the 5 percent application fee. Pricing is Base at $0 and Pro as a one-time $399 unlock per tournament, so a once-a-year event never pays for eleven idle months.",
+        "TeeVents is organizer-owned by design. Payments settle directly into the organizer's connected account. Start at $0 with a player-funded service fee or choose Per-Event for $299 with no TeeVents transaction fee and a dedicated representative.",
         "The public site is the headline difference: six professional templates, reorderable sections, your own photos and colors, custom tabs, a sponsor wall, and a custom domain if you want the event to live at your organization's own address.",
       ],
       mockup: "site",
@@ -486,7 +486,7 @@ export const golfstatusAlternatives: GuideContent = {
   faqs: [
     {
       q: "Is TeeVents free for nonprofits?",
-      a: "The Base tier is $0 and there is no annual contract. Pro features unlock for a one-time $399 per tournament, and a 5 percent platform fee applies to paid transactions, which can be passed to registrants.",
+      a: "Start at $0 with a 5 percent player-funded service fee, or choose Per-Event for $299 with no TeeVents transaction fee and dedicated setup support.",
     },
     {
       q: "Can I keep my existing registrations if I switch?",
@@ -547,7 +547,7 @@ export const golfGeniusAlternatives: GuideContent = {
     {
       heading: "Feature comparison at a glance",
       bullets: [
-        "Pricing model — TeeVents: $399 one-time per tournament plus 5 percent platform fee. Golf Genius: annual arrangement, commonly with per-golfer components.",
+        "Pricing model — TeeVents: $0 to start or $299 per event with no TeeVents transaction fee. Golf Genius: annual arrangement, commonly with per-golfer components.",
         "Contract — TeeVents: none, pay per event. Golf Genius: annual.",
         "Event website — TeeVents: six templates, section reordering, custom domain. Golf Genius: standard event page.",
         "Pin sheets — TeeVents: built-in PDF generator. Golf Genius: not native.",
@@ -592,7 +592,7 @@ export const golfGeniusAlternatives: GuideContent = {
     },
     {
       q: "What does TeeVents cost compared with Golf Genius?",
-      a: "TeeVents is $0 on Base and a one-time $399 per tournament for Pro, plus a 5 percent platform fee that can be passed to registrants. Golf Genius is generally an annual arrangement.",
+      a: "TeeVents is $0 to start or $299 per tournament with no TeeVents transaction fee. Golf Genius is generally an annual arrangement.",
     },
     {
       q: "Does TeeVents handle handicaps and flighting?",
@@ -650,7 +650,7 @@ export const perfectGolfEventReviews: GuideContent = {
       heading: "Pricing models you will encounter",
       paragraphs: [
         "Expect three shapes: an annual license, per-golfer fees, or per-event pricing. Annual licenses reward organizations running many events. Per-golfer pricing punishes large fields. Per-event pricing suits the once-a-year charity outing.",
-        "TeeVents uses per-event pricing: Base at $0, Pro at a one-time $399 for a specific tournament, plus a 5 percent platform fee on paid transactions that you may pass to registrants. There is no annual commitment and no per-golfer platform fee.",
+        "TeeVents offers $0-to-start player-funded pricing and a one-time $299 Per-Event option with no TeeVents transaction fee. There is no annual commitment for either tournament option.",
       ],
       mockup: "pricing",
     },
@@ -774,7 +774,7 @@ export const rsvpifyForGolf: GuideContent = {
     {
       heading: "Cost comparison",
       paragraphs: [
-        "General event tools price by plan tier plus processing, and golf features are simply absent at every tier. TeeVents is $0 on Base with a one-time $399 Pro unlock per tournament and a 5 percent platform fee on paid transactions that can be passed to registrants, with funds settling directly to your own Stripe account as merchant of record.",
+        "General event tools price by plan tier plus processing, and golf features are often absent. TeeVents starts at $0 or costs $299 per event with no TeeVents transaction fee and a dedicated representative who builds everything for you.",
         "The more useful comparison is not the invoice — it is whether you spend the two weeks before your event building spreadsheets or selling sponsorships.",
       ],
       mockup: "pricing",

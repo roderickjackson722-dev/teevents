@@ -43,6 +43,7 @@ Deno.serve(async (req) => {
       }
       const rowId = session.metadata!.subscription_row_id;
       const subId = String(session.subscription || "");
+      const currentPricing = session.metadata?.pricing_version === "2026-10";
       const custId = String(session.customer || "");
       let periodStart: string | null = null;
       let periodEnd: string | null = null;
@@ -64,6 +65,14 @@ Deno.serve(async (req) => {
           current_period_end: periodEnd,
         })
         .eq("id", rowId);
+
+      if (currentPricing) {
+        await supabaseAdmin.from("organizations").update({ pricing_model: "per_league" }).eq("id", session.metadata?.organization_id);
+        await supabaseAdmin.from("golf_leagues").update({
+          pricing_version: "2026-10", pricing_model: "per_league", league_fee_paid: true,
+          annual_fee_cents: 49900, white_glove_requested: true,
+        }).eq("organization_id", session.metadata?.organization_id);
+      }
 
       // Notify TeeVents admin now that payment/signup is confirmed (fires for $0 promo too).
       try {

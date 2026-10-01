@@ -26,6 +26,7 @@ export default function CreateWorkspace() {
   const [contactName, setContactName] = useState("");
   const [contactEmail, setContactEmail] = useState("");
   const [contactPhone, setContactPhone] = useState("");
+  const [selectedPlan, setSelectedPlan] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -46,6 +47,7 @@ export default function CreateWorkspace() {
         const p = JSON.parse(raw);
         if (!preset && p?.interest_area) setInterest(p.interest_area);
         if (p?.organization_name) setName(p.organization_name);
+        if (p?.selected_plan) setSelectedPlan(p.selected_plan);
       }
     } catch {}
   }, []);
@@ -71,7 +73,7 @@ export default function CreateWorkspace() {
         subdomain,
         plan: "free",
         workspace_type: interest,
-        pricing_model: interest === "league" ? "per_league" : "free",
+        pricing_model: interest === "league" ? "per_league" : selectedPlan === "per-event" ? "per_event" : "free",
       } as any);
       if (orgErr) throw orgErr;
       const { error: memErr } = await supabase.from("org_members").insert({
@@ -84,7 +86,7 @@ export default function CreateWorkspace() {
       try { localStorage.removeItem("teevents.pendingWorkspace"); } catch {}
 
       if (interest === "league") {
-        // Send to Stripe checkout for $199/year
+        // Send new league workspaces to the current one-time checkout.
         const { data, error } = await (supabase as any).functions.invoke("create-league-subscription", {
           body: {
             organization_id: orgId,

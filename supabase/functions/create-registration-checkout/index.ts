@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at")
+      .select("id, title, slug, organization_id, pricing_version, pricing_model, event_fee_paid, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at")
       .eq("id", tournament_id)
       .single();
 
@@ -387,12 +387,15 @@ Deno.serve(async (req) => {
     // Determine if golfer pays fees:
     // - passFeesToParticipants=true → always pass fees
     // - coverFees=true → golfer opted to cover fees voluntarily
-    const golferPaysFees = passFeesToParticipants || coverFees;
+    const currentFreePlan = tournament.pricing_version === "2026-10" && tournament.pricing_model === "free";
+    const currentPaidPlan = tournament.pricing_version === "2026-10" && ["per_event", "enterprise"].includes(tournament.pricing_model);
+    // The current Free plan is always player-funded. Legacy events retain their saved toggle.
+    const golferPaysFees = currentFreePlan || passFeesToParticipants || coverFees;
 
     const lineItems: any[] = [];
     // Fees are computed on the COMBINED total (registration + add-ons)
     const flatRate = await isFlatRateTournament(supabaseAdmin, tournament.id);
-    const platformFeeCents = flatRate ? 0 : Math.round(baseTotalCents * PLATFORM_FEE_RATE);
+    const platformFeeCents = flatRate || currentPaidPlan ? 0 : Math.round(baseTotalCents * PLATFORM_FEE_RATE);
     const stripeFeeCents = golferPaysFees
       ? calculateGrossedUpStripeFee(baseTotalCents + platformFeeCents)
       : calculateProcessingFee(baseTotalCents);
@@ -489,12 +492,24 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (golferPaysFees && combinedFeesCents > 0) {
+    if (currentFreePlan && platformFeeCents > 0) {
       lineItems.push({
         price_data: {
           currency: "usd",
-          product_data: { name: "Fees" },
-          unit_amount: combinedFeesCents,
+          product_data: { name: "TeeVents service fee (5%)" },
+          unit_amount: platformFeeCents,
+        },
+        quantity: 1,
+      });
+    }
+
+    const visibleProcessingFeeCents = currentFreePlan ? stripeFeeCents : combinedFeesCents;
+    if (golferPaysFees && visibleProcessingFeeCents > 0) {
+      lineItems.push({
+        price_data: {
+          currency: "usd",
+          product_data: { name: currentFreePlan ? "Card processing fee" : "Fees" },
+          unit_amount: visibleProcessingFeeCents,
         },
         quantity: 1,
       });

@@ -192,7 +192,7 @@ export default function Signup() {
                   <div className="w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center mb-3"><Flag className="h-6 w-6 text-secondary" /></div>
                   <h3 className="font-bold text-lg">Golf Leagues</h3>
                   <p className="text-sm text-muted-foreground mt-1">Season long play, weekly events, standings, skins, and handicaps.</p>
-                  <p className="text-xs mt-2 font-medium text-primary">$399/year + 5% platform fee</p>
+                  <p className="text-xs mt-2 font-medium text-primary">$499 per league · no TeeVents transaction fee</p>
                 </button>
               </div>
               <div className="flex justify-between items-center pt-2">

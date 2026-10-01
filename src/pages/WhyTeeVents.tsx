@@ -1,21 +1,22 @@
 import { Link } from "react-router-dom";
-import { Paintbrush, Globe, DollarSign, Flag, Megaphone, Tag, Check, X } from "lucide-react";
+import { Paintbrush, Globe, DollarSign, Flag, Megaphone, Users, Check, X } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 
 const cards = [
+  { icon: Users, title: "We Build It For You", body: "Every paid event includes a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings." },
   { icon: Paintbrush, title: "Your Brand. Your Colors. Your Leaderboard.", body: "Most platforms give you a generic green and white leaderboard. TeeVents lets you customize your leaderboard to match your event's branding—your logo, your colors, your identity. Whether it's school colors, Greek organization colors, or your company's palette, your leaderboard will look like it was built just for you." },
   { icon: Globe, title: "Event Pages That Look Like Real Websites", body: "Other platforms give you a basic form. TeeVents creates a fully branded, professional event page with hero images, sponsor logos, and custom colors. Your players will think you hired a web designer—when really, you built it in minutes." },
   { icon: DollarSign, title: "Free for Organizers. Player-Funded.", body: "Most platforms charge you upfront—before you've sold a single ticket. TeeVents is free for organizers. A small service fee is included in each player's registration total, so you keep 100% of your event revenue. You only pay when your players pay." },
   { icon: Flag, title: "Built for Golf. Not Generic Events.", body: "Other platforms are built for concerts, conferences, and generic ticketing. TeeVents is built exclusively for golf. Live leaderboards, mobile scoring, pairings, tee sheets, skins, deuces, and GHIN handicap integration—all built in, not bolted on." },
   { icon: Megaphone, title: "Sponsor Highlights That Actually Get Seen", body: "Most platforms bury sponsor logos in a PDF. TeeVents puts your sponsors front and center—on the live leaderboard, the event page, and the mobile scoring app. Clickable logos, digital signage, and a built-in sponsor package you can resell for $5k-$10k." },
-  { icon: Tag, title: "White-Label Everything", body: "Some platforms put their branding on your event. TeeVents lets you remove ours entirely. Use your logo, your colors, your custom domain—so your event looks 100% yours. No co-branding. No distractions. Just your brand." },
 ];
 
 const rows: [string, string, string][] = [
+  ["Dedicated rep who builds everything for you", "Self-serve only", "Included"],
   ["Custom leaderboard colors", "Generic template", "Full customization"],
   ["Event pages that look like websites", "Basic form", "Custom microsite"],
-  ["Upfront cost", "$199–$4,200/year", "$0 to start"],
+  ["Upfront cost", "$4,200/year", "$0 to start"],
   ["Who pays the fee?", "The organizer", "The players (typically)"],
   ["Sponsor highlights", "Basic or none", "Clickable logos + digital signage"],
   ["White-label branding", "Platform branding shows", "Remove our branding entirely"],

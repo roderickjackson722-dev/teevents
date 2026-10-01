@@ -26,6 +26,7 @@ const data: CompSection[] = [
   {
     category: "Golf-Specific Features",
     rows: [
+      { feature: "Dedicated account representative", eventbrite: "Not offered", teevents: "Included with every paid event", ebStatus: "no", tvStatus: "yes" },
       { feature: "Live Leaderboard", eventbrite: "Not available", teevents: "Built-in, embeddable", ebStatus: "no", tvStatus: "yes" },
       { feature: "Hole Sponsors", eventbrite: "Basic logo only", teevents: "Portal with asset delivery", ebStatus: "no", tvStatus: "yes" },
       { feature: "Team Registration (Foursomes)", eventbrite: "Clunky workarounds", teevents: "Native group registration", ebStatus: "warn", tvStatus: "yes" },

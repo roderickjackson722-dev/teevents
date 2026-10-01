@@ -1,5 +1,5 @@
-// Create a Stripe Checkout session for an annual Golf League subscription.
-// Flat fee: $199/year unlimited golfers.
+// Create checkout for a league. Existing organizations keep their annual legacy
+// subscription; new organizations pay the current one-time Per-League fee.
 // Billed on the TeeVents platform Stripe account (NOT Connect).
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -11,6 +11,8 @@ const corsHeaders = {
 };
 
 const FLAT_FEE_CENTS = 39900; // $399/year, up to 24 events
+const CURRENT_LEAGUE_FEE_CENTS = 49900;
+const CURRENT_LEAGUE_PRICE_ID = "price_1ULsJV7UK8GxgadTnBLryUHV";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -46,6 +48,13 @@ Deno.serve(async (req) => {
     if (!stripeKey) throw new Error("STRIPE_SECRET_KEY not configured");
     const stripe = new Stripe(stripeKey, { apiVersion: "2025-08-27.basil" });
 
+    const { data: organization } = await supabaseAdmin
+      .from("organizations")
+      .select("pricing_model")
+      .eq("id", organization_id)
+      .single();
+    const currentPricing = organization?.pricing_model === "per_league";
+
     let customerId: string | undefined;
     if (user.email) {
       const existing = await stripe.customers.list({ email: user.email, limit: 1 });
@@ -57,7 +66,7 @@ Deno.serve(async (req) => {
       .insert({
         organization_id,
         subscription_type: "flat_fee",
-        flat_fee_price_cents: FLAT_FEE_CENTS,
+        flat_fee_price_cents: currentPricing ? CURRENT_LEAGUE_FEE_CENTS : FLAT_FEE_CENTS,
         per_golfer_price_cents: 0,
         current_golfers: 0,
         max_golfers: 0,
@@ -84,40 +93,43 @@ Deno.serve(async (req) => {
     if (promoError) throw new Error(promoError);
 
     const session = await stripe.checkout.sessions.create({
-      mode: "subscription",
+      mode: currentPricing ? "payment" : "subscription",
       payment_method_types: ["card"],
       customer: customerId,
       customer_email: customerId ? undefined : user.email || undefined,
       ...(discounts ? { discounts } : { allow_promotion_codes: true }),
       line_items: [
         {
-          price_data: {
-            currency: "usd",
-            product_data: {
-              name: "TeeVents Golf League Management — Annual Subscription",
-              description: "Annual subscription for golf league management. Unlimited golfers. Cancel anytime.",
+          ...(currentPricing ? { price: CURRENT_LEAGUE_PRICE_ID } : {
+            price_data: {
+              currency: "usd",
+              product_data: {
+                name: "TeeVents Golf League Management — Annual Subscription",
+                description: "Annual subscription for golf league management. Unlimited golfers. Cancel anytime.",
+              },
+              unit_amount: FLAT_FEE_CENTS,
+              recurring: { interval: "year" },
             },
-            unit_amount: FLAT_FEE_CENTS,
-            recurring: { interval: "year" },
-          },
+          }),
           quantity: 1,
         },
       ],
       success_url: `${origin}/select-workspace?league_sub=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/select-workspace`,
-      subscription_data: {
+      ...(currentPricing ? {} : { subscription_data: {
         metadata: {
           kind: "league_subscription",
           organization_id,
           subscription_row_id: subRow.id,
           subscription_type: "flat_fee",
         },
-      },
+      }}),
       metadata: {
         kind: "league_subscription",
         organization_id,
         subscription_row_id: subRow.id,
         subscription_type: "flat_fee",
+        pricing_version: currentPricing ? "2026-10" : "legacy",
         contact_name,
         contact_email: contact_email || user.email || "",
         contact_phone,

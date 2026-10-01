@@ -43,7 +43,7 @@ const planCards = [
   {
     icon: BadgeDollarSign,
     title: "Per-Event",
-    price: "$150",
+    price: "$299",
     unit: "per tournament",
     badge: "Predictable pricing",
     highlight: true,
@@ -52,6 +52,9 @@ const planCards = [
       'Everything in "No Cost to Start"',
       "No 5% platform fee",
       "Unlimited manual entries",
+      "Live Leaderboard + Mobile Scoring included ($99 value)",
+      "Dedicated TeeVents account representative",
+      "Full-Service Page Build Out included",
       "Unlimited transactions",
       "One-time, per event",
     ],
@@ -63,7 +66,7 @@ const planCards = [
   {
     icon: Trophy,
     title: "Per-League",
-    price: "$399",
+    price: "$499",
     unit: "per league",
     badge: "Season-long",
     highlight: false,
@@ -73,6 +76,7 @@ const planCards = [
       "Covers the entire league season",
       "League standings & leaderboards",
       "Season-long reporting",
+      "Dedicated TeeVents account representative",
     ],
     exclusions: [],
     cta: "Select Per-League",
@@ -83,13 +87,6 @@ const planCards = [
 
 /* ─── Paid add-ons (per event, one-time) ─── */
 const addons = [
-  {
-    icon: BarChart3,
-    title: "Live Leaderboard + Mobile Scoring",
-    price: 99,
-    to: "/checkout/live-leaderboard",
-    desc: "Combined package: real-time public leaderboard with mobile scoring from any phone — no app download required.",
-  },
   {
     icon: Users,
     title: "Unlimited Manual Entries",
@@ -131,6 +128,7 @@ const addons = [
 
 /* ─── Why Choose Us ─── */
 const whyChooseUs = [
+  { icon: Users, title: "We build it for you", desc: "Every paid event includes a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings." },
   { icon: Package, title: "One platform, end-to-end", desc: "Plan, promote, register, score, pay out, and follow up — all from one dashboard." },
   { icon: Trophy, title: "Built for golf", desc: "8 scoring formats, sponsor portals, pairings, and printables — nothing generic." },
   { icon: Shield, title: "PCI Level 1 payments", desc: "Bank-level Stripe security. We never hold your money." },
@@ -159,9 +157,31 @@ const Plans = () => {
               Choose the pricing that fits your event — start at $0, pay once per event, or run unlimited events with Enterprise.
             </p>
             <p className="mt-5 text-base md:text-lg font-bold uppercase tracking-widest text-secondary">
-              Zero upfront cost. Player-funded. No risk.
+              Every paid event includes a dedicated TeeVents rep who builds your event page and custom leaderboard for you.
             </p>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="bg-background py-20 border-b border-border">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <p className="text-xs font-bold uppercase tracking-widest text-secondary mb-3">Your Dedicated TeeVents Representative</p>
+            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">You Run the Tournament. We Build Everything Else.</h2>
+            <p className="mt-4 text-muted-foreground">Every paid event comes with a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings for you—so you can focus on running a great tournament.</p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-10">
+            <div><h3 className="font-display text-2xl font-bold mb-5">What Your Rep Does</h3><ul className="space-y-3">{[
+              "Builds your custom event page — logo, colors, hero images, sponsor logos, and branding",
+              "Configures registration and payments — waivers, fees, discounts, and Stripe setup",
+              "Sets up pairings and tee times with conflict detection",
+              "Builds your live leaderboard to match your brand colors",
+              "Imports your player roster from a spreadsheet or manual list",
+              "Trains your staff on scoring, check-in, and day-of operations",
+              "Stays on-call during your event for real-time support",
+            ].map((item) => <li key={item} className="flex gap-3 text-sm text-foreground/80"><Check className="h-5 w-5 shrink-0 text-primary" />{item}</li>)}</ul></div>
+            <div className="border-l-4 border-secondary pl-6 self-center"><h3 className="font-display text-2xl font-bold mb-3">Why This Matters</h3><p className="text-muted-foreground leading-relaxed">Most platforms give you software and say “good luck.” We give you software and a dedicated rep who builds everything for you. That’s the TeeVents difference.</p></div>
+          </div>
         </div>
       </section>
 
@@ -296,10 +316,11 @@ const Plans = () => {
                 <table className="w-full min-w-[720px] text-sm">
                   <thead><tr className="border-b border-border text-left"><th className="p-3"> </th><th className="p-3">No Cost to Start</th><th className="p-3 text-primary">Per-Event</th><th className="p-3 text-primary">Enterprise</th></tr></thead>
                   <tbody>{[
-                    ["Upfront Cost", "$0", "$150 per tournament", "$2,500/year"],
+                    ["Dedicated rep who builds everything", "Not included", "Included", "Included"],
+                    ["Upfront Cost", "$0", "$299 per tournament", "$2,999/year"],
                     ["Transaction Fee", "5% (covered by players)", "0%", "0%"],
                     ["Events Included", "Pay as you go", "Pay as you go", "Unlimited"],
-                    ["Live Leaderboard + Mobile Scoring", "Add-on: $99", "Add-on: $99", "Included"],
+                    ["Live Leaderboard + Mobile Scoring", "Add-on: $99", "Included", "Included"],
                     ["Best For", "Nonprofits, first-time organizers", "Organizers who want predictable costs", "Courses & clubs running 10+ events"],
                   ].map((row) => <tr key={row[0]} className="border-b border-border/60 last:border-0">{row.map((cell, index) => <td key={`${row[0]}-${index}`} className={`p-3 ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{cell}</td>)}</tr>)}</tbody>
                 </table>
@@ -319,7 +340,7 @@ const Plans = () => {
               <div className="mb-6">
                 <h3 className="text-2xl font-display font-bold text-foreground">Add-on Features</h3>
                  <p className="text-sm text-muted-foreground">
-                   All $99 each. One-time, per event. Select an add-on to go straight to checkout.
+                   All $99 each. One-time, per event. Full-Service Page Build Out is included automatically with every paid plan and remains available here for No Cost to Start events.
                 </p>
 
               </div>
@@ -368,11 +389,11 @@ const Plans = () => {
                Our Enterprise plan is built for golf courses, clubs, and organizations running leagues and tournaments all year long.
             </p>
              <div className="mb-6">
-               <span className="text-4xl md:text-5xl font-display font-bold text-secondary">$2,500</span>
+               <span className="text-4xl md:text-5xl font-display font-bold text-secondary">$2,999</span>
                <span className="text-primary-foreground/80">/year — Unlimited Events</span>
             </div>
              <ul className="mx-auto mb-6 grid max-w-2xl gap-2 text-left sm:grid-cols-2">
-               {["Unlimited tournaments and leagues", "Live Leaderboard + Mobile Scoring included ($99 value per event)", "0% transaction fees", "Custom branding", "Priority support"].map((feature) => (
+               {["Unlimited tournaments and leagues", "Live Leaderboard + Mobile Scoring included ($99 value per event)", "Dedicated TeeVents account representative who builds every event for you", "0% transaction fees", "Custom branding", "Priority support"].map((feature) => (
                  <li key={feature} className="flex items-start gap-2 text-sm text-primary-foreground">
                    <Check className="mt-0.5 h-4 w-4 shrink-0 text-secondary" /> {feature}
                  </li>
@@ -446,7 +467,7 @@ const Plans = () => {
                Running 10 tournaments or more per year?
             </h2>
             <p className="text-primary-foreground/70 mb-8">
-               Our Enterprise plan gives you unlimited events for $2,500/year — and includes Live Leaderboard + Mobile Scoring, normally a $99 add-on per event. Run 10 events, and it pays for itself. Run more? You save more.
+               Our Enterprise plan gives you unlimited events for $2,999/year, a dedicated TeeVents representative, and Live Leaderboard + Mobile Scoring on every event. Run 10 events, and it pays for itself. Run more? You save more.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
                <EnterpriseInquiryDialog><button type="button"

@@ -10,6 +10,7 @@ const INCLUDED = [
   "Live Leaderboard + Mobile Scoring on every event",
   "Branded course page for your club",
   "0% transaction fees",
+  "Dedicated TeeVents representative who builds every event",
   "Multiple staff logins with roles",
   "Priority support",
 ];
@@ -33,7 +34,7 @@ const EnterpriseDemoPage = () => {
   return (
     <div className="min-h-screen bg-background">
       <section className="bg-primary py-12 px-4 text-center" style={config?.primary_color ? { backgroundColor: config.primary_color } : undefined}>
-        <p className="text-secondary text-xs font-bold uppercase tracking-widest">TeeVents Enterprise · $2,500/year</p>
+        <p className="text-secondary text-xs font-bold uppercase tracking-widest">TeeVents Enterprise · $2,999/year</p>
         <h1 className="mt-2 font-display text-3xl md:text-5xl font-bold text-primary-foreground">
           {config?.club_name ? `Built for ${config.club_name}` : "See what your club gets with Enterprise"}
         </h1>

@@ -200,7 +200,7 @@ export default function EnterpriseCreate() {
     }
 
     const { data, error } = await (supabase.from("tournaments") as any)
-      .insert({ ...payload, organization_id: org.orgId, status: "draft" })
+      .insert({ ...payload, organization_id: org.orgId, status: "draft", pricing_version: "2026-10", pricing_model: "enterprise", platform_fee_percent: 0 })
       .select("id, slug")
       .maybeSingle();
     setSaving(false);

@@ -85,6 +85,13 @@
       "when": 1790527277514,
       "tag": "0011_handicap_system",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1790893173023,
+      "tag": "0012_grandfathered_new_pricing",
+      "breakpoints": true
     }
   ]
 }

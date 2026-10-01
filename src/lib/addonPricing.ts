@@ -3,9 +3,11 @@
  * Admin overrides live in public.admin_addon_pricing (addon_key → price_cents).
  */
 
-export const FLAT_RATE_PRO_CENTS = 15000; // $150 per event, no 5% platform fee
+export const LEGACY_FLAT_RATE_PRO_CENTS = 15000;
+export const FLAT_RATE_PRO_CENTS = 29900; // New-customer Per-Event price
 export const BRANDING_SPONSOR_CENTS = 9900; // Branding Removal + Digital Sponsor
-export const LEAGUE_ANNUAL_CENTS = 39900; // $399/year golf league subscription
+export const LEGACY_LEAGUE_ANNUAL_CENTS = 39900;
+export const LEAGUE_ANNUAL_CENTS = 49900; // New-customer Per-League price
 export const LEAGUE_EVENT_LIMIT = 24;
 export const FREE_MANUAL_ENTRIES = 10;
 

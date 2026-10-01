@@ -36,13 +36,13 @@ const prettyDate = (value: unknown) =>
 
 /** Static copy for marketing / help / legal pages. */
 const STATIC: Record<string, { title: string; description: string }> = {
-  "/": { title: SITE_NAME, description: "All-in-one platform to plan, manage, and run golf tournaments — registration, sponsors, live scoring, and payments." },
+  "/": { title: SITE_NAME, description: "Golf tournament software with a dedicated representative who builds every paid event page, leaderboard, and pairings." },
   "/about": { title: "About TeeVents – Platform & On-Site Event Management | TeeVents", description: "TeeVents is the complete golf tournament solution — an online platform plus full-service on-site event management, built by tournament directors." },
   "/services": { title: "Services | TeeVents", description: "Full-service golf tournament consulting — from course selection and vendor management to day-of coordination and sponsor strategy." },
   "/events": { title: "Upcoming Events | TeeVents", description: "Discover and register for upcoming golf tournaments and charity events." },
   "/reviews": { title: "Reviews | TeeVents", description: "See what tournament organizers say about TeeVents — real reviews from nonprofits and corporations running golf events." },
   "/contact": { title: "Contact Us | TeeVents", description: "Get in touch with TeeVents for golf tournament planning, platform questions, or consulting inquiries." },
-  "/plans": { title: "Simple Golf Tournament Pricing | TeeVents", description: "Start at no cost, choose $150 per-event pricing, run a $399 league, or get unlimited Enterprise events for $2,500 per year." },
+  "/plans": { title: "Simple Golf Tournament Pricing | TeeVents", description: "Start at no cost, choose $299 per-event pricing, run a $499 league, or get unlimited Enterprise events for $2,999 per year." },
   "/enterprise-pricing": { title: "Enterprise Pricing | TeeVents", description: "White-label and volume plans for associations, management companies, and multi-event organizers." },
   "/features": { title: "All Features | TeeVents Golf Tournament Software", description: "Explore every TeeVents feature in tournament-day order — from planning and registration through live scoring and post-event reporting." },
   "/faq": { title: "FAQ | TeeVents", description: "Answers to common questions about TeeVents golf tournament management — payments, fees, payouts, and support." },

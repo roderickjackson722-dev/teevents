@@ -499,7 +499,7 @@ export const pricing: GuideContent = {
   faqs: [
     {
       q: "How much does TeeVents cost?",
-        "Start at $0 with a 5 percent player-funded service fee. Per-Event is $299, Per-League is $499, and Enterprise is $2,999 per year.",
+      a: "Start at $0 with a 5 percent player-funded service fee. Per-Event is $299, Per-League is $499, and Enterprise is $2,999 per year.",
     },
     {
       q: "Is there a monthly subscription?",

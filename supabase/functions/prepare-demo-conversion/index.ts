@@ -16,7 +16,7 @@ type DiscountType = "none" | "percentage" | "fixed" | "free_pro";
 
 function discountLine(t: DiscountType | null | undefined, v: number | null | undefined) {
   switch (t) {
-    case "free_pro": return "🔥 Special offer: Free Pro upgrade ($399 value — 100% off)";
+    case "free_pro": return "Special offer: Per-Event upgrade ($299 value — 100% off)";
     case "percentage": return v && v > 0 ? `🔥 Special offer: ${v}% off Pro` : null;
     case "fixed": return v && v > 0 ? `🔥 Special offer: $${v} off Pro` : null;
     default: return null;

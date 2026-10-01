@@ -80,6 +80,7 @@ const EnterprisePricing = () => {
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
               $2,999/year — unlimited events, a dedicated representative, and everything your golf operation needs.
             </p>
+            <p className="mt-4 text-secondary font-semibold">Run 10 events, and it pays for itself. Run more? You save more.</p>
           </motion.div>
         </div>
       </section>

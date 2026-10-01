@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     q: "How much does TeeVents cost?",
-    a: "TeeVents has a Base plan at $0 with full setup access. Upgrade any tournament to Pro for a one-time $399 unlock that adds advanced features like live leaderboards, auctions, and the flyer studio. Enterprise pricing is available for large operators.",
+    a: "TeeVents starts at $0 with a player-funded 5% service fee. Per-Event is $299 with no TeeVents transaction fee, live scoring, and a dedicated representative. Enterprise is $2,999 per year for unlimited events.",
   },
   {
     q: "Is TeeVents good for charity and nonprofit golf tournaments?",

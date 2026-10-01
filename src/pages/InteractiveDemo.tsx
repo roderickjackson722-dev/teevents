@@ -61,7 +61,7 @@ const steps: Step[] = [
     target: '[data-tour="demo-cta"]',
     title: "Ready to Run Your Own Tournament?",
     content:
-      "Get started — no credit card required. Upgrade to Pro ($399 per tournament) when you need advanced features like the live leaderboard, sponsor portal, and auction tools.",
+      "Start at $0, or choose Per-Event ($299) with no TeeVents transaction fee, live scoring, and a dedicated representative who builds everything for you.",
     placement: "auto",
   },
 ];

@@ -47,7 +47,7 @@ const planCards = [
     unit: "per tournament",
     badge: "Predictable pricing",
     highlight: true,
-    desc: "Pay once per event and keep 100% of your registration revenue. No transaction fees.",
+    desc: "Pay once per event and keep 100% of your registration revenue. No transaction fees. Everything included.",
     features: [
       'Everything in "No Cost to Start"',
       "No 5% platform fee",

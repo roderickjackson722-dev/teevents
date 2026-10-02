@@ -148,13 +148,21 @@ const Index = () => {
             className="h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 mx-auto mb-4 md:mb-6 object-contain"
           />
           <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
-            Simple, Transparent Pricing
+            The Complete Golf Tournament
+            <br />
+            <span className="text-secondary">Management Platform</span>
           </h1>
           <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto font-medium">
-            Choose the pricing that fits your event — start at $0, pay once per event, or run unlimited events with Enterprise.
+            From registration to payouts – everything you need to run a professional golf tournament in one place.
           </p>
           <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-primary-foreground/75 max-w-2xl mx-auto leading-relaxed">
-            <span className="block text-secondary font-semibold">Every paid event includes a dedicated TeeVents rep who builds your event page and custom leaderboard for you.</span>
+            No spreadsheets. No manual payments. No stress.
+            <span className="block mt-2 text-secondary font-semibold">
+              Built by golf tournament managers, for golf tournament managers.
+            </span>
+            <span className="block mt-2 text-secondary font-semibold">
+              Every paid event includes a dedicated TeeVents rep who builds your event page and custom leaderboard for you.
+            </span>
           </p>
           <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link

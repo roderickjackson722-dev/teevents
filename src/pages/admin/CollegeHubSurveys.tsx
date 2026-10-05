@@ -243,8 +243,9 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
   const save = async () => {
     if (!title.trim() || !slug.trim()) { toast({ title: "Title and slug are required", variant: "destructive" }); return; }
     if (questions.some((q) => !q.question_text.trim())) { toast({ title: "All questions need text", variant: "destructive" }); return; }
-    if (responseCopyEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(responseCopyEmail.trim())) {
-      toast({ title: "Enter a valid response copy email", variant: "destructive" });
+    const copyList = responseCopyEmail.split(/[,;]+/).map((e) => e.trim().toLowerCase()).filter(Boolean);
+    if (copyList.length && copyList.some((e) => !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e))) {
+      toast({ title: "Enter valid response copy emails (comma-separated)", variant: "destructive" });
       return;
     }
     setSaving(true);
@@ -261,7 +262,7 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
         cta_label: ctaLabel.trim() || null,
         cta_description: ctaDescription.trim() || null,
         submit_button_text: submitButtonText.trim() || null,
-        response_copy_email: responseCopyEmail.trim().toLowerCase() || null,
+        response_copy_email: copyList.join(",") || null,
       };
       if (surveyId) {
         const { error } = await (supabase as any).from("college_surveys").update(payload).eq("id", surveyId);
@@ -319,13 +320,13 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
             <div>
               <Label>Copy Responses To</Label>
               <Input
-                type="email"
+                inputMode="email"
                 value={responseCopyEmail}
                 onChange={(e) => setResponseCopyEmail(e.target.value)}
-                maxLength={320}
-                placeholder="name@example.com"
+                maxLength={500}
+                placeholder="name@example.com, second@example.com"
               />
-              <p className="text-xs text-muted-foreground mt-1">This address receives a copy of every new response.</p>
+              <p className="text-xs text-muted-foreground mt-1">Enter one or more addresses, separated by commas. Each receives a copy of every new response.</p>
             </div>
           </div>
           <div>

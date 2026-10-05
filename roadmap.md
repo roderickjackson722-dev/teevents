@@ -8,4 +8,4 @@
 ## Survey response settings
 - [x] Add editable public submit-button text
 - [x] Add an optional email copied on new responses
-- [ ] Verify the admin editor and public survey
+- [x] Verify the admin editor and public survey

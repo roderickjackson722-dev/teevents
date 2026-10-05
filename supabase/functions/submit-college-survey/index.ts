@@ -85,10 +85,14 @@ Deno.serve(async (req) => {
       const answersHtml = Object.entries(rd)
         .map(([k, v]) => `<tr><td style="padding:4px 8px;border:1px solid #ddd;"><strong>${escapeHtml(k)}</strong></td><td style="padding:4px 8px;border:1px solid #ddd;">${escapeHtml(v)}</td></tr>`)
         .join("");
+      const copyEmails = (survey.response_copy_email || "")
+        .split(/[,;]+/)
+        .map((e: string) => e.trim())
+        .filter((e: string) => isEmail(e));
       const adminBody = {
         from: "TeeVents <notifications@teevents.golf>",
         to: ["info@teevents.golf"],
-        ...(isEmail(survey.response_copy_email) ? { cc: [survey.response_copy_email] } : {}),
+        ...(copyEmails.length ? { cc: copyEmails } : {}),
         subject: `New Survey Submission – ${survey.title}`,
         html: `<p>A new survey response has been submitted.</p>
           <p><strong>Survey:</strong> ${escapeHtml(survey.title)}<br/>

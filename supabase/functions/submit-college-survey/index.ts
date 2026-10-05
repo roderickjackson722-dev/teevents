@@ -89,38 +89,37 @@ Deno.serve(async (req) => {
         .split(/[,;]+/)
         .map((e: string) => e.trim())
         .filter((e: string) => isEmail(e));
-      const adminBody = {
-        from: "TeeVents <notifications@teevents.golf>",
-        to: ["info@teevents.golf"],
-        ...(copyEmails.length ? { cc: copyEmails } : {}),
-        subject: `New Survey Submission – ${survey.title}`,
-        html: `<p>A new survey response has been submitted.</p>
+      const FROM = "TeeVents Golf Management <info@notifications.teevents.golf>";
+      const recipients = Array.from(new Set(["info@teevents.golf", ...copyEmails].map((e) => e.toLowerCase())));
+      const subject = `New Survey Submission – ${survey.title}`;
+      const html = `<p>A new survey response has been submitted.</p>
           <p><strong>Survey:</strong> ${escapeHtml(survey.title)}<br/>
           <strong>Respondent:</strong> ${escapeHtml(respondent_name || "—")}<br/>
           <strong>Email:</strong> ${escapeHtml(respondent_email || "—")}<br/>
           <strong>School:</strong> ${escapeHtml(respondent_school || "—")}<br/>
           <strong>Submitted:</strong> ${escapeHtml(submittedAt)}</p>
           <table style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;">${answersHtml}</table>
-          <p style="margin-top:16px;font-size:12px;color:#666;">Automated notification from TeeVents.</p>`,
-      };
-      try {
-        await fetch("https://api.resend.com/emails", {
+          <p style="margin-top:16px;font-size:12px;color:#666;">Automated notification from TeeVents.</p>`;
+      const send = async (payload: Record<string, unknown>) => {
+        const res = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND}` },
-          body: JSON.stringify(adminBody),
+          body: JSON.stringify(payload),
         });
+        if (!res.ok) console.error("Resend error", res.status, await res.text());
+      };
+      try {
+        for (const to of recipients) {
+          await send({ from: FROM, to: [to], subject, html });
+        }
         if (survey.notify_respondent && respondent_email) {
-          await fetch("https://api.resend.com/emails", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND}` },
-            body: JSON.stringify({
-              from: "TeeVents <notifications@teevents.golf>",
-              to: [respondent_email],
-              subject: `Thank you for completing the ${survey.title} survey`,
-              html: `<p>Thank you for completing the survey. Your responses have been recorded.</p>
+          await send({
+            from: FROM,
+            to: [respondent_email],
+            subject: `Thank you for completing the ${survey.title} survey`,
+            html: `<p>Thank you for completing the survey. Your responses have been recorded.</p>
                 <p>If you have any questions, please contact us at info@teevents.golf.</p>
                 <p style="margin-top:16px;font-size:12px;color:#666;">TeeVents Golf Management</p>`,
-            }),
           });
         }
       } catch (e) {

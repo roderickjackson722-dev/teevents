@@ -9,7 +9,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-type Survey = { id: string; title: string; description: string | null; slug: string; is_active: boolean; hero_image_url: string | null };
+type Survey = {
+  id: string;
+  title: string;
+  description: string | null;
+  slug: string;
+  is_active: boolean;
+  hero_image_url: string | null;
+  submit_button_text: string | null;
+};
 type Question = { id: string; question_text: string; question_type: string; display_order: number; is_required: boolean; options: string[] | null };
 
 export default function CollegeSurvey({ slugOverride }: { slugOverride?: string } = {}) {
@@ -30,7 +38,7 @@ export default function CollegeSurvey({ slugOverride }: { slugOverride?: string 
         return;
       }
       try {
-        const { data: s } = await (supabase as any).from("college_surveys").select("id, title, description, slug, is_active, hero_image_url").eq("slug", slug).eq("is_active", true).maybeSingle();
+        const { data: s } = await (supabase as any).from("college_surveys").select("id, title, description, slug, is_active, hero_image_url, submit_button_text").eq("slug", slug).eq("is_active", true).maybeSingle();
         if (s) {
           const { data: qs } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", s.id).order("display_order");
           setSurvey(s);
@@ -149,7 +157,7 @@ export default function CollegeSurvey({ slugOverride }: { slugOverride?: string 
               </div>
             ))}
             <Button onClick={submit} disabled={submitting} className="w-full">
-              <Send className="mr-2 h-4 w-4" /> {submitting ? "Submitting…" : "Submit Survey"}
+              <Send className="mr-2 h-4 w-4" /> {submitting ? "Submitting…" : (survey.submit_button_text || "Submit Survey")}
             </Button>
           </CardContent>
         </Card>

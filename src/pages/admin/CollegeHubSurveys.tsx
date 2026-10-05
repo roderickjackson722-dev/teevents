@@ -22,6 +22,8 @@ type Survey = {
   tournament_id: string | null;
   cta_label: string | null;
   cta_description: string | null;
+  submit_button_text: string | null;
+  response_copy_email: string | null;
 };
 type CollegeTournament = { id: string; title: string };
 type Question = {
@@ -176,6 +178,8 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
   const [saving, setSaving] = useState(false);
   const [ctaLabel, setCtaLabel] = useState("");
   const [ctaDescription, setCtaDescription] = useState("");
+  const [submitButtonText, setSubmitButtonText] = useState("");
+  const [responseCopyEmail, setResponseCopyEmail] = useState("");
 
   useEffect(() => {
     if (!open) return;
@@ -192,11 +196,14 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
         setTournamentId(survey.tournament_id || "");
         setCtaLabel(survey.cta_label || "");
         setCtaDescription(survey.cta_description || "");
+        setSubmitButtonText(survey.submit_button_text || "");
+        setResponseCopyEmail(survey.response_copy_email || "");
         const { data } = await (supabase as any).from("college_survey_questions").select("*").eq("survey_id", survey.id).order("display_order");
         setQuestions(data || []);
       } else {
         setTitle(""); setDescription(""); setSlug(""); setIsActive(true); setNotifyRespondent(false);
         setHeroImageUrl(null); setTournamentId(""); setCtaLabel(""); setCtaDescription("");
+        setSubmitButtonText(""); setResponseCopyEmail("");
         setQuestions(DEFAULT_QUESTIONS.map((q) => ({ ...q })));
       }
     })();
@@ -236,6 +243,10 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
   const save = async () => {
     if (!title.trim() || !slug.trim()) { toast({ title: "Title and slug are required", variant: "destructive" }); return; }
     if (questions.some((q) => !q.question_text.trim())) { toast({ title: "All questions need text", variant: "destructive" }); return; }
+    if (responseCopyEmail.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(responseCopyEmail.trim())) {
+      toast({ title: "Enter a valid response copy email", variant: "destructive" });
+      return;
+    }
     setSaving(true);
     try {
       let surveyId = survey?.id;
@@ -249,6 +260,8 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
         tournament_id: tournamentId || null,
         cta_label: ctaLabel.trim() || null,
         cta_description: ctaDescription.trim() || null,
+        submit_button_text: submitButtonText.trim() || null,
+        response_copy_email: responseCopyEmail.trim().toLowerCase() || null,
       };
       if (surveyId) {
         const { error } = await (supabase as any).from("college_surveys").update(payload).eq("id", surveyId);
@@ -291,6 +304,29 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
           <div>
             <Label>Description</Label>
             <Textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <Label>Submit Button Text</Label>
+              <Input
+                value={submitButtonText}
+                onChange={(e) => setSubmitButtonText(e.target.value)}
+                maxLength={80}
+                placeholder="Submit Survey"
+              />
+              <p className="text-xs text-muted-foreground mt-1">Leave blank to use “Submit Survey.”</p>
+            </div>
+            <div>
+              <Label>Copy Responses To</Label>
+              <Input
+                type="email"
+                value={responseCopyEmail}
+                onChange={(e) => setResponseCopyEmail(e.target.value)}
+                maxLength={320}
+                placeholder="name@example.com"
+              />
+              <p className="text-xs text-muted-foreground mt-1">This address receives a copy of every new response.</p>
+            </div>
           </div>
           <div>
             <Label>Survey Card Label</Label>

@@ -6,6 +6,17 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+const escapeHtml = (value: unknown) => String(value ?? "")
+  .replace(/&/g, "&amp;")
+  .replace(/</g, "&lt;")
+  .replace(/>/g, "&gt;")
+  .replace(/"/g, "&quot;")
+  .replace(/'/g, "&#39;");
+
+const isEmail = (value: unknown) => typeof value === "string"
+  && value.length <= 320
+  && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
 
@@ -26,7 +37,7 @@ Deno.serve(async (req) => {
 
     const { data: survey, error: sErr } = await admin
       .from("college_surveys")
-      .select("id, title, is_active, notify_respondent")
+      .select("id, title, is_active, notify_respondent, response_copy_email")
       .eq("slug", slug)
       .maybeSingle();
     if (sErr || !survey || !survey.is_active) {
@@ -72,18 +83,19 @@ Deno.serve(async (req) => {
     if (RESEND) {
       const submittedAt = new Date(inserted.submitted_at).toLocaleString();
       const answersHtml = Object.entries(rd)
-        .map(([k, v]) => `<tr><td style="padding:4px 8px;border:1px solid #ddd;"><strong>${k}</strong></td><td style="padding:4px 8px;border:1px solid #ddd;">${String(v ?? "")}</td></tr>`)
+        .map(([k, v]) => `<tr><td style="padding:4px 8px;border:1px solid #ddd;"><strong>${escapeHtml(k)}</strong></td><td style="padding:4px 8px;border:1px solid #ddd;">${escapeHtml(v)}</td></tr>`)
         .join("");
       const adminBody = {
         from: "TeeVents <notifications@teevents.golf>",
         to: ["info@teevents.golf"],
+        ...(isEmail(survey.response_copy_email) ? { cc: [survey.response_copy_email] } : {}),
         subject: `New Survey Submission – ${survey.title}`,
         html: `<p>A new survey response has been submitted.</p>
-          <p><strong>Survey:</strong> ${survey.title}<br/>
-          <strong>Respondent:</strong> ${respondent_name || "—"}<br/>
-          <strong>Email:</strong> ${respondent_email || "—"}<br/>
-          <strong>School:</strong> ${respondent_school || "—"}<br/>
-          <strong>Submitted:</strong> ${submittedAt}</p>
+          <p><strong>Survey:</strong> ${escapeHtml(survey.title)}<br/>
+          <strong>Respondent:</strong> ${escapeHtml(respondent_name || "—")}<br/>
+          <strong>Email:</strong> ${escapeHtml(respondent_email || "—")}<br/>
+          <strong>School:</strong> ${escapeHtml(respondent_school || "—")}<br/>
+          <strong>Submitted:</strong> ${escapeHtml(submittedAt)}</p>
           <table style="border-collapse:collapse;font-family:Arial,sans-serif;font-size:13px;">${answersHtml}</table>
           <p style="margin-top:16px;font-size:12px;color:#666;">Automated notification from TeeVents.</p>`,
       };

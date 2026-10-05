@@ -92,6 +92,13 @@
       "when": 1790893173023,
       "tag": "0012_grandfathered_new_pricing",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791210345789,
+      "tag": "0013_add_college_survey_submission_settings",
+      "breakpoints": true
     }
   ]
 }

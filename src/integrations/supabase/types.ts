@@ -1321,7 +1321,9 @@ export type Database = {
           id: string
           is_active: boolean
           notify_respondent: boolean
+          response_copy_email: string | null
           slug: string
+          submit_button_text: string | null
           title: string
           tournament_id: string | null
           updated_at: string
@@ -1335,7 +1337,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           notify_respondent?: boolean
+          response_copy_email?: string | null
           slug: string
+          submit_button_text?: string | null
           title: string
           tournament_id?: string | null
           updated_at?: string
@@ -1349,7 +1353,9 @@ export type Database = {
           id?: string
           is_active?: boolean
           notify_respondent?: boolean
+          response_copy_email?: string | null
           slug?: string
+          submit_button_text?: string | null
           title?: string
           tournament_id?: string | null
           updated_at?: string

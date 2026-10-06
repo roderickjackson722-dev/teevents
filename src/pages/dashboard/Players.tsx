@@ -205,6 +205,12 @@ const Players = () => {
   const [view, setView] = useState<"roster" | "pairings">("roster");
   const [addPlayerOpen, setAddPlayerOpen] = useState(false);
   const [addingPlayer, setAddingPlayer] = useState(false);
+  const EMPTY_TEAMMATES = () => [0, 1, 2].map(() => ({ first_name: "", last_name: "", email: "" }));
+  const [teamSize, setTeamSize] = useState(1);
+  const [teamName, setTeamName] = useState("");
+  const [teammates, setTeammates] = useState(EMPTY_TEAMMATES);
+  const updateTeammate = (i: number, patch: Partial<{ first_name: string; last_name: string; email: string }>) =>
+    setTeammates((list) => list.map((t, idx) => (idx === i ? { ...t, ...patch } : t)));
   const [newPlayer, setNewPlayer] = useState({
     first_name: "",
     last_name: "",
@@ -855,20 +861,66 @@ const Players = () => {
       cash_payment_received: isCash && newPlayer.payment_status === "paid",
       ...(extraAnswers.length ? { custom_answers: extraAnswers } : {}),
     };
-    const { data, error } = await supabase.from("tournament_registrations").insert(insertPayload).select("*").single();
+    const mates = teamSize > 1 ? teammates.slice(0, teamSize - 1) : [];
+    if (mates.some((t) => !t.first_name.trim() || !t.last_name.trim())) {
+      setAddingPlayer(false);
+      toast({ title: "Missing fields", description: "Enter a first and last name for every teammate.", variant: "destructive" });
+      return;
+    }
+    let groupId: string | null = null;
+    const finalTeamName = teamName.trim() || `${insertPayload.last_name} Team`;
+    if (mates.length) {
+      const { data: g, error: gErr } = await (supabase as any)
+        .from("registration_groups")
+        .insert({ tournament_id: selectedTournament, group_name: finalTeamName })
+        .select("id").single();
+      if (gErr || !g) {
+        setAddingPlayer(false);
+        toast({ title: "Error", description: gErr?.message || "Couldn't create team", variant: "destructive" });
+        return;
+      }
+      groupId = g.id;
+    }
+    const rows: any[] = [
+      { ...insertPayload, ...(groupId ? { group_id: groupId, group_leader: true } : {}) },
+      ...mates.map((t) => ({
+        tournament_id: selectedTournament,
+        first_name: t.first_name.trim(),
+        last_name: t.last_name.trim(),
+        email: (t.email.trim() || insertPayload.email).toLowerCase(),
+        tier_id: insertPayload.tier_id,
+        payment_method: insertPayload.payment_method,
+        payment_status: insertPayload.payment_status,
+        cash_payment_received: insertPayload.cash_payment_received,
+        group_id: groupId,
+        group_leader: false,
+      })),
+    ];
+    const { data: inserted, error } = await supabase.from("tournament_registrations").insert(rows).select("*");
     setAddingPlayer(false);
     if (error) {
+      if (groupId) await (supabase as any).from("registration_groups").delete().eq("id", groupId);
       toast({ title: "Error", description: error.message, variant: "destructive" });
-    } else if (data) {
-      setAllPlayers((prev) => [...prev, data as unknown as Registration]);
+    } else if (inserted?.length) {
+      const data = inserted[0] as any;
+      setAllPlayers((prev) => [...prev, ...(inserted as unknown as Registration[])]);
+      if (groupId) setGroupNames((prev) => ({ ...prev, [groupId as string]: finalTeamName }));
       setNewPlayer({ first_name: "", last_name: "", email: "", phone: "", handicap: "", shirt_size: "", payment_status: "paid", payment_method: "online", age: "", city: "", state: "", tier_id: "" });
+      setTeamSize(1);
+      setTeamName("");
+      setTeammates(EMPTY_TEAMMATES());
       setAddPlayerOpen(false);
-      toast({ title: "Player added", description: `${data.first_name} ${data.last_name} has been added.` });
+      toast({
+        title: inserted.length > 1 ? "Team added" : "Player added",
+        description: inserted.length > 1 ? `${finalTeamName} (${inserted.length} players) has been added.` : `${data.first_name} ${data.last_name} has been added.`,
+      });
       markChecklistTaskComplete(selectedTournament, "add_first_player");
       // Fire organizer + platform-admin notification emails (manual add-on / offline payment).
-      supabase.functions.invoke("notify-manual-registration", {
-        body: { registration_id: (data as any).id },
-      }).catch((e) => console.error("notify-manual-registration failed:", e));
+      inserted.forEach((r: any) => {
+        supabase.functions.invoke("notify-manual-registration", {
+          body: { registration_id: r.id },
+        }).catch((e) => console.error("notify-manual-registration failed:", e));
+      });
     }
   };
 
@@ -2540,6 +2592,17 @@ const Players = () => {
                 </div>
               </DialogHeader>
               <div className="space-y-4 pt-2">
+                <div>
+                  <Label>How many players?</Label>
+                  <div className="mt-1 grid grid-cols-4 gap-2">
+                    {[1, 2, 3, 4].map((n) => (
+                      <Button key={n} type="button" size="sm" variant={teamSize === n ? "default" : "outline"} onClick={() => setTeamSize(n)}>
+                        {n === 1 ? "1 player" : `Team of ${n}`}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
+                {teamSize > 1 && <p className="text-xs font-semibold text-muted-foreground">Player 1 (team captain)</p>}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <Label htmlFor="ap-first">First Name *</Label>
@@ -2652,9 +2715,28 @@ const Players = () => {
                     </div>
                   ) : null;
                 })()}
+                {teamSize > 1 && (
+                  <div className="space-y-3 rounded-md border p-3">
+                    <div>
+                      <Label htmlFor="ap-team-name">Team Name</Label>
+                      <Input id="ap-team-name" value={teamName} onChange={(e) => setTeamName(e.target.value)} placeholder={`${newPlayer.last_name || "Smith"} Team`} />
+                    </div>
+                    {teammates.slice(0, teamSize - 1).map((t, i) => (
+                      <div key={i} className="space-y-2">
+                        <p className="text-xs font-semibold text-muted-foreground">Player {i + 2}</p>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Input aria-label={`Player ${i + 2} first name`} value={t.first_name} onChange={(e) => updateTeammate(i, { first_name: e.target.value })} placeholder="First name *" />
+                          <Input aria-label={`Player ${i + 2} last name`} value={t.last_name} onChange={(e) => updateTeammate(i, { last_name: e.target.value })} placeholder="Last name *" />
+                        </div>
+                        <Input aria-label={`Player ${i + 2} email`} type="email" value={t.email} onChange={(e) => updateTeammate(i, { email: e.target.value })} placeholder="Email (optional — uses Player 1's)" />
+                      </div>
+                    ))}
+                    <p className="text-xs text-muted-foreground">Teammates share Player 1's ticket, payment status and method, and stay grouped together in pairings.</p>
+                  </div>
+                )}
                 <Button onClick={handleAddPlayer} disabled={addingPlayer} className="w-full">
                   {addingPlayer ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <UserPlus className="h-4 w-4 mr-2" />}
-                  Add Player
+                  {teamSize > 1 ? `Add Team of ${teamSize}` : "Add Player"}
                 </Button>
               </div>
             </DialogContent>

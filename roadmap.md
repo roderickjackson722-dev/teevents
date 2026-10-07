@@ -24,3 +24,9 @@
 - [x] Correct key public pricing presentation without changing grandfathered events or payments
 - [x] Verify pages and uploaded assets
 - [ ] Replace text-only organization names with official logos when supplied (Troon, Cleveland, Golf Channel, PGA, Octagon)
+## Enterprise enhancement request
+- [ ] Audit requested features against existing Enterprise capabilities
+- [ ] Confirm payment-fee policy conflict before changing transaction behavior
+- [ ] Implement approved high-priority gaps without changing legacy or non-Enterprise workflows
+- [ ] Implement approved medium-priority gaps
+- [ ] Verify Enterprise flows and document current limits

@@ -6,6 +6,7 @@ import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import heroGolf from "@/assets/hero-golf.jpg";
 import { supabase } from "@/integrations/supabase/client";
+import { TestimonialCards } from "@/components/OrganizerTestimonials";
 
 interface Review {
   id: string;
@@ -47,6 +48,10 @@ const Reviews = () => {
             {[...Array(5)].map((_, i) => (
               <Star key={i} className="h-6 w-6 fill-secondary text-secondary" />
             ))}
+          </div>
+
+          <div className="founder-trust mb-8">
+            <TestimonialCards stacked />
           </div>
 
           {loading ? (

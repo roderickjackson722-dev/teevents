@@ -17,6 +17,7 @@ import HeroSection from "@/components/HeroSection";
 import FindYourLeague from "@/components/leagues/FindYourLeague";
 import FounderSection from "@/components/FounderSection";
 import FounderPartners from "@/components/FounderPartners";
+import OrganizerTestimonials from "@/components/OrganizerTestimonials";
 import { Button } from "@/components/ui/button";
 
 import heroGolf from "@/assets/hero-golf.jpg";
@@ -226,6 +227,7 @@ const Index = () => {
 
       <FounderSection />
       <FounderPartners />
+      <OrganizerTestimonials />
 
       {/* For Tournament Organizers */}
       <section className="bg-golf-cream py-20 md:py-24">

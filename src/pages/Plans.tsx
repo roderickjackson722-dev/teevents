@@ -9,6 +9,7 @@ import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import EnterpriseDemo from "@/components/pricing/EnterpriseDemo";
 import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
+import { Button } from "@/components/ui/button";
 
 /* ─── Core pricing options ─── */
 const planCards = [
@@ -45,7 +46,7 @@ const planCards = [
     title: "Per-Event",
     price: "$299",
     unit: "per tournament",
-    badge: "Predictable pricing",
+    badge: "Recommended for charity and first-time organizers",
     highlight: true,
     desc: "Pay once per event and keep 100% of your registration revenue. No transaction fees. Everything included.",
     features: [
@@ -145,6 +146,17 @@ const Plans = () => {
         description="Start at $0, pay $299 per event, $499 per league, or $2,999 per year for Enterprise. Every paid event includes a dedicated TeeVents representative."
         path="/plans"
       />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+        "@context": "https://schema.org", "@type": "Product", name: "TeeVents Golf Tournament Management Software",
+        description: "Golf tournament and league management with a dedicated representative included on paid plans.",
+        brand: { "@type": "Brand", name: "TeeVents" },
+        offers: [
+          ["No Cost to Start", "0", "5% platform fee covered by players; standard processing applies."],
+          ["Per-Event", "299", "One-time per tournament; dedicated representative included; standard processing applies."],
+          ["Per-League", "499", "Per league season; dedicated representative included; standard processing applies."],
+          ["Enterprise", "2999", "Per year for unlimited events; dedicated representative included; standard processing applies."],
+        ].map(([name, price, description]) => ({ "@type": "Offer", name, price, priceCurrency: "USD", description, url: "https://www.teevents.golf/plans" })),
+      }) }} />
 
       {/* 1. HERO */}
       <section className="bg-primary pt-24 pb-14">
@@ -250,7 +262,7 @@ const Plans = () => {
                     <p.icon className="h-4 w-4" />
                   </div>
                   {p.badge && (
-                    <span className="text-[10px] font-bold uppercase tracking-wider text-secondary">
+                    <span className="text-xs font-bold text-primary leading-relaxed">
                       {p.badge}
                     </span>
                   )}
@@ -402,9 +414,9 @@ const Plans = () => {
              <p className="font-semibold text-primary-foreground mb-6">
                Run 10 events, and it pays for itself. Run more? You save more.
             </p>
-             <EnterpriseInquiryDialog><button type="button" className="inline-flex items-center gap-2 rounded-md bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:bg-secondary/90">
+              <EnterpriseInquiryDialog><Button type="button" className="inline-flex items-center gap-2 rounded-md bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:bg-secondary/90">
                Contact us at info@teevents.golf <ArrowRight className="h-4 w-4" />
-             </button></EnterpriseInquiryDialog>
+              </Button></EnterpriseInquiryDialog>
              </div>
           </motion.div>
 
@@ -470,11 +482,11 @@ const Plans = () => {
                Our Enterprise plan gives you unlimited events for $2,999/year, a dedicated TeeVents representative, and Live Leaderboard + Mobile Scoring on every event. Run 10 events, and it pays for itself. Run more? You save more.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-               <EnterpriseInquiryDialog><button type="button"
+                <EnterpriseInquiryDialog><Button type="button"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
                  Contact us at info@teevents.golf <ArrowRight className="h-4 w-4" />
-               </button></EnterpriseInquiryDialog>
+                </Button></EnterpriseInquiryDialog>
               <Link
                 to="/request-sample"
                 className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"

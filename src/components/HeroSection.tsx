@@ -25,14 +25,14 @@ const HeroSection = ({ backgroundImage, title, subtitle, children, height = "min
 
 
       <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
-        <motion.h1
+        {title && <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
           className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight break-words"
         >
           {title}
-        </motion.h1>
+        </motion.h1>}
         {subtitle && (
           <motion.p
             initial={{ opacity: 0, y: 20 }}

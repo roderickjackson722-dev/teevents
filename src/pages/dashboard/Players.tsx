@@ -1,5 +1,6 @@
 import { paymentStatusClasses, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
 import PublicPairingsPageEditor from "@/components/dashboard/PublicPairingsPageEditor";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import PairingsTemplateBuilder, { type TemplateSlot } from "@/components/dashboard/PairingsTemplateBuilder";
@@ -42,6 +43,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -69,6 +71,7 @@ import {
 import PlayerImport from "@/components/PlayerImport";
 import ManualEntryLimitModal from "@/components/ManualEntryLimitModal";
 import { useManualEntryEnforcement } from "@/hooks/useManualEntryEnforcement";
+import { sendRegistrationPaymentLink } from "@/lib/registrationPayment.functions";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import {
   AlertDialog,
@@ -268,6 +271,11 @@ const Players = () => {
   });
   const [savingEdit, setSavingEdit] = useState(false);
   const [regFeeCents, setRegFeeCents] = useState(0);
+  const sendPaymentLink = useServerFn(sendRegistrationPaymentLink);
+  const [paymentLinkPlayer, setPaymentLinkPlayer] = useState<Registration | null>(null);
+  const [paymentLinkEmail, setPaymentLinkEmail] = useState("");
+  const [paymentLinkAmount, setPaymentLinkAmount] = useState("");
+  const [sendingPaymentLink, setSendingPaymentLink] = useState(false);
   const manualEntry = useManualEntryEnforcement(selectedTournament || null);
 
   // Registration field definitions for this tournament (used to expose custom answers as roster columns)
@@ -937,6 +945,38 @@ const Players = () => {
       supabase.functions.invoke("notify-manual-registration", {
         body: { registration_id: id },
       }).catch((e) => console.error("notify-manual-registration failed:", e));
+    }
+  };
+
+  const openPaymentLink = (player: Registration) => {
+    setPaymentLinkPlayer(player);
+    setPaymentLinkEmail(player.email || "");
+    setPaymentLinkAmount((regFeeCents / 100).toFixed(2));
+  };
+
+  const handleSendPaymentLink = async () => {
+    if (!paymentLinkPlayer) return;
+    const amount = Number(paymentLinkAmount);
+    if (!Number.isFinite(amount) || amount < 0.5) {
+      toast({ title: "Enter a valid payment amount", variant: "destructive" });
+      return;
+    }
+    setSendingPaymentLink(true);
+    try {
+      await sendPaymentLink({
+        data: {
+          registrationId: paymentLinkPlayer.id,
+          recipientEmail: paymentLinkEmail,
+          amountCents: Math.round(amount * 100),
+          origin: window.location.origin,
+        },
+      });
+      toast({ title: "Payment link sent", description: `Sent to ${paymentLinkEmail}. No new roster entry was created.` });
+      setPaymentLinkPlayer(null);
+    } catch (error) {
+      toast({ title: "Couldn't send payment link", description: error instanceof Error ? error.message : "Please try again.", variant: "destructive" });
+    } finally {
+      setSendingPaymentLink(false);
     }
   };
 
@@ -3032,9 +3072,14 @@ const Players = () => {
                             </button>
                           )}
                           {p.payment_status !== "paid" && p.payment_status !== "refunded" && (
-                            <button onClick={() => markAsPaid(p.id)} className="text-[10px] text-primary hover:underline">
-                              Mark as Paid
-                            </button>
+                            <>
+                              <button onClick={() => openPaymentLink(p)} className="text-[10px] font-semibold text-primary hover:underline">
+                                Send Payment Link
+                              </button>
+                              <button onClick={() => markAsPaid(p.id)} className="text-[10px] text-primary hover:underline">
+                                Mark as Paid
+                              </button>
+                            </>
                           )}
 
                         </div>
@@ -4213,6 +4258,38 @@ const Players = () => {
       )}
 
       {/* Player Detail Dialog */}
+      <Dialog open={!!paymentLinkPlayer} onOpenChange={(open) => !open && setPaymentLinkPlayer(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Send Payment Link</DialogTitle>
+            <DialogDescription>
+              This collects payment for {paymentLinkPlayer?.first_name} {paymentLinkPlayer?.last_name}'s existing roster entry. It will not add another player.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <div>
+              <Label htmlFor="payment-link-email">Send to</Label>
+              <Input id="payment-link-email" type="email" value={paymentLinkEmail} onChange={(e) => setPaymentLinkEmail(e.target.value)} />
+            </div>
+            <div>
+              <Label htmlFor="payment-link-amount">Registration amount</Label>
+              <div className="relative mt-1">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                <Input id="payment-link-amount" type="number" min="0.50" max="10000" step="0.01" className="pl-7" value={paymentLinkAmount} onChange={(e) => setPaymentLinkAmount(e.target.value)} />
+              </div>
+              <p className="mt-1 text-xs text-muted-foreground">You can adjust the amount before sending.</p>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button variant="outline" onClick={() => setPaymentLinkPlayer(null)} disabled={sendingPaymentLink}>Cancel</Button>
+              <Button onClick={handleSendPaymentLink} disabled={sendingPaymentLink || !paymentLinkEmail.trim()}>
+                {sendingPaymentLink && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Send Link
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!viewingPlayer} onOpenChange={(open) => !open && setViewingPlayer(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>

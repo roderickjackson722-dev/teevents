@@ -325,7 +325,7 @@ export default function CheckIn() {
             {filtered?.map((p) => {
               const fullName = `${p.first_name} ${p.last_name}`;
               return (
-                <Card key={p.id} className={p.checked_in ? "border-primary/30 bg-primary/5" : ""}>
+                <Card key={p.id} className={p.checked_in ? "border-primary bg-primary/15 ring-1 ring-primary/30" : ""}>
                   <CardContent className="pt-4 pb-4">
                     <div className="flex items-start justify-between">
                       <div>
@@ -338,7 +338,7 @@ export default function CheckIn() {
                       <div className="flex flex-col items-end gap-2">
                         {p.checked_in ? (
                           <>
-                            <Badge className="bg-primary/10 text-primary">
+                            <Badge className="bg-primary text-primary-foreground">
                               <CheckCircle2 className="mr-1 h-3 w-3" /> Checked In
                             </Badge>
                             <button

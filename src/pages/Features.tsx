@@ -458,12 +458,12 @@ const Features = () => {
               The full TeeVents toolkit, in the order you'll use it — from pre-planning
               concepts through tournament-day scoring and post-event wrap-up.
             </p>
-            <div className="mt-7 grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-stretch gap-3 max-w-2xl mx-auto">
+            <div className="mt-7 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl mx-auto">
               <div className="rounded-lg border bg-card p-5 text-left">
                 <p className="font-display text-xl font-bold">Free</p>
                 <p className="mt-1 text-sm text-muted-foreground">$0 upfront with a 5% platform fee on registrations.</p>
               </div>
-              <div className="flex items-center justify-center font-bold text-muted-foreground">OR</div>
+              <div className="flex shrink-0 items-center justify-center font-bold text-muted-foreground">OR</div>
               <div className="rounded-lg border border-primary/40 bg-card p-5 text-left">
                 <p className="font-display text-xl font-bold">Per-Event</p>
                 <p className="mt-1 text-sm text-muted-foreground">$299 per tournament with 0% platform fees.</p>

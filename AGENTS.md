@@ -6,3 +6,4 @@
 - Pricing behavior is cohort-based: existing events and leagues remain `legacy`; only explicit post-cutover creation paths stamp the current pricing version, so edits never migrate grandfathered records.
 - College survey presentation and response-copy settings live on each `college_surveys` row so every survey can be configured independently.
 - Founder biography and portrait are shared through `FounderSection` on homepage and About; partner imagery uses CDN pointers and accurate past-relationship labels to avoid divergent credibility claims.
+- Payment reminders create checkout for the existing pending registration ID; never insert a replacement roster row.

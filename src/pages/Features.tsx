@@ -458,18 +458,23 @@ const Features = () => {
               The full TeeVents toolkit, in the order you'll use it — from pre-planning
               concepts through tournament-day scoring and post-event wrap-up.
             </p>
-            <div className="mt-6 flex flex-wrap justify-center items-center gap-3">
-              <Badge variant="secondary" className="text-sm">Free — included for everyone</Badge>
-              <Badge className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 border-0 text-sm">
-                Per-Event — $299 per tournament
-              </Badge>
+            <div className="mt-7 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl mx-auto">
+              <div className="rounded-lg border bg-card p-5 text-left">
+                <p className="font-display text-xl font-bold">Free</p>
+                <p className="mt-1 text-sm text-muted-foreground">$0 upfront with a 5% platform fee on registrations.</p>
+              </div>
+              <div className="flex shrink-0 items-center justify-center font-bold text-muted-foreground">OR</div>
+              <div className="rounded-lg border border-primary/40 bg-card p-5 text-left">
+                <p className="font-display text-xl font-bold">Per-Event</p>
+                <p className="mt-1 text-sm text-muted-foreground">$299 per tournament with 0% platform fees.</p>
+              </div>
             </div>
             <div className="mt-6 flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
-                <Link to="/get-started">Start a Tournament for Free</Link>
+                <Link to="/signup?plan=free">Start for Free</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/request-sample">Request a Sample</Link>
+                <Link to="/signup?plan=per-event">Start with Per-Event — $299</Link>
               </Button>
             </div>
           </header>
@@ -525,14 +530,14 @@ const Features = () => {
               Ready to run your next tournament?
             </h3>
             <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Start free — the entire management platform is included. Add paid add-ons like custom domain, auction & raffle, or SMS blasts only when you need them.
+              Choose $0 upfront with a 5% platform fee, or pay $299 once for your tournament and remove the platform fee.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
-                <Link to="/get-started">Start a Tournament for Free</Link>
+                <Link to="/signup?plan=free">Start for Free</Link>
               </Button>
               <Button asChild size="lg" variant="outline">
-                <Link to="/request-sample">Request a Sample</Link>
+                <Link to="/signup?plan=per-event">Start with Per-Event — $299</Link>
               </Button>
             </div>
           </div>

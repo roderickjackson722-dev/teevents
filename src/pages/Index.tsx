@@ -82,7 +82,7 @@ const fadeUp = {
 const Index = () => {
   return (
     <Layout>
-      <SEO title="Home" description="All-in-one platform to plan, manage, and run golf tournaments — registration, sponsors, live scoring, and payments." path="/" />
+      <SEO title="Golf Tournament Management Software | TeeVents - Free to Start" description="Golf tournament software with a dedicated representative who builds every paid event page, leaderboard, and pairings." path="/" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -139,7 +139,7 @@ const Index = () => {
         }}
       />
       {/* Hero */}
-      <HeroSection backgroundImage={heroGolf} title="" height="min-h-screen py-20 md:py-0 md:h-screen">
+      <HeroSection backgroundImage={heroGolf} title="" height="min-h-[680px] py-8 md:py-14">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -148,23 +148,21 @@ const Index = () => {
           <img
             src={logoWhite}
             alt="TeeVents Golf"
-            className="h-20 w-20 sm:h-28 sm:w-28 md:h-36 md:w-36 mx-auto mb-4 md:mb-6 object-contain"
+             className="h-12 w-12 md:h-20 md:w-20 mx-auto mb-4 object-contain"
           />
-          <h1 className="text-3xl sm:text-4xl md:text-6xl lg:text-7xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
+          <p className="mb-3 text-sm font-semibold text-secondary">For nonprofit, charity &amp; corporate golf tournaments</p>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
             The Complete Golf Tournament
             <br />
             <span className="text-secondary">Management Platform</span>
           </h1>
           <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto font-medium">
-            From registration to payouts – everything you need to run a professional golf tournament in one place.
+            We build your event page, leaderboard, and pairings — you show up and run it. Included with every paid event.
           </p>
           <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-primary-foreground/75 max-w-2xl mx-auto leading-relaxed">
             No spreadsheets. No manual payments. No stress.
             <span className="block mt-2 text-secondary font-semibold">
               Built by a tournament director — for tournament directors.
-            </span>
-            <span className="block mt-2 text-secondary font-semibold">
-              Every paid event includes a dedicated TeeVents rep who builds your event page and custom leaderboard for you.
             </span>
           </p>
           <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
@@ -182,7 +180,7 @@ const Index = () => {
               Request a Sample
             </Link>
           </div>
-
+          <p className="mt-4 text-xs sm:text-sm text-primary-foreground/90 max-w-xl mx-auto">No credit card to start. Payments go straight to your connected Stripe account — we never hold your money. <Link to="/help/how-payments-work" className="underline">How payments work</Link></p>
         </motion.div>
       </HeroSection>
 
@@ -192,6 +190,7 @@ const Index = () => {
             <p className="text-xs font-bold uppercase tracking-widest text-secondary mb-3">Your Dedicated TeeVents Representative</p>
             <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">We Build It For You.</h2>
             <p className="mt-4 text-muted-foreground text-lg">Every paid event includes a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings—so you can focus on the tournament.</p>
+            <p className="mt-3 text-muted-foreground">Give players a professional event page with your colors and sponsor logos, then share registration and financial reports with your board after the event.</p>
           </div>
           <div className="grid md:grid-cols-3 gap-8 mb-10">
             {[
@@ -250,6 +249,8 @@ const Index = () => {
                 "Sell registrations & sponsorships online",
                 "Manage players, pairings, and live scoring",
                 "Get paid automatically – we never hold your money",
+                "Share registration and financial reports with your board",
+                "Invite staff and volunteers with role-based access",
               ].map((item) => (
                 <li key={item} className="flex items-start gap-3 bg-card p-4 rounded-lg border border-border">
                   <CheckCircle className="h-5 w-5 text-secondary mt-0.5 flex-shrink-0" />
@@ -382,7 +383,7 @@ const Index = () => {
 
           <div className="text-center mt-12">
             <Link
-              to="/plans"
+              to="/features"
               className="inline-flex items-center gap-2 text-primary font-semibold hover:text-secondary transition-colors"
             >
               See All Features
@@ -443,15 +444,16 @@ const Index = () => {
               ['Per-Event', '$299', 'per tournament · 0% platform fees'],
               ['Per-League', '$499', 'per league · 0% platform fees'],
               ['Enterprise', '$2,999', 'per year · unlimited events'],
-            ].map(([title, price, description]) => <div key={title} className="border-t-2 border-secondary pt-5"><h3 className="font-display text-xl font-semibold">{title}</h3><p className="font-display text-3xl font-bold text-primary mt-3">{price}</p><p className="text-sm text-muted-foreground mt-2">{description}</p></div>)}
+             ].map(([title, price, description]) => <div key={title} className={title === 'Per-Event' ? "rounded-lg border-2 border-secondary bg-card p-5 shadow-md" : "border-t-2 border-secondary pt-5"}>{title === 'Per-Event' && <p className="mb-3 text-xs font-bold text-primary">Recommended for charity and first-time organizers</p>}<h3 className="font-display text-xl font-semibold">{title}</h3><p className="font-display text-3xl font-bold text-primary mt-3">{price}</p><p className="text-sm text-muted-foreground mt-2">{description}</p></div>)}
           </div>
           <p className="mt-8 text-muted-foreground">Add-ons are $99 each. A dedicated representative and full-service page build out are included on paid plans. Standard card processing applies.</p>
           <Button asChild className="mt-6 bg-secondary text-secondary-foreground hover:bg-secondary/90"><Link to="/plans">View Plans &amp; Pricing <ArrowRight className="h-4 w-4" /></Link></Button>
+          <p className="mt-4 text-sm text-muted-foreground">No credit card to start. Payments go straight to your connected Stripe account — we never hold your money. <Link to="/help/how-payments-work" className="text-primary underline">How payments work</Link></p>
         </div>
       </section>
 
       {/* How Payments Work */}
-      <section className="bg-background py-24 border-t border-border">
+      <section id="payments" className="bg-background py-24 border-t border-border">
         <div className="container mx-auto px-4 max-w-5xl">
           <motion.div
             initial={{ opacity: 0, y: 20 }}

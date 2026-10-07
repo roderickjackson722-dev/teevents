@@ -19,7 +19,7 @@ const absolute = (url: string) => {
 };
 
 const SEO = ({ title, description, path = "", ogImage = DEFAULT_OG_IMAGE, noIndex = false }: SEOProps) => {
-  const fullTitle = title === "Home" ? SITE_NAME : `${title} | ${SITE_NAME}`;
+  const fullTitle = title === "Home" ? SITE_NAME : title.includes("TeeVents") ? title : `${title} | ${SITE_NAME}`;
   const url = `${BASE_URL}${path}`;
   const image = absolute(ogImage || DEFAULT_OG_IMAGE);
 

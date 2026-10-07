@@ -36,7 +36,7 @@ const prettyDate = (value: unknown) =>
 
 /** Static copy for marketing / help / legal pages. */
 const STATIC: Record<string, { title: string; description: string }> = {
-  "/": { title: SITE_NAME, description: "Golf tournament software with a dedicated representative who builds every paid event page, leaderboard, and pairings." },
+  "/": { title: "Golf Tournament Management Software | TeeVents - Free to Start", description: "Golf tournament software with a dedicated representative who builds every paid event page, leaderboard, and pairings." },
   "/about": { title: "About Roderick Jackson & TeeVents | Golf Tournament Management", description: "Meet TeeVents founder Roderick Jackson, a tournament director with over 20 years in golf and over a decade managing HBCU golf tournaments." },
   "/services": { title: "Services | TeeVents", description: "Full-service golf tournament consulting — from course selection and vendor management to day-of coordination and sponsor strategy." },
   "/events": { title: "Upcoming Events | TeeVents", description: "Discover and register for upcoming golf tournaments and charity events." },

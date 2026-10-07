@@ -1,3 +1,10 @@
+## HeyCatch website audit
+- [x] Read all findings and the prioritized action plan
+- [x] Apply supported website copy, navigation, pricing emphasis, and structured-data fixes without platform changes
+- [x] Verify homepage, features navigation, plans, pricing redirect, FAQ schema, and 375px layouts; document exact original scores
+- [ ] Complete client-proof items after supplied approved screenshots, third testimonial/headshots, verified usage counts, founder social URLs, and dated external reviews
+- [ ] Consider crawl-rendering work separately; broad rendering changes are outside this presentation-only pass
+
 ## New pricing and dedicated representative rollout
 - [x] Audit all public pricing, service, comparison, and homepage references
 - [x] Add backward-compatible pricing fields and grandfather all existing events

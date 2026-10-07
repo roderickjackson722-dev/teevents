@@ -2,6 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { Menu, X, LogIn, User, LayoutDashboard, LogOut, Settings } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "@/components/ui/button";
 import logoWhite from "@/assets/logo-white.png";
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +13,7 @@ import {
 const baseLinks = [
   { label: "Home", to: "/" },
   { label: "Why TeeVents", to: "/why-teevents" },
+  { label: "Features", to: "/features" },
   { label: "Plans & Pricing", to: "/plans" },
   { label: "Find a Tournament", to: "/tournaments/search" },
   { label: "Leagues", to: "/golf-leagues" },
@@ -52,25 +54,18 @@ const Navbar = () => {
           <span className="font-display text-xl font-semibold text-primary-foreground tracking-wide whitespace-nowrap">TeeVents</span>
         </Link>
 
-        <div className="hidden lg:flex items-center gap-6 xl:gap-8">
+        <div className="hidden 2xl:flex items-center gap-3">
           {navLinks.map((link) => (
             <Link
               key={link.to}
               to={link.to}
-              className={`text-sm font-medium tracking-wider uppercase whitespace-nowrap transition-colors ${
+              className={`text-xs font-medium whitespace-nowrap transition-colors ${
                 pathname === link.to ? "text-secondary" : "text-primary-foreground/80 hover:text-secondary"
               }`}
             >
               {link.label}
             </Link>
           ))}
-          <Link
-            to="/request-sample"
-            className="hidden lg:inline-flex items-center gap-2 border border-primary-foreground/30 text-primary-foreground px-3 py-2 rounded-md text-sm font-semibold tracking-wider uppercase hover:bg-primary-foreground/10 transition-colors"
-          >
-            Request a Sample
-          </Link>
-
           {user ? (
             <DropdownMenu>
               <DropdownMenuTrigger className="flex items-center gap-2 bg-primary-foreground/10 text-primary-foreground px-3 py-2 rounded-md text-sm font-semibold hover:bg-primary-foreground/15 transition-colors">
@@ -104,15 +99,15 @@ const Navbar = () => {
                 to="/get-started"
                 className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase hover:bg-secondary/90 transition-colors"
               >
-                Start for Free
+                 Get Started
               </Link>
             </>
           )}
         </div>
 
-        <button className="lg:hidden text-primary-foreground" onClick={() => setMobileOpen(!mobileOpen)}>
+        <Button variant="ghost" size="icon" className="2xl:hidden text-primary-foreground h-11 w-11" aria-label={mobileOpen ? "Close navigation" : "Open navigation"} aria-expanded={mobileOpen} aria-controls="mobile-navigation" onClick={() => setMobileOpen(!mobileOpen)}>
           {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        </Button>
       </div>
 
       <AnimatePresence>
@@ -121,7 +116,8 @@ const Navbar = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="lg:hidden bg-golf-green-dark border-t border-primary/20 overflow-hidden"
+            id="mobile-navigation"
+            className="2xl:hidden bg-golf-green-dark border-t border-primary/20 overflow-y-auto max-h-[calc(100dvh-4rem)]"
           >
             <div className="flex flex-col p-4 gap-3">
               {navLinks.map((link) => (
@@ -129,7 +125,7 @@ const Navbar = () => {
                   key={link.to}
                   to={link.to}
                   onClick={() => setMobileOpen(false)}
-                  className={`text-sm font-medium tracking-wider uppercase py-2 transition-colors ${
+                  className={`text-sm font-medium uppercase min-h-11 flex items-center py-2 transition-colors ${
                     pathname === link.to ? "text-secondary" : "text-primary-foreground/80 hover:text-secondary"
                   }`}
                 >
@@ -158,7 +154,7 @@ const Navbar = () => {
                     <LogIn className="h-4 w-4" /> Sign In
                   </Link>
                   <Link to="/get-started" onClick={() => setMobileOpen(false)} className="flex items-center gap-2 bg-secondary text-secondary-foreground px-4 py-2 rounded-md text-sm font-semibold tracking-wider uppercase w-fit">
-                    Start a Tournament for Free
+                     Get Started
                   </Link>
                 </>
               )}

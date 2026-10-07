@@ -41,6 +41,10 @@ type RegRow = {
   tier_id: string | null;
   payment_status: string;
   created_at: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  group_id: string | null;
 };
 
 type Incentive = {
@@ -74,6 +78,7 @@ export default function TeamPerformance() {
   const [regs, setRegs] = useState<RegRow[]>([]);
   const [clicks, setClicks] = useState<{ promoter_id: string }[]>([]);
   const [incentives, setIncentives] = useState<Incentive[]>([]);
+  const [detailPromoterId, setDetailPromoterId] = useState<string | null>(null);
 
   // Add/edit promoter dialog
   const [promoterOpen, setPromoterOpen] = useState(false);
@@ -134,7 +139,7 @@ export default function TeamPerformance() {
       supabase.from("team_promoters").select("*").eq("tournament_id", tournamentId).order("created_at", { ascending: false }),
       supabase
         .from("tournament_registrations")
-        .select("id, promoter_id, tier_id, payment_status, created_at")
+        .select("id, promoter_id, tier_id, payment_status, created_at, first_name, last_name, email, group_id")
         .eq("tournament_id", tournamentId),
       supabase.from("promoter_incentives").select("*").eq("tournament_id", tournamentId).order("created_at", { ascending: false }),
       supabase.from("tournaments").select("registration_fee_cents").eq("id", tournamentId).single(),
@@ -176,11 +181,16 @@ export default function TeamPerformance() {
       const revenue = myRegs
         .filter((r) => r.payment_status === "paid")
         .reduce((s, r) => s + regRevenue(r), 0);
+      const pendingCents = myRegs
+        .filter((r) => r.payment_status !== "paid")
+        .reduce((s, r) => s + regRevenue(r), 0);
       const conv = myClicks > 0 ? Math.round((myRegs.length / myClicks) * 100) : 0;
       return {
         promoter: p,
         registrations: myRegs.length,
         revenueCents: revenue,
+        pendingCents,
+        registrationRows: myRegs,
         clicks: myClicks,
         conversionRate: conv,
       };
@@ -530,8 +540,15 @@ export default function TeamPerformance() {
                             {buildRefUrl(origin, slug, p.promoter.unique_ref_code)}
                           </button>
                         </TableCell>
-                        <TableCell className="text-right">{p.registrations}</TableCell>
-                        <TableCell className="text-right">{fmtUsd(p.revenueCents)}</TableCell>
+                        <TableCell className="text-right">
+                          <Button variant="link" size="sm" className="h-auto px-0 font-semibold" onClick={() => setDetailPromoterId(p.promoter.id)}>
+                            {p.registrations}
+                          </Button>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div>{fmtUsd(p.revenueCents)} paid</div>
+                          {p.pendingCents > 0 && <div className="text-xs font-medium text-amber-700">{fmtUsd(p.pendingCents)} pending</div>}
+                        </TableCell>
                         <TableCell>{p.promoter.is_active ? <Badge className="bg-emerald-100 text-emerald-900 border-emerald-300">Active</Badge> : <Badge variant="secondary">Inactive</Badge>}</TableCell>
                         <TableCell className="text-right">
                           <Button size="sm" variant="ghost" onClick={() => copyLink(p.promoter.unique_ref_code)} title="Copy link"><Copy className="h-4 w-4" /></Button>
@@ -662,6 +679,30 @@ export default function TeamPerformance() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Dialog open={!!detailPromoterId} onOpenChange={(open) => !open && setDetailPromoterId(null)}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Registrations from {promoters.find((p) => p.id === detailPromoterId)?.name || "this link"}</DialogTitle>
+            <DialogDescription>Each player attributed to this Personal Link, including payment status and amount.</DialogDescription>
+          </DialogHeader>
+          <div className="max-h-[60vh] overflow-auto">
+            <Table>
+              <TableHeader><TableRow><TableHead>Player</TableHead><TableHead>Email</TableHead><TableHead>Status</TableHead><TableHead className="text-right">Amount</TableHead></TableRow></TableHeader>
+              <TableBody>
+                {regs.filter((r) => r.promoter_id === detailPromoterId).map((r) => (
+                  <TableRow key={r.id}>
+                    <TableCell className="font-medium">{r.first_name} {r.last_name}</TableCell>
+                    <TableCell>{r.email}</TableCell>
+                    <TableCell><Badge variant={r.payment_status === "paid" ? "default" : "outline"} className={r.payment_status === "paid" ? "" : "border-amber-400 text-amber-700"}>{r.payment_status === "paid" ? "Paid" : "Pending"}</Badge></TableCell>
+                    <TableCell className="text-right">{fmtUsd(regRevenue(r))}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Promoter dialog */}
       <Dialog open={promoterOpen} onOpenChange={setPromoterOpen}>

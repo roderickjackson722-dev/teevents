@@ -34,6 +34,17 @@ function buildHtml(
   list: Reg[],
   opts: { layout: string; showQr: boolean; showDetails: boolean; showStatus: boolean }
 ) {
+  if (opts.layout === "list") {
+    const checkedIn = list.filter((r) => r.checked_in).length;
+    return `<div style="max-width:8in;margin:0 auto;font-family:Arial,sans-serif;">
+      <h1 style="font-size:24px;margin:0 0 4px;color:#1a5c38;">${escapeHtml(tournament?.title || "")}</h1>
+      <p style="color:#666;font-size:13px;margin:0 0 18px;">Check-In List · ${checkedIn} of ${list.length} checked in</p>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;">
+        <thead><tr style="background:#1a5c38;color:#fff;"><th style="padding:8px;text-align:left;">Player</th><th style="padding:8px;text-align:left;">Team</th><th style="padding:8px;text-align:center;">Hole</th><th style="padding:8px;text-align:center;">Status</th></tr></thead>
+        <tbody>${list.map((r) => `<tr style="border-bottom:1px solid #ddd;${r.checked_in ? "background:#dcfce7;" : ""}"><td style="padding:8px;font-weight:700;">${escapeHtml(r.last_name)}, ${escapeHtml(r.first_name)}</td><td style="padding:8px;">${escapeHtml(r.group_label || "—")}</td><td style="padding:8px;text-align:center;">${startingHoleOf(r as any) ?? "—"}</td><td style="padding:8px;text-align:center;font-weight:700;color:${r.checked_in ? "#166534" : "#92400e"};">${r.checked_in ? "✓ CHECKED IN" : "☐ NOT CHECKED IN"}</td></tr>`).join("")}</tbody>
+      </table>
+    </div>`;
+  }
   const perPage = opts.layout === "compact" ? 4 : opts.layout === "standard" ? 2 : 1;
   const qrSize = opts.layout === "large" ? 220 : opts.layout === "standard" ? 170 : 130;
   const cardMinHeight = opts.layout === "large" ? "9in" : opts.layout === "standard" ? "4.8in" : "2.4in";
@@ -95,7 +106,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
   const [sortBy, setSortBy] = useState<"alpha" | "created" | "team" | "hole" | "tee">("alpha");
   const [filterMode, setFilterMode] = useState<"all" | "group" | "hole">("all");
   const [filterValue, setFilterValue] = useState<string>("all");
-  const [layout, setLayout] = useState<"compact" | "standard" | "large">("compact");
+  const [layout, setLayout] = useState<"list" | "compact" | "standard" | "large">("list");
   const [showQr, setShowQr] = useState(true);
   const [showDetails, setShowDetails] = useState(true);
   const [showStatus, setShowStatus] = useState(true);
@@ -195,6 +206,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
             <Select value={layout} onValueChange={(v: any) => setLayout(v)}>
               <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
               <SelectContent>
+                <SelectItem value="list">Check-In List</SelectItem>
                 <SelectItem value="compact">Compact (4 per page)</SelectItem>
                 <SelectItem value="standard">Standard (2 per page)</SelectItem>
                 <SelectItem value="large">Large Print (1 per page)</SelectItem>

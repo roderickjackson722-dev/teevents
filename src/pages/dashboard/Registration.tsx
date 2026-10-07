@@ -1219,9 +1219,9 @@ const Registration = () => {
               {/* Cash payment registration */}
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
                 <div>
-                  <Label className="text-sm font-semibold">Allow Cash Payment Registrations</Label>
+                  <Label className="text-sm font-semibold">Allow Cash or Check Payments</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Lets you add players who will pay with cash or check on the day of the event. When adding a player, you'll be able to choose Cash or Check as the payment method and mark payment received later.
+                    Turn this off to require electronic payment for every registration. Turn it on only when you want staff to add cash or check payments manually.
                   </p>
                 </div>
                 <Switch checked={allowCash} onCheckedChange={setAllowCash} />

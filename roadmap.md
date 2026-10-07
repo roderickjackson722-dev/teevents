@@ -25,8 +25,8 @@
 - [x] Verify pages and uploaded assets
 - [ ] Replace text-only organization names with official logos when supplied (Troon, Cleveland, Golf Channel, PGA, Octagon)
 ## Enterprise enhancement request
-- [ ] Audit requested features against existing Enterprise capabilities
-- [ ] Confirm payment-fee policy conflict before changing transaction behavior
-- [ ] Implement approved high-priority gaps without changing legacy or non-Enterprise workflows
-- [ ] Implement approved medium-priority gaps
-- [ ] Verify Enterprise flows and document current limits
+- [x] Audit requested features against existing Enterprise capabilities
+- [x] Preserve direct charges and apply the approved 0% fee only to newly created Enterprise events and leagues
+- [x] Implement approved high-priority gaps without changing legacy or non-Enterprise workflows
+- [x] Implement approved medium-priority gaps
+- [x] Verify Enterprise operations, printables, messaging, handicap math, and protected access

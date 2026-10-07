@@ -48,7 +48,8 @@ export async function lookupHandicapByGhinId(ghinId: string, lastName?: string |
 
 async function batchLookup(ghinIds: string[]): Promise<Map<string, GhinLookup>> {
   const output = new Map<string, GhinLookup>();
-  const unique = [...new Set(ghinIds.filter((id) => /^\d{4,10}$/.test(id)))];
+  const normalized = ghinIds.map((id) => String(id || "").replace(/\D/g, "")).filter((id) => /^\d{4,10}$/.test(id));
+  const unique = [...new Set(normalized)];
   if (!unique.length) return output;
   const username = process.env["GHIN_USERNAME"];
   const password = process.env["GHIN_PASSWORD"];
@@ -155,7 +156,8 @@ export async function syncHandicapsForEvent(admin: Admin, eventId: string, trigg
   const now = new Date().toISOString();
   for (const r of list) {
     if (!r.ghin_id || pending) continue;
-    const res = lookups.get(r.ghin_id) || { status: "not_found" as const, message: "No golfer found for that GHIN number." };
+    const normalizedId = String(r.ghin_id).replace(/\D/g, "");
+    const res = lookups.get(normalizedId) || { status: "not_found" as const, message: "No golfer found for that GHIN number." };
     if (res.status === "ok") {
       await admin.from("tournament_registrations").update({
         handicap_index: res.index, handicap: Math.round(res.index), low_handicap_index: res.lowIndex,
@@ -171,7 +173,7 @@ export async function syncHandicapsForEvent(admin: Admin, eventId: string, trigg
   await recalcEventHandicaps(admin, eventId);
   const summary = summarize({
     total: list.length, updated, failed, pending, errors,
-    manualRemaining: list.filter((r: any) => !r.ghin_id).length,
+    manualRemaining: list.filter((r: any) => r.handicap_source === "manual" || !r.ghin_id).length,
   });
   await writeLog(admin, { organization_id: t?.organization_id, scope: "event", target_id: eventId, target_name: t?.title, triggered_by: triggeredBy }, summary);
   return summary;
@@ -181,7 +183,7 @@ export async function syncHandicapsForLeague(admin: Admin, leagueId: string, tri
   const { data: lg } = await admin.from("golf_leagues").select("id, league_name, organization_id").eq("id", leagueId).maybeSingle();
   const { data: members } = await admin
     .from("league_members")
-    .select("id, member_name, ghin_id")
+    .select("id, member_name, ghin_id, handicap_source")
     .eq("league_id", leagueId)
     .neq("is_active", false);
   const list = members || [];
@@ -192,7 +194,8 @@ export async function syncHandicapsForLeague(admin: Admin, leagueId: string, tri
   const now = new Date().toISOString();
   for (const m of list) {
     if (!m.ghin_id || pending) continue;
-    const res = lookups.get(m.ghin_id) || { status: "not_found" as const, message: "No golfer found for that GHIN number." };
+    const normalizedId = String(m.ghin_id).replace(/\D/g, "");
+    const res = lookups.get(normalizedId) || { status: "not_found" as const, message: "No golfer found for that GHIN number." };
     if (res.status === "ok") {
       await admin.from("league_members").update({
         handicap_index: res.index, low_handicap_index: res.lowIndex, handicap_source: "ghin",
@@ -207,7 +210,7 @@ export async function syncHandicapsForLeague(admin: Admin, leagueId: string, tri
   }
   const summary = summarize({
     total: list.length, updated, failed, pending, errors,
-    manualRemaining: list.filter((m: any) => !m.ghin_id).length,
+    manualRemaining: list.filter((m: any) => m.handicap_source === "manual" || !m.ghin_id).length,
   });
   await writeLog(admin, { organization_id: lg?.organization_id, scope: "league", target_id: leagueId, target_name: lg?.league_name, triggered_by: triggeredBy }, summary);
   return summary;

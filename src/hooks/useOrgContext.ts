@@ -18,6 +18,19 @@ export interface OrgContext {
   enterpriseSubscriptionRenewsAt: string | null;
 }
 
+type OrganizationContextRow = {
+  id: string;
+  name: string;
+  plan: string;
+  dashboard_name: string | null;
+  feature_overrides: Record<string, boolean> | null;
+  fee_override: number | null;
+  pricing_model: string | null;
+  enterprise_settings: Record<string, unknown> | null;
+  enterprise_subscription_status: string | null;
+  enterprise_subscription_renews_at: string | null;
+};
+
 export function useOrgContext() {
   const [org, setOrg] = useState<OrgContext | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,7 +50,7 @@ export function useOrgContext() {
             .from("organizations")
             .select("id, name, plan, dashboard_name, feature_overrides, fee_override, pricing_model, enterprise_settings, enterprise_subscription_status, enterprise_subscription_renews_at")
             .eq("id", adminOrgId)
-            .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null; feature_overrides: Record<string, boolean> | null; fee_override: number | null } | null; error: any };
+            .single() as { data: OrganizationContextRow | null; error: any };
 
           if (orgData) {
             setOrg({
@@ -50,10 +63,10 @@ export function useOrgContext() {
               permissions: [],
               featureOverrides: orgData.feature_overrides || null,
               feeOverride: orgData.fee_override ?? null,
-              pricingModel: (orgData as any).pricing_model || null,
-              enterpriseSettings: ((orgData as any).enterprise_settings || {}) as Record<string, unknown>,
-              enterpriseSubscriptionStatus: (orgData as any).enterprise_subscription_status || null,
-              enterpriseSubscriptionRenewsAt: (orgData as any).enterprise_subscription_renews_at || null,
+              pricingModel: orgData.pricing_model || null,
+              enterpriseSettings: orgData.enterprise_settings || {},
+              enterpriseSubscriptionStatus: orgData.enterprise_subscription_status || null,
+              enterpriseSubscriptionRenewsAt: orgData.enterprise_subscription_renews_at || null,
             });
             setLoading(false);
             return;
@@ -91,7 +104,7 @@ export function useOrgContext() {
         .from("organizations")
         .select("id, name, plan, dashboard_name, feature_overrides, fee_override, pricing_model, enterprise_settings, enterprise_subscription_status, enterprise_subscription_renews_at")
         .eq("id", membership.organization_id)
-        .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null; feature_overrides: Record<string, boolean> | null; fee_override: number | null } | null; error: any };
+        .single() as { data: OrganizationContextRow | null; error: any };
 
       if (orgData) {
         setOrg({
@@ -104,10 +117,10 @@ export function useOrgContext() {
           permissions: (membership as any).permissions || [],
           featureOverrides: orgData.feature_overrides || null,
           feeOverride: orgData.fee_override ?? null,
-          pricingModel: (orgData as any).pricing_model || null,
-          enterpriseSettings: ((orgData as any).enterprise_settings || {}) as Record<string, unknown>,
-          enterpriseSubscriptionStatus: (orgData as any).enterprise_subscription_status || null,
-          enterpriseSubscriptionRenewsAt: (orgData as any).enterprise_subscription_renews_at || null,
+          pricingModel: orgData.pricing_model || null,
+          enterpriseSettings: orgData.enterprise_settings || {},
+          enterpriseSubscriptionStatus: orgData.enterprise_subscription_status || null,
+          enterpriseSubscriptionRenewsAt: orgData.enterprise_subscription_renews_at || null,
         });
       }
       setLoading(false);

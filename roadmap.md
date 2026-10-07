@@ -1,3 +1,8 @@
+## HeyCatch website audit
+- [ ] Read all findings and the prioritized action plan
+- [ ] Apply only supported website fixes; leave passing content and platform functionality untouched
+- [ ] Verify affected pages and report exact finding codes, original scores, and external blockers
+
 ## New pricing and dedicated representative rollout
 - [x] Audit all public pricing, service, comparison, and homepage references
 - [x] Add backward-compatible pricing fields and grandfather all existing events

@@ -7,6 +7,7 @@ import HeroSection from "@/components/HeroSection";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import aboutBg from "@/assets/golf-about-bg.jpg";
 import FounderSection from "@/components/FounderSection";
+import FounderPartners from "@/components/FounderPartners";
 
 const platformFeatures: { name: string; description: string }[] = [
   { name: "Tournament Website", description: "Branded public page – live in 10 minutes. Custom domain support." },
@@ -73,8 +74,6 @@ const About = () => {
         subtitle="The complete golf tournament solution — platform and on-site management."
         height="h-[60vh]"
       />
-
-      <FounderSection />
 
       {/* Intro */}
       <section className="bg-golf-cream py-16">
@@ -271,6 +270,10 @@ const About = () => {
           </Tabs>
         </div>
       </section>
+
+      <FounderSection />
+
+      <FounderPartners />
 
       {/* CTA */}
       <section className="bg-primary py-16">

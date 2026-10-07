@@ -179,11 +179,11 @@ const categories: { name: string; subtitle: string; features: Feature[] }[] = [
       {
         icon: DollarSign,
         title: "Transparent Fees",
-        description: "5% platform fee on paid transactions — no monthly subscriptions.",
+        description: "$0 to start with a player-covered 5% platform fee, or 0% platform fees on paid plans.",
         bullets: [
           "Combined platform + Stripe fee shown at checkout",
-          "Free tier supports 1 tournament with 72 players",
-          "Pay $399 only when upgrading a tournament to Pro",
+          "$299 per tournament or $499 per league",
+          "Enterprise: $2,999 per year · Add-ons: $99 each",
           "No setup fees or hidden charges",
         ],
         tier: "Free",

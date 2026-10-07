@@ -10,12 +10,14 @@ import {
   Award,
   Trophy,
   CheckCircle,
-  Star,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import FindYourLeague from "@/components/leagues/FindYourLeague";
+import FounderSection from "@/components/FounderSection";
+import FounderPartners from "@/components/FounderPartners";
+import { Button } from "@/components/ui/button";
 
 import heroGolf from "@/assets/hero-golf.jpg";
 import logoWhite from "@/assets/logo-white.png";
@@ -60,10 +62,10 @@ const steps = [
 ];
 
 const stats = [
-  { value: "10+", label: "Features Included" },
-  { value: "100%", label: "Mobile Optimized" },
-  { value: "24/7", label: "Platform Access" },
-  { value: "0", label: "Tech Skills Needed" },
+  "20+ Years in the Golf Industry",
+  "10+ Years as a Tournament Director",
+  "Trusted by the Largest HBCU Golf Tournament in the World",
+  "Trusted by the Black College Golf Coaches Association Since 2017",
 ];
 
 const stagger = {
@@ -158,7 +160,7 @@ const Index = () => {
           <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-primary-foreground/75 max-w-2xl mx-auto leading-relaxed">
             No spreadsheets. No manual payments. No stress.
             <span className="block mt-2 text-secondary font-semibold">
-              Built by golf tournament managers, for golf tournament managers.
+              Built by a tournament director — for tournament directors.
             </span>
             <span className="block mt-2 text-secondary font-semibold">
               Every paid event includes a dedicated TeeVents rep who builds your event page and custom leaderboard for you.
@@ -207,23 +209,23 @@ const Index = () => {
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat) => (
               <motion.div
-                key={stat.label}
+                key={stat}
                 initial={{ opacity: 0, y: 10 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 className="text-center"
               >
-                <p className="text-3xl md:text-4xl font-display font-bold text-secondary">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-primary-foreground/70 mt-1 font-medium">
-                  {stat.label}
+                <p className="text-lg font-display font-semibold text-primary-foreground leading-relaxed">
+                  {stat}
                 </p>
               </motion.div>
             ))}
           </div>
         </div>
       </section>
+
+      <FounderSection />
+      <FounderPartners />
 
       {/* For Tournament Organizers */}
       <section className="bg-golf-cream py-20 md:py-24">
@@ -305,6 +307,16 @@ const Index = () => {
               Built by golf tournament managers, for golf tournament managers.
               With over a decade of experience, we built TeeVents to solve the exact problems we faced.
             </p>
+            <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-left mb-10">
+              {[
+                ['Custom leaderboard colors', 'Your event colors, reflected in every leaderboard.'],
+                ['Event pages that look like real websites', 'A polished home for registration, event details, and sponsors.'],
+                ['Free for organizers (player-funded)', '$0 to start, with the 5% platform fee covered by players.'],
+                ['Built for golf', 'Pairings, handicaps, and scoring — not generic event tools.'],
+                ['Sponsor highlights', 'Put your sponsors in front of players on your event page and leaderboard.'],
+                ['White-label branding', 'Keep your organization’s identity at the center of the experience.'],
+              ].map(([title, description]) => <div key={title} className="border-t border-primary-foreground/20 pt-4"><h3 className="font-display text-lg font-semibold text-secondary">{title}</h3><p className="mt-2 text-sm text-primary-foreground/80 leading-relaxed">{description}</p></div>)}
+            </div>
             <div className="bg-primary-foreground/5 border border-primary-foreground/15 rounded-xl p-6 md:p-8 mb-10">
               <p className="text-lg md:text-xl text-primary-foreground/90 leading-relaxed">
                 <span className="text-secondary font-semibold">We never hold your money.</span>{" "}
@@ -315,7 +327,7 @@ const Index = () => {
               to="/get-started"
               className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
             >
-              Start a Tournament for Free
+              Start a Tournament
               <ArrowRight className="h-4 w-4" />
             </Link>
           </motion.div>
@@ -420,36 +432,19 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Testimonial / Social Proof */}
-      <section className="bg-golf-cream py-24">
-        <div className="container mx-auto px-4 max-w-3xl text-center">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <div className="flex justify-center gap-1 mb-6">
-              {[...Array(5)].map((_, i) => (
-                <Star key={i} className="h-5 w-5 fill-secondary text-secondary" />
-              ))}
-            </div>
-            <blockquote className="text-xl md:text-2xl font-display italic text-foreground leading-relaxed">
-              "TeeVents made planning our charity golf tournament effortless.
-              The registration, pairings, and sponsor tools saved us
-              countless hours of work."
-            </blockquote>
-            <p className="mt-6 text-muted-foreground font-medium">
-              — Tournament Organizer
-            </p>
-            <Link
-              to="/reviews"
-              className="inline-flex items-center gap-2 text-primary font-semibold mt-6 hover:text-secondary transition-colors"
-            >
-              Read More Reviews
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </motion.div>
+      <section className="bg-background py-16 border-t border-border">
+        <div className="container mx-auto px-4 max-w-6xl">
+          <h2 className="font-display text-3xl font-bold text-primary mb-8">Choose the right fit for your event</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[
+              ['No Cost to Start', '$0', '5% platform fee covered by players'],
+              ['Per-Event', '$299', 'per tournament · 0% platform fees'],
+              ['Per-League', '$499', 'per league · 0% platform fees'],
+              ['Enterprise', '$2,999', 'per year · unlimited events'],
+            ].map(([title, price, description]) => <div key={title} className="border-t-2 border-secondary pt-5"><h3 className="font-display text-xl font-semibold">{title}</h3><p className="font-display text-3xl font-bold text-primary mt-3">{price}</p><p className="text-sm text-muted-foreground mt-2">{description}</p></div>)}
+          </div>
+          <p className="mt-8 text-muted-foreground">Add-ons are $99 each. A dedicated representative and full-service page build out are included on paid plans. Standard card processing applies.</p>
+          <Button asChild className="mt-6 bg-secondary text-secondary-foreground hover:bg-secondary/90"><Link to="/plans">View Plans &amp; Pricing <ArrowRight className="h-4 w-4" /></Link></Button>
         </div>
       </section>
 
@@ -476,7 +471,7 @@ const Index = () => {
           <div className="grid md:grid-cols-4 gap-6">
             {[
               { num: "1", title: "Golfer Pays", desc: "Full registration amount charged at checkout via Stripe." },
-              { num: "2", title: "5% Fee Deducted", desc: "TeeVents automatically receives a 5% platform fee." },
+              { num: "2", title: "Your Plan Applies", desc: "No Cost to Start: a 5% platform fee covered by players. Paid plans: 0% platform transaction fees." },
               { num: "3", title: "Stripe Fee Applied", desc: "Standard 2.9% + $0.30 processing fee deducted by Stripe." },
               { num: "4", title: "You Get Paid", desc: "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2–7 business days (standard Stripe review)." },
             ].map((step, i) => (
@@ -580,7 +575,7 @@ const Index = () => {
                 to="/get-started"
                 className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
               >
-                Start a Tournament for Free
+                Start a Tournament
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <Link

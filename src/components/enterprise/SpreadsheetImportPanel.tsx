@@ -81,9 +81,23 @@ export default function SpreadsheetImportPanel({ onImport }: Props) {
   const readFile = async (file: File) => {
     const name = file.name.toLowerCase();
     if (name.endsWith(".xlsx") || name.endsWith(".xls")) {
-      toast.error("Save the sheet as CSV first", {
-        description: "In Excel or Google Sheets choose File → Download → CSV, then upload that file.",
-      });
+      const XLSX = await import("xlsx");
+      const workbook = XLSX.read(await file.arrayBuffer(), { type: "array" });
+      const firstSheet = workbook.SheetNames[0];
+      if (!firstSheet) { toast.error("That workbook has no sheets."); return; }
+      const sheet = workbook.Sheets[firstSheet];
+      if (!sheet) { toast.error("The first sheet could not be read."); return; }
+      const matrix = XLSX.utils.sheet_to_json<(string | number | null)[]>(sheet, { header: 1, defval: "" });
+      const head = (matrix[0] || []).map(String);
+      const parsed = matrix.slice(1).map((row) => row.map(String));
+      const blanks = parsed.filter((row) => row.every((cell) => !cell.trim())).length;
+      setFileName(file.name);
+      setHeader(head);
+      setRows(parsed.filter((row) => row.some((cell) => cell.trim())));
+      setBlankRows(blanks);
+      const initial: Record<string, string> = {};
+      FIELDS.forEach((f) => { initial[f.key] = guess(head, f.key as string); });
+      setMap(initial);
       return;
     }
     const text = await file.text();
@@ -165,7 +179,7 @@ export default function SpreadsheetImportPanel({ onImport }: Props) {
         />
         <div className="flex flex-wrap items-center gap-3">
           <Button variant="outline" onClick={() => fileRef.current?.click()}>
-            <Upload className="mr-1.5 h-4 w-4" /> Upload CSV file
+            <Upload className="mr-1.5 h-4 w-4" /> Upload CSV or Excel file
           </Button>
           {fileName && <span className="text-sm text-muted-foreground">{fileName} · {rows.length} rows</span>}
         </div>

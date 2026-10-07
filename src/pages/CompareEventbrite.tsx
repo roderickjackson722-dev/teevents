@@ -39,9 +39,9 @@ const data: CompSection[] = [
   {
     category: "Pricing",
     rows: [
-      { feature: "Platform Fee", eventbrite: "3.7% + $1.79/ticket", teevents: "5%", ebStatus: "warn", tvStatus: "yes" },
+      { feature: "Platform Fee", eventbrite: "3.7% + $1.79/ticket", teevents: "$0 plan: 5% covered by players; $299 Per-Event: 0%", ebStatus: "warn", tvStatus: "yes" },
       { feature: "Payment Processing Fee", eventbrite: "2.9% + $0.30 (extra)", teevents: "2.9% + $0.30 (Stripe)", ebStatus: "warn", tvStatus: "warn" },
-      { feature: "Total on $100 Registration", eventbrite: "~$8.69+", teevents: "$8.20", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Fees on $100 before pass-through", eventbrite: "~$8.69+", teevents: "$8.20 on $0 plan; $3.20 processing on paid plans", ebStatus: "no", tvStatus: "yes" },
       { feature: "Monthly Subscription", eventbrite: "No (per-event fees)", teevents: "No", ebStatus: "yes", tvStatus: "yes" },
       { feature: "Pass Fees to Golfers", eventbrite: "Not transparent", teevents: "Yes (toggle on/off)", ebStatus: "warn", tvStatus: "yes" },
     ],
@@ -193,7 +193,7 @@ const CompareEventbrite = () => {
                 <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $8.20</li>
               </ul>
               <p className="mt-3 text-sm font-bold" style={{ color: "#F5A623" }}>
-                5% platform fee — simple and transparent. Payments split automatically. TeeVents never holds your money.
+                Example before pass-through on the $0 plan; players cover the 5% platform fee. Paid plans have 0% platform fees — $299 per tournament, $499 per league, or $2,999 per year for Enterprise. Standard Stripe processing applies.
               </p>
             </div>
           </motion.div>

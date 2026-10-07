@@ -5,6 +5,7 @@ import arcis from '@/assets/trust/arcis-golf.png.asset.json';
 import bridgestone from '@/assets/trust/bridgestone-hbcu.png.asset.json';
 import mwm from '@/assets/trust/making-wishes-matter.png.asset.json';
 import men from '@/assets/trust/100-black-men-phoenix.png.asset.json';
+import foundation from '@/assets/trust/advancing-the-game.png.asset.json';
 
 const logos = [
   { name: 'Black College Golf Coaches Association', image: bcgca.url, href: 'https://www.bcgca.org/' },
@@ -14,6 +15,7 @@ const logos = [
   { name: 'National Black College Alumni Hall of Fame', image: hall.url, href: 'https://www.nbcahof.org/' },
   { name: '100 Black Men of Phoenix', image: men.url, href: 'https://www.100blackmen.org/' },
   { name: 'Making Wishes Matter', image: mwm.url, href: undefined, dark: true },
+  { name: 'Advancing the Game Foundation', image: foundation.url, href: undefined },
 ];
 const organizations = [
   ['Troon Golf', 'https://www.troon.com/'],

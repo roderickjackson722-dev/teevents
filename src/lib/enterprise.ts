@@ -139,6 +139,9 @@ export interface EnterpriseSettings {
   leaderboard: EnterpriseLeaderboardSettings;
   scorecardTemplate: string;
   wizardStep: number;
+  acceptInvoicePayments?: boolean;
+  processingFeeHandling?: "absorb" | "pass_through";
+  automations?: Record<string, boolean>;
 }
 
 export const defaultEnterpriseSettings = (): EnterpriseSettings => ({
@@ -200,6 +203,8 @@ export const defaultEnterpriseSettings = (): EnterpriseSettings => ({
   },
   scorecardTemplate: "standard_stroke",
   wizardStep: 0,
+  acceptInvoicePayments: false,
+  processingFeeHandling: "absorb",
 });
 
 /** Merge stored JSON over the defaults so older rows never break the UI. */

@@ -99,6 +99,13 @@
       "when": 1791210345789,
       "tag": "0013_add_college_survey_submission_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791377658464,
+      "tag": "0014_enterprise_operations_expansion",
+      "breakpoints": true
     }
   ]
 }

@@ -38,7 +38,7 @@ function LastSync({ targetId, bump }: { targetId: string | null; bump: number })
   if (!log) return <span className="text-xs text-muted-foreground">Not synced yet</span>;
   return (
     <span className="text-xs text-muted-foreground">
-      Last sync {new Date(log.created_at).toLocaleString()} · {log.pending ? "GHIN not connected" : `${log.updated}/${log.total} updated`}
+      {log.pending ? "Pending Sync" : `Synced on ${new Date(log.created_at).toLocaleDateString()}`} · {log.updated} players updated, {log.manual_remaining} manual entries
       {log.triggered_by === "cron" ? " (daily auto-sync)" : ""}
     </span>
   );

@@ -1,8 +1,8 @@
 /**
  * GHIN handicap lookups and event/league sync. Server-only.
  *
- * Credentials: set GHIN_API_KEY (bearer token issued by the USGA) and optionally
- * GHIN_API_URL. Until a key exists every lookup returns `pending`, and players keep
+ * Credentials: set GHIN_USERNAME and GHIN_PASSWORD. Until both exist every lookup
+ * returns `pending`, and players keep
  * their stored/manual index — nothing is blocked.
  */
 import { computeHandicaps } from "@/lib/courseHandicap";
@@ -14,7 +14,7 @@ export type GhinLookup =
   | { status: "error"; message: string };
 
 export function ghinConfigured() {
-  return !!process.env["GHIN_API_KEY"];
+  return Boolean(process.env["GHIN_USERNAME"] && process.env["GHIN_PASSWORD"]);
 }
 
 function parseIndex(v: unknown): number | null {
@@ -25,25 +25,60 @@ function parseIndex(v: unknown): number | null {
 }
 
 export async function lookupHandicapByGhinId(ghinId: string, lastName?: string | null): Promise<GhinLookup> {
-  const key = process.env["GHIN_API_KEY"];
-  if (!key) return { status: "pending", message: "GHIN is not connected yet — enter the index manually." };
-  const base = process.env["GHIN_API_URL"] || "https://api2.ghin.com/api/v1";
-  const qs = new URLSearchParams({ golfer_id: ghinId, per_page: "1", page: "1", status: "Active" });
-  if (lastName) qs.set("last_name", lastName);
+  const username = process.env["GHIN_USERNAME"];
+  const password = process.env["GHIN_PASSWORD"];
+  if (!username || !password) return { status: "pending", message: "GHIN is not connected yet — enter the index manually." };
   try {
-    const res = await fetch(`${base}/golfers/search.json?${qs}`, {
-      headers: { Authorization: `Bearer ${key}`, Accept: "application/json" },
-    });
-    if (!res.ok) return { status: "error", message: `GHIN responded ${res.status}` };
-    const body: any = await res.json();
-    const g = body?.golfers?.[0];
+    const { GhinClient } = await import("@spicygolf/ghin");
+    const client = new GhinClient({ username, password });
+    const result = await client.golfers.getMany([Number(ghinId)], { status: null });
+    if (result.isErr()) return { status: "error", message: result.error.message || "GHIN request failed" };
+    const g = result.value.golfers[0];
     if (!g) return { status: "not_found", message: "No active golfer found for that GHIN number." };
+    if (lastName && g.last_name && g.last_name.toLowerCase() !== lastName.toLowerCase()) {
+      return { status: "not_found", message: "The GHIN number did not match that player's last name." };
+    }
     const index = parseIndex(g.handicap_index ?? g.hi_value);
     if (index == null) return { status: "not_found", message: "Golfer has no handicap index on file." };
     return { status: "ok", index, lowIndex: parseIndex(g.low_hi ?? g.low_hi_value) };
   } catch (e: any) {
     return { status: "error", message: e?.message || "GHIN request failed" };
   }
+}
+
+async function batchLookup(ghinIds: string[]): Promise<Map<string, GhinLookup>> {
+  const output = new Map<string, GhinLookup>();
+  const normalized = ghinIds.map((id) => String(id || "").replace(/\D/g, "")).filter((id) => /^\d{4,10}$/.test(id));
+  const unique = [...new Set(normalized)];
+  if (!unique.length) return output;
+  const username = process.env["GHIN_USERNAME"];
+  const password = process.env["GHIN_PASSWORD"];
+  if (!username || !password) {
+    unique.forEach((id) => output.set(id, { status: "pending", message: "GHIN is not connected yet — enter the index manually." }));
+    return output;
+  }
+  try {
+    const { GhinClient } = await import("@spicygolf/ghin");
+    const client = new GhinClient({ username, password });
+    const result = await client.golfers.getMany(unique.map(Number), { status: null });
+    if (result.isErr()) {
+      unique.forEach((id) => output.set(id, { status: "error", message: result.error.message || "GHIN request failed" }));
+      return output;
+    }
+    const golfers = new Map(result.value.golfers.map((g) => [String(g.ghin), g]));
+    unique.forEach((id) => {
+      const golfer = golfers.get(id);
+      if (!golfer) { output.set(id, { status: "not_found", message: "No golfer found for that GHIN number." }); return; }
+      const index = parseIndex(golfer.handicap_index ?? golfer.hi_value);
+      output.set(id, index == null
+        ? { status: "not_found", message: "Golfer has no handicap index on file." }
+        : { status: "ok", index, lowIndex: parseIndex(golfer.low_hi ?? golfer.low_hi_value) });
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "GHIN request failed";
+    unique.forEach((id) => output.set(id, { status: "error", message }));
+  }
+  return output;
 }
 
 type Admin = any;
@@ -115,12 +150,14 @@ export async function syncHandicapsForEvent(admin: Admin, eventId: string, trigg
     .eq("tournament_id", eventId);
   const list = regs || [];
   const pending = !ghinConfigured();
+  const lookups = await batchLookup(list.map((r: any) => r.ghin_id).filter(Boolean));
   let updated = 0, failed = 0;
   const errors: SyncSummary["errors"] = [];
   const now = new Date().toISOString();
   for (const r of list) {
     if (!r.ghin_id || pending) continue;
-    const res = await lookupHandicapByGhinId(r.ghin_id, r.last_name);
+    const normalizedId = String(r.ghin_id).replace(/\D/g, "");
+    const res = lookups.get(normalizedId) || { status: "not_found" as const, message: "No golfer found for that GHIN number." };
     if (res.status === "ok") {
       await admin.from("tournament_registrations").update({
         handicap_index: res.index, handicap: Math.round(res.index), low_handicap_index: res.lowIndex,
@@ -136,7 +173,7 @@ export async function syncHandicapsForEvent(admin: Admin, eventId: string, trigg
   await recalcEventHandicaps(admin, eventId);
   const summary = summarize({
     total: list.length, updated, failed, pending, errors,
-    manualRemaining: list.filter((r: any) => !r.ghin_id).length,
+    manualRemaining: list.filter((r: any) => r.handicap_source === "manual" || !r.ghin_id).length,
   });
   await writeLog(admin, { organization_id: t?.organization_id, scope: "event", target_id: eventId, target_name: t?.title, triggered_by: triggeredBy }, summary);
   return summary;
@@ -146,18 +183,19 @@ export async function syncHandicapsForLeague(admin: Admin, leagueId: string, tri
   const { data: lg } = await admin.from("golf_leagues").select("id, league_name, organization_id").eq("id", leagueId).maybeSingle();
   const { data: members } = await admin
     .from("league_members")
-    .select("id, member_name, ghin_id")
+    .select("id, member_name, ghin_id, handicap_source")
     .eq("league_id", leagueId)
     .neq("is_active", false);
   const list = members || [];
   const pending = !ghinConfigured();
+  const lookups = await batchLookup(list.map((m: any) => m.ghin_id).filter(Boolean));
   let updated = 0, failed = 0;
   const errors: SyncSummary["errors"] = [];
   const now = new Date().toISOString();
   for (const m of list) {
     if (!m.ghin_id || pending) continue;
-    const last = String(m.member_name || "").trim().split(/\s+/).pop();
-    const res = await lookupHandicapByGhinId(m.ghin_id, last);
+    const normalizedId = String(m.ghin_id).replace(/\D/g, "");
+    const res = lookups.get(normalizedId) || { status: "not_found" as const, message: "No golfer found for that GHIN number." };
     if (res.status === "ok") {
       await admin.from("league_members").update({
         handicap_index: res.index, low_handicap_index: res.lowIndex, handicap_source: "ghin",
@@ -172,7 +210,7 @@ export async function syncHandicapsForLeague(admin: Admin, leagueId: string, tri
   }
   const summary = summarize({
     total: list.length, updated, failed, pending, errors,
-    manualRemaining: list.filter((m: any) => !m.ghin_id).length,
+    manualRemaining: list.filter((m: any) => m.handicap_source === "manual" || !m.ghin_id).length,
   });
   await writeLog(admin, { organization_id: lg?.organization_id, scope: "league", target_id: leagueId, target_name: lg?.league_name, triggered_by: triggeredBy }, summary);
   return summary;

@@ -37,6 +37,7 @@ import EnterpriseAutomations from "./pages/enterprise/EnterpriseAutomations";
 import EnterpriseResources from "./pages/enterprise/EnterpriseResources";
 import EnterpriseAdmin from "./pages/enterprise/EnterpriseAdmin";
 import EnterpriseHandicaps from "./pages/enterprise/EnterpriseHandicaps";
+import EnterpriseOperations from "./pages/enterprise/EnterpriseOperations";
 import TeeSheet from "./pages/dashboard/TeeSheet";
 import Tournaments from "./pages/dashboard/Tournaments";
 import QuickActionsPage from "./pages/dashboard/QuickActions";
@@ -301,6 +302,7 @@ const App = () => (
           <Route path="/enterprise/create" element={<EnterpriseCreate />} />
           <Route path="/enterprise/roster" element={<EnterpriseRoster />} />
           <Route path="/enterprise/handicaps" element={<EnterpriseHandicaps />} />
+          <Route path="/enterprise/operations" element={<EnterpriseOperations />} />
           <Route path="/enterprise/courses" element={<EnterpriseCourses />} />
           <Route path="/enterprise/leagues" element={<EnterpriseLeagues />} />
           <Route path="/enterprise/printables" element={<EnterprisePrintables />} />

@@ -2854,6 +2854,47 @@ export type Database = {
           },
         ]
       }
+      enterprise_communication_log: {
+        Row: {
+          created_at: string
+          failed_count: number
+          id: string
+          organization_id: string
+          recipient_count: number
+          sent_by: string
+          sent_count: number
+          subject: string
+        }
+        Insert: {
+          created_at?: string
+          failed_count?: number
+          id?: string
+          organization_id: string
+          recipient_count?: number
+          sent_by: string
+          sent_count?: number
+          subject: string
+        }
+        Update: {
+          created_at?: string
+          failed_count?: number
+          id?: string
+          organization_id?: string
+          recipient_count?: number
+          sent_by?: string
+          sent_count?: number
+          subject?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_communication_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enterprise_demos: {
         Row: {
           accent_color: string | null
@@ -2907,6 +2948,120 @@ export type Database = {
           view_count?: number
         }
         Relationships: []
+      }
+      enterprise_invoice_audit_log: {
+        Row: {
+          action: string
+          actor_id: string
+          created_at: string
+          details: Json
+          id: string
+          invoice_id: string
+          organization_id: string
+        }
+        Insert: {
+          action: string
+          actor_id: string
+          created_at?: string
+          details?: Json
+          id?: string
+          invoice_id: string
+          organization_id: string
+        }
+        Update: {
+          action?: string
+          actor_id?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          invoice_id?: string
+          organization_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_invoice_audit_log_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enterprise_invoice_audit_log_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enterprise_invoices: {
+        Row: {
+          amount_cents: number
+          billing_address: string
+          billing_email: string
+          billing_name: string
+          created_at: string
+          created_by: string
+          due_date: string
+          id: string
+          invoice_number: string
+          organization_id: string
+          paid_at: string | null
+          status: string
+          stripe_payment_intent_id: string | null
+          tournament_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          amount_cents: number
+          billing_address: string
+          billing_email: string
+          billing_name: string
+          created_at?: string
+          created_by: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          organization_id: string
+          paid_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          amount_cents?: number
+          billing_address?: string
+          billing_email?: string
+          billing_name?: string
+          created_at?: string
+          created_by?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          organization_id?: string
+          paid_at?: string | null
+          status?: string
+          stripe_payment_intent_id?: string | null
+          tournament_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_invoices_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enterprise_invoices_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       enterprise_roster: {
         Row: {
@@ -6295,7 +6450,11 @@ export type Database = {
           dedicated_rep_name: string | null
           dedicated_rep_phone: string | null
           ein: string | null
+          enterprise_canceled_at: string | null
+          enterprise_settings: Json
           enterprise_subscription_id: string | null
+          enterprise_subscription_renews_at: string | null
+          enterprise_subscription_status: string | null
           feature_overrides: Json | null
           fee_override: number | null
           id: string
@@ -6330,7 +6489,11 @@ export type Database = {
           dedicated_rep_name?: string | null
           dedicated_rep_phone?: string | null
           ein?: string | null
+          enterprise_canceled_at?: string | null
+          enterprise_settings?: Json
           enterprise_subscription_id?: string | null
+          enterprise_subscription_renews_at?: string | null
+          enterprise_subscription_status?: string | null
           feature_overrides?: Json | null
           fee_override?: number | null
           id?: string
@@ -6365,7 +6528,11 @@ export type Database = {
           dedicated_rep_name?: string | null
           dedicated_rep_phone?: string | null
           ein?: string | null
+          enterprise_canceled_at?: string | null
+          enterprise_settings?: Json
           enterprise_subscription_id?: string | null
+          enterprise_subscription_renews_at?: string | null
+          enterprise_subscription_status?: string | null
           feature_overrides?: Json | null
           fee_override?: number | null
           id?: string

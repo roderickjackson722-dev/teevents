@@ -9,13 +9,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Loader2, IdCard, Car, List } from "lucide-react";
+import { Printer, Loader2, IdCard, Car, List, Users, Handshake } from "lucide-react";
 import { toast } from "sonner";
 import { openPrintWindow } from "@/components/printables/printUtils";
 import CartSignsTab from "@/components/printables/CartSignsTab";
 import AlphaListTab from "@/components/printables/AlphaListTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
-import type { Registration, Tournament } from "@/components/printables/types";
+import PairingsTab from "@/components/printables/PairingsTab";
+import SponsorSignsTab from "@/components/printables/SponsorSignsTab";
+import type { Registration, Sponsor, Tournament } from "@/components/printables/types";
 import type { RegistrationGroupRow } from "@/components/printables/teamGrouping";
 import {
   SCORECARD_TEMPLATES,
@@ -39,6 +41,7 @@ export default function EnterprisePrintables() {
   const [regs, setRegs] = useState<RegRow[]>([]);
   const [groups, setGroups] = useState<RegistrationGroupRow[]>([]);
   const [skins, setSkins] = useState<SkinResult[]>([]);
+  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
   const [template, setTemplate] = useState("standard_stroke");
   const [color, setColor] = useState("#1a5c38");
   const [accent, setAccent] = useState("#c8a84e");
@@ -54,7 +57,7 @@ export default function EnterprisePrintables() {
     setAccent(event.site_secondary_color || "#c8a84e");
     setShowSkins(Boolean(settings?.skinsGross || settings?.skinsNet));
     (async () => {
-      const [regRes, groupRes, gameRes] = await Promise.all([
+      const [regRes, groupRes, gameRes, sponsorRes] = await Promise.all([
         (supabase.from("tournament_registrations") as any)
           .select("id, first_name, last_name, email, group_number, group_position, group_label, scoring_code, group_scoring_code, handicap_index, tee_time, flight_id")
           .eq("tournament_id", event.id)
@@ -65,10 +68,15 @@ export default function EnterprisePrintables() {
         (supabase.from("division_skins_games") as any)
           .select("id, skin_format")
           .eq("tournament_id", event.id),
+        (supabase.from("sponsor_registrations") as any)
+          .select("id, company_name, sponsorship_tiers(name), logo_url, website_url")
+          .eq("tournament_id", event.id)
+          .eq("payment_status", "paid"),
       ]);
       const rows = (regRes.data || []) as RegRow[];
       setRegs(rows);
       setGroups((groupRes.data || []) as RegistrationGroupRow[]);
+      setSponsors((sponsorRes.data || []).map((row: any) => ({ id: row.id, name: row.company_name, tier: row.sponsorship_tiers?.name || "Sponsor", logo_url: row.logo_url, website_url: row.website_url })));
 
       const games = (gameRes.data || []) as { id: string; skin_format: string }[];
       if (games.length) {
@@ -162,7 +170,7 @@ export default function EnterprisePrintables() {
   return (
     <EnterpriseLayout
       title="Printables"
-      description="Scorecards, cart signs, alpha list and name badges — all branded to the event."
+      description="Branded scorecards, signs, lists, badges and pairings for event day."
       crumbs={[{ label: "Printables" }]}
       actions={<EnterpriseEventPicker events={events} eventId={event?.id} onChange={selectEvent} />}
     >
@@ -177,6 +185,8 @@ export default function EnterprisePrintables() {
             <TabsTrigger value="cart"><Car className="mr-1.5 h-4 w-4" /> Cart Signs</TabsTrigger>
             <TabsTrigger value="alpha"><List className="mr-1.5 h-4 w-4" /> Alpha List</TabsTrigger>
             <TabsTrigger value="badges"><IdCard className="mr-1.5 h-4 w-4" /> Name Badges</TabsTrigger>
+            <TabsTrigger value="pairings"><Users className="mr-1.5 h-4 w-4" /> Pairings</TabsTrigger>
+            <TabsTrigger value="sponsors"><Handshake className="mr-1.5 h-4 w-4" /> Sponsor Signs</TabsTrigger>
           </TabsList>
 
           <TabsContent value="scorecards" className="mt-3 space-y-4">
@@ -243,6 +253,12 @@ export default function EnterprisePrintables() {
           </TabsContent>
           <TabsContent value="badges" className="mt-3">
             <NameBadgesTab tournament={printTournament} registrations={regs} loading={false} groups={groups} />
+          </TabsContent>
+          <TabsContent value="pairings" className="mt-3">
+            <PairingsTab tournament={printTournament} registrations={regs} loading={false} groups={groups} />
+          </TabsContent>
+          <TabsContent value="sponsors" className="mt-3">
+            <SponsorSignsTab tournament={printTournament} sponsors={sponsors} loading={false} />
           </TabsContent>
         </Tabs>
       )}

@@ -12,6 +12,10 @@ export interface OrgContext {
   permissions: string[];
   featureOverrides: Record<string, boolean> | null;
   feeOverride: number | null;
+  pricingModel: string | null;
+  enterpriseSettings: Record<string, unknown>;
+  enterpriseSubscriptionStatus: string | null;
+  enterpriseSubscriptionRenewsAt: string | null;
 }
 
 export function useOrgContext() {
@@ -31,7 +35,7 @@ export function useOrgContext() {
         if (isAdmin) {
         const { data: orgData } = await supabase
             .from("organizations")
-            .select("id, name, plan, dashboard_name, feature_overrides, fee_override")
+            .select("id, name, plan, dashboard_name, feature_overrides, fee_override, pricing_model, enterprise_settings, enterprise_subscription_status, enterprise_subscription_renews_at")
             .eq("id", adminOrgId)
             .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null; feature_overrides: Record<string, boolean> | null; fee_override: number | null } | null; error: any };
 
@@ -46,6 +50,10 @@ export function useOrgContext() {
               permissions: [],
               featureOverrides: orgData.feature_overrides || null,
               feeOverride: orgData.fee_override ?? null,
+              pricingModel: (orgData as any).pricing_model || null,
+              enterpriseSettings: ((orgData as any).enterprise_settings || {}) as Record<string, unknown>,
+              enterpriseSubscriptionStatus: (orgData as any).enterprise_subscription_status || null,
+              enterpriseSubscriptionRenewsAt: (orgData as any).enterprise_subscription_renews_at || null,
             });
             setLoading(false);
             return;
@@ -81,7 +89,7 @@ export function useOrgContext() {
 
       const { data: orgData } = await supabase
         .from("organizations")
-        .select("id, name, plan, dashboard_name, feature_overrides, fee_override")
+        .select("id, name, plan, dashboard_name, feature_overrides, fee_override, pricing_model, enterprise_settings, enterprise_subscription_status, enterprise_subscription_renews_at")
         .eq("id", membership.organization_id)
         .single() as { data: { id: string; name: string; plan: string; dashboard_name: string | null; feature_overrides: Record<string, boolean> | null; fee_override: number | null } | null; error: any };
 
@@ -96,6 +104,10 @@ export function useOrgContext() {
           permissions: (membership as any).permissions || [],
           featureOverrides: orgData.feature_overrides || null,
           feeOverride: orgData.fee_override ?? null,
+          pricingModel: (orgData as any).pricing_model || null,
+          enterpriseSettings: ((orgData as any).enterprise_settings || {}) as Record<string, unknown>,
+          enterpriseSubscriptionStatus: (orgData as any).enterprise_subscription_status || null,
+          enterpriseSubscriptionRenewsAt: (orgData as any).enterprise_subscription_renews_at || null,
         });
       }
       setLoading(false);

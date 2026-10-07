@@ -49,7 +49,7 @@ const data: Section[] = [
     category: "Payments & Payouts",
     rows: [
       { feature: "Direct-to-organizer Payments", teevents: "Stripe Connect Direct Charges — organizer is merchant of record", gg: "Funds often held by platform", tv: "yes", ggs: "warn" },
-      { feature: "Fee Transparency", teevents: "5% TeeVents fee + Stripe shown on checkout", gg: "Bundled / opaque per-golfer fees", tv: "yes", ggs: "warn" },
+      { feature: "Fee Transparency", teevents: "$0 plan: 5% covered by players; paid plans: 0% platform fees. Stripe processing applies.", gg: "Bundled / opaque per-golfer fees", tv: "yes", ggs: "warn" },
       { feature: "Pass Fees to Players", teevents: "Toggle on/off", gg: "Limited", tv: "yes", ggs: "warn" },
     ],
   },

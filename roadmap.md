@@ -30,3 +30,11 @@
 - [x] Implement approved high-priority gaps without changing legacy or non-Enterprise workflows
 - [x] Implement approved medium-priority gaps
 - [x] Verify Enterprise operations, printables, messaging, handicap math, and protected access
+
+## Organizer pricing, payments, referrals, and check-in
+- [ ] Clarify the Features page with Free OR Per-Event choices and replace its current CTAs
+- [ ] Add a pending-roster payment-link action that reuses the existing registration and supports recipient and amount edits
+- [ ] Add Team Performance registration drill-down with paid/pending amount clarity
+- [ ] Add an event setting to disable cash payments
+- [ ] Add roster check-in controls with a distinct checked-in state and include check-in status in printouts
+- [ ] Verify the affected public page and organizer workflows without changing other platform behavior

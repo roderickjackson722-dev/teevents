@@ -11,7 +11,7 @@ const RESERVED = new Set([
   "setup-admin","get-started","onboarding","payment-success","dashboard","league","leagues",
   "day-of","trips","pricing","plans","golf-leagues","sample","demo","help","features","faq",
   "privacy","terms","unsubscribe","claim","book","scan","score","survey","refund","flyer",
-  "compare","nonprofits","sales","enterprise-pricing","oauth","confirm-bank-change",
+  "compare","nonprofits","sales","enterprise-pricing","enterprise-overview","oauth","confirm-bank-change",
   "confirm-payout-change","force-password-change","reset-password","accept-invitation",
   "golf-tournament-software","charity-golf-tournament-planning","golf-fundraiser-management",
   "what-is-a-scramble","charity-golf-tournament-guide","golf-tournament-formats","custom-golf-tournament-website",

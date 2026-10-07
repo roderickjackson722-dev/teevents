@@ -22,6 +22,7 @@ import Onboarding from "./pages/Onboarding";
 import DashboardLayout from "./components/DashboardLayout";
 import PaymentSuccess from "./pages/PaymentSuccess";
 import DashboardHome from "./pages/dashboard/DashboardHome";
+import EnterpriseOverview from "./pages/EnterpriseOverview";
 import EnterpriseHome from "./pages/enterprise/EnterpriseHome";
 import EnterpriseCreate from "./pages/enterprise/EnterpriseCreate";
 import EnterpriseRoster from "./pages/enterprise/EnterpriseRoster";
@@ -427,6 +428,7 @@ const App = () => (
            <Route path="/how-it-works" element={<Navigate to="/plans" replace />} />
            <Route path="/pricing" element={<Navigate to="/plans" replace />} />
            <Route path="/enterprise-pricing" element={<EnterprisePricing />} />
+           <Route path="/enterprise-overview" element={<EnterpriseOverview />} />
            <Route path="/enterprise-demo" element={<EnterpriseDemoPage />} />
            <Route path="/enterprise-demo/:slug" element={<EnterpriseDemoPage />} />
            <Route path="/sample-organizer" element={<SampleDashboard />} />

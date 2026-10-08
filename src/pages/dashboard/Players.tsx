@@ -900,6 +900,9 @@ const Players = () => {
         payment_method: insertPayload.payment_method,
         payment_status: insertPayload.payment_status,
         cash_payment_received: insertPayload.cash_payment_received,
+        // Must be present in every row of the array insert — supabase-js sends
+        // NULL for keys missing from any row, but this column is NOT NULL.
+        custom_answers: [],
         group_id: groupId,
         group_leader: false,
       })),

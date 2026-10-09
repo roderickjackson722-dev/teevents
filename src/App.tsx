@@ -190,6 +190,7 @@ import AdminLeagues from "./pages/admin/Leagues";
 import AdminScoring from "./pages/admin/AdminScoring";
 import LeaguePromoCodes from "./pages/admin/LeaguePromoCodes";
 import AiSalesAgent from "./pages/admin/AiSalesAgent";
+import AdminHelpChats from "./pages/admin/HelpChats";
 import CollegeHubBookingsPublic from "./pages/CollegeHubBookings";
 import CollegeHubSurveys from "./pages/admin/CollegeHubSurveys";
 import CollegeSurvey from "./pages/CollegeSurvey";
@@ -477,6 +478,7 @@ const App = () => (
             <Route path="/admin/scoring/:tournamentId" element={<AdminScoring />} />
             <Route path="/admin/manage-events" element={<ManageEvents />} />
             <Route path="/admin/ai-sales-agent" element={<AiSalesAgent />} />
+            <Route path="/admin/help-chats" element={<AdminHelpChats />} />
              <Route path="/college-hub/bookings" element={<CollegeHubBookingsPublic />} />
           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
           <Route path="/admin/course-database" element={<AdminCourseDatabase />} />

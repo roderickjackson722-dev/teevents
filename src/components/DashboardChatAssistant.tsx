@@ -259,7 +259,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
                 <Bot className="h-5 w-5" />
                 <div>
                   <p className="text-sm font-semibold">TeeVents Assistant</p>
-                  <p className="text-xs text-primary-foreground/70">Ask me anything about your tournament</p>
+                  <p className="text-xs text-primary-foreground/70">Ask where to find anything in TeeVents</p>
                 </div>
               </div>
               <button onClick={() => setOpen(false)} className="hover:bg-primary-foreground/10 rounded p-1 transition-colors">
@@ -274,7 +274,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
                   <Bot className="h-10 w-10 mx-auto text-muted-foreground/40 mb-3" />
                   <p className="text-sm text-muted-foreground font-medium">Hi there! 👋</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    I can help with tournament setup, player management, scoring, and more.
+                    Ask me where to find something in your dashboard. Other questions go to our team.
                   </p>
                 </div>
               )}
@@ -325,26 +325,26 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
                 <div className="bg-muted rounded-lg p-3 space-y-2">
                   <div className="flex items-center gap-2 text-sm font-medium text-foreground">
                     <Phone className="h-4 w-4 text-primary" />
-                    Request a Call from TeeVents
+                    Talk to the TeeVents team
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Our team will reach out to help you directly.
+                    Describe what you need. We'll email you back — the AI only helps with finding things in the dashboard.
                   </p>
                   <Input
-                    placeholder="Your name"
+                    placeholder="What do you need help with?"
                     value={callName}
                     onChange={(e) => setCallName(e.target.value)}
                     className="text-sm h-9"
                   />
                   <Input
-                    placeholder="Phone number"
+                    placeholder="Phone (optional)"
                     value={callPhone}
                     onChange={(e) => setCallPhone(e.target.value)}
                     className="text-sm h-9"
                   />
                   <div className="flex gap-2">
                     <Button size="sm" onClick={handleCallRequest} className="flex-1">
-                      <Phone className="h-3 w-3 mr-1" /> Request Call
+                      <Phone className="h-3 w-3 mr-1" /> Send to team
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setShowCallForm(false)}>
                       Cancel
@@ -355,9 +355,9 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
 
               {callSubmitted && (
                 <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-center">
-                  <p className="text-sm font-medium text-primary">✅ Call Requested</p>
+                  <p className="text-sm font-medium text-primary">✅ Request sent</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    A TeeVents team member will call {callName} at {callPhone} shortly.
+                    A TeeVents team member will follow up by email.
                   </p>
                 </div>
               )}
@@ -385,7 +385,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
                 className="flex items-center justify-center gap-1.5 w-full text-xs text-muted-foreground hover:text-primary transition-colors py-1"
               >
                 <Phone className="h-3 w-3" />
-                Need more help? Request a call from TeeVents
+                Need a person? Send a help ticket to TeeVents
               </button>
             </div>
           </motion.div>

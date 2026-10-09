@@ -1131,7 +1131,7 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
           </Button>
         )}
 
-        {!allowGroup && (
+        {!allowGroup && fields.find((field) => field.is_default && field.label.toLowerCase() === "additional notes")?.is_enabled !== false && (
           <div>
             <Label htmlFor="reg_notes">Additional Notes</Label>
             <Textarea
@@ -1145,7 +1145,7 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
           </div>
         )}
 
-        {allowGroup && (
+        {allowGroup && fields.find((field) => field.is_default && field.label.toLowerCase() === "additional notes")?.is_enabled !== false && (
           <div>
             <Label htmlFor="group_notes">Group Notes</Label>
             <Textarea

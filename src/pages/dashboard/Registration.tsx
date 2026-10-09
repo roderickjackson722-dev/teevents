@@ -171,6 +171,7 @@ const DEFAULT_FIELDS: Omit<RegField, "tournament_id">[] = [
   { label: "Dietary Restrictions", field_type: "text", options: null, is_required: false, is_default: true, is_enabled: true, sort_order: 4 },
   { label: "Company / Organization", field_type: "text", options: null, is_required: false, is_default: true, is_enabled: false, sort_order: 5 },
   { label: "Skill Level", field_type: "dropdown", options: ["Beginner", "Intermediate", "Advanced", "Scratch"], is_required: false, is_default: true, is_enabled: false, sort_order: 6 },
+  { label: "Additional Notes", field_type: "text", options: null, is_required: false, is_default: true, is_enabled: true, sort_order: 7 },
 ];
 
 /* ── main component ── */
@@ -325,6 +326,11 @@ const Registration = () => {
       loadedFields = (seeded as RegField[]) || [];
     }
 
+    // Keep existing events unchanged until the organizer explicitly toggles notes.
+    if (!loadedFields.some((field) => field.is_default && field.label.toLowerCase() === "additional notes")) {
+      const notesField = DEFAULT_FIELDS.find((field) => field.label === "Additional Notes");
+      if (notesField) loadedFields = [...loadedFields, { ...notesField, tournament_id: tid }];
+    }
     setFields(loadedFields);
     setAddons((addonsRes.data as Addon[]) || []);
     setPromoCodes((promoRes.data as PromoCode[]) || []);
@@ -412,10 +418,20 @@ const Registration = () => {
   const toggleField = async (field: RegField) => {
     if (demoGuard()) return;
     const updated = !field.is_enabled;
+    if (!field.id) {
+      const { data, error } = await supabase
+        .from("tournament_registration_fields")
+        .insert({ ...field, is_enabled: updated })
+        .select("*")
+        .single();
+      if (error) toast.error(error.message);
+      else if (data) setFields((prev) => prev.map((f) => f === field ? data as RegField : f));
+      return;
+    }
     const { error } = await supabase
       .from("tournament_registration_fields")
       .update({ is_enabled: updated } as any)
-      .eq("id", field.id!);
+      .eq("id", field.id);
     if (error) toast.error(error.message);
     else setFields((prev) => prev.map((f) => (f.id === field.id ? { ...f, is_enabled: updated } : f)));
   };
@@ -1482,13 +1498,13 @@ const Registration = () => {
                 </p>
                 <div className="space-y-3">
                   {fields.filter((f) => f.is_default).map((field) => (
-                    <div key={field.id} className="flex items-center justify-between p-3 rounded-lg border border-border">
+                    <div key={field.id || field.label} className="flex items-center justify-between p-3 rounded-lg border border-border">
                       <div className="flex items-center gap-3">
-                        <Switch checked={field.is_enabled} onCheckedChange={() => toggleField(field)} />
+                        <Switch aria-label={`Show ${field.label}`} checked={field.is_enabled} onCheckedChange={() => toggleField(field)} />
                         <span className="font-medium text-foreground text-sm">{field.label}</span>
                         <Badge variant="outline" className="text-[10px]">{field.field_type}</Badge>
                       </div>
-                      {field.is_enabled && (
+                      {field.is_enabled && field.label !== "Additional Notes" && (
                         <div className="flex items-center gap-2">
                           <span className="text-xs text-muted-foreground">Required</span>
                           <Switch checked={field.is_required} onCheckedChange={() => toggleFieldRequired(field)} />

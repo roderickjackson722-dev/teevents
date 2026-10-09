@@ -40,7 +40,7 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
 
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, pricing_version, pricing_model, flat_rate_enabled, pass_fees_to_participants")
+      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, flat_rate_enabled, pass_fees_to_participants")
       .eq("id", registration.tournament_id)
       .maybeSingle();
     if (!tournament) throw new Error("Tournament not found");
@@ -52,6 +52,9 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
       .eq("user_id", context.userId)
       .maybeSingle();
     if (!membership) throw new Error("Not authorized for this tournament");
+
+    const rawTitle = (tournament.public_section_titles as Record<string, unknown> | null)?.registration;
+    const registrationTitle = typeof rawTitle === "string" && rawTitle.trim() ? rawTitle.trim().slice(0, 80) : "Registration";
 
     const stripeKey = process.env["STRIPE_SECRET_KEY"];
     if (!stripeKey) throw new Error("Payments are not configured");
@@ -90,7 +93,7 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
         price_data: {
           currency: "usd",
           product_data: {
-            name: `Registration — ${tournament.title}`,
+            name: `${registrationTitle} — ${tournament.title}`,
             description: `${registration.first_name} ${registration.last_name}`,
           },
           unit_amount: chargeTotalCents,
@@ -148,7 +151,7 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
         to: [data.recipientEmail],
         reply_to: "info@teevents.golf",
         subject: `Complete payment for ${tournament.title}`,
-        html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1f2937"><h1 style="color:#1a5c38;font-size:24px">Complete your registration payment</h1><p>Hi ${escapeHtml(registration.first_name)},</p><p>Your spot for <strong>${escapeHtml(tournament.title)}</strong> is listed under <strong>${escapeHtml(playerName)}</strong> and is awaiting payment.</p><p style="font-size:20px;font-weight:700">Amount: $${(data.amountCents / 100).toFixed(2)}</p><p><a href="${session.url}" style="display:inline-block;background:#F5A623;color:#1a5c38;padding:12px 22px;text-decoration:none;font-weight:700;border-radius:6px">Pay Registration</a></p><p style="font-size:12px;color:#6b7280">This link collects payment for the existing roster entry; it does not create another player.</p></div>`,
+        html: `<div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#1f2937"><h1 style="color:#1a5c38;font-size:24px">Complete your ${escapeHtml(registrationTitle.toLowerCase())} payment</h1><p>Hi ${escapeHtml(registration.first_name)},</p><p>Your spot for <strong>${escapeHtml(tournament.title)}</strong> is listed under <strong>${escapeHtml(playerName)}</strong> and is awaiting payment.</p><p style="font-size:20px;font-weight:700">Amount: $${(data.amountCents / 100).toFixed(2)}</p><p><a href="${session.url}" style="display:inline-block;background:#F5A623;color:#1a5c38;padding:12px 22px;text-decoration:none;font-weight:700;border-radius:6px">Pay ${escapeHtml(registrationTitle)}</a></p><p style="font-size:12px;color:#6b7280">This link collects payment for the existing roster entry; it does not create another player.</p></div>`,
       }),
     });
     if (!emailResponse.ok) {

@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, organization_id, pricing_version, pricing_model, event_fee_paid, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at")
+      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, event_fee_paid, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at")
       .eq("id", tournament_id)
       .single();
 
@@ -74,6 +74,9 @@ Deno.serve(async (req) => {
     if (!tournament.registration_open || !tournament.site_published) {
       throw new Error("Registration is not open for this tournament");
     }
+
+    const rawTitle = (tournament.public_section_titles as Record<string, unknown> | null)?.registration;
+    const registrationTitle = typeof rawTitle === "string" && rawTitle.trim() ? rawTitle.trim().slice(0, 80) : "Registration";
 
     const { data: registrationFields, error: fieldsErr } = await supabaseAdmin
       .from("tournament_registration_fields")
@@ -425,7 +428,7 @@ Deno.serve(async (req) => {
           price_data: {
             currency: "usd",
             product_data: {
-              name: `Registration${addonNames} — ${tournament.title}`,
+              name: `${registrationTitle}${addonNames} — ${tournament.title}`,
               description: `${isFoursome ? `Foursome: ${playerNames}` : playerNames} • Promo ${promoRecord.code} applied (-$${(discountCents / 100).toFixed(2)})`,
             },
             unit_amount: subtotalCents,
@@ -441,7 +444,7 @@ Deno.serve(async (req) => {
             price_data: {
               currency: "usd",
               product_data: {
-                name: `Early Bird Team Registration — ${tournament.title}`,
+                name: `Early Bird Team ${registrationTitle} — ${tournament.title}`,
                 description: `${players.length}-player team: ${playerNames}`,
               },
               unit_amount: registrationFeeCents,
@@ -453,7 +456,7 @@ Deno.serve(async (req) => {
             price_data: {
               currency: "usd",
               product_data: {
-                name: `Registration — ${tournament.title}`,
+                name: `${registrationTitle} — ${tournament.title}`,
                 description: isFoursome ? `Foursome: ${playerNames}` : playerNames,
               },
               unit_amount: feePerPlayer,

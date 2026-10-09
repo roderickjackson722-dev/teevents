@@ -32,6 +32,11 @@
 - [x] Verify Enterprise operations, printables, messaging, handicap math, and protected access
 
 ## Organizer pricing, payments, referrals, and check-in
+## Editable public tournament titles
+- [x] Add per-tournament section title editing in both layout editors
+- [x] Carry custom registration titles through public forms and checkout without changing payment behavior
+- [x] Verify defaults, saved titles, and ticket wording
+
 - [x] Clarify the Features page with Free OR Per-Event choices and replace its current CTAs
 - [x] Add a pending-roster payment-link action that reuses the existing registration and supports recipient and amount edits
 - [x] Add Team Performance registration drill-down with paid/pending amount clarity

@@ -223,15 +223,18 @@ export async function sendRegistrantConfirmationEmail(
 
     // Fetch organizer/tournament logo (falls back to org logo)
     let logoUrl: string | null = null;
+    let registrationTitle = "Registration";
     if (tournamentId) {
       try {
         const admin = getAdminClient();
         const { data: t } = await admin
           .from("tournaments")
-          .select("logo_url, organization_id")
+          .select("logo_url, organization_id, public_section_titles")
           .eq("id", tournamentId)
           .maybeSingle();
         logoUrl = (t as any)?.logo_url || null;
+        const rawTitle = (t as any)?.public_section_titles?.registration;
+        if (typeof rawTitle === "string" && rawTitle.trim()) registrationTitle = rawTitle.trim().slice(0, 80);
         if (!logoUrl && (t as any)?.organization_id) {
           const { data: org } = await admin
             .from("organizations")
@@ -245,16 +248,19 @@ export async function sendRegistrantConfirmationEmail(
       }
     }
 
+    const isTickets = /\btickets?\b/i.test(registrationTitle);
+    const customTitle = registrationTitle !== "Registration";
+    const escapedTitle = registrationTitle.replace(/[&<>"']/g, (character) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[character] || character);
     const lines = [
       `Hi <strong>${firstName}</strong>,`,
-      `We've received your registration for <strong>${tournamentTitle}</strong>. Thank you for signing up!`,
+      `We've received your ${customTitle ? escapedTitle.toLowerCase() : "registration"} for <strong>${tournamentTitle}</strong>. Thank you for signing up!`,
       dateStr ? `📅 <strong>Date:</strong> ${dateStr}` : "",
       tournamentLocation ? `📍 <strong>Location:</strong> ${tournamentLocation}` : "",
       dateStr ? `We look forward to seeing you on <strong>${dateStr}</strong>. Keep an eye on your inbox for any updates leading up to the event.` : "We look forward to seeing you there! Keep an eye on your inbox for any updates leading up to the event.",
       "See you on the course! ⛳",
     ].filter(Boolean);
 
-    const html = buildConfirmationHtml("Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg, logoUrl);
+    const html = buildConfirmationHtml(customTitle ? `${escapedTitle} Confirmed!` : "Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg, logoUrl);
 
 
     console.log(`[Confirmation] Sending registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
@@ -267,7 +273,7 @@ export async function sendRegistrantConfirmationEmail(
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
         to: [recipientEmail],
         // No BCC to info@teevents.golf — admin only receives payout notices.
-        subject: `You're Registered — ${tournamentTitle}`,
+        subject: `${isTickets ? "Tickets Confirmed" : customTitle ? `${registrationTitle} Confirmed` : "You're Registered"} — ${tournamentTitle}`,
         html,
       },
       {

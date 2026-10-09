@@ -69,6 +69,40 @@ export const PUBLIC_TABS_DEFAULT_ORDER: PublicTabKey[] = [
   "lodging", "media", "volunteers", "contests", "travel",
 ];
 
+export type PublicSectionTitles = Partial<Record<PublicTabKey, string>>;
+
+/** Only known keys and short plain-text titles are accepted. Blank restores defaults. */
+export function normalizeSectionTitles(stored: unknown): PublicSectionTitles {
+  const titles: PublicSectionTitles = {};
+  if (!stored || typeof stored !== "object" || Array.isArray(stored)) return titles;
+  const values = stored as Record<string, unknown>;
+  for (const { key } of PUBLIC_TABS) {
+    const value = values[key];
+    if (typeof value === "string" && value.trim()) titles[key] = value.trim().slice(0, 80);
+  }
+  return titles;
+}
+
+export function publicSectionTitle(stored: unknown, key: PublicTabKey, fallback: string): string {
+  return normalizeSectionTitles(stored)[key] || fallback;
+}
+
+/** Display copy only: no pricing, registration, or scoring behavior changes. */
+export function registrationCopy(title = "Registration") {
+  const label = title.trim().slice(0, 80) || "Registration";
+  const tickets = /\btickets?\b/i.test(label);
+  const custom = label !== "Registration";
+  return {
+    label, tickets, custom,
+    action: tickets ? "Get Tickets" : custom ? `Continue to ${label}` : "Register Now",
+    complete: tickets ? "Confirm Tickets" : custom ? `Complete ${label}` : "Complete Registration",
+    confirmed: tickets ? "Tickets Confirmed!" : custom ? `${label} Confirmed!` : "You're Registered!",
+    fee: tickets ? "Ticket Price" : custom ? `${label} Fee` : "Registration Fee",
+    tier: tickets ? "Select Ticket Type" : custom ? `Select ${label} Type` : "Select Registration Tier",
+    closed: `${label} Closed`,
+  };
+}
+
 /** Merge a stored visibility map with defaults so missing keys still resolve. */
 export function normalizeVisibility(
   stored: Partial<Record<string, boolean>> | null | undefined,

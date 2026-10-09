@@ -267,6 +267,7 @@ interface SiteSettings {
   show_countdown: boolean | null;
   public_tabs: Record<string, boolean> | null;
   public_tabs_order: string[] | null;
+  public_section_titles?: Record<string, string>;
   // Public Page Design
   site_show_logo: boolean | null;
   site_text_color: string | null;
@@ -1746,9 +1747,12 @@ const SiteBuilder = () => {
 
               {/* Card 2: Public Page Tabs */}
               <PublicTabsManager
+                key={settings.id}
                 tournamentId={settings.id}
                 initialVisibility={settings.public_tabs}
                 initialOrder={settings.public_tabs_order}
+                initialTitles={settings.public_section_titles}
+                onSaved={(values) => updateFields(values)}
               />
             </>
           )}

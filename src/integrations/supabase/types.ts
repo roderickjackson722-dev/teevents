@@ -12929,6 +12929,7 @@ export type Database = {
           printable_options: Json
           pro_paid_at: string | null
           pro_payment_intent_id: string | null
+          public_section_titles: Json
           public_tabs: Json | null
           public_tabs_order: string[] | null
           raffle_tab_title: string | null
@@ -13294,6 +13295,7 @@ export type Database = {
           printable_options?: Json
           pro_paid_at?: string | null
           pro_payment_intent_id?: string | null
+          public_section_titles?: Json
           public_tabs?: Json | null
           public_tabs_order?: string[] | null
           raffle_tab_title?: string | null
@@ -13659,6 +13661,7 @@ export type Database = {
           printable_options?: Json
           pro_paid_at?: string | null
           pro_payment_intent_id?: string | null
+          public_section_titles?: Json
           public_tabs?: Json | null
           public_tabs_order?: string[] | null
           raffle_tab_title?: string | null

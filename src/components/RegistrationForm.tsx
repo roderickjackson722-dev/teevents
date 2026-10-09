@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { registrationCopy } from "@/lib/publicTabs";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -42,6 +43,7 @@ interface RegFieldConfig {
 
 interface RegistrationFormProps {
   tournamentId: string;
+  sectionTitle?: string;
   primaryColor: string;
   secondaryColor: string;
   registrationFeeCents?: number;
@@ -88,12 +90,13 @@ const emptyPlayer = () => ({
 type PlayerForm = ReturnType<typeof emptyPlayer>;
 
 const PlayerFields = ({
-  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel, groupRules, groupMode,
+  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel, groupRules, groupMode, tickets,
 }: {
   player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
   errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
   fields?: RegFieldConfig[]; captainLabel?: string | null;
   groupRules?: GroupFieldRules | null; groupMode?: boolean;
+  tickets?: boolean;
 }) => {
   const prefix = index > 0 ? `p${index}_` : "";
 
@@ -155,7 +158,7 @@ const PlayerFields = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground">
-          {index === 0
+          {tickets ? `Attendee ${index + 1}` : index === 0
             ? (groupMode && groupRules?.enabled
                 ? `Team Captain (Primary Contact)`
                 : captainLabel && captainLabel.trim() ? `Player 1 (${captainLabel.trim()})` : "Player 1")
@@ -284,7 +287,8 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", showAddons = true, captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", showAddons = true, captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
+  const copy = registrationCopy(sectionTitle);
   // When the organizer restricts group sizes (e.g. foursomes only), start at the
   // smallest allowed size so the total reflects the real number of players.
   const initialGroupSize = (() => {
@@ -706,7 +710,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           if (data?.checkout_url) { window.location.href = data.checkout_url; return; }
           if (data?.paid) setSubmitted(true);
       } catch (err: any) {
-        setErrors({ form: err.message || "Registration failed. Please try again." });
+        setErrors({ form: err.message || `${copy.label} could not be completed. Please try again.` });
       }
     } else {
       // Free registration — insert directly
@@ -751,7 +755,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
       const { error } = await supabase.from("tournament_registrations").insert(inserts);
 
       if (error) {
-        setErrors({ form: "Registration failed. Please try again." });
+        setErrors({ form: `${copy.label} could not be completed. Please try again.` });
       } else {
         setSubmitted(true);
       }
@@ -772,7 +776,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
           >
             <CheckCircle2 className="h-12 w-12 mx-auto mb-3" style={{ color: secondaryColor }} />
             <h3 className="text-xl font-display font-bold text-foreground mb-2">
-              You're Registered!
+              {copy.confirmed}
             </h3>
             <p className="text-sm text-muted-foreground">
               Thank you for signing up. You'll receive confirmation details via email.
@@ -792,7 +796,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         {/* Tier Selection */}
         {tiers.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-foreground">Select Registration Tier *</p>
+            <p className="text-sm font-semibold text-foreground">{copy.tier} *</p>
             <div className="grid gap-2">
               {tiers.map((tier) => (
                 <button
@@ -888,7 +892,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
         {(hasFee || subtotalBeforeDiscount > 0) && (
           <div className="rounded-md px-4 py-3 text-sm font-medium border" style={{ backgroundColor: `${secondaryColor}15`, borderColor: `${secondaryColor}30`, color: primaryColor }}>
-            {activeFee > 0 && <>Registration Fee: {feeDisplay} per player</>}
+            {activeFee > 0 && <>{copy.fee}: {feeDisplay} per {copy.tickets ? "ticket" : "player"}</>}
             {addonTotalCents > 0 && (
               <span className="block text-xs mt-1 opacity-80">
                 Add-ons: {formatCents(addonTotalCents)}
@@ -961,8 +965,8 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
 
         {allowGroup && (
           <div className="rounded-md px-4 py-3 text-sm border bg-muted/30 border-border">
-            <p className="font-semibold text-foreground">How many players are you registering?</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Choose your group size (up to {maxGroupSize}). The captain fills in each player's details.</p>
+            <p className="font-semibold text-foreground">{copy.tickets ? "How many tickets do you need?" : "How many players are you registering?"}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{copy.tickets ? `Up to ${maxGroupSize} tickets. Enter each attendee's details.` : `Choose your group size (up to ${maxGroupSize}). The captain fills in each player's details.`}</p>
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
               {(() => {
                 const all = Array.from({ length: maxGroupSize }, (_, i) => i + 1);
@@ -971,7 +975,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
                   : all;
                 return filtered;
               })().map((n) => {
-                const labels: Record<number, string> = { 1: "Individual", 2: "Twosome (2)", 3: "Threesome (3)", 4: "Foursome (4)" };
+                const labels: Record<number, string> = copy.tickets ? { 1: "1 Ticket", 2: "2 Tickets", 3: "3 Tickets", 4: "4 Tickets" } : { 1: "Individual", 2: "Twosome (2)", 3: "Threesome (3)", 4: "Foursome (4)" };
                 const active = players.length === n;
                 return (
                   <button
@@ -1114,6 +1118,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
               captainLabel={captainLabel}
               groupRules={groupFieldRules}
               groupMode={groupRulesActive}
+              tickets={copy.tickets}
             />
           </div>
         ))}
@@ -1122,7 +1127,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         {allowGroup && players.length < maxGroupSize && (
           <Button type="button" variant="outline" className="w-full" onClick={addPlayer}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Add Player {players.length + 1}
+            {copy.tickets ? "Add Attendee" : "Add Player"} {players.length + 1}
           </Button>
         )}
 
@@ -1226,7 +1231,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
             )}
             {donationCents > 0 && (
               <p className="text-xs font-semibold" style={{ color: secondaryColor }}>
-                ✓ Adding {formatCents(donationCents)} donation to your registration
+                ✓ Adding {formatCents(donationCents)} donation to your {copy.tickets ? "tickets" : copy.label.toLowerCase()}
               </p>
             )}
           </div>
@@ -1235,7 +1240,7 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         {/* Tax-Exempt Notice */}
         {isNonprofit && (
           <p className="text-xs text-muted-foreground text-center">
-            🧾 {nonprofitName || "This organization"} is a registered 501(c)(3) nonprofit{ein ? ` (EIN: ${ein})` : ""}. Your registration may be tax-deductible. A receipt will be emailed to you.
+            🧾 {nonprofitName || "This organization"} is a registered 501(c)(3) nonprofit{ein ? ` (EIN: ${ein})` : ""}. Your {copy.tickets ? "ticket purchase" : copy.label.toLowerCase()} may be tax-deductible. A receipt will be emailed to you.
           </p>
         )}
 
@@ -1247,7 +1252,9 @@ const RegistrationForm = ({ tournamentId, primaryColor, secondaryColor, registra
         >
           {submitting && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
           {hasFee
-            ? `Register & Pay ${totalDisplay}`
+            ? `${copy.tickets ? "Get Tickets & Pay" : copy.custom ? `Complete ${copy.label} & Pay` : "Register & Pay"} ${totalDisplay}`
+            : copy.custom
+              ? `${copy.complete}${allowGroup ? ` (${players.length} ${copy.tickets ? "tickets" : "attendees"})` : ""}`
             : allowGroup
               ? `Register Group (${players.length} player${players.length > 1 ? "s" : ""})`
               : "Complete Registration"}

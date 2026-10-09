@@ -951,7 +951,7 @@ const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          <AlertDialog>
+                          {t.type !== "no_charge_registration" && <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
                                 variant="ghost"
@@ -977,7 +977,7 @@ const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
                                 <AlertDialogAction onClick={() => handleDeleteTransaction(t)}>Delete</AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
-                          </AlertDialog>
+                          </AlertDialog>}
                         </TableCell>
                       </TableRow>
                       {open && (

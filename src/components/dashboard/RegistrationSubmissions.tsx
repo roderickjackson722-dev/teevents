@@ -45,6 +45,7 @@ const DEFAULT_KEY_MAP: Record<string, keyof SubmissionRow> = {
   "handicap": "handicap",
   "shirt size": "shirt_size",
   "dietary restrictions": "dietary_restrictions",
+  "additional notes": "notes",
 };
 
 const formatAnswer = (val: unknown): string => {

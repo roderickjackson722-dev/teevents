@@ -90,12 +90,13 @@ const emptyPlayer = () => ({
 type PlayerForm = ReturnType<typeof emptyPlayer>;
 
 const PlayerFields = ({
-  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel, groupRules, groupMode,
+  player, index, onChange, errors, showRemove, onRemove, fields, captainLabel, groupRules, groupMode, tickets,
 }: {
   player: PlayerForm; index: number; onChange: (p: PlayerForm) => void;
   errors: Record<string, string>; showRemove?: boolean; onRemove?: () => void;
   fields?: RegFieldConfig[]; captainLabel?: string | null;
   groupRules?: GroupFieldRules | null; groupMode?: boolean;
+  tickets?: boolean;
 }) => {
   const prefix = index > 0 ? `p${index}_` : "";
 
@@ -157,7 +158,7 @@ const PlayerFields = ({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="text-sm font-semibold text-foreground">
-          {index === 0
+          {tickets ? `Attendee ${index + 1}` : index === 0
             ? (groupMode && groupRules?.enabled
                 ? `Team Captain (Primary Contact)`
                 : captainLabel && captainLabel.trim() ? `Player 1 (${captainLabel.trim()})` : "Player 1")
@@ -964,8 +965,8 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
 
         {allowGroup && (
           <div className="rounded-md px-4 py-3 text-sm border bg-muted/30 border-border">
-            <p className="font-semibold text-foreground">How many players are you registering?</p>
-            <p className="text-xs text-muted-foreground mt-0.5">Choose your group size (up to {maxGroupSize}). The captain fills in each player's details.</p>
+            <p className="font-semibold text-foreground">{copy.tickets ? "How many tickets do you need?" : "How many players are you registering?"}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{copy.tickets ? `Up to ${maxGroupSize} tickets. Enter each attendee's details.` : `Choose your group size (up to ${maxGroupSize}). The captain fills in each player's details.`}</p>
             <div className="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-2">
               {(() => {
                 const all = Array.from({ length: maxGroupSize }, (_, i) => i + 1);
@@ -974,7 +975,7 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
                   : all;
                 return filtered;
               })().map((n) => {
-                const labels: Record<number, string> = { 1: "Individual", 2: "Twosome (2)", 3: "Threesome (3)", 4: "Foursome (4)" };
+                const labels: Record<number, string> = copy.tickets ? { 1: "1 Ticket", 2: "2 Tickets", 3: "3 Tickets", 4: "4 Tickets" } : { 1: "Individual", 2: "Twosome (2)", 3: "Threesome (3)", 4: "Foursome (4)" };
                 const active = players.length === n;
                 return (
                   <button
@@ -1117,6 +1118,7 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
               captainLabel={captainLabel}
               groupRules={groupFieldRules}
               groupMode={groupRulesActive}
+              tickets={copy.tickets}
             />
           </div>
         ))}
@@ -1125,7 +1127,7 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
         {allowGroup && players.length < maxGroupSize && (
           <Button type="button" variant="outline" className="w-full" onClick={addPlayer}>
             <UserPlus className="h-4 w-4 mr-2" />
-            Add Player {players.length + 1}
+            {copy.tickets ? "Add Attendee" : "Add Player"} {players.length + 1}
           </Button>
         )}
 

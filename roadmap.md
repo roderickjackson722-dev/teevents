@@ -33,9 +33,9 @@
 
 ## Organizer pricing, payments, referrals, and check-in
 ## Editable public tournament titles
-- [ ] Add per-tournament section title editing in both layout editors
-- [ ] Carry custom registration titles through public forms and checkout without changing payment behavior
-- [ ] Verify defaults, saved titles, and ticket wording
+- [x] Add per-tournament section title editing in both layout editors
+- [x] Carry custom registration titles through public forms and checkout without changing payment behavior
+- [x] Verify defaults, saved titles, and ticket wording
 
 - [x] Clarify the Features page with Free OR Per-Event choices and replace its current CTAs
 - [x] Add a pending-roster payment-link action that reuses the existing registration and supports recipient and amount edits

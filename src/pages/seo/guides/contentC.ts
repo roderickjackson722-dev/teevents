@@ -2,7 +2,7 @@ import type { GuideContent } from "./types";
 
 const CTA_HEADING = "Start your tournament on TeeVents";
 const CTA_TEXT =
-  "Build a branded event site and collect payments directly. Start at $0, or choose Per-Event for $299 with a dedicated representative who builds it for you.";
+  "Build a branded event site and collect payments directly. Start at $0, or choose Per-Event for $299 with a dedicated representative who builds it for you. Dedicated rep included on every plan — even free.";
 
 export const eventbriteForGolf: GuideContent = {
   slug: "eventbrite-for-golf-tournaments",
@@ -64,7 +64,7 @@ export const eventbriteForGolf: GuideContent = {
       heading: "Fees: comparing apples to apples",
       paragraphs: [
         "Eventbrite charges a per-ticket service fee plus payment processing, and those fees scale with every golfer you register. For a 144-player event at $150 a seat that adds up fast, and the money routes through Eventbrite before it reaches you.",
-        "TeeVents starts at $0 with a 5 percent player-funded service fee. Per-Event is a one-time $299 with no TeeVents transaction fee and includes a dedicated representative who builds the event page, leaderboard, and pairings.",
+        "TeeVents starts at $0 with a 5 percent player-funded service fee. Per-Event is a one-time $299 with no TeeVents transaction fee and includes a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
       ],
       mockup: "pricing",
     },
@@ -246,7 +246,7 @@ export const bestSoftware: GuideContent = {
       heading: "What each pricing model really costs",
       paragraphs: [
         "Per-golfer pricing looks harmless at $5 to $12 a player until you multiply by 144 and add a second event. Annual subscriptions look predictable until you run only one tournament a year and pay for eleven idle months. Free platforms typically monetize with a donation prompt or a processing markup at checkout, which quietly moves the cost onto your donors.",
-        "TeeVents keeps this simple: start at $0 with a player-funded 5 percent service fee, or pay $299 per event with no TeeVents transaction fee and dedicated setup support.",
+        "TeeVents keeps this simple: start at $0 with a player-funded 5 percent service fee, or pay $299 per event with no TeeVents transaction fee and dedicated setup support. Dedicated rep included on every plan — even free.",
       ],
       mockup: "pricing",
     },
@@ -448,7 +448,7 @@ export const golfstatusAlternatives: GuideContent = {
     {
       heading: "Where TeeVents is different",
       paragraphs: [
-        "TeeVents is organizer-owned by design. Payments settle directly into the organizer's connected account. Start at $0 with a player-funded service fee or choose Per-Event for $299 with no TeeVents transaction fee and a dedicated representative.",
+        "TeeVents is organizer-owned by design. Payments settle directly into the organizer's connected account. Start at $0 with a player-funded service fee or choose Per-Event for $299 with no TeeVents transaction fee and a dedicated representative. Dedicated rep included on every plan — even free.",
         "The public site is the headline difference: six professional templates, reorderable sections, your own photos and colors, custom tabs, a sponsor wall, and a custom domain if you want the event to live at your organization's own address.",
       ],
       mockup: "site",
@@ -486,7 +486,7 @@ export const golfstatusAlternatives: GuideContent = {
   faqs: [
     {
       q: "Is TeeVents free for nonprofits?",
-      a: "Start at $0 with a 5 percent player-funded service fee, or choose Per-Event for $299 with no TeeVents transaction fee and dedicated setup support.",
+      a: "Start at $0 with a 5 percent player-funded service fee, or choose Per-Event for $299 with no TeeVents transaction fee and dedicated setup support. Dedicated rep included on every plan — even free.",
     },
     {
       q: "Can I keep my existing registrations if I switch?",
@@ -774,7 +774,7 @@ export const rsvpifyForGolf: GuideContent = {
     {
       heading: "Cost comparison",
       paragraphs: [
-        "General event tools price by plan tier plus processing, and golf features are often absent. TeeVents starts at $0 or costs $299 per event with no TeeVents transaction fee and a dedicated representative who builds everything for you.",
+        "General event tools price by plan tier plus processing, and golf features are often absent. TeeVents starts at $0 or costs $299 per event with no TeeVents transaction fee and a dedicated representative who builds everything for you. Dedicated rep included on every plan — even free.",
         "The more useful comparison is not the invoice — it is whether you spend the two weeks before your event building spreadsheets or selling sponsorships.",
       ],
       mockup: "pricing",

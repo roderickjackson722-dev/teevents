@@ -1,3 +1,10 @@
+## All-plan dedicated rep website positioning
+- [x] Update homepage hero, service sections and credibility stat
+- [x] Update pricing, About, Features, Enterprise and organizer welcome messaging
+- [x] Update public service comparisons and remove paid-only rep claims
+- [x] Add shareable TeeVents Sales Sheet page
+- [x] Verify requested pages and unchanged event/payment implementation
+
 ## HeyCatch website audit
 - [x] Read all findings and the prioritized action plan
 - [x] Apply supported website copy, navigation, pricing emphasis, and structured-data fixes without platform changes

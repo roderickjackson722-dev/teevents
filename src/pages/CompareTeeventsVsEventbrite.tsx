@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Check, X, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { repComparisonRows } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 import {
   Table,
@@ -20,7 +21,7 @@ interface CompRow {
 }
 
 const rows: CompRow[] = [
-  { feature: "Dedicated account representative", eventbrite: "Not offered", teevents: "Included with every paid event" },
+  ...repComparisonRows.map(([feature, eventbrite, teevents]): CompRow => ({ feature, eventbrite, teevents })),
   { feature: "Cost per tournament", eventbrite: "3.7% + $1.79/ticket + 2.9% processing", teevents: "$299 flat" },
   { feature: "$150 ticket (144 players)", eventbrite: "~$958", teevents: "$299 total Per-Event price" },
   { feature: "$250 ticket (144 players)", eventbrite: "~$1,323", teevents: "$299 total Per-Event price" },

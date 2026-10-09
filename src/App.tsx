@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import CustomDomainRouter from "./components/CustomDomainRouter";
 import About from "./pages/About";
+import SalesSheet from "./pages/SalesSheet";
 import Services from "./pages/Services";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
@@ -270,6 +271,7 @@ const App = () => (
         <Routes>
           <Route path="/" element={<CustomDomainRouter />} />
           <Route path="/about" element={<About />} />
+          <Route path="/sales-sheet" element={<SalesSheet />} />
           <Route path="/services" element={<Services />} />
           <Route path="/platform" element={<Navigate to="/plans" replace />} />
           <Route path="/events" element={<Events />} />

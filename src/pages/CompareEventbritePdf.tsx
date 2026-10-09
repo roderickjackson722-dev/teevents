@@ -57,7 +57,11 @@ const CompareEventbritePdf = () => {
         <table>
           <thead><tr><th style="width:30%">Feature</th><th class="eb" style="width:35%">Eventbrite</th><th class="tv" style="width:35%">TeeVents</th></tr></thead>
           <tbody>
-            <tr><td>Dedicated account representative</td><td class="no">✗ Not offered</td><td class="yes">✓ Included with every paid event</td></tr>
+            <tr><td>Dedicated account representative</td><td class="no">✗ Not offered</td><td class="yes">✓ Included on every plan — even free</td></tr>
+            <tr><td>Custom event page built for you</td><td>You build it</td><td class="yes">✓ We build it</td></tr>
+            <tr><td>Leaderboard set up with your branding</td><td>You configure the template</td><td class="yes">✓ Custom-built by your rep</td></tr>
+            <tr><td>Sponsor page</td><td>You arrange your sponsor display</td><td class="yes">✓ Built for you</td></tr>
+            <tr><td>Pre-configured mobile scoring</td><td>You set it up</td><td class="yes">✓ We set it up</td></tr>
             <tr class="cat"><td colspan="3">Golf-Specific Features</td></tr>
             <tr><td>Live Leaderboard</td><td class="no">✗ Not available</td><td class="yes">✓ Built-in, embeddable</td></tr>
             <tr><td>Hole Sponsors</td><td class="no">✗ Basic logo only</td><td class="yes">✓ Portal with asset delivery</td></tr>
@@ -106,7 +110,7 @@ const CompareEventbritePdf = () => {
             <li><strong>5% platform fee</strong> — simple, transparent pricing</li>
             <li><strong>Golf-specific features</strong> — Leaderboards, pairings, hole sponsors</li>
             <li><strong>Funds direct to you</strong> — Stripe Connect Direct Charges; we never hold your money</li>
-            <li><strong>We build it for you</strong> — Every paid event includes a dedicated representative</li>
+            <li><strong>We build it for you</strong> — Every event includes a dedicated rep — free or paid</li>
             <li><strong>Built for golf</strong> — By tournament organizers, for tournament organizers</li>
           </ol>
         </div>

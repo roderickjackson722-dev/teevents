@@ -1,12 +1,13 @@
 import { Check, X, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { repComparisonRows } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 
 type Row = { feature: string; them: string; teevents: string; yesNo?: boolean };
 
 const golfRows: Row[] = [
-  { feature: "Dedicated account representative", them: "Not offered", teevents: "Included with every paid event" },
+  
   { feature: "Live Leaderboard", them: "No", teevents: "Yes", yesNo: true },
   { feature: "Mobile Scoring", them: "No", teevents: "Yes", yesNo: true },
   { feature: "Pairings & Tee Times", them: "No", teevents: "Yes", yesNo: true },
@@ -23,6 +24,7 @@ export const PLATFORMS = {
     sub: "Zeffy is great for nonprofit fundraising forms — but it wasn't built to run a golf event.",
     callout: "Keep your fundraising — and add everything golf needs with TeeVents.",
     rows: [
+      ...repComparisonRows.map(([feature, them, teevents]): Row => ({ feature, them, teevents })),
       { feature: "Cost to organizer", them: "$0 (asks donors for a voluntary tip)", teevents: "$0 to start or $299 flat" },
       { feature: "Branded tournament website", them: "Basic form page", teevents: "Full custom event site" },
       { feature: "Sponsorship packages & hole signs", them: "Limited", teevents: "Yes" },
@@ -36,6 +38,7 @@ export const PLATFORMS = {
     sub: "GiveButter is built for campaigns. TeeVents is built for tee times, scorecards and leaderboards.",
     callout: "One platform for registration, sponsors, scoring and payouts.",
     rows: [
+      ...repComparisonRows.map(([feature, them, teevents]): Row => ({ feature, them, teevents })),
       { feature: "Cost to organizer", them: "Optional tips or platform fee + processing", teevents: "$0 to start or $299 flat" },
       { feature: "Branded tournament website", them: "Campaign page", teevents: "Full custom event site" },
       { feature: "Sponsorship packages & hole signs", them: "Generic tiers", teevents: "Golf-specific packages" },
@@ -49,6 +52,7 @@ export const PLATFORMS = {
     sub: "Google Forms collects names. TeeVents collects payments, builds pairings and scores the event.",
     callout: "Save hours of manual spreadsheet work on every tournament.",
     rows: [
+      ...repComparisonRows.map(([feature, them, teevents]): Row => ({ feature, them, teevents })),
       { feature: "Online payments", them: "No", teevents: "Yes", yesNo: true },
       { feature: "Automatic confirmation emails", them: "No", teevents: "Yes", yesNo: true },
       { feature: "Branded tournament website", them: "No", teevents: "Yes", yesNo: true },

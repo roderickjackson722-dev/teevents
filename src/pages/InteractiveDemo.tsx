@@ -61,7 +61,7 @@ const steps: Step[] = [
     target: '[data-tour="demo-cta"]',
     title: "Ready to Run Your Own Tournament?",
     content:
-      "Start at $0, or choose Per-Event ($299) with no TeeVents transaction fee, live scoring, and a dedicated representative who builds everything for you.",
+      "Start at $0, or choose Per-Event ($299) with no TeeVents transaction fee, live scoring, and a dedicated representative who builds everything for you. Dedicated rep included on every plan — even free.",
     placement: "auto",
   },
 ];

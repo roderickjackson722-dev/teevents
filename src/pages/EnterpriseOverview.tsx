@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Check, Trophy, Users, CalendarDays, Smartphone, Printer, Mail, ShieldCheck, Flag, BarChart3, UserCog, Headphones } from "lucide-react";
 import Layout from "@/components/Layout";
+import { DedicatedRepBadge, EnterpriseRepSection } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
 import { Button } from "@/components/ui/button";
@@ -23,10 +24,11 @@ export default function EnterpriseOverview() {
   return (
     <Layout>
       <SEO title="TeeVents Enterprise for Golf Courses & Clubs" description="Everything included in TeeVents Enterprise for golf courses and organizations running 10 or more events a year." path="/enterprise-overview" noIndex />
+      <DedicatedRepBadge />
       <section className="bg-primary px-4 py-16 text-center">
         <p className="text-xs font-bold uppercase tracking-widest text-secondary">TeeVents Enterprise · $2,999 per year</p>
         <h1 className="mx-auto mt-3 max-w-3xl font-display text-3xl font-bold text-primary-foreground md:text-5xl">Built for golf courses and clubs running 10+ events a year</h1>
-        <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/80">Unlimited tournaments and leagues, live scoring on every event, 0% transaction fees, and a dedicated representative who builds your events for you.</p>
+        <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/80">Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. And a dedicated rep who builds every event for you.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <EnterpriseInquiryDialog><Button variant="secondary" size="lg">Request Enterprise</Button></EnterpriseInquiryDialog>
           <Button asChild size="lg" variant="outline" className="border-primary-foreground/40 bg-transparent text-primary-foreground hover:bg-primary-foreground/10"><Link to="/enterprise-demo">Try the live demo</Link></Button>
@@ -58,6 +60,7 @@ export default function EnterpriseOverview() {
         <EnterpriseInquiryDialog><Button size="lg" variant="secondary" className="mt-6">Talk to us about your club</Button></EnterpriseInquiryDialog>
         <p className="mt-3 text-xs text-muted-foreground">Questions? info@teevents.golf</p>
       </section>
+      <EnterpriseRepSection />
     </Layout>
   );
 }

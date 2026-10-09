@@ -70,3 +70,6 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 .complete-score{background-color:transparent}
 .founder-trust { --primary:150 38% 16%; --secondary:42 63% 55%; font-family:Inter,system-ui,sans-serif; }
 .founder-trust * { letter-spacing:0; }
+/* Service presentation is scoped so event sites and platform controls keep their themes. */
+.rep-service { --primary:150 38% 16%; --secondary:42 63% 55%; --secondary-foreground:150 38% 16%; }
+.rep-service * { letter-spacing:0; }

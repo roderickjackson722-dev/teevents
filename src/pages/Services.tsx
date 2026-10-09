@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { Check } from "lucide-react";
 import Layout from "@/components/Layout";
+import { DedicatedRepBadge, DedicatedRepSection } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import servicesBg from "@/assets/golf-services-bg.jpg";
@@ -47,6 +48,8 @@ const Services = () => {
         height="h-[60vh]"
       />
 
+      <DedicatedRepBadge />
+      <DedicatedRepSection />
       <section className="bg-golf-cream py-20">
         <div className="container mx-auto px-4 max-w-5xl">
           <motion.p

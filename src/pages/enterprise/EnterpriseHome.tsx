@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
+import { DedicatedRepBadge } from "@/components/DedicatedRep";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -249,6 +250,7 @@ export default function EnterpriseHome({ tournamentsOnly = false }: { tournament
     <EnterpriseLayout title={title} description={description} crumbs={tournamentsOnly ? [{ label: "Tournaments" }] : [{ label: "Home" }]}>
       {!tournamentsOnly && (
         <>
+          <div className="mb-6"><DedicatedRepBadge /></div>
           <section className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4" aria-label="Enterprise overview">
             {[
               { label: "Upcoming Events", value: upcoming, icon: CalendarDays },

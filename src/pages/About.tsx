@@ -31,7 +31,7 @@ const onsitePhases: { phase: string; services: string }[] = [
 
 const processSteps: { step: string; title: string; body: string }[] = [
   { step: "Step 1", title: "Discovery", body: "We learn about your event – size, budget, goals, and timeline." },
-  { step: "Step 2", title: "Setup", body: "If you're using the platform, we help you get set up in under 10 minutes. If you're using our full-service option, we handle everything from course negotiation to day-of execution." },
+  { step: "Step 2", title: "Setup", body: "Every plan includes a dedicated rep who builds your event page, registration, leaderboard, and scoring setup. If you're using our full-service option, we handle everything from course negotiation to day-of execution." },
   { step: "Step 3", title: "Execution", body: "Your tournament runs smoothly – whether you're managing it yourself through the dashboard or our team is on-site handling every detail." },
   { step: "Step 4", title: "Wrap-Up", body: "We help you finalize scores, process payouts, and gather feedback for next year." },
 ];
@@ -112,7 +112,7 @@ const About = () => {
                 <h3 className="font-display text-2xl font-bold text-primary">The Online Platform</h3>
               </div>
               <p className="text-foreground/80 mb-5">
-                A complete tournament management system built for golf.
+                A complete tournament management system built for golf — with a named rep who builds your event on every plan.
               </p>
               <ul className="space-y-2">
                 {platformBullets.map((b) => (
@@ -274,6 +274,12 @@ const About = () => {
       <FounderSection />
 
       <FounderPartners />
+
+      <section className="rep-service bg-background py-16 border-t border-border"><div className="container mx-auto max-w-6xl px-4"><h2 className="font-display text-3xl md:text-4xl font-bold text-primary mb-10">What Drives Us</h2><div className="grid gap-8 md:grid-cols-3">{[
+        ["Attention to Detail", "Every event page, every pairings sheet, every leaderboard is built with the same care we'd want for our own tournament."],
+        ["Passion for Every Event", "We don't treat any event like it's small. Whether it's 20 players or 200, your event gets the same level of dedication."],
+        ["Determination for Success", "We're not done until your event runs smoothly. If something goes wrong, we fix it. If something needs to change, we change it."],
+      ].map(([title, text]) => <div key={title} className="border-t-2 border-secondary pt-5"><h3 className="font-display text-xl font-bold text-primary">{title}</h3><p className="mt-3 text-muted-foreground leading-relaxed">{text}</p></div>)}</div></div></section>
 
       {/* CTA */}
       <section className="bg-primary py-16">

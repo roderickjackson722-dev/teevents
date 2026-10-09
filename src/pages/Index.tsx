@@ -15,6 +15,7 @@ import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import HeroSection from "@/components/HeroSection";
 import FindYourLeague from "@/components/leagues/FindYourLeague";
+import { DedicatedRepBadge, DedicatedRepSection, WhyServiceMatters } from "@/components/DedicatedRep";
 import FounderSection from "@/components/FounderSection";
 import FounderPartners from "@/components/FounderPartners";
 import OrganizerTestimonials from "@/components/OrganizerTestimonials";
@@ -27,7 +28,7 @@ const highlights = [
   {
     icon: Globe,
     title: "Custom Tournament Website",
-    description: "Launch a branded event site in minutes — no design skills needed.",
+    description: "Your dedicated rep builds a branded event site — no design work for you.",
   },
   {
     icon: CreditCard,
@@ -57,12 +58,13 @@ const highlights = [
 ];
 
 const steps = [
-  { num: "01", title: "Start Free", text: "Create your account and start building your tournament. No up front cost. Pay only for the add ons you need. " },
-  { num: "02", title: "Build & Customize", text: "Set up your branded site, registration, and sponsor pages." },
-  { num: "03", title: "Launch & Manage", text: "Go live and run everything from one powerful dashboard." },
+  { num: "01", title: "Tell Us About Your Event", text: "Share your event details, logo, colors, and goals with your named TeeVents rep." },
+  { num: "02", title: "We Build It For You", text: "Your rep sets up your branded site, registration, sponsor page, pairings, and scoring." },
+  { num: "03", title: "Run Your Tournament", text: "Everything is ready to go, with your dedicated partner before, during, and after the event." },
 ];
 
 const stats = [
+  "100% of events include a dedicated rep — free or paid",
   "20+ Years in the Golf Industry",
   "10+ Years as a Tournament Director",
   "Trusted by the Largest HBCU Golf Tournament in the World",
@@ -82,7 +84,7 @@ const fadeUp = {
 const Index = () => {
   return (
     <Layout>
-      <SEO title="Golf Tournament Management Software | TeeVents - Free to Start" description="Golf tournament software with a dedicated representative who builds every paid event page, leaderboard, and pairings." path="/" />
+      <SEO title="TeeVents — The Golf Tournament Platform That Builds Your Event For You" description="Every event includes a named TeeVents rep who builds your branded page, registration, leaderboard, pairings, and scoring — free or paid." path="/" />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -152,25 +154,21 @@ const Index = () => {
           />
           <p className="mb-3 text-sm font-semibold text-secondary">For nonprofit, charity &amp; corporate golf tournaments</p>
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-primary-foreground text-shadow-hero leading-tight">
-            The Complete Golf Tournament
-            <br />
-            <span className="text-secondary">Management Platform</span>
+            The Golf Tournament Platform That
+            <span className="text-secondary"> Builds Your Event For You</span>
           </h1>
           <p className="mt-4 md:mt-6 text-base sm:text-lg md:text-xl text-primary-foreground/90 max-w-2xl mx-auto font-medium">
-            We build your event page, leaderboard, and pairings — you show up and run it. Included with every paid event.
+            Every event includes a dedicated TeeVents rep — free or paid — who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard — so you can focus on running your tournament, not the software.
           </p>
           <p className="mt-3 md:mt-4 text-sm sm:text-base md:text-lg text-primary-foreground/75 max-w-2xl mx-auto leading-relaxed">
-            No spreadsheets. No manual payments. No stress.
-            <span className="block mt-2 text-secondary font-semibold">
-              Built by a tournament director — for tournament directors.
-            </span>
+            Built by a tournament director with 20+ years in the golf industry. No spreadsheets. No manual setup. No stress. You tell us about your event — we build it for you.
           </p>
           <div className="mt-6 md:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
             <Link
               to="/get-started"
               className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3.5 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
             >
-              GET STARTED
+              Get Started — We'll Build It For You
               <ArrowRight className="h-4 w-4" />
             </Link>
             <Link
@@ -184,29 +182,14 @@ const Index = () => {
         </motion.div>
       </HeroSection>
 
-      <section className="bg-background py-16 md:py-20 border-b border-border">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center max-w-3xl mx-auto mb-10">
-            <p className="text-xs font-bold uppercase tracking-widest text-secondary mb-3">Your Dedicated TeeVents Representative</p>
-            <h2 className="text-3xl md:text-5xl font-display font-bold text-foreground">We Build It For You.</h2>
-            <p className="mt-4 text-muted-foreground text-lg">Every paid event includes a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings—so you can focus on the tournament.</p>
-            <p className="mt-3 text-muted-foreground">Give players a professional event page with your colors and sponsor logos, then share registration and financial reports with your board after the event.</p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8 mb-10">
-            {[
-              ["01", "You tell us about your event", "Share your logo, colors, event details, and pairings."],
-              ["02", "We build everything", "Your rep builds your custom event page, leaderboard, registration flow, and more."],
-              ["03", "You show up and run it", "Everything is ready to go. You focus on your players."],
-            ].map(([num, title, text]) => <div key={num} className="border-t-2 border-secondary pt-5"><p className="font-display text-3xl font-bold text-secondary">{num}</p><h3 className="mt-3 text-xl font-display font-bold">{title}</h3><p className="mt-2 text-sm text-muted-foreground">{text}</p></div>)}
-          </div>
-          <div className="text-center"><Link to="/plans" className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-md font-semibold">Learn More About Our White-Glove Service <ArrowRight className="h-4 w-4" /></Link></div>
-        </div>
-      </section>
+      <DedicatedRepBadge />
+      <DedicatedRepSection />
+      <WhyServiceMatters />
 
       {/* Stats Bar */}
       <section className="bg-primary py-8 border-b border-primary-foreground/10">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-8">
             {stats.map((stat) => (
               <motion.div
                 key={stat}
@@ -245,7 +228,7 @@ const Index = () => {
             </h2>
             <ul className="grid sm:grid-cols-2 gap-4 max-w-3xl mx-auto">
               {[
-                "Create a professional tournament website in minutes",
+                "Your rep builds your professional tournament website",
                 "Sell registrations & sponsorships online",
                 "Manage players, pairings, and live scoring",
                 "Get paid automatically – we never hold your money",
@@ -312,7 +295,8 @@ const Index = () => {
             </p>
             <div className="grid sm:grid-cols-2 gap-x-8 gap-y-6 text-left mb-10">
               {[
-                ['Custom leaderboard colors', 'Your event colors, reflected in every leaderboard.'],
+                ['A named rep on every plan', 'Your event built by a real person — free or paid.'],
+                ['Custom leaderboard colors', 'Your rep matches every leaderboard to your event colors.'],
                 ['Event pages that look like real websites', 'A polished home for registration, event details, and sponsors.'],
                 ['Free for organizers (player-funded)', '$0 to start, with the 5% platform fee covered by players.'],
                 ['Built for golf', 'Pairings, handicaps, and scoring — not generic event tools.'],
@@ -406,7 +390,7 @@ const Index = () => {
               How It Works
             </h3>
             <h2 className="text-3xl md:text-5xl font-display font-bold text-primary-foreground">
-              Up and Running in Minutes
+              You Tell Us. We Build It. You Run It.
             </h2>
           </motion.div>
 
@@ -446,8 +430,9 @@ const Index = () => {
               ['Enterprise', '$2,999', 'per year · unlimited events'],
              ].map(([title, price, description]) => <div key={title} className={title === 'Per-Event' ? "rounded-lg border-2 border-secondary bg-card p-5 shadow-md" : "border-t-2 border-secondary pt-5"}>{title === 'Per-Event' && <p className="mb-3 text-xs font-bold text-primary">Recommended for charity and first-time organizers</p>}<h3 className="font-display text-xl font-semibold">{title}</h3><p className="font-display text-3xl font-bold text-primary mt-3">{price}</p><p className="text-sm text-muted-foreground mt-2">{description}</p></div>)}
           </div>
-          <p className="mt-8 text-muted-foreground">Add-ons are $99 each. A dedicated representative and full-service page build out are included on paid plans. Standard card processing applies.</p>
+          <p className="mt-8 text-muted-foreground">A dedicated rep and your event page build are included on every plan — even free. Optional add-ons are $99 each. Standard card processing applies.</p>
           <Button asChild className="mt-6 bg-secondary text-secondary-foreground hover:bg-secondary/90"><Link to="/plans">View Plans &amp; Pricing <ArrowRight className="h-4 w-4" /></Link></Button>
+          <Button asChild variant="outline" className="mt-6 sm:ml-3"><Link to="/sales-sheet">TeeVents Sales Sheet <ArrowRight className="h-4 w-4" /></Link></Button>
           <p className="mt-4 text-sm text-muted-foreground">No credit card to start. Payments go straight to your connected Stripe account — we never hold your money. <Link to="/help/how-payments-work" className="text-primary underline">How payments work</Link></p>
         </div>
       </section>

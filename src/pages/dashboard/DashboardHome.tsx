@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
+import { DedicatedRepBadge } from "@/components/DedicatedRep";
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
 import UpcomingRemindersWidget from "@/components/dashboard/UpcomingRemindersWidget";
 import EventTimeline from "@/components/dashboard/EventTimeline";
@@ -124,6 +125,7 @@ const DashboardHome = () => {
             ? `Track tasks and key due dates for ${latestTournament.title}.`
             : "Track tasks and key due dates for your tournament."}
         </p>
+        <div className="mt-5"><DedicatedRepBadge /></div>
       </div>
 
       <Tabs defaultValue="checklist" className="mb-8">

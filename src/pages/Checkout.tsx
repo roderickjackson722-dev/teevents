@@ -46,6 +46,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
     flow: "free",
     desc: "The full tournament platform with a 5% platform fee per paid transaction. No upfront cost.",
     features: [
+      "Dedicated rep who builds your event — included on every plan",
       "Full tournament management platform",
       "Branded tournament website & registration",
       "QR check-in, pairings, printables & payouts",
@@ -129,7 +130,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
     icon: LayoutTemplate,
     flow: "addon",
     addonKey: "custom_event_page",
-    desc: "We design a custom event page for you — layout, colors, content, and branding so everything is ready to go.",
+    desc: "Your dedicated rep and event page build are included on every plan. This existing add-on checkout is not required to receive a rep; contact TeeVents for your included setup.",
     features: ["Done-for-you build", "Custom layout & colors", "Content placement & branding"],
   },
   "custom-domain": {

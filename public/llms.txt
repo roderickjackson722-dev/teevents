@@ -2,7 +2,7 @@
 
 > All-in-one golf tournament management software for charity, corporate, and nonprofit golf tournaments. Branded event sites, online registration, live scoring, sponsors, pairings, and automated payments via Stripe Connect.
 
-TeeVents offers a free tier with a 5% platform fee covered by players at checkout, plus per-event ($299), per-league ($499), and enterprise ($2,999/year) plans. Add-ons are $99 each.
+TeeVents offers a free tier with a 5% platform fee covered by players at checkout, plus per-event ($299), per-league ($499), and enterprise ($2,999/year) plans. Every plan includes a named dedicated TeeVents rep who builds your event page, registration, leaderboard, sponsor page, pairings, and scoring setup — free or paid. Optional add-ons are $99 each.
 
 ## Pricing
 
@@ -16,6 +16,7 @@ TeeVents offers a free tier with a 5% platform fee covered by players at checkou
 
 - [Home](/): Overview of the TeeVents platform.
 - [Plans & Pricing](/plans): No Cost to Start ($0 + 5% covered by players), Per-Event ($299), Per-League ($499), and Enterprise ($2,999/year) plans.
+- [TeeVents Sales Sheet](/sales-sheet): Why TeeVents builds your event for you, with a rep included on every plan.
 - [Features](/features): Full list of platform features.
 - [Services](/services): White-glove tournament consulting and management services.
 - [About](/about): About TeeVents and the team.

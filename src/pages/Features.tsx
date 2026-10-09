@@ -6,6 +6,7 @@ import {
   Megaphone, FileText, Camera, Briefcase, Star, Zap, Layout as LayoutIcon,
 } from "lucide-react";
 import Layout from "@/components/Layout";
+import { DedicatedRepBadge } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -412,13 +413,13 @@ const categories: { name: string; subtitle: string; features: Feature[] }[] = [
       },
       {
         icon: Zap,
-        title: "Real Human Support",
-        description: "Talk to golf-industry pros, not chatbots.",
+        title: "Your Dedicated TeeVents Rep",
+        description: "A named, real person who builds your event — included on every plan.",
         bullets: [
-          "In-app chat assistant",
-          "Help center with step-by-step guides",
-          "Phone and email support",
-          "Priority response on Pro & Enterprise",
+          "Branded event page built for you",
+          "Leaderboard and scoring configured by your rep",
+          "Registration, sponsor page, and pairings setup",
+          "Hands-on support before, during, and after your event",
         ],
         tier: "Free",
       },
@@ -448,6 +449,7 @@ const Features = () => {
         title="All Features | TeeVents Golf Tournament Software"
         description="Explore every TeeVents feature in tournament-day order — from planning and registration through live scoring and post-event reporting. See what's included Free vs. Pro."
       />
+      <DedicatedRepBadge />
       <div className="bg-gradient-to-b from-background to-muted/30">
         <div className="container mx-auto px-4 py-16 md:py-20">
           <header className="text-center max-w-3xl mx-auto mb-10 md:mb-14">
@@ -455,8 +457,7 @@ const Features = () => {
               Everything you need to run a great tournament
             </h1>
             <p className="text-lg text-muted-foreground">
-              The full TeeVents toolkit, in the order you'll use it — from pre-planning
-              concepts through tournament-day scoring and post-event wrap-up.
+              Your named TeeVents rep builds your event page, registration, leaderboard, and scoring setup — on every plan. Everything you need, ready for your tournament.
             </p>
             <div className="mt-7 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl mx-auto">
               <div className="rounded-lg border bg-card p-5 text-left">

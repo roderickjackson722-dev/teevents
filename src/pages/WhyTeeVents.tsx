@@ -1,19 +1,20 @@
 import { Link } from "react-router-dom";
 import { Paintbrush, Globe, DollarSign, Flag, Megaphone, Users, Check, X } from "lucide-react";
 import Layout from "@/components/Layout";
+import { repComparisonRows } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 
 const cards = [
-  { icon: Users, title: "We Build It For You", body: "Every paid event includes a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings." },
+  { icon: Users, title: "We Build It For You", body: "Every event — free or paid — includes a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings." },
   { icon: Paintbrush, title: "Your Brand. Your Colors. Your Leaderboard.", body: "Most platforms give you a generic green and white leaderboard. TeeVents lets you customize your leaderboard to match your event's branding—your logo, your colors, your identity. Whether it's school colors, Greek organization colors, or your company's palette, your leaderboard will look like it was built just for you." },
-  { icon: Globe, title: "Event Pages That Look Like Real Websites", body: "Other platforms give you a basic form. TeeVents creates a fully branded, professional event page with hero images, sponsor logos, and custom colors. Your players will think you hired a web designer—when really, you built it in minutes." },
+  { icon: Globe, title: "Event Pages That Look Like Real Websites", body: "Other platforms give you a basic form. TeeVents creates a fully branded, professional event page with hero images, sponsor logos, and custom colors. Your players will think you hired a web designer—because your dedicated rep did the work for you." },
   { icon: DollarSign, title: "Free for Organizers. Player-Funded.", body: "Most platforms charge you upfront—before you've sold a single ticket. TeeVents is free for organizers. A small service fee is included in each player's registration total, so you keep 100% of your event revenue. You only pay when your players pay." },
   { icon: Flag, title: "Built for Golf. Not Generic Events.", body: "Other platforms are built for concerts, conferences, and generic ticketing. TeeVents is built exclusively for golf. Live leaderboards, mobile scoring, pairings, tee sheets, skins, deuces, and GHIN handicap integration—all built in, not bolted on." },
   { icon: Megaphone, title: "Sponsor Highlights That Actually Get Seen", body: "Most platforms bury sponsor logos in a PDF. TeeVents puts your sponsors front and center—on the live leaderboard, the event page, and the mobile scoring app. Clickable logos, digital signage, and a built-in sponsor package you can resell for $5k-$10k." },
 ];
 
 const rows: [string, string, string][] = [
-  ["Dedicated rep who builds everything for you", "Self-serve only", "Included"],
+  ...repComparisonRows,
   ["Custom leaderboard colors", "Generic template", "Full customization"],
   ["Event pages that look like websites", "Basic form", "Custom microsite"],
   ["Upfront cost", "$4,200/year", "$0 to start"],
@@ -94,7 +95,7 @@ export default function WhyTeeVents() {
 
       <section className="py-20 px-4 bg-primary text-primary-foreground text-center">
         <h2 className="font-display text-3xl md:text-4xl font-bold">Ready to see the difference?</h2>
-        <p className="mt-4 text-primary-foreground/90">Build your first event for free. No upfront cost. No commitment.</p>
+        <p className="mt-4 text-primary-foreground/90">Tell us about your first event — your rep builds it for you. No upfront cost on No Cost to Start.</p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <Link to="/signup" className="bg-secondary text-primary px-8 py-3 rounded-md font-semibold hover:bg-secondary/90 transition-colors">Get Started — Free for Organizers</Link>
           <Link to="/enterprise-demo" className="border-2 border-secondary text-secondary px-8 py-3 rounded-md font-semibold hover:bg-secondary hover:text-primary transition-colors">See a Live Demo</Link>

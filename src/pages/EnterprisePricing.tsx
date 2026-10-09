@@ -2,6 +2,7 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, ArrowRight, Loader2, Building2, Shield } from "lucide-react";
 import Layout from "@/components/Layout";
+import { DedicatedRepBadge, EnterpriseRepSection } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,7 +14,7 @@ import { toast } from "sonner";
 const enterpriseFeatures = [
   "Unlimited tournaments and leagues",
   "Live Leaderboard + Mobile Scoring included ($99 value per event)",
-  "Dedicated TeeVents account representative who builds every event for you",
+  "Your own dedicated rep who builds every event, every league, and every leaderboard for you",
   "0% transaction fees",
   "Custom branding",
   "Priority support",
@@ -64,6 +65,7 @@ const EnterprisePricing = () => {
       />
 
       {/* Hero */}
+      <DedicatedRepBadge />
       <section className="bg-primary pt-24 pb-14">
         <div className="container mx-auto px-4 text-center max-w-3xl">
           <motion.div
@@ -78,7 +80,7 @@ const EnterprisePricing = () => {
               Running 10 tournaments or more per year?
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
-              $2,999/year — unlimited events, a dedicated representative, and everything your golf operation needs.
+              Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. And a dedicated rep who builds every event for you.
             </p>
             <p className="mt-4 text-secondary font-semibold">Run 10 events, and it pays for itself. Run more? You save more.</p>
           </motion.div>
@@ -191,6 +193,7 @@ const EnterprisePricing = () => {
           </div>
         </div>
       </section>
+      <EnterpriseRepSection />
     </Layout>
   );
 };

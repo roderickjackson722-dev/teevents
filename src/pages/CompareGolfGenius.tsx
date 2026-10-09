@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Check, X, AlertTriangle, ArrowRight } from "lucide-react";
 import Layout from "@/components/Layout";
+import { repComparisonRows } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
@@ -12,7 +13,7 @@ const data: Section[] = [
   {
     category: "Pricing & Commitment",
     rows: [
-      { feature: "Dedicated account representative", teevents: "Included with every paid event", gg: "Software onboarding", tv: "yes", ggs: "warn" },
+      ...repComparisonRows.map(([feature, gg, teevents]): Row => ({ feature, gg, teevents, tv: "yes", ggs: "warn" })),
       { feature: "Pricing Model", teevents: "$299 per tournament (one-time) with no platform fee", gg: "Annual subscription + per-golfer fees", tv: "yes", ggs: "warn" },
       { feature: "Contract", teevents: "No long-term commitment — pay per tournament", gg: "Annual contract required", tv: "yes", ggs: "no" },
       { feature: "Setup Fees", teevents: "None", gg: "Often charged at onboarding", tv: "yes", ggs: "warn" },

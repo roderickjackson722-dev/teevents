@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { Check, X, AlertTriangle, ArrowRight, Calendar } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
+import { repComparisonRows } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 
@@ -26,7 +27,7 @@ const data: CompSection[] = [
   {
     category: "Golf-Specific Features",
     rows: [
-      { feature: "Dedicated account representative", eventbrite: "Not offered", teevents: "Included with every paid event", ebStatus: "no", tvStatus: "yes" },
+      ...repComparisonRows.map(([feature, eventbrite, teevents]): CompRow => ({ feature, eventbrite, teevents, ebStatus: "warn", tvStatus: "yes" })),
       { feature: "Live Leaderboard", eventbrite: "Not available", teevents: "Built-in, embeddable", ebStatus: "no", tvStatus: "yes" },
       { feature: "Hole Sponsors", eventbrite: "Basic logo only", teevents: "Portal with asset delivery", ebStatus: "no", tvStatus: "yes" },
       { feature: "Team Registration (Foursomes)", eventbrite: "Clunky workarounds", teevents: "Native group registration", ebStatus: "warn", tvStatus: "yes" },
@@ -67,7 +68,7 @@ const data: CompSection[] = [
     category: "Support",
     rows: [
       { feature: "Customer Support", eventbrite: "AI bots, unresponsive", teevents: "Direct email (info@teevents.golf)", ebStatus: "no", tvStatus: "yes" },
-      { feature: "Phone Support", eventbrite: "No", teevents: "Available for Pro plans", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Phone Support", eventbrite: "No", teevents: "Dedicated rep included on every plan", ebStatus: "no", tvStatus: "yes" },
       { feature: "Onboarding Help", eventbrite: "No", teevents: "Free setup assistance", ebStatus: "no", tvStatus: "yes" },
     ],
   },

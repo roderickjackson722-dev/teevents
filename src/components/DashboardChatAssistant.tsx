@@ -13,11 +13,11 @@ type Msg = { role: "user" | "assistant"; content: string };
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dashboard-chat`;
 
 async function streamChat({
-  messages,
+  message,
   onDelta,
   onDone,
 }: {
-  messages: Msg[];
+  message: string;
   onDelta: (t: string) => void;
   onDone: () => void;
 }) {
@@ -31,7 +31,7 @@ async function streamChat({
       Authorization: `Bearer ${session.access_token}`,
       apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
     },
-    body: JSON.stringify({ messages }),
+    body: JSON.stringify({ message }),
   });
 
   if (!resp.ok) {
@@ -111,6 +111,20 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
     } catch {}
   }, [forceShow]);
 
+  // Load the organizer's saved help conversation.
+  const loadHistory = useCallback(async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { data } = await supabase
+      .from("help_chat_messages")
+      .select("role, content")
+      .eq("user_id", user.id)
+      .order("created_at", { ascending: true })
+      .limit(300);
+    setMessages(((data as any[]) || []).map((m) => ({ role: m.role, content: m.content })));
+  }, []);
+  useEffect(() => { if (open) loadHistory(); }, [open, loadHistory]);
+
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
@@ -128,35 +142,48 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
     let soFar = "";
     const upsert = (chunk: string) => {
       soFar += chunk;
+      const shown = soFar.replace("[[HUMAN_HELP]]", "").trimStart();
       setMessages((prev) => {
         const last = prev[prev.length - 1];
         if (last?.role === "assistant") {
-          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: soFar } : m));
+          return prev.map((m, i) => (i === prev.length - 1 ? { ...m, content: shown } : m));
         }
-        return [...prev, { role: "assistant", content: soFar }];
+        return [...prev, { role: "assistant", content: shown }];
       });
     };
 
     try {
       await streamChat({
-        messages: [...messages, userMsg],
+        message: text,
         onDelta: upsert,
-        onDone: () => setLoading(false),
+        onDone: () => {
+          setLoading(false);
+          if (soFar.includes("[[HUMAN_HELP]]")) {
+            toast({ title: "Sent to the TeeVents team", description: "A team member will follow up by email." });
+          }
+        },
       });
     } catch (e: any) {
       setLoading(false);
       toast({ variant: "destructive", title: "Chat Error", description: e.message });
     }
-  }, [input, loading, messages]);
+  }, [input, loading]);
 
-  const handleCallRequest = () => {
-    if (!callName.trim() || !callPhone.trim()) {
-      toast({ variant: "destructive", title: "Please fill in all fields" });
+  const handleCallRequest = async () => {
+    if (!callName.trim()) {
+      toast({ variant: "destructive", title: "Please describe what you need help with" });
       return;
     }
-    // In production this would hit an API — for now we show confirmation
+    const { error } = await supabase.functions.invoke("dashboard-chat", {
+      body: { action: "ticket", question: `${callName.trim()}${callPhone.trim() ? `\nPhone: ${callPhone.trim()}` : ""}` },
+    });
+    if (error) {
+      toast({ variant: "destructive", title: "Could not send request", description: error.message });
+      return;
+    }
     setCallSubmitted(true);
-    toast({ title: "Call Requested!", description: "A TeeVents team member will call you shortly." });
+    await loadHistory();
+    toast({ title: "Request sent", description: "A TeeVents team member will follow up by email." });
   };
 
   const dismiss = () => {

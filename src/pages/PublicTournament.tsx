@@ -20,7 +20,7 @@ import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { buildLeaderboard, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
 import { LiveLeaderboardEmbed } from "@/pages/LiveLeaderboard";
-import { normalizeOrder, normalizeVisibility, PublicTabKey } from "@/lib/publicTabs";
+import { normalizeOrder, normalizeVisibility, normalizeSectionTitles, publicSectionTitle, registrationCopy, PublicTabKey } from "@/lib/publicTabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
@@ -44,6 +44,7 @@ interface TournamentSite {
   site_hero_title: string | null; site_hero_subtitle: string | null; site_primary_color: string | null;
   site_secondary_color: string | null; site_hero_image_url: string | null; site_hero_opacity: number | null; contact_email: string | null;
   contact_phone: string | null; schedule_info: string | null; schedule_info_html?: string | null; registration_url: string | null;
+  public_section_titles?: unknown;
   registration_open: boolean | null; course_par: number | null; template: string | null;
   waitlist_enabled?: boolean; waitlist_deposit_cents?: number; max_players?: number | null; max_waitlist_slots?: number | null; show_registration_count?: boolean | null;
   donation_goal_cents: number | null; registration_fee_cents: number | null;
@@ -101,7 +102,7 @@ const tournamentShareMeta = (tournament: TournamentSite, fallbackSlug?: string) 
   const publicSlug = tournament.custom_slug || tournament.slug || fallbackSlug || "";
   const pageUrl = `${SHARE_BASE_URL}/t/${publicSlug}`;
   const imageUrl = toAbsoluteShareUrl(tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url);
-  const description = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. Register now!`;
+  const description = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. ${registrationCopy(publicSectionTitle(tournament.public_section_titles, "registration", "Registration")).action}!`;
 
   return {
     pageTitle: `${tournament.title} – ${SHARE_SITE_NAME}`,
@@ -857,6 +858,13 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     lodging: "Lodging",
   };
 
+  const sectionTitles = normalizeSectionTitles(tournament.public_section_titles);
+  for (const key of Object.keys(tabLabelByKey) as PublicTabKey[]) {
+    tabLabelByKey[key] = sectionTitles[key] || tabLabelByKey[key];
+  }
+  const sectionTitle = (key: PublicTabKey, fallback: string) => sectionTitles[key] || fallback;
+  const regCopy = registrationCopy(tabLabelByKey.registration);
+
   // Build nav links: Home + Registration always; optional tabs in organizer order; Contact last.
   const orderedOptionalLinks = tabOrder
     .filter((k) => isTabVisible(k))
@@ -970,6 +978,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const galleryPosition = tournament.gallery_position || "default";
   const galleryNode = (isTabVisible("gallery") && photos.length > 0) ? (
     <section id="photos" className="py-16 bg-white">
+          {sectionTitles.gallery && <h2 className="text-2xl font-display font-bold text-center mb-6">{sectionTitles.gallery}</h2>}
       <div className="max-w-5xl mx-auto px-4">
         <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -1000,7 +1009,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     <section id="media" className="py-16" style={{ backgroundColor: "#fff" }}>
       <div className="max-w-6xl mx-auto px-4">
         <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
-          {((tournament as any).media_tab_title || "MEDIA").toUpperCase()}
+          {sectionTitle("media", (tournament as any).media_tab_title || "MEDIA").toUpperCase()}
         </h2>
         <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -1077,7 +1086,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const showClosedNotice = regAutoClose && regClosedByTime && !tournament.registration_url;
   const closedMessage =
     ((tournament as any).registration_closed_message as string | null)?.trim() ||
-    "Registration for this event is now closed. Thank you for your interest — we have reached our registration deadline. If you would still like to play, be added to our waitlist, or ask about sponsorship opportunities, please contact us and we will do our best to help.";
+    (regCopy.custom ? `${regCopy.closed}. Please contact the organizer for availability or questions.` : "Registration for this event is now closed. Thank you for your interest — we have reached our registration deadline. If you would still like to play, be added to our waitlist, or ask about sponsorship opportunities, please contact us and we will do our best to help.");
   const closedEmail = (tournament as any).registration_closed_contact_email as string | null;
   const closedPhone = (tournament as any).registration_closed_contact_phone as string | null;
 
@@ -1087,7 +1096,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       {showClosedNotice && (
         <section id="register" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-xl mx-auto px-4 text-center">
-            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION CLOSED</h2>
+            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>{regCopy.closed.toUpperCase()}</h2>
             <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
             <p className="text-sm leading-relaxed whitespace-pre-line" style={{ color: "#666" }}>{closedMessage}</p>
             {(closedEmail || closedPhone) && (
@@ -1115,7 +1124,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           <div className="max-w-xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <div className="text-center mb-8">
-                <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>REGISTRATION</h2>
+                <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>{regCopy.label.toUpperCase()}</h2>
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
                 {(tournament as any).registration_intro_html?.trim() ? (
                   <div
@@ -1127,6 +1136,8 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   <p style={{ color: "#666" }}>
                     {isTournamentFull && tournament.waitlist_enabled
                       ? "This tournament is currently full. Join the waitlist below."
+                      : regCopy.tickets
+                        ? "Choose your tickets and enter attendee details below."
                       : tournament.foursome_registration
                         ? "Register your foursome below to secure your spots."
                         : "Fill out the form below to secure your spot."}
@@ -1192,6 +1203,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
                   <WaitlistSignup
                     tournamentId={tournament.id}
+                    sectionTitle={regCopy.label}
                     primaryColor={primary}
                     secondaryColor={secondary}
                     depositCents={tournament.waitlist_deposit_cents || 0}
@@ -1211,7 +1223,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                     <X className="h-5 w-5" style={{ color: "#999" }} />
                   </button>
                   <CheckCircle className="h-16 w-16 mx-auto mb-4" style={{ color: secondary }} />
-                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>You're Registered!</h3>
+                  <h3 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>{regCopy.confirmed}</h3>
                   <p style={{ color: "#666" }}>Payment confirmed. You'll receive confirmation details via email.</p>
                 </div>
               ) : (
@@ -1274,10 +1286,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="register" className="py-16" style={{ backgroundColor: primary }}>
           <div className="max-w-4xl mx-auto px-4 text-center">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">Ready to Play?</h2>
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">{regCopy.custom ? regCopy.label : "Ready to Play?"}</h2>
               <p className="text-white/70 max-w-xl mx-auto mb-8">Secure your spot today. Space is limited!</p>
               <a href={tournament.registration_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 rounded-md text-lg font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: secondary, color: primary }}>
-                Register Now <ExternalLink className="h-4 w-4" />
+                {regCopy.action} <ExternalLink className="h-4 w-4" />
               </a>
             </motion.div>
           </div>
@@ -1296,7 +1308,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="sponsors" className="py-16 bg-white">
           <div className="max-w-5xl mx-auto px-4">
             <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>
-              THANK YOU SPONSORS
+              {sectionTitle("sponsors", "THANK YOU SPONSORS").toUpperCase()}
             </h2>
             <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
 
@@ -1824,7 +1836,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   fontSize: `${buttonSize}px`,
                 }}
               >
-                {showClosedNotice ? "Registration Closed" : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
+                {showClosedNotice ? regCopy.closed : regCopy.custom ? regCopy.label : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
               </a>
             )}
 
@@ -2188,6 +2200,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
       {isTabVisible("about_event") && (((tournament as any).description_html && (tournament as any).description_html.replace(/<[^>]*>/g, "").trim()) || tournament.description) && (
         <section id="about" className="py-16" style={{ backgroundColor: "#fafafa" }}>
+          {sectionTitles.about_event && <h2 className="text-2xl font-display font-bold text-center mb-6">{sectionTitles.about_event}</h2>}
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               {tournament.site_logo_url && (
@@ -2217,7 +2230,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       <section id="contests" className="py-16 bg-white">
         <div className="max-w-4xl mx-auto px-4">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>EVENT DAY CONTESTS</h2>
+            <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>{sectionTitle("contests", "EVENT DAY CONTESTS").toUpperCase()}</h2>
             <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
             <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Compete for prizes throughout the day</p>
             <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2242,7 +2255,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="schedule" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-3xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>SCHEDULE</h2>
+              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>{sectionTitle("schedule", "SCHEDULE").toUpperCase()}</h2>
               <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
               <div className="bg-white rounded-lg border p-6" style={{ borderColor: "#e5e5e5" }}>
                 {(() => {
@@ -2278,7 +2291,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       <section id="location" className="py-16 bg-white">
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>LOCATION</h2>
+            <h2 className="text-2xl font-display font-bold mb-2" style={{ color: "#1a1a1a" }}>{(sectionTitles.travel || sectionTitles.course_details || "LOCATION").toUpperCase()}</h2>
             <div className="w-16 h-0.5 mx-auto mb-8" style={{ backgroundColor: secondary }} />
             <div className="flex flex-col items-center gap-2">
               <MapPin className="h-6 w-6" style={{ color: primary }} />
@@ -2295,6 +2308,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
           scorecard drill-down) so the homepage never drifts from the live page. */}
       {isTabVisible("leaderboard") && leaderboard.length > 0 && tournament.slug && !leaderboardEmbedUnavailable && (
         <section id="leaderboard" className="py-12 bg-white">
+          {sectionTitles.leaderboard && <h2 className="text-2xl font-display font-bold text-center mb-6">{sectionTitles.leaderboard}</h2>}
           <div className="max-w-6xl mx-auto px-2 sm:px-4">
             <div className="rounded-xl overflow-hidden border [&_.min-h-screen]:min-h-0" style={{ borderColor: "#e5e5e5" }}>
               <LiveLeaderboardEmbed
@@ -2324,7 +2338,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="auction" className="py-16 bg-white">
           <div className="max-w-5xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>AUCTION & RAFFLE</h2>
+              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>{sectionTitle("auction", "AUCTION & RAFFLE").toUpperCase()}</h2>
               <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
               <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Bid on items or enter the raffle</p>
               <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -2453,7 +2467,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="volunteers" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-4xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>VOLUNTEER</h2>
+              <h2 className="text-2xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>{sectionTitle("volunteers", "VOLUNTEER").toUpperCase()}</h2>
               <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
               <p className="text-center text-sm mb-10" style={{ color: "#888" }}>Sign up to help make this event a success</p>
               <div className="grid sm:grid-cols-2 gap-4">
@@ -2553,7 +2567,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             ) : (
               <>
                 <Heart className="h-10 w-10 mx-auto mb-3 text-white/80" />
-                <h2 className="text-2xl md:text-3xl font-display font-bold mb-2 text-white">MAKE A DONATION</h2>
+                <h2 className="text-2xl md:text-3xl font-display font-bold mb-2 text-white">{sectionTitle("donations", "MAKE A DONATION").toUpperCase()}</h2>
                 <div className="w-16 h-0.5 mx-auto mb-4" style={{ backgroundColor: secondary }} />
                 <p className="text-white/80 max-w-xl mx-auto mb-8 whitespace-pre-line">
                   {((tournament as any).donations_header_text as string | null)?.trim() ||
@@ -2695,7 +2709,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="about-organizer" className="py-16" style={{ backgroundColor: "#ffffff" }}>
           <div className="max-w-4xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>ABOUT THE ORGANIZER</h2>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>{sectionTitle("about_organizer", "ABOUT THE ORGANIZER").toUpperCase()}</h2>
               <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
 
               <div className="space-y-6">
@@ -2765,7 +2779,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         <section id="lodging" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-4xl mx-auto px-4">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>LODGING ACCOMMODATIONS</h2>
+              <h2 className="text-2xl md:text-3xl font-display font-bold text-center mb-2" style={{ color: "#1a1a1a" }}>{sectionTitle("lodging", "LODGING ACCOMMODATIONS").toUpperCase()}</h2>
               <div className="w-16 h-0.5 mx-auto mb-10" style={{ backgroundColor: secondary }} />
               <div className="space-y-6">
                 {accommodations.map((h) => {

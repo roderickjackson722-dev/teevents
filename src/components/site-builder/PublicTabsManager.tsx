@@ -4,6 +4,7 @@ import { GripVertical, Loader2, Save } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import {
@@ -11,12 +12,16 @@ import {
   PublicTabKey,
   normalizeOrder,
   normalizeVisibility,
+  normalizeSectionTitles,
+  type PublicSectionTitles,
 } from "@/lib/publicTabs";
 
 interface PublicTabsManagerProps {
   tournamentId: string;
   initialVisibility: Partial<Record<string, boolean>> | null | undefined;
   initialOrder: string[] | null | undefined;
+  initialTitles?: unknown;
+  onSaved?: (values: { public_tabs: Record<PublicTabKey, boolean>; public_tabs_order: PublicTabKey[]; public_section_titles: PublicSectionTitles }) => void;
   /** @deprecated no longer used — Registration is now a reorderable section */
   initialGolfersFirst?: boolean | null;
 }
@@ -25,12 +30,15 @@ export const PublicTabsManager = ({
   tournamentId,
   initialVisibility,
   initialOrder,
+  initialTitles,
+  onSaved,
 }: PublicTabsManagerProps) => {
   const { toast } = useToast();
   const [visibility, setVisibility] = useState<Record<PublicTabKey, boolean>>(
     normalizeVisibility(initialVisibility),
   );
   const [order, setOrder] = useState<PublicTabKey[]>(normalizeOrder(initialOrder));
+  const [titles, setTitles] = useState<PublicSectionTitles>(normalizeSectionTitles(initialTitles));
   const [saving, setSaving] = useState(false);
 
   const tabMeta = (key: PublicTabKey) =>
@@ -55,6 +63,7 @@ export const PublicTabsManager = ({
       .update({
         public_tabs: visibility as any,
         public_tabs_order: order,
+        public_section_titles: normalizeSectionTitles(titles),
       } as any)
       .eq("id", tournamentId);
     setSaving(false);
@@ -66,6 +75,7 @@ export const PublicTabsManager = ({
       title: "Page layout saved",
       description: "Your changes are live on the public tournament page.",
     });
+    onSaved?.({ public_tabs: visibility, public_tabs_order: order, public_section_titles: normalizeSectionTitles(titles) });
   };
 
   return (
@@ -103,23 +113,34 @@ export const PublicTabsManager = ({
                             : "border-border"
                         }`}
                       >
-                        <button
+                         <Button
                           type="button"
+                           variant="ghost"
+                           size="icon"
                           {...dragProvided.dragHandleProps}
                           className="text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing touch-none"
                           aria-label={`Reorder ${meta.label}`}
                         >
                           <GripVertical className="h-4 w-4" />
-                        </button>
+                         </Button>
                         <Switch
                           checked={enabled}
                           onCheckedChange={(v) => toggle(key, v)}
                           aria-label={`Show ${meta.label} tab`}
                         />
                         <div className="flex-1 min-w-0">
-                          <Label className="text-sm font-semibold cursor-pointer block">
+                           <Label htmlFor={`section-title-${tournamentId}-${key}`} className="text-sm font-semibold block">
                             {meta.label}
                           </Label>
+                           <Input
+                             id={`section-title-${tournamentId}-${key}`}
+                             aria-label={`${meta.label} section title`}
+                             value={titles[key] ?? ""}
+                             placeholder={meta.label}
+                             maxLength={80}
+                             onChange={(event) => setTitles((previous) => ({ ...previous, [key]: event.target.value }))}
+                             className="mt-1 mb-1 h-8 text-sm"
+                           />
                           <p className="text-xs text-muted-foreground truncate">
                             {meta.helper}
                           </p>

@@ -7,3 +7,4 @@
 - College survey presentation and response-copy settings live on each `college_surveys` row so every survey can be configured independently.
 - Founder biography and portrait are shared through `FounderSection` on homepage and About; partner imagery uses CDN pointers and accurate past-relationship labels to avoid divergent credibility claims.
 - Payment reminders create checkout for the existing pending registration ID; never insert a replacement roster row.
+- Public tournament section titles are per-event display settings, resolved through publicTabs helpers and propagated to attendee checkout; preserve stable section anchors and all existing registration/payment behavior.

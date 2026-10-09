@@ -43,7 +43,7 @@ export default function WebpageLayout() {
     queryFn: async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, public_tabs, public_tabs_order")
+        .select("id, public_tabs, public_tabs_order, public_section_titles")
         .eq("id", selected)
         .maybeSingle();
       return data;
@@ -106,9 +106,11 @@ export default function WebpageLayout() {
 
       {selected && tournament && (
         <PublicTabsManager
+          key={tournament.id}
           tournamentId={tournament.id}
           initialVisibility={(tournament as any).public_tabs}
           initialOrder={(tournament as any).public_tabs_order}
+          initialTitles={tournament.public_section_titles}
         />
       )}
     </div>

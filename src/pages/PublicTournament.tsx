@@ -1203,7 +1203,6 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
                   <WaitlistSignup
                     tournamentId={tournament.id}
-                    sectionTitle={regCopy.label}
                     primaryColor={primary}
                     secondaryColor={secondary}
                     depositCents={tournament.waitlist_deposit_cents || 0}
@@ -1230,6 +1229,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <div className="bg-white rounded-xl border p-6 shadow-sm" style={{ borderColor: "#e5e5e5" }}>
                   <RegistrationForm
                     tournamentId={tournament.id}
+                    sectionTitle={regCopy.label}
                     primaryColor={primary}
                     secondaryColor={secondary}
                     registrationFeeCents={effectiveFeeCents}

@@ -1,0 +1,2 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS public_section_titles jsonb NOT NULL DEFAULT '{}'::jsonb;
+COMMENT ON COLUMN public.tournaments.public_section_titles IS 'Organizer-defined public section titles keyed by public tab key; empty map preserves existing labels and registration terminology.';

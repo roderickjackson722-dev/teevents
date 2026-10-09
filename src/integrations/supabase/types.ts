@@ -4094,6 +4094,72 @@ export type Database = {
         }
         Relationships: []
       }
+      help_chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          needs_human: boolean
+          organization_id: string | null
+          role: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          needs_human?: boolean
+          organization_id?: string | null
+          role: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          needs_human?: boolean
+          organization_id?: string | null
+          role?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      help_tickets: {
+        Row: {
+          created_at: string
+          id: string
+          organization_id: string | null
+          question: string
+          resolved_at: string | null
+          status: string
+          user_email: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          question: string
+          resolved_at?: string | null
+          status?: string
+          user_email?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          organization_id?: string | null
+          question?: string
+          resolved_at?: string | null
+          status?: string
+          user_email?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       hold_releases: {
         Row: {
           amount_cents: number

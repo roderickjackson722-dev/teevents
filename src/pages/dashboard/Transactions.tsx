@@ -216,7 +216,41 @@ const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
     ]);
 
     setCustomFields((fieldsRes.data as any) || []);
-    setRegs(new Map(((regRes.data as any) || []).map((r: any) => [r.id, r])));
+
+    // No-charge online sign-ups (e.g. free ticket requests) never create a payment
+    // record, so surface them here as $0 rows with every answer they submitted.
+    const { data: freeRegData } = await supabase
+      .from("tournament_registrations")
+      .select("id, tournament_id, first_name, last_name, email, phone, handicap, shirt_size, dietary_restrictions, notes, group_label, custom_answers, created_at, payment_status, payment_method")
+      .in("tournament_id", tournIds)
+      .eq("payment_method", "online")
+      .in("payment_status", ["paid", "pending"])
+      .order("created_at", { ascending: false })
+      .limit(2000);
+    const freeRegs = ((freeRegData as any[]) || []).filter((r) => !regIds.has(r.id));
+    const freeTx: Tx[] = freeRegs.map((r) => ({
+      id: `reg-${r.id}`,
+      created_at: r.created_at,
+      amount_cents: 0,
+      platform_fee_cents: 0,
+      stripe_fee_cents: 0,
+      net_amount_cents: 0,
+      type: "no_charge_registration",
+      status: r.payment_status === "paid" ? "completed" : "pending",
+      description: r.payment_status === "paid" ? "No-charge sign-up / ticket request" : "Sign-up started — checkout not completed",
+      tournament_id: r.tournament_id,
+      metadata: {},
+      stripe_payment_intent_id: null,
+      stripe_session_id: null,
+      golfer_name: `${r.first_name || ""} ${r.last_name || ""}`.trim() || null,
+      golfer_email: r.email,
+      payout_method: null,
+      registration_id: r.id,
+    }));
+    if (freeTx.length) {
+      setTxs([...allTx, ...freeTx].sort((a, b) => b.created_at.localeCompare(a.created_at)));
+    }
+    setRegs(new Map([...(((regRes.data as any) || []) as any[]), ...freeRegs].map((r: any) => [r.id, r])));
     setSponsors(new Map(((sponsorRes.data as any) || []).map((r: any) => [r.id, r])));
     setVendors(new Map(((vendorRes.data as any) || []).map((r: any) => [r.id, r])));
     setSideTickets(new Map(((sideRes.data as any) || []).map((r: any) => [r.id, r])));
@@ -917,7 +951,7 @@ const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                          <AlertDialog>
+                          {t.type !== "no_charge_registration" && <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button
                                 variant="ghost"
@@ -943,7 +977,7 @@ const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
                                 <AlertDialogAction onClick={() => handleDeleteTransaction(t)}>Delete</AlertDialogAction>
                               </AlertDialogFooter>
                             </AlertDialogContent>
-                          </AlertDialog>
+                          </AlertDialog>}
                         </TableCell>
                       </TableRow>
                       {open && (

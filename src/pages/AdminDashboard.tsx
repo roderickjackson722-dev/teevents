@@ -1005,6 +1005,18 @@ const AdminDashboard = () => {
               </div>
             </div>
 
+            <div>
+              <div className="text-[10px] tracking-widest uppercase font-bold text-muted-foreground mb-1.5">Organizer Support</div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  onClick={() => navigate("/admin/help-chats")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Mail className="h-4 w-4" /> Help Chats &amp; Tickets
+                </button>
+              </div>
+            </div>
+
 
 
             <div>

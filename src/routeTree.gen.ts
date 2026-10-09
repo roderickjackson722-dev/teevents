@@ -22,6 +22,7 @@ import { Route as TeamSlugRouteImport } from './routes/team/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
 import { Route as ApiGhinLookupRouteImport } from './routes/api/ghin/lookup'
 import { Route as ApiGhinSyncAllRouteImport } from './routes/api/ghin/sync-all'
+import { Route as ApiPublicHelpChatDailySummaryRouteImport } from './routes/api/public/help-chat-daily-summary'
 import { Route as ApiPublicLeadMagnetDownloadRouteImport } from './routes/api/public/lead-magnet-download'
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
 import { Route as ApiPublicLeagueEventRegistrationLinkRouteImport } from './routes/api/public/league-event-registration-link'
@@ -110,6 +111,12 @@ const ApiGhinSyncAllRoute = ApiGhinSyncAllRouteImport.update({
   path: '/api/ghin/sync-all',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHelpChatDailySummaryRoute =
+  ApiPublicHelpChatDailySummaryRouteImport.update({
+    id: '/api/public/help-chat-daily-summary',
+    path: '/api/public/help-chat-daily-summary',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicLeadMagnetDownloadRoute =
   ApiPublicLeadMagnetDownloadRouteImport.update({
     id: '/api/public/lead-magnet-download',
@@ -251,6 +258,7 @@ export interface FileRoutesByFullPath {
   '/college/': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
@@ -288,6 +296,7 @@ export interface FileRoutesByTo {
   '/college': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
@@ -326,6 +335,7 @@ export interface FileRoutesById {
   '/college/': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
   '/api/public/league-event-registration-link': typeof ApiPublicLeagueEventRegistrationLinkRoute
@@ -365,6 +375,7 @@ export interface FileRouteTypes {
     | '/college/'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
@@ -402,6 +413,7 @@ export interface FileRouteTypes {
     | '/college'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
@@ -439,6 +451,7 @@ export interface FileRouteTypes {
     | '/college/'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
     | '/api/public/league-event-registration-link'
@@ -477,6 +490,7 @@ export interface RootRouteChildren {
   CollegeIndexRoute: typeof CollegeIndexRoute
   ApiGhinLookupRoute: typeof ApiGhinLookupRoute
   ApiGhinSyncAllRoute: typeof ApiGhinSyncAllRoute
+  ApiPublicHelpChatDailySummaryRoute: typeof ApiPublicHelpChatDailySummaryRoute
   ApiPublicLeadMagnetDownloadRoute: typeof ApiPublicLeadMagnetDownloadRoute
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
   ApiPublicLeagueEventRegistrationLinkRoute: typeof ApiPublicLeagueEventRegistrationLinkRoute
@@ -591,6 +605,13 @@ declare module '@tanstack/react-router' {
       path: '/api/ghin/sync-all'
       fullPath: '/api/ghin/sync-all'
       preLoaderRoute: typeof ApiGhinSyncAllRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/help-chat-daily-summary': {
+      id: '/api/public/help-chat-daily-summary'
+      path: '/api/public/help-chat-daily-summary'
+      fullPath: '/api/public/help-chat-daily-summary'
+      preLoaderRoute: typeof ApiPublicHelpChatDailySummaryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/lead-magnet-download': {
@@ -776,6 +797,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollegeIndexRoute: CollegeIndexRoute,
   ApiGhinLookupRoute: ApiGhinLookupRoute,
   ApiGhinSyncAllRoute: ApiGhinSyncAllRoute,
+  ApiPublicHelpChatDailySummaryRoute: ApiPublicHelpChatDailySummaryRoute,
   ApiPublicLeadMagnetDownloadRoute: ApiPublicLeadMagnetDownloadRoute,
   ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,
   ApiPublicLeagueEventRegistrationLinkRoute:

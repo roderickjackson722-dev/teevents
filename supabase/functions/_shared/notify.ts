@@ -193,6 +193,41 @@ export async function sendRegistrantConfirmationEmail(
       return;
     }
 
+    // If the organizer customized the Confirmation email in Email Templates,
+    // send that version instead of the built-in default.
+    if (tournamentId) {
+      try {
+        const admin = getAdminClient();
+        const { data: tc } = await admin
+          .from("tournaments")
+          .select("confirmation_email_config")
+          .eq("id", tournamentId)
+          .maybeSingle();
+        if ((tc as any)?.confirmation_email_config) {
+          const { data: reg } = await admin
+            .from("tournament_registrations")
+            .select("id")
+            .eq("tournament_id", tournamentId)
+            .ilike("email", recipientEmail)
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+          if ((reg as any)?.id) {
+            const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+            const res = await fetch(`${Deno.env.get("SUPABASE_URL")}/functions/v1/resend-confirmation`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}`, apikey: key },
+              body: JSON.stringify({ registration_ids: [(reg as any).id], template_kind: "confirmation", use_custom_template: true, service_run: true }),
+            });
+            if (res.ok) return;
+            console.error("[Confirmation] custom template send failed, using default:", res.status, await res.text().catch(() => ""));
+          }
+        }
+      } catch (e) {
+        console.error("[Confirmation] custom template lookup failed, using default:", e);
+      }
+    }
+
     // Pin date-only strings to local midnight so timezone never shifts the displayed day.
     const dateStr = tournamentDate
       ? new Date(/^\d{4}-\d{2}-\d{2}$/.test(tournamentDate) ? `${tournamentDate}T00:00:00` : tournamentDate)

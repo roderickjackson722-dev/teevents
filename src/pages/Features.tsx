@@ -168,8 +168,8 @@ export default function Features() {
   useEffect(() => {
     const onScroll = () => setStuck((slot.current?.getBoundingClientRect().top ?? 1) <= 64);
     onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => window.removeEventListener("scroll", onScroll, true);
   }, []);
   return (
     <Layout>

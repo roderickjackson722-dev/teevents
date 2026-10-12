@@ -1,319 +1,160 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
-import { Monitor, Flag, Calendar, Rocket, Phone, Check } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Check, Target, Heart, Flame, X, Users } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
-import HeroSection from "@/components/HeroSection";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import aboutBg from "@/assets/golf-about-bg.jpg";
-import FounderSection from "@/components/FounderSection";
-import FounderPartners from "@/components/FounderPartners";
+import { Button } from "@/components/ui/button";
+import portrait from "@/assets/trust/roderick-jackson.jpg.asset.json";
+import { founderPartnerLogos } from "@/components/FounderPartners";
 
-const platformFeatures: { name: string; description: string }[] = [
-  { name: "Tournament Website", description: "Branded public page – live in 10 minutes. Custom domain support." },
-  { name: "Online Registration", description: "Stripe, Apple Pay, Google Pay. Group registration (foursomes)." },
-  { name: "Live Leaderboard", description: "Real-time gross/net scores. Embed on any website." },
-  { name: "QR Check-In & Scoring", description: "Scan a QR code to check in. Players enter scores from their phone." },
-  { name: "Sponsor Management", description: "Tiered packages, asset delivery, ROI tracking. Sponsor logos on leaderboard." },
-  { name: "Volunteer Coordination", description: "Shift scheduling, QR check-in, automated reminders." },
-  { name: "Day-of Event Page", description: "Players see tee times, group, leaderboard, sponsor ads, and announcements." },
-  { name: "Automatic Payouts", description: "Stripe Connect – funds go directly to your bank account. No holding." },
-  { name: "Printables & Reports", description: "Scorecards, cart signs, name badges, CSV exports, financial reports." },
+const fade = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "-60px" }, transition: { duration: 0.5 } };
+const h2 = "font-display text-3xl font-bold text-primary md:text-4xl";
+
+const values = [
+  { icon: Target, title: "Attention to Detail", text: "Every event page, every pairings sheet, every leaderboard is built with the same care we would want for our own tournament." },
+  { icon: Heart, title: "Passion for Every Event", text: "We do not treat any event like it is small. Whether it is 20 players or 200, your event gets the same level of dedication." },
+  { icon: Flame, title: "Determination for Success", text: "We are not done until your event runs smoothly. If something goes wrong, we fix it. If something needs to change, we change it." },
 ];
 
-const onsitePhases: { phase: string; services: string }[] = [
-  { phase: "Planning", services: "Course selection, contract negotiation, budget creation, timeline development" },
-  { phase: "Logistics", services: "Volunteer recruitment, staff training, equipment setup, signage production" },
-  { phase: "Day-of Execution", services: "Check-in management, scoring oversight, volunteer coordination, real-time troubleshooting" },
-  { phase: "Sponsor Management", services: "Sponsor recruitment, asset delivery, on-site recognition, post-event reporting" },
-  { phase: "Post-Event", services: "Awards ceremony coordination, final scoring, participant surveys, financial reconciliation" },
+const compare = [
+  ["You build the event page yourself", "Your rep builds it for you"],
+  ["You configure registration and payments", "Your rep sets it all up"],
+  ["You figure out the leaderboard settings", "Your rep configures everything"],
+  ["You watch tutorials and read FAQs", "You tell us what you want and we do it"],
+  ["Generic email support tickets", "A named rep who knows your event"],
+  ["You are on your own", "You have a dedicated partner"],
 ];
 
-const processSteps: { step: string; title: string; body: string }[] = [
-  { step: "Step 1", title: "Discovery", body: "We learn about your event – size, budget, goals, and timeline." },
-  { step: "Step 2", title: "Setup", body: "Every plan includes a dedicated rep who builds your event page, registration, leaderboard, and scoring setup. If you're using our full-service option, we handle everything from course negotiation to day-of execution." },
-  { step: "Step 3", title: "Execution", body: "Your tournament runs smoothly – whether you're managing it yourself through the dashboard or our team is on-site handling every detail." },
-  { step: "Step 4", title: "Wrap-Up", body: "We help you finalize scores, process payouts, and gather feedback for next year." },
+const stats = [
+  ["100%", "Of events include a dedicated rep, free or paid"],
+  ["20+", "Years in the golf industry"],
+  ["10+", "Years as a tournament director"],
+  ["2017", "Trusted by the Black College Golf Coaches Association since"],
 ];
 
-const whyUs: { why: string; meaning: string }[] = [
-  { why: "Built by Directors", meaning: "Every feature was designed by people who have run tournaments. No guesswork." },
-  { why: "All-in-One", meaning: "No need for multiple platforms – website, registration, scoring, sponsors, payouts, all in one place." },
-  { why: "No Upfront Cost", meaning: "Start with no upfront cost. You only pay when you collect registration fees." },
-  { why: "We Never Hold Your Money", meaning: "Stripe pays you instantly. No waiting weeks for your funds." },
-  { why: "Real Human Support", meaning: "You talk to tournament directors, not chatbots." },
-];
-
-const platformBullets = [
-  "Branded tournament website",
-  "Online registration & payments",
-  "Live leaderboard & scoring",
-  "Sponsor management",
-  "Automatic payouts",
-];
-
-const onsiteBullets = [
-  "Course negotiation",
-  "Sponsor recruitment",
-  "Volunteer coordination",
-  "Day-of event management",
-  "Post-event wrap-up",
-];
-
-const About = () => {
+export default function About() {
   return (
     <Layout>
-      <SEO
-        title="About TeeVents – Platform & On-Site Event Management"
-        description="TeeVents is the complete golf tournament solution — an online platform plus full-service on-site event management, built by tournament directors."
-        path="/about"
-      />
-      <HeroSection
-        backgroundImage={aboutBg}
-        title="About TeeVents"
-        subtitle="The complete golf tournament solution — platform and on-site management."
-        height="h-[60vh]"
-      />
+      <SEO title="About TeeVents" description="TeeVents was built by tournament director Roderick Jackson. Every event, free or paid, includes a dedicated rep who builds it for you." path="/about" />
 
-      {/* Intro */}
-      <section className="bg-golf-cream py-16">
-        <div className="container mx-auto px-4 max-w-4xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="bg-card border border-border rounded-lg p-8 md:p-10 shadow-sm text-center"
-          >
-            <h2 className="font-display text-2xl md:text-3xl font-bold text-primary mb-4">
-              We are tournament directors, software builders, and event managers.
-            </h2>
-            <p className="text-lg text-foreground/80 leading-relaxed">
-              TeeVents was built from the ground up by people who have run hundreds of golf tournaments.
-              We know what organizers need because we've been in their shoes.
-            </p>
+      <section className="bg-primary py-20 text-center text-primary-foreground md:py-28">
+        <motion.div {...fade} className="container mx-auto max-w-4xl px-4">
+          <p className="text-sm font-semibold tracking-widest text-secondary">ABOUT TEEVENTS</p>
+          <h1 className="mt-4 font-display text-4xl font-bold leading-tight md:text-6xl">Built by a Tournament Director, for Tournament Directors</h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/85">TeeVents was created by someone who has spent over two decades in the golf industry, running tournaments, working at courses, and understanding what organizers actually need.</p>
+        </motion.div>
+      </section>
+
+      <section className="bg-background py-20 md:py-28">
+        <div className="container mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-[2fr_3fr]">
+          <motion.div {...fade}>
+            <img src={portrait.url} alt="Roderick Jackson, founder of TeeVents" className="mx-auto aspect-[4/5] w-full max-w-sm rounded-2xl object-cover shadow-xl" />
+          </motion.div>
+          <motion.div {...fade} className="space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg">
+            <div>
+              <h2 className={h2}>Meet Roderick Jackson</h2>
+              <p className="mt-2 font-semibold text-secondary">Founder, Golfer, Tournament Director</p>
+            </div>
+            <p>Roderick Jackson has been a golfer since the late 1990s, playing collegiate golf at Alabama A&amp;M University before building a career in the golf industry that spans over two decades.</p>
+            <p>He has worked for the top golf management company in the world with Troon Golf, and with one of the top golf equipment companies in the industry with Cleveland Golf. Over the past decade, he has served as a tournament director for some of the largest events in collegiate golf.</p>
+            <p>Today, Roderick organizes and manages the largest HBCU Golf Tournament in the world, working alongside organizations including the Golf Channel, PGA, Bridgestone Golf, Arcis Golf, SAS Data and AI Solutions, Farmers Insurance, Octagon Management, Octagon (Global Leadership in Sports, Entertainment, and Culture), the National Black College Alumni Hall of Fame, the Black College Golf Coaches Association, and the 100 Black Men Organization.</p>
+            <p>He has managed HBCU collegiate golf tournaments for over a decade, working with celebrities, corporate sponsors, and some of the most respected names in the sport.</p>
           </motion.div>
         </div>
       </section>
 
-      {/* Two-column dual offering */}
-      <section className="bg-background py-16">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="grid md:grid-cols-2 gap-6 md:gap-8">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-lg p-8 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 rounded-md bg-primary/10 text-primary">
-                  <Monitor className="h-6 w-6" />
-                </div>
-                <h3 className="font-display text-2xl font-bold text-primary">The Online Platform</h3>
-              </div>
-              <p className="text-foreground/80 mb-5">
-                A complete tournament management system built for golf — with a named rep who builds your event on every plan.
-              </p>
-              <ul className="space-y-2">
-                {platformBullets.map((b) => (
-                  <li key={b} className="flex items-start gap-2 text-sm text-foreground">
-                    <Check className="h-4 w-4 text-secondary mt-1 flex-shrink-0" />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+      <section className="bg-muted/40 py-20 md:py-28">
+        <motion.div {...fade} className="container mx-auto max-w-3xl space-y-6 px-4 text-center text-lg leading-relaxed text-muted-foreground">
+          <h2 className={h2}>Why TeeVents Exists</h2>
+          <p>Roderick built TeeVents because he saw a gap in the market. Most platforms hand you software and wish you luck. He knew from his years as a tournament director that what organizers actually need is a partner. Someone who understands the pressure, the details, and the stakes.</p>
+          <p className="font-semibold text-primary">That is why every TeeVents event, free or paid, comes with a dedicated rep who does the work for you.</p>
+        </motion.div>
+      </section>
 
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="bg-card border border-border rounded-lg p-8 shadow-sm"
-            >
-              <div className="flex items-center gap-3 mb-4">
-                <div className="p-3 rounded-md bg-secondary/15 text-secondary">
-                  <Flag className="h-6 w-6" />
-                </div>
-                <h3 className="font-display text-2xl font-bold text-primary">On-Site Event Management</h3>
-              </div>
-              <p className="text-foreground/80 mb-5">
-                Full-service event execution from start to finish.
-              </p>
-              <ul className="space-y-2">
-                {onsiteBullets.map((b) => (
-                  <li key={b} className="flex items-start gap-2 text-sm text-foreground">
-                    <Check className="h-4 w-4 text-secondary mt-1 flex-shrink-0" />
-                    <span>{b}</span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+      <section className="bg-primary py-20 text-primary-foreground md:py-28">
+        <motion.figure {...fade} className="container mx-auto max-w-4xl px-4 text-center">
+          <blockquote className="font-display text-2xl leading-snug md:text-4xl">“TeeVents was built from the experience of knowing what is needed from both sides of the game, as a tournament director and as a golf course coordinator.”</blockquote>
+          <figcaption className="mt-8 font-semibold text-secondary">Roderick Jackson, Founder</figcaption>
+        </motion.figure>
+      </section>
+
+      <section className="bg-background py-20 md:py-28">
+        <div className="container mx-auto max-w-6xl px-4">
+          <motion.div {...fade} className="mb-12 text-center"><h2 className={h2}>What Drives Us</h2><p className="mt-3 text-lg text-muted-foreground">Three values behind every event on TeeVents.</p></motion.div>
+          <div className="grid gap-6 md:grid-cols-3">
+            {values.map(({ icon: Icon, title, text }) => (
+              <motion.div {...fade} key={title} className="rounded-xl border border-border bg-card p-7 shadow-sm">
+                <div className="mb-4 w-fit rounded-lg bg-secondary/20 p-3 text-primary"><Icon className="h-6 w-6" aria-hidden="true" /></div>
+                <h3 className="font-display text-xl font-bold text-primary">{title}</h3>
+                <p className="mt-3 text-muted-foreground">{text}</p>
+              </motion.div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Tabs deep-dive */}
-      <section className="bg-golf-cream py-16">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <Tabs defaultValue="platform" className="w-full">
-            <TabsList className="w-full grid grid-cols-2 md:grid-cols-4 h-auto gap-2 bg-transparent p-0 mb-6">
-              <TabsTrigger value="platform" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5">Platform</TabsTrigger>
-              <TabsTrigger value="onsite" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5">Event Management</TabsTrigger>
-              <TabsTrigger value="process" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5">Our Process</TabsTrigger>
-              <TabsTrigger value="why" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground py-2.5">Why Us</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="platform" className="mt-0">
-              <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-sm">
-                <h3 className="font-display text-2xl font-bold text-primary mb-2">
-                  Everything You Need to Run a Tournament Online
-                </h3>
-                <p className="text-foreground/80 mb-6">
-                  TeeVents is a complete golf tournament management platform built by tournament directors for tournament directors. Whether you're running a charity event, a corporate outing, or a club championship, the platform gives you everything you need.
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-muted">
-                        <th className="p-3 font-semibold text-primary border-b border-border w-1/3">Feature</th>
-                        <th className="p-3 font-semibold text-primary border-b border-border">Description</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {platformFeatures.map((f) => (
-                        <tr key={f.name} className="border-b border-border/60">
-                          <td className="p-3 font-medium text-foreground align-top">{f.name}</td>
-                          <td className="p-3 text-sm text-foreground/80">{f.description}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+      <section className="bg-muted/40 py-20 md:py-28">
+        <div className="container mx-auto max-w-6xl px-4 text-center">
+          <motion.div {...fade}><h2 className={h2}>Trusted by Leaders in Collegiate and HBCU Golf</h2><p className="mt-3 text-lg text-muted-foreground">Organizations that have worked with TeeVents and our team.</p></motion.div>
+          <div className="mt-12 grid grid-cols-2 items-center gap-x-6 gap-y-10 md:grid-cols-4">
+            {founderPartnerLogos.map((logo) => (
+              <div key={logo.name}>
+                <div className={`flex h-28 items-center justify-center rounded-md px-4 ${logo.dark ? "bg-golf-green-dark" : ""}`}>
+                  <img src={logo.image} alt={logo.name} loading="lazy" className="max-h-24 max-w-full object-contain grayscale" />
                 </div>
+                <p className="mt-3 text-xs text-muted-foreground">{logo.name}</p>
               </div>
-            </TabsContent>
-
-            <TabsContent value="onsite" className="mt-0">
-              <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-sm">
-                <h3 className="font-display text-2xl font-bold text-primary mb-2">
-                  Full-Service Event Management – From Concept to Completion
-                </h3>
-                <p className="text-foreground/80 mb-6">
-                  If you prefer a hands-off approach, our team can manage your entire tournament from start to finish. We handle every detail so you can focus on your guests and sponsors.
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-muted">
-                        <th className="p-3 font-semibold text-primary border-b border-border w-1/3">Phase</th>
-                        <th className="p-3 font-semibold text-primary border-b border-border">Services</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {onsitePhases.map((p) => (
-                        <tr key={p.phase} className="border-b border-border/60">
-                          <td className="p-3 font-medium text-foreground align-top">{p.phase}</td>
-                          <td className="p-3 text-sm text-foreground/80">{p.services}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="process" className="mt-0">
-              <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-sm">
-                <h3 className="font-display text-2xl font-bold text-primary mb-2">How We Work</h3>
-                <p className="text-foreground/80 mb-6">
-                  We meet you where you are. Whether you need full-service management or just the platform, we adapt to your needs.
-                </p>
-                <div className="grid sm:grid-cols-2 gap-4">
-                  {processSteps.map((s) => (
-                    <div key={s.step} className="border border-border rounded-md p-5 bg-background">
-                      <div className="text-xs font-semibold uppercase tracking-wider text-secondary mb-1">{s.step}</div>
-                      <div className="font-display text-lg font-bold text-primary mb-2">{s.title}</div>
-                      <p className="text-sm text-foreground/80 leading-relaxed">{s.body}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </TabsContent>
-
-            <TabsContent value="why" className="mt-0">
-              <div className="bg-card border border-border rounded-lg p-6 md:p-8 shadow-sm">
-                <h3 className="font-display text-2xl font-bold text-primary mb-2">
-                  Why Tournament Directors Choose TeeVents
-                </h3>
-                <p className="text-foreground/80 mb-6">
-                  We are tournament directors first. We've run hundreds of events – from small club outings to large charity tournaments. We built TeeVents to solve the problems we experienced firsthand.
-                </p>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-muted">
-                        <th className="p-3 font-semibold text-primary border-b border-border w-1/3">Why</th>
-                        <th className="p-3 font-semibold text-primary border-b border-border">What It Means</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {whyUs.map((w) => (
-                        <tr key={w.why} className="border-b border-border/60">
-                          <td className="p-3 font-medium text-foreground align-top">{w.why}</td>
-                          <td className="p-3 text-sm text-foreground/80">{w.meaning}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-            </TabsContent>
-          </Tabs>
+            ))}
+          </div>
         </div>
       </section>
 
-      <FounderSection />
-
-      <FounderPartners />
-
-      <section className="rep-service bg-background py-16 border-t border-border"><div className="container mx-auto max-w-6xl px-4"><h2 className="font-display text-3xl md:text-4xl font-bold text-primary mb-10">What Drives Us</h2><div className="grid gap-8 md:grid-cols-3">{[
-        ["Attention to Detail", "Every event page, every pairings sheet, every leaderboard is built with the same care we'd want for our own tournament."],
-        ["Passion for Every Event", "We don't treat any event like it's small. Whether it's 20 players or 200, your event gets the same level of dedication."],
-        ["Determination for Success", "We're not done until your event runs smoothly. If something goes wrong, we fix it. If something needs to change, we change it."],
-      ].map(([title, text]) => <div key={title} className="border-t-2 border-secondary pt-5"><h3 className="font-display text-xl font-bold text-primary">{title}</h3><p className="mt-3 text-muted-foreground leading-relaxed">{text}</p></div>)}</div></div></section>
-
-      {/* CTA */}
-      <section className="bg-primary py-16">
-        <div className="container mx-auto px-4 max-w-3xl text-center">
-          <h2 className="font-display text-3xl md:text-4xl font-bold text-primary-foreground mb-4">
-            Ready to Run Your Tournament?
-          </h2>
-          <p className="text-primary-foreground/85 text-lg mb-8">
-            Whether you need the platform, full-service management, or both — we're here to help.
-          </p>
-          <div className="flex flex-wrap justify-center gap-3">
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 bg-secondary text-secondary-foreground px-6 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
-            >
-              <Calendar className="h-4 w-4" /> Request a Sample
-            </Link>
-            <Link
-              to="/get-started"
-              className="inline-flex items-center gap-2 bg-primary-foreground text-primary px-6 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/90 transition-colors"
-            >
-              <Rocket className="h-4 w-4" /> Get Started
-            </Link>
-            <Link
-              to="/contact"
-              className="inline-flex items-center gap-2 border border-primary-foreground/40 text-primary-foreground px-6 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
-            >
-              <Phone className="h-4 w-4" /> Contact Us
-            </Link>
-          </div>
+      <section className="bg-background py-20 md:py-28">
+        <div className="container mx-auto max-w-5xl px-4">
+          <motion.div {...fade} className="mb-12 text-center"><h2 className={h2}>What Makes TeeVents Different</h2><p className="mt-3 text-lg text-muted-foreground">Most platforms sell you software. We deliver a finished event.</p></motion.div>
+          <motion.div {...fade} className="grid overflow-hidden rounded-xl border border-border md:grid-cols-2">
+            <div className="bg-card p-6 md:p-8">
+              <h3 className="mb-5 font-body text-lg font-semibold text-muted-foreground">Typical Tournament Software</h3>
+              <ul className="space-y-4">{compare.map(([a]) => <li key={a} className="flex gap-3 text-muted-foreground"><X className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />{a}</li>)}</ul>
+            </div>
+            <div className="bg-primary p-6 text-primary-foreground md:p-8">
+              <h3 className="mb-5 font-body text-lg font-semibold text-secondary">TeeVents</h3>
+              <ul className="space-y-4">{compare.map(([a, b]) => <li key={a} className="flex gap-3"><Check className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden="true" />{b}</li>)}</ul>
+            </div>
+          </motion.div>
+          <motion.p {...fade} className="mx-auto mt-10 max-w-3xl rounded-xl border-l-4 border-secondary bg-muted/50 p-6 text-center text-lg font-medium text-primary">That is why organizers choose TeeVents. Not because the software is better, but because the service is.</motion.p>
         </div>
+      </section>
+
+      <section className="bg-primary py-20 text-primary-foreground md:py-24">
+        <div className="container mx-auto grid max-w-6xl grid-cols-1 gap-10 px-4 text-center sm:grid-cols-2 lg:grid-cols-4">
+          {stats.map(([n, d]) => (
+            <motion.div {...fade} key={n}><p className="font-display text-5xl font-bold text-secondary md:text-6xl">{n}</p><p className="mx-auto mt-3 max-w-[16rem] text-primary-foreground/85">{d}</p></motion.div>
+          ))}
+        </div>
+      </section>
+
+      <section className="bg-background py-20 md:py-28">
+        <motion.div {...fade} className="container mx-auto max-w-3xl px-4 text-center">
+          <h2 className={h2}>Meet the Team</h2>
+          <p className="mt-3 text-lg text-muted-foreground">The people behind every TeeVents event.</p>
+          <div className="mt-10 rounded-xl border border-dashed border-border bg-muted/40 p-8 text-muted-foreground">
+            <Users className="mx-auto mb-3 h-8 w-8 text-secondary" aria-hidden="true" />
+            Team section coming soon. As TeeVents grows, this is where you will meet the reps and staff who build your event.
+          </div>
+        </motion.div>
+      </section>
+
+      <section className="bg-primary py-20 text-center text-primary-foreground">
+        <motion.div {...fade} className="container mx-auto max-w-3xl px-4">
+          <h2 className="font-display text-3xl font-bold md:text-5xl">Ready to Work with a Real Partner?</h2>
+          <p className="mt-5 text-lg text-primary-foreground/85">Free for organizers. A dedicated rep builds your event for you.</p>
+          <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
+            <Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/get-started">GET STARTED<ArrowRight /></Link></Button>
+            <Button asChild variant="outline" size="lg" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/request-sample">REQUEST A SAMPLE</Link></Button>
+          </div>
+        </motion.div>
       </section>
     </Layout>
   );
-};
-
-export default About;
+}

@@ -204,6 +204,5 @@ export default function GettingStarted() {
       </div>
       {choice === "Build it yourself" && <p className="mt-6 text-center"><button type="button" className="font-semibold text-primary underline underline-offset-4" onClick={() => navigate(tournamentId ? `/dashboard/tournaments/${tournamentId}/site-builder${ctx}` : `/dashboard/tournaments${ctx}`)}>Open the site builder</button></p>}
     </div>}
-    {toolboxId === undefined && null}
   </div>;
 }

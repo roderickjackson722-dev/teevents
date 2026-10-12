@@ -128,6 +128,7 @@ const Tournaments = () => {
       pricing_version: "2026-10",
       pricing_model: "free",
       platform_fee_percent: 5,
+      flat_rate_amount_cents: 39900,
     } as any).select("id").maybeSingle();
 
     if (!error && (created as any)?.id) {

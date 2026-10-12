@@ -25,7 +25,7 @@ export const getFlatRateStatus = createServerFn({ method: "POST" })
       flat_rate_paid_at: t.flat_rate_paid_at ?? null,
       admin_override: !!t.flat_rate_admin_override,
       override_reason: t.flat_rate_override_reason ?? null,
-      amount_cents: t.pricing_version === "2026-10" ? FLAT_RATE_AMOUNT_CENTS : LEGACY_FLAT_RATE_AMOUNT_CENTS,
+      amount_cents: t.pricing_version === "2026-10" ? ((t as any).flat_rate_amount_cents === FLAT_RATE_AMOUNT_CENTS_CURRENT ? FLAT_RATE_AMOUNT_CENTS_CURRENT : FLAT_RATE_AMOUNT_CENTS) : LEGACY_FLAT_RATE_AMOUNT_CENTS,
     };
   });
 
@@ -38,7 +38,7 @@ export const createFlatRateCheckout = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }: any) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { assertOrgMemberForTournament, logFlatRate, FLAT_RATE_AMOUNT_CENTS, LEGACY_FLAT_RATE_AMOUNT_CENTS, PER_EVENT_STRIPE_PRICE_ID } = await import("./flatRate.server");
+    const { assertOrgMemberForTournament, logFlatRate, FLAT_RATE_AMOUNT_CENTS, LEGACY_FLAT_RATE_AMOUNT_CENTS, FLAT_RATE_AMOUNT_CENTS_CURRENT, PER_EVENT_STRIPE_PRICE_ID, PER_EVENT_STRIPE_PRICE_ID_CURRENT } = await import("./flatRate.server");
     const t = await assertOrgMemberForTournament(
       context.supabase,
       supabaseAdmin,
@@ -54,15 +54,20 @@ export const createFlatRateCheckout = createServerFn({ method: "POST" })
 
     const origin = data.origin || "https://teevents.golf";
     const isCurrentPricing = t.pricing_version === "2026-10";
-    const amount = isCurrentPricing ? FLAT_RATE_AMOUNT_CENTS : LEGACY_FLAT_RATE_AMOUNT_CENTS;
+    // Events created on/after the Oct 12, 2026 price change carry 39900; earlier
+    // events (including the 2026-10 cohort) keep the $299 price they were quoted.
+    const isNewAmount = isCurrentPricing && (t as any).flat_rate_amount_cents === FLAT_RATE_AMOUNT_CENTS_CURRENT;
+    const amount = isNewAmount ? FLAT_RATE_AMOUNT_CENTS_CURRENT : isCurrentPricing ? FLAT_RATE_AMOUNT_CENTS : LEGACY_FLAT_RATE_AMOUNT_CENTS;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
       line_items: [
         {
-          ...(isCurrentPricing
-            ? { price: PER_EVENT_STRIPE_PRICE_ID }
-            : {
+          ...(isNewAmount
+            ? { price: PER_EVENT_STRIPE_PRICE_ID_CURRENT }
+            : isCurrentPricing
+              ? { price: PER_EVENT_STRIPE_PRICE_ID }
+              : {
                 price_data: {
                   currency: "usd",
                   product_data: {

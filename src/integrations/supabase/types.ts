@@ -6828,6 +6828,9 @@ export type Database = {
           hero_image: Json | null
           id: string
           logo: Json | null
+          onboarding_choice: string | null
+          onboarding_completed_at: string | null
+          onboarding_event: Json | null
           onboarding_seen_at: string | null
           organization_id: string
           reviewed_at: string | null
@@ -6846,6 +6849,9 @@ export type Database = {
           hero_image?: Json | null
           id?: string
           logo?: Json | null
+          onboarding_choice?: string | null
+          onboarding_completed_at?: string | null
+          onboarding_event?: Json | null
           onboarding_seen_at?: string | null
           organization_id: string
           reviewed_at?: string | null
@@ -6864,6 +6870,9 @@ export type Database = {
           hero_image?: Json | null
           id?: string
           logo?: Json | null
+          onboarding_choice?: string | null
+          onboarding_completed_at?: string | null
+          onboarding_event?: Json | null
           onboarding_seen_at?: string | null
           organization_id?: string
           reviewed_at?: string | null

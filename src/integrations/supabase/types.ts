@@ -6790,6 +6790,71 @@ export type Database = {
           },
         ]
       }
+      organizer_toolboxes: {
+        Row: {
+          additional_notes: string | null
+          anything_else: string | null
+          brand_colors: Json
+          created_at: string
+          documents: Json
+          gallery: Json
+          hero_image: Json | null
+          id: string
+          logo: Json | null
+          onboarding_seen_at: string | null
+          organization_id: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          sponsor_logos: Json
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          additional_notes?: string | null
+          anything_else?: string | null
+          brand_colors?: Json
+          created_at?: string
+          documents?: Json
+          gallery?: Json
+          hero_image?: Json | null
+          id?: string
+          logo?: Json | null
+          onboarding_seen_at?: string | null
+          organization_id: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sponsor_logos?: Json
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          additional_notes?: string | null
+          anything_else?: string | null
+          brand_colors?: Json
+          created_at?: string
+          documents?: Json
+          gallery?: Json
+          hero_image?: Json | null
+          id?: string
+          logo?: Json | null
+          onboarding_seen_at?: string | null
+          organization_id?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          sponsor_logos?: Json
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_toolboxes_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       outreach_campaigns: {
         Row: {
           created_at: string

@@ -15,6 +15,7 @@ import EventTimeline from "@/components/dashboard/EventTimeline";
 import TeamReferralsSummary from "@/components/dashboard/TeamReferralsSummary";
 import SetupChecklist from "@/components/SetupChecklist";
 import { toast } from "sonner";
+import ToolboxDashboardWidgets from "@/components/toolbox/ToolboxDashboardWidgets";
 
 interface Tournament {
   id: string;
@@ -114,6 +115,7 @@ const DashboardHome = () => {
 
   return (
     <div>
+      {org && <ToolboxDashboardWidgets orgId={org.orgId} hasTournament={tournamentCount > 0} />}
       <div className="relative mb-8 overflow-hidden rounded-2xl bg-primary p-6 text-primary-foreground shadow-lg md:p-8">
         <p className="text-xs font-semibold uppercase tracking-[0.25em] text-secondary">Clubhouse</p>
         <h1 className="mt-1 font-display text-3xl font-bold md:text-4xl">

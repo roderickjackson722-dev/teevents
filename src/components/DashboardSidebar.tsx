@@ -6,7 +6,7 @@ import {
   CreditCard, Share2, FileEdit, Printer, PenLine, Mail, HelpCircle,
   MapPin, Sliders, Search as SearchIcon, FileText, Megaphone,
   Building2, Store, Target, BedDouble, Ticket, Eye, Activity, ContactRound, LayoutTemplate, Receipt, Gauge,
-  Clock, ChevronDown, Zap, MessageSquare, GraduationCap,
+  Clock, ChevronDown, Zap, Package, Rocket, MessageSquare, GraduationCap,
 } from "lucide-react";
 import { NavLink } from "@/components/NavLink";
 import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
@@ -187,6 +187,8 @@ const AGE_REPORT_TOURNAMENT_ID = "8d241ebc-4fd3-4dcb-bfad-27f7e92e9c6a";
 
 const settingsItems: NavItem[] = [
   { title: "General Settings", url: "/dashboard/settings", icon: Settings, feature: null, description: "Branding, custom domain, public page tabs" },
+  { title: "Getting Started", url: "/dashboard/getting-started", icon: Rocket, feature: null, description: "What happens next and what you can do now" },
+  { title: "Organizer Toolbox", url: "/dashboard/toolbox", icon: Package, feature: null, description: "Upload logos, images, and event assets for your rep" },
 ];
 
 export function DashboardSidebar() {

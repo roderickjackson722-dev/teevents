@@ -372,10 +372,10 @@ const Plans = () => {
                <Building2 className="h-4 w-4" /> Enterprise
              </div>
              <h3 className="text-2xl md:text-4xl font-display font-bold text-primary-foreground mb-2">
-               Running 10 tournaments or more per year?
+               Running 10 or more events a year?
             </h3>
              <p className="text-primary-foreground/80 mb-6">
-               Our Enterprise plan is built for golf courses, clubs, and organizations running leagues and tournaments all year long.
+               Our Enterprise plan is built for golf courses, clubs, and organizations running 10 or more events a year.
             </p>
              <div className="mb-6">
                <span className="text-4xl md:text-5xl font-display font-bold text-secondary">$2,999</span>
@@ -453,7 +453,7 @@ const Plans = () => {
         <div className="container mx-auto px-4 text-center max-w-2xl">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             <h2 className="text-2xl md:text-4xl font-display font-bold text-primary-foreground mb-4">
-               Running 10 tournaments or more per year?
+               Running 10 or more events a year?
             </h2>
             <p className="text-primary-foreground/70 mb-8">
                Our Enterprise plan gives you unlimited events for $2,999/year, a dedicated TeeVents representative, and Live Leaderboard + Mobile Scoring on every event. Run 10 events, and it pays for itself. Run more? You save more.

@@ -162,6 +162,13 @@
       "when": 1791845758148,
       "tag": "0022_new_no_cost_leaderboard_defaults",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1791845778764,
+      "tag": "0023_feature_addon_requests",
+      "breakpoints": true
     }
   ]
 }

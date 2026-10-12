@@ -1,8 +1,9 @@
 ## Requested sales pages, onboarding verification, and direct support
-- [ ] Remove Sales Sheet label, clarify Enterprise audience, and use one final homepage CTA
-- [ ] Add persisted two-way admin/organizer support replies
-- [ ] Verify signup, event creation, Welcome, logo upload, and admin review
-- [ ] Verify direct replies and the requested public pages
+- [x] Remove Sales Sheet label, clarify Enterprise audience, and use one final homepage CTA
+- [x] Add persisted two-way admin/organizer support replies
+- [x] Verify an unpublished test event, Welcome, logo upload/restoration, and admin review/restoration with the requesting user's account
+- [ ] Complete fresh-account signup and automatic Welcome verification: requires a real email verification and CAPTCHA completed by the user; safeguards were not bypassed
+- [x] Verify direct replies in both directions, reload restoration, and the requested public pages
 
 ## Five-section homepage restructure
 - [x] Replace homepage with the five approved sections and one grayscale logo row

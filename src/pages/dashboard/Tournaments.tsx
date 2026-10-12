@@ -145,6 +145,18 @@ const Tournaments = () => {
       // Walk the organizer through the full setup for the new event.
       const newId = (created as any)?.id;
       if (newId) {
+        // New organizers should see their rep welcome immediately after their
+        // first event, rather than only after a later visit to dashboard home.
+        if (tournaments.length === 0 && !new URLSearchParams(window.location.search).has("admin_org")) {
+          const [organization, toolbox] = await Promise.all([
+            supabase.from("organizations").select("created_at").eq("id", org.orgId).maybeSingle(),
+            supabase.from("organizer_toolboxes").select("onboarding_seen_at").eq("organization_id", org.orgId).maybeSingle(),
+          ]);
+          if (!organization.error && !toolbox.error && organization.data?.created_at && organization.data.created_at >= "2026-10-12T00:00:00Z" && !toolbox.data?.onboarding_seen_at) {
+            window.location.href = buildLink(`/dashboard/getting-started?tournament_id=${newId}`);
+            return;
+          }
+        }
         window.location.href = buildLink(`/dashboard/setup-checklist?tournament_id=${newId}`);
         return;
       }

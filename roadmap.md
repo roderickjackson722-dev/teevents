@@ -72,3 +72,11 @@
 - [x] Add an event setting to disable cash payments
 - [x] Add roster check-in controls with a distinct checked-in state and include check-in status in printouts
 - [x] Verify the affected public page and organizer workflows without changing other platform behavior
+
+## October 12 navigation, add-ons, directory, and login
+- [ ] Reorder menu, restore organizer login, remove league search and footer founder credit
+- [ ] Remove five requested Reviews sections
+- [ ] Replace public add-on event list with event/contact details and admin fulfillment
+- [ ] Provide admin live leaderboard control and default new No Cost events off
+- [ ] Add admin controls for public featured/upcoming directory sections
+- [ ] Verify public pages, login, and authenticated admin controls

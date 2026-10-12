@@ -75,3 +75,6 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 .rep-service * { letter-spacing:0; }
 .rep-service { --primary:150 38% 16%; --golf-green-dark:150 38% 16%; --secondary:42 63% 55%; --secondary-foreground:150 38% 16%; font-family:Inter,system-ui,sans-serif; }
 .homepage-hero-overlay { background:hsl(var(--primary) / .82); }
+.pricing-page { font-family:Inter,system-ui,sans-serif; }
+.pricing-page .pricing-comparison { display:table; white-space:normal; }
+.pricing-page .pricing-comparison th,.pricing-page .pricing-comparison td { white-space:normal; min-width:150px; vertical-align:top; }

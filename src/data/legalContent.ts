@@ -1,5 +1,6 @@
 export type LegalSection = { title: string; body: string };
 export const PRIVACY_SECTIONS: LegalSection[] = [
+ {"title": "1. Introduction", "body": "TeeVents Golf Management (\"TeeVents,\" \"we,\" \"us,\" or \"our\") operates the website at www.teevents.golf and provides golf tournament and league management software and services. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use our platform."},
  {
   "title": "2. Information We Collect",
   "body": "We collect information you provide directly, such as your name, email address, phone number, organization name, and payment information. We also collect information automatically when you use our platform, such as IP address, browser type, device information, and pages visited."
@@ -50,6 +51,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
  }
 ];
 export const TERMS_SECTIONS: LegalSection[] = [
+ {"title": "1. Acceptance of Terms", "body": "By accessing or using TeeVents, you agree to be bound by these Terms of Service. If you do not agree, do not use the platform."},
  {
   "title": "2. Description of Service",
   "body": "TeeVents provides cloud-based software and services for managing golf tournaments, leagues, and events. Services include registration, payment processing, live scoring, leaderboards, pairings, and event management tools."

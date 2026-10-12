@@ -52,13 +52,13 @@ export function OutlineLight({ to, children }: { to: string; children: ReactNode
   return <Button asChild variant="outline" size="lg" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to={to}>{children}</Link></Button>;
 }
 
-export function FinalCta({ title, subtitle }: { title: string; subtitle: string }) {
+export function FinalCta({ title, subtitle, children }: { title: string; subtitle: string; children?: ReactNode }) {
   return (
     <section className="bg-primary py-20 text-center text-primary-foreground">
       <motion.div {...fade} className="container mx-auto max-w-3xl px-4">
         <h2 className="font-display text-3xl font-bold md:text-5xl">{title}</h2>
         <p className="mt-5 text-lg text-primary-foreground/85">{subtitle}</p>
-        <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row"><GetStarted /><OutlineLight to="/request-sample">REQUEST A SAMPLE</OutlineLight></div>
+        <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">{children ?? <><GetStarted /><OutlineLight to="/request-sample">REQUEST A SAMPLE</OutlineLight></>}</div>
       </motion.div>
     </section>
   );

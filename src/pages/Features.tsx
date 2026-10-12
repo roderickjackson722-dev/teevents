@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowRight, Globe, Layout as LayoutIcon, Link2, FileText, Eye, Unlock, Smartphone,
   Users, ClipboardList, FileSignature, CalendarClock, ListOrdered, ShoppingBag, UserPlus, Mail, RotateCcw, ShieldCheck, Landmark, Receipt,
@@ -162,6 +163,14 @@ function Section({ id, title, subtitle, items, callout, muted }: { id: string; t
 }
 
 export default function Features() {
+  const slot = useRef<HTMLDivElement>(null);
+  const [stuck, setStuck] = useState(false);
+  useEffect(() => {
+    const onScroll = () => setStuck((slot.current?.getBoundingClientRect().top ?? 1) <= 64);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
   return (
     <Layout>
       <SEO title="Golf Tournament Software Features" description="Every TeeVents feature: event websites, registration and payments, live scoring, pairings, communication, sponsorship, reporting, security, and player tools." path="/features" />
@@ -175,13 +184,15 @@ export default function Features() {
         </motion.div>
       </section>
 
-      <nav aria-label="Feature categories" className="sticky top-16 z-30 border-b border-border bg-background/95 backdrop-blur">
+      <div ref={slot} className="h-[61px]">
+      <nav aria-label="Feature categories" className={`${stuck ? "fixed inset-x-0 top-16" : "relative"} z-30 border-b border-border bg-background/95 backdrop-blur`}>
         <div className="container mx-auto flex gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
           {[...categories.map((c) => [c.id, c.nav]), ["multi-sport", "Multi-Sport"]].map(([id, label]) => (
             <a key={id} href={`#${id}`} onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }} className="shrink-0 whitespace-nowrap rounded-full border border-border px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:border-secondary hover:bg-secondary/15">{label}</a>
           ))}
         </div>
       </nav>
+      </div>
 
       {categories.map((c, i) => <Section key={c.id} {...c} muted={i % 2 === 1} />)}
 

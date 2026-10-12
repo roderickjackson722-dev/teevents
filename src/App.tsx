@@ -192,6 +192,9 @@ import AdminScoring from "./pages/admin/AdminScoring";
 import LeaguePromoCodes from "./pages/admin/LeaguePromoCodes";
 import AiSalesAgent from "./pages/admin/AiSalesAgent";
 import AdminHelpChats from "./pages/admin/HelpChats";
+import AdminOrganizerToolboxes from "./pages/admin/OrganizerToolboxes";
+import OrganizerToolbox from "./pages/dashboard/OrganizerToolbox";
+import GettingStarted from "./pages/dashboard/GettingStarted";
 import CollegeHubBookingsPublic from "./pages/CollegeHubBookings";
 import CollegeHubSurveys from "./pages/admin/CollegeHubSurveys";
 import CollegeSurvey from "./pages/CollegeSurvey";
@@ -377,6 +380,8 @@ const App = () => (
           <Route path="/dashboard/email-log" element={<DashboardLayout><EmailLog /></DashboardLayout>} />
           <Route path="/dashboard/messages" element={<DashboardLayout><DashboardMessages /></DashboardLayout>} />
           <Route path="/dashboard/settings" element={<DashboardLayout><Settings /></DashboardLayout>} />
+          <Route path="/dashboard/toolbox" element={<DashboardLayout><OrganizerToolbox /></DashboardLayout>} />
+          <Route path="/dashboard/getting-started" element={<DashboardLayout><GettingStarted /></DashboardLayout>} />
           <Route path="/dashboard/activity-log" element={<DashboardLayout><ActivityLog /></DashboardLayout>} />
           <Route path="/dashboard/team" element={<DashboardLayout><TeamManagementPage /></DashboardLayout>} />
           <Route path="/dashboard/organization-info" element={<DashboardLayout><OrganizationInfo /></DashboardLayout>} />
@@ -482,6 +487,7 @@ const App = () => (
             <Route path="/admin/manage-events" element={<ManageEvents />} />
             <Route path="/admin/ai-sales-agent" element={<AiSalesAgent />} />
             <Route path="/admin/help-chats" element={<AdminHelpChats />} />
+            <Route path="/admin/organizer-toolboxes" element={<AdminOrganizerToolboxes />} />
              <Route path="/college-hub/bookings" element={<CollegeHubBookingsPublic />} />
           <Route path="/admin/stripe-connections" element={<AdminStripeConnections />} />
           <Route path="/admin/course-database" element={<AdminCourseDatabase />} />

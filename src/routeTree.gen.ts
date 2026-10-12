@@ -12,7 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as FindYourEventRouteImport } from './routes/find-your-event'
 import { Route as ForGolfersRouteImport } from './routes/for-golfers'
@@ -72,9 +74,19 @@ const AboutRoute = AboutRouteImport.update({
   path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompareRoute = CompareRouteImport.update({
+  id: '/compare',
+  path: '/compare',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -314,7 +326,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
+  '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
   '/for-golfers': typeof ForGolfersRoute
@@ -363,7 +377,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
+  '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
   '/for-golfers': typeof ForGolfersRoute
@@ -413,7 +429,9 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
+  '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
+  '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
   '/for-golfers': typeof ForGolfersRoute
@@ -464,7 +482,9 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/about'
+    | '/compare'
     | '/contact'
+    | '/faq'
     | '/features'
     | '/find-your-event'
     | '/for-golfers'
@@ -513,7 +533,9 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/about'
+    | '/compare'
     | '/contact'
+    | '/faq'
     | '/features'
     | '/find-your-event'
     | '/for-golfers'
@@ -562,7 +584,9 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/about'
+    | '/compare'
     | '/contact'
+    | '/faq'
     | '/features'
     | '/find-your-event'
     | '/for-golfers'
@@ -612,7 +636,9 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   AboutRoute: typeof AboutRoute
+  CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
+  FaqRoute: typeof FaqRoute
   FeaturesRoute: typeof FeaturesRoute
   FindYourEventRoute: typeof FindYourEventRoute
   ForGolfersRoute: typeof ForGolfersRoute
@@ -680,11 +706,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compare': {
+      id: '/compare'
+      path: '/compare'
+      fullPath: '/compare'
+      preLoaderRoute: typeof CompareRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/contact': {
       id: '/contact'
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -1007,7 +1047,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   AboutRoute: AboutRoute,
+  CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
+  FaqRoute: FaqRoute,
   FeaturesRoute: FeaturesRoute,
   FindYourEventRoute: FindYourEventRoute,
   ForGolfersRoute: ForGolfersRoute,

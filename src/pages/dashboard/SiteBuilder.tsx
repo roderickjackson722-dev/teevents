@@ -1668,11 +1668,10 @@ const SiteBuilder = () => {
                   />
                   <div className="flex-1">
                     <Label className="text-sm font-semibold cursor-pointer">
-                      Show on public tournament search
+                      Make this event public
                     </Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Lists your event at{" "}
-                      <span className="font-mono">teevents.golf/tournaments/search</span>.
+                      When public, your event appears in the Find Your Event directory where golfers can discover and register. When private, only people with your direct link can access the event.
                     </p>
                   </div>
                 </div>

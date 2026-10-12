@@ -63,10 +63,12 @@ export default function Index() {
             <blockquote className="text-base leading-relaxed text-foreground md:text-center md:text-xl">“{testimonial.quote.replace(" — ", ", ").replace("NCAA-sanctioned", "NCAA sanctioned")}”</blockquote>
             <figcaption className="mt-6 text-center text-sm leading-relaxed"><span className="font-semibold text-primary">{testimonial.name}</span><br /><span className="text-muted-foreground">{testimonial.title}, {testimonial.organization}</span></figcaption>
           </figure>
-          <div className="flex items-center gap-6 overflow-x-auto border-t border-border pt-8 pb-2 md:justify-between" aria-label="Golf organizations and events">
-            {founderPartnerLogos.map(logo => <div key={logo.name} className={`flex h-20 w-24 shrink-0 items-center justify-center p-2 ${logo.dark ? "bg-primary" : ""}`}>
-              <img src={logo.image} alt={logo.name} title={logo.name} loading="lazy" className="max-h-full max-w-full object-contain" />
-            </div>)}
+          <div className="logo-marquee border-t border-border pt-8 pb-2" aria-label="Golf organizations and events">
+            <div className="logo-marquee-track">
+              {Array.from({ length: 4 }).map((_, set) => founderPartnerLogos.map(logo => <div key={`${set}-${logo.name}`} aria-hidden={set > 0} className={`mr-6 flex h-20 w-24 shrink-0 items-center justify-center p-2 ${logo.dark ? "bg-primary" : ""}`}>
+                <img src={logo.image} alt={set > 0 ? "" : logo.name} title={logo.name} loading="lazy" className="max-h-full max-w-full object-contain" />
+              </div>))}
+            </div>
           </div>
         </div>
       </section>

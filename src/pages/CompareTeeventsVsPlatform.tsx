@@ -25,7 +25,7 @@ export const PLATFORMS = {
     callout: "Keep your fundraising — and add everything golf needs with TeeVents.",
     rows: [
       ...repComparisonRows.map(([feature, them, teevents]): Row => ({ feature, them, teevents })),
-      { feature: "Cost to organizer", them: "$0 (asks donors for a voluntary tip)", teevents: "$0 to start or $299 flat" },
+      { feature: "Cost to organizer", them: "$0 (asks donors for a voluntary tip)", teevents: "$0 to start or $399 flat" },
       { feature: "Branded tournament website", them: "Basic form page", teevents: "Full custom event site" },
       { feature: "Sponsorship packages & hole signs", them: "Limited", teevents: "Yes" },
       { feature: "Auction with mobile bidding", them: "Basic", teevents: "Yes" },
@@ -39,7 +39,7 @@ export const PLATFORMS = {
     callout: "One platform for registration, sponsors, scoring and payouts.",
     rows: [
       ...repComparisonRows.map(([feature, them, teevents]): Row => ({ feature, them, teevents })),
-      { feature: "Cost to organizer", them: "Optional tips or platform fee + processing", teevents: "$0 to start or $299 flat" },
+      { feature: "Cost to organizer", them: "Optional tips or platform fee + processing", teevents: "$0 to start or $399 flat" },
       { feature: "Branded tournament website", them: "Campaign page", teevents: "Full custom event site" },
       { feature: "Sponsorship packages & hole signs", them: "Generic tiers", teevents: "Golf-specific packages" },
       { feature: "QR check-in on event day", them: "Limited", teevents: "Yes" },

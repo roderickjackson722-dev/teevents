@@ -56,7 +56,7 @@ export default function EnterpriseOverview() {
 
       <section className="bg-muted px-4 py-14 text-center">
         <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">Run 10 events and it pays for itself</h2>
-        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Per-event pricing is $299 each. At 10 events a year, Enterprise costs about the same and adds unlimited events, leagues, staff logins and 0% fees.</p>
+        <p className="mx-auto mt-3 max-w-xl text-muted-foreground">Per-event pricing is $399 each. At 10 events a year, Enterprise costs about the same and adds unlimited events, leagues, staff logins and 0% fees.</p>
         <EnterpriseInquiryDialog><Button size="lg" variant="secondary" className="mt-6">Talk to us about your club</Button></EnterpriseInquiryDialog>
         <p className="mt-3 text-xs text-muted-foreground">Questions? info@teevents.golf</p>
       </section>

@@ -7,7 +7,7 @@ export const LEGACY_FLAT_RATE_AMOUNT_CENTS = 15000;
 export const FLAT_RATE_AMOUNT_CENTS = 29900;
 export const FLAT_RATE_AMOUNT_CENTS_CURRENT = 39900;
 export const PER_EVENT_STRIPE_PRICE_ID = "price_1ULsIR7UK8GxgadTNWqa8KCz";
-export const PER_EVENT_STRIPE_PRICE_ID_CURRENT = "price_1ULsT7UK8GxgadTQ8wKcZdVf";
+export const PER_EVENT_STRIPE_PRICE_ID_CURRENT = "price_1UPrT67UK8GxgadTO4RDJYcq";
 
 export async function assertOrgMemberForTournament(
   supabase: any,

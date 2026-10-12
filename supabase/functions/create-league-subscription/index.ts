@@ -12,7 +12,7 @@ const corsHeaders = {
 
 const FLAT_FEE_CENTS = 39900; // $399/year, up to 24 events
 const CURRENT_LEAGUE_FEE_CENTS = 59900;
-const CURRENT_LEAGUE_PRICE_ID = "price_1ULsTL7UK8GxgadTuI031Xrh";
+const CURRENT_LEAGUE_PRICE_ID = "price_1UPrTL7UK8GxgadTuI031Xrh";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });

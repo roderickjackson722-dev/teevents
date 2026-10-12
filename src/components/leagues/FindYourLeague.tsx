@@ -37,7 +37,7 @@ export default function FindYourLeague() {
   };
 
   return (
-    <section id="find-your-league" className="bg-golf-cream py-16 border-t border-border">
+    <section id="find-your-league" className="bg-background text-foreground py-12 border-t border-border">
       <div className="container mx-auto px-4 max-w-2xl text-center">
         <h2 className="text-3xl font-display font-bold text-foreground mb-2">Find Your League</h2>
         <p className="text-muted-foreground mb-6">
@@ -50,7 +50,7 @@ export default function FindYourLeague() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="e.g. TeeVets Golf League"
-              className="pl-9 bg-card"
+              className="pl-9 bg-card text-card-foreground"
               aria-label="Search leagues by name"
             />
           </div>

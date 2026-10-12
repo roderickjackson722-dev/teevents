@@ -212,7 +212,7 @@ export default function GolfLeagues() {
           </div>
         </section>
       </main>
-      <Footer />
+      <Footer includeLeagueSearch={false} />
     </>
   );
 }

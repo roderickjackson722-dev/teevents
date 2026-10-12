@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 import logoBlack from "@/assets/logo-black.png";
 import FindYourLeague from "@/components/leagues/FindYourLeague";
 
-const Footer = () => {
+const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean }) => {
   return (
     <footer className="bg-golf-green-dark text-primary-foreground">
-      <FindYourLeague />
+      {includeLeagueSearch && <FindYourLeague />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

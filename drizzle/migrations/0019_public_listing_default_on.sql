@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ALTER COLUMN show_in_public_search SET DEFAULT true;

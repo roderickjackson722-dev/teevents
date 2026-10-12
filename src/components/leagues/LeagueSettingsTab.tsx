@@ -229,8 +229,8 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
 
           <div className="flex items-start justify-between gap-4 rounded-md border p-3">
             <div>
-              <p className="font-medium text-sm">Listed in "Find Your League"</p>
-              <p className="text-xs text-muted-foreground">Let members search for this league by name on the TeeVents homepage.</p>
+              <p className="font-medium text-sm">Make this event public</p>
+              <p className="text-xs text-muted-foreground">When public, your league appears in the Find Your Event directory where golfers can discover and register. When private, only people with your direct link can access the league.</p>
             </div>
             <Switch checked={!!vis.allow_search} onCheckedChange={(v) => setVis({ ...vis, allow_search: v })} />
           </div>

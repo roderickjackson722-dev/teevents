@@ -119,7 +119,7 @@ export default function FindYourEvent() {
                       </div>
                       <h2 className="font-display text-xl font-semibold text-primary">{e.name}</h2>
                       <p className="flex items-center gap-2 text-sm text-muted-foreground"><CalendarDays className="h-4 w-4" />{fmtDate(e.start)}{e.end && e.end.slice(0, 10) !== e.start?.slice(0, 10) ? ` to ${fmtDate(e.end)}` : ""}</p>
-                      {(e.location || e.state) && <p className="flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="h-4 w-4" />{[e.location, e.state].filter(Boolean).join(", ")}</p>}
+                      {(e.location || e.state) && <p className="flex items-center gap-2 text-sm text-muted-foreground"><MapPin className="h-4 w-4" />{e.location && e.state && e.location.includes(e.state) ? e.location : [e.location, e.state].filter(Boolean).join(", ")}</p>}
                       <p className="text-sm text-foreground">{e.sport} · {e.format}</p>
                       <Button asChild variant="secondary" className="mt-auto font-semibold"><Link to={e.url}>View Event</Link></Button>
                     </CardContent>

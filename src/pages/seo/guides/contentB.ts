@@ -179,7 +179,7 @@ export const eventbrite: GuideContent = {
       heading: "Fees and how money moves",
       mockup: "pricing",
       paragraphs: [
-        "TeeVents starts at $0 with a 5 percent player-funded service fee, so organizers keep their event revenue. Per-Event is a one-time $299 with no TeeVents transaction fee and includes live scoring plus a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
+        "TeeVents starts at $0 with a 5 percent player-funded service fee, so organizers keep their event revenue. Per-Event is a one-time $399 with no TeeVents transaction fee and includes live scoring plus a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
         "Funds settle directly to your own connected Stripe account as the merchant of record, so you are not waiting on a platform payout cycle to access your event revenue.",
       ],
     },
@@ -276,7 +276,7 @@ export const competitors: GuideContent = {
       heading: "Pricing philosophy",
       mockup: "pricing",
       paragraphs: [
-        "There is no required subscription. Start at $0 with the player-funded service fee, choose Per-Event for $299 or Per-League for $499, or run unlimited events with Enterprise at $2,999 per year.",
+        "There is no required subscription. Start at $0 with the player-funded service fee, choose Per-Event for $399 or Per-League for $599, or run unlimited events with Enterprise at $2,999 per year.",
         "Funds settle directly into your own connected Stripe account, so you are the merchant of record and you are not waiting on someone else's payout schedule.",
       ],
     },
@@ -446,8 +446,8 @@ export const pricing: GuideContent = {
       mockup: "pricing",
       bullets: [
         "No Cost to Start: $0 with a 5 percent player-funded service fee.",
-        "Per-Event: a one-time $299 for one tournament, with no TeeVents transaction fee and a dedicated representative. Dedicated rep included on every plan — even free.",
-        "Per-League: $499 for the complete league season.",
+        "Per-Event: a one-time $399 for one tournament, with no TeeVents transaction fee and a dedicated representative. Dedicated rep included on every plan — even free.",
+        "Per-League: $599 for the complete league season.",
         "Enterprise: $2,999 per year for unlimited events and zero TeeVents transaction fees.",
         "Card processing: standard Stripe rates, charged by Stripe.",
       ],
@@ -499,7 +499,7 @@ export const pricing: GuideContent = {
   faqs: [
     {
       q: "How much does TeeVents cost?",
-      a: "Start at $0 with a 5 percent player-funded service fee. Per-Event is $299, Per-League is $499, and Enterprise is $2,999 per year.",
+      a: "Start at $0 with a 5 percent player-funded service fee. Per-Event is $399, Per-League is $599, and Enterprise is $2,999 per year.",
     },
     {
       q: "Is there a monthly subscription?",

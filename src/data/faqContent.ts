@@ -34,7 +34,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   "items": [
    {
     "q": "How much does TeeVents cost?",
-    "a": "There are four options: No Cost to Start ($0 upfront, with a 5% platform fee paid by players at checkout), Per-Event ($299 per tournament), Per-League ($499 per league), and Enterprise ($2,999 per year for unlimited events)."
+    "a": "There are four options: No Cost to Start ($0 upfront, with a 5% platform fee paid by players at checkout), Per-Event ($399 per tournament), Per-League ($599 per league), and Enterprise ($2,999 per year for unlimited events)."
    },
    {
     "q": "What is the 5% platform fee?",
@@ -46,11 +46,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "What is Per-Event pricing?",
-    "a": "$299 per tournament. No platform transaction fees. You keep 100% of your registration revenue. Standard Stripe processing fees still apply."
+    "a": "$399 per tournament. Includes Live Leaderboard, Mobile Scoring, and 0% platform transaction fees. You keep 100% of your registration revenue. Standard Stripe processing fees still apply."
    },
    {
     "q": "What is Per-League pricing?",
-    "a": "$499 per league. Covers the entire league season, including standings, leaderboards, and season-long reporting."
+    "a": "$599 per league. Includes everything in Per-Event plus season-long standings and reporting."
+   },
+   {
+    "q": "Is Live Leaderboard included in Per-Event?",
+    "a": "Yes. Live Leaderboard and Mobile Scoring are included in Per-Event, Per-League, and Enterprise plans. On the No Cost to Start plan, it is available as a $99 add-on."
    },
    {
     "q": "What is Enterprise pricing?",
@@ -297,7 +301,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "How is league pricing different from tournament pricing?",
-    "a": "Per-League pricing is $499 per league, covering the entire season. Enterprise includes unlimited leagues."
+    "a": "Per-League pricing is $599 per league, covering the entire season. Enterprise includes unlimited leagues."
    },
    {
     "q": "Do players have separate logins for leagues?",

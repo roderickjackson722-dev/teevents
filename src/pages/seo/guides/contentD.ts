@@ -2,7 +2,7 @@ import type { GuideContent } from "./types";
 
 const CTA_HEADING = "Start your tournament on TeeVents";
 const CTA_TEXT =
-  "Build a branded event site and collect payments directly. Start at $0, or choose Per-Event for $299 with a dedicated representative who builds it for you. Dedicated rep included on every plan — even free.";
+  "Build a branded event site and collect payments directly. Start at $0, or choose Per-Event for $399 with a dedicated representative who builds it for you. Dedicated rep included on every plan — even free.";
 
 export const pairingsManagement: GuideContent = {
   slug: "golf-tournament-pairings-management",
@@ -487,7 +487,7 @@ export const websiteBuilderPage: GuideContent = {
     },
     {
       q: "What does the website cost?",
-      a: "The site is part of the platform. Start at $0 with a 5 percent player-funded service fee, or choose Per-Event for $299 with no TeeVents transaction fee.",
+      a: "The site is part of the platform. Start at $0 with a 5 percent player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee.",
     },
   ],
   related: [
@@ -789,7 +789,7 @@ export const pageCustomization: GuideContent = {
     },
     {
       q: "Do I need Pro for customization?",
-      a: "Core page customization is available at $0. Per-Event is $299 and includes the full feature set plus a dedicated representative. Dedicated rep included on every plan — even free.",
+      a: "Core page customization is available at $0. Per-Event is $399 and includes the full feature set plus a dedicated representative. Dedicated rep included on every plan — even free.",
     },
   ],
   related: [

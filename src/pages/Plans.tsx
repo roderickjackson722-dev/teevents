@@ -8,8 +8,8 @@ import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialo
 
 const plans = [
   { name: "No Cost to Start", price: "$0", unit: "", badge: "", description: "Free for you. A 5% service fee is included in each player's registration total, so you keep 100% of your event revenue.", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
-  { name: "Per-Event", price: "$299", unit: "per tournament", badge: "MOST POPULAR", description: "Pay once per tournament. No platform transaction fees. Keep 100% of your registration revenue.", features: ['Everything in "No Cost to Start"', "No 5% platform fee", "Unlimited manual entries", "Unlimited transactions", "Dedicated TeeVents rep who builds your event", "One-time, per event"], cta: "SELECT PER-EVENT", to: "/signup?plan=per-event", note: "Standard card processing fees still apply." },
-  { name: "Per-League", price: "$499", unit: "per league", badge: "", description: "Perfect for season-long leagues with multiple events and standings.", features: ['Everything in "Per-Event"', "Covers the entire league season", "League standings and leaderboards", "Season-long reporting", "Dedicated TeeVents rep who manages your league"], cta: "SELECT PER-LEAGUE", to: "/signup?plan=per-league", note: "One league, one season-long price." },
+  { name: "Per-Event", price: "$399", unit: "per tournament", badge: "MOST POPULAR", description: "Pay once per tournament. No platform transaction fees. Keep 100% of your registration revenue.", features: ['Everything in "No Cost to Start"', "Live Leaderboard and Mobile Scoring included on every event", "Custom Leaderboard Colors matched to your event branding", "0% TeeVents platform transaction fees", "Unlimited manual entries", "Unlimited transactions", "Dedicated TeeVents rep who builds your event", "One-time, per event"], cta: "SELECT PER-EVENT", to: "/signup?plan=per-event", note: "Standard card processing fees still apply." },
+  { name: "Per-League", price: "$599", unit: "per league", badge: "", description: "Perfect for season-long leagues with multiple events and standings.", features: ['Everything in "Per-Event"', "Covers the entire league season", "League standings and leaderboards", "Season-long reporting", "Dedicated TeeVents rep who manages your league"], cta: "SELECT PER-LEAGUE", to: "/signup?plan=per-league", note: "One league, one season-long price." },
   { name: "Enterprise", price: "$2,999", unit: "per year", badge: "BEST FOR 10 OR MORE EVENTS A YEAR", description: "For golf courses, clubs, and organizations running 10 or more events a year.", features: ["Unlimited tournaments and leagues", "0% TeeVents transaction fees", "Live leaderboard and mobile scoring included on every event", "Dedicated TeeVents rep who builds every event", "Custom branding", "Staff accounts with role-based permissions", "Priority support", "Club page with all upcoming events"], cta: "REQUEST ENTERPRISE", to: "", note: "Billed annually. No per-event fees." },
 ];
 const included = [
@@ -19,12 +19,12 @@ const included = [
   { icon: ShieldCheck, title: "Secure Payments", description: "Payments go straight to your Stripe account. We never hold your money." },
 ];
 const addons = [
-  { icon: Trophy, title: "Live Leaderboard and Mobile Scoring", description: "Real-time leaderboard with mobile scoring from any phone. No app download required.", slug: "live-leaderboard" },
+  { icon: Trophy, title: "Live Leaderboard and Mobile Scoring", description: "Real-time leaderboard with mobile scoring from any phone. No app download required. Available as an add-on for the No Cost to Start plan only; included automatically on Per-Event, Per-League, and Enterprise plans.", slug: "live-leaderboard" },
   { icon: Users, title: "Unlimited Manual Entries", description: "Remove the 10-entry cap. Add unlimited manual player registrations, sponsors, and side-event entries.", slug: "unlimited-manual-entries" },
   { icon: Gavel, title: "Auction Dashboard", description: "Mobile bidding dashboard with auto-draw at close and real-time bid tracking.", slug: "auction-raffle" },
-  { icon: LayoutTemplate, title: "Full-Service Page Build Out", description: "Our team designs a custom event page for you with layout, colors, content, and branding.", slug: "custom-event-page" },
+  { icon: LayoutTemplate, title: "Full-Service Page Build Out", description: "Extra design work beyond the standard event page. Custom layout, custom sections, and premium imagery.", slug: "custom-event-page" },
   { icon: Megaphone, title: "Branding Removal and Digital Sponsor", description: 'TeeVents branding hidden. Custom "Presented by" logo and a turnkey digital sponsor package you can resell for $5,000 to $10,000.', slug: "branding-removal" },
-  { icon: Globe, title: "Custom Domain", description: "Brand your tournament URL (example: golfyourclub.com) instead of a teevents.golf link.", slug: "custom-domain" },
+  { icon: Globe, title: "Custom Domain", description: "Brand your tournament URL (for example: golfyourclub.com) instead of a teevents.golf link.", slug: "custom-domain" },
 ];
 const payments = [
   ["Golfer Pays", "Full registration amount charged at checkout via Stripe."],
@@ -33,13 +33,14 @@ const payments = [
   ["You Get Paid", "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2 to 7 business days."],
 ];
 const comparison = [
-  ["Upfront cost", "$0", "$299 per tournament", "$499 per league", "$2,999 per year"],
+  ["Upfront cost", "$0", "$399 per tournament", "$599 per league", "$2,999 per year"],
   ["Transaction fee", "5% (covered by players)", "0%", "0%", "0%"],
   ["Events included", "Pay as you go", "Pay as you go", "One league season", "Unlimited"],
   ["Dedicated rep", "Included", "Included", "Included", "Included"],
-  ["Live leaderboard", "Add-on: $99", "Add-on: $99", "Add-on: $99", "Included"],
+  ["Live Leaderboard and Mobile Scoring", "Add-on: $99", "Included", "Included", "Included"],
+  ["Custom leaderboard colors", "Add-on: $99", "Included", "Included", "Included"],
   ["Custom branding", "TeeVents branding", "TeeVents branding", "TeeVents branding", "Custom branding"],
-  ["Best for", "Nonprofits and first-time organizers", "Organizers who want predictable costs", "Season-long leagues", "Courses and clubs running 10 or more events a year"],
+  ["Best for", "Nonprofits and first-time organizers", "Mid-size tournaments", "Season-long leagues", "Courses and clubs running 10 or more events a year"],
 ];
 const faqs = [
   ["Do I really get a dedicated rep on the free plan?", "Yes. Every event on TeeVents, free or paid, includes a dedicated TeeVents rep who builds your event page, sets up your registration, and configures your leaderboard."],
@@ -55,7 +56,7 @@ const heading = "text-3xl font-display font-bold md:text-4xl";
 
 export default function Plans() {
   return <Layout>
-    <SEO title="Simple, Transparent Pricing | TeeVents" description="Choose $0 to start, $299 per event, $499 per league, or $2,999 per year Enterprise. Every plan includes a dedicated TeeVents rep." path="/pricing" />
+    <SEO title="Simple, Transparent Pricing | TeeVents" description="Choose $0 to start, $399 per event, $599 per league, or $2,999 per year Enterprise. Every plan includes a dedicated TeeVents rep." path="/pricing" />
     <div className="pricing-page">
       <section aria-labelledby="pricing-title" className={`${section} bg-primary text-primary-foreground text-center`}>
         <div className="mx-auto max-w-3xl">
@@ -73,7 +74,7 @@ export default function Plans() {
             <h2 className="text-2xl font-display font-bold">{plan.name}</h2>
             <div className="my-5"><span className="text-4xl font-display font-bold">{plan.price}</span>{plan.unit && <p className={`mt-1 text-sm ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{plan.unit}</p>}</div>
             <p className={`mb-6 text-sm leading-relaxed ${index === 3 ? "text-primary-foreground/85" : "text-muted-foreground"}`}>{plan.description}</p>
-            <ul className="mb-8 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2 text-sm leading-relaxed"><Check aria-hidden="true" className={`mt-1 h-4 w-4 shrink-0 ${index === 3 ? "text-secondary" : "text-primary"}`} /><span>{feature}</span></li>)}</ul>
+            <ul className="mb-8 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2 text-sm leading-relaxed"><Check aria-hidden="true" className={`mt-1 h-4 w-4 shrink-0 ${index === 3 ? "text-secondary" : "text-primary"}`} /><span className={feature.startsWith("Live Leaderboard") ? "font-semibold" : undefined}>{feature}</span></li>)}</ul>
             <div className="mt-auto">
               {index === 3 ? <EnterpriseInquiryDialog><Button variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold">{plan.cta}<ArrowRight /></Button></EnterpriseInquiryDialog> : <Button asChild variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold"><Link to={plan.to}>{plan.cta}<ArrowRight /></Link></Button>}
               <p className={`mt-4 min-h-9 text-center text-xs leading-relaxed ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{plan.note}</p>

@@ -268,7 +268,7 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
         <div className="rounded-lg border border-border bg-background/40 p-4 space-y-3">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="font-semibold text-sm">Branding Removal + Digital Sponsor — $499 per event</p>
+              <p className="font-semibold text-sm">Branding Removal + Digital Sponsor — $99 per event</p>
               <p className="text-xs text-muted-foreground mt-1">
                 One-time fee for this event. Hides the TeeVents logo and tagline from your live leaderboard
                 and mobile scoring pages, and unlocks the full Digital Sponsor package you can resell to a

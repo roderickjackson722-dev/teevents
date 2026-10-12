@@ -14,7 +14,7 @@ const data: Section[] = [
     category: "Pricing & Commitment",
     rows: [
       ...repComparisonRows.map(([feature, gg, teevents]): Row => ({ feature, gg, teevents, tv: "yes", ggs: "warn" })),
-      { feature: "Pricing Model", teevents: "$299 per tournament (one-time) with no platform fee", gg: "Annual subscription + per-golfer fees", tv: "yes", ggs: "warn" },
+      { feature: "Pricing Model", teevents: "$399 per tournament (one-time) with no platform fee", gg: "Annual subscription + per-golfer fees", tv: "yes", ggs: "warn" },
       { feature: "Contract", teevents: "No long-term commitment — pay per tournament", gg: "Annual contract required", tv: "yes", ggs: "no" },
       { feature: "Setup Fees", teevents: "None", gg: "Often charged at onboarding", tv: "yes", ggs: "warn" },
     ],

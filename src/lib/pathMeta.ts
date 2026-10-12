@@ -45,7 +45,7 @@ const STATIC: Record<string, { title: string; description: string }> = {
   "/events": { title: "Upcoming Events | TeeVents", description: "Discover and register for upcoming golf tournaments and charity events." },
   "/reviews": { title: "Reviews | TeeVents", description: "See what tournament organizers say about TeeVents — real reviews from nonprofits and corporations running golf events." },
   "/contact": { title: "Contact Us | TeeVents", description: "Get in touch with TeeVents for golf tournament planning, platform questions, or consulting inquiries." },
-  "/plans": { title: "Simple Golf Tournament Pricing | TeeVents", description: "A dedicated rep builds your event on every plan. $0 + 5%, $299/event, $499/league, or $2,999/year Enterprise." },
+  "/plans": { title: "Simple Golf Tournament Pricing | TeeVents", description: "A dedicated rep builds your event on every plan. $0 + 5%, $399/event, $599/league, or $2,999/year Enterprise." },
   "/enterprise-pricing": { title: "Enterprise Pricing | TeeVents", description: "Unlimited tournaments and leagues, 0% platform fees, and a named rep who builds every event for you. $2,999/year." },
   "/features": { title: "All Features | TeeVents Golf Tournament Software", description: "Your dedicated rep sets up your event page, registration, pairings, leaderboard, and scoring. Included on every plan — free or paid." },
   "/faq": { title: "FAQ | TeeVents", description: "Answers to common questions about TeeVents golf tournament management — payments, fees, payouts, and support." },

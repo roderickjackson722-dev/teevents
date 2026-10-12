@@ -76,7 +76,7 @@ export default function GolfLeagues() {
     <>
       <SEO
         title="Golf League Management Software | TeeVents"
-        description="Run a complete golf league season for $499 with live scoring, standings, handicaps, and a dedicated TeeVents representative."
+        description="Run a complete golf league season for $599 with live scoring, standings, handicaps, and a dedicated TeeVents representative."
       />
       <Navbar />
       <main className="min-h-screen bg-background">
@@ -104,7 +104,7 @@ export default function GolfLeagues() {
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" onClick={subscribe} disabled={loading}>
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Start your league — $499
+                  Start your league — $599
                 </Button>
                 <Button size="lg" variant="secondary" asChild>
                   <a href="#find-your-league">Find your league</a>
@@ -185,7 +185,7 @@ export default function GolfLeagues() {
               <CardHeader>
                 <CardTitle>Golf League — Annual</CardTitle>
                 <div className="mt-2">
-                  <span className="text-4xl font-bold">$499</span>
+                  <span className="text-4xl font-bold">$599</span>
                   <span className="text-muted-foreground">/league</span>
                 </div>
               </CardHeader>
@@ -198,7 +198,7 @@ export default function GolfLeagues() {
                 ))}
                 <Button className="w-full mt-4" onClick={subscribe} disabled={loading}>
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  Select Per-League — $499
+                  Select Per-League — $599
                 </Button>
               </CardContent>
             </Card>

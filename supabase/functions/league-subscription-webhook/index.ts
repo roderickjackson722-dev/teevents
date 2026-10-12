@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
         await supabaseAdmin.from("organizations").update({ pricing_model: "per_league" }).eq("id", session.metadata?.organization_id);
         await supabaseAdmin.from("golf_leagues").update({
           pricing_version: "2026-10", pricing_model: "per_league", league_fee_paid: true,
-          annual_fee_cents: 49900, white_glove_requested: true,
+          annual_fee_cents: session.amount_total ?? 59900, white_glove_requested: true,
         }).eq("organization_id", session.metadata?.organization_id);
       }
 

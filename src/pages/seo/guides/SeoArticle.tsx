@@ -58,7 +58,7 @@ const Mockup = ({ kind }: { kind: MockupKind }) => {
     },
     pricing: {
       label: "Pricing",
-      rows: ["No Cost to Start — $0", "Per-Event — $299 per tournament", "Per-League — $499", "Enterprise — $2,999/year"],
+      rows: ["No Cost to Start — $0", "Per-Event — $399 per tournament", "Per-League — $599", "Enterprise — $2,999/year"],
     },
   };
   const frame = frames[kind];

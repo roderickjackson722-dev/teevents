@@ -153,6 +153,7 @@ serve(async (req) => {
       pricing_version: "2026-10",
       pricing_model: "free",
       platform_fee_percent: 5,
+      flat_rate_amount_cents: 39900,
     };
     if (date) tPayload.date = date;
     if (location) tPayload.location = String(location).trim();

@@ -1,8 +1,13 @@
 /** Server-only helpers for grandfathered and current Per-Event pricing. */
 
 export const LEGACY_FLAT_RATE_AMOUNT_CENTS = 15000;
+// $299 applies to events created before the Oct 12, 2026 price change (their
+// flat_rate_amount_cents still holds the default); events created on or after
+// that date are stamped with 39900 at creation and use the $399 price below.
 export const FLAT_RATE_AMOUNT_CENTS = 29900;
+export const FLAT_RATE_AMOUNT_CENTS_CURRENT = 39900;
 export const PER_EVENT_STRIPE_PRICE_ID = "price_1ULsIR7UK8GxgadTNWqa8KCz";
+export const PER_EVENT_STRIPE_PRICE_ID_CURRENT = "price_1UPrT67UK8GxgadTO4RDJYcq";
 
 export async function assertOrgMemberForTournament(
   supabase: any,

@@ -38,7 +38,7 @@ const audiences = [
 ] as const;
 const plans = [
   ["No Cost to Start", "$0", "A 5% service fee is included in each player's registration total. You keep 100% of your event revenue."],
-  ["Per-Event", "$299", "Per tournament. No platform transaction fees. Keep every dollar of registration revenue."],
+  ["Per-Event", "$399", "Per tournament. No platform transaction fees. Keep every dollar of registration revenue."],
   ["Enterprise", "$2,999", "Per year. For courses and clubs running 10 or more events a year."],
 ];
 const quotes = [
@@ -51,7 +51,7 @@ const faqs = [
   ["What if I have never run a tournament before?", "TeeVents is built for first-time organizers. Your rep walks you through every step."],
   ["Can I use my own payment system?", "TeeVents uses Stripe for payments. Setup takes 5 to 10 minutes and your rep will help you connect it."],
   ["How long does setup take?", "Most events are live within a few days of signup. Complex events may take longer, and your rep will give you a timeline during your first call."],
-  ["Can I run multiple events per year?", "Yes. Per-Event pricing is $299 per tournament. Enterprise is unlimited for $2,999 per year."],
+  ["Can I run multiple events per year?", "Yes. Per-Event pricing is $399 per tournament. Enterprise is unlimited for $2,999 per year."],
 ];
 
 function Steps({ items }: { items: [string, string][] }) {

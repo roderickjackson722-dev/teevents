@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { Package, ArrowRight, Rocket } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import OnboardingChecklist from "@/components/toolbox/OnboardingChecklist";
 import { itemCount, loadToolbox, type Toolbox } from "@/lib/organizerToolbox";
 
 // Accounts created before the toolbox launched never see the one-time welcome
@@ -41,6 +42,7 @@ export default function ToolboxDashboardWidgets({ orgId, hasTournament }: { orgI
   const empty = tb !== undefined && itemCount(tb ?? null) === 0;
 
   return <>
+    {isNewOrg && tb && (tb as any).onboarding_completed_at && <OnboardingChecklist orgId={orgId} tb={tb} ctx={ctx} />}
     {isNewOrg && empty && <div className="mb-6 flex flex-col gap-4 rounded-lg border-2 border-secondary bg-secondary/10 p-5 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm leading-relaxed text-foreground md:text-base">Your rep will contact you within 1 business day. In the meantime, upload your event assets to the Organizer Toolbox so your rep can start building right away.</p>
       <Button asChild variant="secondary" className="shrink-0 font-semibold"><Link to={`/dashboard/toolbox${ctx}`}>Go to Organizer Toolbox <ArrowRight className="h-4 w-4" /></Link></Button>

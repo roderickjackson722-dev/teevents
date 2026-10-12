@@ -77,7 +77,7 @@ const EnterprisePricing = () => {
               <Building2 className="h-3.5 w-3.5" /> Enterprise
             </div>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Running 10 tournaments or more per year?
+              Running 10 or more events a year?
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
               Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. And a dedicated rep who builds every event for you.

@@ -1,3 +1,9 @@
+## Requested sales pages, onboarding verification, and direct support
+- [ ] Remove Sales Sheet label, clarify Enterprise audience, and use one final homepage CTA
+- [ ] Add persisted two-way admin/organizer support replies
+- [ ] Verify signup, event creation, Welcome, logo upload, and admin review
+- [ ] Verify direct replies and the requested public pages
+
 ## Five-section homepage restructure
 - [x] Replace homepage with the five approved sections and one grayscale logo row
 - [x] Clean header/footer and relocate league search; preserve removed content on dedicated public pages

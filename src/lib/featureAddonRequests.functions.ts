@@ -5,7 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { FEATURE_ADDONS, COLLEGE_ADDON_AMOUNTS } from "./featureAddonCatalog";
 
 const requestSchema = z.object({
-  addonKey: z.string().refine(k => k in FEATURE_ADDONS),
+  addonKey: z.string().refine(k => Object.hasOwn(FEATURE_ADDONS, k)),
   eventName: z.string().trim().min(2).max(200),
   contactName: z.string().trim().min(2).max(120),
   contactEmail: z.string().trim().email().max(254),

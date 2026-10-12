@@ -5,7 +5,7 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { FinalCta, GetStarted, Hero, OutlineLight, h2 } from "@/components/marketing/PageBits";
+import { FinalCta, Hero, OutlineLight, h2 } from "@/components/marketing/PageBits";
 import { FAQ_CATEGORIES } from "@/data/faqContent";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -77,4 +77,3 @@ export default function FAQ() {
     </Layout>
   );
 }
-void GetStarted;

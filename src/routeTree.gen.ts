@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as FindYourEventRouteImport } from './routes/find-your-event'
 import { Route as ForGolfersRouteImport } from './routes/for-golfers'
 import { Route as ForOrganizersRouteImport } from './routes/for-organizers'
@@ -61,6 +62,11 @@ const IndexRoute = IndexRouteImport.update({
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FindYourEventRoute = FindYourEventRouteImport.update({
@@ -289,6 +295,7 @@ const ApiPublicHooksTournamentPageCanaryRoute =
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
@@ -334,6 +341,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
@@ -380,6 +388,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
@@ -427,6 +436,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/$'
+    | '/features'
     | '/find-your-event'
     | '/for-golfers'
     | '/for-organizers'
@@ -472,6 +482,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/$'
+    | '/features'
     | '/find-your-event'
     | '/for-golfers'
     | '/for-organizers'
@@ -517,6 +528,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/$'
+    | '/features'
     | '/find-your-event'
     | '/for-golfers'
     | '/for-organizers'
@@ -563,6 +575,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  FeaturesRoute: typeof FeaturesRoute
   FindYourEventRoute: typeof FindYourEventRoute
   ForGolfersRoute: typeof ForGolfersRoute
   ForOrganizersRoute: typeof ForOrganizersRoute
@@ -619,6 +632,13 @@ declare module '@tanstack/react-router' {
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/find-your-event': {
@@ -926,6 +946,7 @@ const TeamSlugRouteWithChildren = TeamSlugRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  FeaturesRoute: FeaturesRoute,
   FindYourEventRoute: FindYourEventRoute,
   ForGolfersRoute: ForGolfersRoute,
   ForOrganizersRoute: ForOrganizersRoute,

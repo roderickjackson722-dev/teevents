@@ -441,7 +441,7 @@ const App = () => (
           <Route path="/golf-leagues" element={<GolfLeagues />} />
            <Route path="/how-it-works" element={<Navigate to="/#how-it-works" replace />} />
            <Route path="/find-your-event" element={<FindYourEvent />} />
-           <Route path="/pricing" element={<Navigate to="/plans" replace />} />
+           <Route path="/pricing" element={<Plans />} />
            <Route path="/enterprise-pricing" element={<EnterprisePricing />} />
            <Route path="/enterprise-overview" element={<EnterpriseOverview />} />
            <Route path="/enterprise-demo" element={<EnterpriseDemoPage />} />

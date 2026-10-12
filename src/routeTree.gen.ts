@@ -15,6 +15,8 @@ import { Route as FindYourEventRouteImport } from './routes/find-your-event'
 import { Route as ForGolfersRouteImport } from './routes/for-golfers'
 import { Route as ForOrganizersRouteImport } from './routes/for-organizers'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as PlansRouteImport } from './routes/plans'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as SalesSheetRouteImport } from './routes/sales-sheet'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
@@ -79,6 +81,16 @@ const ForOrganizersRoute = ForOrganizersRouteImport.update({
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PlansRoute = PlansRouteImport.update({
+  id: '/plans',
+  path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SalesSheetRoute = SalesSheetRouteImport.update({
@@ -281,6 +293,8 @@ export interface FileRoutesByFullPath {
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/plans': typeof PlansRoute
+  '/pricing': typeof PricingRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -324,6 +338,8 @@ export interface FileRoutesByTo {
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/plans': typeof PlansRoute
+  '/pricing': typeof PricingRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -368,6 +384,8 @@ export interface FileRoutesById {
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/plans': typeof PlansRoute
+  '/pricing': typeof PricingRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -413,6 +431,8 @@ export interface FileRouteTypes {
     | '/for-golfers'
     | '/for-organizers'
     | '/how-it-works'
+    | '/plans'
+    | '/pricing'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -456,6 +476,8 @@ export interface FileRouteTypes {
     | '/for-golfers'
     | '/for-organizers'
     | '/how-it-works'
+    | '/plans'
+    | '/pricing'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -499,6 +521,8 @@ export interface FileRouteTypes {
     | '/for-golfers'
     | '/for-organizers'
     | '/how-it-works'
+    | '/plans'
+    | '/pricing'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -543,6 +567,8 @@ export interface RootRouteChildren {
   ForGolfersRoute: typeof ForGolfersRoute
   ForOrganizersRoute: typeof ForOrganizersRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  PlansRoute: typeof PlansRoute
+  PricingRoute: typeof PricingRoute
   SalesSheetRoute: typeof SalesSheetRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
@@ -621,6 +647,20 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/plans': {
+      id: '/plans'
+      path: '/plans'
+      fullPath: '/plans'
+      preLoaderRoute: typeof PlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sales-sheet': {
@@ -890,6 +930,8 @@ const rootRouteChildren: RootRouteChildren = {
   ForGolfersRoute: ForGolfersRoute,
   ForOrganizersRoute: ForOrganizersRoute,
   HowItWorksRoute: HowItWorksRoute,
+  PlansRoute: PlansRoute,
+  PricingRoute: PricingRoute,
   SalesSheetRoute: SalesSheetRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CollegeSlugRoute: CollegeSlugRoute,

@@ -12,3 +12,4 @@
 - Payment reminders create checkout for the existing pending registration ID; never insert a replacement roster row.
 - Public tournament section titles are per-event display settings, resolved through publicTabs helpers and propagated to attendee checkout; preserve stable section anchors and all existing registration/payment behavior.
 - Additional Notes uses the existing registration-field settings for both individual and group notes; missing settings retain visibility and are persisted only on an organizer's explicit toggle to preserve current events.
+- Organizer Toolbox data lives in one organizer_toolboxes row per organization with files in the private organizer-toolbox bucket under <org_id>/; only admins set review fields, so rep status can't be self-reported.

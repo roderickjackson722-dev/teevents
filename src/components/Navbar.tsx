@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import logoWhite from "@/assets/logo-white.png";
 
 const navLinks = [
-  { label: "How It Works", to: "/how-it-works" },
+  { label: "Find Your Event", to: "/find-your-event" },
   { label: "Features", to: "/features" },
   { label: "Pricing", to: "/pricing" },
   { label: "About", to: "/about" },

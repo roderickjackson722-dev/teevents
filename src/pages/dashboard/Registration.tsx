@@ -188,6 +188,7 @@ const Registration = () => {
 
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
+  const [publicListing, setPublicListing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -244,7 +245,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label, registration_auto_close_enabled, registration_close_at, registration_closed_message, registration_closed_contact_email, registration_closed_contact_phone, registration_close_includes_addons")
+      .select("id, title, registration_fee_cents, registration_open, show_in_public_search, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label, registration_auto_close_enabled, registration_close_at, registration_closed_message, registration_closed_contact_email, registration_closed_contact_phone, registration_close_includes_addons")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -266,6 +267,7 @@ const Registration = () => {
       setFeeCents(cents);
       setFeeDisplay((cents / 100).toFixed(2));
       setRegOpen(tournament.registration_open || false);
+      setPublicListing(!!(tournament as any).show_in_public_search);
       const mp = tournament.max_players || 144;
       setMaxPlayers(mp);
       setMaxPlayersDisplay(String(mp));
@@ -353,6 +355,7 @@ const Registration = () => {
     const updates: any = {
       registration_fee_cents: feeCents,
       registration_open: regOpen,
+      show_in_public_search: publicListing,
       max_players: maxPlayers,
       foursome_registration: foursomeReg,
       max_group_size: maxGroupSize,
@@ -908,6 +911,13 @@ const Registration = () => {
                   </div>
                   <p className="text-xs text-muted-foreground">
                     Toggle on = players can register. Toggle off to close registration.
+                  </p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <Switch id="public-listing" checked={publicListing} onCheckedChange={setPublicListing} />
+                    <Label htmlFor="public-listing" className="text-sm font-medium">Make this event public</Label>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    On = your published event appears in Find Your Event. Off = private, reachable only by direct link.
                   </p>
 
                 </div>

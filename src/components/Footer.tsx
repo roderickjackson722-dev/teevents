@@ -1,9 +1,11 @@
 import { Link } from "react-router-dom";
 import logoBlack from "@/assets/logo-black.png";
+import FindYourLeague from "@/components/leagues/FindYourLeague";
 
-const Footer = () => {
+const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean }) => {
   return (
     <footer className="bg-golf-green-dark text-primary-foreground">
+      {includeLeagueSearch && <FindYourLeague />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -46,7 +48,10 @@ const Footer = () => {
             <Link to="/" className="hover:text-secondary transition-colors">Home</Link>
             <Link to="/about" className="hover:text-secondary transition-colors">About</Link>
             <Link to="/services" className="hover:text-secondary transition-colors">Services</Link>
-            <Link to="/plans" className="hover:text-secondary transition-colors">Plans & Pricing</Link>
+            <Link to="/features" className="hover:text-secondary transition-colors">Features</Link>
+            <Link to="/pricing" className="hover:text-secondary transition-colors">Pricing</Link>
+            <Link to="/for-golfers" className="hover:text-secondary transition-colors">For Golfers</Link>
+            <Link to="/for-organizers" className="hover:text-secondary transition-colors">For Organizers</Link>
             <Link to="/events" className="hover:text-secondary transition-colors">Events</Link>
             <Link to="/reviews" className="hover:text-secondary transition-colors">Reviews</Link>
             <Link to="/contact" className="hover:text-secondary transition-colors">Contact</Link>

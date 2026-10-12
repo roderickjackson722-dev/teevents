@@ -9,7 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
+import { Route as ForGolfersRouteImport } from './routes/for-golfers'
+import { Route as ForOrganizersRouteImport } from './routes/for-organizers'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as SalesSheetRouteImport } from './routes/sales-sheet'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
@@ -46,9 +50,29 @@ import { Route as ApiPublicHooksProcessLeagueRenewalsRouteImport } from './route
 import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
 import { Route as ApiPublicHooksTournamentPageCanaryRouteImport } from './routes/api/public/hooks/tournament-page-canary'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SplatRoute = SplatRouteImport.update({
   id: '/$',
   path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForGolfersRoute = ForGolfersRouteImport.update({
+  id: '/for-golfers',
+  path: '/for-golfers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForOrganizersRoute = ForOrganizersRouteImport.update({
+  id: '/for-organizers',
+  path: '/for-organizers',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SalesSheetRoute = SalesSheetRouteImport.update({
@@ -245,7 +269,11 @@ const ApiPublicHooksTournamentPageCanaryRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/for-golfers': typeof ForGolfersRoute
+  '/for-organizers': typeof ForOrganizersRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -283,7 +311,11 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/for-golfers': typeof ForGolfersRoute
+  '/for-organizers': typeof ForOrganizersRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -322,7 +354,11 @@ export interface FileRoutesByTo {
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/$': typeof SplatRoute
+  '/for-golfers': typeof ForGolfersRoute
+  '/for-organizers': typeof ForOrganizersRoute
+  '/how-it-works': typeof HowItWorksRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -362,7 +398,11 @@ export interface FileRoutesById {
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
+    | '/'
     | '/$'
+    | '/for-golfers'
+    | '/for-organizers'
+    | '/how-it-works'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -400,7 +440,11 @@ export interface FileRouteTypes {
     | '/api/public/hooks/tournament-page-canary'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/$'
+    | '/for-golfers'
+    | '/for-organizers'
+    | '/how-it-works'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -438,7 +482,11 @@ export interface FileRouteTypes {
     | '/api/public/hooks/tournament-page-canary'
   id:
     | '__root__'
+    | '/'
     | '/$'
+    | '/for-golfers'
+    | '/for-organizers'
+    | '/how-it-works'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -477,7 +525,11 @@ export interface FileRouteTypes {
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
+  ForGolfersRoute: typeof ForGolfersRoute
+  ForOrganizersRoute: typeof ForOrganizersRoute
+  HowItWorksRoute: typeof HowItWorksRoute
   SalesSheetRoute: typeof SalesSheetRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
@@ -516,11 +568,39 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/$': {
       id: '/$'
       path: '/$'
       fullPath: '/$'
       preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-golfers': {
+      id: '/for-golfers'
+      path: '/for-golfers'
+      fullPath: '/for-golfers'
+      preLoaderRoute: typeof ForGolfersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-organizers': {
+      id: '/for-organizers'
+      path: '/for-organizers'
+      fullPath: '/for-organizers'
+      preLoaderRoute: typeof ForOrganizersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sales-sheet': {
@@ -784,7 +864,11 @@ const TeamSlugRouteWithChildren = TeamSlugRoute._addFileChildren(
 )
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
+  ForGolfersRoute: ForGolfersRoute,
+  ForOrganizersRoute: ForOrganizersRoute,
+  HowItWorksRoute: HowItWorksRoute,
   SalesSheetRoute: SalesSheetRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CollegeSlugRoute: CollegeSlugRoute,

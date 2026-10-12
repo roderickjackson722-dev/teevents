@@ -73,3 +73,5 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 /* Service presentation is scoped so event sites and platform controls keep their themes. */
 .rep-service { --primary:150 38% 16%; --secondary:42 63% 55%; --secondary-foreground:150 38% 16%; }
 .rep-service * { letter-spacing:0; }
+.rep-service { --primary:150 38% 16%; --golf-green-dark:150 38% 16%; --secondary:42 63% 55%; --secondary-foreground:150 38% 16%; font-family:Inter,system-ui,sans-serif; }
+.homepage-hero-overlay { background:hsl(var(--primary) / .82); }

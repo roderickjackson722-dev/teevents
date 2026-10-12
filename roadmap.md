@@ -1,3 +1,8 @@
+## Five-section homepage restructure
+- [x] Replace homepage with the five approved sections and one grayscale logo row
+- [x] Clean header/footer and relocate league search; preserve removed content on dedicated public pages
+- [x] Verify desktop/mobile layout, navigation, and unchanged event/payment implementation
+
 ## All-plan dedicated rep website positioning
 - [x] Update homepage hero, service sections and credibility stat
 - [x] Update pricing, About, Features, Enterprise and organizer welcome messaging

@@ -53,6 +53,10 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
     "a": "$599 per league. Includes everything in Per-Event plus season-long standings and reporting."
    },
    {
+    "q": "Is Live Leaderboard included in Per-Event?",
+    "a": "Yes. Live Leaderboard and Mobile Scoring are included in Per-Event, Per-League, and Enterprise plans. On the No Cost to Start plan, it is available as a $99 add-on."
+   },
+   {
     "q": "What is Enterprise pricing?",
     "a": "$2,999 per year for unlimited tournaments and leagues. Best for courses and clubs running 10 or more events a year. Includes 0% transaction fees, live leaderboard and mobile scoring on every event, and custom branding."
    },

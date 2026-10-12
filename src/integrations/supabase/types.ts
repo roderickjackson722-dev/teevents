@@ -3587,6 +3587,27 @@ export type Database = {
           },
         ]
       }
+      faq_question_clicks: {
+        Row: {
+          category: string
+          created_at: string
+          id: string
+          question: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          id?: string
+          question: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          id?: string
+          question?: string
+        }
+        Relationships: []
+      }
       flight_payouts: {
         Row: {
           created_at: string

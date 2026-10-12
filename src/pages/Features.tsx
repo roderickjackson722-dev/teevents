@@ -1,551 +1,202 @@
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
-  Globe, CreditCard, Users, BarChart3, Award, MessageSquare, Trophy, QrCode,
-  Smartphone, Printer, DollarSign, Palette, Shield, Building2, Calendar,
-  ShoppingBag, Gift, HeartHandshake, ImageIcon, ClipboardList, Mail,
-  Megaphone, FileText, Camera, Briefcase, Star, Zap, Layout as LayoutIcon,
+  ArrowRight, Globe, Layout as LayoutIcon, Link2, FileText, Eye, Unlock, Smartphone,
+  Users, ClipboardList, FileSignature, CalendarClock, ListOrdered, ShoppingBag, UserPlus, Mail, RotateCcw, ShieldCheck, Landmark, Receipt,
+  Hash, Zap, Monitor, Palette, Layers, UsersRound, Trophy, Coins, Flag, QrCode, KeyRound,
+  Clock, Move, Grid3x3, Shuffle, Building2, CalendarDays, Printer, PencilLine, Repeat,
+  Send, MessageSquare, Timer, MailCheck, Inbox, History, BadgeCheck,
+  Award, Megaphone, Image, MonitorSmartphone, HeartHandshake, Gavel, Ticket, Star,
+  PiggyBank, FileSpreadsheet, FileDown, BarChart3, Calculator, FileStack, Scale, RefreshCw, FileCheck,
+  LayoutDashboard, Lock, Network, Database, Bell, Compass, ListChecks, Activity, Archive, CreditCard, ShieldAlert,
+  CheckCircle2, LineChart, Home, ListTree, Dumbbell, CalendarRange, Map, Settings2,
+  type LucideIcon,
 } from "lucide-react";
 import Layout from "@/components/Layout";
-import { DedicatedRepBadge } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
-type Tier = "Free" | "Pro";
-type Feature = {
-  icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  description: string;
-  bullets: string[];
-  tier: Tier;
-};
+type Item = [LucideIcon, string, string];
+type Category = { id: string; nav: string; title: string; subtitle: string; items: Item[]; callout?: string };
 
-// Ordered chronologically: from pre-planning through post-event wrap-up.
-const categories: { name: string; subtitle: string; features: Feature[] }[] = [
-  {
-    name: "1. Plan & Set Up",
-    subtitle: "Get your tournament off the ground in minutes.",
-    features: [
-      {
-        icon: Calendar,
-        title: "Tournament Creation",
-        description: "Spin up a complete tournament in under 5 minutes.",
-        bullets: [
-          "Auto-generated titles based on course",
-          "Course details, format, and date setup",
-          "Save as draft or publish instantly",
-          "Choose from 8 scoring formats",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: ClipboardList,
-        title: "Planning Checklist",
-        description: "A 30-step interactive guide that walks you through every milestone.",
-        bullets: [
-          "Triggered automatically on tournament creation",
-          "Track progress as you go",
-          "Best-practice tips at each step",
-          "Built by tournament directors",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Briefcase,
-        title: "Payout Setup",
-        description: "Three flexible ways to receive your tournament funds.",
-        bullets: [
-          "Stripe Connect — automatic payouts",
-          "PayPal — bi-weekly transfers",
-          "Check — mailed on request",
-          "Secure admin-verified bank account changes",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Users,
-        title: "Team Management",
-        description: "Add staff and volunteers with granular role-based access.",
-        bullets: [
-          "14 granular permissions",
-          "Custom roles per organization",
-          "Invitation-based onboarding",
-          "Activity audit log",
-        ],
-        tier: "Pro",
-      },
-    ],
-  },
-  {
-    name: "2. Build Your Site & Brand",
-    subtitle: "A professional public site for every event — no coding required.",
-    features: [
-      {
-        icon: Globe,
-        title: "Custom Tournament Website",
-        description: "A branded public site for every event.",
-        bullets: [
-          "Six professional layout templates",
-          "Mobile-responsive design",
-          "Built-in tabs for sponsors, schedule, and rules",
-          "SEO-friendly out of the box",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: LayoutIcon,
-        title: "Site Builder",
-        description: "Drag-and-drop editor to customize every section of your event page.",
-        bullets: [
-          "Live preview as you edit",
-          "Color, logo, and hero image controls",
-          "Public/private tab management",
-          "Reorder sections with one click",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Palette,
-        title: "White-Label Branding",
-        description: "Your tournament, your colors, your domain.",
-        bullets: [
-          "Custom domain (CNAME or A record)",
-          "Upload your logo and brand colors",
-          "No TeeVents branding on Pro events",
-          "Branded email sender",
-        ],
-        tier: "Pro",
-      },
-    ],
-  },
-  {
-    name: "3. Promote & Sell",
-    subtitle: "Marketing tools to fill your field and recruit sponsors.",
-    features: [
-      {
-        icon: Megaphone,
-        title: "Share & Promote",
-        description: "Trackable links and share kits to get the word out.",
-        bullets: [
-          "Trackable share links (?ref parameters)",
-          "QR codes for flyers",
-          "Social media share kit",
-          "Featured in TeeVents search (Pro)",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Camera,
-        title: "Flyer Studio",
-        description: "Design custom marketing flyers without leaving TeeVents.",
-        bullets: [
-          "Canva integration",
-          "Pre-built templates",
-          "Tournament details added automatically",
-          "Download or print",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Award,
-        title: "Sponsor Sales",
-        description: "Tiered sponsorship sales with public landing pages.",
-        bullets: [
-          "Custom sponsor tiers and pricing",
-          "Public sponsor landing pages",
-          "Logo uploads and payment tracking",
-          "Recognition on website and leaderboard",
-        ],
-        tier: "Free",
-      },
-    ],
-  },
-  {
-    name: "4. Register Players & Sponsors",
-    subtitle: "Take payments and manage signups from day one.",
-    features: [
-      {
-        icon: CreditCard,
-        title: "Online Registration",
-        description: "Stripe-powered checkout with all major payment methods.",
-        bullets: [
-          "Apple Pay & Google Pay support",
-          "Promo codes and discounts",
-          "Add-on products at checkout",
-          "Automated confirmation emails",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: DollarSign,
-        title: "Transparent Fees",
-        description: "$0 to start with a player-covered 5% platform fee, or 0% platform fees on paid plans.",
-        bullets: [
-          "Combined platform + Stripe fee shown at checkout",
-          "$299 per tournament or $499 per league",
-          "Enterprise: $2,999 per year · Add-ons: $99 each",
-          "No setup fees or hidden charges",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: ShoppingBag,
-        title: "Add-On Store",
-        description: "Sell merchandise, mulligans, and extras at checkout.",
-        bullets: [
-          "Full product CRUD (create, edit, delete)",
-          "Inventory tracking",
-          "Product images and descriptions",
-          "Active/inactive toggle",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: ClipboardList,
-        title: "Waitlist Management",
-        description: "Automated queue when your tournament fills up.",
-        bullets: [
-          "Players join waitlist with one click",
-          "24-hour claim window when spots open",
-          "Automatic email notifications",
-          "Convert waitlist to registration",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Gift,
-        title: "Auction & Raffle",
-        description: "Run silent auctions and raffles alongside your tournament.",
-        bullets: [
-          "Item listings with photos",
-          "Live bidding",
-          "Buy-now pricing",
-          "Winner notifications",
-        ],
-        tier: "Pro",
-      },
-      {
-        icon: HeartHandshake,
-        title: "Donations",
-        description: "Accept donations with optional 501(c)(3) tax receipts.",
-        bullets: [
-          "Custom donation amounts",
-          "Nonprofit tax-exempt receipting",
-          "Donor recognition wall",
-          "Recurring donation support",
-        ],
-        tier: "Free",
-      },
-    ],
-  },
-  {
-    name: "5. Communicate with Players",
-    subtitle: "Reach players, sponsors, and volunteers in seconds.",
-    features: [
-      {
-        icon: Mail,
-        title: "Email Templates",
-        description: "Customize every transactional and outreach email.",
-        bullets: [
-          "Editable confirmation emails",
-          "Refund and waitlist notifications",
-          "Group registration confirmations",
-          "Branded sender identity",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: MessageSquare,
-        title: "Messaging",
-        description: "Bulk messaging for last-minute updates and reminders.",
-        bullets: [
-          "Bulk email blasts",
-          "SMS messaging (Pro)",
-          "Scheduled sends",
-          "Delivery tracking",
-        ],
-        tier: "Pro",
-      },
-    ],
-  },
-  {
-    name: "6. Prepare for Tournament Day",
-    subtitle: "Lock in pairings, print materials, and get on-course ready.",
-    features: [
-      {
-        icon: Users,
-        title: "Player & Pairing Management",
-        description: "Manage every golfer, group, and hole assignment in one place.",
-        bullets: [
-          "Drag-and-drop pairings",
-          "CSV import for bulk player upload",
-          "Handicap tracking",
-          "Hole assignments with shotgun support",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Printer,
-        title: "Printables",
-        description: "Print-ready materials with embedded QR codes.",
-        bullets: [
-          "Scorecards with player QR codes",
-          "Cart signs and hole assignments",
-          "Name badges and alpha lists",
-          "Sponsor signs",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: QrCode,
-        title: "On-Site Check-In",
-        description: "Fast check-in with QR code scanning from any phone.",
-        bullets: [
-          "Scan player QR codes from any phone",
-          "Live check-in dashboard",
-          "Tee time and group display",
-          "Last-minute substitutions",
-        ],
-        tier: "Free",
-      },
-    ],
-  },
-  {
-    name: "7. Tournament Day & Live Scoring",
-    subtitle: "Real-time scoring and a leaderboard worthy of the big screen.",
-    features: [
-      {
-        icon: Smartphone,
-        title: "Live Scoring",
-        description: "Players enter scores from their phone — no app to download.",
-        bullets: [
-          "8 scoring formats (Stroke, Stableford, Scramble, Best Ball, more)",
-          "6-character access codes for friction-less entry",
-          "Hole-by-hole entry on any device",
-          "Auto-saves to leaderboard in real-time",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Trophy,
-        title: "Live Leaderboard",
-        description: "Beautiful real-time leaderboard for big-screen displays.",
-        bullets: [
-          "Auto-refreshing standings",
-          "Rotating sponsor banner",
-          "Scrolling sponsor ticker",
-          "Public share link for spectators",
-        ],
-        tier: "Free",
-      },
-    ],
-  },
-  {
-    name: "8. After the Event",
-    subtitle: "Wrap up the books, share the memories, and improve next year.",
-    features: [
-      {
-        icon: BarChart3,
-        title: "Real-Time Budget Tracker",
-        description: "Live revenue, expenses, and profit/loss.",
-        bullets: [
-          "Categorized line items",
-          "Auto-pulled registration revenue",
-          "Manual expense entry",
-          "Exportable summaries",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: FileText,
-        title: "Financial Reports",
-        description: "Complete transaction history and revenue tracking.",
-        bullets: [
-          "Per-tournament and per-org views",
-          "Refund and chargeback tracking",
-          "Stripe payout sync",
-          "1099-K friendly exports",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: ImageIcon,
-        title: "Photo Gallery",
-        description: "Public gallery for tournament photos and recap.",
-        bullets: [
-          "Drag-and-drop uploads",
-          "Public share link",
-          "Player photo tagging",
-          "Download originals",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Star,
-        title: "Post-Event Surveys",
-        description: "Collect feedback and improve next year's event.",
-        bullets: [
-          "Customizable questions",
-          "Email distribution",
-          "Response analytics",
-          "Anonymous responses option",
-        ],
-        tier: "Pro",
-      },
-    ],
-  },
-  {
-    name: "9. Trust & Support",
-    subtitle: "Bank-level security and real human help — included for everyone.",
-    features: [
-      {
-        icon: Shield,
-        title: "PCI Level 1 Payments",
-        description: "Bank-level security on every transaction.",
-        bullets: [
-          "Stripe handles all card data",
-          "TeeVents never holds organizer funds",
-          "Destination charges split at checkout",
-          "Strict PII storage policies",
-        ],
-        tier: "Free",
-      },
-      {
-        icon: Zap,
-        title: "Your Dedicated TeeVents Rep",
-        description: "A named, real person who builds your event — included on every plan.",
-        bullets: [
-          "Branded event page built for you",
-          "Leaderboard and scoring configured by your rep",
-          "Registration, sponsor page, and pairings setup",
-          "Hands-on support before, during, and after your event",
-        ],
-        tier: "Free",
-      },
-    ],
-  },
+const categories: Category[] = [
+  { id: "website", nav: "Website and Event Pages", title: "Custom Website and Event Pages", subtitle: "Your event deserves a site that looks like you hired a designer. We build it for you.", items: [
+    [Globe, "Hosted Event Websites", "Fully hosted event pages with multiple layout templates."],
+    [LayoutIcon, "Visual Site Builder", "Logo, hero imagery, brand colors, section content, and page ordering."],
+    [Link2, "Custom Domain Support", "Brand your URL with your own domain (example: golfyourclub.com)."],
+    [FileText, "Program-Specific Pages", "Schedule, information, sponsors, results, documents, and contact."],
+    [Eye, "Publish and Preview", "Preview your site privately before making it live."],
+    [Unlock, "Public Resource Access", "Schedules, documents, and results available without a login."],
+    [Smartphone, "Mobile Responsive", "Every page looks great on phones and tablets."],
+  ], callout: "Your dedicated rep designs a fully branded event page with your logo, colors, hero image, and sponsor logos. It looks like you hired a web designer because we did the work for you." },
+  { id: "registration", nav: "Registration and Payments", title: "Registration and Payments", subtitle: "Online registration, secure payments, and instant payouts to your account.", items: [
+    [Users, "Individual and Team Registration", "Configurable capacity limits for individuals, teams, and foursomes."],
+    [ClipboardList, "Configurable Registration Forms", "Custom fields including roster details and apparel sizing."],
+    [FileSignature, "Waiver and Consent Capture", "Electronic waivers and consent acknowledgements captured at registration."],
+    [CalendarClock, "Registration Open and Close Scheduling", "Set open and close dates with automatic cutoffs."],
+    [ListOrdered, "Automated Waitlist", "Queued offers with a timed claim window when spots open."],
+    [ShoppingBag, "Add-On Purchases", "Optional add-ons and donations during checkout."],
+    [UserPlus, "Manual and Offline Registration", "Administrators can enter registrations for phone, mail, and walk-in signups."],
+    [Mail, "Automated Confirmation Emails", "Confirmation emails sent to the registrant and all listed group members."],
+    [RotateCcw, "Refund Handling", "Full and partial refunds issued from the administrative dashboard."],
+    [ShieldCheck, "PCI-Compliant Checkout", "Card, Apple Pay, and Google Pay accepted. No card data touches TeeVents."],
+    [Landmark, "Direct-to-Organizer Settlement", "Funds land in your Stripe account. TeeVents never holds your money."],
+    [Receipt, "Tax-Exempt Receipting", "501(c)(3) receipting support for qualifying organizations."],
+  ], callout: "On the No Cost to Start plan, a 5% platform fee is included in each player's registration total. You keep 100% of your event revenue. Your players cover the fee." },
+  { id: "scoring", nav: "Live Scoring and Leaderboards", title: "Live Scoring and Leaderboards", subtitle: "Real-time scores, custom leaderboards, and mobile scoring from any phone.", items: [
+    [Smartphone, "Mobile Live Scoring", "Players score from any phone browser. No app download required."],
+    [Hash, "Hole-by-Hole and Per-Round Entry", "Score entry with validation and correction."],
+    [Zap, "Fast Bulk Score Entry", "Designed for large fields of 100 or more participants."],
+    [Monitor, "Real-Time Public Leaderboards", "Auto-updating leaderboards with a large-format display mode for on-site monitors."],
+    [Palette, "Custom Leaderboard Colors", "Your rep matches every leaderboard to your event colors and logo."],
+    [Layers, "Multi-Division and Multi-Round", "Support for 9, 18, 27, 36, and 54-hole competitions."],
+    [UsersRound, "Team Scoring", "Configurable team size with best-of-N counting scores."],
+    [Trophy, "Multiple Scoring Formats", "Scramble, Stroke Play, Stableford, Best Ball, Alternate Shot, and more."],
+    [Coins, "Skins and Deuces", "Gross and net skins with automatic winner calculation."],
+    [Flag, "Closest-to-the-Pin", "Track and display side-game winners."],
+    [QrCode, "QR Code Access", "Participants can access scoring and leaderboard pages via QR code."],
+    [KeyRound, "Short Numeric Access Codes", "Score without creating an account."],
+  ], callout: "Display your live leaderboard on a TV monitor at the clubhouse. It updates in real time as scores are entered." },
+  { id: "pairings", nav: "Pairings and Scheduling", title: "Pairings and Scheduling", subtitle: "Drag-and-drop pairings, tee times, and facility management.", items: [
+    [Clock, "Start-Time and Mass-Start Scheduling", "Group and heat assignment for shotgun starts and tee times."],
+    [Move, "Drag-and-Drop Pairings", "Assign participants to groups, times, and locations in seconds."],
+    [Grid3x3, "Group Sizes of 2, 3, or 4", "Pairing templates for repeatable setups."],
+    [Shuffle, "Auto-Assign Pairings", "Auto-generate groups by handicap or random."],
+    [Building2, "Facility and Venue Records", "Booking records with double-booking conflict detection."],
+    [CalendarDays, "Drag-to-Move Calendar", "Games, practices, and meetings with reschedule and cancel states."],
+    [Printer, "Printable Operational Materials", "Scorecards, signage, pairing sheets, and rosters."],
+    [PencilLine, "Editable Content Overrides", "Customize printed materials on the fly."],
+    [Repeat, "League Scheduling", "Season-long scheduling with recurring weekly events."],
+  ] },
+  { id: "communication", nav: "Communication", title: "Communication Tools", subtitle: "Bulk email, SMS, and automated reminders. All from one dashboard.", items: [
+    [Send, "Bulk Email", "Send to all participants, coaches, or a selected team or group."],
+    [MessageSquare, "Bulk SMS and Text Messaging", "Text the same audience groups directly from the platform."],
+    [Timer, "Scheduled Sends", "Schedule messages for future delivery."],
+    [MailCheck, "Automated Transactional Email", "Confirmations, reminders, waitlist offers, and receipts."],
+    [Inbox, "Two-Way Support Messaging", "Participant and organizer messages routed to an administrative inbox."],
+    [History, "Communication History", "Complete log of every message sent for recordkeeping."],
+    [BadgeCheck, "Verified Sending Domain", "Email delivered reliably with verified sending configuration."],
+  ] },
+  { id: "sponsorship", nav: "Sponsorship and Fundraising", title: "Sponsorship and Fundraising", subtitle: "Put your sponsors in front of every player and raise more for your cause.", items: [
+    [Award, "Tiered Sponsor Packages", "Create packages at different price points."],
+    [Megaphone, "Public Sponsor Pages", "Dedicated sponsor pages on your event site."],
+    [Image, "Logo Placement", "Sponsor logos on your event page and live leaderboard."],
+    [MonitorSmartphone, "Digital Signage", "Clickable sponsor logos on leaderboard and mobile scoring pages."],
+    [HeartHandshake, "Donation Widgets", "Collect donations at checkout and on your event page."],
+    [Gavel, "Silent Auctions", "Mobile bidding with auto-draw at close."],
+    [Ticket, "50/50 Raffles", "Digital raffle sales with automatic winner selection."],
+    [Receipt, "501(c)(3) Receipting", "Tax-exempt receipting for qualifying organizations."],
+    [Star, "Donor Recognition Wall", "Thank your donors publicly on your event page."],
+  ] },
+  { id: "reporting", nav: "Reporting and Financials", title: "Reporting and Financials", subtitle: "Real-time visibility into every dollar that moves through your event.", items: [
+    [PiggyBank, "Live Budget Tracking", "Track every dollar of revenue and expense as it happens."],
+    [FileSpreadsheet, "CSV Exports", "Export registrations, participants, rosters, schedules, results, and transactions."],
+    [FileDown, "PDF Reports", "Print or save schedules, reports, and invoices as PDF."],
+    [BarChart3, "Post-Event Summary Reports", "Participation and revenue reports after every event."],
+    [Calculator, "Financial Reports", "Line-item detail suitable for reconciliation."],
+    [FileStack, "Invoice Generation", "Multiple line items with purchase-order reference and status tracking."],
+    [Scale, "GAAP and GASB Views", "Government accounting-standard views with CSV and PDF export."],
+    [RefreshCw, "Stripe Payout Sync", "Every payout synced with your Stripe account."],
+    [FileCheck, "1099-K Friendly Exports", "Tax-ready exports for your accountant."],
+  ] },
+  { id: "security", nav: "Admin and Security", title: "Admin and Security", subtitle: "Enterprise-grade security and role-based access for your whole team.", items: [
+    [LayoutDashboard, "Central Admin Dashboard", "Categorized navigation with everything in one place."],
+    [Lock, "Role-Based Access Control", "Granular per-permission assignment for staff and volunteers."],
+    [Network, "Multi-Organization Support", "Separate data for each organization or tenant."],
+    [Database, "Row-Level Database Security", "Participant and financial data secured at the database layer."],
+    [Bell, "Administrator Activity Notifications", "Alerts for new programs, registrations, and transactions."],
+    [Compass, "Guided Setup Walkthrough", "Step-by-step setup for new programs."],
+    [ListChecks, "Interactive Operational Checklist", "Ensures nothing is missed before event day."],
+    [Activity, "Automated Daily Health Monitoring", "Public pages checked daily with email alerts on failure."],
+    [Archive, "Program Archival", "Historical record retention with double-confirmation deletion."],
+    [CreditCard, "PCI Level 1 Payments", "Bank-level Stripe security. We never hold your money."],
+    [ShieldCheck, "256-bit SSL Encryption", "Encrypted in transit and at rest."],
+    [ShieldAlert, "Stripe Radar Fraud Protection", "Built-in fraud protection on every payment."],
+  ] },
+  { id: "players", nav: "Player Experience", title: "For Your Players", subtitle: "A simple, modern experience that keeps golfers coming back.", items: [
+    [CheckCircle2, "Easy Registration", "Register online in minutes with a clean, mobile-friendly form."],
+    [QrCode, "QR Check-In", "Check in on event day by scanning a QR code."],
+    [Smartphone, "Mobile Scoring", "Score from any phone. No app download required."],
+    [LineChart, "Live Leaderboard Access", "Follow the leaderboard in real time."],
+    [Mail, "Instant Email Confirmations", "Confirmation emails with calendar invites."],
+    [Home, "Player Hub", "One place for schedule, pairings, scoring, and results."],
+    [Trophy, "Public Results", "View final leaderboards and standings after the event."],
+  ] },
 ];
 
-const TierBadge = ({ tier }: { tier: Tier }) => {
-  if (tier === "Pro") {
-    return (
-      <Badge className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 border-0 shrink-0">
-        Pro
-      </Badge>
-    );
-  }
-  return (
-    <Badge variant="secondary" className="shrink-0">
-      Free
-    </Badge>
-  );
-};
+const multiSport: Item[] = [
+  [ListTree, "Sport Type Designation", "Every program can be assigned a sport type."],
+  [CalendarRange, "Season Records Independent of Sport", "Recurring seasonal programs supported."],
+  [Users, "Team Records with Rosters", "Rosters, coach assignment, and per-season standings."],
+  [Map, "Facility Records Across Sports", "Shared facility records for fields, courts, and courses."],
+  [Dumbbell, "Sport-Agnostic Registration and Payments", "The same core platform supports any sport."],
+  [Settings2, "Per-Sport Form Configuration", "Custom registration forms per sport."],
+];
 
-const Features = () => {
+const fade = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "-60px" }, transition: { duration: 0.5 } };
+
+function Section({ id, title, subtitle, items, callout, muted }: { id: string; title: string; subtitle: string; items: Item[]; callout?: string; muted?: boolean }) {
+  return (
+    <section id={id} aria-labelledby={`${id}-title`} className={`scroll-mt-32 py-16 md:py-20 ${muted ? "bg-muted/40" : "bg-background"}`}>
+      <div className="container mx-auto max-w-6xl px-4">
+        <motion.div {...fade} className="mx-auto mb-10 max-w-3xl text-center">
+          <h2 id={`${id}-title`} className="font-display text-3xl font-bold text-primary md:text-4xl">{title}</h2>
+          <p className="mt-3 text-base text-muted-foreground md:text-lg">{subtitle}</p>
+        </motion.div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {items.map(([Icon, name, desc], i) => (
+            <motion.div key={name} {...fade} transition={{ duration: 0.45, delay: Math.min(i * 0.04, 0.3) }} className="flex gap-3 rounded-xl border border-border bg-card p-5 shadow-sm">
+              <div className="h-fit rounded-lg bg-secondary/20 p-2 text-primary"><Icon className="h-5 w-5" aria-hidden="true" /></div>
+              <div><h3 className="font-body text-base font-semibold text-foreground">{name}</h3><p className="mt-1 text-sm text-muted-foreground">{desc}</p></div>
+            </motion.div>
+          ))}
+        </div>
+        {callout && (
+          <motion.div {...fade} className="mx-auto mt-8 max-w-4xl rounded-xl border-l-4 border-secondary bg-primary p-6 text-primary-foreground">
+            <p className="text-base md:text-lg">{callout}</p>
+          </motion.div>
+        )}
+      </div>
+    </section>
+  );
+}
+
+export default function Features() {
   return (
     <Layout>
-      <SEO
-        title="All Features | TeeVents Golf Tournament Software"
-        description="Explore every TeeVents feature in tournament-day order — from planning and registration through live scoring and post-event reporting. See what's included Free vs. Pro."
-      />
-      <DedicatedRepBadge />
-      <div className="bg-gradient-to-b from-background to-muted/30">
-        <div className="container mx-auto px-4 py-16 md:py-20">
-          <header className="text-center max-w-3xl mx-auto mb-10 md:mb-14">
-            <h1 className="text-4xl md:text-5xl font-display font-bold text-foreground mb-4">
-              Everything you need to run a great tournament
-            </h1>
-            <p className="text-lg text-muted-foreground">
-              Your named TeeVents rep builds your event page, registration, leaderboard, and scoring setup — on every plan. Everything you need, ready for your tournament.
-            </p>
-            <div className="mt-7 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl mx-auto">
-              <div className="rounded-lg border bg-card p-5 text-left">
-                <p className="font-display text-xl font-bold">Free</p>
-                <p className="mt-1 text-sm text-muted-foreground">$0 upfront with a 5% platform fee on registrations.</p>
-              </div>
-              <div className="flex shrink-0 items-center justify-center font-bold text-muted-foreground">OR</div>
-              <div className="rounded-lg border border-primary/40 bg-card p-5 text-left">
-                <p className="font-display text-xl font-bold">Per-Event</p>
-                <p className="mt-1 text-sm text-muted-foreground">$299 per tournament with 0% platform fees.</p>
-              </div>
-            </div>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
-                <Link to="/signup?plan=free">Start for Free</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/signup?plan=per-event">Start with Per-Event — $299</Link>
-              </Button>
-            </div>
-          </header>
+      <SEO title="Golf Tournament Software Features" description="Every TeeVents feature: event websites, registration and payments, live scoring, pairings, communication, sponsorship, reporting, security, and player tools." path="/features" />
 
-          <div className="space-y-14">
-            {categories.map((cat) => (
-              <section key={cat.name}>
-                <div className="mb-6 border-b pb-3">
-                  <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground">
-                    {cat.name}
-                  </h2>
-                  <p className="text-sm md:text-base text-muted-foreground mt-1">
-                    {cat.subtitle}
-                  </p>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                  {cat.features.map((f) => {
-                    const Icon = f.icon;
-                    return (
-                      <Card key={f.title} className="h-full">
-                        <CardHeader>
-                          <div className="flex items-start justify-between gap-3 mb-2">
-                            <div className="flex items-center gap-3">
-                              <div className="p-2 rounded-md bg-primary/10 text-primary">
-                                <Icon className="h-5 w-5" />
-                              </div>
-                              <CardTitle className="text-lg">{f.title}</CardTitle>
-                            </div>
-                            <TierBadge tier={f.tier} />
-                          </div>
-                          <p className="text-sm text-muted-foreground">{f.description}</p>
-                        </CardHeader>
-                        <CardContent>
-                          <ul className="space-y-1.5">
-                            {f.bullets.map((b) => (
-                              <li key={b} className="text-sm text-foreground flex gap-2">
-                                <span className="text-primary mt-1.5 h-1 w-1 rounded-full bg-primary shrink-0" />
-                                <span>{b}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </CardContent>
-                      </Card>
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
-          </div>
+      <section className="bg-primary py-20 text-center text-primary-foreground md:py-28">
+        <motion.div {...fade} className="container mx-auto max-w-4xl px-4">
+          <p className="text-sm font-semibold tracking-widest text-secondary">PLATFORM FEATURES</p>
+          <h1 className="mt-4 font-display text-4xl font-bold leading-tight md:text-6xl">Everything You Need to Run a Professional Golf Tournament</h1>
+          <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/85">From registration to payouts, TeeVents handles every part of your event. And every event includes a dedicated rep who builds it for you.</p>
+          <Button asChild variant="secondary" size="lg" className="mt-9 font-bold"><Link to="/get-started">GET STARTED<ArrowRight /></Link></Button>
+        </motion.div>
+      </section>
 
-          <div className="mt-16 text-center bg-card border rounded-xl p-8 md:p-12">
-            <h3 className="text-2xl md:text-3xl font-display font-bold mb-3">
-              Ready to run your next tournament?
-            </h3>
-            <p className="text-muted-foreground mb-6 max-w-xl mx-auto">
-              Choose $0 upfront with a 5% platform fee, or pay $299 once for your tournament and remove the platform fee.
-            </p>
-            <div className="flex flex-wrap justify-center gap-3">
-              <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
-                <Link to="/signup?plan=free">Start for Free</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/signup?plan=per-event">Start with Per-Event — $299</Link>
-              </Button>
-            </div>
-          </div>
+      <nav aria-label="Feature categories" className="sticky top-16 z-30 border-b border-border bg-background/95 backdrop-blur">
+        <div className="container mx-auto flex gap-2 overflow-x-auto px-4 py-3 [scrollbar-width:none]">
+          {[...categories.map((c) => [c.id, c.nav]), ["multi-sport", "Multi-Sport"]].map(([id, label]) => (
+            <a key={id} href={`#${id}`} onClick={(e) => { e.preventDefault(); document.getElementById(id)?.scrollIntoView({ behavior: "smooth" }); }} className="shrink-0 whitespace-nowrap rounded-full border border-border px-4 py-1.5 text-sm font-medium text-primary transition-colors hover:border-secondary hover:bg-secondary/15">{label}</a>
+          ))}
         </div>
-      </div>
+      </nav>
+
+      {categories.map((c, i) => <Section key={c.id} {...c} muted={i % 2 === 1} />)}
+
+      <Section id="multi-sport" title="Built for Golf. Ready for Multi-Sport." subtitle="TeeVents was built for golf and is architected to handle any sport your organization runs." items={multiSport} muted />
+
+      <section className="bg-primary py-20 text-center text-primary-foreground">
+        <motion.div {...fade} className="container mx-auto max-w-3xl px-4">
+          <h2 className="font-display text-3xl font-bold md:text-5xl">Ready to See Every Feature in Action?</h2>
+          <p className="mt-5 text-lg text-primary-foreground/85">Free for organizers. A dedicated rep builds it for you.</p>
+          <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
+            <Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/get-started">GET STARTED<ArrowRight /></Link></Button>
+            <Button asChild variant="outline" size="lg" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/request-sample">REQUEST A SAMPLE</Link></Button>
+          </div>
+        </motion.div>
+      </section>
     </Layout>
   );
-};
-
-export default Features;
+}

@@ -25,6 +25,6 @@ export default function FeatureAddonContactForm({ addonKey, amount, divisions }:
     </div>
     <div><Label htmlFor="feature-notes">Event link or additional contact details (optional)</Label><Textarea id="feature-notes" maxLength={1000} value={form.contactNotes} onChange={e => setForm({ ...form, contactNotes: e.target.value })} /></div>
     <div><Label htmlFor="feature-discount">Discount code (optional)</Label><Input id="feature-discount" maxLength={50} value={form.discountCode} onChange={e => setForm({ ...form, discountCode: e.target.value })} /></div>
-    <Button type="submit" size="lg" className="w-full" disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <CreditCard />}Pay ${(amount / 100).toFixed(0)} with Stripe</Button>
+    <Button type="submit" variant="secondary" size="lg" className="w-full" disabled={busy}>{busy ? <Loader2 className="animate-spin" /> : <CreditCard />}Pay ${(amount / 100).toFixed(0)} with Stripe</Button>
   </form>;
 }

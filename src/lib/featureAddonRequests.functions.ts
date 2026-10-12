@@ -84,14 +84,16 @@ export const adminListFeatureAddonRequests = createServerFn({ method: "POST" })
     const { data, error } = await admin.from("feature_addon_requests").select("*").order("created_at", { ascending: false }).limit(100);
     if (error) throw new Error(error.message);
     const key = process.env["STRIPE_SECRET_KEY"];
-    if (key) await Promise.all((data || []).filter((r: any) => r.status === "pending" && r.stripe_session_id).map(async (r: any) => {
-      const response = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(r.stripe_session_id)}`, { headers: { Authorization: `Bearer ${key}` } });
+    if (key) for (const r of (data || []).filter((r: any) => r.status === "pending" && r.stripe_session_id).slice(0, 10)) {
+      try {
+      const response = await fetch(`https://api.stripe.com/v1/checkout/sessions/${encodeURIComponent(r.stripe_session_id)}`, { headers: { Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(3000) });
       const session = await response.json() as any;
       if (response.ok && session.metadata?.request_id === r.id && (session.payment_status === "paid" || session.payment_status === "no_payment_required")) {
         const result = await admin.from("feature_addon_requests").update({ status: "paid" }).eq("id", r.id).eq("status", "pending");
         if (!result.error) r.status = "paid";
       }
-    }));
+      } catch { /* Keep pending when the payment provider is unavailable. */ }
+    }
     return { requests: data || [] };
   });
 

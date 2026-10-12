@@ -1,196 +1,80 @@
-import { motion } from "framer-motion";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Search } from "lucide-react";
 import Layout from "@/components/Layout";
-import SEO from "@/components/SEO";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import { HelpCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { FinalCta, GetStarted, Hero, OutlineLight, h2 } from "@/components/marketing/PageBits";
+import { FAQ_CATEGORIES } from "@/data/faqContent";
+import { supabase } from "@/integrations/supabase/client";
 
-const faqSections = [
-  {
-    title: "General",
-    items: [
-      {
-        q: "What is TeeVents.golf?",
-        a: "TeeVents is a complete golf tournament management platform that lets you build a custom branded event website, handle registrations & payments, live scoring, pairings, budget tracking, and more — with optional white-glove consulting services.",
-      },
-      {
-        q: "How do I create my first tournament?",
-        a: "After purchasing a Starter or Pro plan, simply complete the quick onboarding (organization name + template), then use the guided dashboard to set up your event in minutes.",
-      },
-      {
-        q: "Who is this built for?",
-        a: "Nonprofit organizations, corporations, charity golf outings, corporate events, and any group running golf tournaments.",
-      },
-    ],
-  },
-  {
-    title: "Registration & Features",
-    items: [
-      {
-        q: "What payment methods are accepted?",
-        a: "Credit cards, Apple Pay, Google Pay, and more — all processed securely through Stripe.",
-      },
-      {
-        q: "Can I accept group registrations (foursomes, etc.)?",
-        a: "Yes — flexible group sizes from 1–6 players are fully supported with one checkout.",
-      },
-      {
-        q: "How does live scoring and leaderboards work?",
-        a: "Players or volunteers enter scores via mobile; results update instantly on the public leaderboard.",
-      },
-      {
-        q: "What if it rains or the event is postponed?",
-        a: "You control the rain date policy in tournament settings. We support automatic transfers to a new date, full refunds, or custom handling — full flexibility for organizers.",
-      },
-    ],
-  },
-  {
-    title: "Payments & Fees",
-    items: [
-      {
-        q: "What are the fees?",
-        a: "Every transaction has two transparent fees:\n\n• TeeVents platform fee: 5% per transaction (covers the full golf tournament management platform, custom website, live scoring, pairings, budget tools, white-glove support, etc.)\n• Stripe processing fee: ~2.9% + $0.30 (standard credit-card fee)\n\nTotal extra cost example: on a $100 registration, total fees are $8.20 when passed to participants.",
-      },
-      {
-        q: "Who pays the fees?",
-        a: "By default (toggle ON), fees are passed on to participants at checkout so your organization receives the full advertised price. You can turn the toggle OFF in tournament settings to absorb the fees yourself — participants then pay exactly the advertised price, and the 5% platform fee is deducted from your proceeds.",
-      },
-      {
-        q: "When and how often does my organization get paid?",
-        a: "Payments are split automatically at checkout using Stripe Connect destination charges. TeeVents never holds your money — net proceeds (after the 5% platform fee and Stripe processing fee) are deposited directly into your connected Stripe account. You withdraw to your bank on your own schedule through Stripe.",
-      },
-      {
-        q: "How are refunds and chargebacks handled?",
-        a: "You set your own refund policy in tournament settings (recommended default: full refunds up to 30 days before the event; tiered options like 50% between 15-30 days are available). Because payments are made directly to your connected Stripe account via Stripe Connect Direct Charges, refunds and chargebacks are processed from your Stripe balance. TeeVents never holds your funds — you are the merchant of record and manage refunds with one click from your dashboard. You also set a separate rain date policy for weather-related postponements.",
-      },
-      {
-        q: "Can I get my money faster?",
-        a: "Funds settle directly in your Stripe account at the moment of checkout — there is no payout schedule to wait on. Stripe transfers to your bank on its standard 2 business-day rolling schedule (or daily/weekly/instant if you configure it in Stripe). Brand-new Stripe accounts go through a standard 2–7 business-day initial review.",
-      },
-      {
-        q: "Are there any hidden fees?",
-        a: "No. All fees are shown clearly at checkout and in your dashboard. There are no monthly subscription fees beyond your chosen Starter/Pro plan.",
-      },
-    ],
-  },
-  {
-    title: "Payouts & Finances",
-    items: [
-      {
-        q: "How do I set up my organization's payout bank account?",
-        a: "Go to Settings → Payouts and enter your bank details once. Future payouts are automatic.",
-      },
-      {
-        q: "Can I track my event budget and sponsor money?",
-        a: "Yes — the full Budget & Finances dashboard shows real-time income, expenses, and a transaction-level view of every Stripe charge, the 5% platform fee, processing fees, and net to your account.",
-      },
-    ],
-  },
-  {
-    title: "Security & Support",
-    items: [
-      {
-        q: "Is my data and money secure?",
-        a: "Yes — we use enterprise-grade Stripe security and follow all PCI compliance standards. TeeVents never holds your money — payments are split automatically at checkout via Stripe Connect, and net proceeds go directly to your connected Stripe account.",
-      },
-      {
-        q: "What if I need help?",
-        a: "Use the in-app chat, email info@teevents.golf, or book a call. White-glove consulting is also available.",
-      },
-      {
-        q: "Can I cancel my plan?",
-        a: "Yes — cancel anytime with no long-term contracts. Existing events remain accessible.",
-      },
-      {
-        q: "Do you support handicap systems or golf-specific formats?",
-        a: "Yes — full support for scrambles, stroke play, flighting, contests (closest-to-pin, longest drive), mulligans, and more.",
-      },
-    ],
-  },
-];
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+const allKeys = FAQ_CATEGORIES.flatMap(c => c.items.map(i => `${c.name}::${i.q}`));
+const jsonLd = JSON.stringify({ "@context": "https://schema.org", "@type": "FAQPage", mainEntity: FAQ_CATEGORIES.flatMap(c => c.items.map(i => ({ "@type": "Question", name: i.q, acceptedAnswer: { "@type": "Answer", text: i.a } }))) });
 
-const FAQ = () => {
+export default function FAQ() {
+  const [q, setQ] = useState("");
+  const [open, setOpen] = useState<string[]>([]);
+  const [closedCats, setClosedCats] = useState<string[]>([]);
+  const term = q.trim().toLowerCase();
+  const cats = useMemo(() => FAQ_CATEGORIES.map(c => ({ ...c, items: c.items.filter(i => !term || `${i.q} ${i.a}`.toLowerCase().includes(term)) })).filter(c => c.items.length), [term]);
+
+  const onChange = (cat: string, vals: string[]) => {
+    const added = vals.filter(v => !open.includes(v));
+    added.forEach(v => { const question = v.split("::")[1]; void supabase.from("faq_question_clicks").insert({ category: cat, question }); });
+    setOpen([...open.filter(v => !v.startsWith(`${cat}::`)), ...vals]);
+  };
+  const jump = (name: string) => {
+    setClosedCats(cs => cs.filter(c => c !== name));
+    document.getElementById(slug(name))?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <Layout>
-      <SEO
-        title="FAQ"
-        description="Answers to common questions about TeeVents golf tournament management — payments, fees, payouts, and support."
-        path="/faq"
-      />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            "@context": "https://schema.org",
-            "@type": "FAQPage",
-            mainEntity: faqSections.flatMap((s) =>
-              s.items.map((i) => ({
-                "@type": "Question",
-                name: i.q,
-                acceptedAnswer: { "@type": "Answer", text: i.a },
-              }))
-            ),
-          }),
-        }}
-      />
-
-      <section className="bg-primary pt-24 pb-16">
-        <div className="container mx-auto px-4 text-center max-w-3xl">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-          >
-            <HelpCircle className="h-12 w-12 text-secondary mx-auto mb-4" />
-            <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Frequently Asked Questions
-            </h1>
-            <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
-              Everything you need to know about TeeVents.
-            </p>
-          </motion.div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: jsonLd }} />
+      <Hero eyebrow="FREQUENTLY ASKED QUESTIONS" title="Questions? We Have Answers." subtitle="Everything you need to know about TeeVents, from pricing to payments to live scoring. If you do not see your question here, reach out and a real person will get back to you within one business day.">
+        <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
+          <Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/contact">CONTACT US</Link></Button>
+          <OutlineLight to="/get-started">GET STARTED</OutlineLight>
         </div>
-      </section>
+      </Hero>
 
-      <section className="bg-background py-16">
-        <div className="container mx-auto px-4 max-w-3xl">
-          {faqSections.map((section, sIdx) => (
-            <motion.div
-              key={section.title}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: sIdx * 0.1 }}
-              className="mb-10"
-            >
-              <h2 className="text-xl font-display font-bold text-foreground mb-4 border-b border-border pb-2">
-                {section.title}
-              </h2>
-              <Accordion type="multiple" className="space-y-2">
-                {section.items.map((item, idx) => (
-                  <AccordionItem
-                    key={idx}
-                    value={`${sIdx}-${idx}`}
-                    className="border border-border rounded-lg px-4 data-[state=open]:bg-muted/30"
-                  >
-                    <AccordionTrigger className="text-left font-medium text-foreground hover:no-underline py-4">
-                      {item.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="text-muted-foreground leading-relaxed pb-4 whitespace-pre-line">
-                      {item.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </motion.div>
-          ))}
+      <nav aria-label="FAQ categories" className="sticky top-16 z-30 border-b border-border bg-background/95 backdrop-blur">
+        <div className="container mx-auto flex gap-2 overflow-x-auto px-4 py-3">
+          {FAQ_CATEGORIES.map(c => <button key={c.name} onClick={() => jump(c.name)} className="shrink-0 rounded-full border border-border px-3 py-1.5 text-sm font-medium text-foreground hover:border-secondary hover:bg-secondary/15">{c.name}</button>)}
         </div>
-      </section>
+      </nav>
+
+      <section className="py-12"><div className="container mx-auto max-w-3xl px-4">
+        <div className="relative"><Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+          <Input aria-label="Search questions" placeholder="Search questions by keyword" value={q} onChange={e => setQ(e.target.value)} className="h-12 pl-10 text-base" /></div>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => { setOpen(allKeys); setClosedCats([]); }}>Expand All</Button>
+          <Button variant="outline" size="sm" onClick={() => setOpen([])}>Collapse All</Button>
+          {term && <span className="text-sm text-muted-foreground">{cats.reduce((n, c) => n + c.items.length, 0)} matching questions</span>}
+        </div>
+
+        {cats.length === 0 && <p className="mt-12 text-center text-muted-foreground">No questions match your search. <Link to="/contact" className="font-semibold text-primary underline">Contact us</Link> and a real person will help.</p>}
+        {cats.map(c => {
+          const collapsed = closedCats.includes(c.name) && !term;
+          return (
+            <section key={c.name} id={slug(c.name)} className="mt-12 scroll-mt-36">
+              <button className="flex w-full items-center justify-between text-left" aria-expanded={!collapsed} onClick={() => setClosedCats(cs => collapsed ? cs.filter(x => x !== c.name) : [...cs, c.name])}>
+                <h2 className={h2}>{c.name}</h2><span className="text-sm font-semibold text-muted-foreground">{collapsed ? "Show" : "Hide"}</span>
+              </button>
+              {!collapsed && <Accordion type="multiple" value={open.filter(v => v.startsWith(`${c.name}::`))} onValueChange={v => onChange(c.name, v)} className="mt-4 rounded-xl border border-border bg-card px-5 shadow-sm">
+                {c.items.map(i => <AccordionItem key={i.q} value={`${c.name}::${i.q}`}><AccordionTrigger className="text-left">{i.q}</AccordionTrigger><AccordionContent className="text-muted-foreground">{i.a}</AccordionContent></AccordionItem>)}
+              </Accordion>}
+            </section>);
+        })}
+      </div></section>
+
+      <FinalCta title="Still Have Questions?" subtitle="We are here to help. Reach out and a real person will get back to you within one business day.">
+        <Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/contact">CONTACT US</Link></Button>
+        <OutlineLight to="/get-started">GET STARTED</OutlineLight>
+      </FinalCta>
     </Layout>
   );
-};
-
-export default FAQ;
+}
+void GetStarted;

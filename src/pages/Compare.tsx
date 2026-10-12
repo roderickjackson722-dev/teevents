@@ -1,392 +1,142 @@
-import { useMemo, useState, useEffect } from "react";
-import { Link, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
-import { Check, X, AlertTriangle, ArrowRight, Calendar } from "lucide-react";
+import { AlertTriangle, Check, Globe, Paintbrush, Rocket, Shield, Trophy, User, X } from "lucide-react";
 import Layout from "@/components/Layout";
-import { repComparisonRows } from "@/components/DedicatedRep";
-import SEO from "@/components/SEO";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Callout, FinalCta, Hero, IconCard, SectionHead, fade } from "@/components/marketing/PageBits";
 
-const BOOK_DEMO_URL = "/request-sample";
-
-type Status = "yes" | "no" | "warn";
-interface CompRow {
-  feature: string;
-  competitor: string;
-  teevents: string;
-  cStatus: Status;
-  tvStatus: Status;
-}
-interface CompSection {
-  category: string;
-  rows: CompRow[];
-}
-interface Comparison {
-  id: string;
-  name: string;
-  tagline: string;
-  hookCtaTitle: string;
-  sections: CompSection[];
-}
-
-const COMPARISONS: Comparison[] = [
-  {
-    id: "eventbrite",
-    name: "Eventbrite",
-    tagline: "Eventbrite is great for concerts. TeeVents is built for golf tournaments.",
-    hookCtaTitle: "Ready to Switch from Eventbrite?",
-    sections: [
-      {
-        category: "Golf-Specific Features",
-        rows: [
-          ...repComparisonRows.map(([feature, competitor, teevents]): CompRow => ({ feature, competitor, teevents, cStatus: "warn", tvStatus: "yes" })),
-          { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, embeddable", cStatus: "no", tvStatus: "yes" },
-          { feature: "Hole Sponsors", competitor: "Basic logo only", teevents: "Portal with asset delivery", cStatus: "no", tvStatus: "yes" },
-          { feature: "Team Registration (Foursomes)", competitor: "Clunky workarounds", teevents: "Native group registration", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Handicap Tracking", competitor: "Not available", teevents: "Stored per player", cStatus: "no", tvStatus: "yes" },
-          { feature: "Pairings & Tee Times", competitor: "Manual spreadsheets", teevents: "Drag-and-drop, auto-notify", cStatus: "no", tvStatus: "yes" },
-          { feature: "Volunteer Check-in", competitor: "Not available", teevents: "QR code, shift scheduling", cStatus: "no", tvStatus: "yes" },
-          { feature: "50/50 Raffles & Auctions", competitor: "Not available", teevents: "Built-in auction system", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Pricing",
-        rows: [
-          { feature: "Platform Fee", competitor: "3.7% + $1.79/ticket", teevents: "5%", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Payment Processing Fee", competitor: "2.9% + $0.30 (extra)", teevents: "2.9% + $0.30 (Stripe)", cStatus: "warn", tvStatus: "warn" },
-          { feature: "Total on $100 Registration", competitor: "~$8.69+", teevents: "$8.20", cStatus: "no", tvStatus: "yes" },
-          { feature: "Monthly Subscription", competitor: "No (per-event fees)", teevents: "No", cStatus: "yes", tvStatus: "yes" },
-          { feature: "Pass Fees to Golfers", competitor: "Not transparent", teevents: "Yes (toggle on/off)", cStatus: "warn", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Payouts",
-        rows: [
-          { feature: "Payout Speed", competitor: "Holds funds until after event", teevents: "Automatic split at checkout", cStatus: "no", tvStatus: "yes" },
-          { feature: "Who Holds Funds", competitor: "Eventbrite holds everything", teevents: "Stripe holds — TeeVents never touches", cStatus: "no", tvStatus: "yes" },
-          { feature: "Fund Holds", competitor: "Arbitrary, unclear", teevents: "None — Stripe sends net proceeds directly", cStatus: "no", tvStatus: "yes" },
-          { feature: "Withdraw Funds", competitor: "Wait for Eventbrite payout", teevents: "Withdraw from your Stripe anytime", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Customization",
-        rows: [
-          { feature: "Branded Tournament Site", competitor: "Limited", teevents: "Full branding", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Custom Domain", competitor: "Limited", teevents: "Free (CNAME setup)", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Embed Leaderboard", competitor: "No", teevents: "Yes (iframe)", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Support",
-        rows: [
-          { feature: "Customer Support", competitor: "AI bots, unresponsive", teevents: "Direct email (info@teevents.golf)", cStatus: "no", tvStatus: "yes" },
-          { feature: "Phone Support", competitor: "No", teevents: "Dedicated rep included on every plan", cStatus: "no", tvStatus: "yes" },
-          { feature: "Onboarding Help", competitor: "No", teevents: "Free setup assistance", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Trust & Safety",
-        rows: [
-          { feature: "Golf-Specific Experience", competitor: "No", teevents: "Built by golf tournament experts", cStatus: "no", tvStatus: "yes" },
-          { feature: "Organizer Reviews", competitor: "Mixed (fees, support complaints)", teevents: "Positive (golf-focused)", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Platform Transparency", competitor: "Hidden fees", teevents: "Clear, simple pricing", cStatus: "warn", tvStatus: "yes" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "golf-genius",
-    name: "Golf Genius",
-    tagline: "TeeVents gives you everything Golf Genius offers — at a fraction of the cost.",
-    hookCtaTitle: "Ready to Switch from Golf Genius?",
-    sections: [
-      {
-        category: "Pricing & Commitment",
-        rows: [
-          ...repComparisonRows.map(([feature, competitor, teevents]): CompRow => ({ feature, competitor, teevents, cStatus: "warn", tvStatus: "yes" })),
-          { feature: "Pricing Model", competitor: "Annual subscription + fees", teevents: "$0 upfront + 5% platform fee", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Contract", competitor: "Annual contract required", teevents: "No long-term commitment", cStatus: "no", tvStatus: "yes" },
-          { feature: "Setup Fees", competitor: "Often charged at onboarding", teevents: "None", cStatus: "warn", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Tournament Features",
-        rows: [
-          { feature: "Pin Sheets (Hole Locations)", competitor: "Not native", teevents: "Built-in PDF generator", cStatus: "no", tvStatus: "yes" },
-          { feature: "Auctions & Raffles", competitor: "Limited / add-on", teevents: "Native silent auction + raffle", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Sponsorship Portal", competitor: "Basic logo placement", teevents: "Full asset delivery + ROI reports", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Volunteer Management", competitor: "Not native", teevents: "Built-in QR check-in & scheduling", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Experience",
-        rows: [
-          { feature: "Learning Curve", competitor: "Steeper — for pros", teevents: "Low — intuitive dashboard", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Onboarding Time", competitor: "Hours to days", teevents: "Published in under 60 seconds", cStatus: "warn", tvStatus: "yes" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "zeffy",
-    name: "Zeffy",
-    tagline: "Zeffy handles donations. TeeVents runs your whole golf tournament.",
-    hookCtaTitle: "Ready for Professional Golf Tools?",
-    sections: [
-      {
-        category: "Golf-Specific Features",
-        rows: [
-          ...repComparisonRows.map(([feature, competitor, teevents]): CompRow => ({ feature, competitor, teevents, cStatus: "warn", tvStatus: "yes" })),
-          { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, real-time", cStatus: "no", tvStatus: "yes" },
-          { feature: "Mobile Scoring", competitor: "Not available", teevents: "Yes — no app download required", cStatus: "no", tvStatus: "yes" },
-          { feature: "Pairings & Tee Times", competitor: "No", teevents: "Drag-and-drop scheduling", cStatus: "no", tvStatus: "yes" },
-          { feature: "Skins & Handicaps", competitor: "No", teevents: "Native golf calculations", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Tournament Management",
-        rows: [
-          { feature: "Sponsorship Packages", competitor: "Limited", teevents: "Yes — dedicated sponsor portal", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Auction with mobile bidding", competitor: "Basic", teevents: "Yes — native auctions", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Branded tournament website", competitor: "Basic form page", teevents: "Full custom event site", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "givebutter",
-    name: "Givebutter",
-    tagline: "Givebutter is a general fundraising platform. TeeVents is purpose-built for golf tournaments.",
-    hookCtaTitle: "Ready to Run a Real Golf Tournament?",
-    sections: [
-      {
-        category: "Golf-Specific Features",
-        rows: [
-          ...repComparisonRows.map(([feature, competitor, teevents]): CompRow => ({ feature, competitor, teevents, cStatus: "warn", tvStatus: "yes" })),
-          { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, real-time, embeddable", cStatus: "no", tvStatus: "yes" },
-          { feature: "Pairings & Tee Times", competitor: "Not available", teevents: "Drag-and-drop, auto-notify", cStatus: "no", tvStatus: "yes" },
-          { feature: "Handicap Tracking", competitor: "Not available", teevents: "Stored per player", cStatus: "no", tvStatus: "yes" },
-          { feature: "8 Scoring Formats", competitor: "Not available", teevents: "Stroke, Stableford, Scramble, more", cStatus: "no", tvStatus: "yes" },
-          { feature: "Hole Sponsor Portal", competitor: "Logo only", teevents: "Asset delivery + ROI reports", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Volunteer Check-in", competitor: "Not available", teevents: "QR code, shift scheduling", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Fundraising",
-        rows: [
-          { feature: "Donations", competitor: "Strong", teevents: "Built-in donation collection", cStatus: "yes", tvStatus: "yes" },
-          { feature: "Silent Auction", competitor: "Yes", teevents: "Yes — built-in auction system", cStatus: "yes", tvStatus: "yes" },
-          { feature: "50/50 Raffles", competitor: "Yes", teevents: "Yes", cStatus: "yes", tvStatus: "yes" },
-          { feature: "Add-On Store (mulligans, skins)", competitor: "Workaround", teevents: "Native add-on store", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Tax-Deductible Receipts", competitor: "Yes (501c3)", teevents: "Yes (501c3 nonprofit support)", cStatus: "yes", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Pricing",
-        rows: [
-          { feature: "Platform Fee", competitor: "Free + optional tips", teevents: "5% platform fee", cStatus: "yes", tvStatus: "warn" },
-          { feature: "Pro Tournament Tools", competitor: "Not available", teevents: "$299 per tournament (one-time)", cStatus: "no", tvStatus: "yes" },
-          { feature: "Payment Processing", competitor: "2.9% + $0.30", teevents: "2.9% + $0.30 (Stripe)", cStatus: "warn", tvStatus: "warn" },
-        ],
-      },
-    ],
-  },
-  {
-    id: "google-forms",
-    name: "Google Forms",
-    tagline: "Google Forms collects data. TeeVents runs your tournament.",
-    hookCtaTitle: "Stop Patching Together Google Forms + Spreadsheets",
-    sections: [
-      {
-        category: "Registration & Payment",
-        rows: [
-          ...repComparisonRows.map(([feature, competitor, teevents]): CompRow => ({ feature, competitor, teevents, cStatus: "warn", tvStatus: "yes" })),
-          { feature: "Built-in Payment Collection", competitor: "Not available", teevents: "Integrated Stripe checkout", cStatus: "no", tvStatus: "yes" },
-          { feature: "Branded Registration Page", competitor: "Generic Google form", teevents: "Fully branded tournament site", cStatus: "no", tvStatus: "yes" },
-          { feature: "Confirmation Emails", competitor: "Basic auto-reply", teevents: "Branded receipts to all participants", cStatus: "warn", tvStatus: "yes" },
-          { feature: "Group / Foursome Logic", competitor: "Manual workaround", teevents: "Native group registration", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Tournament Operations",
-        rows: [
-          { feature: "Live Leaderboard", competitor: "Not available", teevents: "Built-in, real-time", cStatus: "no", tvStatus: "yes" },
-          { feature: "Pairings & Tee Times", competitor: "Manual spreadsheet", teevents: "Drag-and-drop interface", cStatus: "no", tvStatus: "yes" },
-          { feature: "Scoring (8 Formats)", competitor: "Not available", teevents: "Stroke, Stableford, Scramble, more", cStatus: "no", tvStatus: "yes" },
-          { feature: "Sponsor Management", competitor: "Not available", teevents: "Full sponsor portal", cStatus: "no", tvStatus: "yes" },
-          { feature: "Volunteer Check-in", competitor: "Not available", teevents: "QR code + shift scheduling", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-      {
-        category: "Cost vs. Value",
-        rows: [
-          { feature: "Software Cost", competitor: "Free", teevents: "5% player-funded fee or $299/tournament", cStatus: "yes", tvStatus: "warn" },
-          { feature: "Hours of Admin Work Saved", competitor: "0 — you do it all", teevents: "Dozens of hours per event", cStatus: "no", tvStatus: "yes" },
-          { feature: "Risk of Errors", competitor: "High (manual everything)", teevents: "Low (automated workflows)", cStatus: "no", tvStatus: "yes" },
-        ],
-      },
-    ],
-  },
+const never = [
+  ["\"I had to build the whole event page myself.\"", "Your rep builds it for you."],
+  ["\"I could not get anyone on the phone.\"", "You have a named rep who knows your event."],
+  ["\"I paid upfront and lost money.\"", "You only pay when your players pay."],
+];
+type Mark = "x" | "warn";
+const rows: [string, Mark, string, string][] = [
+  ["Dedicated rep", "x", "Self-service only", "Included on every plan, free or paid"],
+  ["Event page build", "x", "You build it yourself", "Your rep builds it for you"],
+  ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding"],
+  ["Custom website", "x", "Basic form", "Fully branded event site"],
+  ["Pricing model", "x", "Upfront fee or subscription", "Free to start, player-funded"],
+  ["Payout timing", "warn", "Varies, sometimes delayed", "Direct to your Stripe account"],
+  ["Live leaderboard", "warn", "Often an add-on", "Built-in, branded"],
+  ["Mobile scoring", "warn", "Often requires an app", "Works in any browser"],
+  ["Sponsor tools", "x", "Limited or none", "Clickable logos and sponsor packages"],
+  ["White-label branding", "x", "Platform branding shows", "Remove our branding entirely"],
+  ["Custom domain", "x", "Generic URL", "Your own domain"],
+  ["Auction dashboard", "warn", "Extra cost", "Built-in"],
+  ["League management", "warn", "Limited", "Full season-long tracking"],
+  ["Support", "warn", "Email tickets only", "Named rep and priority support"],
+];
+const pricing = [
+  { title: "Most Platforms", hl: false, items: ["Charge $199 to $4,200 per year", "Fees due before your event", "You lose money if turnout is low", "Organizer pays upfront"] },
+  { title: "TeeVents No Cost to Start", hl: true, items: ["$0 upfront", "5% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
+  { title: "TeeVents Enterprise", hl: false, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included"] },
+];
+const audiences = [
+  ["First-Time Organizers", "Free to start. Your rep builds everything. No risk."],
+  ["Nonprofits and Charities", "Player-funded fees. 501(c)(3) receipting. Auction tools."],
+  ["Golf Courses and Clubs", "Enterprise plan with unlimited events. 0% transaction fees."],
+  ["Repeat Tournament Directors", "Clone past events in one click. No double work."],
+];
+const reasons = [
+  [User, "A Named Rep on Every Plan", "Free or paid, you get a real person who knows your event."],
+  [Paintbrush, "Custom Leaderboard Colors", "Your rep matches every leaderboard to your event branding."],
+  [Globe, "Event Pages That Look Like Real Websites", "Fully branded microsites. Not a form. Not a template."],
+  [Shield, "Payments You Can Trust", "Funds go directly to your Stripe account. We never hold your money."],
+  [Trophy, "Built for Golf, Not Generic Events", "Pairings, handicaps, scoring, and leaderboards built in."],
+  [Rocket, "Zero Risk to Get Started", "Free to start. Pay only when your players register."],
+] as const;
+const worries = ["Building your own event page from scratch", "Tracking down payments and chasing checks", "Printing and collecting paper scorecards", "Manually updating leaderboards", "Searching for someone to answer a question", "Paying for a platform that did not help you grow", "Rebuilding your event from scratch every year", "Wondering if your sponsors got enough visibility"];
+const quotes = [
+  ["We have trusted the TeeVents team to organize and manage our NCAA-sanctioned golf tournaments for the past 10 years. That trust has only grown stronger, to the point where we would not choose any other organization to work with.", "Leonard Smoot", "President", "Black College Golf Coaches Association"],
+  ["We turned over the golf tournament management duties to Roderick and the TeeVents team, and we have been beyond pleased with the service. From the initial setup to the conclusion of the event, everything was handled with the highest level of professionalism.", "Merral Jackson", "Tournament Director", "National Black College Alumni Hall of Fame"],
+];
+const faqs = [
+  ["Is switching to TeeVents difficult?", "No. Your rep handles the entire setup. You share your event details, upload your assets to the Organizer Toolbox, and we build everything for you."],
+  ["What if I am already using another platform?", "You can run TeeVents alongside your current platform or switch entirely. Your rep will help you decide what is best for your event."],
+  ["Can I move my existing registrations over?", "Yes. TeeVents supports CSV import so you can bring in your player list without double entry."],
+  ["What if my event is bigger or smaller than a typical tournament?", "TeeVents works for events of any size, from 20 players to 500 or more. Your rep will configure the platform to match your event."],
+  ["Do I have to commit to a long-term contract?", "No. No Cost to Start and Per-Event plans are pay-as-you-go. Enterprise is billed annually with the option to renew."],
+  ["What happens if I do not like it?", "On the No Cost to Start plan, you have zero risk. You only pay when your players register. If you do not love it, you can stop using it at any time."],
 ];
 
-const StatusIcon = ({ status }: { status: Status }) => {
-  if (status === "yes") return <Check className="h-4 w-4 text-green-600 inline mr-1.5" />;
-  if (status === "no") return <X className="h-4 w-4 text-red-500 inline mr-1.5" />;
-  return <AlertTriangle className="h-4 w-4 text-orange-500 inline mr-1.5" />;
-};
+const Yes = () => <Check className="h-5 w-5 shrink-0 text-golf-green" aria-label="Yes" />;
+const No = ({ m }: { m: Mark }) => m === "x" ? <X className="h-5 w-5 shrink-0 text-muted-foreground" aria-label="No" /> : <AlertTriangle className="h-5 w-5 shrink-0 text-secondary" aria-label="Partial" />;
 
-const Compare = () => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const v = searchParams.get("v");
-  
-  const [selectedId, setSelectedId] = useState<string>(() => {
-    if (v && COMPARISONS.some(c => c.id === v)) return v;
-    return COMPARISONS[0].id;
-  });
-
-  useEffect(() => {
-    if (v && COMPARISONS.some(c => c.id === v)) {
-      setSelectedId(v);
-    }
-  }, [v]);
-
-  const selected = useMemo(() => COMPARISONS.find((c) => c.id === selectedId) ?? COMPARISONS[0], [selectedId]);
-
-  const handleSelect = (id: string) => {
-    setSelectedId(id);
-    setSearchParams({ v: id });
-  };
-
+export default function Compare() {
   return (
     <Layout>
-      <SEO
-        title="Compare Golf Tournament Software"
-        description="Compare TeeVents to Eventbrite, Golf Genius, Zeffy, Givebutter, and Google Forms. See why TeeVents is the smarter choice for golf tournaments."
-        path="/compare"
-      />
+      <Hero eyebrow="COMPARE" title="Why Organizers Choose TeeVents" subtitle="Most platforms sell you software and wish you luck. TeeVents delivers a finished event, with a dedicated rep who builds it for you.">
+        <p className="mt-4 text-primary-foreground/70">See how TeeVents compares to other tournament and event management platforms.</p>
+      </Hero>
 
-      {/* Hero */}
-      <section className="bg-golf-green-dark text-primary-foreground pt-28 pb-16">
-        <div className="container mx-auto px-4 text-center max-w-3xl">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} key={selected.id}>
-            <h1 className="text-3xl md:text-5xl font-display font-bold mb-4 break-words">
-              {selected.name} vs. TeeVents
-            </h1>
-            <p className="text-lg md:text-xl text-primary-foreground/70 mb-8">
-              {selected.tagline}
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                to={BOOK_DEMO_URL}
-                className="inline-flex items-center justify-center gap-2 px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider transition-colors"
-                style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
-              >
-                <Calendar className="h-4 w-4" /> Request a Sample
-              </Link>
-              <Link
-                to="/signup?interest=tournament"
-                className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold text-sm uppercase tracking-wider hover:bg-primary-foreground/10 transition-colors"
-              >
-                Start a Tournament for Free <ArrowRight className="h-4 w-4" />
-              </Link>
-            </div>
-          </motion.div>
-        </div>
-      </section>
+      <section className="py-20"><div className="container mx-auto max-w-6xl px-4">
+        <SectionHead title="Three Things You Will Never Hear From a TeeVents Customer" subtitle="These are the problems other platforms leave you to solve." />
+        <div className="grid gap-6 md:grid-cols-3">{never.map(([q, w]) => (
+          <motion.div {...fade} key={q} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <p className="font-display text-xl italic text-foreground line-through decoration-secondary/70">{q}</p>
+            <p className="mt-4 flex gap-2 font-semibold text-primary"><Yes />{w}</p>
+          </motion.div>))}</div>
+        <Callout>If you hear any of these from a TeeVents customer, tell us. We will make it right.</Callout>
+      </div></section>
 
-      {/* Selector */}
-      <section className="py-8 bg-muted/30 border-b">
-        <div className="container mx-auto px-4">
-          <p className="text-center text-sm font-medium text-muted-foreground mb-4 uppercase tracking-wider">
-            Compare TeeVents to:
-          </p>
-          <div className="flex flex-wrap justify-center gap-2">
-            {COMPARISONS.map((c) => (
-              <button
-                key={c.id}
-                onClick={() => handleSelect(c.id)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                  selectedId === c.id
-                    ? "bg-[#1a5c38] text-white shadow-md"
-                    : "bg-background border hover:border-[#1a5c38]"
-                }`}
-              >
-                {c.name}
-              </button>
-            ))}
+      <section className="bg-muted/40 py-20"><div className="container mx-auto max-w-5xl px-4">
+        <SectionHead title="TeeVents vs Typical Tournament Software" subtitle="Here is the difference in one view." />
+        <motion.div {...fade} className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+          <div className="grid grid-cols-[1fr_1fr_1fr] text-sm font-semibold md:text-base">
+            <div className="p-3 md:p-4">Category</div><div className="p-3 md:p-4 text-muted-foreground">Typical Tournament Software</div><div className="bg-secondary p-3 text-secondary-foreground md:p-4">TeeVents</div>
           </div>
-        </div>
-      </section>
+          {rows.map(([c, m, t, us]) => (
+            <div key={c} className="grid grid-cols-[1fr_1fr_1fr] border-t border-border text-sm md:text-base">
+              <div className="p-3 font-medium md:p-4">{c}</div>
+              <div className="flex gap-2 p-3 text-muted-foreground md:p-4"><No m={m} />{t}</div>
+              <div className="flex gap-2 bg-secondary/15 p-3 font-medium md:p-4"><Yes />{us}</div>
+            </div>))}
+        </motion.div>
+      </div></section>
 
-      {/* Comparison Table */}
-      <section className="py-16 bg-background">
-        <div className="container mx-auto px-4 max-w-5xl">
-          <h2 className="text-2xl font-display font-bold text-foreground mb-8">
-            Feature-by-Feature Comparison
-          </h2>
+      <section className="py-20"><div className="container mx-auto max-w-6xl px-4">
+        <SectionHead title="Pricing That Works in Your Favor" subtitle="Other platforms charge you whether your event succeeds or not. TeeVents only succeeds when you do." />
+        <div className="grid gap-6 md:grid-cols-3">{pricing.map(p => (
+          <motion.div {...fade} key={p.title} className={`rounded-xl border p-6 shadow-sm ${p.hl ? "border-2 border-secondary bg-card" : "border-border bg-card"}`}>
+            <h3 className="font-display text-2xl font-bold text-primary">{p.title}</h3>
+            <ul className="mt-5 space-y-3">{p.items.map(i => <li key={i} className="flex gap-2">{p.title === "Most Platforms" ? <X className="h-5 w-5 shrink-0 text-muted-foreground" /> : <Yes />}{i}</li>)}</ul>
+          </motion.div>))}</div>
+        <Callout>If you run fewer than 10 events a year, No Cost to Start or Per-Event is almost always cheaper than a subscription. If you run 10 or more, Enterprise pays for itself.</Callout>
+      </div></section>
 
-          <div className="rounded-xl border border-border overflow-hidden shadow-sm">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-muted/50">
-                  <TableHead className="w-[40%] font-bold text-foreground p-4">Feature</TableHead>
-                  <TableHead className="w-[30%] text-center p-4">{selected.name}</TableHead>
-                  <TableHead className="w-[30%] text-center p-4 bg-primary/5 text-primary font-bold">TeeVents</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {selected.sections.flatMap((section) => [
-                  <tr key={section.category} className="border-b border-border bg-muted/20">
-                    <td colSpan={3} className="px-4 py-2 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                      {section.category}
-                    </td>
-                  </tr>,
-                  ...section.rows.map((row) => (
-                    <TableRow key={row.feature} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                      <TableCell className="p-4 font-medium text-foreground">{row.feature}</TableCell>
-                      <TableCell className="p-4 text-center text-muted-foreground">
-                        <StatusIcon status={row.cStatus} /> {row.competitor}
-                      </TableCell>
-                      <TableCell className="p-4 text-center font-semibold text-primary bg-primary/5">
-                        <StatusIcon status={row.tvStatus} /> {row.teevents}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ])}
-              </TableBody>
-            </Table>
-          </div>
+      <section className="bg-muted/40 py-20"><div className="container mx-auto max-w-6xl px-4">
+        <SectionHead title="TeeVents Is Built For You If..." subtitle="Whether you are new to running tournaments or a seasoned pro, TeeVents is designed for you." />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">{audiences.map(([t, d]) => (
+          <motion.div {...fade} key={t} className="rounded-xl border-t-4 border-secondary bg-card p-6 shadow-sm"><h3 className="font-display text-xl font-bold text-primary">{t}</h3><p className="mt-3 text-muted-foreground">{d}</p></motion.div>))}</div>
+      </div></section>
 
-          {/* Call to action */}
-          <div className="mt-16 bg-golf-green-dark rounded-2xl p-8 md:p-12 text-center text-primary-foreground relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-secondary" />
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }}>
-              <h3 className="text-2xl md:text-4xl font-display font-bold mb-4">
-                {selected.hookCtaTitle}
-              </h3>
-              <p className="text-lg text-primary-foreground/70 mb-8 max-w-2xl mx-auto">
-                Join thousands of organizers who have simplified their tournament planning and increased their revenue with TeeVents.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  to="/signup?interest=tournament"
-                  className="bg-secondary text-secondary-foreground px-10 py-4 rounded-md font-bold text-sm uppercase tracking-wider hover:bg-secondary/90 transition-all shadow-lg"
-                >
-                  Create My Tournament
-                </Link>
-                <Link
-                  to={BOOK_DEMO_URL}
-                  className="bg-white/10 text-primary-foreground border border-white/20 px-10 py-4 rounded-md font-bold text-sm uppercase tracking-wider hover:bg-white/20 transition-all"
-                >
-                  See a Demo
-                </Link>
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <section className="py-20"><div className="container mx-auto max-w-6xl px-4">
+        <SectionHead title="Six Reasons Organizers Switch to TeeVents" subtitle="Here is what you get with TeeVents that you will not find elsewhere." />
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">{reasons.map(([I, t, d]) => <IconCard key={t} icon={I} title={t} text={d} />)}</div>
+      </div></section>
+
+      <section className="bg-muted/40 py-20"><div className="container mx-auto max-w-4xl px-4">
+        <SectionHead title="What You Will Never Worry About Again" subtitle="These are the things our customers stopped worrying about on day one." />
+        <motion.ul {...fade} className="grid gap-4 md:grid-cols-2">{worries.map(w => <li key={w} className="flex gap-3 rounded-lg bg-card p-4 shadow-sm"><X className="h-5 w-5 shrink-0 text-destructive" />{w}</li>)}</motion.ul>
+        <Callout>Every one of these is handled by TeeVents and your dedicated rep.</Callout>
+      </div></section>
+
+      <section className="py-20"><div className="container mx-auto max-w-5xl px-4">
+        <SectionHead title="What Organizers Say After Switching" />
+        <div className="grid gap-6 md:grid-cols-2">{quotes.map(([q, n, t, o]) => (
+          <motion.figure {...fade} key={n} className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <blockquote className="text-lg text-foreground">"{q}"</blockquote>
+            <figcaption className="mt-5"><p className="font-semibold text-primary">{n}</p><p className="text-sm text-muted-foreground">{t}, {o}</p></figcaption>
+          </motion.figure>))}</div>
+      </div></section>
+
+      <section className="bg-muted/40 py-20"><div className="container mx-auto max-w-3xl px-4">
+        <SectionHead title="Common Questions About Switching" />
+        <Accordion type="single" collapsible className="rounded-xl bg-card px-6 shadow-sm">{faqs.map(([q, a]) => (
+          <AccordionItem key={q} value={q}><AccordionTrigger className="text-left">{q}</AccordionTrigger><AccordionContent className="text-muted-foreground">{a}</AccordionContent></AccordionItem>))}</Accordion>
+      </div></section>
+
+      <FinalCta title="Ready to See the Difference?" subtitle="Free for organizers. A dedicated rep builds your event for you." />
     </Layout>
   );
-};
-
-export default Compare;
+}

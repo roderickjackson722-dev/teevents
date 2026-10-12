@@ -73,7 +73,7 @@ export default function Compare() {
         <SectionHead title="Three Things You Will Never Hear From a TeeVents Customer" subtitle="These are the problems other platforms leave you to solve." />
         <div className="grid gap-6 md:grid-cols-3">{never.map(([q, w]) => (
           <motion.div {...fade} key={q} className="rounded-xl border border-border bg-card p-6 shadow-sm">
-            <p className="font-display text-xl italic text-foreground line-through decoration-secondary/70">{q}</p>
+            <p className="font-display text-xl italic text-foreground">{q}</p>
             <p className="mt-4 flex gap-2 font-semibold text-primary"><Yes />{w}</p>
           </motion.div>))}</div>
         <Callout>If you hear any of these from a TeeVents customer, tell us. We will make it right.</Callout>

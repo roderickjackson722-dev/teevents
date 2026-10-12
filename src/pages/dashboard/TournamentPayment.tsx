@@ -95,7 +95,7 @@ const TournamentPayment = () => {
             <CardContent className="grid sm:grid-cols-2 gap-4">
               <div className="rounded-lg border border-border p-4 space-y-2">
                 <p className="font-semibold text-sm flex items-center gap-2">
-                  <Award className="h-4 w-4 text-primary" /> Branding Removal + Digital Sponsor — $499
+                  <Award className="h-4 w-4 text-primary" /> Branding Removal + Digital Sponsor — $99
                 </p>
                 <p className="text-xs text-muted-foreground">
                   One-time per event. Removes the TeeVents logo and tagline from your live leaderboard

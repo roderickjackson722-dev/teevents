@@ -10,7 +10,7 @@ export const getFlatRateStatus = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }: any) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { assertOrgMemberForTournament, FLAT_RATE_AMOUNT_CENTS, LEGACY_FLAT_RATE_AMOUNT_CENTS } = await import("./flatRate.server");
+    const { assertOrgMemberForTournament, FLAT_RATE_AMOUNT_CENTS, LEGACY_FLAT_RATE_AMOUNT_CENTS, FLAT_RATE_AMOUNT_CENTS_CURRENT } = await import("./flatRate.server");
     const t = await assertOrgMemberForTournament(
       context.supabase,
       supabaseAdmin,

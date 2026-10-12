@@ -96,7 +96,7 @@ const FlatRateOverride = () => {
                     <p className="text-xs text-muted-foreground">{row.date || "No date set"}</p>
                     <div className="flex gap-2 mt-2">
                       {row.flat_rate_enabled && <Badge>Flat-Rate active</Badge>}
-                      {row.flat_rate_paid && <Badge variant="secondary">Paid $299</Badge>}
+                      {row.flat_rate_paid && <Badge variant="secondary">Paid</Badge>}
                       {row.flat_rate_admin_override && <Badge variant="outline">Admin override</Badge>}
                     </div>
                   </div>

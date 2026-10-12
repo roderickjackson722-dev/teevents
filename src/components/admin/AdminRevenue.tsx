@@ -136,7 +136,7 @@ const AdminRevenue = () => {
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-xs font-medium text-muted-foreground flex items-center gap-2">
-              <Percent className="h-4 w-4" /> Flat-Rate Pro ($299)
+              <Percent className="h-4 w-4" /> Flat-Rate Pro
             </CardTitle>
           </CardHeader>
           <CardContent>

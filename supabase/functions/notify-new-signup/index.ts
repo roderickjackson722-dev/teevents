@@ -73,6 +73,42 @@ serve(async (req) => {
          <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Expected Players</td><td style="padding:8px;border:1px solid #e5e7eb;">${expected_players || "—"}</td></tr>`
       : "";
 
+    // Organization, event, plan and Organizer Toolbox summary (when available)
+    let orgName = "Not created yet", eventName = "Not created yet", planLabel = "$0 to Start", toolboxLink = "https://www.teevents.golf/admin/organizer-toolboxes";
+    let tb: any = null;
+    try {
+      const { data: vet } = await supabaseAdmin.from("signup_vetting").select("user_id, organization_name").ilike("email", String(email || "")).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (vet?.organization_name) orgName = vet.organization_name;
+      if (vet?.user_id) {
+        const { data: mem } = await supabaseAdmin.from("org_members").select("organization_id").eq("user_id", vet.user_id).order("created_at", { ascending: true }).limit(1).maybeSingle();
+        if (mem?.organization_id) {
+          const [{ data: org }, { data: ev }, { data: box }] = await Promise.all([
+            supabaseAdmin.from("organizations").select("name, plan, pricing_model").eq("id", mem.organization_id).maybeSingle(),
+            supabaseAdmin.from("tournaments").select("title").eq("organization_id", mem.organization_id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
+            supabaseAdmin.from("organizer_toolboxes").select("*").eq("organization_id", mem.organization_id).maybeSingle(),
+          ]);
+          if (org?.name) orgName = org.name;
+          if (ev?.title) eventName = ev.title;
+          const pm = String(org?.pricing_model || org?.plan || "");
+          planLabel = /enterprise/i.test(pm) ? "Enterprise" : /league/i.test(pm) ? "$499 Per-League" : /event|pro/i.test(pm) ? "$299 Per-Event" : "$0 to Start";
+          tb = box;
+          toolboxLink = `https://www.teevents.golf/admin/organizer-toolboxes?org=${mem.organization_id}`;
+        }
+      }
+    } catch (_) { /* summary is best effort */ }
+    const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+    const colorsSet = !!(tb?.brand_colors && (tb.brand_colors.primary || tb.brand_colors.secondary || tb.brand_colors.accent));
+    const summary = `Logo uploaded: ${tb?.logo ? "Yes" : "No"} / Colors set: ${colorsSet ? "Yes" : "No"} / Hero image: ${tb?.hero_image ? "Yes" : "No"} / Sponsor logos: ${tb?.sponsor_logos?.length || 0} / Documents: ${tb?.documents?.length || 0} / Notes: ${(tb?.additional_notes || tb?.anything_else) ? "Provided" : "Not yet"}`;
+    const toolboxBlock = isApproved ? `
+        <h3 style="color:#1a5c38;border-bottom:2px solid #1a5c38;padding-bottom:4px;">Organizer Toolbox</h3>
+        <table style="width:100%;border-collapse:collapse;margin:8px 0 12px 0;">
+          <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;width:35%;">Organization</td><td style="padding:8px;border:1px solid #e5e7eb;">${esc(orgName)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Event</td><td style="padding:8px;border:1px solid #e5e7eb;">${esc(eventName)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Plan Selected</td><td style="padding:8px;border:1px solid #e5e7eb;">${esc(planLabel)}</td></tr>
+          <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Uploaded Items</td><td style="padding:8px;border:1px solid #e5e7eb;">${summary}</td></tr>
+        </table>
+        <p style="margin:0 0 20px 0;"><a href="${toolboxLink}" style="display:inline-block;background:#d4a843;color:#1a3a2a;font-weight:bold;padding:10px 18px;border-radius:6px;text-decoration:none;">View their Organizer Toolbox</a></p>` : "";
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 640px; margin: 0 auto; padding: 24px; color:#111827;">
         <h2 style="color:#1a5c38;margin:0 0 4px 0;">${isApproved ? "New TeeVents Signup" : "New Demo Request"}</h2>
@@ -87,6 +123,7 @@ serve(async (req) => {
           <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;">Created</td><td style="padding:8px;border:1px solid #e5e7eb;">${new Date().toLocaleString("en-US")}</td></tr>
         </table>
 
+        ${toolboxBlock}
         <h3 style="color:#1a5c38;border-bottom:2px solid #1a5c38;padding-bottom:4px;">Vetting Responses</h3>
         <table style="width:100%;border-collapse:collapse;margin:8px 0 20px 0;">
           <tr><td style="padding:8px;border:1px solid #e5e7eb;font-weight:bold;background:#f9fafb;width:45%;">1. Tournament currently planned?</td><td style="padding:8px;border:1px solid #e5e7eb;">${planningLabel}</td></tr>

@@ -19,9 +19,6 @@ function HomeActions({ hero = false }: { hero?: boolean }) {
     <Button asChild variant="secondary" size="lg" className="h-auto min-h-12 whitespace-normal px-5 py-3 text-center font-semibold uppercase leading-snug">
       <Link to="/get-started">{hero ? "Get Started, We'll Build It For You" : "Get Started"}<ArrowRight aria-hidden="true" /></Link>
     </Button>
-    {!hero && <Button asChild variant="outline" size="lg" className="h-auto min-h-12 border-primary-foreground/60 bg-transparent py-3 font-semibold uppercase text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground">
-      <Link to="/request-sample">Request a Sample</Link>
-    </Button>}
   </div>;
 }
 

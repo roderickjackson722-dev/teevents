@@ -1,6 +1,6 @@
 ## Eight-section pricing page rebuild
-- [ ] Rebuild pricing with four plans, all-plan service, six add-ons, payments, comparison, FAQ, and final CTA
-- [ ] Preserve purchase flows and grandfathered events; verify desktop/mobile and purchase links
+- [x] Rebuild pricing with four plans, all-plan service, six add-ons, payments, comparison, FAQ, and final CTA
+- [x] Preserve purchase flows and grandfathered events; verify desktop/mobile and purchase links
 
 ## Requested sales pages, onboarding verification, and direct support
 - [x] Remove Sales Sheet label, clarify Enterprise audience, and use one final homepage CTA

@@ -65,7 +65,7 @@ export default function Index() {
           </figure>
           <div className="flex items-center gap-6 overflow-x-auto border-t border-border pt-8 pb-2 md:justify-between" aria-label="Golf organizations and events">
             {founderPartnerLogos.map(logo => <div key={logo.name} className={`flex h-20 w-24 shrink-0 items-center justify-center p-2 ${logo.dark ? "bg-primary" : ""}`}>
-              <img src={logo.image} alt={logo.name} title={logo.name} loading="lazy" className="max-h-full max-w-full object-contain grayscale" />
+              <img src={logo.image} alt={logo.name} title={logo.name} loading="lazy" className="max-h-full max-w-full object-contain" />
             </div>)}
           </div>
         </div>

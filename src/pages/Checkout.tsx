@@ -6,6 +6,7 @@ import {
   GraduationCap, LayoutTemplate, Loader2, Lock, Megaphone, ShieldCheck, Smartphone, Sparkles, Users,
 } from "lucide-react";
 import Layout from "@/components/Layout";
+import FeatureAddonContactForm from "@/components/FeatureAddonContactForm";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -177,6 +178,7 @@ const Checkout = () => {
   const [searchParams] = useSearchParams();
   const item = CHECKOUT_ITEMS[slug];
 
+  const contactPurchase = !!item && ["addon", "branding_sponsor", "college_scoring"].includes(item.flow);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
   const [tournaments, setTournaments] = useState<TournamentRow[]>([]);
@@ -186,15 +188,16 @@ const Checkout = () => {
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    if (contactPurchase) { setCheckingAuth(false); return; }
     (async () => {
-      const { data } = await supabase.auth.getSession();
-      const session = data.session;
-      setSignedIn(!!session);
-      if (session?.user) {
+      const { data } = await supabase.auth.getUser();
+      const user = data.user;
+      setSignedIn(!!user);
+      if (user) {
         const { data: memberships } = await supabase
           .from("org_members")
           .select("organization_id")
-          .eq("user_id", session.user.id);
+          .eq("user_id", user.id);
         const orgIds = (memberships || []).map((m: any) => m.organization_id);
         if (orgIds.length) {
           const { data: rows } = await supabase
@@ -209,7 +212,7 @@ const Checkout = () => {
       }
       setCheckingAuth(false);
     })();
-  }, []);
+  }, [contactPurchase]);
 
   const priceCents = useMemo(() => {
     if (!item) return 0;
@@ -318,6 +321,11 @@ const Checkout = () => {
                       Create your account <ArrowRight className="h-4 w-4 ml-1.5" />
                     </Link>
                   </Button>
+                ) : contactPurchase ? (
+                  <div className="space-y-4">
+                    {item.flow === "college_scoring" && <div><Label>Divisions</Label><Select value={String(divisions)} onValueChange={v => setDivisions(Number(v))}><SelectTrigger aria-label="Divisions"><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4].map(d => <SelectItem key={d} value={String(d)}>{d} division{d > 1 ? "s" : ""}</SelectItem>)}</SelectContent></Select></div>}
+                    <FeatureAddonContactForm addonKey={item.flow === "branding_sponsor" ? "branding_sponsor" : item.flow === "college_scoring" ? "college_scoring" : item.addonKey || ""} amount={priceCents} divisions={divisions} />
+                  </div>
                 ) : checkingAuth ? (
                   <div className="py-6 flex justify-center">
                     <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
@@ -329,7 +337,7 @@ const Checkout = () => {
                       this checkout.
                     </p>
                     <Button asChild className="w-full">
-                      <Link to={`/get-started?redirect=/checkout/${item.slug}`}>
+                      <Link to={`/get-started?mode=signin&redirect=/checkout/${item.slug}`}>
                         Sign in to continue <ArrowRight className="h-4 w-4 ml-1.5" />
                       </Link>
                     </Button>

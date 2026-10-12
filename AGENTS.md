@@ -17,3 +17,6 @@
 - Organizer Toolbox data lives in one organizer_toolboxes row per organization with files in the private organizer-toolbox bucket under <org_id>/; only admins set review fields, so rep status can't be self-reported.
 - Human support replies share each organizer's existing help_chat_messages conversation; RLS validates sender identity and admin team replies, while AI navigation messages retain the existing model and transport.
 - Public Contact inquiries share a client/server Zod schema and use a dedicated server function that verifies CAPTCHA before sending plain-text email to the fixed team recipient; never report success until the email provider accepts the message.
+
+- Pricing-page feature add-ons collect event/contact details in private feature_addon_requests, use server-priced Stripe checkout, and are matched to events only by authenticated admins after payment verification; existing event-specific purchase flows stay intact.
+- Public directory section visibility uses public platform_settings hide flags, leaving event-level publication and explicit searches unchanged; new No Cost events default leaderboard off at insertion without rewriting existing events.

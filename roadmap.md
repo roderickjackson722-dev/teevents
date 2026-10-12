@@ -74,9 +74,10 @@
 - [x] Verify the affected public page and organizer workflows without changing other platform behavior
 
 ## October 12 navigation, add-ons, directory, and login
-- [ ] Reorder menu, restore organizer login, remove league search and footer founder credit
-- [ ] Remove five requested Reviews sections
-- [ ] Replace public add-on event list with event/contact details and admin fulfillment
-- [ ] Provide admin live leaderboard control and default new No Cost events off
-- [ ] Add admin controls for public featured/upcoming directory sections
-- [ ] Verify public pages, login, and authenticated admin controls
+- [x] Reorder menu, restore organizer login, remove league search and footer founder credit
+- [x] Remove five requested Reviews sections
+- [x] Replace public add-on event list with event/contact details and admin fulfillment
+- [x] Provide admin live leaderboard control and default new No Cost events off
+- [x] Add admin controls for public featured/upcoming directory sections
+- [x] Verify public pages, direct login, saved contact details, Stripe checkout opening, and authenticated admin leaderboard changes on the unpublished QA event; restore settings and remove unpaid QA request
+- [ ] Verify paid add-on fulfillment after a real authorized payment; checkout was opened without charging a card

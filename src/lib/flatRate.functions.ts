@@ -133,7 +133,7 @@ export const verifyFlatRatePayment = createServerFn({ method: "POST" })
         flat_rate_enabled: true,
         flat_rate_paid: true,
         flat_rate_paid_at: new Date().toISOString(),
-        ...(session.metadata?.pricing_version === "2026-10" ? { pricing_model: "per_event", event_fee_paid: true, white_glove_requested: true } : {}),
+        ...(session.metadata?.pricing_version === "2026-10" ? { pricing_model: "per_event", event_fee_paid: true, white_glove_requested: true, live_leaderboard_enabled: true } : {}),
       })
       .eq("id", tournamentId);
 

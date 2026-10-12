@@ -12,6 +12,10 @@ import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamen
 import SampleModePanel from "@/components/admin/SampleModePanel";
 import AdminTournamentEditModal, { type PaymentOverride } from "@/components/admin/AdminTournamentEditModal";
 import { toast } from "sonner";
+import { Switch } from "@/components/ui/switch";
+import { useServerFn } from "@tanstack/react-start";
+import { adminSetEventLeaderboard } from "@/lib/featureAddonRequests.functions";
+import FeatureAddonRequests from "@/components/admin/FeatureAddonRequests";
 
 type Row = {
   id: string;
@@ -27,6 +31,8 @@ type Row = {
   site_published: boolean | null;
   registration_open: boolean | null;
   managed_by_teevents: boolean | null;
+  live_leaderboard_enabled?: boolean;
+  paid_features?: Record<string, boolean>;
   created_at: string;
   registration_fee_cents: number | null;
   created_by_admin_id: string | null;
@@ -49,6 +55,8 @@ type Row = {
 
 export default function PlatformTournaments({ embedded = false }: { embedded?: boolean }) {
   const navigate = useNavigate();
+  const setEventLeaderboard = useServerFn(adminSetEventLeaderboard);
+  const [leaderboardBusy, setLeaderboardBusy] = useState("");
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
@@ -86,7 +94,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants, show_in_public_search, payment_method_override, max_players")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants, show_in_public_search, payment_method_override, max_players, live_leaderboard_enabled, paid_features")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];
@@ -440,6 +448,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
       )}
 
       <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
+        <FeatureAddonRequests tournaments={rows} onChanged={load} />
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <StatCard icon={<Trophy className="h-4 w-4" />} label="Tournaments" value={summary.tournaments.toLocaleString()} />
           <StatCard icon={<Building2 className="h-4 w-4" />} label="Organizations" value={summary.orgs.toLocaleString()} />
@@ -608,6 +617,10 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                       {expanded === r.id && (
                         <TableRow className="bg-muted/30 hover:bg-muted/30">
                           <TableCell colSpan={10} className="p-6">
+                            <div className="mb-4 flex items-center gap-3"><span className="text-sm font-medium">Live leaderboard</span><Switch aria-label={`Live leaderboard for ${r.title}`} checked={r.live_leaderboard_enabled !== false} disabled={leaderboardBusy === r.id} onCheckedChange={async enabled => {
+                              setLeaderboardBusy(r.id);
+                              try { await setEventLeaderboard({ data: { tournamentId: r.id, enabled } }); await load(); toast.success(enabled ? "Live leaderboard enabled" : "Live leaderboard disabled"); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not update leaderboard"); } finally { setLeaderboardBusy(""); }
+                            }} /><Badge variant="outline">{r.paid_features?.live_leaderboard ? "Purchased" : "Admin control"}</Badge></div>
                             {r.organization_id && (
                               <div className="flex flex-wrap items-center gap-3 mb-4">
                                 <span className="text-sm font-medium">Organizer plan</span>

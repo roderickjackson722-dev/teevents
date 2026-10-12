@@ -3608,6 +3608,68 @@ export type Database = {
         }
         Relationships: []
       }
+      feature_addon_requests: {
+        Row: {
+          addon_key: string
+          amount_cents: number
+          contact_email: string
+          contact_name: string
+          contact_notes: string | null
+          contact_phone: string
+          created_at: string
+          divisions: number
+          event_name: string
+          fulfilled_at: string | null
+          fulfilled_by: string | null
+          id: string
+          status: string
+          stripe_session_id: string | null
+          tournament_id: string | null
+        }
+        Insert: {
+          addon_key: string
+          amount_cents?: number
+          contact_email: string
+          contact_name: string
+          contact_notes?: string | null
+          contact_phone: string
+          created_at?: string
+          divisions?: number
+          event_name: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          status?: string
+          stripe_session_id?: string | null
+          tournament_id?: string | null
+        }
+        Update: {
+          addon_key?: string
+          amount_cents?: number
+          contact_email?: string
+          contact_name?: string
+          contact_notes?: string | null
+          contact_phone?: string
+          created_at?: string
+          divisions?: number
+          event_name?: string
+          fulfilled_at?: string | null
+          fulfilled_by?: string | null
+          id?: string
+          status?: string
+          stripe_session_id?: string | null
+          tournament_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "feature_addon_requests_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       flight_payouts: {
         Row: {
           created_at: string

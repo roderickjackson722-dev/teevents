@@ -7,6 +7,8 @@ import { toast } from "sonner";
 
 const FLAGS: { key: string; label: string; description: string }[] = [
   { key: "enable_group_trips", label: "Group Trips Module", description: "Show the Group Trips section in main navigation for authenticated users." },
+  { key: "hide_featured_events", label: "Hide Featured Events", description: "Hide the Featured Events section on Find Your Event." },
+  { key: "hide_upcoming_events", label: "Hide Upcoming Events", description: "Hide automatic Upcoming Events listings. Visitors can still search for an event." },
 ];
 
 export default function AdminFeatureFlags() {
@@ -24,7 +26,7 @@ export default function AdminFeatureFlags() {
 
   const toggle = async (key: string, on: boolean) => {
     setValues((v) => ({ ...v, [key]: on }));
-    const { error } = await supabase.from("platform_settings").upsert({ key, value: on as any }, { onConflict: "key" });
+    const { error } = await supabase.from("platform_settings").upsert({ key, value: on as any, ...(key.startsWith("hide_") ? { is_public: true } : {}) }, { onConflict: "key" });
     if (error) { toast.error(error.message); load(); return; }
     toast.success(`${on ? "Enabled" : "Disabled"}`);
   };
@@ -39,7 +41,7 @@ export default function AdminFeatureFlags() {
               <Label className="text-sm font-medium">{f.label}</Label>
               <p className="text-xs text-muted-foreground mt-0.5">{f.description}</p>
             </div>
-            <Switch checked={!!values[f.key]} onCheckedChange={(v) => toggle(f.key, v)} />
+            <Switch aria-label={f.label} checked={!!values[f.key]} onCheckedChange={(v) => toggle(f.key, v)} />
           </div>
         ))}
       </CardContent>

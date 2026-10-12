@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as SplatRouteImport } from './routes/$'
 import { Route as AboutRouteImport } from './routes/about'
+import { Route as AddonConfirmationRouteImport } from './routes/addon-confirmation'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -74,6 +75,11 @@ const SplatRoute = SplatRouteImport.update({
 const AboutRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AddonConfirmationRoute = AddonConfirmationRouteImport.update({
+  id: '/addon-confirmation',
+  path: '/addon-confirmation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -338,6 +344,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
+  '/addon-confirmation': typeof AddonConfirmationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -391,6 +398,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
+  '/addon-confirmation': typeof AddonConfirmationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -445,6 +453,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/$': typeof SplatRoute
   '/about': typeof AboutRoute
+  '/addon-confirmation': typeof AddonConfirmationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -500,6 +509,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/about'
+    | '/addon-confirmation'
     | '/compare'
     | '/contact'
     | '/faq'
@@ -553,6 +563,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/about'
+    | '/addon-confirmation'
     | '/compare'
     | '/contact'
     | '/faq'
@@ -606,6 +617,7 @@ export interface FileRouteTypes {
     | '/'
     | '/$'
     | '/about'
+    | '/addon-confirmation'
     | '/compare'
     | '/contact'
     | '/faq'
@@ -660,6 +672,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   SplatRoute: typeof SplatRoute
   AboutRoute: typeof AboutRoute
+  AddonConfirmationRoute: typeof AddonConfirmationRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
@@ -730,6 +743,13 @@ declare module '@tanstack/react-router' {
       path: '/about'
       fullPath: '/about'
       preLoaderRoute: typeof AboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/addon-confirmation': {
+      id: '/addon-confirmation'
+      path: '/addon-confirmation'
+      fullPath: '/addon-confirmation'
+      preLoaderRoute: typeof AddonConfirmationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -1087,6 +1107,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   SplatRoute: SplatRoute,
   AboutRoute: AboutRoute,
+  AddonConfirmationRoute: AddonConfirmationRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,

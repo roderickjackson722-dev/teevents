@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { FinalCta, Hero, OutlineLight, SectionHead, fade } from "@/components/marketing/PageBits";
 import { US_STATES } from "@/lib/usStates";
 import placeholder from "@/assets/event-placeholder.jpg";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 
 type Status = "Open" | "Closed" | "Completed";
 type Listing = { id: string; kind: "Tournament" | "League"; name: string; start: string | null; end: string | null; time: string | null; location: string | null; state: string | null; format: string; formatKey: string; status: Status; image: string | null; url: string };
@@ -45,6 +46,9 @@ function EventCard({ e, wide }: { e: Listing; wide?: boolean }) {
 }
 
 export default function FindYourEvent() {
+  const hideFeatured = useFeatureFlag("hide_featured_events");
+  const hideUpcoming = useFeatureFlag("hide_upcoming_events");
+  const [hasSearched, setHasSearched] = useState(false);
   const [params, setParams] = useSearchParams();
   const applied: Filters = useMemo(() => Object.fromEntries(Object.entries(DEFAULTS).map(([k, v]) => [k, params.get(k) || v])) as Filters, [params]);
   const [draft, setDraft] = useState<Filters>(applied);
@@ -54,6 +58,7 @@ export default function FindYourEvent() {
   const [showFilters, setShowFilters] = useState(false);
 
   const commit = (f: Filters) => {
+    setHasSearched(true);
     const next = new URLSearchParams();
     Object.entries(f).forEach(([k, v]) => { if (v && v !== (DEFAULTS as any)[k]) next.set(k, v); });
     setParams(next);
@@ -150,13 +155,13 @@ export default function FindYourEvent() {
         </form>
       </div></section>
 
-      {featured.length > 0 && <section className="py-16"><div className="container mx-auto max-w-6xl px-4">
+      {!hideFeatured.loading && !hideFeatured.enabled && featured.length > 0 && <section className="py-16"><div className="container mx-auto max-w-6xl px-4">
         <SectionHead title="Featured Events" subtitle="Highlighted tournaments and leagues from our partners." />
         <div className="-mx-4 flex snap-x gap-5 overflow-x-auto px-4 pb-2 sm:mx-0 sm:grid sm:grid-cols-2 sm:overflow-visible sm:px-0 lg:grid-cols-3">{featured.map(e => <EventCard key={`f-${e.id}`} e={e} wide />)}</div>
       </div></section>}
 
-      <section className="bg-muted/40 py-16"><div className="container mx-auto max-w-6xl px-4">
-        <SectionHead title="Upcoming Events" subtitle="Every public tournament and league on TeeVents." />
+      {!hideUpcoming.loading && (!hideUpcoming.enabled || hasSearched || params.toString().length > 0) && <section className="bg-muted/40 py-16"><div className="container mx-auto max-w-6xl px-4">
+        <SectionHead title={hideUpcoming.enabled ? "Search Results" : "Upcoming Events"} subtitle="Public tournaments and leagues on TeeVents." />
         <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
           <p className="text-sm text-muted-foreground">{loading ? "Loading events..." : `${results.length} event${results.length === 1 ? "" : "s"} found`}</p>
           <div className="flex items-center gap-2"><Label htmlFor="sort">Sort by</Label>
@@ -178,7 +183,7 @@ export default function FindYourEvent() {
           <span className="text-sm text-muted-foreground">Page {page} of {pages}</span>
           <Button variant="outline" disabled={page === pages} onClick={() => commit({ ...applied, page: String(page + 1) })}>Next</Button>
         </div>}
-      </div></section>
+      </div></section>}
 
       <section className="py-16"><motion.div {...fade} className="container mx-auto max-w-4xl rounded-2xl border-l-4 border-secondary bg-primary px-6 py-12 text-center text-primary-foreground md:px-12">
         <h2 className="font-display text-3xl font-bold md:text-4xl">Do Not See Your Event? Host Your Own.</h2>

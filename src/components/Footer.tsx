@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
 import logoBlack from "@/assets/logo-black.png";
-import FindYourLeague from "@/components/leagues/FindYourLeague";
 
-const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean }) => {
+const Footer = (_props: { includeLeagueSearch?: boolean }) => {
   return (
     <footer className="bg-golf-green-dark text-primary-foreground">
-      {includeLeagueSearch && <FindYourLeague />}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{
@@ -48,7 +46,7 @@ const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean 
             {[
               ["Platform", [["Features", "/features"], ["Pricing", "/pricing"], ["How It Works", "/#how-it-works"], ["Compare", "/compare"]]],
               ["Who It's For", [["For Organizers", "/for-organizers"], ["For Golfers", "/for-golfers"], ["Services", "/services"]]],
-              ["Resources", [["Find Your Event", "/find-your-event"], ["Organizer Login", "/login"], ["Contact", "/contact"]]],
+              ["Resources", [["Find Your Event", "/find-your-event"], ["Organizer Login", "/organizer-login"], ["Contact", "/contact"]]],
               ["Company", [["About", "/about"], ["Reviews", "/reviews"], ["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"]]],
             ].map(([heading, links]) => (
               <div key={heading as string}>
@@ -64,7 +62,6 @@ const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean 
           <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col items-center gap-3 text-xs text-primary-foreground/40">
 
           <p className="text-primary-foreground/60 italic text-center">Built by a tournament director for tournament directors.</p>
-          <p className="text-primary-foreground/70">Founded by Roderick Jackson</p>
           <div className="flex gap-4">
             <Link to="/privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
             <Link to="/terms" className="hover:text-secondary transition-colors">Terms of Service</Link>

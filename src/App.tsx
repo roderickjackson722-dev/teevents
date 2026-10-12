@@ -7,7 +7,7 @@ import CustomDomainRouter from "./components/CustomDomainRouter";
 import About from "./pages/About";
 import SalesSheet from "./pages/SalesSheet";
 import Services from "./pages/Services";
-import { HowItWorksPage, ForGolfersPage, ForOrganizersPage } from "./pages/PublicAudience";
+import { ForGolfersPage, ForOrganizersPage } from "./pages/PublicAudience";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import ManageEvents from "./pages/admin/ManageEvents";

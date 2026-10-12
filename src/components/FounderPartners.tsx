@@ -7,7 +7,7 @@ import mwm from '@/assets/trust/making-wishes-matter.png.asset.json';
 import men from '@/assets/trust/100-black-men-phoenix.png.asset.json';
 import hbcuGolf from '@/assets/trust/hbcu-golf.png.asset.json';
 
-const logos = [
+export const founderPartnerLogos = [
   { name: 'Black College Golf Coaches Association', image: bcgca.url },
   { name: 'Arcis Golf', image: arcis.url },
   { name: 'SAS HBCU Invitational', image: sas.url },
@@ -23,7 +23,7 @@ export default function FounderPartners() {
     <div className="container mx-auto px-4 max-w-6xl text-center">
       <h2 className="font-display text-3xl md:text-4xl text-primary font-bold">Trusted By Leaders in Golf</h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-x-6 gap-y-8 items-center mt-12">
-        {logos.map(logo => (
+        {founderPartnerLogos.map(logo => (
           <div className="group" key={logo.name}>
             <div className={`h-28 flex items-center justify-center px-4 rounded-md ${logo.dark ? 'bg-golf-green-dark' : ''}`}>
               <img src={logo.image} alt={logo.name} loading="lazy" className="max-h-24 max-w-full object-contain" />

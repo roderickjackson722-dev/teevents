@@ -7,7 +7,8 @@
 - College survey presentation and response-copy settings live on each `college_surveys` row so every survey can be configured independently.
 - Dedicated-rep marketing badges, service sections, and comparison rows share `DedicatedRep` components; keep these presentation-only so service copy never mutates event pricing, entitlements, or rep assignments.
 - New public sales pages use explicit TanStack leaf metadata while rendering through the existing App shell so shared navigation retains its required router context.
-- Founder biography and portrait are shared through `FounderSection` on homepage and About; partner imagery uses CDN pointers and accurate past-relationship labels to avoid divergent credibility claims.
+- Founder biography and portrait live on About through `FounderSection`; partner imagery shares `founderPartnerLogos` CDN pointers so the compact homepage wall and detailed trust sections cannot diverge.
+- Homepage and the dedicated How It Works page share `HomeHowItWorks`; public audience pages render through the existing App shell with explicit TanStack leaf metadata to preserve navigation context and isolate marketing from event logic.
 - Payment reminders create checkout for the existing pending registration ID; never insert a replacement roster row.
 - Public tournament section titles are per-event display settings, resolved through publicTabs helpers and propagated to attendee checkout; preserve stable section anchors and all existing registration/payment behavior.
 - Additional Notes uses the existing registration-field settings for both individual and group notes; missing settings retain visibility and are persisted only on an organizer's explicit toggle to preserve current events.

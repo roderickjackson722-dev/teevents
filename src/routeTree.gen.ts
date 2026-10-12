@@ -19,6 +19,7 @@ import { Route as ForOrganizersRouteImport } from './routes/for-organizers'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as SalesSheetRouteImport } from './routes/sales-sheet'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
@@ -103,6 +104,11 @@ const PlansRoute = PlansRouteImport.update({
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
   path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewsRoute = ReviewsRouteImport.update({
+  id: '/reviews',
+  path: '/reviews',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SalesSheetRoute = SalesSheetRouteImport.update({
@@ -309,6 +315,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
+  '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -356,6 +363,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
+  '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -404,6 +412,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
+  '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -453,6 +462,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/plans'
     | '/pricing'
+    | '/reviews'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -500,6 +510,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/plans'
     | '/pricing'
+    | '/reviews'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -547,6 +558,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/plans'
     | '/pricing'
+    | '/reviews'
     | '/sales-sheet'
     | '/sitemap.xml'
     | '/college/$slug'
@@ -595,6 +607,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   PlansRoute: typeof PlansRoute
   PricingRoute: typeof PricingRoute
+  ReviewsRoute: typeof ReviewsRoute
   SalesSheetRoute: typeof SalesSheetRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
@@ -701,6 +714,13 @@ declare module '@tanstack/react-router' {
       path: '/pricing'
       fullPath: '/pricing'
       preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reviews': {
+      id: '/reviews'
+      path: '/reviews'
+      fullPath: '/reviews'
+      preLoaderRoute: typeof ReviewsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sales-sheet': {
@@ -974,6 +994,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   PlansRoute: PlansRoute,
   PricingRoute: PricingRoute,
+  ReviewsRoute: ReviewsRoute,
   SalesSheetRoute: SalesSheetRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   CollegeSlugRoute: CollegeSlugRoute,

@@ -148,6 +148,13 @@
       "when": 1791839681962,
       "tag": "0020_faq_question_clicks",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1791840285276,
+      "tag": "0021_organizer_onboarding_details",
+      "breakpoints": true
     }
   ]
 }

@@ -36,8 +36,8 @@ const STATIC_ENTRIES: SitemapEntry[] = [
   { path: "/compare/eventbrite-vs-teevents", changefreq: "monthly", priority: "0.7" },
   { path: "/compare/golf-genius-vs-teevents", changefreq: "monthly", priority: "0.7" },
   { path: "/platform", changefreq: "monthly", priority: "0.6" },
-  { path: "/privacy-policy", changefreq: "yearly", priority: "0.3" },
-  { path: "/terms-of-service", changefreq: "yearly", priority: "0.3" },
+  { path: "/privacy", changefreq: "yearly", priority: "0.3" },
+  { path: "/terms", changefreq: "yearly", priority: "0.3" },
 ];
 
 const HELP_SLUGS = [

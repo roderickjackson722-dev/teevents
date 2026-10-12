@@ -22,9 +22,11 @@ import { Route as ForOrganizersRouteImport } from './routes/for-organizers'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PricingRouteImport } from './routes/pricing'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as SalesSheetRouteImport } from './routes/sales-sheet'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
 import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
@@ -124,6 +126,11 @@ const PricingRoute = PricingRouteImport.update({
   path: '/pricing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReviewsRoute = ReviewsRouteImport.update({
   id: '/reviews',
   path: '/reviews',
@@ -137,6 +144,11 @@ const SalesSheetRoute = SalesSheetRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollegeIndexRoute = CollegeIndexRouteImport.update({
@@ -336,9 +348,11 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -387,9 +401,11 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -439,9 +455,11 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
+  '/privacy': typeof PrivacyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -492,9 +510,11 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/plans'
     | '/pricing'
+    | '/privacy'
     | '/reviews'
     | '/sales-sheet'
     | '/sitemap.xml'
+    | '/terms'
     | '/college/$slug'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -543,9 +563,11 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/plans'
     | '/pricing'
+    | '/privacy'
     | '/reviews'
     | '/sales-sheet'
     | '/sitemap.xml'
+    | '/terms'
     | '/college/$slug'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -594,9 +616,11 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/plans'
     | '/pricing'
+    | '/privacy'
     | '/reviews'
     | '/sales-sheet'
     | '/sitemap.xml'
+    | '/terms'
     | '/college/$slug'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -646,9 +670,11 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   PlansRoute: typeof PlansRoute
   PricingRoute: typeof PricingRoute
+  PrivacyRoute: typeof PrivacyRoute
   ReviewsRoute: typeof ReviewsRoute
   SalesSheetRoute: typeof SalesSheetRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
   LeagueSlugRoute: typeof LeagueSlugRoute
   PairingsSlugRoute: typeof PairingsSlugRoute
@@ -776,6 +802,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PricingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/reviews': {
       id: '/reviews'
       path: '/reviews'
@@ -795,6 +828,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/college/': {
@@ -1057,9 +1097,11 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   PlansRoute: PlansRoute,
   PricingRoute: PricingRoute,
+  PrivacyRoute: PrivacyRoute,
   ReviewsRoute: ReviewsRoute,
   SalesSheetRoute: SalesSheetRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   CollegeSlugRoute: CollegeSlugRoute,
   LeagueSlugRoute: LeagueSlugRoute,
   PairingsSlugRoute: PairingsSlugRoute,

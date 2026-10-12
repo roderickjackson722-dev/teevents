@@ -66,7 +66,7 @@ export default function GettingStarted() {
       const t = tours?.[0];
       setTournamentId(searchParams.get("tournament_id") || t?.id || null);
       const saved = (tb as any)?.onboarding_event as EventInfo | null;
-      setEv(saved ? { ...EMPTY, ...saved } : { ...EMPTY, name: t?.title || "", date: t?.date?.slice(0, 10) || "", location: t?.course_name || "", cityState: [t?.location, t?.state].filter(Boolean).join(", "), format: SELECTS[1][2].find(f => f === pretty(t?.scoring_format ?? null)) || "", type: t ? "Tournament" : "" });
+      setEv(saved ? { ...EMPTY, ...saved } : { ...EMPTY, name: t?.title || "", date: t?.date?.slice(0, 10) || "", location: t?.course_name || "", cityState: t?.location && t?.state && t.location.includes(t.state) ? t.location : [t?.location, t?.state].filter(Boolean).join(", "), format: SELECTS[1][2].find(f => f === pretty(t?.scoring_format ?? null)) || "", type: t ? "Tournament" : "" });
       setChoice((tb as any)?.onboarding_choice || null);
       setItems(itemCount(tb));
       setToolboxId(tb?.id || null);

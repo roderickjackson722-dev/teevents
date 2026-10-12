@@ -49,7 +49,7 @@ const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean 
               ["Platform", [["Features", "/features"], ["Pricing", "/pricing"], ["How It Works", "/#how-it-works"], ["Compare", "/compare"]]],
               ["Who It's For", [["For Organizers", "/for-organizers"], ["For Golfers", "/for-golfers"], ["Services", "/services"]]],
               ["Resources", [["Find Your Event", "/find-your-event"], ["Organizer Login", "/login"], ["Contact", "/contact"]]],
-              ["Company", [["About", "/about"], ["Reviews", "/reviews"], ["Privacy Policy", "/privacy-policy"], ["Terms of Service", "/terms-of-service"]]],
+              ["Company", [["About", "/about"], ["Reviews", "/reviews"], ["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"]]],
             ].map(([heading, links]) => (
               <div key={heading as string}>
                 <h4 className="mb-3 font-semibold text-secondary">{heading as string}</h4>
@@ -66,8 +66,8 @@ const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean 
           <p className="text-primary-foreground/60 italic text-center">Built by a tournament director for tournament directors.</p>
           <p className="text-primary-foreground/70">Founded by Roderick Jackson</p>
           <div className="flex gap-4">
-            <Link to="/privacy-policy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
-            <Link to="/terms-of-service" className="hover:text-secondary transition-colors">Terms of Service</Link>
+            <Link to="/privacy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
+            <Link to="/terms" className="hover:text-secondary transition-colors">Terms of Service</Link>
           </div>
           <p>&copy; 2026 TeeVents Golf Management. All rights reserved.</p>
         </div>

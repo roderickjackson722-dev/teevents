@@ -134,6 +134,13 @@
       "when": 1791834125577,
       "tag": "0018_organizer_support_direct_replies",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1791835117734,
+      "tag": "0019_public_listing_default_on",
+      "breakpoints": true
     }
   ]
 }

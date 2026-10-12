@@ -33,7 +33,7 @@ const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean 
         }}
       />
       <div className="container mx-auto px-4 py-12">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+        <div className="flex flex-col md:flex-row items-start justify-between gap-8">
           <div className="flex items-center gap-3">
             <img src={logoBlack} alt="TeeVents" className="h-12 w-12 object-contain invert" />
             <div>
@@ -44,31 +44,32 @@ const Footer = ({ includeLeagueSearch = true }: { includeLeagueSearch?: boolean 
             </div>
           </div>
 
-          <div className="flex flex-wrap justify-center gap-6 text-sm text-primary-foreground/70">
-            <Link to="/" className="hover:text-secondary transition-colors">Home</Link>
-            <Link to="/about" className="hover:text-secondary transition-colors">About</Link>
-            <Link to="/services" className="hover:text-secondary transition-colors">Services</Link>
-            <Link to="/features" className="hover:text-secondary transition-colors">Features</Link>
-            <Link to="/pricing" className="hover:text-secondary transition-colors">Pricing</Link>
-            <Link to="/for-golfers" className="hover:text-secondary transition-colors">For Golfers</Link>
-            <Link to="/for-organizers" className="hover:text-secondary transition-colors">For Organizers</Link>
-            <Link to="/events" className="hover:text-secondary transition-colors">Events</Link>
-            <Link to="/reviews" className="hover:text-secondary transition-colors">Reviews</Link>
-            <Link to="/contact" className="hover:text-secondary transition-colors">Contact</Link>
-            <Link to="/compare" className="hover:text-secondary transition-colors">Compare</Link>
-            <Link to="/login" className="hover:text-secondary transition-colors">Organizer Login</Link>
+          <div className="grid w-full max-w-3xl grid-cols-2 gap-8 text-sm md:grid-cols-4">
+            {[
+              ["Platform", [["Features", "/features"], ["Pricing", "/pricing"], ["How It Works", "/#how-it-works"], ["Compare", "/compare"]]],
+              ["Who It's For", [["For Organizers", "/for-organizers"], ["For Golfers", "/for-golfers"], ["Services", "/services"]]],
+              ["Resources", [["Find Your Event", "/find-your-event"], ["Organizer Login", "/login"], ["Contact", "/contact"]]],
+              ["Company", [["About", "/about"], ["Reviews", "/reviews"], ["Privacy Policy", "/privacy-policy"], ["Terms of Service", "/terms-of-service"]]],
+            ].map(([heading, links]) => (
+              <div key={heading as string}>
+                <h4 className="mb-3 font-semibold text-secondary">{heading as string}</h4>
+                <ul className="space-y-2 text-primary-foreground/70">
+                  {(links as string[][]).map(([label, to]) => <li key={label}><Link to={to} className="hover:text-secondary transition-colors">{label}</Link></li>)}
+                </ul>
+              </div>
+            ))}
           </div>
           </div>
 
           <div className="mt-8 pt-6 border-t border-primary-foreground/10 flex flex-col items-center gap-3 text-xs text-primary-foreground/40">
 
-          <p className="text-primary-foreground/60 italic text-center">Built by a tournament director — for tournament directors.</p>
+          <p className="text-primary-foreground/60 italic text-center">Built by a tournament director for tournament directors.</p>
           <p className="text-primary-foreground/70">Founded by Roderick Jackson</p>
           <div className="flex gap-4">
             <Link to="/privacy-policy" className="hover:text-secondary transition-colors">Privacy Policy</Link>
             <Link to="/terms-of-service" className="hover:text-secondary transition-colors">Terms of Service</Link>
           </div>
-          <p>&copy; {new Date().getFullYear()} TeeVents Golf Management. All rights reserved.</p>
+          <p>&copy; 2026 TeeVents Golf Management. All rights reserved.</p>
         </div>
       </div>
     </footer>

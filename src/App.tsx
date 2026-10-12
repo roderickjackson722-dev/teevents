@@ -7,7 +7,7 @@ import CustomDomainRouter from "./components/CustomDomainRouter";
 import About from "./pages/About";
 import SalesSheet from "./pages/SalesSheet";
 import Services from "./pages/Services";
-import { HowItWorksPage, ForGolfersPage, ForOrganizersPage } from "./pages/PublicAudience";
+import { ForGolfersPage, ForOrganizersPage } from "./pages/PublicAudience";
 import Events from "./pages/Events";
 import EventDetail from "./pages/EventDetail";
 import ManageEvents from "./pages/admin/ManageEvents";
@@ -228,6 +228,7 @@ import Vendors from "./pages/dashboard/Vendors";
 import SideEvents from "./pages/dashboard/SideEvents";
 import TeamPerformance from "./pages/dashboard/TeamPerformance";
 import TournamentSearch from "./pages/TournamentSearch";
+import FindYourEvent from "./pages/FindYourEvent";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
 import TeamHomepage from "./pages/TeamHomepage";
 import ScoreLogin from "./pages/ScoreLogin";
@@ -438,7 +439,8 @@ const App = () => (
           <Route path="/checkout/:item" element={<Checkout />} />
           <Route path="/college-golf-scoring" element={<CollegeGolfScoring />} />
           <Route path="/golf-leagues" element={<GolfLeagues />} />
-           <Route path="/how-it-works" element={<HowItWorksPage />} />
+           <Route path="/how-it-works" element={<Navigate to="/#how-it-works" replace />} />
+           <Route path="/find-your-event" element={<FindYourEvent />} />
            <Route path="/pricing" element={<Navigate to="/plans" replace />} />
            <Route path="/enterprise-pricing" element={<EnterprisePricing />} />
            <Route path="/enterprise-overview" element={<EnterpriseOverview />} />

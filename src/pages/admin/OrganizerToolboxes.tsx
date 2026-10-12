@@ -79,7 +79,7 @@ export default function OrganizerToolboxes() {
         </div>
         <div className="flex flex-wrap gap-2">
           {current.reviewed_at ? <Badge className="h-9 px-3"><CheckCircle2 className="mr-1 h-4 w-4" />Reviewed</Badge> : <Button variant="secondary" onClick={() => markReviewed(current)}><CheckCircle2 className="h-4 w-4" /> Mark as Reviewed</Button>}
-          <Button variant="outline" disabled={!current.email} onClick={() => { window.location.href = `mailto:${current.email}?subject=${encodeURIComponent("Your TeeVents Organizer Toolbox")}`; }}><Mail className="h-4 w-4" /> Send Message to Organizer</Button>
+          <Button variant="outline" disabled={!current.user_id} onClick={() => navigate(`/admin/help-chats?user=${current.user_id}&org=${current.organization_id}`)}><Mail className="h-4 w-4" /> Send Message to Organizer</Button>
           <Button variant="outline" onClick={() => downloadAll(current)}><Download className="h-4 w-4" /> Download All Assets</Button>
         </div>
       </div>

@@ -37,7 +37,7 @@ const prettyDate = (value: unknown) =>
 /** Static copy for marketing / help / legal pages. */
 const STATIC: Record<string, { title: string; description: string }> = {
   "/": { title: "TeeVents — The Golf Tournament Platform That Builds Your Event For You", description: "Every event includes a named TeeVents rep who builds your page, registration, leaderboard, pairings, and scoring — free or paid." },
-  "/sales-sheet": { title: "TeeVents Sales Sheet — We Build Your Event For You", description: "A named rep builds your event page, registration, leaderboard, scoring, and sponsor page. Included on every plan — free or paid." },
+  "/sales-sheet": { title: "Why TeeVents? | We Build Your Event For You", description: "A named rep builds your event page, registration, leaderboard, scoring, and sponsor page. Included on every plan — free or paid." },
   "/why-teevents": { title: "Why TeeVents? A Dedicated Rep on Every Plan", description: "We deliver a finished event, not just software: your named TeeVents rep builds it for you, free or paid." },
   "/enterprise-overview": { title: "TeeVents Enterprise — Every Event Built For You", description: "Unlimited tournaments and leagues, live scoring, 0% platform fees, and your own dedicated rep for $2,999/year." },
   "/about": { title: "About Roderick Jackson & TeeVents | Golf Tournament Management", description: "Meet TeeVents founder Roderick Jackson, a tournament director with over 20 years in golf and over a decade managing HBCU golf tournaments." },

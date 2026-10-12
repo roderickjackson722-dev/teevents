@@ -4102,6 +4102,8 @@ export type Database = {
           needs_human: boolean
           organization_id: string | null
           role: string
+          sender_type: string | null
+          sender_user_id: string | null
           user_email: string | null
           user_id: string
         }
@@ -4112,6 +4114,8 @@ export type Database = {
           needs_human?: boolean
           organization_id?: string | null
           role: string
+          sender_type?: string | null
+          sender_user_id?: string | null
           user_email?: string | null
           user_id: string
         }
@@ -4122,6 +4126,8 @@ export type Database = {
           needs_human?: boolean
           organization_id?: string | null
           role?: string
+          sender_type?: string | null
+          sender_user_id?: string | null
           user_email?: string | null
           user_id?: string
         }

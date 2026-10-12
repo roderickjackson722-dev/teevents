@@ -27,7 +27,7 @@ export default function EnterpriseOverview() {
       <DedicatedRepBadge />
       <section className="bg-primary px-4 py-16 text-center">
         <p className="text-xs font-bold uppercase tracking-widest text-secondary">TeeVents Enterprise · $2,999 per year</p>
-        <h1 className="mx-auto mt-3 max-w-3xl font-display text-3xl font-bold text-primary-foreground md:text-5xl">Built for golf courses and clubs running 10+ events a year</h1>
+        <h1 className="mx-auto mt-3 max-w-3xl font-display text-3xl font-bold text-primary-foreground md:text-5xl">Built for golf courses and clubs running 10 or more events a year</h1>
         <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/80">Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. And a dedicated rep who builds every event for you.</p>
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <EnterpriseInquiryDialog><Button variant="secondary" size="lg">Request Enterprise</Button></EnterpriseInquiryDialog>

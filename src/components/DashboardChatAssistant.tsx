@@ -8,7 +8,7 @@ import { toast } from "@/hooks/use-toast";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; sender_type?: string | null };
 
 const CHAT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/dashboard-chat`;
 
@@ -86,6 +86,8 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [humanMode, setHumanMode] = useState(false);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const [showCallForm, setShowCallForm] = useState(false);
   const [callName, setCallName] = useState("");
   const [callPhone, setCallPhone] = useState("");
@@ -115,15 +117,22 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
   const loadHistory = useCallback(async () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from("help_chat_messages")
-      .select("role, content")
+       .select("role, content, sender_type")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true })
       .limit(300);
-    setMessages(((data as any[]) || []).map((m) => ({ role: m.role, content: m.content })));
+    if (error) { toast({ variant: "destructive", title: "Could not load your chat", description: error.message }); return; }
+    setMessages((data || []).map((m) => ({ role: m.role === "user" ? "user" : "assistant", content: m.content, sender_type: m.sender_type })));
   }, []);
   useEffect(() => { if (open) loadHistory(); }, [open, loadHistory]);
+  useEffect(() => {
+    if (!open) return;
+    inputRef.current?.focus();
+    const timer = window.setInterval(() => { if (!loading) void loadHistory(); }, 5000);
+    return () => window.clearInterval(timer);
+  }, [open, loading, loadHistory]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -138,6 +147,19 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
     const userMsg: Msg = { role: "user", content: text };
     setMessages((prev) => [...prev, userMsg]);
     setLoading(true);
+    if (humanMode) {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error("Please sign in again.");
+        const { data: member, error: memberError } = await supabase.from("org_members").select("organization_id").eq("user_id", user.id).limit(1).maybeSingle();
+        if (memberError || !member) throw new Error("Could not find your organization.");
+        const { error } = await supabase.from("help_chat_messages").insert({ user_id: user.id, user_email: user.email, organization_id: member.organization_id, role: "user", sender_type: "organizer", sender_user_id: user.id, content: text, needs_human: true });
+        if (error) throw error;
+        await loadHistory();
+      } catch (error) { setInput(text); toast({ variant: "destructive", title: "Could not send message", description: error instanceof Error ? error.message : "Please try again." }); }
+      finally { setLoading(false); inputRef.current?.focus(); }
+      return;
+    }
 
     let soFar = "";
     const upsert = (chunk: string) => {
@@ -167,7 +189,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
       setLoading(false);
       toast({ variant: "destructive", title: "Chat Error", description: e.message });
     }
-  }, [input, loading]);
+  }, [input, loading, humanMode, loadHistory]);
 
   const handleCallRequest = async () => {
     if (!callName.trim()) {
@@ -182,8 +204,9 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
       return;
     }
     setCallSubmitted(true);
+    setHumanMode(true);
     await loadHistory();
-    toast({ title: "Request sent", description: "A TeeVents team member will follow up by email." });
+    toast({ title: "Request sent", description: "A TeeVents team member can reply here in your chat." });
   };
 
   const dismiss = () => {
@@ -251,7 +274,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-6 left-6 z-40 w-[380px] max-h-[560px] flex flex-col rounded-xl border border-border bg-card shadow-2xl overflow-hidden"
+            className="fixed bottom-6 left-3 sm:left-6 z-40 w-[380px] max-w-[calc(100vw-24px)] max-h-[calc(100dvh-48px)] flex flex-col rounded-xl border border-border bg-card shadow-2xl overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 bg-primary text-primary-foreground">
@@ -283,7 +306,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
                 <div key={i} className={`flex gap-2 ${m.role === "user" ? "justify-end" : "justify-start"}`}>
                   {m.role === "assistant" && (
                     <div className="h-6 w-6 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-1">
-                      <Bot className="h-3.5 w-3.5 text-primary" />
+                      {m.sender_type === "team" ? <User className="h-3.5 w-3.5 text-primary" /> : <Bot className="h-3.5 w-3.5 text-primary" />}
                     </div>
                   )}
                   <div
@@ -293,6 +316,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
                         : "bg-muted text-foreground"
                     }`}
                   >
+                    {m.sender_type === "team" && <p className="mb-1 text-xs font-semibold text-primary">TeeVents team</p>}
                     {m.role === "assistant" ? (
                       <div className="prose prose-sm max-w-none dark:prose-invert [&>p]:m-0 [&>ul]:my-1 [&>ol]:my-1">
                         <ReactMarkdown>{m.content}</ReactMarkdown>
@@ -328,7 +352,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
                     Talk to the TeeVents team
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Describe what you need. We'll email you back — the AI only helps with finding things in the dashboard.
+                     Describe what you need. Your TeeVents team can reply here in your chat.
                   </p>
                   <Input
                     placeholder="What do you need help with?"
@@ -357,7 +381,7 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
                 <div className="bg-primary/5 border border-primary/20 rounded-lg p-3 text-center">
                   <p className="text-sm font-medium text-primary">✅ Request sent</p>
                   <p className="text-xs text-muted-foreground mt-1">
-                    A TeeVents team member will follow up by email.
+                    A TeeVents team member can reply here in your chat.
                   </p>
                 </div>
               )}
@@ -365,18 +389,25 @@ export function DashboardChatAssistant({ forceShow = false }: DashboardChatAssis
 
             {/* Input area */}
             <div className="border-t border-border p-3 space-y-2">
+              <div className="flex gap-1" role="group" aria-label="Support mode">
+                <Button size="sm" variant={!humanMode ? "secondary" : "ghost"} aria-pressed={!humanMode} onClick={() => setHumanMode(false)}>Navigation AI</Button>
+                <Button size="sm" variant={humanMode ? "secondary" : "ghost"} aria-pressed={humanMode} onClick={() => setHumanMode(true)}>TeeVents team</Button>
+              </div>
               <div className="flex gap-2">
                 <Textarea
+                  ref={inputRef}
+                  aria-label={humanMode ? "Message TeeVents team" : "Ask navigation AI"}
+                  maxLength={4000}
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); }
                   }}
-                  placeholder="Ask about your tournament..."
+                  placeholder={humanMode ? "Message the TeeVents team..." : "Ask about your tournament..."}
                   className="min-h-[40px] max-h-[80px] text-sm resize-none"
                   rows={1}
                 />
-                <Button size="icon" onClick={send} disabled={loading || !input.trim()} className="h-10 w-10 flex-shrink-0">
+                <Button size="icon" aria-label="Send message" onClick={send} disabled={loading || !input.trim()} className="h-10 w-10 flex-shrink-0">
                   <Send className="h-4 w-4" />
                 </Button>
               </div>

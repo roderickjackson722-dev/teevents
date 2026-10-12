@@ -1,3 +1,9 @@
+## Contact page rebuild
+- [x] Rebuild requested Contact sections, omitting mailing address and references as instructed
+- [x] Connect validated inquiries to real email delivery with server-verified CAPTCHA only
+- [x] Verify desktop/mobile form states, protections, and navigation without changing other pages
+- [ ] Confirm live email receipt after the user completes CAPTCHA on the public Contact page; CAPTCHA rejects localhost, and safeguards were not bypassed
+
 ## Eight-section pricing page rebuild
 - [x] Rebuild pricing with four plans, all-plan service, six add-ons, payments, comparison, FAQ, and final CTA
 - [x] Preserve purchase flows and grandfathered events; verify desktop/mobile and purchase links

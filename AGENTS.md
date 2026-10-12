@@ -15,3 +15,4 @@
 - Additional Notes uses the existing registration-field settings for both individual and group notes; missing settings retain visibility and are persisted only on an organizer's explicit toggle to preserve current events.
 - Organizer Toolbox data lives in one organizer_toolboxes row per organization with files in the private organizer-toolbox bucket under <org_id>/; only admins set review fields, so rep status can't be self-reported.
 - Human support replies share each organizer's existing help_chat_messages conversation; RLS validates sender identity and admin team replies, while AI navigation messages retain the existing model and transport.
+- Public Contact inquiries share a client/server Zod schema and use a dedicated server function that verifies CAPTCHA before sending plain-text email to the fixed team recipient; never report success until the email provider accepts the message.

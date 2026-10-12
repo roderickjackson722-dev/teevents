@@ -34,7 +34,7 @@ function UploadButton({ accept, multiple, onFiles, busy }: { accept: string; mul
   </>;
 }
 
-export default function OrganizerToolbox() {
+export default function OrganizerToolbox({ embedded, onSaved }: { embedded?: boolean; onSaved?: (t: Toolbox) => void } = {}) {
   const { org, loading: orgLoading } = useOrgContext();
   const [tb, setTb] = useState<Toolbox | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
@@ -81,6 +81,7 @@ export default function OrganizerToolbox() {
     setTb(data as Toolbox);
     setSaved(true);
     toast.success("Saved to your Organizer Toolbox.");
+    onSaved?.(data as Toolbox);
   };
 
   const done = sectionsComplete(tb);
@@ -96,10 +97,10 @@ export default function OrganizerToolbox() {
   </ul> : null;
 
   return <div className="mx-auto max-w-4xl space-y-5 pb-12">
-    <div>
+    {!embedded && <div>
       <h1 className="font-display text-2xl font-bold text-foreground md:text-3xl">Organizer Toolbox</h1>
       <p className="mt-1 text-muted-foreground">Upload everything you want on your event page. Your TeeVents rep will review these items and add them to your site.</p>
-    </div>
+    </div>}
 
     <div className="grid gap-4 rounded-lg border-2 border-secondary bg-primary p-5 text-primary-foreground sm:grid-cols-3">
       <div><p className="text-xs uppercase text-primary-foreground/70">Items uploaded</p><p className="font-display text-2xl font-bold">{itemCount(tb)}</p></div>
@@ -154,7 +155,7 @@ export default function OrganizerToolbox() {
 
     <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
       <Button variant="secondary" size="lg" onClick={save} disabled={saving || !!busy} className="font-semibold">
-        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />} Save to Toolbox
+        {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Package className="h-4 w-4" />} {embedded ? "SAVE AND CONTINUE" : "Save to Toolbox"}
       </Button>
       {saved && <p className="rounded-md bg-primary/10 px-4 py-2 text-sm font-medium text-primary" role="status">Saved. Your TeeVents rep will see everything in this toolbox when they contact you within 1 business day.</p>}
     </div>

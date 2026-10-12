@@ -27,7 +27,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
  },
  {
   "title": "8. Your Rights",
-  "body": "Depending on your location, you may have the right to access, correct, or delete your personal information, and to opt out of certain data processing. To exercise these rights, contact us at privacy@teevents.golf."
+  "body": "Depending on your location, you may have the right to access, correct, or delete your personal information, and to opt out of certain data processing. To exercise these rights, contact us at info@teevents.golf."
  },
  {
   "title": "9. California Privacy Rights (CCPA)",
@@ -47,7 +47,7 @@ export const PRIVACY_SECTIONS: LegalSection[] = [
  },
  {
   "title": "13. Contact Us",
-  "body": "If you have questions about this Privacy Policy, contact us at privacy@teevents.golf."
+  "body": "If you have questions about this Privacy Policy, contact us at info@teevents.golf."
  }
 ];
 export const TERMS_SECTIONS: LegalSection[] = [
@@ -114,6 +114,6 @@ export const TERMS_SECTIONS: LegalSection[] = [
  },
  {
   "title": "17. Contact Us",
-  "body": "If you have questions about these Terms, contact us at legal@teevents.golf."
+  "body": "If you have questions about these Terms, contact us at info@teevents.golf."
  }
 ];

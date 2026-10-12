@@ -1,481 +1,120 @@
-import { motion } from "framer-motion";
-import {
-  Check, ArrowRight, Shield, Lock, CreditCard, Smartphone, Sparkles,
-  Globe, Users, BarChart3, Award, MessageSquare, Trophy,
-  Package, Gavel, LayoutTemplate, Megaphone, BadgeDollarSign, Building2, X,
-} from "lucide-react";
+import { ArrowRight, Check, Globe, ShieldCheck, Trophy, UserRound, Users, Gavel, LayoutTemplate, Megaphone, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
-import { DedicatedRepBadge, RepMeaningSection } from "@/components/DedicatedRep";
 import SEO from "@/components/SEO";
-import EnterpriseDemo from "@/components/pricing/EnterpriseDemo";
-import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
 import { Button } from "@/components/ui/button";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
 
-/* ─── Core pricing options ─── */
-const planCards = [
-  {
-    icon: Sparkles,
-    title: "No Cost to Start",
-    price: "$0",
-    unit: "to start",
-    badge: null,
-    highlight: false,
-    desc: "Free for you. A 5% service fee is included in each player's registration total, so you keep 100% of your event revenue.",
-    features: [
-      "Dedicated TeeVents rep who builds your event page, leaderboard, and scoring setup — included on every tournament",
-      "Full tournament management platform",
-      "Branded tournament website",
-      "Online registration & Stripe payments",
-      "QR check-in from any phone",
-      "Pairings, tee sheets & drag-and-drop scheduling",
-      "Player management, waitlist & CSV import",
-      "Volunteer coordination & shift scheduling",
-      "Printables — scorecards, cart signs, name badges",
-      "Email confirmations & basic reporting",
-      "Financial dashboard & Stripe payouts",
-      "Public search listing on teevents.golf",
-      "10 manual entries included",
-      "No monthly subscription",
-    ],
-    exclusions: [],
-    cta: "Select No Cost to Start",
-    ctaTo: "/signup?plan=no-cost",
-    note: "No monthly subscription.",
-  },
-  {
-    icon: BadgeDollarSign,
-    title: "Per-Event",
-    price: "$299",
-    unit: "per tournament",
-    badge: "Recommended for charity and first-time organizers",
-    highlight: true,
-    desc: "Pay once per event and keep 100% of your registration revenue. No transaction fees. Everything included.",
-    features: [
-      'Everything in "No Cost to Start"',
-      "No 5% platform fee",
-      "Unlimited manual entries",
-      "Live Leaderboard + Mobile Scoring included ($99 value)",
-      "Dedicated rep who builds your entire event — website, registration, leaderboard, scoring",
-      "Full-Service Page Build Out included",
-      "Unlimited transactions",
-      "One-time, per event",
-    ],
-    exclusions: [],
-    cta: "Select Per-Event",
-    ctaTo: "/signup?plan=per-event",
-    note: "Standard card processing fees still apply.",
-  },
-  {
-    icon: Trophy,
-    title: "Per-League",
-    price: "$499",
-    unit: "per league",
-    badge: "Season-long",
-    highlight: false,
-    desc: "Perfect for season-long leagues with multiple events.",
-    features: [
-      'Everything in "Per-Event"',
-      "Covers the entire league season",
-      "League standings & leaderboards",
-      "Season-long reporting",
-      "Dedicated rep who manages your season-long setup and standings",
-    ],
-    exclusions: [],
-    cta: "Select Per-League",
-    ctaTo: "/signup?plan=per-league",
-    note: "One league, one season-long price.",
-  },
+const plans = [
+  { name: "No Cost to Start", price: "$0", unit: "", badge: "", description: "Free for you. A 5% service fee is included in each player's registration total, so you keep 100% of your event revenue.", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
+  { name: "Per-Event", price: "$299", unit: "per tournament", badge: "MOST POPULAR", description: "Pay once per tournament. No platform transaction fees. Keep 100% of your registration revenue.", features: ['Everything in "No Cost to Start"', "No 5% platform fee", "Unlimited manual entries", "Unlimited transactions", "Dedicated TeeVents rep who builds your event", "One-time, per event"], cta: "SELECT PER-EVENT", to: "/signup?plan=per-event", note: "Standard card processing fees still apply." },
+  { name: "Per-League", price: "$499", unit: "per league", badge: "", description: "Perfect for season-long leagues with multiple events and standings.", features: ['Everything in "Per-Event"', "Covers the entire league season", "League standings and leaderboards", "Season-long reporting", "Dedicated TeeVents rep who manages your league"], cta: "SELECT PER-LEAGUE", to: "/signup?plan=per-league", note: "One league, one season-long price." },
+  { name: "Enterprise", price: "$2,999", unit: "per year", badge: "BEST FOR 10 OR MORE EVENTS A YEAR", description: "For golf courses, clubs, and organizations running 10 or more events a year.", features: ["Unlimited tournaments and leagues", "0% TeeVents transaction fees", "Live leaderboard and mobile scoring included on every event", "Dedicated TeeVents rep who builds every event", "Custom branding", "Staff accounts with role-based permissions", "Priority support", "Club page with all upcoming events"], cta: "REQUEST ENTERPRISE", to: "", note: "Billed annually. No per-event fees." },
 ];
-
-/* ─── Paid add-ons (per event, one-time) ─── */
+const included = [
+  { icon: UserRound, title: "A Named TeeVents Rep", description: "Your event built by a real person, free or paid." },
+  { icon: Globe, title: "Custom Website Page", description: "Branded event page with your logo, colors, and sponsors." },
+  { icon: Trophy, title: "Custom Leaderboard", description: "Your rep matches every leaderboard to your event colors." },
+  { icon: ShieldCheck, title: "Secure Payments", description: "Payments go straight to your Stripe account. We never hold your money." },
+];
 const addons = [
-  {
-    icon: Users,
-    title: "Unlimited Manual Entries",
-    price: 99,
-    to: "/checkout/unlimited-manual-entries",
-    desc: "Remove the 10-entry cap; add unlimited manual player registrations, sponsors, and side-event entries.",
-  },
-  {
-    icon: Gavel,
-    title: "Auction Dashboard",
-    price: 99,
-    to: "/checkout/auction-raffle",
-    desc: "Mobile bidding dashboard with auto-draw at close and real-time bid tracking.",
-  },
-  {
-    icon: Megaphone,
-    title: "Branding Removal + Digital Sponsor",
-    price: 99,
-    to: "/checkout/branding-removal",
-    desc: "TeeVents branding hidden; custom \"Presented by\" logo and a turnkey digital sponsor package.",
-  },
-  {
-    icon: Globe,
-    title: "Custom Domain",
-    price: 99,
-    to: "/checkout/custom-domain",
-    desc: "Brand your tournament URL (e.g., golfyourclub.com) instead of a teevents.golf link.",
-  },
+  { icon: Trophy, title: "Live Leaderboard and Mobile Scoring", description: "Real-time leaderboard with mobile scoring from any phone. No app download required.", slug: "live-leaderboard" },
+  { icon: Users, title: "Unlimited Manual Entries", description: "Remove the 10-entry cap. Add unlimited manual player registrations, sponsors, and side-event entries.", slug: "unlimited-manual-entries" },
+  { icon: Gavel, title: "Auction Dashboard", description: "Mobile bidding dashboard with auto-draw at close and real-time bid tracking.", slug: "auction-raffle" },
+  { icon: LayoutTemplate, title: "Full-Service Page Build Out", description: "Our team designs a custom event page for you with layout, colors, content, and branding.", slug: "custom-event-page" },
+  { icon: Megaphone, title: "Branding Removal and Digital Sponsor", description: 'TeeVents branding hidden. Custom "Presented by" logo and a turnkey digital sponsor package you can resell for $5,000 to $10,000.', slug: "branding-removal" },
+  { icon: Globe, title: "Custom Domain", description: "Brand your tournament URL (example: golfyourclub.com) instead of a teevents.golf link.", slug: "custom-domain" },
 ];
-
-
-
-/* ─── Why Choose Us ─── */
-const whyChooseUs = [
-  { icon: Users, title: "We build it for you", desc: "Every event — free or paid — includes a dedicated TeeVents representative who builds your event page, custom leaderboard, and pairings." },
-  { icon: Package, title: "One platform, end-to-end", desc: "Plan, promote, register, score, pay out, and follow up — all from one dashboard." },
-  { icon: Trophy, title: "Built for golf", desc: "8 scoring formats, sponsor portals, pairings, and printables — nothing generic." },
-  { icon: Shield, title: "PCI Level 1 payments", desc: "Bank-level Stripe security. We never hold your money." },
-  { icon: BarChart3, title: "No monthly subscriptions", desc: "Start free. Buy add-ons only for the tournaments that need them." },
-  { icon: MessageSquare, title: "Real human support", desc: "Talk to golf-industry pros, not chatbots — before, during, and after your event." },
-  { icon: Award, title: "Fundraising friendly", desc: "Nonprofit-ready receipts, donation totals, and organizer-controlled refunds." },
+const payments = [
+  ["Golfer Pays", "Full registration amount charged at checkout via Stripe."],
+  ["Your Plan Applies", "No Cost to Start: a 5% platform fee covered by players. Paid plans: 0% platform transaction fees."],
+  ["Stripe Fee Applied", "Standard 2.9% + $0.30 processing fee deducted by Stripe."],
+  ["You Get Paid", "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2 to 7 business days."],
 ];
+const comparison = [
+  ["Upfront cost", "$0", "$299 per tournament", "$499 per league", "$2,999 per year"],
+  ["Transaction fee", "5% (covered by players)", "0%", "0%", "0%"],
+  ["Events included", "Pay as you go", "Pay as you go", "One league season", "Unlimited"],
+  ["Dedicated rep", "Included", "Included", "Included", "Included"],
+  ["Live leaderboard", "Add-on: $99", "Add-on: $99", "Add-on: $99", "Included"],
+  ["Custom branding", "TeeVents branding", "TeeVents branding", "TeeVents branding", "Custom branding"],
+  ["Best for", "Nonprofits and first-time organizers", "Organizers who want predictable costs", "Season-long leagues", "Courses and clubs running 10 or more events a year"],
+];
+const faqs = [
+  ["Do I really get a dedicated rep on the free plan?", "Yes. Every event on TeeVents, free or paid, includes a dedicated TeeVents rep who builds your event page, sets up your registration, and configures your leaderboard."],
+  ["What is the 5% platform fee?", "On the No Cost to Start plan, a 5% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."],
+  ["Can I pass the fee to my players?", "Yes. On the No Cost to Start plan, the 5% fee is automatically added to each registration at checkout. Players see it as a service fee, similar to Eventbrite."],
+  ["When do I get paid?", "Funds land directly in your connected Stripe account. New Stripe accounts typically see funds available within 2 to 7 business days. TeeVents never holds your money."],
+  ["What if I run more than 10 events a year?", "Enterprise is built for you. $2,999 per year for unlimited tournaments and leagues, with 0% transaction fees and live leaderboard and mobile scoring included on every event."],
+  ["Can I switch plans later?", "Yes. You can upgrade from No Cost to Start to Per-Event, Per-League, or Enterprise at any time."],
+  ["Do I need a Stripe account?", "Yes, but setup takes 5 to 10 minutes. TeeVents helps you connect your Stripe account during onboarding."],
+];
+const section = "px-5 py-16 md:px-8 md:py-24";
+const heading = "text-3xl font-display font-bold md:text-4xl";
 
-const Plans = () => {
-  return (
-    <Layout>
-      <SEO
-        title="Simple, Transparent Pricing | TeeVents"
-        description="Start at $0, pay $299 per event, $499 per league, or $2,999 per year for Enterprise. Every event — free or paid — includes a dedicated TeeVents representative."
-        path="/plans"
-      />
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify({
-        "@context": "https://schema.org", "@type": "Product", name: "TeeVents Golf Tournament Management Software",
-        description: "Golf tournament and league management with a dedicated representative included on every plan.",
-        brand: { "@type": "Brand", name: "TeeVents" },
-        offers: [
-          ["No Cost to Start", "0", "Dedicated rep included; 5% platform fee covered by players; standard processing applies."],
-          ["Per-Event", "299", "One-time per tournament; dedicated representative included; standard processing applies."],
-          ["Per-League", "499", "Per league season; dedicated representative included; standard processing applies."],
-          ["Enterprise", "2999", "Per year for unlimited events; dedicated representative included; standard processing applies."],
-        ].map(([name, price, description]) => ({ "@type": "Offer", name, price, priceCurrency: "USD", description, url: "https://www.teevents.golf/plans" })),
-      }) }} />
-
-      <DedicatedRepBadge />
-      {/* 1. HERO */}
-      <section className="bg-primary pt-24 pb-14">
-        <div className="container mx-auto px-4 text-center max-w-3xl">
-          <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-            <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
-              Simple, Transparent Pricing
-            </h1>
-            <p className="text-lg md:text-xl text-primary-foreground/80 leading-relaxed">
-              Choose the pricing that fits your event — start at $0, pay once per event, or run unlimited events with Enterprise.
-            </p>
-            <p className="mt-5 text-base md:text-lg font-bold uppercase tracking-widest text-secondary">
-              Every event — free or paid — includes a dedicated TeeVents rep who builds your event page and custom leaderboard for you.
-            </p>
-          </motion.div>
+export default function Plans() {
+  return <Layout>
+    <SEO title="Simple, Transparent Pricing | TeeVents" description="Choose $0 to start, $299 per event, $499 per league, or $2,999 per year Enterprise. Every plan includes a dedicated TeeVents rep." path="/pricing" />
+    <div className="pricing-page">
+      <section aria-labelledby="pricing-title" className={`${section} bg-primary text-primary-foreground text-center`}>
+        <div className="mx-auto max-w-3xl">
+          <p className="mb-5 text-sm font-semibold text-secondary">PRICING</p>
+          <h1 id="pricing-title" className="text-4xl font-display font-bold md:text-6xl">Simple, Transparent Pricing</h1>
+          <p className="mt-6 text-lg leading-relaxed text-primary-foreground/85">Choose the plan that fits your event. Start free, pay per event, or run unlimited events with Enterprise.</p>
+          <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-primary-foreground/85">Every plan includes a dedicated TeeVents rep who builds your event page, sets up your leaderboard, and configures everything for you. <strong className="text-secondary">Free or paid.</strong></p>
         </div>
       </section>
 
-      {/* Zero-risk banner */}
-      <section className="bg-primary border-t border-secondary/30 py-10">
-        <div className="container mx-auto px-4 max-w-4xl text-center">
-          <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-xl md:text-3xl font-display font-bold text-secondary mb-3">
-              Zero upfront cost. Player-funded. No risk.
-            </h2>
-            <p className="text-sm md:text-base text-primary-foreground/80 leading-relaxed">
-              You have no idea if you'll sell 50 spots or 150. Why risk paying upfront before you've sold a single ticket? With TeeVents, your platform cost is zero until your players register. We only get paid when you get paid.
-            </p>
-          </motion.div>
+      <section aria-label="The four plans" className={`${section} bg-muted/40`}>
+        <div className="mx-auto grid max-w-[1440px] items-stretch gap-5 lg:grid-cols-4">
+          {plans.map((plan, index) => <article key={plan.name} className={`relative flex min-w-0 flex-col rounded-lg border p-6 ${index === 1 ? "border-2 border-secondary bg-card lg:-my-3 lg:py-9" : index === 3 ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"}`}>
+            <div className="mb-5 flex min-h-10 items-center">{plan.badge && <span className="rounded-sm bg-secondary px-3 py-2 text-center text-xs font-bold leading-relaxed text-secondary-foreground">{plan.badge}</span>}</div>
+            <h2 className="text-2xl font-display font-bold">{plan.name}</h2>
+            <div className="my-5"><span className="text-4xl font-display font-bold">{plan.price}</span>{plan.unit && <p className={`mt-1 text-sm ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{plan.unit}</p>}</div>
+            <p className={`mb-6 text-sm leading-relaxed ${index === 3 ? "text-primary-foreground/85" : "text-muted-foreground"}`}>{plan.description}</p>
+            <ul className="mb-8 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2 text-sm leading-relaxed"><Check aria-hidden="true" className={`mt-1 h-4 w-4 shrink-0 ${index === 3 ? "text-secondary" : "text-primary"}`} /><span>{feature}</span></li>)}</ul>
+            <div className="mt-auto">
+              {index === 3 ? <EnterpriseInquiryDialog><Button variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold">{plan.cta}<ArrowRight /></Button></EnterpriseInquiryDialog> : <Button asChild variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold"><Link to={plan.to}>{plan.cta}<ArrowRight /></Link></Button>}
+              <p className={`mt-4 min-h-9 text-center text-xs leading-relaxed ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{plan.note}</p>
+            </div>
+          </article>)}
         </div>
       </section>
 
-
-      {/* Why choose us */}
-      <section className="bg-background py-16">
-        <div className="container mx-auto px-4 max-w-6xl">
-          <div className="text-center mb-10">
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">Why organizers choose TeeVents</h2>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {whyChooseUs.map((b, i) => (
-              <motion.div
-                key={b.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                className="flex items-start gap-4"
-              >
-                <div className="flex-shrink-0 inline-flex items-center justify-center h-10 w-10 rounded-full bg-secondary/15 text-secondary">
-                  <b.icon className="h-5 w-5" />
-                </div>
-                <div>
-                  <h3 className="text-base font-bold text-foreground mb-1">{b.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+      <section aria-labelledby="included-title" className={section}>
+        <div className="mx-auto max-w-6xl">
+          <div className="mb-12 text-center"><h2 id="included-title" className={heading}>What Every Plan Includes</h2><p className="mt-4 text-muted-foreground">No matter which plan you choose, you get the same dedicated service.</p></div>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{included.map(item => <article key={item.title} className="rounded-lg border border-border p-6"><item.icon aria-hidden="true" className="mb-6 h-8 w-8 text-primary" /><h3 className="mb-3 text-xl font-display font-bold">{item.title}</h3><p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p></article>)}</div>
+          <p className="mx-auto mt-12 max-w-3xl border-l-4 border-secondary pl-6 text-lg leading-relaxed text-primary">Most platforms sell you software and wish you luck. TeeVents delivers a finished event. You tell us what you want and we build it.</p>
         </div>
       </section>
 
-      {/* 2. PRICING */}
-      <section id="pricing" className="bg-primary/5 py-20">
-        <div className="container mx-auto px-4 max-w-6xl">
-          {/* Core options */}
-           <div className="grid gap-6 mb-16 lg:grid-cols-3">
-            {planCards.map((p, i) => (
-              <motion.div
-                key={p.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.05 }}
-                 className={`bg-card rounded-lg p-6 flex flex-col ${
-                  p.highlight ? "border-2 border-secondary shadow-lg" : "border border-border"
-                }`}
-              >
-                <div className="flex items-center gap-2 mb-3">
-                  <div className="inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
-                    <p.icon className="h-4 w-4" />
-                  </div>
-                  {p.badge && (
-                    <span className="text-xs font-bold text-primary leading-relaxed">
-                      {p.badge}
-                    </span>
-                  )}
-                </div>
-                <h3 className="text-lg font-display font-bold text-foreground">{p.title}</h3>
-                <div className="mt-2 mb-1">
-                  <span className="text-4xl font-display font-bold text-foreground">{p.price}</span>
-                  <span className="text-xs ml-1.5 text-muted-foreground">{p.unit}</span>
-                </div>
-                <p className="text-sm text-muted-foreground leading-relaxed mb-4">{p.desc}</p>
-                <ul className="space-y-2 mb-4">
-                  {p.features.map((f) => (
-                    <li key={f} className="flex items-start gap-2 text-sm text-foreground/80">
-                      <Check className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                {p.exclusions.length > 0 && (
-                  <ul className="space-y-2 mb-6">
-                    {p.exclusions.map((f) => (
-                      <li key={f} className="flex items-start gap-2 text-sm text-muted-foreground">
-                        <X className="h-4 w-4 mt-0.5 flex-shrink-0" />
-                        <span>{f}</span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-                {p.title === "Per-Event" && <p className="mb-5 border-l-4 border-secondary bg-secondary/10 p-4 text-sm font-semibold text-primary">You’re not buying software. You’re hiring a team to build your event.</p>}
-                <div className="mt-auto">
-                  <Link
-                    to={p.ctaTo}
-                    className={`block w-full text-center px-5 py-3 rounded-md font-semibold text-xs tracking-wider uppercase transition-colors ${
-                      p.highlight
-                        ? "bg-secondary text-secondary-foreground hover:bg-secondary/90"
-                        : "bg-primary text-primary-foreground hover:bg-primary/90"
-                    }`}
-                  >
-                    {p.cta}
-                  </Link>
-                  <p className="text-[11px] text-muted-foreground mt-2 text-center">{p.note}</p>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-
-          <RepMeaningSection />
-
-          {/* Which option is right for you? */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mb-16 max-w-5xl mx-auto"
-          >
-            <div className="text-center mb-6">
-              <h3 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-3">
-                Which Option Is Right for You?
-              </h3>
-              <p className="text-sm md:text-base text-muted-foreground max-w-3xl mx-auto leading-relaxed">
-                The real question isn't "Which is cheaper on paper?" — it's "Do you want to pay upfront, or do you want a zero-risk platform that pays for itself as you grow?"
-              </p>
-            </div>
-            <div className="rounded-lg border border-border bg-card p-6 overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
-                  <thead><tr className="border-b border-border text-left"><th className="p-3"> </th><th className="p-3">No Cost to Start</th><th className="p-3 text-primary">Per-Event</th><th className="p-3 text-primary">Enterprise</th></tr></thead>
-                  <tbody>{[
-                    ["Dedicated rep who builds everything", "Included — even free", "Included", "Included"],
-                    ["Upfront Cost", "$0", "$299 per tournament", "$2,999/year"],
-                    ["Transaction Fee", "5% (covered by players)", "0%", "0%"],
-                    ["Events Included", "Pay as you go", "Pay as you go", "Unlimited"],
-                    ["Live Leaderboard + Mobile Scoring", "Add-on: $99", "Included", "Included"],
-                    ["Best For", "Nonprofits, first-time organizers", "Organizers who want predictable costs", "Courses & clubs running 10+ events"],
-                  ].map((row) => <tr key={row[0]} className="border-b border-border/60 last:border-0">{row.map((cell, index) => <td key={`${row[0]}-${index}`} className={`p-3 ${index === 0 ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{cell}</td>)}</tr>)}</tbody>
-                </table>
-              </div>
-            </div>
-          </motion.div>
-
-
-          {/* Add-on features */}
-          <div className="mb-14">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              className="bg-card rounded-2xl border border-border p-8 max-w-4xl mx-auto"
-            >
-              <div className="mb-6">
-                <h3 className="text-2xl font-display font-bold text-foreground">Add-on Features</h3>
-                 <p className="text-sm text-muted-foreground">
-                   Optional add-ons are $99 each, one-time per event. Your dedicated rep and Full-Service Page Build Out are included on every plan — no extra rep charge.
-                </p>
-
-              </div>
-
-              <ul className="divide-y divide-border">
-                {addons.map((a) => (
-                  <li key={a.title} className="py-3 flex items-start gap-3">
-                    <div className="flex-shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
-                      <a.icon className="h-4 w-4" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-baseline justify-between gap-3">
-                        <p className="font-semibold text-foreground text-sm">{a.title}</p>
-                        <p className="font-display font-bold text-foreground whitespace-nowrap">${a.price}</p>
-                      </div>
-                      <p className="text-xs text-muted-foreground leading-snug">{a.desc}</p>
-                      <Link
-                        to={a.to}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-primary mt-1 hover:underline"
-                      >
-                        Select &amp; check out <ArrowRight className="h-3 w-3" />
-                      </Link>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
-          </div>
-
-
-           {/* Enterprise */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-             className="rounded-lg border-2 border-secondary bg-primary p-6 md:p-10 max-w-5xl mx-auto"
-          >
-             <div className="mx-auto max-w-3xl text-center">
-             <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase text-secondary-foreground">
-               <Building2 className="h-4 w-4" /> Enterprise
-             </div>
-             <h3 className="text-2xl md:text-4xl font-display font-bold text-primary-foreground mb-2">
-               Running 10 or more events a year?
-            </h3>
-             <p className="text-primary-foreground/80 mb-6">
-               Our Enterprise plan is built for golf courses, clubs, and organizations running 10 or more events a year.
-            </p>
-             <div className="mb-6">
-               <span className="text-4xl md:text-5xl font-display font-bold text-secondary">$2,999</span>
-               <span className="text-primary-foreground/80">/year — Unlimited Events</span>
-            </div>
-             <ul className="mx-auto mb-6 grid max-w-2xl gap-2 text-left sm:grid-cols-2">
-               {["Unlimited tournaments and leagues", "Live Leaderboard + Mobile Scoring included ($99 value per event)", "Your own dedicated rep who builds every event, every league, and every leaderboard for you", "0% transaction fees", "Custom branding", "Dedicated rep included on every plan"].map((feature) => (
-                 <li key={feature} className="flex items-start gap-2 text-sm text-primary-foreground">
-                   <Check className="mt-0.5 h-4 w-4 shrink-0 text-secondary" /> {feature}
-                 </li>
-               ))}
-             </ul>
-             <p className="font-semibold text-primary-foreground mb-6">
-               Run 10 events, and it pays for itself. Run more? You save more.
-            </p>
-              <EnterpriseInquiryDialog><Button type="button" className="inline-flex items-center gap-2 rounded-md bg-secondary px-6 py-3 text-sm font-semibold text-secondary-foreground hover:bg-secondary/90">
-               Contact us at info@teevents.golf <ArrowRight className="h-4 w-4" />
-              </Button></EnterpriseInquiryDialog>
-             </div>
-          </motion.div>
-
-           <div className="mt-14 text-center">
-             <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-3">
-               <Building2 className="h-3.5 w-3.5" /> Try the Enterprise demo
-             </div>
-             <h3 className="text-xl md:text-2xl font-display font-bold text-foreground">
-               Pinehurst Ridge Golf Club — Member-Guest Classic
-             </h3>
-           </div>
-           <EnterpriseDemo />
-           <p className="text-center mt-4"><a href="/enterprise-demo" className="text-sm font-semibold text-primary underline">Open the full Enterprise demo</a></p>
-
-
-          {/* Secure Payments */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            className="mt-12 rounded-xl border border-border bg-card p-8 md:p-10"
-          >
-            <div className="text-center mb-8">
-              <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4">
-                <Lock className="h-3.5 w-3.5" /> Secure Payment Processing
-              </div>
-              <h3 className="text-xl md:text-2xl font-display font-bold text-foreground mb-2">
-                Your golfers pay securely — every time
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-xl mx-auto">
-                Every TeeVents tournament uses Stripe — the same payment platform trusted by Amazon, Google, and millions of businesses worldwide.
-              </p>
-            </div>
-
-            <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-              {[
-                { icon: Shield, title: "PCI Level 1 Certified", desc: "The highest level of payment security compliance" },
-                { icon: Lock, title: "256-bit SSL Encryption", desc: "Bank-level encryption on every transaction" },
-                { icon: Smartphone, title: "Apple Pay & Google Pay", desc: "One-tap checkout your golfers already trust" },
-                { icon: CreditCard, title: "Fraud Protection", desc: "Built-in Stripe Radar on every payment" },
-              ].map((item) => (
-                <div key={item.title} className="text-center">
-                  <div className="inline-flex items-center justify-center h-10 w-10 rounded-full bg-primary/10 text-primary mb-3">
-                    <item.icon className="h-5 w-5" />
-                  </div>
-                  <h4 className="text-sm font-bold text-foreground mb-1">{item.title}</h4>
-                  <p className="text-xs text-muted-foreground">{item.desc}</p>
-                </div>
-              ))}
-            </div>
-          </motion.div>
+      <section aria-labelledby="addons-title" className={`${section} bg-muted/40`}>
+        <div className="mx-auto max-w-5xl"><h2 id="addons-title" className={heading}>Add-On Features</h2><p className="mt-4 text-muted-foreground">All $99 each. One-time, per event. Select an add-on to go straight to checkout.</p>
+          <div className="mt-10 divide-y divide-border">{addons.map(addon => <article key={addon.slug} className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center"><addon.icon aria-hidden="true" className="h-7 w-7 shrink-0 text-primary" /><div className="min-w-0 flex-1"><h3 className="text-xl font-display font-bold">{addon.title}</h3><p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{addon.description}</p>{addon.slug === "custom-event-page" && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Your named rep and standard event setup remain included on every plan. This optional custom design does not add a rep charge.</p>}</div><div className="shrink-0 sm:text-right"><p className="mb-2 text-2xl font-display font-bold">$99</p><Button asChild variant="link" className="h-auto p-0"><Link to={`/checkout/${addon.slug}`}>Select and check out<ArrowRight /></Link></Button></div></article>)}</div>
         </div>
       </section>
 
-      {/* Final CTA */}
-      <section className="bg-primary py-14">
-        <div className="container mx-auto px-4 text-center max-w-2xl">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
-            <h2 className="text-2xl md:text-4xl font-display font-bold text-primary-foreground mb-4">
-               Running 10 or more events a year?
-            </h2>
-            <p className="text-primary-foreground/70 mb-8">
-               Our Enterprise plan gives you unlimited events for $2,999/year, a dedicated TeeVents representative, and Live Leaderboard + Mobile Scoring on every event. Run 10 events, and it pays for itself. Run more? You save more.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <EnterpriseInquiryDialog><Button type="button"
-                className="inline-flex items-center justify-center gap-2 bg-secondary text-secondary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-secondary/90 transition-colors"
-              >
-                 Contact us at info@teevents.golf <ArrowRight className="h-4 w-4" />
-                </Button></EnterpriseInquiryDialog>
-              <Link
-                to="/request-sample"
-                className="inline-flex items-center justify-center gap-2 border border-primary-foreground/30 text-primary-foreground px-8 py-3 rounded-md font-semibold tracking-wider uppercase text-sm hover:bg-primary-foreground/10 transition-colors"
-              >
-                Request a Sample
-              </Link>
-            </div>
-          </motion.div>
+      <section aria-labelledby="payments-title" className={`${section} bg-primary text-primary-foreground`}>
+        <div className="mx-auto max-w-6xl"><div className="mx-auto max-w-3xl text-center"><p className="mb-4 text-sm font-semibold text-secondary">HOW PAYMENTS WORK</p><h2 id="payments-title" className={heading}>We Never Hold Your Money</h2><p className="mt-5 leading-relaxed text-primary-foreground/85">Payments split automatically at checkout using Stripe Connect. Your funds go directly to your Stripe account. TeeVents never touches them.</p></div>
+          <ol className="mt-14 grid gap-9 sm:grid-cols-2 lg:grid-cols-4">{payments.map(([title, description], index) => <li key={title}><span className="mb-5 flex h-11 w-11 items-center justify-center rounded-full border border-secondary text-lg font-bold text-secondary">{index + 1}</span><h3 className="mb-3 text-xl font-display font-bold">{title}</h3><p className="text-sm leading-relaxed text-primary-foreground/80">{description}</p></li>)}</ol>
+          <p className="mt-12 border-t border-primary-foreground/20 pt-8 text-center font-semibold leading-relaxed">TeeVents never holds your money. Stripe sends net proceeds directly to your bank account on your schedule.</p>
+          <p className="mt-6 flex items-center justify-center gap-2 text-center text-xs text-primary-foreground/75"><Lock className="h-4 w-4 shrink-0" />PCI Level 1 payments · SSL encryption · Apple Pay and Google Pay · Stripe Radar</p>
         </div>
       </section>
-    </Layout>
-  );
-};
 
-export default Plans;
+      <section aria-labelledby="compare-title" className={section}>
+        <div className="mx-auto max-w-6xl"><h2 id="compare-title" className={`${heading} mb-10 text-center`}>Compare Your Options</h2><div className="overflow-x-auto rounded-lg border border-border"><table className="pricing-comparison w-full min-w-[900px] text-left text-sm"><caption className="sr-only">TeeVents pricing plans and included features</caption><thead className="bg-muted"><tr><th scope="col" className="p-5">Feature</th>{plans.map(plan => <th scope="col" key={plan.name} className={`p-5 ${plan.name === "Per-Event" ? "bg-secondary/15" : ""}`}>{plan.name}</th>)}</tr></thead><tbody>{comparison.map(([label, ...cells]) => <tr key={label} className="border-t border-border"><th scope="row" className="p-5 font-semibold">{label}</th>{cells.map((cell, index) => <td key={index} className={`p-5 leading-relaxed ${index === 1 ? "bg-secondary/10" : ""}`}>{cell}</td>)}</tr>)}</tbody></table></div></div>
+      </section>
+
+      <section aria-labelledby="faq-title" className={`${section} bg-muted/40`}>
+        <div className="mx-auto max-w-3xl"><h2 id="faq-title" className={`${heading} mb-10 text-center`}>Frequently Asked Questions</h2><Accordion type="single" collapsible>{faqs.map(([question, answer], index) => <AccordionItem key={question} value={`faq-${index}`}><AccordionTrigger className="gap-5 py-6 text-left text-base font-semibold">{question}</AccordionTrigger><AccordionContent className="pr-6 text-base leading-relaxed text-muted-foreground">{answer}</AccordionContent></AccordionItem>)}</Accordion></div>
+      </section>
+
+      <section aria-labelledby="final-title" className={`${section} bg-primary text-primary-foreground text-center`}>
+        <div className="mx-auto max-w-3xl"><h2 id="final-title" className={heading}>Ready to See Your Event on TeeVents?</h2><p className="mt-5 text-lg text-primary-foreground/85">Free for organizers. A dedicated rep builds it for you.</p><div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row"><Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/get-started">GET STARTED<ArrowRight /></Link></Button><Button asChild variant="outline" size="lg" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/request-sample">REQUEST A SAMPLE</Link></Button></div></div>
+      </section>
+    </div>
+  </Layout>;
+}

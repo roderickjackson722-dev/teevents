@@ -782,7 +782,22 @@ const Players = () => {
   };
 
   const handleExportCSV = () => {
-    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Division / Tier", "Shirt Size", "Hole", "Payment", "Scoring Code"];
+    // Include every custom registration question (e.g. "Number of tickets needed",
+    // "Dates you would like to attend") as its own column, in first-seen order.
+    const customLabels: string[] = [];
+    rosterBase.forEach((p: any) => {
+      (p.custom_answers || []).forEach((a: any) => {
+        const label = (a?.label || "").trim();
+        if (label && !customLabels.includes(label)) customLabels.push(label);
+      });
+    });
+    const formatAnswer = (val: unknown): string => {
+      if (val === null || val === undefined || val === "") return "";
+      if (typeof val === "boolean") return val ? "Yes" : "No";
+      if (Array.isArray(val)) return val.join(", ");
+      return String(val);
+    };
+    const headers = ["First Name", "Last Name", "Email", "Phone", "Handicap", "Division / Tier", "Shirt Size", "Hole", "Payment", "Scoring Code", ...customLabels];
     const rowFor = (p: any) => [
       p.first_name,
       p.last_name,

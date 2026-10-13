@@ -25,6 +25,23 @@ const compare = [
   ["You are on your own", "You have a dedicated partner"],
 ];
 
+const pastEventPhotos = [
+  ["Arcis 2026 HBCU Championship", "https://antiondownsfilmsandphotographyllc.pixieset.com/2026arcishbcuchampionship/"],
+  ["2025 Thomas W. Dortch Jr. HBCU Collegiate Golf Classic", "https://photos.app.goo.gl/DkwHw8g4v7hPdwrB9"],
+  ["2024 SAS HBCU Invitational", "https://photos.app.goo.gl/KFoH2qb7z9nS3Etz7"],
+  ["2024 TWD HBCU Collegiate Golf Classic", "https://photos.app.goo.gl/2rbX7rZFrFAVALGMA"],
+  ["2023 Thomas W. Dortch, Jr. HBCU Golf Classic", "https://flic.kr/s/aHBqjAWh1A"],
+  ["2023 SAS Championship", "https://photos.app.goo.gl/m7z9iNdNmfJJou9Z9"],
+  ["2022 SAS Championship", "https://photos.app.goo.gl/7acfwUf4pEBMJdft6"],
+  ["2021 HBCU Golf Invitational", "https://photos.app.goo.gl/44BQa5WK628jC4SJ8"],
+  ["2021 Father’s Day Outing", "https://flic.kr/s/aHsmXfGerF"],
+  ["2020 M.L.K. Golf Tournament", "https://flic.kr/s/aHsmKQP6cE"],
+  ["2019 NBCAHOF Annual Golf Tournament", "https://photos.app.goo.gl/qhQD4DxzygeSAhCx5"],
+  ["2018 HBCU Invitational", "https://photos.app.goo.gl/tgqdccukguQrhJJ66"],
+  ["4th Annual Father's Day Outing", "https://flic.kr/s/aHsmEmTo5Z"],
+  ["Inaugural Marcus Brown Golf Fundraiser", "https://flic.kr/s/aHskRfyrxe"],
+];
+
 const stats = [
   ["100%", "Of events include a dedicated rep, free or paid"],
   ["20+", "Years in the golf industry"],

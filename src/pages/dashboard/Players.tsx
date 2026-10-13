@@ -798,6 +798,7 @@ const Players = () => {
 
     // Mirror the dashboard layout: one block per pairing group, separated by a blank
     // line, with a group header showing hole, tee time, team name and scoring code.
+    const players = rosterBase;
     const nums = [...new Set(players.filter((p) => p.group_number !== null).map((p) => p.group_number!))].sort((a, b) => a - b);
     const rows: string[][] = [];
     nums.forEach((num) => {

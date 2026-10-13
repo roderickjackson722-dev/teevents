@@ -33,7 +33,7 @@ export default function Index() {
         <div className="relative mx-auto flex min-h-[680px] max-w-5xl flex-col justify-center px-6 py-14 text-center md:py-20">
           <h1 id="homepage-title" className="font-display text-3xl font-bold leading-tight md:text-5xl lg:text-6xl">The Golf Tournament Platform That <span className="text-secondary">Builds Your Event For You</span></h1>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Every event includes a dedicated TeeVents rep, free or paid, who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard. You focus on running your tournament while we handle the software.</p>
-          <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 md:text-base">Built by a tournament director with over 20 years in the golf industry. No spreadsheets. No manual setup. No stress.</p>
+          <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 md:text-base">No spreadsheets. No manual setup. No stress.</p>
           <div className="mt-8"><HomeActions hero /></div>
           <p className="mx-auto mt-6 flex max-w-2xl items-start justify-center gap-2 text-xs leading-relaxed text-primary-foreground/85 md:text-sm"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-secondary" aria-hidden="true" /><span>No credit card to start. Payments go straight to your connected Stripe account. We never hold your money.</span></p>
         </div>

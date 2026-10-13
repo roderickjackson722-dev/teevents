@@ -25,6 +25,23 @@ const compare = [
   ["You are on your own", "You have a dedicated partner"],
 ];
 
+const pastEventPhotos = [
+  ["Arcis 2026 HBCU Championship", "https://antiondownsfilmsandphotographyllc.pixieset.com/2026arcishbcuchampionship/"],
+  ["2025 Thomas W. Dortch Jr. HBCU Collegiate Golf Classic", "https://photos.app.goo.gl/DkwHw8g4v7hPdwrB9"],
+  ["2024 SAS HBCU Invitational", "https://photos.app.goo.gl/KFoH2qb7z9nS3Etz7"],
+  ["2024 TWD HBCU Collegiate Golf Classic", "https://photos.app.goo.gl/2rbX7rZFrFAVALGMA"],
+  ["2023 Thomas W. Dortch, Jr. HBCU Golf Classic", "https://flic.kr/s/aHBqjAWh1A"],
+  ["2023 SAS Championship", "https://photos.app.goo.gl/m7z9iNdNmfJJou9Z9"],
+  ["2022 SAS Championship", "https://photos.app.goo.gl/7acfwUf4pEBMJdft6"],
+  ["2021 HBCU Golf Invitational", "https://photos.app.goo.gl/44BQa5WK628jC4SJ8"],
+  ["2021 Father’s Day Outing", "https://flic.kr/s/aHsmXfGerF"],
+  ["2020 M.L.K. Golf Tournament", "https://flic.kr/s/aHsmKQP6cE"],
+  ["2019 NBCAHOF Annual Golf Tournament", "https://photos.app.goo.gl/qhQD4DxzygeSAhCx5"],
+  ["2018 HBCU Invitational", "https://photos.app.goo.gl/tgqdccukguQrhJJ66"],
+  ["4th Annual Father's Day Outing", "https://flic.kr/s/aHsmEmTo5Z"],
+  ["Inaugural Marcus Brown Golf Fundraiser", "https://flic.kr/s/aHskRfyrxe"],
+];
+
 const stats = [
   ["100%", "Of events include a dedicated rep, free or paid"],
   ["20+", "Years in the golf industry"],
@@ -109,7 +126,23 @@ export default function About() {
         </div>
       </section>
 
-      <section className="bg-background py-20 md:py-28">
+      <section className="bg-background py-14 md:py-16">
+        <motion.div {...fade} className="container mx-auto max-w-2xl px-4">
+          <h2 className="font-display text-xl font-bold text-primary md:text-2xl">Photos from Past Events</h2>
+          <ul className="mt-5 divide-y divide-border">
+            {pastEventPhotos.map(([name, url]) => (
+              <li key={name}>
+                <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-4 py-2.5 text-sm text-muted-foreground transition-colors hover:text-primary md:text-base">
+                  <span>{name}</span>
+                  <span className="shrink-0 font-semibold text-secondary">View Photos</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      </section>
+
+      <section className="bg-muted/40 py-20 md:py-28">
         <div className="container mx-auto max-w-5xl px-4">
           <motion.div {...fade} className="mb-12 text-center"><h2 className={h2}>What Makes TeeVents Different</h2><p className="mt-3 text-lg text-muted-foreground">Most platforms sell you software. We deliver a finished event.</p></motion.div>
           <motion.div {...fade} className="grid overflow-hidden rounded-xl border border-border md:grid-cols-2">

@@ -126,7 +126,23 @@ export default function About() {
         </div>
       </section>
 
-      <section className="bg-background py-20 md:py-28">
+      <section className="bg-background py-14 md:py-16">
+        <motion.div {...fade} className="container mx-auto max-w-2xl px-4">
+          <h2 className="font-display text-xl font-bold text-primary md:text-2xl">Photos from Past Events</h2>
+          <ul className="mt-5 divide-y divide-border">
+            {pastEventPhotos.map(([name, url]) => (
+              <li key={name}>
+                <a href={url} target="_blank" rel="noopener noreferrer" className="flex items-center justify-between gap-4 py-2.5 text-sm text-muted-foreground transition-colors hover:text-primary md:text-base">
+                  <span>{name}</span>
+                  <span className="shrink-0 font-semibold text-secondary">View Photos</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </motion.div>
+      </section>
+
+      <section className="bg-muted/40 py-20 md:py-28">
         <div className="container mx-auto max-w-5xl px-4">
           <motion.div {...fade} className="mb-12 text-center"><h2 className={h2}>What Makes TeeVents Different</h2><p className="mt-3 text-lg text-muted-foreground">Most platforms sell you software. We deliver a finished event.</p></motion.div>
           <motion.div {...fade} className="grid overflow-hidden rounded-xl border border-border md:grid-cols-2">

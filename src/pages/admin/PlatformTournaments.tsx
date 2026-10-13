@@ -486,7 +486,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
               <div className="py-10 text-center text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Loading…</div>
             ) : (
               <div className="border rounded-md">
-                <Table>
+                <Table className="[&_th]:px-3 [&_th]:h-10 [&_td]:px-3 [&_td]:py-2">
                   <TableHeader>
                     <TableRow>
                       <TableHead>Tournament</TableHead>
@@ -504,9 +504,9 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                   <TableBody>
                     {filtered.map((r) => (
                       <Fragment key={r.id}>
-                      <TableRow>
+                      <TableRow data-state={expanded === r.id ? "selected" : undefined}>
                         <TableCell>
-                          <div className="font-medium">{r.title}</div>
+                          <Button variant="link" size="sm" className="h-auto max-w-72 justify-start whitespace-normal p-0 text-left font-semibold text-foreground" aria-expanded={expanded === r.id} aria-controls={`tournament-options-${r.id}`} onClick={() => setExpanded(expanded === r.id ? null : r.id)}>{r.title}</Button>
                           <div className="text-xs text-muted-foreground flex items-center gap-1">
                             {r.course_name && <span>{r.course_name}</span>}
                             {r.location && <span>· {r.location}</span>}
@@ -540,7 +540,18 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                         <TableCell className="text-right">{money(r.revenue_cents || 0)}</TableCell>
                         <TableCell className="text-right">{r.sponsors_count}</TableCell>
                         <TableCell className="text-right">
-                          <div className="flex justify-end gap-1 flex-wrap">
+                          <Button variant="outline" size="sm" className="h-8 gap-1.5" aria-label={`Options for ${r.title}`} aria-expanded={expanded === r.id} aria-controls={`tournament-options-${r.id}`} onClick={() => setExpanded(expanded === r.id ? null : r.id)}>
+                            Options {expanded === r.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                      {expanded === r.id && (
+                        <TableRow className="bg-muted/30 hover:bg-muted/30">
+                          <TableCell colSpan={10} className="!p-4 !whitespace-normal">
+                            <div id={`tournament-options-${r.id}`} role="region" aria-label={`Options for ${r.title}`}>
+                            <div className="mb-3 text-sm font-semibold">{r.title}</div>
+                            <div className="mb-4 flex flex-wrap items-center gap-2">
+
                             <Button asChild variant="outline" size="sm">
                               <Link to={`/t/${slugOf(r)}`} target="_blank"><ExternalLink className="h-3.5 w-3.5 mr-1" />Site</Link>
                             </Button>
@@ -603,20 +614,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                                 <Trash2 className="h-3.5 w-3.5" />
                               </Button>
                             )}
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              title="Feature toggles & overrides"
-                              onClick={() => setExpanded(expanded === r.id ? null : r.id)}
-                            >
-                              {expanded === r.id ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                      {expanded === r.id && (
-                        <TableRow className="bg-muted/30 hover:bg-muted/30">
-                          <TableCell colSpan={10} className="p-6">
+                            </div>
                             <div className="mb-4 flex items-center gap-3"><span className="text-sm font-medium">Live leaderboard</span><Switch aria-label={`Live leaderboard for ${r.title}`} checked={r.live_leaderboard_enabled !== false} disabled={leaderboardBusy === r.id} onCheckedChange={async enabled => {
                               setLeaderboardBusy(r.id);
                               try { await setEventLeaderboard({ data: { tournamentId: r.id, enabled } }); await load(); toast.success(enabled ? "Live leaderboard enabled" : "Live leaderboard disabled"); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not update leaderboard"); } finally { setLeaderboardBusy(""); }
@@ -686,6 +684,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                             ) : (
                               <p className="mt-4 text-sm text-muted-foreground">No organization attached — feature overrides unavailable.</p>
                             )}
+                            </div>
                           </TableCell>
                         </TableRow>
                       )}

@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowRight, Check, Target, Heart, Flame, X, Users } from "lucide-react";
+import { ArrowRight, Check, Target, Heart, Flame, X } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
@@ -132,17 +132,6 @@ export default function About() {
             <motion.div {...fade} key={n}><p className="font-display text-5xl font-bold text-secondary md:text-6xl">{n}</p><p className="mx-auto mt-3 max-w-[16rem] text-primary-foreground/85">{d}</p></motion.div>
           ))}
         </div>
-      </section>
-
-      <section className="bg-background py-20 md:py-28">
-        <motion.div {...fade} className="container mx-auto max-w-3xl px-4 text-center">
-          <h2 className={h2}>Meet the Team</h2>
-          <p className="mt-3 text-lg text-muted-foreground">The people behind every TeeVents event.</p>
-          <div className="mt-10 rounded-xl border border-dashed border-border bg-muted/40 p-8 text-muted-foreground">
-            <Users className="mx-auto mb-3 h-8 w-8 text-secondary" aria-hidden="true" />
-            Team section coming soon. As TeeVents grows, this is where you will meet the reps and staff who build your event.
-          </div>
-        </motion.div>
       </section>
 
       <section className="bg-primary py-20 text-center text-primary-foreground">

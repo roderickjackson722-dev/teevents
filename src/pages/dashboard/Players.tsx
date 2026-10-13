@@ -809,6 +809,9 @@ const Players = () => {
       p.group_number?.toString() || "Unassigned",
       p.payment_status,
       codeOf(p),
+      ...customLabels.map((label) =>
+        formatAnswer((p.custom_answers || []).find((a: any) => (a?.label || "").trim() === label)?.answer),
+      ),
     ];
 
     // Mirror the dashboard layout: one block per pairing group, separated by a blank

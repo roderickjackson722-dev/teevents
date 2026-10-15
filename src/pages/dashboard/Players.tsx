@@ -1,3 +1,4 @@
+import PlayersTabs from "@/components/dashboard/PlayersTabs";
 import { paymentStatusClasses, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
@@ -2474,6 +2475,7 @@ const Players = () => {
         submitting={manualEntry.submitting}
         onConfirm={manualEntry.confirmPending}
       />
+      <PlayersTabs />
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>

@@ -1,3 +1,4 @@
+import PlayersTabs from "@/components/dashboard/PlayersTabs";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -226,6 +227,7 @@ const Printables = () => {
 
   return (
     <div>
+      <PlayersTabs />
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Printables</h1>

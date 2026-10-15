@@ -1,4 +1,5 @@
 import DashboardEventSwitcher from "@/components/DashboardEventSwitcher";
+import FundraisingTabs, { FUNDRAISING_PATHS } from "@/components/dashboard/FundraisingTabs";
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -312,6 +313,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </div>
             )}
             <main className="flex-1 bg-muted/30 p-3 sm:p-4 md:p-8 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
+              {typeof window !== "undefined" && FUNDRAISING_PATHS.includes(window.location.pathname) && <FundraisingTabs />}
               {children}
             </main>
           </div>

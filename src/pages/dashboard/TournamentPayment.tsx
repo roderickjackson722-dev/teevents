@@ -102,8 +102,8 @@ const TournamentPayment = () => {
                   and mobile scoring pages so the space is entirely your sponsor's.
                 </p>
                 <Button asChild variant="outline" size="sm">
-                  <Link to={`/dashboard/leaderboard?tournament_id=${selected}`}>
-                    Purchase on Leaderboard Branding <ArrowRight className="h-3.5 w-3.5 ml-1" />
+                  <Link to="/dashboard/sponsorship-tools">
+                    Purchase in Sponsorship Tools <ArrowRight className="h-3.5 w-3.5 ml-1" />
                   </Link>
                 </Button>
               </div>

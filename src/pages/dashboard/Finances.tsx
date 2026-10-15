@@ -798,7 +798,7 @@ const Finances = () => {
       <Tabs
         defaultValue={
           typeof window !== "undefined" &&
-          ["transactions", "refunds", "details", "reports"].includes(
+          ["transactions", "refunds", "reports"].includes(
             new URLSearchParams(window.location.search).get("tab") || "",
           )
             ? (new URLSearchParams(window.location.search).get("tab") as string)
@@ -820,10 +820,6 @@ const Finances = () => {
                   {pendingRefunds.length}
                 </Badge>
               )}
-            </TabsTrigger>
-            <TabsTrigger value="details">
-              <Receipt className="h-4 w-4 mr-1.5" />
-              Detailed Records
             </TabsTrigger>
             <TabsTrigger value="reports">
               <FileText className="h-4 w-4 mr-1.5" />
@@ -1017,6 +1013,10 @@ const Finances = () => {
               </div>
             );
           })()}
+          <details className="rounded-lg border border-border bg-card p-3 sm:p-4">
+            <summary className="cursor-pointer text-sm font-semibold">Submission details (Detailed Records)</summary>
+            <div className="mt-4"><TransactionDetails embedded /></div>
+          </details>
         </TabsContent>
 
         {/* Refunds Tab */}
@@ -1201,9 +1201,6 @@ const Finances = () => {
           </div>
         </TabsContent>
 
-        <TabsContent value="details" className="space-y-4">
-          <TransactionDetails embedded />
-        </TabsContent>
       </Tabs>
 
       {/* Breakdown Dialog */}

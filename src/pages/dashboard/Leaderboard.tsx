@@ -1537,25 +1537,16 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       )}
 
       {showSettings && selectedTournament && (
-        <LeaderboardFreezeCard
-          tournamentId={selectedTournament}
-          frozenAt={frozenAt}
-          canManage={canManageFreeze}
-          onChange={() => queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] })}
-        />
+        <div className="pt-4 border-t border-border">
+          <h2 className="text-lg font-display font-bold text-foreground">Look</h2>
+          <p className="text-xs text-muted-foreground">Header, colors, logos, rotation and gallery.</p>
+        </div>
       )}
 
       {showSettings && selectedTournament && (
         <LeaderboardHeaderCard
           tournamentId={selectedTournament}
           onSaved={() => queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] })}
-        />
-      )}
-
-      {showSettings && selectedTournament && (
-        <LiveDisplayShareCard
-          tournamentId={selectedTournament}
-          tournamentSlug={selectedTournamentData?.slug || null}
         />
       )}
 
@@ -1567,17 +1558,61 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         />
       )}
 
+      {showSettings && selectedTournament && org && (
+        <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
+      )}
+
       {showSettings && selectedTournament && (
-        <TickerSponsorsCard tournamentId={selectedTournament} />
+        <div className="pt-4 border-t border-border">
+          <h2 className="text-lg font-display font-bold text-foreground">Content</h2>
+          <p className="text-xs text-muted-foreground">Sponsors and ticker shown on the leaderboard.</p>
+        </div>
       )}
 
       {showSettings && selectedTournament && org && (
         <LeaderboardSponsorCard tournamentId={selectedTournament} orgId={org.orgId} />
       )}
 
+      {showSettings && selectedTournament && (
+        <details className="rounded-lg border border-border">
+          <summary className="cursor-pointer px-4 py-3 text-sm font-semibold text-foreground">Advanced: Scrolling Ticker</summary>
+          <div className="p-4 pt-0"><TickerSponsorsCard tournamentId={selectedTournament} /></div>
+        </details>
+      )}
 
-      {showSettings && selectedTournament && org && (
-        <LeaderboardGallery tournamentId={selectedTournament} orgId={org.orgId} />
+      {showSettings && selectedTournament && (
+        <div className="pt-4 border-t border-border">
+          <h2 className="text-lg font-display font-bold text-foreground">Publish</h2>
+          <p className="text-xs text-muted-foreground">Share, freeze and test your live leaderboard.</p>
+        </div>
+      )}
+
+      {showSettings && selectedTournament && (
+        <LiveDisplayShareCard
+          tournamentId={selectedTournament}
+          tournamentSlug={selectedTournamentData?.slug || null}
+        />
+      )}
+
+      {showSettings && selectedTournament && (
+        <LeaderboardFreezeCard
+          tournamentId={selectedTournament}
+          frozenAt={frozenAt}
+          canManage={canManageFreeze}
+          onChange={() => queryClient.invalidateQueries({ queryKey: ["tournaments", org?.orgId, isPlatformAdmin] })}
+        />
+      )}
+
+      {showSettings && selectedTournament && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border p-4">
+          <div>
+            <p className="text-sm font-semibold text-foreground">Test Readiness</p>
+            <p className="text-xs text-muted-foreground">Run a load test with TEST players only. Real registrations are never touched.</p>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <a href="/dashboard/stress-test">Test Readiness</a>
+          </Button>
+        </div>
       )}
 
       {showEntry && selectedTournament && withdrawnPlayerScores.length > 0 && (

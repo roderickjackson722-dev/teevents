@@ -9,7 +9,10 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Save, Trophy, Coins } from "lucide-react";
+import { Loader2, Save, Trophy, Coins, ChevronDown } from "lucide-react";
+import { Link, useSearchParams } from "react-router-dom";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import PairingsScoringSteps from "@/components/dashboard/PairingsScoringSteps";
 import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import FlightsManager from "@/components/dashboard/FlightsManager";
@@ -26,8 +29,24 @@ const FORMAT_OPTIONS = [
   ...EXTRA_FORMATS,
 ];
 
+function AdvancedBlock({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(defaultOpen);
+  useEffect(() => { if (defaultOpen) setOpen(true); }, [defaultOpen]);
+  return (
+    <Collapsible open={open} onOpenChange={setOpen} className="rounded-lg border border-border">
+      <CollapsibleTrigger className="flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-foreground">
+        {title}
+        <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
+      </CollapsibleTrigger>
+      <CollapsibleContent className="space-y-4 px-4 pb-4">{children}</CollapsibleContent>
+    </Collapsible>
+  );
+}
+
 export default function ScoringPayouts() {
   const { org } = useOrgContext();
+  const [searchParams] = useSearchParams();
+  const flightsOpen = searchParams.get("section") === "flights";
   const [tournaments, setTournaments] = useState<{ id: string; title: string }[]>([]);
   const [selected, setSelected] = useTournamentIdParam();
   const [loading, setLoading] = useState(true);
@@ -81,13 +100,10 @@ export default function ScoringPayouts() {
 
   async function save() {
     if (!selected) return;
-    const value = isCustom ? customFormat.trim() : format;
-    if (isCustom && !value) return toast.error("Enter a custom format name");
     setSaving(true);
     const { error } = await supabase
       .from("tournaments")
       .update({
-        scoring_format: value,
         skins_enabled: skinsEnabled,
         skins_mode: skinsMode,
         skins_entry_fee_cents: skinsFee.trim() ? Math.round(parseFloat(skinsFee) * 100) : 0,
@@ -117,10 +133,11 @@ export default function ScoringPayouts() {
 
   return (
     <div className="max-w-5xl space-y-6">
+      <PairingsScoringSteps />
       <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Scoring &amp; Payouts</h1>
         <p className="text-muted-foreground mt-1">
-          Choose how your event is scored, turn on skins, flight the field, and confirm the payout breakdown — all in one place.
+          Review your scoring format, turn on skins, flight the field, and confirm the payout breakdown.
         </p>
       </div>
 
@@ -140,41 +157,20 @@ export default function ScoringPayouts() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg"><Trophy className="h-5 w-5 text-primary" /> Scoring Format</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <p className="text-sm text-muted-foreground">Select the format for your tournament:</p>
-          <RadioGroup
-            value={isCustom ? "custom" : format}
-            onValueChange={(v) => {
-              if (v === "custom") { setIsCustom(true); }
-              else { setIsCustom(false); setFormat(v); }
-            }}
-            className="grid sm:grid-cols-2 gap-2"
-          >
-            {FORMAT_OPTIONS.map((f) => (
-              <div key={f.id} className="flex items-start gap-2 rounded-md border p-3">
-                <RadioGroupItem value={f.id} id={`fmt-${f.id}`} className="mt-1" />
-                <div>
-                  <Label htmlFor={`fmt-${f.id}`} className="font-medium cursor-pointer">{f.name}</Label>
-                  {f.description && <p className="text-xs text-muted-foreground">{f.description}</p>}
-                </div>
-              </div>
-            ))}
-            <div className="flex items-start gap-2 rounded-md border p-3 sm:col-span-2">
-              <RadioGroupItem value="custom" id="fmt-custom" className="mt-1" />
-              <div className="flex-1">
-                <Label htmlFor="fmt-custom" className="font-medium cursor-pointer">Custom</Label>
-                <Input
-                  className="mt-2"
-                  placeholder="Name your own format"
-                  value={customFormat}
-                  onChange={(e) => { setCustomFormat(e.target.value); setIsCustom(true); }}
-                />
-              </div>
-            </div>
-          </RadioGroup>
+        <CardContent className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="font-medium text-foreground">
+              {isCustom ? (customFormat || "Custom") : (FORMAT_OPTIONS.find((f) => f.id === format)?.name || format)}
+            </p>
+            <p className="text-xs text-muted-foreground">The scoring format is set in Setup, Event Details.</p>
+          </div>
+          <Button variant="outline" size="sm" asChild>
+            <Link to="/dashboard/tournaments">Edit in Setup</Link>
+          </Button>
         </CardContent>
       </Card>
 
+      <AdvancedBlock title="Advanced: Skins & Deuces">
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-lg"><Coins className="h-5 w-5 text-primary" /> Skins</CardTitle>
@@ -215,6 +211,8 @@ export default function ScoringPayouts() {
         </CardContent>
       </Card>
 
+      </AdvancedBlock>
+
       <div className="flex justify-end">
         <Button onClick={save} disabled={saving}>
           {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
@@ -222,12 +220,17 @@ export default function ScoringPayouts() {
         </Button>
       </div>
 
-      {selected && <DivisionSkinsManager tournamentId={selected} />}
+      {selected && (
+        <AdvancedBlock title="Advanced: Division Skins">
+          <DivisionSkinsManager tournamentId={selected} />
+        </AdvancedBlock>
+      )}
 
       {selected && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-display font-bold">Flights &amp; Payout Breakdown</h2>
-          <FlightsManager tournamentId={selected} />
+        <div id="flights">
+          <AdvancedBlock title="Advanced: Flights & Payout Breakdown" defaultOpen={flightsOpen}>
+            <FlightsManager tournamentId={selected} />
+          </AdvancedBlock>
         </div>
       )}
 

@@ -88,6 +88,19 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 
 /* Fundraising screens: stack tables into cards on phones (no sideways scrolling). */
 /* Money presentation is isolated from Fundraising and payment behavior. */
+.promote-layout { min-width: 0; max-width: 100%; }
+@media (max-width: 639px) {
+  .promote-layout table, .promote-layout tbody, .promote-layout tr, .promote-layout td { display: block; width: 100%; min-width: 0 !important; }
+  .promote-layout thead { display: none; }
+  .promote-layout tr { border: 1px solid hsl(var(--border)); border-radius: var(--radius); margin-bottom: .75rem; padding: .5rem; }
+  .promote-layout td { white-space: normal !important; overflow-wrap: anywhere; padding: .25rem .5rem; border: 0; }
+  .promote-layout .overflow-x-auto { overflow-x: visible; }
+  .promote-layout .grid { grid-template-columns: minmax(0, 1fr) !important; }
+  .promote-layout .truncate { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
+  .promote-layout button, .promote-layout a { white-space: normal; overflow-wrap: anywhere; max-width: 100%; height: auto; }
+  .promote-layout input, .promote-layout textarea { min-width: 0; max-width: 100%; }
+  .promote-layout [role="tablist"] { flex-wrap: wrap; height: auto; }
+}
 .money-layout { min-width: 0; max-width: 100%; }
 .money-layout .money-main-save { color: hsl(var(--primary)); }
 @media (max-width: 639px) {

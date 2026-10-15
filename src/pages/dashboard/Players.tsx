@@ -4337,7 +4337,7 @@ const Players = () => {
                 <p className="text-xs text-muted-foreground">Email</p>
                 <p className="text-sm font-medium text-foreground">{viewingPlayer.email}</p>
               </div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Phone</p>
                   <p className="text-sm text-foreground">{viewingPlayer.phone || "—"}</p>
@@ -4421,7 +4421,7 @@ const Players = () => {
             <DialogTitle>Edit Player</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-2">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="ep-first">First Name *</Label>
                 <Input id="ep-first" value={editForm.first_name} onChange={(e) => setEditForm((f) => ({ ...f, first_name: e.target.value }))} />

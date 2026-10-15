@@ -50,6 +50,18 @@ import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { sharePreviewUrl } from "@/lib/shareLinks";
 
+/** Advanced settings stay collapsed by default so the main path stays simple. */
+function AdvancedSection({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <details className="group rounded-lg border border-dashed border-border px-3 py-2">
+      <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground hover:text-foreground">
+        Advanced: {label}
+      </summary>
+      <div className="mt-3 space-y-3">{children}</div>
+    </details>
+  );
+}
+
 const getFunctionErrorMessage = (res: { data?: any; error?: any }, fallback: string) =>
   res.data?.message || res.data?.error || res.error?.message || fallback;
 
@@ -893,6 +905,7 @@ const SiteBuilder = () => {
                   </div>
                 </div>
 
+<AdvancedSection label="Focal Point">
                 <div>
                   <Label className="text-sm">Focal Point</Label>
                   <p className="text-xs text-muted-foreground mb-2">
@@ -914,6 +927,7 @@ const SiteBuilder = () => {
                     })}
                   </div>
                 </div>
+</AdvancedSection>
 
                 {((settings as any).site_hero_fit ?? "cover") === "contain" && (
                   <label className="flex items-start gap-2">
@@ -930,6 +944,7 @@ const SiteBuilder = () => {
                 )}
               </div>
 
+<AdvancedSection label="Overlay opacity">
               {/* Background Transparency — always visible, controls current image */}
               <div className="space-y-2 pt-2 border-t border-border">
                 <div className="flex items-center justify-between">
@@ -985,6 +1000,7 @@ const SiteBuilder = () => {
                   </div>
                 </div>
               </div>
+</AdvancedSection>
 
 
               {/* Template Selector */}
@@ -1226,6 +1242,7 @@ const SiteBuilder = () => {
 
                 {/* Button style */}
                 <div className="space-y-3">
+<AdvancedSection label="Button Corner Radius">
                   <div>
                     <div className="flex items-center justify-between">
                       <Label className="text-sm">Button Corner Radius</Label>
@@ -1240,6 +1257,7 @@ const SiteBuilder = () => {
                       className="mt-2"
                     />
                   </div>
+</AdvancedSection>
                   <div>
                     <Label className="text-xs">Button Hover Effect</Label>
                     <select
@@ -1510,6 +1528,7 @@ const SiteBuilder = () => {
                 Customize the look of printed materials like cart signs, scorecards, and badges.
               </p>
 
+<AdvancedSection label="Print Font">
               {/* Font Selection */}
               <div>
                 <Label>Print Font</Label>
@@ -1538,6 +1557,7 @@ const SiteBuilder = () => {
                   ))}
                 </div>
               </div>
+</AdvancedSection>
 
               {/* Layout Selection */}
               <div>
@@ -1813,6 +1833,7 @@ const SiteBuilder = () => {
                 }}
               />
 
+<AdvancedSection label="Custom Domain DNS">
               <DomainInstructions currentDomain={settings.custom_domain} />
 
 
@@ -1879,6 +1900,7 @@ const SiteBuilder = () => {
                   </div>
                 )}
               </div>
+</AdvancedSection>
 
             </>
           )}

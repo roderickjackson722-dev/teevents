@@ -76,7 +76,7 @@ const emptyForm = {
   reminder_enabled: false,
 };
 
-export default function OrganizerNotes() {
+export default function OrganizerNotes({ embedded = false, forcedTournamentId }: { embedded?: boolean; forcedTournamentId?: string } = {}) {
   const { org } = useOrgContext();
   const [tournaments, setTournaments] = useState<{ id: string; title: string }[]>([]);
   const [tournamentId, setTournamentId] = useState<string>("");
@@ -102,10 +102,10 @@ export default function OrganizerNotes() {
         .order("created_at", { ascending: false });
       const list = (data || []) as { id: string; title: string }[];
       setTournaments(list);
-      if (list.length) setTournamentId(pickTournamentId(list, tournamentId));
+      if (list.length) setTournamentId(pickTournamentId(list, forcedTournamentId || tournamentId));
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [org]);
+  }, [org, forcedTournamentId]);
 
   const loadNotes = async () => {
     if (!tournamentId) return;
@@ -233,23 +233,30 @@ export default function OrganizerNotes() {
   }, [notes, search, categoryFilter, priorityFilter, showCompleted]);
 
   return (
-    <div className="p-6 space-y-6 max-w-6xl mx-auto">
+    <div className={embedded ? "space-y-4" : "p-6 space-y-6 max-w-6xl mx-auto"}>
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <FileText className="h-8 w-8 text-primary" />
-            Notes & Reminders
-          </h1>
-          <p className="text-muted-foreground mt-1">
+        <div className="min-w-0">
+          {embedded ? (
+            <h2 className="text-lg font-display font-bold flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary shrink-0" />
+              Notes & Reminders
+            </h2>
+          ) : (
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <FileText className="h-8 w-8 text-primary" />
+              Notes & Reminders
+            </h1>
+          )}
+          <p className="text-muted-foreground mt-1 text-sm">
             Keep track of tasks, reminders, and notes for your event.
           </p>
         </div>
-        <Button onClick={openAdd} disabled={!tournamentId}>
+        <Button onClick={openAdd} disabled={!tournamentId} variant={embedded ? "outline" : "default"} className="shrink-0">
           <Plus className="h-4 w-4 mr-1" /> Add Note
         </Button>
       </div>
 
-      {tournaments.length > 1 && (
+      {!embedded && tournaments.length > 1 && (
         <div className="max-w-sm">
           <Label className="text-xs text-muted-foreground">Tournament</Label>
           <Select value={tournamentId} onValueChange={setTournamentId}>
@@ -274,14 +281,14 @@ export default function OrganizerNotes() {
           />
         </div>
         <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-          <SelectTrigger className="w-[170px]"><SelectValue placeholder="Category" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[170px]"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All categories</SelectItem>
             {CATEGORIES.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="Priority" /></SelectTrigger>
+          <SelectTrigger className="w-full sm:w-[160px]"><SelectValue placeholder="Priority" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All priorities</SelectItem>
             <SelectItem value="high">High</SelectItem>

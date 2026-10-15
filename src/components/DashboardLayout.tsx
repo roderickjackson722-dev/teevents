@@ -213,6 +213,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="bg-destructive text-destructive-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50">
             <ShieldCheck className="h-4 w-4 flex-shrink-0" />
             <span>Admin Mode — Editing <strong>{displayName}</strong>'s dashboard</span>
+            {orgContext && <DashboardEventSwitcher orgId={orgContext.orgId} />}
             <Link
               to="/admin"
               className="inline-flex items-center gap-1 bg-destructive-foreground/20 hover:bg-destructive-foreground/30 px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors"
@@ -284,7 +285,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                       </span>
                       <span className="hidden md:block h-0.5 w-10 bg-secondary" />
                     </span>
-                    <DashboardEventSwitcher orgId={orgContext.orgId} />
                   </div>
                 )}
               </div>

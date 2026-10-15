@@ -60,48 +60,55 @@ interface SidebarCategory {
 // and from within the pages they now live under.
 const categories: SidebarCategory[] = [
   {
-    label: "Event",
+    label: "Home",
     color: "border-l-secondary bg-secondary/5",
     items: [
-      { title: "Event Checklist & Timeline", url: "/dashboard", icon: LayoutDashboard, feature: null, description: "Setup checklist and milestone timeline with due dates" },
-      { title: "Event Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Event info, registration fee, format, and course setup" },
-      { title: "Quick Actions", url: "/dashboard/quick-actions", icon: Zap, feature: null, description: "Pick the shortcuts you use most" },
-      { title: "Notes & Reminders", url: "/dashboard/notes", icon: FileText, feature: null, description: "Personal to-do list, reminders, and notes for this tournament" },
+      { title: "Home", url: "/dashboard", icon: LayoutDashboard, feature: null, description: "Your next step, setup progress, quick actions, and notes" },
     ],
-
   },
   {
-    label: "Players & Pairings",
+    label: "Setup",
+    color: "border-l-secondary bg-secondary/5",
+    items: [
+      // "View Live Tournament Page" injected dynamically when a tournament slug exists
+      { title: "Event Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Event info, registration fee, format, and course setup" },
+      { title: "Setup Checklist", url: "/dashboard/setup-checklist", icon: ClipboardCheck, feature: null, description: "Every setup task and its due date" },
+      { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
+      { title: "Public Page Editor", url: "/dashboard/public-page-editor", icon: Trophy, feature: null, description: "Edit your public tournament page: branding, content, contact, domain" },
+      { title: "Webpage Layout", url: "/dashboard/webpage-layout", icon: LayoutTemplate, feature: null, description: "Reorder and show/hide sections and top-nav tabs on your public page" },
+      { title: "Getting Started", url: "/dashboard/getting-started", icon: Rocket, feature: null, description: "What happens next and what you can do now" },
+      { title: "Organizer Toolbox", url: "/dashboard/toolbox", icon: Package, feature: null, description: "Upload logos, images, and event assets for your rep" },
+    ],
+  },
+  {
+    label: "Players",
     color: "border-l-blue-400 bg-blue-400/5",
     items: [
       { title: "Roster", url: "/dashboard/players", icon: Users, feature: "players", description: "View, edit, and import players" },
-      { title: "Pairings", url: "/dashboard/players?tab=pairings", icon: Users, feature: "players", description: "Groups, tee times, and starting holes" },
-      { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
       { title: "Check-In", url: "/dashboard/check-in", icon: ScanLine, feature: "check-in", description: "QR code scanning, manual check‑in" },
       { title: "Waitlist", url: "/dashboard/waitlist", icon: ClipboardList, feature: null, description: "Manage queue, offer spots" },
       { title: "Printables", url: "/dashboard/printables", icon: Printer, feature: null, description: "Scorecards, cart signs, name badges" },
     ],
   },
   {
-    label: "Leaderboard & Live Scoring",
+    label: "Pairings & Scoring",
     color: "border-l-orange-400 bg-orange-400/5",
     items: [
+      { title: "Pairings", url: "/dashboard/players?tab=pairings", icon: Users, feature: "players", description: "Groups, tee times, and starting holes" },
       { title: "Leaderboard & Live Scoring", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Enter scores and manage the live leaderboard" },
       { title: "Scoring Settings", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, handicap allowances, skins, flights, and payouts" },
       // College Golf Scoring is an approval-only add-on: it is injected at
       // runtime for tournaments where it has been paid for / approved.
-
       { title: "Stress Test", url: "/dashboard/stress-test", icon: Gauge, feature: null, description: "Simulate 70 players to test check-in, scoring, and leaderboard load" },
     ],
   },
   {
-    label: "Sponsors & Fundraising",
+    label: "Fundraising",
     color: "border-l-purple-400 bg-purple-400/5",
     items: [
       { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Sponsor levels, prices, benefits, logos, and vendors" },
       { title: "Sponsorship Tools", url: "/dashboard/sponsorship-tools", icon: Megaphone, feature: null, description: "Digital Sponsor package, outreach email template, and sponsor QR code" },
       { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Vendor booths: packages, registrations, documents, and hole locations" },
-      { title: "Post-Tournament Report", url: "/dashboard/post-event-report", icon: FileText, feature: null, description: "Recap of attendance, revenue, results, and sponsors (PDF/CSV)" },
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
       { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
       { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
@@ -110,18 +117,7 @@ const categories: SidebarCategory[] = [
     ],
   },
   {
-    label: "Content & Media",
-    color: "border-l-emerald-400 bg-emerald-400/5",
-    items: [
-      // "View Live Tournament Page" injected dynamically when a tournament slug exists
-      { title: "Public Page Editor", url: "/dashboard/public-page-editor", icon: Trophy, feature: null, description: "Edit your public tournament page: branding, content, contact, domain" },
-      { title: "Webpage Layout", url: "/dashboard/webpage-layout", icon: LayoutTemplate, feature: null, description: "Reorder and show/hide sections and top-nav tabs on your public page" },
-      { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery", description: "Upload, organize, share event photos" },
-      { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
-    ],
-  },
-  {
-    label: "Finances",
+    label: "Money",
     color: "border-l-yellow-400 bg-yellow-400/5",
     items: [
       { title: "Transactions", url: "/dashboard/finances", icon: Wallet, feature: null, description: "Transaction history, revenue, refunds, reports, and full submission details" },
@@ -132,33 +128,35 @@ const categories: SidebarCategory[] = [
     ],
   },
   {
-    label: "Marketing",
+    label: "Promote",
     color: "border-l-green-400 bg-green-400/5",
     items: [
       { title: "Share & Promote", url: "/dashboard/share-promote", icon: Share2, feature: null, description: "QR codes, short URLs, social templates" },
-      { title: "Team Referral Links", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Give each team member a personal sign-up link and see who registered through it" },
       { title: "Flyer Studio", url: "/dashboard/flyer-studio", icon: Megaphone, feature: "flyer-studio", description: "Canva‑integrated flyers" },
       { title: "Email Templates", url: "/dashboard/email-templates", icon: Mail, feature: null, description: "Customize confirmation and reminder emails and send them" },
       { title: "Email Send Log", url: "/dashboard/email-log", icon: Mail, feature: null, description: "See every email sent, delivery results, and resend failures" },
       { title: "SMS Blasts", url: "/dashboard/messages", icon: MessageSquare, feature: null, description: "Text message updates to players (paid add-on)" },
       { title: "Public Search", url: "/dashboard/public-search", icon: SearchIcon, feature: null, description: "Opt in/out of teevents.golf search" },
-      { title: "Director Shop", url: "/dashboard/director-shop", icon: ShoppingCart, feature: null, description: "Consulting, signage, insurance" },
+      { title: "Photo Gallery", url: "/dashboard/gallery", icon: ImageIcon, feature: "gallery", description: "Upload, organize, share event photos" },
+      { title: "Media Clips", url: "/dashboard/media", icon: ImageIcon, feature: null, description: "Video highlights, sponsor interviews" },
     ],
   },
   {
-    label: "Team & Volunteers",
+    label: "Team",
     color: "border-l-sky-400 bg-sky-400/5",
     items: [
       { title: "Team Members", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles, track referral performance" },
+      { title: "Team Referral Links", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Give each team member a personal sign-up link and see who registered through it" },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
       { title: "Team HQ", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
       { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
     ],
   },
   {
-    label: "Post-Event",
+    label: "Wrap-Up",
     color: "border-l-pink-400 bg-pink-400/5",
     items: [
+      { title: "Post-Tournament Report", url: "/dashboard/post-event-report", icon: FileText, feature: null, description: "Recap of attendance, revenue, results, and sponsors (PDF/CSV)" },
       { title: "Surveys & Feedback", url: "/dashboard/surveys", icon: ClipboardList, feature: "surveys", description: "Post‑event player surveys and email templates" },
     ],
   },
@@ -187,8 +185,6 @@ const AGE_REPORT_TOURNAMENT_ID = "8d241ebc-4fd3-4dcb-bfad-27f7e92e9c6a";
 
 const settingsItems: NavItem[] = [
   { title: "General Settings", url: "/dashboard/settings", icon: Settings, feature: null, description: "Branding, custom domain, public page tabs" },
-  { title: "Getting Started", url: "/dashboard/getting-started", icon: Rocket, feature: null, description: "What happens next and what you can do now" },
-  { title: "Organizer Toolbox", url: "/dashboard/toolbox", icon: Package, feature: null, description: "Upload logos, images, and event assets for your rep" },
 ];
 
 export function DashboardSidebar() {
@@ -382,20 +378,20 @@ export function DashboardSidebar() {
             let items = cat.items;
             // "Missing Age Records" was built for one specific event, so it is
             // only surfaced on that tournament's dashboard.
-            if (cat.label === "Players & Pairings" && tournamentId === AGE_REPORT_TOURNAMENT_ID) {
+            if (cat.label === "Players" && tournamentId === AGE_REPORT_TOURNAMENT_ID) {
               items = [
                 ...cat.items,
                 { title: "Missing Age Records", url: "/dashboard/missing-ages", icon: Mail, feature: null, description: "Find registrations without an age and request it by email" },
               ];
             }
             // Approval-only add-on: never shown on default platforms.
-            if (cat.label === "Leaderboard & Live Scoring" && collegeScoringApproved) {
+            if (cat.label === "Pairings & Scoring" && collegeScoringApproved) {
               items = [
                 ...items,
                 { title: "College Golf Scoring", url: "/dashboard/college-scoring", icon: GraduationCap, feature: null, description: "Divisions, teams (best 4 of 5), fast score entry, WD/DQ, and scoring admins" },
               ];
             }
-            if (cat.label === "Content & Media" && tournamentSlug) {
+            if (cat.label === "Setup" && tournamentSlug) {
               items = [
                 { title: "View Live Tournament Page", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
                 ...cat.items,
@@ -411,7 +407,7 @@ export function DashboardSidebar() {
             return (
               <Collapsible
                 key={cat.label}
-                open={openCategories[cat.label] ?? true}
+                open={openCategories[cat.label] ?? (categoryActive || cat.label === "Home")}
                 onOpenChange={(open) =>
                   setOpenCategories((prev) => ({ ...prev, [cat.label]: open }))
                 }
@@ -430,7 +426,7 @@ export function DashboardSidebar() {
                         {!collapsed && (
                           <ChevronDown
                             className={`h-3 w-3 flex-shrink-0 transition-transform ${
-                              (openCategories[cat.label] ?? true) ? "" : "-rotate-90"
+                              (openCategories[cat.label] ?? (categoryActive || cat.label === "Home")) ? "" : "-rotate-90"
                             }`}
                           />
                         )}
@@ -452,7 +448,7 @@ export function DashboardSidebar() {
             <SidebarGroup>
               <div className="border-l-2 border-l-gray-400 ml-2 pl-2">
                 <SidebarGroupLabel className="text-primary-foreground/50 text-[10px] tracking-widest uppercase font-semibold">
-                  {collapsed ? "" : "Settings"}
+                  {collapsed ? "" : "Help & Settings"}
                 </SidebarGroupLabel>
               </div>
               <SidebarGroupContent>
@@ -490,6 +486,16 @@ export function DashboardSidebar() {
         </SidebarContent>
 
         <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3 space-y-2">
+          {!isLeagueWorkspace && (
+            <NavLink
+              to={withContext("/dashboard/director-shop")}
+              onClick={() => { if (isMobile) setOpenMobile(false); }}
+              className="flex items-center gap-2 text-xs text-primary-foreground/60 hover:text-primary-foreground transition-colors w-full"
+            >
+              <ShoppingCart className="h-3.5 w-3.5" />
+              {!collapsed && <span>Director Shop</span>}
+            </NavLink>
+          )}
           <button
             onClick={async () => {
               const { decideWorkspaceSwitch } = await import("@/lib/workspaceSwitch");

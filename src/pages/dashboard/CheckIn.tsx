@@ -1,3 +1,4 @@
+import PlayersTabs from "@/components/dashboard/PlayersTabs";
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { useDemoMode } from "@/hooks/useDemoMode";
@@ -228,6 +229,7 @@ export default function CheckIn() {
 
   return (
     <div className="space-y-6">
+      <PlayersTabs />
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Check-In (QR Code & Manual)</h1>
         <p className="text-muted-foreground">

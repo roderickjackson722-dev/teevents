@@ -1,3 +1,4 @@
+import PlayersTabs from "@/components/dashboard/PlayersTabs";
 import { useState, useEffect, useCallback } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import DropdownOptionsEditor from "@/components/dashboard/DropdownOptionsEditor";
@@ -786,6 +787,7 @@ const Registration = () => {
 
   return (
     <div>
+      <PlayersTabs />
       <div className="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-display font-bold text-foreground">Registration Management</h1>
@@ -811,12 +813,11 @@ const Registration = () => {
         </div>
       ) : (
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <div className="-mx-4 px-4 sm:mx-0 sm:px-0 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <TabsList className="inline-flex w-max sm:grid sm:grid-cols-8 sm:w-full sm:max-w-4xl">
-              <TabsTrigger value="settings" className="shrink-0 whitespace-nowrap">Settings</TabsTrigger>
-              <TabsTrigger value="tiers" className="shrink-0 whitespace-nowrap">Tiers</TabsTrigger>
-              <TabsTrigger value="flights" className="shrink-0 whitespace-nowrap">Flights</TabsTrigger>
-              <TabsTrigger value="fields" className="shrink-0 whitespace-nowrap">Fields</TabsTrigger>
+          <div>
+            <TabsList className="inline-flex w-max flex-wrap h-auto sm:w-full">
+              <TabsTrigger value="settings" className="shrink-0 whitespace-nowrap">Setup 1: Settings</TabsTrigger>
+              <TabsTrigger value="tiers" className="shrink-0 whitespace-nowrap">Setup 2: Tiers</TabsTrigger>
+              <TabsTrigger value="fields" className="shrink-0 whitespace-nowrap">Setup 3: Fields</TabsTrigger>
               <TabsTrigger value="addons" className="shrink-0 whitespace-nowrap">Add-ons</TabsTrigger>
               <TabsTrigger value="promos" className="shrink-0 whitespace-nowrap">Promo Codes</TabsTrigger>
               <TabsTrigger value="submissions" className="shrink-0 whitespace-nowrap">Submissions</TabsTrigger>
@@ -825,6 +826,9 @@ const Registration = () => {
                 Refunds
               </TabsTrigger>
             </TabsList>
+            <p className="mt-2 text-xs text-muted-foreground">
+              Flights are managed in one place: <a href="/dashboard/scoring-payouts" className="underline hover:text-foreground">Pairings &amp; Scoring, Scoring Settings</a>.
+            </p>
           </div>
 
 
@@ -1523,8 +1527,9 @@ const Registration = () => {
               </div>
 
               {/* Custom fields */}
-              <div className="bg-card rounded-lg border border-border p-6">
-                <h2 className="text-lg font-display font-bold text-foreground mb-4">Custom Questions</h2>
+              <details className="group bg-card rounded-lg border border-border p-6">
+                <summary className="cursor-pointer list-none text-lg font-display font-bold text-foreground">Advanced: Custom Questions <span className="text-xs font-normal text-muted-foreground">(click to open)</span></summary>
+                <div className="mt-4">
 
                 {fields.filter((f) => !f.is_default).length > 0 && (
                   <div className="space-y-3 mb-6">

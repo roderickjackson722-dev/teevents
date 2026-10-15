@@ -104,7 +104,6 @@ export default function ScoringPayouts() {
     const { error } = await supabase
       .from("tournaments")
       .update({
-        scoring_format: value,
         skins_enabled: skinsEnabled,
         skins_mode: skinsMode,
         skins_entry_fee_cents: skinsFee.trim() ? Math.round(parseFloat(skinsFee) * 100) : 0,

@@ -94,12 +94,12 @@ const categories: SidebarCategory[] = [
     label: "Pairings & Scoring",
     color: "border-l-orange-400 bg-orange-400/5",
     items: [
+      { title: "Format & Flights", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, skins, flights, and payouts" },
       { title: "Pairings", url: "/dashboard/players?tab=pairings", icon: Users, feature: "players", description: "Groups, tee times, and starting holes" },
       { title: "Leaderboard & Live Scoring", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Enter scores and manage the live leaderboard" },
-      { title: "Scoring Settings", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, handicap allowances, skins, flights, and payouts" },
       // College Golf Scoring is an approval-only add-on: it is injected at
       // runtime for tournaments where it has been paid for / approved.
-      { title: "Stress Test", url: "/dashboard/stress-test", icon: Gauge, feature: null, description: "Simulate 70 players to test check-in, scoring, and leaderboard load" },
+      // Stress Test is reached from the Test Readiness button on the Leaderboard screen.
     ],
   },
   {

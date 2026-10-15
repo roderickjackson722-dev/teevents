@@ -473,6 +473,9 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
           </p>
         </section>
 
+        <details className="border-t pt-5">
+          <summary className="cursor-pointer text-base font-semibold">Advanced: Rotation Settings</summary>
+          <div className="pt-3">
         {/* ROTATION / PAGING */}
         <section className="space-y-3 border-t pt-5">
           <Label className="text-base font-semibold">Rotation Settings</Label>
@@ -507,6 +510,9 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
 
 
         {/* SPONSOR BANNER */}
+          </div>
+        </details>
+
         <section className="space-y-3 border-t pt-5">
           <Label className="text-base font-semibold">Sponsor Banner</Label>
           <Check label="Show sponsor banner on leaderboard" checked={design.show_sponsor_banner} onChange={(v) => update("show_sponsor_banner", v)} />

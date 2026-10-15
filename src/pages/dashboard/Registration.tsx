@@ -912,12 +912,9 @@ const Registration = () => {
                   <p className="text-xs text-muted-foreground">
                     Toggle on = players can register. Toggle off to close registration.
                   </p>
-                  <div className="mt-3 flex items-center gap-3">
-                    <Switch id="public-listing" checked={publicListing} onCheckedChange={setPublicListing} />
-                    <Label htmlFor="public-listing" className="text-sm font-medium">Make this event public</Label>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    On = your published event appears in Find Your Event. Off = private, reachable only by direct link.
+                  <p className="mt-3 text-xs text-muted-foreground">
+                    This event is {publicListing ? "public" : "private"}. Change it in{" "}
+                    <a href={`/dashboard/public-page-editor?step=public_view${typeof window !== "undefined" ? window.location.search.replace(/^\?/, "&") : ""}`} className="font-medium text-primary hover:underline">Setup &gt; Public View</a>.
                   </p>
 
                 </div>

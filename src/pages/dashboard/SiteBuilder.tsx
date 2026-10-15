@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useEffect, useState, useCallback } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useDemoMode } from "@/hooks/useDemoMode";
@@ -49,6 +50,18 @@ import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
 import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { sharePreviewUrl } from "@/lib/shareLinks";
+
+/** Advanced settings stay collapsed by default so the main path stays simple. */
+function AdvancedSection({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <details className="group rounded-lg border border-dashed border-border px-3 py-2">
+      <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground hover:text-foreground">
+        Advanced: {label}
+      </summary>
+      <div className="mt-3 space-y-3">{children}</div>
+    </details>
+  );
+}
 
 const getFunctionErrorMessage = (res: { data?: any; error?: any }, fallback: string) =>
   res.data?.message || res.data?.error || res.error?.message || fallback;
@@ -298,7 +311,10 @@ const SiteBuilder = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
-  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables" | "public_view">("branding");
+  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables" | "public_view">(() => {
+    const st = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("step") : null;
+    return (["branding", "content", "contact", "domain", "printables", "public_view"] as const).find((k) => k === st) ?? "branding";
+  });
 
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);
@@ -354,7 +370,7 @@ const SiteBuilder = () => {
 
 
   const handleSave = async () => {
-    if (!settings || demoGuard()) return;
+    if (!settings || demoGuard()) return false;
     setSaving(true);
 
     const newDomain = settings.custom_domain || null;
@@ -420,7 +436,7 @@ const SiteBuilder = () => {
     if (error) {
       toast({ title: "Error saving", description: error.message, variant: "destructive" });
       setSaving(false);
-      return;
+      return false;
     }
 
     try {
@@ -569,6 +585,14 @@ const SiteBuilder = () => {
     { key: "domain" as const, label: "Domain", icon: Globe },
   ];
 
+  const stepIndex = Math.max(0, tabs.findIndex((t) => t.key === activeTab));
+  const goBack = () => { if (stepIndex > 0) { setActiveTab(tabs[stepIndex - 1].key); window.scrollTo({ top: 0 }); } };
+  const goNext = () => { if (stepIndex < tabs.length - 1) { setActiveTab(tabs[stepIndex + 1].key); window.scrollTo({ top: 0 }); } };
+  const saveAndContinue = async () => {
+    const ok = await handleSave();
+    if (ok !== false) goNext();
+  };
+
   if (loading) {
     return (
       <div className="flex justify-center py-12">
@@ -630,30 +654,34 @@ const SiteBuilder = () => {
               Only you can see the preview until you turn on Publish and save.
             </span>
           )}
-          <Button onClick={handleSave} disabled={saving} className="shrink-0">
-            {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-            <span className="ml-1.5">Save</span>
-          </Button>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="flex gap-1 mb-6 bg-card rounded-lg border border-border p-1 w-fit">
-        {tabs.map((tab) => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-              activeTab === tab.key
-                ? "bg-primary text-primary-foreground"
-                : "text-muted-foreground hover:text-foreground hover:bg-muted"
-            }`}
-          >
-            <tab.icon className="h-4 w-4" />
-            {tab.label}
-          </button>
+      {/* Guided steps */}
+      <ol className="mb-6 grid grid-cols-2 gap-1 rounded-lg border border-border bg-card p-1 sm:grid-cols-3 lg:grid-cols-6">
+        {tabs.map((tab, i) => (
+          <li key={tab.key}>
+            <button
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              aria-current={activeTab === tab.key ? "step" : undefined}
+              className={`flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium transition-colors ${
+                activeTab === tab.key
+                  ? "bg-muted text-foreground ring-1 ring-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+              }`}
+            >
+              <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[11px]">{i + 1}</span>
+              <span className="min-w-0">{tab.label}</span>
+            </button>
+          </li>
         ))}
-      </div>
+      </ol>
+
+      <p className="mb-4 text-sm text-muted-foreground">
+        Tournament name, dates, course, location, fee, and scoring format are set once in{" "}
+        <Link to={`/dashboard/tournaments?tournament_id=${settings.id}`} className="font-medium text-primary hover:underline">Event Details</Link>.
+      </p>
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Editor Panel */}
@@ -893,6 +921,7 @@ const SiteBuilder = () => {
                   </div>
                 </div>
 
+<AdvancedSection label="Focal Point">
                 <div>
                   <Label className="text-sm">Focal Point</Label>
                   <p className="text-xs text-muted-foreground mb-2">
@@ -914,6 +943,7 @@ const SiteBuilder = () => {
                     })}
                   </div>
                 </div>
+</AdvancedSection>
 
                 {((settings as any).site_hero_fit ?? "cover") === "contain" && (
                   <label className="flex items-start gap-2">
@@ -930,6 +960,7 @@ const SiteBuilder = () => {
                 )}
               </div>
 
+<AdvancedSection label="Overlay opacity">
               {/* Background Transparency — always visible, controls current image */}
               <div className="space-y-2 pt-2 border-t border-border">
                 <div className="flex items-center justify-between">
@@ -985,6 +1016,7 @@ const SiteBuilder = () => {
                   </div>
                 </div>
               </div>
+</AdvancedSection>
 
 
               {/* Template Selector */}
@@ -1226,6 +1258,7 @@ const SiteBuilder = () => {
 
                 {/* Button style */}
                 <div className="space-y-3">
+<AdvancedSection label="Button Corner Radius">
                   <div>
                     <div className="flex items-center justify-between">
                       <Label className="text-sm">Button Corner Radius</Label>
@@ -1240,6 +1273,7 @@ const SiteBuilder = () => {
                       className="mt-2"
                     />
                   </div>
+</AdvancedSection>
                   <div>
                     <Label className="text-xs">Button Hover Effect</Label>
                     <select
@@ -1446,7 +1480,7 @@ const SiteBuilder = () => {
                   Use the toolbar to bold key items, change fonts, or highlight (e.g. SOLD OUT, LIMITED SPOTS).
                 </p>
                 <div className="mt-3 flex items-center gap-3">
-                  <Button onClick={handleSave} disabled={saving}>
+                  <Button variant="outline" onClick={handleSave} disabled={saving}>
                     {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
                     <span className="ml-1.5">Save Schedule</span>
                   </Button>
@@ -1510,6 +1544,7 @@ const SiteBuilder = () => {
                 Customize the look of printed materials like cart signs, scorecards, and badges.
               </p>
 
+<AdvancedSection label="Print Font">
               {/* Font Selection */}
               <div>
                 <Label>Print Font</Label>
@@ -1538,6 +1573,7 @@ const SiteBuilder = () => {
                   ))}
                 </div>
               </div>
+</AdvancedSection>
 
               {/* Layout Selection */}
               <div>
@@ -1813,6 +1849,7 @@ const SiteBuilder = () => {
                 }}
               />
 
+<AdvancedSection label="Custom Domain DNS">
               <DomainInstructions currentDomain={settings.custom_domain} />
 
 
@@ -1879,6 +1916,7 @@ const SiteBuilder = () => {
                   </div>
                 )}
               </div>
+</AdvancedSection>
 
             </>
           )}
@@ -2014,6 +2052,22 @@ const SiteBuilder = () => {
         </div>
       </div>
 
+      {/* Wizard controls: always in the same place */}
+      <div className="sticky bottom-0 z-20 mt-6 border-t border-border bg-background/95 py-3 backdrop-blur">
+        <div className="flex items-center justify-between gap-3">
+          <Button variant="outline" onClick={goBack} disabled={stepIndex === 0}>
+            <ArrowLeft className="h-4 w-4 mr-1" /> Back
+          </Button>
+          <span className="hidden text-xs text-muted-foreground sm:inline">Step {stepIndex + 1} of {tabs.length}</span>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" onClick={goNext} disabled={stepIndex === tabs.length - 1}>Next</Button>
+            <Button onClick={saveAndContinue} disabled={saving}>
+              {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
+              <span className="ml-1.5">{stepIndex === tabs.length - 1 ? "Save" : "Save and Continue"}</span>
+            </Button>
+          </div>
+        </div>
+      </div>
       <ImageCropperDialog
         open={cropperOpen}
         onOpenChange={(o) => {

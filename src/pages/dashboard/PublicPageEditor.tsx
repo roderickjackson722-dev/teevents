@@ -16,12 +16,14 @@ const PublicPageEditor = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const paramId = searchParams.get("tournament_id") || "";
+  const step = searchParams.get("step");
+  const stepQs = step ? `?step=${encodeURIComponent(step)}` : "";
 
   useEffect(() => {
     if (loading) return;
 
     if (paramId) {
-      navigate(buildLink(`/dashboard/tournaments/${paramId}/site-builder`), { replace: true });
+      navigate(buildLink(`/dashboard/tournaments/${paramId}/site-builder${stepQs}`), { replace: true });
       return;
     }
     if (!org) return;
@@ -37,7 +39,7 @@ const PublicPageEditor = () => {
         const id = pickTournamentId(((data || []) as { id: string }[]), null);
         navigate(
           id
-            ? buildLink(`/dashboard/tournaments/${id}/site-builder`)
+            ? buildLink(`/dashboard/tournaments/${id}/site-builder${stepQs}`)
             : buildLink("/dashboard/tournaments"),
           { replace: true },
         );

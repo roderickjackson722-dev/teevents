@@ -549,9 +549,9 @@ export default function PayoutSettings() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
         <Card className={`border-2 ${selectedMethod === "stripe" || pendingMethod === "stripe" ? "border-emerald-500/50" : "border-border"}`}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="h-10 w-10 shrink-0 rounded-lg bg-primary/10 flex items-center justify-center">
                   <CreditCard className="h-5 w-5 text-primary" />
                 </div>
                 <div>
@@ -643,11 +643,11 @@ export default function PayoutSettings() {
                 <div className="flex flex-wrap gap-2">
                   {selectedMethod !== "stripe" && (
                     <>
-                      <Button size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")} disabled={pendingMethod === "stripe" && !ackFee}>
+                      <Button variant={pendingMethod === "stripe" && !showStripeConfirmModal ? "secondary" : "outline"} className={pendingMethod === "stripe" && !showStripeConfirmModal ? "money-main-save" : undefined} size="sm" onClick={pendingMethod === "stripe" ? handleSelectStripe : () => beginMethodSelection("stripe")} disabled={pendingMethod === "stripe" && !ackFee}>
                         {pendingMethod === "stripe" ? "Save & Set as Active" : "Use Stripe Connect"}
                       </Button>
                       {pendingMethod === "stripe" && (
-                        <Button variant="ghost" size="sm" onClick={clearPendingMethod}>Cancel</Button>
+                        <Button variant="outline" size="sm" onClick={clearPendingMethod}>Cancel</Button>
                       )}
                     </>
                   )}
@@ -690,7 +690,7 @@ export default function PayoutSettings() {
                         Click below to securely finish connecting your bank account through Stripe. This is the last step required to save Stripe Connect as your payout method.
                       </p>
                       <div className="flex flex-wrap gap-2 pt-1">
-                        <Button onClick={handleStripeConnect} disabled={connectingStripe} className="bg-emerald-600 hover:bg-emerald-700 text-white">
+                        <Button variant="secondary" onClick={handleStripeConnect} disabled={connectingStripe} className="money-main-save">
                           {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
                           {stripeStarted ? "Confirm & Finish Stripe Setup" : "Confirm & Connect Stripe Account"}
                         </Button>
@@ -698,13 +698,13 @@ export default function PayoutSettings() {
                           {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
                           Save Payment Method
                         </Button>
-                        <Button variant="ghost" onClick={clearPendingMethod}>Cancel</Button>
+                        <Button variant="outline" onClick={clearPendingMethod}>Cancel</Button>
                       </div>
                     </div>
                   </div>
                 )}
                 {pendingMethod !== "stripe" && (
-                  <Button onClick={() => beginMethodSelection("stripe")}>
+                  <Button variant="outline" onClick={() => beginMethodSelection("stripe")}>
                     <CreditCard className="h-4 w-4 mr-2" />
                     Select Stripe Connect
                   </Button>
@@ -719,9 +719,9 @@ export default function PayoutSettings() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
         <Card className={`border-2 ${selectedMethod === "paypal" || pendingMethod === "paypal" ? "border-blue-500/50" : "border-border"}`}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="h-10 w-10 shrink-0 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
                   <Mail className="h-5 w-5 text-blue-600" />
                 </div>
                 <div>
@@ -772,15 +772,15 @@ export default function PayoutSettings() {
                   </label>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button onClick={handleSavePaypal} disabled={savingPaypal || !paypalEmail.trim()}>
+                  <Button variant="secondary" className="money-main-save" onClick={handleSavePaypal} disabled={savingPaypal || !paypalEmail.trim()}>
                     {savingPaypal ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
                     Save PayPal & Set as Active
                   </Button>
-                  <Button variant="ghost" onClick={clearPendingMethod}>Cancel</Button>
+                  <Button variant="outline" onClick={clearPendingMethod}>Cancel</Button>
                 </div>
               </div>
             )}
-            <Button onClick={pendingMethod === "paypal" ? handleSavePaypal : () => beginMethodSelection("paypal")} disabled={savingPaypal || !paypalEmail.trim()}>
+            <Button variant="outline" onClick={pendingMethod === "paypal" ? handleSavePaypal : () => beginMethodSelection("paypal")} disabled={savingPaypal || !paypalEmail.trim()}>
               {savingPaypal && pendingMethod === "paypal" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
               {pendingMethod === "paypal" ? "Save PayPal & Set as Active" : "Select PayPal"}
             </Button>
@@ -792,9 +792,9 @@ export default function PayoutSettings() {
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
         <Card className={`border-2 ${selectedMethod === "check" || pendingMethod === "check" ? "border-amber-500/50" : "border-border"}`}>
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:justify-between">
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="h-10 w-10 shrink-0 rounded-lg bg-amber-100 dark:bg-amber-950 flex items-center justify-center">
                   <FileCheck className="h-5 w-5 text-amber-600" />
                 </div>
                 <div>
@@ -846,15 +846,15 @@ export default function PayoutSettings() {
                   </label>
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button onClick={handleSaveCheck} disabled={savingCheck || !mailingAddress.trim()}>
+                  <Button variant="secondary" className="money-main-save" onClick={handleSaveCheck} disabled={savingCheck || !mailingAddress.trim()}>
                     {savingCheck ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileCheck className="h-4 w-4 mr-2" />}
                     Save Address & Set as Active
                   </Button>
-                  <Button variant="ghost" onClick={clearPendingMethod}>Cancel</Button>
+                  <Button variant="outline" onClick={clearPendingMethod}>Cancel</Button>
                 </div>
               </div>
             )}
-            <Button onClick={pendingMethod === "check" ? handleSaveCheck : () => beginMethodSelection("check")} disabled={savingCheck || !mailingAddress.trim()}>
+            <Button variant="outline" onClick={pendingMethod === "check" ? handleSaveCheck : () => beginMethodSelection("check")} disabled={savingCheck || !mailingAddress.trim()}>
               {savingCheck && pendingMethod === "check" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <FileCheck className="h-4 w-4 mr-2" />}
               {pendingMethod === "check" ? "Save Address & Set as Active" : "Select Check"}
             </Button>
@@ -885,14 +885,14 @@ export default function PayoutSettings() {
                 <TableBody>
                   {combinedLogs.map((log) => (
                     <TableRow key={`${log.source}-${log.id}`}>
-                      <TableCell className="text-sm text-muted-foreground whitespace-nowrap">
+                      <TableCell data-label="Date" className="text-sm text-muted-foreground whitespace-nowrap">
                         {new Date(log.created_at).toLocaleString()}
                       </TableCell>
-                      <TableCell className="text-sm text-foreground whitespace-nowrap">
+                      <TableCell data-label="Email" className="text-sm text-foreground whitespace-nowrap">
                         {log.email || <span className="text-muted-foreground">—</span>}
                       </TableCell>
-                      <TableCell className="text-sm font-medium">{log.action.replace(/_/g, " ")}</TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{log.description || "—"}</TableCell>
+                      <TableCell data-label="Action" className="text-sm font-medium">{log.action.replace(/_/g, " ")}</TableCell>
+                      <TableCell data-label="Details" className="text-sm text-muted-foreground">{log.description || "—"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -989,7 +989,7 @@ export default function PayoutSettings() {
           </div>
           <div className="flex justify-end gap-2 pt-2">
             <Button variant="outline" onClick={() => setShowStripeConfirmModal(false)}>Cancel</Button>
-            <Button onClick={confirmActivateStripe} disabled={!ackFee}>
+            <Button variant="secondary" className="money-main-save" onClick={confirmActivateStripe} disabled={!ackFee}>
               <CheckCircle2 className="h-4 w-4 mr-2" />
               Confirm & Activate Stripe
             </Button>

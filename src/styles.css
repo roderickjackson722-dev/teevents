@@ -87,6 +87,43 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 @media (prefers-reduced-motion: reduce) { .logo-marquee-track { animation:none; } }
 
 /* Fundraising screens: stack tables into cards on phones (no sideways scrolling). */
+/* Money presentation is isolated from Fundraising and payment behavior. */
+.money-layout { min-width: 0; max-width: 100%; }
+.money-layout .money-main-save { color: hsl(var(--primary)); }
+@media (max-width: 639px) {
+  .money-layout table, .money-layout tbody, .money-layout tfoot, .money-layout tr {
+    display: block; width: 100%; min-width: 0 !important; max-width: 100%; white-space: normal;
+  }
+  .money-layout thead { display: none; }
+  .money-layout tbody > tr, .money-layout tfoot > tr {
+    border: 1px solid hsl(var(--border)); border-radius: var(--radius);
+    margin-bottom: .75rem; padding: .5rem;
+  }
+  .money-layout td {
+    display: block; width: 100%; min-width: 0; max-width: 100%;
+    white-space: normal !important; overflow-wrap: anywhere; text-align: left;
+    padding: .375rem .5rem; border: 0;
+  }
+  .money-layout td[data-label]::before {
+    content: attr(data-label); display: block; margin-bottom: .125rem;
+    font-size: .75rem; font-weight: 600; color: hsl(var(--muted-foreground));
+  }
+  .money-layout td:empty { display: none; }
+  .money-layout .overflow-x-auto { overflow-x: visible; }
+  .money-layout .truncate, .money-layout [role="combobox"] > span {
+    overflow: visible; text-overflow: clip; white-space: normal;
+    -webkit-line-clamp: unset; overflow-wrap: anywhere;
+  }
+  .money-layout [role="combobox"] { height: auto; min-height: 2.5rem; min-width: 0; max-width: 100%; }
+  .money-layout [role="combobox"] > svg { flex-shrink: 0; }
+  .money-layout button, .money-layout a, .money-layout pre {
+    white-space: normal; overflow-wrap: anywhere; max-width: 100%;
+  }
+  .money-layout button { height: auto; min-height: 2.25rem; }
+  .money-layout input { min-width: 0; max-width: 100%; }
+  .money-layout .budget-page header input { width: 100%; }
+  .money-layout .budget-page .bg-primary > input { width: 60%; min-width: 0; }
+}
 @media (max-width: 639px) {
   .fundraising-stack table, .fundraising-stack tbody, .fundraising-stack tr, .fundraising-stack td { display: block; width: 100%; }
   .fundraising-stack thead { display: none; }

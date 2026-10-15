@@ -583,14 +583,14 @@ export default function BudgetPage() {
             Template-based event budget. Edit any line, add new ones, and totals update automatically.
           </p>
         </div>
-        <div className="flex items-center gap-2 flex-wrap">
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] min-w-0 items-center gap-2 sm:flex sm:flex-wrap">
           {savedFlash && (
             <span className="text-xs text-muted-foreground flex items-center gap-1">
               <Check className="h-3 w-3 text-primary" /> Saved
             </span>
           )}
           <Select value={selectedId} onValueChange={setSelectedId}>
-            <SelectTrigger className="w-[240px] bg-card">
+            <SelectTrigger className="w-full min-w-0 sm:w-[240px] bg-card">
               <Trophy className="h-4 w-4 mr-2 text-primary" />
               <SelectValue placeholder="Select tournament" />
             </SelectTrigger>
@@ -643,13 +643,13 @@ export default function BudgetPage() {
 
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="no-print">
             <TabsList className="grid grid-cols-3 w-full h-auto">
-              <TabsTrigger value="expenses" className="gap-1.5 py-2">
+              <TabsTrigger value="expenses" className="gap-1.5 py-2 min-w-0 whitespace-normal">
                 <TrendingDown className="h-4 w-4" /> Expenses
               </TabsTrigger>
-              <TabsTrigger value="income" className="gap-1.5 py-2">
+              <TabsTrigger value="income" className="gap-1.5 py-2 min-w-0 whitespace-normal">
                 <TrendingUp className="h-4 w-4" /> Income
               </TabsTrigger>
-              <TabsTrigger value="pnl" className="gap-1.5 py-2">
+              <TabsTrigger value="pnl" className="gap-1.5 py-2 min-w-0 whitespace-normal">
                 <PieChart className="h-4 w-4" /> Profit / Loss
               </TabsTrigger>
             </TabsList>
@@ -849,8 +849,8 @@ function SectionCard({
   return (
     <section className="bg-card border border-border rounded-lg overflow-hidden">
       <header className="p-4 border-b border-border flex flex-col gap-3">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="flex items-start gap-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-start">
+          <div className="flex min-w-0 items-start gap-2">
             {icon}
             <div>
               {editableTitle && onTitleChange ? (
@@ -906,18 +906,18 @@ function EstimatesTable({
         <tbody>
           {items.map((e) => (
             <tr key={e.id} className="border-t border-border hover:bg-muted/30">
-              <td className="p-1.5"><BareInput value={e.item_name} onCommit={(v) => onChange(e.id, { item_name: v })} placeholder="Item" /></td>
-              <td className="p-1.5"><BareInput value={e.vendor_a_name} onCommit={(v) => onChange(e.id, { vendor_a_name: v })} /></td>
-              <td className="p-1.5"><BareNumber value={e.vendor_a_price} onCommit={(v) => onChange(e.id, { vendor_a_price: v })} /></td>
-              <td className="p-1.5"><BareInput value={e.vendor_b_name} onCommit={(v) => onChange(e.id, { vendor_b_name: v })} /></td>
-              <td className="p-1.5"><BareNumber value={e.vendor_b_price} onCommit={(v) => onChange(e.id, { vendor_b_price: v })} /></td>
-              <td className="p-1.5"><BareInput value={e.vendor_c_name} onCommit={(v) => onChange(e.id, { vendor_c_name: v })} /></td>
-              <td className="p-1.5"><BareNumber value={e.vendor_c_price} onCommit={(v) => onChange(e.id, { vendor_c_price: v })} /></td>
-              <td className="p-1.5 text-center">
+              <td data-label="Item" className="p-1.5"><BareInput value={e.item_name} onCommit={(v) => onChange(e.id, { item_name: v })} placeholder="Item" /></td>
+              <td data-label="Vendor A" className="p-1.5"><BareInput value={e.vendor_a_name} onCommit={(v) => onChange(e.id, { vendor_a_name: v })} /></td>
+              <td data-label="Price A" className="p-1.5"><BareNumber value={e.vendor_a_price} onCommit={(v) => onChange(e.id, { vendor_a_price: v })} /></td>
+              <td data-label="Vendor B" className="p-1.5"><BareInput value={e.vendor_b_name} onCommit={(v) => onChange(e.id, { vendor_b_name: v })} /></td>
+              <td data-label="Price B" className="p-1.5"><BareNumber value={e.vendor_b_price} onCommit={(v) => onChange(e.id, { vendor_b_price: v })} /></td>
+              <td data-label="Vendor C" className="p-1.5"><BareInput value={e.vendor_c_name} onCommit={(v) => onChange(e.id, { vendor_c_name: v })} /></td>
+              <td data-label="Price C" className="p-1.5"><BareNumber value={e.vendor_c_price} onCommit={(v) => onChange(e.id, { vendor_c_price: v })} /></td>
+              <td data-label="Sponsorable?" className="p-1.5 text-center">
                 <Checkbox checked={e.sponsorable} onCheckedChange={(c) => onChange(e.id, { sponsorable: !!c })} />
               </td>
-              <td className="p-1.5"><BareInput value={e.notes} onCommit={(v) => onChange(e.id, { notes: v })} /></td>
-              <td className="p-1.5 no-print whitespace-nowrap">
+              <td data-label="Notes" className="p-1.5"><BareInput value={e.notes} onCommit={(v) => onChange(e.id, { notes: v })} /></td>
+              <td data-label="Actions" className="p-1.5 no-print whitespace-nowrap">
                 <Button size="sm" variant="ghost" onClick={() => onMove(e)} title="Move best price to Expenses">
                   <ArrowRight className="h-3.5 w-3.5" />
                 </Button>
@@ -978,23 +978,23 @@ function ExpenseSection({
               const v = Number(e.actual_cost) - Number(e.estimated_cost);
               return (
                 <tr key={e.id} className={`border-t border-border ${e.is_paid ? "bg-primary/5" : ""}`}>
-                  <td className="p-1.5"><BareInput value={e.item_name} onCommit={(val) => onChange(e.id, { item_name: val })} placeholder="Item" /></td>
-                  <td className="p-1.5"><BareNumber value={e.estimated_cost} onCommit={(val) => onChange(e.id, { estimated_cost: val })} /></td>
-                  <td className="p-1.5"><BareNumber value={e.actual_cost} onCommit={(val) => onChange(e.id, { actual_cost: val })} /></td>
-                  <td className={`p-1.5 text-right font-mono text-xs ${v > 0 ? "text-destructive" : v < 0 ? "text-primary" : "text-muted-foreground"}`}>
+                  <td data-label="Item" className="p-1.5"><BareInput value={e.item_name} onCommit={(val) => onChange(e.id, { item_name: val })} placeholder="Item" /></td>
+                  <td data-label="Estimated" className="p-1.5"><BareNumber value={e.estimated_cost} onCommit={(val) => onChange(e.id, { estimated_cost: val })} /></td>
+                  <td data-label="Actual" className="p-1.5"><BareNumber value={e.actual_cost} onCommit={(val) => onChange(e.id, { actual_cost: val })} /></td>
+                  <td data-label="Variance" className={`p-1.5 text-right font-mono text-xs ${v > 0 ? "text-destructive" : v < 0 ? "text-primary" : "text-muted-foreground"}`}>
                     {fmt(v)}
                   </td>
-                  <td className="p-1.5 text-center">
+                  <td data-label="Paid" className="p-1.5 text-center">
                     <Checkbox checked={e.is_paid} onCheckedChange={(c) => onChange(e.id, { is_paid: !!c })} />
                   </td>
-                  <td className="p-1.5">
+                  <td data-label="Date Paid" className="p-1.5">
                     <Input type="date" className="h-8"
                       value={e.payment_due_date || ""}
                       onChange={(ev) => onChange(e.id, { payment_due_date: ev.target.value || null })}
                     />
                   </td>
-                  <td className="p-1.5"><BareInput value={e.notes} onCommit={(val) => onChange(e.id, { notes: val })} placeholder="Notes (sponsor underwriter)" /></td>
-                  <td className="p-1.5 no-print">
+                  <td data-label="Notes" className="p-1.5"><BareInput value={e.notes} onCommit={(val) => onChange(e.id, { notes: val })} placeholder="Notes (sponsor underwriter)" /></td>
+                  <td data-label="Actions" className="p-1.5 no-print">
                     <Button size="sm" variant="ghost" onClick={() => onDelete(e.id)} className="text-destructive h-8 w-8 p-0">
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -1006,8 +1006,8 @@ function ExpenseSection({
           <tfoot className="bg-muted/30 font-medium">
             <tr>
               <td className="p-2 text-right uppercase text-xs">Total</td>
-              <td className="p-2 text-right font-mono">{fmt(totalEst)}</td>
-              <td className="p-2 text-right font-mono">{fmt(totalAct)}</td>
+              <td data-label="Estimated total" className="p-2 text-right font-mono">{fmt(totalEst)}</td>
+              <td data-label="Actual total" className="p-2 text-right font-mono">{fmt(totalAct)}</td>
               <td colSpan={5}></td>
             </tr>
           </tfoot>
@@ -1063,17 +1063,17 @@ function IncomeSection({
               const act = incomeActual(i);
               return (
                 <tr key={i.id} className={`border-t border-border ${i.is_received ? "bg-primary/5" : ""}`}>
-                  <td className="p-1.5"><BareInput value={i.item_name} onCommit={(v) => onChange(i.id, { item_name: v })} placeholder="Item" /></td>
-                  <td className="p-1.5"><BareNumber value={i.quantity_estimated} integer onCommit={(v) => onChange(i.id, { quantity_estimated: v })} /></td>
-                  <td className="p-1.5"><BareNumber value={i.quantity_actual} integer onCommit={(v) => onChange(i.id, { quantity_actual: v })} /></td>
-                  <td className="p-1.5"><BareNumber value={i.unit_price} onCommit={(v) => onChange(i.id, { unit_price: v })} /></td>
-                  <td className="p-1.5 text-right font-mono text-primary">{fmt(est)}</td>
-                  <td className="p-1.5 text-right font-mono text-primary">{fmt(act)}</td>
-                  <td className="p-1.5 text-center">
+                  <td data-label="Item" className="p-1.5"><BareInput value={i.item_name} onCommit={(v) => onChange(i.id, { item_name: v })} placeholder="Item" /></td>
+                  <td data-label="Est. #" className="p-1.5"><BareNumber value={i.quantity_estimated} integer onCommit={(v) => onChange(i.id, { quantity_estimated: v })} /></td>
+                  <td data-label="Actual #" className="p-1.5"><BareNumber value={i.quantity_actual} integer onCommit={(v) => onChange(i.id, { quantity_actual: v })} /></td>
+                  <td data-label="Price" className="p-1.5"><BareNumber value={i.unit_price} onCommit={(v) => onChange(i.id, { unit_price: v })} /></td>
+                  <td data-label="Est. Income" className="p-1.5 text-right font-mono text-primary">{fmt(est)}</td>
+                  <td data-label="Actual Income" className="p-1.5 text-right font-mono text-primary">{fmt(act)}</td>
+                  <td data-label="Received" className="p-1.5 text-center">
                     <Checkbox checked={i.is_received} onCheckedChange={(c) => onChange(i.id, { is_received: !!c })} />
                   </td>
-                  <td className="p-1.5"><BareInput value={i.notes} onCommit={(v) => onChange(i.id, { notes: v })} placeholder="Notes" /></td>
-                  <td className="p-1.5 no-print">
+                  <td data-label="Notes" className="p-1.5"><BareInput value={i.notes} onCommit={(v) => onChange(i.id, { notes: v })} placeholder="Notes" /></td>
+                  <td data-label="Actions" className="p-1.5 no-print">
                     <Button size="sm" variant="ghost" onClick={() => onDelete(i.id)} className="text-destructive h-8 w-8 p-0">
                       <Trash2 className="h-3.5 w-3.5" />
                     </Button>
@@ -1085,8 +1085,8 @@ function IncomeSection({
           <tfoot className="bg-muted/30 font-medium">
             <tr>
               <td colSpan={4} className="p-2 text-right uppercase text-xs">Total</td>
-              <td className="p-2 text-right font-mono">{fmt(totEst)}</td>
-              <td className="p-2 text-right font-mono">{fmt(totAct)}</td>
+              <td data-label="Estimated total" className="p-2 text-right font-mono">{fmt(totEst)}</td>
+              <td data-label="Actual total" className="p-2 text-right font-mono">{fmt(totAct)}</td>
               <td colSpan={3}></td>
             </tr>
           </tfoot>
@@ -1178,15 +1178,15 @@ function PLTable({
         <tbody>
           {rows.map((r) => (
             <tr key={r.category} className="border-b border-border/50">
-              <td className="py-1.5">{r.title || r.category}</td>
-              <td className="py-1.5 text-right font-mono">{fmt(r.est)}</td>
-              <td className="py-1.5 text-right font-mono">{fmt(r.act)}</td>
+              <td data-label="Category" className="py-1.5">{r.title || r.category}</td>
+              <td data-label="Estimated" className="py-1.5 text-right font-mono">{fmt(r.est)}</td>
+              <td data-label="Actual" className="py-1.5 text-right font-mono">{fmt(r.act)}</td>
             </tr>
           ))}
           <tr className="font-semibold bg-muted/30">
-            <td className="py-1.5">Total</td>
-            <td className={`py-1.5 text-right font-mono ${positiveIsGood ? "text-primary" : "text-destructive"}`}>{fmt(totalEst)}</td>
-            <td className={`py-1.5 text-right font-mono ${positiveIsGood ? "text-primary" : "text-destructive"}`}>{fmt(totalAct)}</td>
+            <td data-label="Summary" className="py-1.5">Total</td>
+            <td data-label="Estimated" className={`py-1.5 text-right font-mono ${positiveIsGood ? "text-primary" : "text-destructive"}`}>{fmt(totalEst)}</td>
+            <td data-label="Actual" className={`py-1.5 text-right font-mono ${positiveIsGood ? "text-primary" : "text-destructive"}`}>{fmt(totalAct)}</td>
           </tr>
         </tbody>
       </table>
@@ -1221,6 +1221,8 @@ function BareInput({
   const [local, setLocal] = useState(value || "");
   useEffect(() => setLocal(value || ""), [value]);
   return (
+    <div className="min-w-0">
+    <span className="sm:hidden block text-sm break-words">{local}</span>
     <input
       className="w-full h-8 px-2 bg-transparent border border-transparent hover:border-input focus:border-input rounded text-sm focus:outline-none focus:ring-1 focus:ring-ring"
       value={local}
@@ -1228,6 +1230,7 @@ function BareInput({
       onChange={(e) => setLocal(e.target.value)}
       onBlur={() => { if (local !== value) onCommit(local); }}
     />
+    </div>
   );
 }
 function BareNumber({

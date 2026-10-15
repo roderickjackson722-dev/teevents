@@ -930,27 +930,27 @@ const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
                   return (
                     <Fragment key={t.id}>
                       <TableRow className="cursor-pointer" onClick={() => toggleRow(t.id)}>
-                        <TableCell>{open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</TableCell>
-                        <TableCell className="text-sm whitespace-nowrap">{new Date(t.created_at).toLocaleDateString()}</TableCell>
-                        <TableCell className="text-sm max-w-[180px] truncate">{tournamentTitle(t.tournament_id)}</TableCell>
-                        <TableCell><Badge variant="outline" className="capitalize">{typeLabel(t.type)}</Badge></TableCell>
-                        <TableCell className="text-sm">{t.golfer_name || "—"}</TableCell>
-                        <TableCell className="text-sm">{t.golfer_email || "—"}</TableCell>
-                        <TableCell>
+                        <TableCell data-label="Details">{open ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}</TableCell>
+                        <TableCell data-label="Date" className="text-sm whitespace-nowrap">{new Date(t.created_at).toLocaleDateString()}</TableCell>
+                        <TableCell data-label="Tournament" className="text-sm sm:max-w-[180px] break-words">{tournamentTitle(t.tournament_id)}</TableCell>
+                        <TableCell data-label="Type"><Badge variant="outline" className="capitalize">{typeLabel(t.type)}</Badge></TableCell>
+                        <TableCell data-label="Name" className="text-sm">{t.golfer_name || "—"}</TableCell>
+                        <TableCell data-label="Email" className="text-sm">{t.golfer_email || "—"}</TableCell>
+                        <TableCell data-label="Required Fields">
                           {missing.length > 0 ? (
                             <Badge variant="destructive" className="whitespace-nowrap">Missing {missing.length}</Badge>
                           ) : (
                             <Badge variant="secondary" className="whitespace-nowrap">Complete</Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-right text-sm">${(t.amount_cents / 100).toFixed(2)}</TableCell>
-                        <TableCell className="text-right text-sm font-medium">${(t.net_amount_cents / 100).toFixed(2)}</TableCell>
-                        <TableCell>
+                        <TableCell data-label="Gross" className="text-right text-sm">${(t.amount_cents / 100).toFixed(2)}</TableCell>
+                        <TableCell data-label="Net" className="text-right text-sm font-medium">${(t.net_amount_cents / 100).toFixed(2)}</TableCell>
+                        <TableCell data-label="Status">
                           <Badge variant={paymentStatusBadgeVariant(t.status)} className="text-xs">
                             {paymentStatusIcon(t.status)} {paymentStatusLabel(t.status)}
                           </Badge>
                         </TableCell>
-                        <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                        <TableCell data-label="Actions" className="text-right" onClick={(e) => e.stopPropagation()}>
                           {t.type !== "no_charge_registration" && <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button

@@ -245,12 +245,9 @@ export default function Volunteers() {
         )}
       </div>
 
-      <Select value={selectedTournament} onValueChange={setSelectedTournament}>
-        <SelectTrigger className="w-[300px]"><SelectValue placeholder="Select a tournament" /></SelectTrigger>
-        <SelectContent>
-          {tournaments?.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}
-        </SelectContent>
-      </Select>
+      <p className="text-sm font-medium text-foreground break-words">
+        {tournaments?.find((t) => t.id === selectedTournament)?.title || "Pick a tournament on Home to manage volunteers."}
+      </p>
 
       {/* Summary Cards */}
       {selectedTournament && (roles?.length ?? 0) > 0 && (

@@ -87,12 +87,9 @@ export default function TeamHQ() {
 
       <div>
         <Label className="text-xs">Tournament</Label>
-        <Select value={tournamentId || undefined} onValueChange={setTournamentId}>
-          <SelectTrigger className="w-full sm:w-[300px]"><SelectValue placeholder="Select" /></SelectTrigger>
-          <SelectContent>
-            {tournaments.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <p className="text-sm font-medium text-foreground break-words">
+          {tournaments.find((t) => t.id === tournamentId)?.title || "Pick a tournament on Home to set up Team HQ."}
+        </p>
       </div>
 
       {teamUrl && (

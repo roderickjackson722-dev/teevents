@@ -27,10 +27,16 @@ const TeamManagementPage = () => {
       </div>
 
       <Tabs defaultValue="tournament" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="tournament">By Tournament</TabsTrigger>
-          <TabsTrigger value="organization">Organization</TabsTrigger>
-        </TabsList>
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-foreground">Invite scope</p>
+          <TabsList className="flex-wrap h-auto">
+            <TabsTrigger value="tournament">By Tournament</TabsTrigger>
+            <TabsTrigger value="organization">Organization</TabsTrigger>
+          </TabsList>
+          <p className="text-xs text-muted-foreground">
+            Pick a scope. Roles match the scope, and Permissions appear only for Organization invites.
+          </p>
+        </div>
         <TabsContent value="tournament">
           <TournamentTeam initialTournamentId={tournamentId} />
         </TabsContent>

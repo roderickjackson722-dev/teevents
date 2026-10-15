@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { useEffect, useState, useCallback } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useDemoMode } from "@/hooks/useDemoMode";
@@ -51,7 +52,7 @@ import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { sharePreviewUrl } from "@/lib/shareLinks";
 
 /** Advanced settings stay collapsed by default so the main path stays simple. */
-function AdvancedSection({ label, children }: { label: string; children: React.ReactNode }) {
+function AdvancedSection({ label, children }: { label: string; children: ReactNode }) {
   return (
     <details className="group rounded-lg border border-dashed border-border px-3 py-2">
       <summary className="cursor-pointer select-none text-sm font-medium text-muted-foreground hover:text-foreground">

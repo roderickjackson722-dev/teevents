@@ -407,7 +407,7 @@ export function DashboardSidebar() {
             return (
               <Collapsible
                 key={cat.label}
-                open={openCategories[cat.label] ?? true}
+                open={openCategories[cat.label] ?? (categoryActive || cat.label === "Home")}
                 onOpenChange={(open) =>
                   setOpenCategories((prev) => ({ ...prev, [cat.label]: open }))
                 }
@@ -426,7 +426,7 @@ export function DashboardSidebar() {
                         {!collapsed && (
                           <ChevronDown
                             className={`h-3 w-3 flex-shrink-0 transition-transform ${
-                              (openCategories[cat.label] ?? true) ? "" : "-rotate-90"
+                              (openCategories[cat.label] ?? (categoryActive || cat.label === "Home")) ? "" : "-rotate-90"
                             }`}
                           />
                         )}

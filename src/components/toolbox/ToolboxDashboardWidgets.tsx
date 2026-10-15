@@ -10,7 +10,7 @@ import { itemCount, loadToolbox, type Toolbox } from "@/lib/organizerToolbox";
 // screen or the "rep will contact you" banner, so current organizers are unaffected.
 const LAUNCH = "2026-10-12T00:00:00Z";
 
-export default function ToolboxDashboardWidgets({ orgId, hasTournament }: { orgId: string; hasTournament: boolean }) {
+export default function ToolboxDashboardWidgets({ orgId, hasTournament, redirectOnly = false }: { orgId: string; hasTournament: boolean; redirectOnly?: boolean }) {
   const [tb, setTb] = useState<Toolbox | null | undefined>(undefined);
   const [isNewOrg, setIsNewOrg] = useState(false);
   const navigate = useNavigate();
@@ -40,6 +40,8 @@ export default function ToolboxDashboardWidgets({ orgId, hasTournament }: { orgI
   }, [tb, isNewOrg, hasTournament]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const empty = tb !== undefined && itemCount(tb ?? null) === 0;
+  // Home merges Getting Started + Toolbox into its Next Step card; keep only the welcome redirect.
+  if (redirectOnly) return null;
 
   return <>
     {isNewOrg && tb && (tb as any).onboarding_completed_at && <OnboardingChecklist orgId={orgId} tb={tb} ctx={ctx} />}

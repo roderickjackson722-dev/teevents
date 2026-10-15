@@ -1491,7 +1491,10 @@ const Registration = () => {
           {/* ── Flights Tab ── */}
           <TabsContent value="flights">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-6">
-              <FlightsManager tournamentId={selectedTournament} />
+              <p className="text-sm text-muted-foreground">
+                Flights are edited in one place.{" "}
+                <a href="/dashboard/scoring-payouts?section=flights" className="font-medium underline hover:text-foreground">Open Flights in Pairings &amp; Scoring</a>
+              </p>
             </motion.div>
           </TabsContent>
 

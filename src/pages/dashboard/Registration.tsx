@@ -1624,7 +1624,8 @@ const Registration = () => {
                   )}
 
                 </div>
-              </div>
+                </div>
+              </details>
             </motion.div>
           </TabsContent>
 

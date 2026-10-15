@@ -1,7 +1,7 @@
 ## Prompt 6 Money presentation completion
-- [ ] Style existing Money saves with one gold main save and outlined alternatives, preserving all handlers
-- [ ] Stack Money tables and wrap names on phones without altering event or payment data
-- [ ] Verify signed-in Money views without saving, purchasing, or publishing
+- [x] Style existing Money saves with one gold main save and outlined alternatives, preserving all handlers; Budget retains its existing autosave
+- [x] Stack Money tables and wrap names on phones without altering event or payment data
+- [x] Verify all signed-in Money views at phone/desktop widths without saving, purchasing, or publishing; populated payout logs and budget summaries checked, transaction views were empty
 
 ## Contact page rebuild
 - [x] Rebuild requested Contact sections, omitting mailing address and references as instructed

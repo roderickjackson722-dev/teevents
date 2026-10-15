@@ -310,6 +310,7 @@ export default function Messages() {
           </CardHeader>
           <CardContent className="flex flex-wrap gap-3">
             <Button
+              variant="outline"
               onClick={() => purchaseMutation.mutate("sms_100")}
               disabled={purchaseMutation.isPending || !selectedTournament}
             >
@@ -584,7 +585,7 @@ export default function Messages() {
               <Button
                 onClick={() => sendMutation.mutate()}
                 disabled={!canSend}
-                className="ml-auto"
+                className="ml-auto bg-secondary text-primary hover:bg-secondary/80"
               >
                 {sendMode === "schedule" ? (
                   <><Timer className="mr-2 h-4 w-4" />{sendMutation.isPending ? "Scheduling..." : "Schedule Message"}</>

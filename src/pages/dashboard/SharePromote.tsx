@@ -226,7 +226,7 @@ const SharePromote = () => {
                 <p className="text-sm font-semibold text-foreground text-center">{tournament.title}</p>
                 <p className="text-xs text-muted-foreground break-all text-center">{registrationUrl}</p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <Button size="sm" onClick={() => downloadQR("png")}>
+                  <Button size="sm" className="bg-secondary text-primary hover:bg-secondary/80" onClick={() => downloadQR("png")}>
                     <Download className="h-3.5 w-3.5 mr-1.5" /> PNG (Print)
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => downloadQR("svg")}>
@@ -279,7 +279,7 @@ const SharePromote = () => {
                 </div>
                 <p className="text-xs text-muted-foreground break-all text-center">{teamHomepageUrl}</p>
                 <div className="flex flex-wrap gap-2 justify-center">
-                  <Button size="sm" onClick={downloadTeamQR}>
+                  <Button size="sm" className="bg-secondary text-primary hover:bg-secondary/80" onClick={downloadTeamQR}>
                     <Download className="h-3.5 w-3.5 mr-1.5" /> Download QR (PNG)
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => copyToClipboard(teamHomepageUrl, "Team homepage link")}>

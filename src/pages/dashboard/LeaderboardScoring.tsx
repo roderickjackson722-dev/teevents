@@ -3,6 +3,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { BarChart3, PenLine } from "lucide-react";
 import Leaderboard from "./Leaderboard";
 import Scoring from "./Scoring";
+import PairingsScoringSteps from "@/components/dashboard/PairingsScoringSteps";
 
 /**
  * Merged "Leaderboard & Live Scoring" workspace. Score entry and the live
@@ -27,6 +28,7 @@ const LeaderboardScoring = () => {
 
   return (
     <div>
+      <PairingsScoringSteps />
       <div className="mb-6">
         <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">
           Leaderboard &amp; Live Scoring

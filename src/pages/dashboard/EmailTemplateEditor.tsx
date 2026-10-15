@@ -1214,7 +1214,7 @@ export default function EmailTemplateEditor() {
               <Label htmlFor="auto-send" className="text-sm cursor-pointer">Send automatically at that time</Label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" onClick={saveSchedule} disabled={savingSchedule}>
+              <Button size="sm" variant="outline" onClick={saveSchedule} disabled={savingSchedule}>
                 {savingSchedule ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
                 Save Schedule
               </Button>
@@ -1794,7 +1794,7 @@ export default function EmailTemplateEditor() {
                 className="mt-2"
               />
             </div>
-            <Button onClick={sendTestEmail} disabled={sendingTest || !testEmail.trim()} className="gap-2">
+            <Button variant="outline" onClick={sendTestEmail} disabled={sendingTest || !testEmail.trim()} className="gap-2">
               {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send Test Email
             </Button>
@@ -1994,7 +1994,7 @@ export default function EmailTemplateEditor() {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button onClick={() => setConfirmSendOpen(true)} disabled={sending || selectedRecipients.length === 0} className="gap-2">
+            <Button variant="outline" onClick={() => setConfirmSendOpen(true)} disabled={sending || selectedRecipients.length === 0} className="gap-2">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
             </Button>
@@ -2037,7 +2037,7 @@ export default function EmailTemplateEditor() {
                     className="mt-2"
                   />
                 </div>
-                <Button onClick={sendTestEmail} disabled={sendingTest || !testEmail.trim()} className="gap-2">
+                <Button variant="outline" onClick={sendTestEmail} disabled={sendingTest || !testEmail.trim()} className="gap-2">
                   {sendingTest ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                   Send Test Email
                 </Button>
@@ -2057,7 +2057,7 @@ export default function EmailTemplateEditor() {
 
       {/* Action Bar */}
       <div className="flex flex-wrap items-center gap-2 bg-card rounded-lg border p-4">
-        <Button onClick={saveTemplate} disabled={saving} className="gap-2">
+        <Button onClick={saveTemplate} disabled={saving} className="gap-2 bg-secondary text-primary hover:bg-secondary/80">
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save Template
         </Button>

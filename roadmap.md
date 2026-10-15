@@ -1,3 +1,8 @@
+## Prompt 6 Money presentation completion
+- [ ] Style existing Money saves with one gold main save and outlined alternatives, preserving all handlers
+- [ ] Stack Money tables and wrap names on phones without altering event or payment data
+- [ ] Verify signed-in Money views without saving, purchasing, or publishing
+
 ## Contact page rebuild
 - [x] Rebuild requested Contact sections, omitting mailing address and references as instructed
 - [x] Connect validated inquiries to real email delivery with server-verified CAPTCHA only

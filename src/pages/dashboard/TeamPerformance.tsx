@@ -665,7 +665,7 @@ export default function TeamPerformance() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {!i.awarded_to ? (
-                        <Button size="sm" onClick={() => openAward(i)} disabled={!promoters.length}>Award Now</Button>
+                        <Button size="sm" variant="outline" onClick={() => openAward(i)} disabled={!promoters.length}>Award Now</Button>
                       ) : (
                         <Button size="sm" variant="outline" onClick={() => unaward(i)}>Clear Award</Button>
                       )}

@@ -144,7 +144,6 @@ const categories: SidebarCategory[] = [
     color: "border-l-sky-400 bg-sky-400/5",
     items: [
       { title: "Team Members", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles, track referral performance" },
-      { title: "Team Referral Links", url: "/dashboard/team-performance", icon: Target, feature: null, description: "Give each team member a personal sign-up link and see who registered through it" },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
       { title: "Team HQ", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
       { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },

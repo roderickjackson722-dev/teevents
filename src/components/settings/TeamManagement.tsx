@@ -519,7 +519,7 @@ export function TeamManagement({ orgId, userId }: TeamManagementProps) {
                   ))}
               </SelectContent>
             </Select>
-            <Button onClick={handleImpersonate} disabled={!impersonateId || impersonating}>
+            <Button variant="outline" onClick={handleImpersonate} disabled={!impersonateId || impersonating}>
               {impersonating ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <LogIn className="h-4 w-4 mr-2" />}
               Log in as member
             </Button>

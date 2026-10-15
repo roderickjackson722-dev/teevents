@@ -144,3 +144,14 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
   .fundraising-stack td { white-space: normal !important; word-break: break-word; padding: 0.25rem 0.5rem; border: 0; }
   .fundraising-stack .overflow-x-auto { overflow-x: visible; }
 }
+
+.team-layout { min-width: 0; max-width: 100%; }
+@media (max-width: 639px) {
+  .team-layout table, .team-layout tbody, .team-layout tr { display: block; width: 100%; min-width: 0 !important; max-width: 100%; }
+  .team-layout thead { display: none; }
+  .team-layout tbody > tr { border: 1px solid hsl(var(--border)); border-radius: var(--radius); margin-bottom: .75rem; padding: .5rem; }
+  .team-layout td { display: block; width: 100%; min-width: 0; white-space: normal !important; overflow-wrap: anywhere; text-align: left; padding: .375rem .5rem; border: 0; }
+  .team-layout td:empty { display: none; }
+  .team-layout .overflow-x-auto { overflow-x: visible; }
+  .team-layout .truncate { overflow: visible; text-overflow: clip; white-space: normal; overflow-wrap: anywhere; }
+}

@@ -1,6 +1,7 @@
 import DashboardEventSwitcher from "@/components/DashboardEventSwitcher";
 import MoneyTabs, { MONEY_PATHS } from "@/components/dashboard/MoneyTabs";
 import PromoteTabs, { PROMOTE_PATHS } from "@/components/dashboard/PromoteTabs";
+import TeamTabs, { TEAM_PATHS } from "@/components/dashboard/TeamTabs";
 import FundraisingTabs, { FUNDRAISING_PATHS } from "@/components/dashboard/FundraisingTabs";
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
@@ -321,6 +322,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <div className="money-layout"><MoneyTabs />{children}</div>
               ) : typeof window !== "undefined" && PROMOTE_PATHS.includes(window.location.pathname) ? (
                 <div className="promote-layout"><PromoteTabs />{children}</div>
+              ) : typeof window !== "undefined" && TEAM_PATHS.includes(window.location.pathname) ? (
+                <div className="team-layout"><TeamTabs />{children}</div>
               ) : children}
             </main>
           </div>

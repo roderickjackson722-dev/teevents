@@ -193,18 +193,9 @@ export function TournamentTeam({ initialTournamentId }: { initialTournamentId?: 
       <CardContent className="space-y-6">
         <div className="max-w-md space-y-2">
           <Label>Tournament</Label>
-          <Select value={tournamentId} onValueChange={setTournamentId}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select a tournament" />
-            </SelectTrigger>
-            <SelectContent>
-              {tournaments.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.title}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <p className="text-sm font-medium text-foreground break-words">
+            {selected?.title || "Pick a tournament on Home to manage its team."}
+          </p>
           {selected?.access === "team_member" && (
             <p className="text-xs text-muted-foreground">
               You have {roleLabel(selected.role)} access to this tournament.

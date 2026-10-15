@@ -291,8 +291,8 @@ const UpgradeFeaturesPage = () => {
                     <div className="flex-shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
                       <a.icon className="h-4 w-4" />
                     </div>
-                    <div className="flex-1">
-                      <div className="flex items-baseline justify-between gap-3">
+                    <div className="flex-1 min-w-0">
+                      <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
                         <p className="font-semibold text-foreground text-sm">
                           {a.label}
                           {owned && (
@@ -315,8 +315,8 @@ const UpgradeFeaturesPage = () => {
               <div className="flex-shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
                 <GraduationCap className="h-4 w-4" />
               </div>
-              <div className="flex-1">
-                <div className="flex items-baseline justify-between gap-3">
+              <div className="flex-1 min-w-0">
+                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
                   <p className="font-display font-bold text-foreground">College Golf Scoring</p>
                   <p className="font-display font-bold text-secondary text-lg">from $199</p>
                 </div>
@@ -335,7 +335,7 @@ const UpgradeFeaturesPage = () => {
               </div>
             </div>
 
-            <div className="mt-6 flex items-center justify-between border-t border-border pt-4">
+            <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-border pt-4">
               <p className="text-sm text-muted-foreground">
                 Total: <span className="font-display font-bold text-foreground text-lg">${total}</span>
               </p>
@@ -348,7 +348,7 @@ const UpgradeFeaturesPage = () => {
 
           {/* Branding removal */}
           <div className="bg-card rounded-xl border border-border p-6 mb-6">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <p className="font-semibold text-foreground">Branding Removal + Digital Sponsor — $99</p>
                 <p className="text-sm text-muted-foreground mt-1">
@@ -489,7 +489,7 @@ const UpgradeFeaturesPage = () => {
           <details className="rounded-xl border border-border bg-card p-4">
             <summary className="cursor-pointer text-sm font-semibold">Advanced: Enterprise</summary>
             <div className="mt-4">
-          <div className="bg-card rounded-xl border border-border p-6 flex items-center justify-between gap-4">
+          <div className="bg-card rounded-xl border border-border p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="flex items-center gap-3">
               <Building2 className="h-5 w-5 text-primary" />
               <div>

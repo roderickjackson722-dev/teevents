@@ -317,7 +317,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               {typeof window !== "undefined" && FUNDRAISING_PATHS.includes(window.location.pathname) ? (
                 <div className="fundraising-stack"><FundraisingTabs />{children}</div>
               ) : typeof window !== "undefined" && MONEY_PATHS.includes(window.location.pathname) ? (
-                <div className="fundraising-stack"><MoneyTabs />{children}</div>
+                <div className="money-layout"><MoneyTabs />{children}</div>
               ) : children}
             </main>
           </div>

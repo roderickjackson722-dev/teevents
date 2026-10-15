@@ -518,7 +518,7 @@ const Finances = () => {
         </div>
         <div className="flex items-center gap-3">
           <Select value={selectedTournament} onValueChange={setSelectedTournament}>
-            <SelectTrigger className="w-[240px] bg-card">
+            <SelectTrigger className="w-full sm:w-[240px] bg-card">
               <Trophy className="h-4 w-4 mr-2 text-primary" />
               <SelectValue placeholder="Select tournament" />
             </SelectTrigger>
@@ -762,7 +762,7 @@ const Finances = () => {
       })()}
 
       {/* Stripe Dashboard Link */}
-      <div className="bg-card rounded-lg border border-border p-4 mb-6 flex items-center justify-between">
+      <div className="bg-card rounded-lg border border-border p-4 mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-full bg-primary/10">
             <ArrowUpRight className="h-4 w-4 text-primary" />
@@ -807,7 +807,7 @@ const Finances = () => {
         className="space-y-4"
       >
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <TabsList className="bg-card border border-border">
+          <TabsList className="grid w-full grid-cols-3 h-auto bg-card border border-border sm:w-auto">
             <TabsTrigger value="transactions">
               <CreditCard className="h-4 w-4 mr-1.5" />
               Transactions
@@ -826,7 +826,7 @@ const Finances = () => {
               Reports
             </TabsTrigger>
           </TabsList>
-          <div className="flex items-center gap-2">
+          <div className="grid w-full grid-cols-1 gap-2 sm:flex sm:w-auto sm:items-center">
             <Button
               variant="outline"
               size="sm"
@@ -959,23 +959,23 @@ const Finances = () => {
                         return (
                           <Fragment key={tx.id}>
                             <tr className="border-b border-border last:border-0 hover:bg-muted/20 transition-colors cursor-pointer" onClick={() => toggleTxRow(tx.id)}>
-                              <td className="p-3">
+                              <td data-label="Details" className="p-3">
                                 {expanded ? <ChevronDown className="h-4 w-4 text-muted-foreground" /> : <ChevronRight className="h-4 w-4 text-muted-foreground" />}
                               </td>
-                              <td className="p-3">{typeBadge(tx.type)}</td>
-                              <td className="p-3">
+                              <td data-label="Type" className="p-3">{typeBadge(tx.type)}</td>
+                              <td data-label="Customer / Item" className="p-3">
                                 <p className="font-medium text-sm text-foreground">{tx.golfer_name || tx.description || "—"}</p>
                                 {tx.golfer_email && <p className="text-xs text-muted-foreground">{tx.golfer_email}</p>}
                                 {tx.description && tx.golfer_name && (
                                   <p className="text-xs text-muted-foreground">{tx.description}</p>
                                 )}
                               </td>
-                              <td className="p-3 font-semibold text-sm text-foreground">${(tx.amount_cents / 100).toFixed(2)}</td>
-                              <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(tx.platform_fee_cents / 100).toFixed(2)}</td>
-                              <td className="p-3 text-sm text-muted-foreground hidden md:table-cell">${((tx.stripe_fee_cents || 0) / 100).toFixed(2)}</td>
-                              <td className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(tx.net_amount_cents / 100).toFixed(2)}</td>
-                              <td className="p-3">{statusBadge(tx.status)}</td>
-                              <td className="p-3 text-sm text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</td>
+                              <td data-label="Customer Paid" className="p-3 font-semibold text-sm text-foreground">${(tx.amount_cents / 100).toFixed(2)}</td>
+                              <td data-label="Platform Fee" className="p-3 text-sm text-muted-foreground hidden md:table-cell">${(tx.platform_fee_cents / 100).toFixed(2)}</td>
+                              <td data-label="Stripe Fee" className="p-3 text-sm text-muted-foreground hidden md:table-cell">${((tx.stripe_fee_cents || 0) / 100).toFixed(2)}</td>
+                              <td data-label="Net to Organizer" className="p-3 text-sm font-medium text-primary hidden lg:table-cell">${(tx.net_amount_cents / 100).toFixed(2)}</td>
+                              <td data-label="Status" className="p-3">{statusBadge(tx.status)}</td>
+                              <td data-label="Date" className="p-3 text-sm text-muted-foreground">{new Date(tx.created_at).toLocaleDateString()}</td>
                             </tr>
                             {expanded && (
                               <tr className="bg-muted/20 border-b border-border">
@@ -1174,7 +1174,7 @@ const Finances = () => {
                 </>
               )}
             </div>
-            <Button onClick={handleGenerateReport} className="gap-2">
+            <Button variant="secondary" onClick={handleGenerateReport} className="money-main-save gap-2">
               <Download className="h-4 w-4" />
               Generate CSV
             </Button>
@@ -1205,7 +1205,7 @@ const Finances = () => {
 
       {/* Breakdown Dialog */}
       <Dialog open={!!breakdown} onOpenChange={(o) => !o && setBreakdown(null)}>
-        <DialogContent className="max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
+        <DialogContent className="money-layout max-w-3xl max-h-[80vh] overflow-hidden flex flex-col">
           <DialogHeader>
             <DialogTitle>{breakdown?.title}</DialogTitle>
             <DialogDescription>{breakdown?.description}</DialogDescription>
@@ -1232,40 +1232,40 @@ const Finances = () => {
                   <tbody>
                     {breakdown.items.map((tx) => (
                       <tr key={tx.id} className="border-b border-border/50 hover:bg-muted/20">
-                        <td className="p-2 text-xs text-muted-foreground whitespace-nowrap">
+                        <td data-label="Date" className="p-2 text-xs text-muted-foreground whitespace-nowrap">
                           {new Date(tx.created_at).toLocaleDateString()}
                         </td>
-                        <td className="p-2">
+                        <td data-label="Participant" className="p-2">
                           <p className="font-medium text-foreground">{tx.golfer_name || "—"}</p>
                           <p className="text-xs text-muted-foreground">{tx.golfer_email || ""}</p>
                         </td>
-                        <td className="p-2 text-xs capitalize text-muted-foreground">{tx.type}</td>
-                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground"}`}>
+                        <td data-label="Type" className="p-2 text-xs capitalize text-muted-foreground">{tx.type}</td>
+                        <td data-label="Gross" className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground"}`}>
                           ${(tx.amount_cents / 100).toFixed(2)}
                         </td>
-                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground"}`}>
+                        <td data-label="Fee (5%)" className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground"}`}>
                           ${(tx.platform_fee_cents / 100).toFixed(2)}
                         </td>
-                        <td className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground"}`}>
+                        <td data-label="Net" className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground"}`}>
                           ${(tx.net_amount_cents / 100).toFixed(2)}
                         </td>
-                        <td className="p-2">{statusBadge(tx.status)}</td>
+                        <td data-label="Status" className="p-2">{statusBadge(tx.status)}</td>
                       </tr>
                     ))}
                   </tbody>
                   <tfoot className="sticky bottom-0 bg-background border-t-2 border-border">
                     <tr>
-                      <td colSpan={3} className="p-2 text-xs font-semibold text-foreground text-right">Total:</td>
-                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground text-xs"}`}>
+                      <td data-label="Summary" colSpan={3} className="p-2 text-xs font-semibold text-foreground text-right">Total:</td>
+                      <td data-label="Gross" className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground text-xs"}`}>
                         ${(breakdown.items.reduce((s, t) => s + t.amount_cents, 0) / 100).toFixed(2)}
                       </td>
-                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground text-xs"}`}>
+                      <td data-label="Fee (5%)" className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground text-xs"}`}>
                         ${(breakdown.items.reduce((s, t) => s + t.platform_fee_cents, 0) / 100).toFixed(2)}
                       </td>
-                      <td className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground text-xs"}`}>
+                      <td data-label="Net" className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground text-xs"}`}>
                         ${(breakdown.items.reduce((s, t) => s + t.net_amount_cents, 0) / 100).toFixed(2)}
                       </td>
-                      <td className="p-2 text-xs text-muted-foreground">{breakdown.items.length} txn</td>
+                      <td data-label="Transactions" className="p-2 text-xs text-muted-foreground">{breakdown.items.length} txn</td>
                     </tr>
                   </tfoot>
                 </table>

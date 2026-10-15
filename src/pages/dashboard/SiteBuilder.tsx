@@ -311,7 +311,10 @@ const SiteBuilder = () => {
   const [saving, setSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
-  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables" | "public_view">("branding");
+  const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables" | "public_view">(() => {
+    const st = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("step") : null;
+    return (["branding", "content", "contact", "domain", "printables", "public_view"] as const).find((k) => k === st) ?? "branding";
+  });
 
   // Cropper state
   const [cropperOpen, setCropperOpen] = useState(false);

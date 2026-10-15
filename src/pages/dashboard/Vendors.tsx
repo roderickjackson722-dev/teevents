@@ -827,6 +827,7 @@ export default function Vendors() {
 
         {/* ===== Form Builder tab ===== */}
         <TabsContent value="form" className="space-y-4">
+          <details className="group rounded-lg border border-border bg-card"><summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground">Advanced: Vendor Form Builder <span className="text-xs">(click to open)</span></summary><div className="p-2">
           <Card>
             <CardHeader>
               <CardTitle>Vendor Registration Form</CardTitle>
@@ -894,9 +895,10 @@ export default function Vendors() {
                 )}
               </div>
 
-              <Button onClick={saveForm}>Save Form</Button>
+              <Button variant="secondary" onClick={saveForm}>Save Form</Button>
             </CardContent>
           </Card>
+          </div></details>
         </TabsContent>
 
         {/* ===== Booth Locations tab ===== */}
@@ -919,7 +921,7 @@ export default function Vendors() {
                 <Button variant="outline" onClick={generateBoothMapPdf} disabled={booths.length === 0}>
                   <Map className="h-4 w-4 mr-1" /> Booth Map PDF
                 </Button>
-                <Button onClick={() => setAddBoothOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Location</Button>
+                <Button variant="outline" onClick={() => setAddBoothOpen(true)}><Plus className="h-4 w-4 mr-1" /> Add Location</Button>
               </div>
             </CardHeader>
             <CardContent>

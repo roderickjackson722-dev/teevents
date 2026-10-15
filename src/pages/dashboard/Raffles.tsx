@@ -195,7 +195,7 @@ export default function Raffles() {
         {selectedTournament && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> Add Raffle</Button>
+              <Button variant="outline" onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> Add Raffle</Button>
             </DialogTrigger>
             <DialogContent className="max-w-xl max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? "Edit Raffle" : "Add Raffle"}</DialogTitle></DialogHeader>

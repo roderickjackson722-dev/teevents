@@ -234,7 +234,7 @@ const EventDaySales = () => {
             </Button>
             <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) resetForm(); }}>
               <DialogTrigger asChild>
-                <Button size="sm"><Plus className="h-4 w-4 mr-1.5" /> Add Item</Button>
+                <Button size="sm" variant="outline"><Plus className="h-4 w-4 mr-1.5" /> Add Item</Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg">
                 <DialogHeader><DialogTitle>{editing ? "Edit Item" : "Add Sales Item"}</DialogTitle></DialogHeader>

@@ -262,7 +262,7 @@ const Donations = () => {
           </div>
         )}
 
-        <Button onClick={saveSettings} disabled={savingSettings}>
+        <Button variant="secondary" onClick={saveSettings} disabled={savingSettings}>
           {savingSettings ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
           Save Settings
         </Button>
@@ -279,7 +279,7 @@ const Donations = () => {
           <Input type="date" value={offlineForm.received_date} onChange={(e) => setOfflineForm({ ...offlineForm, received_date: e.target.value })} />
           <Input placeholder="Notes" value={offlineForm.notes} onChange={(e) => setOfflineForm({ ...offlineForm, notes: e.target.value })} maxLength={300} />
         </div>
-        <Button size="sm" onClick={addOffline} disabled={savingOffline}>
+        <Button size="sm" variant="outline" onClick={addOffline} disabled={savingOffline}>
           {savingOffline ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
           Add Offline Donation
         </Button>

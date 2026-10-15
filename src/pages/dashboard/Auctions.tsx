@@ -208,7 +208,7 @@ export default function Auctions() {
         {selectedTournament && (
           <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
             <DialogTrigger asChild>
-              <Button onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> Add Item</Button>
+              <Button variant="outline" onClick={openCreate}><Plus className="mr-2 h-4 w-4" /> Add Item</Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
               <DialogHeader><DialogTitle>{editing ? "Edit Auction Item" : "Add Auction Item"}</DialogTitle></DialogHeader>

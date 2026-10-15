@@ -500,6 +500,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
   return (
     <div className="space-y-6 min-w-0 max-w-full">
       {/* Sponsor Registration Form Fields */}
+      <details className="group rounded-lg border border-border bg-card"><summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground">Advanced: Sponsor Registration Form Fields <span className="text-xs">(click to open)</span></summary><div className="p-2">
       <Card className="min-w-0 overflow-hidden">
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
@@ -531,13 +532,14 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
             </div>
           ))}
           <div className="flex justify-end pt-1">
-            <Button size="sm" onClick={saveSponsorFormConfig} disabled={savingFormConfig}>
+            <Button size="sm" variant="secondary" onClick={saveSponsorFormConfig} disabled={savingFormConfig}>
               {savingFormConfig && <Loader2 className="h-4 w-4 animate-spin mr-1" />}
               Save Form Settings
             </Button>
           </div>
         </CardContent>
       </Card>
+      </div></details>
 
       {/* Sponsorship Tiers */}
       <Card className="min-w-0 overflow-hidden">
@@ -548,7 +550,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
             </CardTitle>
             <Dialog open={dialogOpen} onOpenChange={(v) => { setDialogOpen(v); if (!v) resetForm(); }}>
               <DialogTrigger asChild>
-                <Button size="sm"><Plus className="h-3.5 w-3.5 mr-1" /> Add Tier</Button>
+                <Button size="sm" variant="outline"><Plus className="h-3.5 w-3.5 mr-1" /> Add Tier</Button>
               </DialogTrigger>
               <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
@@ -772,7 +774,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
               </div>
               <Dialog open={regDialogOpen} onOpenChange={(v) => { setRegDialogOpen(v); if (!v) resetRegForm(); }}>
                 <DialogTrigger asChild>
-                  <Button size="sm"><Plus className="h-3.5 w-3.5 mr-1" /> Add Sponsor</Button>
+                  <Button size="sm" variant="outline"><Plus className="h-3.5 w-3.5 mr-1" /> Add Sponsor</Button>
                 </DialogTrigger>
                 <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
                   <DialogHeader>

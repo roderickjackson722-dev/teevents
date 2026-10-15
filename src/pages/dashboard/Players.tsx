@@ -1,3 +1,4 @@
+import PairingsScoringSteps from "@/components/dashboard/PairingsScoringSteps";
 import PlayersTabs from "@/components/dashboard/PlayersTabs";
 import { paymentStatusClasses, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -2476,6 +2477,7 @@ const Players = () => {
         onConfirm={manualEntry.confirmPending}
       />
       <PlayersTabs />
+      {view === "pairings" && <PairingsScoringSteps />}
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
@@ -4274,7 +4276,7 @@ const Players = () => {
             <span className="text-xs text-muted-foreground mr-auto">
               Tee times and pairing templates save automatically — use this to confirm everything is stored.
             </span>
-            <Button onClick={handleSaveTeeTimesNow} size="sm" disabled={savingTeeTimes}>
+            <Button onClick={handleSaveTeeTimesNow} size="sm" variant="outline" disabled={savingTeeTimes}>
               {savingTeeTimes ? "Saving…" : "Save Tee Times"}
             </Button>
           </div>

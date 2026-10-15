@@ -1,4 +1,5 @@
 import DashboardEventSwitcher from "@/components/DashboardEventSwitcher";
+import MoneyTabs, { MONEY_PATHS } from "@/components/dashboard/MoneyTabs";
 import FundraisingTabs, { FUNDRAISING_PATHS } from "@/components/dashboard/FundraisingTabs";
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
@@ -315,6 +316,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <main className="flex-1 bg-muted/30 p-3 sm:p-4 md:p-8 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
               {typeof window !== "undefined" && FUNDRAISING_PATHS.includes(window.location.pathname) ? (
                 <div className="fundraising-stack"><FundraisingTabs />{children}</div>
+              ) : typeof window !== "undefined" && MONEY_PATHS.includes(window.location.pathname) ? (
+                <div className="fundraising-stack"><MoneyTabs />{children}</div>
               ) : children}
             </main>
           </div>

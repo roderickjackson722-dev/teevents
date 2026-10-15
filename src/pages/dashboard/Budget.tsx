@@ -642,10 +642,7 @@ export default function BudgetPage() {
           </div>
 
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as typeof activeTab)} className="no-print">
-            <TabsList className="grid grid-cols-2 sm:grid-cols-4 w-full h-auto">
-              <TabsTrigger value="estimates" className="gap-1.5 py-2">
-                <Lightbulb className="h-4 w-4" /> Estimates
-              </TabsTrigger>
+            <TabsList className="grid grid-cols-3 w-full h-auto">
               <TabsTrigger value="expenses" className="gap-1.5 py-2">
                 <TrendingDown className="h-4 w-4" /> Expenses
               </TabsTrigger>
@@ -657,7 +654,8 @@ export default function BudgetPage() {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="estimates" className="mt-4">
+            <TabsContent value="estimates" className="mt-4 space-y-3">
+              <Button size="sm" variant="outline" onClick={() => setActiveTab("expenses")}>Back to Expenses</Button>
               <SectionCard
                 icon={<Lightbulb className="h-5 w-5 text-secondary" />}
                 title={budget?.estimate_section_title || "Vendor Estimates"}
@@ -680,6 +678,11 @@ export default function BudgetPage() {
             </TabsContent>
 
             <TabsContent value="expenses" className="mt-4 space-y-4">
+              <div className="flex justify-end">
+                <Button size="sm" variant="outline" onClick={() => setActiveTab("estimates")}>
+                  <Lightbulb className="h-4 w-4 mr-1" /> Compare quotes
+                </Button>
+              </div>
               {/* Golfer inputs — dedicated card for reliable typing */}
               <div className="bg-card border border-border rounded-lg p-4 grid sm:grid-cols-4 gap-3">
                 <GolferInput

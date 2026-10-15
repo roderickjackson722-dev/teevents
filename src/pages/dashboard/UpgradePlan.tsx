@@ -363,19 +363,13 @@ const UpgradeFeaturesPage = () => {
                 )}
               </div>
               <div className="flex flex-col items-end gap-2">
-                <Switch
-                  checked={brandingRemoved}
-                  disabled={brandingRemoved || brandingLoading}
-                  onCheckedChange={(v) => { if (v) handleBrandingPurchase(); }}
-                />
                 {brandingRemoved ? (
                   <span className="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary">
                     <Check className="h-3 w-3" /> Branding removed
                   </span>
                 ) : (
-                  <Button size="sm" onClick={handleBrandingPurchase} disabled={brandingLoading}>
-                    {brandingLoading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : null}
-                    Buy for $99
+                  <Button asChild size="sm" variant="outline">
+                    <Link to="/dashboard/sponsorship-tools">Purchase in Sponsorship Tools</Link>
                   </Button>
                 )}
               </div>
@@ -492,6 +486,9 @@ const UpgradeFeaturesPage = () => {
           </div>
 
 
+          <details className="rounded-xl border border-border bg-card p-4">
+            <summary className="cursor-pointer text-sm font-semibold">Advanced: Enterprise</summary>
+            <div className="mt-4">
           <div className="bg-card rounded-xl border border-border p-6 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <Building2 className="h-5 w-5 text-primary" />
@@ -506,6 +503,8 @@ const UpgradeFeaturesPage = () => {
               </Link>
             </Button>
           </div>
+            </div>
+          </details>
         </>
       )}
     </div>

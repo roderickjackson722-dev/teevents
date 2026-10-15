@@ -1994,7 +1994,7 @@ export default function EmailTemplateEditor() {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setConfirmSendOpen(true)} disabled={sending || selectedRecipients.length === 0} className="gap-2">
+            <Button onClick={() => setConfirmSendOpen(true)} disabled={sending || selectedRecipients.length === 0} className="gap-2 bg-secondary text-primary hover:bg-secondary/80">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
               Send {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
             </Button>
@@ -2057,7 +2057,7 @@ export default function EmailTemplateEditor() {
 
       {/* Action Bar */}
       <div className="flex flex-wrap items-center gap-2 bg-card rounded-lg border p-4">
-        <Button onClick={saveTemplate} disabled={saving} className="gap-2 bg-secondary text-primary hover:bg-secondary/80">
+        <Button onClick={saveTemplate} disabled={saving} variant={activeTab === "send" ? "outline" : undefined} className={activeTab === "send" ? "gap-2" : "gap-2 bg-secondary text-primary hover:bg-secondary/80"}>
           {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
           Save Template
         </Button>
@@ -2087,7 +2087,7 @@ export default function EmailTemplateEditor() {
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setConfirmSendOpen(false)}>Cancel</Button>
               <Button
-                className="gap-2"
+                 className="gap-2 bg-secondary text-primary hover:bg-secondary/80"
                 disabled={sending}
                 onClick={async () => { setConfirmSendOpen(false); await sendEmails(); }}
               >

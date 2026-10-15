@@ -256,7 +256,7 @@ const FlyerStudio = () => {
                   </div>
                   <p className="text-xs text-muted-foreground line-clamp-2">{t.description}</p>
                   {t.size && <Badge variant="outline" className="text-[10px]">{t.size}</Badge>}
-                  <Button size="sm" className="w-full text-xs" onClick={() => handleEditInCanva(t)}>
+                  <Button size="sm" className="w-full text-xs bg-secondary text-primary hover:bg-secondary/80" onClick={() => handleEditInCanva(t)}>
                     <ExternalLink className="h-3.5 w-3.5 mr-1" /> Edit in Canva
                   </Button>
                 </CardContent>

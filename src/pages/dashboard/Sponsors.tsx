@@ -172,7 +172,7 @@ function SponsorAssetManager({ sponsors, selectedTournament, orgId }: { sponsors
           </CardTitle>
           <Dialog open={uploadOpen} onOpenChange={setUploadOpen}>
             <DialogTrigger asChild>
-              <Button size="sm"><Upload className="h-3.5 w-3.5 mr-1" /> Upload Asset</Button>
+              <Button size="sm" variant="outline"><Upload className="h-3.5 w-3.5 mr-1" /> Upload Asset</Button>
             </DialogTrigger>
             <DialogContent>
               <DialogHeader><DialogTitle>Upload Sponsor Asset</DialogTitle></DialogHeader>
@@ -397,7 +397,7 @@ function SponsorPageShareCard({
               </div>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" onClick={copyLink}>
+              <Button size="sm" variant="outline" onClick={copyLink}>
                 <Copy className="h-3.5 w-3.5 mr-1.5" /> Copy Link
               </Button>
               <Button size="sm" variant="outline" asChild>

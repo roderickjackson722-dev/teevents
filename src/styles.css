@@ -85,3 +85,12 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 .logo-marquee:hover .logo-marquee-track, .logo-marquee:focus-within .logo-marquee-track { animation-play-state:paused; }
 @keyframes logo-marquee-scroll { from { transform:translateX(0); } to { transform:translateX(-50%); } }
 @media (prefers-reduced-motion: reduce) { .logo-marquee-track { animation:none; } }
+
+/* Fundraising screens: stack tables into cards on phones (no sideways scrolling). */
+@media (max-width: 639px) {
+  .fundraising-stack table, .fundraising-stack tbody, .fundraising-stack tr, .fundraising-stack td { display: block; width: 100%; }
+  .fundraising-stack thead { display: none; }
+  .fundraising-stack tr { border: 1px solid hsl(var(--border)); border-radius: 0.5rem; margin-bottom: 0.75rem; padding: 0.5rem; }
+  .fundraising-stack td { white-space: normal !important; word-break: break-word; padding: 0.25rem 0.5rem; border: 0; }
+  .fundraising-stack .overflow-x-auto { overflow-x: visible; }
+}

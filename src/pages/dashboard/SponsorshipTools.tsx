@@ -403,6 +403,7 @@ Thank you for considering it,
           </Card>
 
           {/* QR + asset kit */}
+          <details className="group rounded-lg border border-border bg-card"><summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-muted-foreground hover:text-foreground">Advanced: Sponsor QR Code & Asset Kit <span className="text-xs">(click to open)</span></summary><div className="p-2">
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -438,7 +439,7 @@ Thank you for considering it,
                   <Button variant="outline" onClick={downloadQr}>
                     <Download className="h-4 w-4 mr-2" /> QR code PNG
                   </Button>
-                  <Button onClick={downloadAll}>
+                  <Button variant="outline" onClick={downloadAll}>
                     <Download className="h-4 w-4 mr-2" /> Download all assets
                   </Button>
                 </div>
@@ -457,7 +458,7 @@ Thank you for considering it,
                 <QRCodeCanvas value={eventUrl} size={800} level="M" includeMargin />
               </div>
             </CardContent>
-          </Card>
+          </Card></div></details>
         </>
       )}
     </div>

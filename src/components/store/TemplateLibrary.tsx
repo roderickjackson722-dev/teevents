@@ -206,7 +206,7 @@ export default function TemplateLibrary({ selectedTournament, onQuickAdd }: Prop
 
               <div><Label>Description</Label><Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Details, sizes, etc." rows={2} maxLength={500} /></div>
 
-              <Button type="submit" className="w-full" disabled={saving}>
+              <Button type="submit" variant="secondary" className="w-full" disabled={saving}>
                 {saving && <Loader2 className="h-4 w-4 animate-spin" />}
                 {editTemplate ? "Update Template" : "Save Template"}
               </Button>

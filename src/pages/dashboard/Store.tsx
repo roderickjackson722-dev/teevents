@@ -187,7 +187,7 @@ const Store = () => {
             maxLength={60}
             className="flex-1"
           />
-          <Button onClick={handleSaveSectionTitle} disabled={savingTitle}>
+          <Button variant="secondary" onClick={handleSaveSectionTitle} disabled={savingTitle}>
             {savingTitle ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : null}
             Save title
           </Button>
@@ -199,7 +199,7 @@ const Store = () => {
 
       {/* Add Button */}
       <div className="mb-6">
-        <Button onClick={() => { setEditProduct(null); setDialogOpen(true); }}>
+        <Button variant="outline" onClick={() => { setEditProduct(null); setDialogOpen(true); }}>
           <Plus className="h-4 w-4 mr-1.5" />Add Product
         </Button>
       </div>
@@ -221,7 +221,7 @@ const Store = () => {
           <ShoppingBag className="h-12 w-12 text-muted-foreground/40 mx-auto mb-4" />
           <h3 className="text-lg font-display font-bold text-foreground mb-2">No products yet</h3>
           <p className="text-muted-foreground mb-4">Add merchandise and products for your tournament.</p>
-          <Button onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1.5" />Add First Product</Button>
+          <Button variant="outline" onClick={() => setDialogOpen(true)}><Plus className="h-4 w-4 mr-1.5" />Add First Product</Button>
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">

@@ -13,6 +13,7 @@ export const HELP_SETTINGS_PATHS = ["/dashboard/settings", "/dashboard/activity-
 /** Shared Help & Settings tab bar. Navigation only. */
 export default function HelpSettingsTabs() {
   const { pathname, search } = useLocation();
+  const tid = new URLSearchParams(search).get("tournament");
   const keep = (url: string) => (url.startsWith("/dashboard") && search ? `${url}${search}` : url);
   return (
     <nav aria-label="Help and Settings sections" className="mb-6 border-b border-border">
@@ -34,7 +35,7 @@ export default function HelpSettingsTabs() {
         {pathname === "/dashboard/settings" && (<>Fee choices: <a href="#fee-settings" className="underline">Payment & Fee Settings</a>. Payouts are managed in <a href={keep("/dashboard/payout-settings")} className="underline">Money → Payouts</a>.</>)}
         {pathname === "/dashboard/activity-log" && <>Every change made by anyone on your team.</>}
         {(pathname === "/dashboard/getting-started" || pathname === "/dashboard/toolbox") && (<>
-          <a href={keep("/dashboard/toolbox")} className="underline">Organizer Toolbox</a> · Edit the same event details in <a href={keep("/dashboard/site-builder")} className="underline">Setup → Site Builder</a>.
+          <a href={keep("/dashboard/toolbox")} className="underline">Organizer Toolbox</a> · Edit the same event details in <a href={tid ? `/dashboard/tournaments/${tid}/site-builder` : "/dashboard"} className="underline">Setup → Site Builder</a>.
         </>)}
       </p>
     </nav>

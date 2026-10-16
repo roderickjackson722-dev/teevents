@@ -326,7 +326,7 @@ const Settings = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="bg-card rounded-lg border border-border p-6"
+          id="fee-settings" className="bg-card rounded-lg border border-border p-6 scroll-mt-6"
         >
           <div className="flex items-center gap-3 mb-4">
             <Receipt className="h-6 w-6 text-secondary" />

@@ -3,6 +3,7 @@ import MoneyTabs, { MONEY_PATHS } from "@/components/dashboard/MoneyTabs";
 import PromoteTabs, { PROMOTE_PATHS } from "@/components/dashboard/PromoteTabs";
 import TeamTabs, { TEAM_PATHS } from "@/components/dashboard/TeamTabs";
 import WrapUpTabs, { WRAPUP_PATHS } from "@/components/dashboard/WrapUpTabs";
+import HelpSettingsTabs, { HELP_SETTINGS_PATHS } from "@/components/dashboard/HelpSettingsTabs";
 import FundraisingTabs, { FUNDRAISING_PATHS } from "@/components/dashboard/FundraisingTabs";
 import { ReactNode, useEffect, useState } from "react";
 import { useNavigate, Link, useSearchParams } from "react-router-dom";
@@ -327,6 +328,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 <div className="team-layout"><TeamTabs />{children}</div>
               ) : typeof window !== "undefined" && WRAPUP_PATHS.includes(window.location.pathname) ? (
                 <div className="team-layout"><WrapUpTabs />{children}</div>
+              ) : typeof window !== "undefined" && HELP_SETTINGS_PATHS.includes(window.location.pathname) ? (
+                <div className="team-layout"><HelpSettingsTabs />{children}</div>
               ) : children}
             </main>
           </div>

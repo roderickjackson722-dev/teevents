@@ -284,7 +284,7 @@ const Settings = () => {
               </p>
             </div>
           </div>
-          <Button asChild className="flex-shrink-0">
+          <Button asChild variant="outline" className="flex-shrink-0">
             <Link to="/dashboard/tournaments?new=1">
               Create Tournament
               <ArrowRight className="h-4 w-4 ml-1" />
@@ -503,7 +503,7 @@ const Settings = () => {
 
                   {hasChanges && (
                     <Button
-                      size="sm"
+                      size="sm" variant="outline"
                       onClick={() => handleSavePolicy(t.id)}
                       disabled={savingPolicy === t.id}
                     >
@@ -566,7 +566,7 @@ const Settings = () => {
               className="flex-1"
             />
             <Button
-              size="sm"
+              size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
               onClick={handleSaveDashboardName}
               disabled={savingDashboardName}
             >

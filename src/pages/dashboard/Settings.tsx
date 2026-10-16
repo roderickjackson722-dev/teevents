@@ -284,7 +284,7 @@ const Settings = () => {
               </p>
             </div>
           </div>
-          <Button asChild className="flex-shrink-0">
+          <Button asChild variant="outline" className="flex-shrink-0">
             <Link to="/dashboard/tournaments?new=1">
               Create Tournament
               <ArrowRight className="h-4 w-4 ml-1" />
@@ -326,7 +326,7 @@ const Settings = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.05 }}
-          className="bg-card rounded-lg border border-border p-6"
+          id="fee-settings" className="bg-card rounded-lg border border-border p-6 scroll-mt-6"
         >
           <div className="flex items-center gap-3 mb-4">
             <Receipt className="h-6 w-6 text-secondary" />
@@ -503,7 +503,7 @@ const Settings = () => {
 
                   {hasChanges && (
                     <Button
-                      size="sm"
+                      size="sm" variant="outline"
                       onClick={() => handleSavePolicy(t.id)}
                       disabled={savingPolicy === t.id}
                     >
@@ -566,7 +566,7 @@ const Settings = () => {
               className="flex-1"
             />
             <Button
-              size="sm"
+              size="sm" className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
               onClick={handleSaveDashboardName}
               disabled={savingDashboardName}
             >

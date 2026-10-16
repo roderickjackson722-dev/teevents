@@ -306,7 +306,7 @@ export default function Surveys() {
                 {tournamentSettings?.post_event_survey_sent_at && (
                   <p className="text-xs text-muted-foreground">Survey emails were sent on {new Date(tournamentSettings.post_event_survey_sent_at).toLocaleString()}</p>
                 )}
-                <Button onClick={() => saveSettings.mutate()} disabled={!settingsDirty || saveSettings.isPending}>
+                <Button className="bg-secondary text-secondary-foreground hover:bg-secondary/90" onClick={() => saveSettings.mutate()} disabled={!settingsDirty || saveSettings.isPending}>
                   {saveSettings.isPending ? "Saving..." : "Save Survey Settings"}
                 </Button>
               </CardContent>
@@ -346,7 +346,7 @@ export default function Surveys() {
             <h2 className="text-lg font-semibold">Questions</h2>
             <Dialog open={questionDialog} onOpenChange={setQuestionDialog}>
               <DialogTrigger asChild>
-                <Button size="sm"><Plus className="mr-1 h-3 w-3" /> Add Question</Button>
+                <Button size="sm" variant="outline"><Plus className="mr-1 h-3 w-3" /> Add Question</Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader><DialogTitle>Add Survey Question</DialogTitle></DialogHeader>

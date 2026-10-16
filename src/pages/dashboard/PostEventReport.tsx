@@ -282,7 +282,7 @@ const PostEventReport = () => {
           <Button variant="outline" onClick={downloadCsv} disabled={!tournament}>
             <Download className="h-4 w-4 mr-2" /> CSV
           </Button>
-          <Button onClick={downloadPdf} disabled={!tournament}>
+          <Button variant="outline" onClick={downloadPdf} disabled={!tournament}>
             <Download className="h-4 w-4 mr-2" /> PDF
           </Button>
         </div>

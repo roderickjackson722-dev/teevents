@@ -44,10 +44,10 @@ const Footer = (_props: { includeLeagueSearch?: boolean }) => {
 
           <div className="grid w-full max-w-3xl grid-cols-2 gap-8 text-sm md:grid-cols-4">
             {[
-              ["Platform", [["Features", "/features"], ["Pricing", "/pricing"], ["How It Works", "/#how-it-works"], ["Compare", "/compare"]]],
+              ["Platform", [["Features", "/features"], ["Pricing", "/pricing"], ["How It Works", "/#how-it-works"], ["Compare", "/compare"], ["Donate", "/donate"]]],
               ["Who It's For", [["For Organizers", "/for-organizers"], ["For Golfers", "/for-golfers"], ["Services", "/services"]]],
               ["Resources", [["Find Your Event", "/find-your-event"], ["Organizer Login", "/get-started?mode=signin"], ["Contact", "/contact"]]],
-              ["Company", [["About", "/about"], ["Reviews", "/reviews"], ["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"]]],
+              ["Company", [["About", "/about"], ["Reviews", "/reviews"], ["Donate", "/donate"], ["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"]]],
             ].map(([heading, links]) => (
               <div key={heading as string}>
                 <h4 className="mb-3 font-semibold text-secondary">{heading as string}</h4>

@@ -1,7 +1,8 @@
 ## Website Donate page
 - [x] Add Donate to the public menu and embed the supplied Zeffy form on its own page
 - [x] Verify public navigation and phone layout without making a donation or publishing
-- [ ] Confirm embedded form rendering: Zeffy returned 403 and blocked framing in preview tests; needs official Zeffy embed code and a successful form display check
+- [x] Replace the temporary iframe with the supplied official Zeffy campaign embed script and its iframe fallback
+- [ ] Confirm embedded form rendering with the official code; verify whether Zeffy permits loading in preview
 
 ## Prompt 6 Money presentation completion
 - [x] Style existing Money saves with one gold main save and outlined alternatives, preserving all handlers; Budget retains its existing autosave

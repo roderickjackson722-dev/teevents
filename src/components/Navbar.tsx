@@ -10,6 +10,7 @@ const navLinks = [
   { label: "Pricing", to: "/pricing" },
   { label: "About", to: "/about" },
   { label: "Reviews", to: "/reviews" },
+  { label: "Donate", to: "/donate" },
   { label: "Find Your Event", to: "/find-your-event" },
 ];
 
@@ -21,7 +22,7 @@ export default function Navbar() {
   return <nav aria-label="Main navigation" className="fixed inset-x-0 top-0 z-50 border-b border-primary-foreground/15 bg-golf-green-dark">
     <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-6">
       <Link to="/" className="flex shrink-0 items-center gap-3"><img src={logoWhite} alt="" className="h-10 w-10 object-contain" /><span className="font-display text-xl font-semibold text-primary-foreground">TeeVents</span></Link>
-      <div className="hidden items-center gap-7 lg:flex">
+      <div className="hidden items-center gap-4 lg:flex">
         {navLinks.map(link => <Link key={link.to} to={link.to} aria-current={active(link.to) ? "page" : undefined} className={`text-sm font-medium transition-colors ${active(link.to) ? "text-secondary" : "text-primary-foreground/85 hover:text-secondary"}`}>{link.label}</Link>)}
         <Button asChild variant="secondary" className="font-semibold"><Link to="/get-started">Get Started</Link></Button>
         <Button asChild variant="secondary" className="font-semibold"><Link to="/get-started?mode=signin">Organizer Login</Link></Button>

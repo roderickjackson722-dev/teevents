@@ -1,3 +1,7 @@
+## Website Donate page
+- [x] Add Donate to the public menu and embed the supplied Zeffy form on its own page
+- [ ] Verify public navigation, embedded form rendering, and phone layout without making a donation or publishing
+
 ## Prompt 6 Money presentation completion
 - [x] Style existing Money saves with one gold main save and outlined alternatives, preserving all handlers; Budget retains its existing autosave
 - [x] Stack Money tables and wrap names on phones without altering event or payment data

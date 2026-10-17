@@ -15,7 +15,6 @@ import { Route as AboutRouteImport } from './routes/about'
 import { Route as AddonConfirmationRouteImport } from './routes/addon-confirmation'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ContactRouteImport } from './routes/contact'
-import { Route as DonateRouteImport } from './routes/donate'
 import { Route as FaqRouteImport } from './routes/faq'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as FindYourEventRouteImport } from './routes/find-your-event'
@@ -91,11 +90,6 @@ const CompareRoute = CompareRouteImport.update({
 const ContactRoute = ContactRouteImport.update({
   id: '/contact',
   path: '/contact',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DonateRoute = DonateRouteImport.update({
-  id: '/donate',
-  path: '/donate',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FaqRoute = FaqRouteImport.update({
@@ -353,7 +347,6 @@ export interface FileRoutesByFullPath {
   '/addon-confirmation': typeof AddonConfirmationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/donate': typeof DonateRoute
   '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
@@ -408,7 +401,6 @@ export interface FileRoutesByTo {
   '/addon-confirmation': typeof AddonConfirmationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/donate': typeof DonateRoute
   '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
@@ -464,7 +456,6 @@ export interface FileRoutesById {
   '/addon-confirmation': typeof AddonConfirmationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
-  '/donate': typeof DonateRoute
   '/faq': typeof FaqRoute
   '/features': typeof FeaturesRoute
   '/find-your-event': typeof FindYourEventRoute
@@ -521,7 +512,6 @@ export interface FileRouteTypes {
     | '/addon-confirmation'
     | '/compare'
     | '/contact'
-    | '/donate'
     | '/faq'
     | '/features'
     | '/find-your-event'
@@ -576,7 +566,6 @@ export interface FileRouteTypes {
     | '/addon-confirmation'
     | '/compare'
     | '/contact'
-    | '/donate'
     | '/faq'
     | '/features'
     | '/find-your-event'
@@ -631,7 +620,6 @@ export interface FileRouteTypes {
     | '/addon-confirmation'
     | '/compare'
     | '/contact'
-    | '/donate'
     | '/faq'
     | '/features'
     | '/find-your-event'
@@ -687,7 +675,6 @@ export interface RootRouteChildren {
   AddonConfirmationRoute: typeof AddonConfirmationRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
-  DonateRoute: typeof DonateRoute
   FaqRoute: typeof FaqRoute
   FeaturesRoute: typeof FeaturesRoute
   FindYourEventRoute: typeof FindYourEventRoute
@@ -777,13 +764,6 @@ declare module '@tanstack/react-router' {
       path: '/contact'
       fullPath: '/contact'
       preLoaderRoute: typeof ContactRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/donate': {
-      id: '/donate'
-      path: '/donate'
-      fullPath: '/donate'
-      preLoaderRoute: typeof DonateRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/faq': {
@@ -1130,7 +1110,6 @@ const rootRouteChildren: RootRouteChildren = {
   AddonConfirmationRoute: AddonConfirmationRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
-  DonateRoute: DonateRoute,
   FaqRoute: FaqRoute,
   FeaturesRoute: FeaturesRoute,
   FindYourEventRoute: FindYourEventRoute,

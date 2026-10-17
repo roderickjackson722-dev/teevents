@@ -14,7 +14,6 @@ import EventDetail from "./pages/EventDetail";
 import ManageEvents from "./pages/admin/ManageEvents";
 import Reviews from "./pages/Reviews";
 import Contact from "./pages/Contact";
-import Donate from "./pages/Donate";
 import Login from "./pages/Login";
 import AdminLogin from "./pages/AdminLogin";
 import TeamLogin from "./pages/TeamLogin";
@@ -289,7 +288,6 @@ const App = () => (
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/why-teevents" element={<WhyTeeVents />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/donate" element={<Donate />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/team-login" element={<TeamLogin />} />

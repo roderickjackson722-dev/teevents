@@ -21,4 +21,3 @@
 - Pricing-page feature add-ons collect event/contact details in private feature_addon_requests, use server-priced Stripe checkout, and are matched to events only by authenticated admins after payment verification; existing event-specific purchase flows stay intact.
 - Public directory section visibility uses public platform_settings hide flags, leaving event-level publication and explicit searches unchanged; new No Cost events default leaderboard off at insertion without rewriting existing events.
 - Money phone tables use the scoped money-layout styles and presentation-only cell labels; keep save, purchase, payout, and budget autosave handlers unchanged.
-- Website donations render the supplied Zeffy form in an isolated public Donate page with explicit leaf metadata and the shared App shell; do not connect it to tournament donation or billing logic.

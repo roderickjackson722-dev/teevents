@@ -10,7 +10,6 @@ const navLinks = [
   { label: "Pricing", to: "/pricing" },
   { label: "About", to: "/about" },
   { label: "Reviews", to: "/reviews" },
-  { label: "Donate", to: "/donate" },
   { label: "Find Your Event", to: "/find-your-event" },
 ];
 

@@ -1,4 +1,11 @@
 
+## One Week Out event preparation
+- [ ] Configure a verified TeeVents sender domain; required before app email scaffolding
+- [ ] Add the supplied single-organizer preparation email, scheduling seven days before at 9 a.m. organizer time and immediate delivery for newly created events less than seven days away
+- [ ] Add the four-item persisted dashboard checklist, completion/dismissal state, and dedicated-rep messaging link
+- [ ] Add Event Prep Status, preview/test and manual resend in the admin organizer profile, with communication-history logging
+- [ ] Verify timing, recipient isolation, deep links and signed-in desktop/phone flows without publishing or altering existing tournament behavior
+
 ## Prompt 6 Money presentation completion
 - [x] Style existing Money saves with one gold main save and outlined alternatives, preserving all handlers; Budget retains its existing autosave
 - [x] Stack Money tables and wrap names on phones without altering event or payment data

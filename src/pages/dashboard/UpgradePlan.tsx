@@ -12,6 +12,7 @@ import { toast } from "sonner";
 import { Switch } from "@/components/ui/switch";
 import { createBrandingRemovalCheckout, verifyBrandingRemoval, getBrandingStatus } from "@/lib/brandingRemoval.functions";
 import FlatRateProCard from "@/components/dashboard/FlatRateProCard";
+import { showAddonSaleOption } from "@/lib/addonSaleVisibility";
 
 interface TournamentRow {
   id: string;
@@ -272,7 +273,7 @@ const UpgradeFeaturesPage = () => {
           <div className="bg-card rounded-xl border border-border p-6 mb-6">
             <h2 className="text-lg font-display font-bold text-foreground mb-4">Add-on Features</h2>
             <ul className="space-y-3">
-              {ADDONS.map((a) => {
+              {ADDONS.filter((a) => showAddonSaleOption(a.key, addons.hasAddon(a.key))).map((a) => {
                 const owned = addons.hasAddon(a.key);
                 const isChecked = selected.has(a.key);
                 return (

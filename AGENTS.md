@@ -10,7 +10,8 @@
 - New public sales pages use explicit TanStack leaf metadata while rendering through the existing App shell so shared navigation retains its required router context.
 - Pricing and its historical plans URL render the same presentation-only Plans page through explicit leaf routes; purchase links reuse existing checkout targets so marketing cannot alter event billing.
 - Founder biography and portrait live on About through `FounderSection`; partner imagery shares `founderPartnerLogos` CDN pointers so the compact homepage wall and detailed trust sections cannot diverge.
-- Homepage and the dedicated How It Works page share `HomeHowItWorks`; public audience pages render through the existing App shell with explicit TanStack leaf metadata to preserve navigation context and isolate marketing from event logic.
+- Homepage and the dedicated How It Works page share `HomeHowItWorks`; scope optional homepage-only service copy through props so other pages remain unchanged. Public audience pages render through the existing App shell with explicit TanStack leaf metadata to preserve navigation context and isolate marketing from event logic.
+- Page-build add-on retirement is presentation-only: retain checkout catalogs, price math and entitlement readers; hide the unowned option at render time while preserving purchased-status display to protect existing customers.
 - Payment reminders create checkout for the existing pending registration ID; never insert a replacement roster row.
 - Public tournament section titles are per-event display settings, resolved through publicTabs helpers and propagated to attendee checkout; preserve stable section anchors and all existing registration/payment behavior.
 - Additional Notes uses the existing registration-field settings for both individual and group notes; missing settings retain visibility and are persisted only on an organizer's explicit toggle to preserve current events.

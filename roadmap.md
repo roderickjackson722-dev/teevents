@@ -1,4 +1,9 @@
 
+## Seven-day promise and page-build sale removal
+- [ ] Remove safe page-build sale presentation first, preserving checkout and existing purchases; report blocked surfaces
+- [ ] Add exact promise copy at existing homepage/pricing placements; skip missing footer CTA
+- [ ] Verify preview on desktop/phone, unchanged prices, fees and remaining five add-ons; do not publish
+
 ## One Week Out event preparation
 - [ ] Configure a verified TeeVents sender domain; required before app email scaffolding
 - [ ] Add the supplied single-organizer preparation email, scheduling seven days before at 9 a.m. organizer time and immediate delivery for newly created events less than seven days away

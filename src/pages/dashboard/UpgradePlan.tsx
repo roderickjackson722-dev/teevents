@@ -272,7 +272,7 @@ const UpgradeFeaturesPage = () => {
           <div className="bg-card rounded-xl border border-border p-6 mb-6">
             <h2 className="text-lg font-display font-bold text-foreground mb-4">Add-on Features</h2>
             <ul className="space-y-3">
-              {ADDONS.map((a) => {
+              {ADDONS.filter((a) => a.key !== "custom_event_page" || addons.hasAddon(a.key)).map((a) => {
                 const owned = addons.hasAddon(a.key);
                 const isChecked = selected.has(a.key);
                 return (

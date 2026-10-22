@@ -1,4 +1,4 @@
-import { ArrowRight, Check, Globe, ShieldCheck, Trophy, UserRound, Users, Gavel, LayoutTemplate, Megaphone, Lock } from "lucide-react";
+import { ArrowRight, Check, Globe, ShieldCheck, Trophy, UserRound, Users, Gavel, Megaphone, Lock } from "lucide-react";
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
@@ -22,7 +22,6 @@ const addons = [
   { icon: Trophy, title: "Live Leaderboard and Mobile Scoring", description: "Real-time leaderboard with mobile scoring from any phone. No app download required. Available as an add-on for the No Cost to Start plan only; included automatically on Per-Event, Per-League, and Enterprise plans.", slug: "live-leaderboard" },
   { icon: Users, title: "Unlimited Manual Entries", description: "Remove the 10-entry cap. Add unlimited manual player registrations, sponsors, and side-event entries.", slug: "unlimited-manual-entries" },
   { icon: Gavel, title: "Auction Dashboard", description: "Mobile bidding dashboard with auto-draw at close and real-time bid tracking.", slug: "auction-raffle" },
-  { icon: LayoutTemplate, title: "Full-Service Page Build Out", description: "Extra design work beyond the standard event page. Custom layout, custom sections, and premium imagery.", slug: "custom-event-page" },
   { icon: Megaphone, title: "Branding Removal and Digital Sponsor", description: 'TeeVents branding hidden. Custom "Presented by" logo and a turnkey digital sponsor package you can resell for $5,000 to $10,000.', slug: "branding-removal" },
   { icon: Globe, title: "Custom Domain", description: "Brand your tournament URL (for example: golfyourclub.com) instead of a teevents.golf link.", slug: "custom-domain" },
 ];
@@ -78,6 +77,7 @@ export default function Plans() {
             <div className="mt-auto">
               {index === 3 ? <EnterpriseInquiryDialog><Button variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold">{plan.cta}<ArrowRight /></Button></EnterpriseInquiryDialog> : <Button asChild variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold"><Link to={plan.to}>{plan.cta}<ArrowRight /></Link></Button>}
               <p className={`mt-4 min-h-9 text-center text-xs leading-relaxed ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{plan.note}</p>
+              {index < 2 && <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">We build your event page for you — live in 7 days or less.</p>}
             </div>
           </article>)}
         </div>
@@ -93,7 +93,7 @@ export default function Plans() {
 
       <section aria-labelledby="addons-title" className={`${section} bg-muted/40`}>
         <div className="mx-auto max-w-5xl"><h2 id="addons-title" className={heading}>Add-On Features</h2><p className="mt-4 text-muted-foreground">All $99 each. One-time, per event. Select an add-on to go straight to checkout.</p>
-          <div className="mt-10 divide-y divide-border">{addons.map(addon => <article key={addon.slug} className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center"><addon.icon aria-hidden="true" className="h-7 w-7 shrink-0 text-primary" /><div className="min-w-0 flex-1"><h3 className="text-xl font-display font-bold">{addon.title}</h3><p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{addon.description}</p>{addon.slug === "custom-event-page" && <p className="mt-2 text-xs leading-relaxed text-muted-foreground">Your named rep and standard event setup remain included on every plan. This optional custom design does not add a rep charge.</p>}</div><div className="shrink-0 sm:text-right"><p className="mb-2 text-2xl font-display font-bold">$99</p><Button asChild variant="link" className="h-auto p-0"><Link to={`/checkout/${addon.slug}`}>Select and check out<ArrowRight /></Link></Button></div></article>)}</div>
+          <div className="mt-10 divide-y divide-border">{addons.map(addon => <article key={addon.slug} className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center"><addon.icon aria-hidden="true" className="h-7 w-7 shrink-0 text-primary" /><div className="min-w-0 flex-1"><h3 className="text-xl font-display font-bold">{addon.title}</h3><p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{addon.description}</p></div><div className="shrink-0 sm:text-right"><p className="mb-2 text-2xl font-display font-bold">$99</p><Button asChild variant="link" className="h-auto p-0"><Link to={`/checkout/${addon.slug}`}>Select and check out<ArrowRight /></Link></Button></div></article>)}</div>
         </div>
       </section>
 

@@ -70,7 +70,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "Do add-ons cost extra?",
-    "a": "Yes. Optional add-ons are $99 each and include Live Leaderboard and Mobile Scoring, Unlimited Manual Entries, Auction Dashboard, Full-Service Page Build Out, Branding Removal and Digital Sponsor, and Custom Domain."
+    "a": "Yes. Optional add-ons are $99 each and include Live Leaderboard and Mobile Scoring, Unlimited Manual Entries, Auction Dashboard, Branding Removal and Digital Sponsor, and Custom Domain."
    }
   ]
  },

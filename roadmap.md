@@ -1,8 +1,9 @@
 
 ## Seven-day promise and page-build sale removal
-- [ ] Remove safe page-build sale presentation first, preserving checkout and existing purchases; report blocked surfaces
-- [ ] Add exact promise copy at existing homepage/pricing placements; skip missing footer CTA
-- [ ] Verify preview on desktop/phone, unchanged prices, fees and remaining five add-ons; do not publish
+- [x] Remove safe page-build sale presentation from Pricing/Plans, FAQ, bundle bullet and unowned Upgrades options; retain purchased-status display and all checkout/pricing logic
+- [x] Add exact promise copy to homepage hero, named-rep differentiator, homepage setup step and both requested pricing plans; skip footer because no CTA band exists
+- [x] Verify public pages and signed-in Upgrades on desktop/phone; seven visibility-rule tests passed; prices, fees and remaining add-ons unchanged; nothing published
+- [ ] Remove direct /checkout/custom-event-page sale: stopped because disabling it changes checkout behavior explicitly forbidden by this request; requires separate authorization
 
 ## One Week Out event preparation
 - [ ] Configure a verified TeeVents sender domain; required before app email scaffolding

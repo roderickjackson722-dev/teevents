@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { clearDashboardContext } from "@/lib/dashboardContext";
+import { clearDashboardContext, withDashboardContext } from "@/lib/dashboardContext";
 import {
   LayoutDashboard, Trophy, ClipboardCheck, Users,
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,
@@ -216,7 +216,7 @@ export function DashboardSidebar() {
   })();
   const withContext = (url: string) => {
     if (!contextQuery || !url.startsWith("/dashboard")) return url;
-    return `${url}${url.includes("?") ? "&" : "?"}${contextQuery}`;
+    return withDashboardContext(url, contextQuery);
   };
 
   useEffect(() => {

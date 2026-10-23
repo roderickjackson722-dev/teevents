@@ -311,31 +311,6 @@ const UpgradeFeaturesPage = () => {
               })}
             </ul>
 
-            {/* College Golf Scoring add-on */}
-            <div className="mt-4 rounded-lg border-2 border-secondary/40 p-4 flex items-start gap-3">
-              <div className="flex-shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-lg bg-secondary/15 text-secondary">
-                <GraduationCap className="h-4 w-4" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-3">
-                  <p className="font-display font-bold text-foreground">College Golf Scoring</p>
-                  <p className="font-display font-bold text-secondary text-lg">from $199</p>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  High-speed score validation and entry for college events — divisions, teams (best 4 of 5),
-                  WD/DQ handling, and scoring admins. Priced by divisions: 1 — $199, 2 — $375, 3 — $550, 4 — $720.
-                </p>
-                {selectedTournamentId && (
-                  <Link
-                    to={`/dashboard/tournaments/${selectedTournamentId}/addons/college-scoring`}
-                    className="text-xs font-semibold text-primary underline mt-2 inline-flex items-center gap-1"
-                  >
-                    Learn More <ArrowRight className="h-3 w-3" />
-                  </Link>
-                )}
-              </div>
-            </div>
-
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-border pt-4">
               <p className="text-sm text-muted-foreground">
                 Total: <span className="font-display font-bold text-foreground text-lg">${total}</span>

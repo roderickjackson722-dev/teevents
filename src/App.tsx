@@ -72,7 +72,6 @@ import SponsorshipTools from "./pages/dashboard/SponsorshipTools";
 import TournamentPayment from "./pages/dashboard/TournamentPayment";
 import Store from "./pages/dashboard/Store";
 import LeaderboardScoring from "./pages/dashboard/LeaderboardScoring";
-import CollegeScoring from "./pages/dashboard/CollegeScoring";
 import CRM from "./pages/dashboard/CRM";
 import CourseDetails from "./pages/dashboard/CourseDetails";
 import WaitlistPage from "./pages/dashboard/Waitlist";
@@ -115,10 +114,8 @@ import AdminPlatformHealth from "./pages/admin/PlatformHealth";
 import AdminEmailNotifications from "./pages/admin/EmailNotifications";
 import AdminScheduledEmails from "./pages/admin/ScheduledEmails";
 import AdminSmsSettings from "./pages/admin/SmsSettings";
-import AdminCollegeScoringSettings from "./pages/admin/CollegeScoringSettings";
 import AdminCollegeHub from "./pages/admin/CollegeHub";
 import RfpClippdIntegration from "./pages/admin/rfp/ClippdIntegration";
-import CollegeScoringAddon from "./pages/dashboard/CollegeScoringAddon";
 import DashboardMessages from "./pages/dashboard/Messages";
 
 import AdminUsersEvents from "./pages/admin/UsersEvents";
@@ -145,7 +142,6 @@ import ForcePasswordChange from "./pages/ForcePasswordChange";
 import Nonprofits from "./pages/Nonprofits";
 import Plans from "./pages/Plans";
 import Checkout from "./pages/Checkout";
-import CollegeGolfScoring from "./pages/CollegeGolfScoring";
 import GolfLeagues from "./pages/GolfLeagues";
 import EnterprisePricing from "./pages/EnterprisePricing";
 import EnterpriseDemoPage from "./pages/EnterpriseDemoPage";
@@ -234,7 +230,6 @@ import FindYourEvent from "./pages/FindYourEvent";
 import LiveLeaderboard from "./pages/LiveLeaderboard";
 import TeamHomepage from "./pages/TeamHomepage";
 import ScoreLogin from "./pages/ScoreLogin";
-import ScoreAdmin from "./pages/ScoreAdmin";
 import GroupScoring from "./pages/GroupScoring";
 import LeagueTeamScoring from "./pages/LeagueTeamScoring";
 import LeagueEventLeaderboard from "./pages/LeagueEventLeaderboard";
@@ -352,8 +347,6 @@ const App = () => (
           <Route path="/dashboard/store" element={<DashboardLayout><PlanGate feature="store"><Store /></PlanGate></DashboardLayout>} />
           <Route path="/dashboard/leaderboard" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
           <Route path="/dashboard/scoring" element={<DashboardLayout><LeaderboardScoring /></DashboardLayout>} />
-          <Route path="/dashboard/college-scoring" element={<DashboardLayout><CollegeScoring /></DashboardLayout>} />
-          <Route path="/dashboard/tournaments/:id/addons/college-scoring" element={<DashboardLayout><CollegeScoringAddon /></DashboardLayout>} />
           <Route path="/dashboard/crm" element={<DashboardLayout><CRM /></DashboardLayout>} />
           <Route path="/dashboard/course-details" element={<DashboardLayout><CourseDetails /></DashboardLayout>} />
           <Route path="/dashboard/quick-actions" element={<DashboardLayout><QuickActionsPage /></DashboardLayout>} />
@@ -419,7 +412,6 @@ const App = () => (
           <Route path="/league-score/:code" element={<LeagueTeamScoring />} />
           <Route path="/league-leaderboard/:eventId" element={<LeagueEventLeaderboard />} />
 
-          <Route path="/score-admin" element={<ScoreAdmin />} />
           <Route path="/score/:slug" element={<ScoreLogin />} />
           <Route path="/score/:slug/:code" element={<GroupScoring />} />
           <Route path="/sample/dashboard/:token" element={<SampleTournamentDashboard />} />
@@ -442,7 +434,6 @@ const App = () => (
            <Route path="/nonprofits" element={<Nonprofits />} />
           <Route path="/plans" element={<Plans />} />
           <Route path="/checkout/:item" element={<Checkout />} />
-          <Route path="/college-golf-scoring" element={<CollegeGolfScoring />} />
           <Route path="/golf-leagues" element={<GolfLeagues />} />
            <Route path="/how-it-works" element={<Navigate to="/#how-it-works" replace />} />
            <Route path="/find-your-event" element={<FindYourEvent />} />
@@ -510,7 +501,6 @@ const App = () => (
            <Route path="/admin/email-notifications" element={<AdminEmailNotifications />} />
            <Route path="/admin/scheduled-emails" element={<AdminScheduledEmails />} />
            <Route path="/admin/sms-settings" element={<AdminSmsSettings />} />
-           <Route path="/admin/college-scoring" element={<AdminCollegeScoringSettings />} />
 
            {/* RFP features archived to archive/rfp/ (bid not won) — Clippd stays for College Hub */}
            <Route path="/admin/clippd" element={<RfpClippdIntegration />} />

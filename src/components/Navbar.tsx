@@ -9,8 +9,6 @@ const navLinks = [
   { label: "Features", to: "/features" },
   { label: "Pricing", to: "/pricing" },
   { label: "About", to: "/about" },
-  { label: "Reviews", to: "/reviews" },
-  { label: "Find Your Event", to: "/find-your-event" },
 ];
 
 export default function Navbar() {

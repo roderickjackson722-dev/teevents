@@ -14,6 +14,7 @@ import EventDetail from "./pages/EventDetail";
 import ManageEvents from "./pages/admin/ManageEvents";
 import Reviews from "./pages/Reviews";
 import Contact from "./pages/Contact";
+import SampleEvent from "./pages/SampleEvent";
 import Login from "./pages/Login";
 import AdminLogin from "./pages/AdminLogin";
 import TeamLogin from "./pages/TeamLogin";
@@ -288,6 +289,7 @@ const App = () => (
           <Route path="/reviews" element={<Reviews />} />
           <Route path="/why-teevents" element={<WhyTeeVents />} />
           <Route path="/contact" element={<Contact />} />
+          <Route path="/sample-event" element={<SampleEvent />} />
           <Route path="/login" element={<Login />} />
           <Route path="/admin-login" element={<AdminLogin />} />
           <Route path="/team-login" element={<TeamLogin />} />

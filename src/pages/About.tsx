@@ -142,6 +142,23 @@ export default function About() {
         </motion.div>
       </section>
 
+      <section aria-labelledby="organizers-say-title" className="bg-background py-20 md:py-28">
+        <div className="container mx-auto max-w-5xl px-4">
+          <h2 id="organizers-say-title" className="text-center font-display text-3xl font-bold text-primary md:text-4xl">What Organizers Say About Working With Our Team</h2>
+          <div className="mt-12 grid gap-6 md:grid-cols-2">
+            {[
+              { quote: "We have trusted the TeeVents team to organize and manage our NCAA-sanctioned golf tournaments for the past 10 years. That trust has only grown stronger, to the point where we would not choose any other organization to work with. Their hard work, preparation, attention to detail, and professionalism are unmatched when it comes to running our multiple college golf tournaments.", name: "Leonard Smoot", title: "President", org: "Black College Golf Coaches Association" },
+              { quote: "We turned over the golf tournament management duties to Roderick and the TeeVents team, and we have been beyond pleased with the service. From the initial setup to the conclusion of the event, everything was handled with the highest level of professionalism. We look forward to a lasting partnership with TeeVents.", name: "Merral Jackson", title: "Tournament Director", org: "National Black College Alumni Hall of Fame" },
+            ].map(t => (
+              <figure key={t.name} className="rounded-lg border border-border bg-card p-7 shadow-sm">
+                <blockquote className="leading-relaxed text-foreground/90">"{t.quote}"</blockquote>
+                <figcaption className="mt-5"><p className="font-semibold text-primary">{t.name}</p><p className="text-sm text-muted-foreground">{t.title}, {t.org}</p></figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <section className="bg-muted/40 py-20 md:py-28">
         <div className="container mx-auto max-w-5xl px-4">
           <motion.div {...fade} className="mb-12 text-center"><h2 className={h2}>What Makes TeeVents Different</h2><p className="mt-3 text-lg text-muted-foreground">Most platforms sell you software. We deliver a finished event.</p></motion.div>

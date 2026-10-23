@@ -109,6 +109,18 @@ export default function Plans() {
         <div className="mx-auto max-w-6xl"><h2 id="compare-title" className={`${heading} mb-10 text-center`}>Compare Your Options</h2><div className="overflow-x-auto rounded-lg border border-border"><table className="pricing-comparison w-full min-w-[900px] text-left text-sm"><caption className="sr-only">TeeVents pricing plans and included features</caption><thead className="bg-muted"><tr><th scope="col" className="p-5">Feature</th>{plans.map(plan => <th scope="col" key={plan.name} className={`p-5 ${plan.name === "Per-Event" ? "bg-secondary/15" : ""}`}>{plan.name}</th>)}</tr></thead><tbody>{comparison.map(([label, ...cells]) => <tr key={label} className="border-t border-border"><th scope="row" className="p-5 font-semibold">{label}</th>{cells.map((cell, index) => <td key={index} className={`p-5 leading-relaxed ${index === 1 ? "bg-secondary/10" : ""}`}>{cell}</td>)}</tr>)}</tbody></table></div></div>
       </section>
 
+      <section aria-labelledby="real-cost-title" className={`${section} bg-muted/40`}>
+        <div className="mx-auto max-w-6xl"><h2 id="real-cost-title" className={`${heading} text-center`}>What a Real Event Costs</h2><p className="mt-4 mb-10 text-center text-muted-foreground">An example event: 100 golfers at $150 each, $15,000 in registrations.</p>
+          <div className="overflow-x-auto rounded-lg border border-border bg-card"><table className="pricing-comparison w-full min-w-[720px] text-left text-sm"><caption className="sr-only">Example event cost comparison</caption><thead className="bg-muted"><tr><th scope="col" className="p-5"><span className="sr-only">Cost</span></th><th scope="col" className="p-5">Eventbrite</th><th scope="col" className="p-5">TeeVents No Cost to Start</th><th scope="col" className="p-5 bg-secondary/15">TeeVents Per-Event</th></tr></thead><tbody>{[
+            ["What your organization pays for the platform", "$0, when fees are passed to golfers", "$0", "$399, one time"],
+            ["What your golfers pay in platform fees", "About $11.90 per golfer, $1,190 total", "$7.50 per golfer, $750 total", "$0"],
+            ["Live leaderboard and mobile scoring", "Not offered", "$99 add-on", "Included"],
+          ].map(([label, ...cells]) => <tr key={label} className="border-t border-border"><th scope="row" className="p-5 font-semibold">{label}</th>{cells.map((cell, i) => <td key={i} className={`p-5 leading-relaxed ${i === 2 ? "bg-secondary/10" : ""}`}>{cell}</td>)}</tr>)}</tbody></table></div>
+          <p className="mt-8 text-center font-semibold">Eventbrite's meter runs on every ticket. On TeeVents, the most an event ever pays for the platform is $399.</p>
+          <p className="mt-4 text-center text-xs text-muted-foreground">Example uses Eventbrite's published fees (3.7% plus $1.79 per ticket, plus 2.9% payment processing), checked October 2026. Stripe processing (2.9% plus $0.30 per transaction) applies separately on TeeVents plans.</p>
+        </div>
+      </section>
+
       <section aria-labelledby="faq-title" className={`${section} bg-muted/40`}>
         <div className="mx-auto max-w-3xl"><h2 id="faq-title" className={`${heading} mb-10 text-center`}>Frequently Asked Questions</h2><Accordion type="single" collapsible>{faqs.map(([question, answer], index) => <AccordionItem key={question} value={`faq-${index}`}><AccordionTrigger className="gap-5 py-6 text-left text-base font-semibold">{question}</AccordionTrigger><AccordionContent className="pr-6 text-base leading-relaxed text-muted-foreground">{answer}</AccordionContent></AccordionItem>)}</Accordion></div>
       </section>

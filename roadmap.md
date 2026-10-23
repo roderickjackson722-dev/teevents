@@ -107,4 +107,4 @@
 
 ## Sample Event visual polish
 - [x] Add scoped sponsor wordmarks, generated golf photography, FCC emblem, card ribbons, and green/gold leaderboard without changing sample copy, prices, sections, or handlers
-- [ ] Verify desktop/phone rendering, full pairings, schedule alignment, photos, and demo button scrolling; preview only
+- [x] Verify desktop/phone rendering, all eight photo placements, four full foursomes, schedule alignment, no page overflow, and all demo button types scrolling only; original prices, data and section order confirmed unchanged; preview only

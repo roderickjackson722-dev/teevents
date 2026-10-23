@@ -33,7 +33,7 @@ export default function WrapUpTabs() {
         })}
       </ul>
       <p className="py-2 text-xs text-muted-foreground">
-        The Report is a read-only summary of Setup, Players, Pairings & Scoring, Fundraising and Money. Shared email design lives in <a href="/dashboard/email-templates" className="underline">Promote → Email Templates</a>.
+        The Report is a read-only summary of Setup, Players, Pairings & Scoring, Fundraising and Money. Shared email design lives in <a href={withDashboardContext("/dashboard/email-templates", search)} className="underline">Promote → Email Templates</a>.
       </p>
     </nav>
   );

@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { withDashboardContext } from "@/lib/dashboardContext";
 
 const TABS = [
   { label: "Report", url: "/dashboard/post-event-report" },
@@ -20,7 +21,7 @@ export default function WrapUpTabs() {
           return (
             <li key={t.url}>
               <a
-                href={tid ? `${t.url}?tournament=${encodeURIComponent(tid)}` : t.url}
+                href={withDashboardContext(tid ? `${t.url}?tournament=${encodeURIComponent(tid)}` : t.url, search)}
                 aria-current={active ? "page" : undefined}
                 className={cn("inline-block px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
                   active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}

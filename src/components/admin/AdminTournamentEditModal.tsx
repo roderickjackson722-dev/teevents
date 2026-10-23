@@ -35,8 +35,7 @@ export default function AdminTournamentEditModal({
 
   // Admin payout override state
   const [poEnabled, setPoEnabled] = useState(false);
-  const [poMethod, setPoMethod] = useState<"stripe" | "paypal" | "check">("stripe");
-  const [poPaypalEmail, setPoPaypalEmail] = useState("");
+  const [poMethod, setPoMethod] = useState<"stripe" | "check">("stripe");
   const [poMailingAddress, setPoMailingAddress] = useState("");
   const [poReason, setPoReason] = useState("");
   const [poAck, setPoAck] = useState(false);
@@ -200,26 +199,10 @@ export default function AdminTournamentEditModal({
                     </Label>
                   </div>
                   <div className="flex items-center gap-2">
-                    <RadioGroupItem value="paypal" id="po-paypal" />
-                    <Label htmlFor="po-paypal" className="font-normal cursor-pointer text-sm">PayPal</Label>
-                  </div>
-                  <div className="flex items-center gap-2">
                     <RadioGroupItem value="check" id="po-check" />
                     <Label htmlFor="po-check" className="font-normal cursor-pointer text-sm">Check by mail</Label>
                   </div>
                 </RadioGroup>
-
-                {poMethod === "paypal" && (
-                  <div>
-                    <Label className="text-xs">PayPal email</Label>
-                    <Input
-                      type="email"
-                      value={poPaypalEmail}
-                      onChange={(e) => setPoPaypalEmail(e.target.value)}
-                      placeholder="organizer@example.com"
-                    />
-                  </div>
-                )}
 
                 {poMethod === "check" && (
                   <div>
@@ -263,7 +246,6 @@ export default function AdminTournamentEditModal({
                         body: {
                           organization_id: orgId,
                           new_method: poMethod,
-                          paypal_email: poMethod === "paypal" ? poPaypalEmail : null,
                           mailing_address: poMethod === "check" ? poMailingAddress : null,
                           reason: poReason,
                         },

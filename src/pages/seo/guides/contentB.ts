@@ -463,7 +463,7 @@ export const pricing: GuideContent = {
       heading: "Who holds your money",
       paragraphs: [
         "This is the question most organizers forget to ask. On TeeVents, payments settle directly into your own connected Stripe account and you are the merchant of record. TeeVents never takes custody of organizer funds — only the 5 percent platform fee is collected from each transaction.",
-        "Practically, that means you access your revenue on Stripe's normal payout schedule rather than waiting for a platform to reconcile and cut a check after the event. Payout options include automatic Stripe deposits, bi-weekly PayPal, or a check on request.",
+        "Practically, that means you access your revenue on Stripe's normal payout schedule rather than waiting for a platform to reconcile and cut a check after the event. Payout options include automatic Stripe deposits or a check on request.",
       ],
     },
     {
@@ -511,7 +511,7 @@ export const pricing: GuideContent = {
     },
     {
       q: "When do I get my money?",
-      a: "Funds settle directly to your connected Stripe account on Stripe's normal payout schedule. PayPal and check payouts are also available.",
+      a: "Funds settle directly to your connected Stripe account on Stripe's normal payout schedule. A check payout is also available on request.",
     },
   ],
   related: [

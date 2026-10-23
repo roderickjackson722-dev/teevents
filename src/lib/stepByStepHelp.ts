@@ -423,7 +423,7 @@ export const STEP_BY_STEP_HELP: HelpSection[] = [
       {
         key: "payout-settings",
         title: "Payout Settings",
-        description: "Connect your Stripe Connect account and choose how you'd like to receive funds (Stripe auto, PayPal, or check).",
+        description: "Connect your Stripe Connect account and choose how you'd like to receive funds (Stripe automatic deposits, or a mailed check).",
         steps: [
           "Go to Finance → Payout Settings.",
           "Click Connect Stripe and complete Stripe onboarding.",

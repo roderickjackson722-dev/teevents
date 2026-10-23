@@ -307,7 +307,7 @@ const Settings = () => {
             <div>
               <h2 className="text-lg font-display font-bold text-foreground">Payout Settings</h2>
               <p className="text-xs text-muted-foreground mt-0.5">
-                Set up Stripe Connect or PayPal to receive tournament funds.
+                Setup Stripe Connect to receive tournament funds.
               </p>
             </div>
           </div>

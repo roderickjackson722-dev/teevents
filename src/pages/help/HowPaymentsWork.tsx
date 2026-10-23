@@ -164,7 +164,7 @@ const HowPaymentsWork = () => (
         <div className="space-y-4">
           {[
             { q: "Do I need a Stripe account?", a: "Yes — during onboarding, TeeVents walks you through connecting (or creating) a free Stripe account. This is where your funds are deposited." },
-            { q: "Can I use PayPal instead?", a: "PayPal is available as a backup payout method, but Stripe is required for automatic payment splitting at checkout." },
+            { q: "Can I use PayPal instead?", a: "No. Payouts run through Stripe Connect only, which deposits your net proceeds directly to your connected bank account. A mailed check is available on request." },
             { q: "Is there a monthly fee?", a: "No monthly fees for the platform fee itself. You only pay the 5% when transactions occur. Your chosen plan (Starter or Premium) is a one-time per-tournament fee." },
             { q: "What if a golfer requests a refund?", a: "You set your own refund policy. Approved refunds are processed through Stripe and deducted from your connected account balance." },
             { q: "Are there any hidden fees?", a: "No. The only fees are the transparent 5% platform fee and Stripe's standard processing fee (~2.9% + $0.30). Both are visible at checkout and in your dashboard." },

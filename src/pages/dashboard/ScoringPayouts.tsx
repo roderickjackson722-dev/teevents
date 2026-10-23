@@ -1,14 +1,13 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
-import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, Save, Trophy, Coins, ChevronDown } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -69,7 +68,9 @@ export default function ScoringPayouts() {
       .then(({ data }) => {
         const t = data || [];
         setTournaments(t);
-        if (t.length > 0 && !selected) setSelected(t[0].id);
+        // Stay on the tournament already in context; only pick one when none is chosen.
+        const keep = pickTournamentId(t, selected);
+        if (keep && keep !== selected) setSelected(keep);
         setLoading(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -141,17 +142,6 @@ export default function ScoringPayouts() {
         </p>
       </div>
 
-      {tournaments.length > 1 && (
-        <div className="max-w-sm">
-          <Label>Tournament</Label>
-          <Select value={selected} onValueChange={setSelected}>
-            <SelectTrigger><SelectValue placeholder="Select a tournament" /></SelectTrigger>
-            <SelectContent>
-              {tournaments.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
 
       <Card>
         <CardHeader>

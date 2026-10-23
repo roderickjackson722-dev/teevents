@@ -1,5 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { withDashboardContext } from "@/lib/dashboardContext";
 
 const TABS = [
   { label: "Roster", url: "/dashboard/players" },
@@ -21,7 +22,7 @@ export default function PlayersTabs() {
           return (
             <li key={t.url}>
               <Link
-                to={t.url}
+                to={withDashboardContext(t.url, search)}
                 aria-current={active ? "page" : undefined}
                 className={cn(
                   "inline-block px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",

@@ -23,8 +23,9 @@ const NavLink = forwardRef<HTMLAnchorElement, NavLinkCompatProps>(
 
     let resolvedTo = to;
     if (carry.length && typeof to === "string") {
-      const separator = to.includes("?") ? "&" : "?";
-      resolvedTo = `${to}${separator}${carry.join("&")}`;
+      // Skip params the link already carries so URLs never repeat them.
+      const extra = carry.filter((kv) => !new RegExp(`[?&]${kv.split("=")[0]}=`).test(to));
+      if (extra.length) resolvedTo = `${to}${to.includes("?") ? "&" : "?"}${extra.join("&")}`;
     } else if (carry.length && typeof to === "object") {
       resolvedTo = { ...to, search: `?${carry.join("&")}` };
     }

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
-import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -51,7 +51,7 @@ const Contests = () => {
       .then(({ data }) => {
         const t = data || [];
         setTournaments(t);
-        if (t.length > 0 && !selectedTournament) setSelectedTournament(t[0].id);
+        if (t.length > 0 && !selectedTournament) setSelectedTournament(pickTournamentId(t));
         setLoading(false);
       });
   }, [org]);

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -49,7 +50,7 @@ export default function WaitlistManagement() {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [entries, setEntries] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -107,7 +108,10 @@ export default function WaitlistManagement() {
       .then(({ data }) => {
         const list = (data || []) as Tournament[];
         setTournaments(list);
-        if (list.length > 0) setSelectedTournament(list[0].id);
+        if (list.length > 0) {
+          const id = pickTournamentId(list, selectedTournament);
+          if (id && id !== selectedTournament) setSelectedTournament(id);
+        }
         setLoading(false);
       });
   }, [org]);

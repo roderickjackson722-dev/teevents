@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { clearDashboardContext, withDashboardContext } from "@/lib/dashboardContext";
 import {
   LayoutDashboard, Trophy, ClipboardCheck, Users,
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,
@@ -215,7 +216,7 @@ export function DashboardSidebar() {
   })();
   const withContext = (url: string) => {
     if (!contextQuery || !url.startsWith("/dashboard")) return url;
-    return `${url}${url.includes("?") ? "&" : "?"}${contextQuery}`;
+    return withDashboardContext(url, contextQuery);
   };
 
   useEffect(() => {
@@ -259,6 +260,7 @@ export function DashboardSidebar() {
   const permissions = org?.permissions || [];
 
   const handleLogout = async () => {
+    clearDashboardContext();
     await supabase.auth.signOut();
     navigate("/");
   };
@@ -495,6 +497,7 @@ export function DashboardSidebar() {
           )}
           <button
             onClick={async () => {
+              clearDashboardContext();
               const { decideWorkspaceSwitch } = await import("@/lib/workspaceSwitch");
               const { data: { session } } = await supabase.auth.getSession();
               if (!session) { navigate("/select-workspace"); return; }

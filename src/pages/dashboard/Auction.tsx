@@ -3,6 +3,7 @@ import { useDemoMode } from "@/hooks/useDemoMode";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,7 +20,7 @@ export default function Auction() {
   const { org, loading: orgLoading } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [viewBidsItem, setViewBidsItem] = useState<string | null>(null);
   const [form, setForm] = useState({

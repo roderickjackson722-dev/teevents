@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { withDashboardContext } from "@/lib/dashboardContext";
 
 const TABS = [
   { label: "Sponsors", url: "/dashboard/sponsors", keywords: "sponsor page link qr public display logo size form fields tiers registrations assets deliverables" },
@@ -19,7 +20,7 @@ export const FUNDRAISING_PATHS = TABS.map((t) => t.url);
 
 /** Shared tab bar and search for the Fundraising screens. Navigation only. */
 export default function FundraisingTabs() {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   const [q, setQ] = useState("");
   const matches = useMemo(() => {
     const s = q.trim().toLowerCase();
@@ -36,7 +37,7 @@ export default function FundraisingTabs() {
             return (
               <li key={t.url}>
                 <Link
-                  to={t.url}
+                  to={withDashboardContext(t.url, search)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
                     "inline-block px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
@@ -65,7 +66,7 @@ export default function FundraisingTabs() {
               <p className="px-3 py-2 text-sm text-muted-foreground">No matches</p>
             ) : (
               matches.map((m) => (
-                <Link key={m.url} to={m.url} onClick={() => setQ("")} className="block rounded px-3 py-2 text-sm hover:bg-muted">
+                <Link key={m.url} to={withDashboardContext(m.url, search)} onClick={() => setQ("")} className="block rounded px-3 py-2 text-sm hover:bg-muted">
                   {m.label}
                 </Link>
               ))

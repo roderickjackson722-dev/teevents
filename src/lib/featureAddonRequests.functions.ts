@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { FEATURE_ADDONS, COLLEGE_ADDON_AMOUNTS } from "./featureAddonCatalog";
+import { FEATURE_ADDONS } from "./featureAddonCatalog";
 
 const requestSchema = z.object({
   addonKey: z.string().refine(k => Object.hasOwn(FEATURE_ADDONS, k)),
@@ -29,9 +29,9 @@ export const startFeatureAddonRequest = createServerFn({ method: "POST" })
     if (!key) throw new Error("Payments are not configured");
     const item = FEATURE_ADDONS[data.addonKey];
     if (!item) throw new Error("Unknown add-on");
-    const overrideKey = data.addonKey === "college_scoring" ? `college_scoring_${data.divisions}` : data.addonKey;
+    const overrideKey = data.addonKey;
     const { data: priceOverride } = await admin.from("admin_addon_pricing").select("price_cents").eq("addon_key", overrideKey).maybeSingle();
-    let amount = priceOverride?.price_cents ?? (data.addonKey === "college_scoring" ? COLLEGE_ADDON_AMOUNTS[data.divisions] : item.cents);
+    let amount = priceOverride?.price_cents ?? item.cents;
     if (data.discountCode) {
       const { data: code } = await admin.from("addon_discount_codes").select("discount_percent, addon_key, expires_at").eq("code", data.discountCode.toUpperCase()).maybeSingle();
       if (!code || (code.expires_at && new Date(code.expires_at) <= new Date()) || (code.addon_key && code.addon_key !== data.addonKey)) throw new Error("Discount code is not valid for this add-on.");
@@ -116,7 +116,6 @@ export const adminFulfillFeatureAddonRequest = createServerFn({ method: "POST" }
     const patch: Record<string, unknown> = { paid_features: { ...(t.paid_features || {}), [request.addon_key]: true } };
     if (request.addon_key === "live_leaderboard") patch.live_leaderboard_enabled = true;
     if (request.addon_key === "branding_sponsor") Object.assign(patch, { branding_removed: true, branding_removed_paid: true, branding_removed_at: new Date().toISOString(), branding_payment_session_id: session.id, digital_sponsor_purchased: true });
-    if (request.addon_key === "college_scoring") Object.assign(patch, { college_scoring_paid: true, college_scoring_purchased: true, college_scoring_divisions: request.divisions, college_scoring_divisions_purchased: request.divisions });
     const updated = await admin.from("tournaments").update(patch).eq("id", t.id);
     if (updated.error) throw new Error(updated.error.message);
     const saved = await admin.from("feature_addon_requests").update({ status: "fulfilled", tournament_id: t.id, fulfilled_by: context.userId, fulfilled_at: new Date().toISOString() }).eq("id", request.id);

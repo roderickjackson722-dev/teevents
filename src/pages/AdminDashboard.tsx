@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import {
   Plus, Trash2, Check, X, LogOut, Calendar, MapPin, Link as LinkIcon,
   Users, Mail, FileText, ChevronDown, ChevronUp, Pencil, Save, Loader2, Upload, GripVertical, Star, Quote, Bell,
-  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, UserPlus, ShieldCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt, Megaphone, Sparkles, Shield, CalendarClock, BookOpen, Gauge, GraduationCap
+  Tag, ExternalLink, Eye, EyeOff, Percent, DollarSign, Trophy, ArrowUpCircle, Target, Globe, UserCheck, UserPlus, ShieldCheck, BarChart3, ShoppingBag, School, KeyRound, Plane, AlertTriangle, ClipboardList, CreditCard, Receipt, Megaphone, Sparkles, Shield, CalendarClock, BookOpen, Gauge
   , Link2
 } from "lucide-react";
 import AdminNotificationCenter, { useAdminNotificationCount } from "@/components/admin/AdminNotificationCenter";
@@ -952,12 +952,6 @@ const AdminDashboard = () => {
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >
                   <School className="h-4 w-4" /> College Hub
-                </button>
-                <button
-                  onClick={() => navigate("/admin/college-hub?tab=scoring")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <GraduationCap className="h-4 w-4" /> College Scoring Add-on
                 </button>
                 <button
                   onClick={() => navigate("/admin/college-hub?tab=clippd")}

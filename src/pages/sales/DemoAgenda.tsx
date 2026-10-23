@@ -369,20 +369,18 @@ export default function DemoAgenda() {
                   <TableRow>
                     <TableHead>Feature</TableHead>
                     <TableHead>Stripe Connect ⭐</TableHead>
-                    <TableHead>PayPal</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {[
-                    ["Setup Time", "2-3 minutes", "1 minute"],
-                    ["Funds settle", "Instant in your Stripe balance", "Manual request"],
-                    ["Extra Fees", "None", "1% or $0.50"],
-                    ["TeeVents hold", "❌ None — direct to you", "❌ None — direct to you"],
-                  ].map(([feat, stripe, pp], i) => (
+                    ["Setup Time", "2-3 minutes"],
+                    ["Funds settle", "Instant in your Stripe balance"],
+                    ["Extra Fees", "None"],
+                    ["TeeVents hold", "❌ None — direct to you"],
+                  ].map(([feat, stripe], i) => (
                     <TableRow key={i}>
                       <TableCell className="font-medium">{feat}</TableCell>
                       <TableCell>{stripe}</TableCell>
-                      <TableCell>{pp}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>

@@ -537,7 +537,7 @@ const Finances = () => {
         <div>
           <p className="text-sm font-medium text-foreground">Transaction history — all payments processed through your tournament.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            A 5% platform fee + Stripe processing fee is deducted per transaction. How you receive funds depends on your payout method (Stripe Connect, PayPal, or Check).{" "}
+            A 5% platform fee + Stripe processing fee is deducted per transaction. How you receive funds depends on your payout method (Stripe Connect or Check).{" "}
             <a href="/dashboard/payout-settings" className="text-primary underline">Manage payout settings</a>
             {" · "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>

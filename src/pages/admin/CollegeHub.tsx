@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Calendar, FileText, GraduationCap, Link2, School } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Link2, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CollegeTournamentHub from "@/components/admin/CollegeTournamentHub";
-import CollegeScoringSettings from "@/pages/admin/CollegeScoringSettings";
 import ClippdIntegration from "@/pages/admin/rfp/ClippdIntegration";
 
 /**
@@ -35,8 +34,8 @@ export default function AdminCollegeHub() {
             <School className="h-6 w-6 text-primary" /> College Hub
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Everything needed to run a college event: event pages and rosters, the College Golf Scoring &amp;
-            Leaderboard add-on, and the Scoreboard/Clippd score sync.
+            Everything needed to run a college event: event pages and rosters, and the Scoreboard/Clippd
+            score sync.
           </p>
         </div>
 
@@ -54,9 +53,6 @@ export default function AdminCollegeHub() {
             <TabsTrigger value="events">
               <School className="h-4 w-4 mr-1.5" /> College Events
             </TabsTrigger>
-            <TabsTrigger value="scoring">
-              <GraduationCap className="h-4 w-4 mr-1.5" /> Scoring &amp; Leaderboard Add-on
-            </TabsTrigger>
             <TabsTrigger value="clippd">
               <Link2 className="h-4 w-4 mr-1.5" /> Scoreboard / Clippd
             </TabsTrigger>
@@ -64,10 +60,6 @@ export default function AdminCollegeHub() {
 
           <TabsContent value="events">
             <CollegeTournamentHub />
-          </TabsContent>
-
-          <TabsContent value="scoring">
-            <CollegeScoringSettings embedded />
           </TabsContent>
 
           <TabsContent value="clippd">

@@ -66,15 +66,6 @@ const FAQ_ITEMS = [
   },
 ];
 
-/* ────── comparison table ────── */
-const COMPARISON = [
-  { feature: "Setup", stripe: "2–3 minute onboarding", paypal: "Enter email address" },
-  { feature: "Funds settlement", stripe: "Instant, in your Stripe balance", paypal: "Per payout request" },
-  { feature: "Bank transfer", stripe: "Stripe's 2-day rolling schedule", paypal: "1–5 business days" },
-  { feature: "Additional fees", stripe: "None (Stripe processing only)", paypal: "1% or $0.50 per payout" },
-  { feature: "Dashboard", stripe: "Embedded in TeeVents + your Stripe", paypal: "PayPal website" },
-];
-
 /* ────── full script text for copy ────── */
 function buildFullScript(): string {
   return `TEEVENTS DEMO CALL — PAYMENT TALK TRACK
@@ -171,10 +162,9 @@ export default function DemoTalkTrack() {
 
           {/* Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab}>
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 h-auto">
+            <TabsList className="grid w-full grid-cols-2 md:grid-cols-3 h-auto">
               <TabsTrigger value="flow" className="text-xs">Fund Flow</TabsTrigger>
               <TabsTrigger value="settlement" className="text-xs">Settlement</TabsTrigger>
-              <TabsTrigger value="compare" className="text-xs">Stripe vs PayPal</TabsTrigger>
               <TabsTrigger value="objections" className="text-xs">Objections</TabsTrigger>
             </TabsList>
 
@@ -268,33 +258,6 @@ export default function DemoTalkTrack() {
                   </CardContent>
                 </Card>
               </div>
-            </TabsContent>
-
-            {/* ── Compare ── */}
-            <TabsContent value="compare" className="space-y-6 mt-6">
-              <h2 className="text-lg font-semibold text-foreground">Stripe Connect vs PayPal</h2>
-              <Card>
-                <CardContent className="p-0">
-                  <table className="w-full text-sm">
-                    <thead className="bg-muted/50">
-                      <tr>
-                        <th className="text-left p-3 font-medium">Feature</th>
-                        <th className="text-left p-3 font-medium">Stripe Connect ⭐</th>
-                        <th className="text-left p-3 font-medium">PayPal</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {COMPARISON.map((r, i) => (
-                        <tr key={i} className="border-t border-border">
-                          <td className="p-3 font-medium text-foreground">{r.feature}</td>
-                          <td className="p-3 text-muted-foreground">{r.stripe}</td>
-                          <td className="p-3 text-muted-foreground">{r.paypal}</td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </CardContent>
-              </Card>
             </TabsContent>
 
             {/* ── Objections ── */}

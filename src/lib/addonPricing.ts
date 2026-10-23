@@ -20,26 +20,6 @@ export const ADDON_PRICE_CENTS: Record<string, number> = {
   custom_domain: 9900,
 };
 
-/** College Golf Scoring is priced by the number of divisions (1–4). */
-export const COLLEGE_SCORING_CENTS: Record<number, number> = {
-  1: 19900,
-  2: 37500,
-  3: 55000,
-  4: 72000,
-};
-
-export function collegeScoringKey(divisions: number) {
-  return `college_scoring_${Math.min(4, Math.max(1, divisions))}`;
-}
-
-export function collegeScoringCents(
-  divisions: number,
-  overrides?: Record<string, number> | null,
-) {
-  const d = Math.min(4, Math.max(1, Math.round(divisions || 1)));
-  return overrides?.[collegeScoringKey(d)] ?? COLLEGE_SCORING_CENTS[d];
-}
-
 export function dollars(cents: number) {
   return `$${(cents / 100).toLocaleString("en-US", {
     minimumFractionDigits: cents % 100 === 0 ? 0 : 2,

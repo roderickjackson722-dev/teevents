@@ -219,7 +219,7 @@ export default function AdminRoutingMonitor() {
           back to TeeVents the <strong>5% platform fee + grossed-up Stripe processing fee</strong> as the
           "App fee" shown below. The remainder lands in the organizer's Stripe balance. If a row shows
           "Platform escrow" instead of "Organizer", the organizer hasn't completed Stripe Connect onboarding
-          yet — funds sit in TeeVents' account until they connect, then we pay them out via PayPal or check.
+          yet — funds sit in TeeVents' account until they connect, then we pay them out via check.
         </div>
       </Card>
 

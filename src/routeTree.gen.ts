@@ -26,6 +26,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as SalesSheetRouteImport } from './routes/sales-sheet'
+import { Route as SampleEventRouteImport } from './routes/sample-event'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
@@ -145,6 +146,11 @@ const ReviewsRoute = ReviewsRouteImport.update({
 const SalesSheetRoute = SalesSheetRouteImport.update({
   id: '/sales-sheet',
   path: '/sales-sheet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SampleEventRoute = SampleEventRouteImport.update({
+  id: '/sample-event',
+  path: '/sample-event',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
@@ -358,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/privacy': typeof PrivacyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
+  '/sample-event': typeof SampleEventRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -412,6 +419,7 @@ export interface FileRoutesByTo {
   '/privacy': typeof PrivacyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
+  '/sample-event': typeof SampleEventRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -467,6 +475,7 @@ export interface FileRoutesById {
   '/privacy': typeof PrivacyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
+  '/sample-event': typeof SampleEventRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
@@ -523,6 +532,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reviews'
     | '/sales-sheet'
+    | '/sample-event'
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
@@ -577,6 +587,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reviews'
     | '/sales-sheet'
+    | '/sample-event'
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
@@ -631,6 +642,7 @@ export interface FileRouteTypes {
     | '/privacy'
     | '/reviews'
     | '/sales-sheet'
+    | '/sample-event'
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
@@ -686,6 +698,7 @@ export interface RootRouteChildren {
   PrivacyRoute: typeof PrivacyRoute
   ReviewsRoute: typeof ReviewsRoute
   SalesSheetRoute: typeof SalesSheetRoute
+  SampleEventRoute: typeof SampleEventRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
@@ -841,6 +854,13 @@ declare module '@tanstack/react-router' {
       path: '/sales-sheet'
       fullPath: '/sales-sheet'
       preLoaderRoute: typeof SalesSheetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sample-event': {
+      id: '/sample-event'
+      path: '/sample-event'
+      fullPath: '/sample-event'
+      preLoaderRoute: typeof SampleEventRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/sitemap.xml': {
@@ -1121,6 +1141,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyRoute: PrivacyRoute,
   ReviewsRoute: ReviewsRoute,
   SalesSheetRoute: SalesSheetRoute,
+  SampleEventRoute: SampleEventRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CollegeSlugRoute: CollegeSlugRoute,

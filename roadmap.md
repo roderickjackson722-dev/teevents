@@ -100,3 +100,7 @@
 - [x] Add admin controls for public featured/upcoming directory sections
 - [x] Verify public pages, direct login, saved contact details, Stripe checkout opening, and authenticated admin leaderboard changes on the unpublished QA event; restore settings and remove unpaid QA request
 - [ ] Verify paid add-on fulfillment after a real authorized payment; checkout was opened without charging a card
+
+## Sample Event showcase page (done, preview only)
+- Static public page at /sample-event mirroring the classic public tournament layout: badge, hero, About, Registration (3 tiers), Sponsors (4 tiers + 6 placeholder logos), Live Leaderboard (10 rows), Pairings (4 foursomes), Schedule, FAQ, bottom CTA band to /get-started, sample disclaimer note.
+- Demo-only buttons scroll to the CTA band; no checkout, no database, no live data. Verified desktop + phone: no horizontal overflow, buttons scroll correctly.

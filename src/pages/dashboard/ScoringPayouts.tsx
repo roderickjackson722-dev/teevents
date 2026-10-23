@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
-import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
+import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -69,7 +69,9 @@ export default function ScoringPayouts() {
       .then(({ data }) => {
         const t = data || [];
         setTournaments(t);
-        if (t.length > 0 && !selected) setSelected(t[0].id);
+        // Stay on the tournament already in context; only pick one when none is chosen.
+        const keep = pickTournamentId(t, selected);
+        if (keep && keep !== selected) setSelected(keep);
         setLoading(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -141,17 +143,6 @@ export default function ScoringPayouts() {
         </p>
       </div>
 
-      {tournaments.length > 1 && (
-        <div className="max-w-sm">
-          <Label>Tournament</Label>
-          <Select value={selected} onValueChange={setSelected}>
-            <SelectTrigger><SelectValue placeholder="Select a tournament" /></SelectTrigger>
-            <SelectContent>
-              {tournaments.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
 
       <Card>
         <CardHeader>

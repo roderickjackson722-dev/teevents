@@ -49,7 +49,7 @@ interface TeamRow {
   status: string;
 }
 
-export function TournamentTeam({ initialTournamentId }: { initialTournamentId?: string }) {
+export function TournamentTeam({ initialTournamentId, showTournamentPicker = false }: { initialTournamentId?: string | null; showTournamentPicker?: boolean }) {
   const { toast } = useToast();
   const loadTournaments = useServerFn(getUserTournaments);
   const loadTeam = useServerFn(listTournamentTeam);
@@ -60,6 +60,12 @@ export function TournamentTeam({ initialTournamentId }: { initialTournamentId?: 
 
   const [tournaments, setTournaments] = useState<any[]>([]);
   const [tournamentId, setTournamentId] = useState(initialTournamentId || "");
+  // Dashboard Team page follows the tournament picked on Home; standalone
+  // uses (Enterprise Admin) have no outside picker, so show one here.
+  const showPicker = showTournamentPicker;
+  useEffect(() => {
+    if (initialTournamentId) setTournamentId(initialTournamentId);
+  }, [initialTournamentId]);
   const [loading, setLoading] = useState(true);
   const [canManage, setCanManage] = useState(false);
   const [members, setMembers] = useState<TeamRow[]>([]);
@@ -193,9 +199,22 @@ export function TournamentTeam({ initialTournamentId }: { initialTournamentId?: 
       <CardContent className="space-y-6">
         <div className="max-w-md space-y-2">
           <Label>Tournament</Label>
-          <p className="text-sm font-medium text-foreground break-words">
-            {selected?.title || "Pick a tournament on Home to manage its team."}
-          </p>
+          {showPicker ? (
+            <Select value={tournamentId} onValueChange={setTournamentId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose a tournament" />
+              </SelectTrigger>
+              <SelectContent>
+                {tournaments.map((t) => (
+                  <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          ) : (
+            <p className="text-sm font-medium text-foreground break-words">
+              {selected?.title || "Pick a tournament on Home to manage its team."}
+            </p>
+          )}
           {selected?.access === "team_member" && (
             <p className="text-xs text-muted-foreground">
               You have {roleLabel(selected.role)} access to this tournament.

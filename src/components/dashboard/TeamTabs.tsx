@@ -1,5 +1,6 @@
 import { useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { withDashboardContext } from "@/lib/dashboardContext";
 
 const TABS = [
   { label: "Members", url: "/dashboard/team" },
@@ -14,8 +15,6 @@ export const TEAM_PATHS = TABS.map((t) => t.url);
 /** Shared Team tab bar. Navigation only; keeps the current tournament in the link. */
 export default function TeamTabs() {
   const { pathname, search } = useLocation();
-  const tid = new URLSearchParams(search).get("tournament_id");
-  const qs = tid ? `?tournament_id=${encodeURIComponent(tid)}` : "";
   return (
     <nav aria-label="Team sections" className="mb-6 border-b border-border">
       <ul className="flex flex-wrap gap-1">
@@ -24,7 +23,7 @@ export default function TeamTabs() {
           return (
             <li key={t.url}>
               <a
-                href={t.url + qs}
+                href={withDashboardContext(t.url, search)}
                 aria-current={active ? "page" : undefined}
                 className={cn("inline-block px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
                   active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground")}

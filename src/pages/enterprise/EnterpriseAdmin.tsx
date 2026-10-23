@@ -91,7 +91,7 @@ export default function EnterpriseAdmin() {
           </Card>
 
           {org && <TeamManagement orgId={org.orgId} userId={org.userId} />}
-          <TournamentTeam />
+          <TournamentTeam showTournamentPicker />
         </TabsContent>
 
         <TabsContent value="events">

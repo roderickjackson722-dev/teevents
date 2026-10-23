@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
   ArrowRight, BadgeDollarSign, BarChart3, Check, CreditCard, Gavel, Globe,
-  GraduationCap, LayoutTemplate, Loader2, Lock, Megaphone, ShieldCheck, Smartphone, Sparkles, Users,
+  LayoutTemplate, Loader2, Lock, Megaphone, ShieldCheck, Smartphone, Sparkles, Users,
 } from "lucide-react";
 import Layout from "@/components/Layout";
 import FeatureAddonContactForm from "@/components/FeatureAddonContactForm";
@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { createFlatRateCheckout } from "@/lib/flatRate.functions";
 import { createBrandingRemovalCheckout } from "@/lib/brandingRemoval.functions";
-import { COLLEGE_SCORING_CENTS, collegeScoringKey, dollars } from "@/lib/addonPricing";
+import { dollars } from "@/lib/addonPricing";
 
 type Flow = "free" | "per_event" | "branding_sponsor" | "addon";
 

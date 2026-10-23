@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { ArrowLeft, Calendar, FileText, GraduationCap, Link2, School } from "lucide-react";
+import { ArrowLeft, Calendar, FileText, Link2, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import CollegeTournamentHub from "@/components/admin/CollegeTournamentHub";

@@ -182,12 +182,12 @@ const StudySheet = () => {
           </Section>
 
           <Section id="payouts" num={5} title="Payout Methods">
-            <SimpleTable headers={["Feature", "Stripe Connect", "PayPal", "Check"]} rows={[
-              ["Setup Time", "2-3 min", "1 min", "Enter address"],
-              ["Funds settle", "Instant in your Stripe", "Manual request", "Upon request"],
-              ["Bank transfer", "Stripe's 2-day rolling", "5-7 days", "Mailed check"],
-              ["Additional Fee", "None", "1% (min $0.50)", "None"],
-              ["TeeVents hold", "None — Direct Charges", "None — Direct Charges", "Funds settle to TeeVents until check requested"],
+            <SimpleTable headers={["Feature", "Stripe Connect", "Check"]} rows={[
+              ["Setup Time", "2-3 min", "Enter address"],
+              ["Funds settle", "Instant in your Stripe", "Upon request"],
+              ["Bank transfer", "Stripe's 2-day rolling", "Mailed check"],
+              ["Additional Fee", "None", "None"],
+              ["TeeVents hold", "None — Direct Charges", "Funds settle to TeeVents until check requested"],
             ]} />
             <p className="mt-3">TeeVents uses Stripe Connect <strong>Direct Charges</strong>: every paid checkout is created on the organizer's connected Stripe account, with TeeVents taking only a 5% application fee. There is no platform reserve. Check payouts are the only flow where funds temporarily route through TeeVents pending a manual check request.</p>
           </Section>
@@ -399,7 +399,6 @@ const StudySheet = () => {
               ["Hold Percentage", "0% (no hold – direct payout via Stripe Connect)"],
               ["Minimum Payout", "$25"],
               ["Payout Speed (Stripe)", "3-7 business days"],
-              ["Payout Speed (PayPal)", "5-7 business days"],
               ["Payout Speed (Check)", "Upon request (mailing time)"],
               ["Custom URL Edits", "3 max per tournament"],
               ["Team Members", "Unlimited (by plan)"],
@@ -602,12 +601,12 @@ function buildPdfHtml(): string {
     </section>
 
     <section><h2>5. Payout Methods</h2>
-      ${t(["Feature", "Stripe Connect", "PayPal", "Check"], [
-        ["Setup Time", "2-3 min", "1 min", "Enter address"],
-        ["Funds settle", "Instant in your Stripe", "Manual request", "Upon request"],
-        ["Bank transfer", "Stripe's 2-day rolling", "5-7 days", "Mailed check"],
-        ["Additional Fee", "None", "1% (min $0.50)", "None"],
-        ["TeeVents hold", "None — Direct Charges", "None — Direct Charges", "Funds settle to TeeVents until check requested"],
+      ${t(["Feature", "Stripe Connect", "Check"], [
+        ["Setup Time", "2-3 min", "Enter address"],
+        ["Funds settle", "Instant in your Stripe", "Upon request"],
+        ["Bank transfer", "Stripe's 2-day rolling", "Mailed check"],
+        ["Additional Fee", "None", "None"],
+        ["TeeVents hold", "None — Direct Charges", "Funds settle to TeeVents until check requested"],
       ])}
       <p>TeeVents uses Stripe Connect <strong>Direct Charges</strong>: every paid checkout is created on the organizer's connected Stripe account, with TeeVents taking only a 5% application fee. Check payouts are the only flow where funds temporarily route through TeeVents pending a manual check request.</p>
     </section>
@@ -804,7 +803,6 @@ function buildPdfHtml(): string {
         ["Hold Percentage", "0% (no hold – direct payout via Stripe Connect)"],
         ["Minimum Payout", "$25"],
         ["Payout Speed (Stripe)", "3-7 business days"],
-        ["Payout Speed (PayPal)", "5-7 business days"],
         ["Payout Speed (Check)", "Upon request (mailing time)"],
         ["Custom URL Edits", "3 max per tournament"],
         ["Player Capacity (Base)", "72 players"],

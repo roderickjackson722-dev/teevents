@@ -7,7 +7,6 @@ export type AddonKey =
   | "auction_raffle"
   | "custom_event_page"
   | "live_leaderboard"
-  | "college_scoring"
   | "bundle";
 
 export interface AddonFlags {
@@ -16,7 +15,6 @@ export interface AddonFlags {
   auction_raffle: boolean;
   custom_event_page: boolean;
   live_leaderboard: boolean;
-  college_scoring: boolean;
   bundle: boolean;
 }
 
@@ -26,7 +24,6 @@ const DEFAULT: AddonFlags = {
   auction_raffle: false,
   custom_event_page: false,
   live_leaderboard: false,
-  college_scoring: false,
   bundle: false,
 };
 

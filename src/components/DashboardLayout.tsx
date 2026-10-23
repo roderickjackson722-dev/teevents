@@ -223,7 +223,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
 
 
-  if (loading) {
+  if (loading || !contextChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-golf-cream">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -281,6 +281,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <button
               onClick={async () => {
                 setSampleModeActive(false);
+                clearDashboardContext();
                 await supabase.auth.signOut();
                 navigate("/");
               }}

@@ -445,6 +445,7 @@ export default function PayoutSettings() {
   // Effective method: only show Stripe if actually configured. Otherwise default to Check.
   const effectiveMethod: "stripe" | "check" =
     selectedMethod === "stripe" && stripeConnected ? "stripe" : "check";
+  const MethodIcon = effectiveMethod === "stripe" ? CreditCard : Banknote;
 
   const methodLabel =
     effectiveMethod === "stripe" ? "Stripe Connect - Automatic Payouts" : "Check - Manual Payment";

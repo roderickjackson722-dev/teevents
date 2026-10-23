@@ -49,7 +49,7 @@ interface TeamRow {
   status: string;
 }
 
-export function TournamentTeam({ initialTournamentId }: { initialTournamentId?: string }) {
+export function TournamentTeam({ initialTournamentId, showTournamentPicker = false }: { initialTournamentId?: string | null; showTournamentPicker?: boolean }) {
   const { toast } = useToast();
   const loadTournaments = useServerFn(getUserTournaments);
   const loadTeam = useServerFn(listTournamentTeam);
@@ -62,7 +62,7 @@ export function TournamentTeam({ initialTournamentId }: { initialTournamentId?: 
   const [tournamentId, setTournamentId] = useState(initialTournamentId || "");
   // Dashboard Team page follows the tournament picked on Home; standalone
   // uses (Enterprise Admin) have no outside picker, so show one here.
-  const showPicker = initialTournamentId === undefined;
+  const showPicker = showTournamentPicker;
   useEffect(() => {
     if (initialTournamentId) setTournamentId(initialTournamentId);
   }, [initialTournamentId]);

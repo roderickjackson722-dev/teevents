@@ -78,11 +78,9 @@ export default function PayoutSettings() {
       setOpeningDashboard(false);
     }
   };
-  const [savingPaypal, setSavingPaypal] = useState(false);
   const [payoutMethod, setPayoutMethod] = useState<PayoutMethod | null>(null);
-  const [paypalEmail, setPaypalEmail] = useState("");
   const [mailingAddress, setMailingAddress] = useState("");
-  const [selectedMethod, setSelectedMethod] = useState<"stripe" | "paypal" | "check">("check");
+  const [selectedMethod, setSelectedMethod] = useState<"stripe" | "check">("check");
   const [auditLogs, setAuditLogs] = useState<AuditLog[]>([]);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [showDisconnectModal, setShowDisconnectModal] = useState(false);
@@ -90,7 +88,7 @@ export default function PayoutSettings() {
   const [showChangeBankModal, setShowChangeBankModal] = useState(false);
   const [changingBank, setChangingBank] = useState(false);
   const [savingCheck, setSavingCheck] = useState(false);
-  const [pendingMethod, setPendingMethod] = useState<"stripe" | "paypal" | "check" | null>(null);
+  const [pendingMethod, setPendingMethod] = useState<"stripe" | "check" | null>(null);
 
   // Legal acknowledgment state
   const [ackFee, setAckFee] = useState(false);
@@ -148,12 +146,12 @@ export default function PayoutSettings() {
       .eq("id", org!.orgId)
       .single();
     if (data) {
-      setSelectedMethod(((data as any).payout_method || "check") as "stripe" | "paypal" | "check");
+      setSelectedMethod((data as any).payout_method === "stripe" ? "stripe" : "check");
       setMailingAddress((data as any).mailing_address || "");
     }
   };
 
-  const beginMethodSelection = (method: "stripe" | "paypal" | "check") => {
+  const beginMethodSelection = (method: "stripe" | "check") => {
     setPendingMethod(method);
     setAckFee(false);
     setAckEscrow(false);
@@ -175,8 +173,6 @@ export default function PayoutSettings() {
 
     if (data) {
       setPayoutMethod(data as unknown as PayoutMethod);
-      if ((data as any).paypal_email) setPaypalEmail((data as any).paypal_email);
-
       if ((data as any).stripe_account_id && !(data as any).stripe_account_last4) {
         try {
           const { data: syncData } = await supabase.functions.invoke("stripe-connect-status", { body: {} });
@@ -364,53 +360,6 @@ export default function PayoutSettings() {
   };
 
 
-  const handleSavePaypal = async () => {
-    if (!paypalEmail || !paypalEmail.includes("@")) {
-      toast.error("Please enter a valid PayPal email address.");
-      return;
-    }
-    if (!ackFee || !ackEscrow) {
-      toast.error("Please acknowledge both checkboxes before saving.");
-      return;
-    }
-    if (!org?.orgId) return;
-    setSavingPaypal(true);
-    const oldMethod = selectedMethod;
-    const oldEmail = payoutMethod?.paypal_email || null;
-    const { error } = await supabase
-      .from("organization_payout_methods")
-      .upsert(
-        {
-          organization_id: org.orgId,
-          paypal_email: paypalEmail,
-          preferred_method: "paypal",
-          is_verified: false,
-        } as any,
-        { onConflict: "organization_id" }
-      );
-    if (error) {
-      toast.error("Failed to save PayPal email.");
-    } else {
-      await supabase.from("organizations").update({ payout_method: "paypal" } as any).eq("id", org.orgId);
-      setSelectedMethod("paypal");
-      toast.success("PayPal email saved. Payouts will be processed manually every two weeks.");
-      await logAudit(oldEmail ? "paypal_updated" : "paypal_added", {
-        summary: oldEmail ? `PayPal email updated to ${paypalEmail}` : `PayPal email added: ${paypalEmail}`,
-      });
-      await logActivity("payout_method_selected", `Changed payout method from ${oldMethod} to PayPal`, {
-        old_method: oldMethod,
-        new_method: "paypal",
-        paypal_email: paypalEmail,
-      });
-      await notifyAdmin("payout_method_selected", `${org?.orgName} selected PayPal as their payout method (${paypalEmail}).`);
-      clearPendingMethod();
-      fetchPayoutMethodAndSync();
-      fetchAuditLogs();
-      fetchActivityLogs();
-    }
-    setSavingPaypal(false);
-  };
-
   const handleSaveCheck = async () => {
     if (!mailingAddress.trim()) {
       toast.error("Please enter a mailing address.");
@@ -493,22 +442,16 @@ export default function PayoutSettings() {
     ...auditLogs.map(l => ({ id: l.id, action: l.action, description: l.details?.summary || null, details: l.details, created_at: l.created_at, email: null as string | null, source: "audit" as const })),
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()).slice(0, 30);
 
-  // Effective method: only show Stripe/PayPal if actually configured. Otherwise default to Check.
-  const paypalConfigured = !!payoutMethod?.paypal_email;
-  const effectiveMethod: "stripe" | "paypal" | "check" =
-    selectedMethod === "stripe" && stripeConnected ? "stripe"
-    : selectedMethod === "paypal" && paypalConfigured ? "paypal"
-    : "check";
+  // Effective method: only show Stripe if actually configured. Otherwise default to Check.
+  const effectiveMethod: "stripe" | "check" =
+    selectedMethod === "stripe" && stripeConnected ? "stripe" : "check";
 
   const methodLabel =
-    effectiveMethod === "stripe" ? "Stripe Connect — Automatic Payouts"
-    : effectiveMethod === "paypal" ? "PayPal — Bi-Weekly Payouts"
-    : "Check — Manual Payment";
+    effectiveMethod === "stripe" ? "Stripe Connect - Automatic Payouts" : "Check - Manual Payment";
   const methodDescription =
-    effectiveMethod === "stripe" ? "Payments are split automatically at checkout and sent directly to your connected Stripe account."
-    : effectiveMethod === "paypal" ? "TeeVents collects payments and sends a PayPal payout every two weeks."
-    : "TeeVents holds funds and mails a check upon your request from the Finances page.";
-  const MethodIcon = effectiveMethod === "stripe" ? CreditCard : effectiveMethod === "paypal" ? Mail : Banknote;
+    effectiveMethod === "stripe"
+      ? "Payments are split automatically at checkout and sent directly to your connected Stripe account."
+      : "TeeVents holds funds and mails a check upon your request from the Finances page.";
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -539,7 +482,6 @@ export default function PayoutSettings() {
         </div>
         <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
           <li><strong>Stripe Connect (Recommended):</strong> Payments split automatically at checkout — net proceeds go directly to your Stripe account</li>
-          <li><strong>PayPal:</strong> TeeVents collects payments and sends you a PayPal payout every two weeks</li>
           <li><strong>Check:</strong> TeeVents holds funds and mails a check upon your request</li>
           <li>All methods: 5% platform fee + Stripe processing fee per transaction</li>
         </ul>
@@ -711,79 +653,6 @@ export default function PayoutSettings() {
                 )}
               </>
             )}
-          </CardContent>
-        </Card>
-      </motion.div>
-
-      {/* ──── PayPal ──── */}
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}>
-        <Card className={`border-2 ${selectedMethod === "paypal" || pendingMethod === "paypal" ? "border-blue-500/50" : "border-border"}`}>
-          <CardHeader>
-            <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 sm:flex sm:justify-between">
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="h-10 w-10 shrink-0 rounded-lg bg-blue-100 dark:bg-blue-950 flex items-center justify-center">
-                  <Mail className="h-5 w-5 text-blue-600" />
-                </div>
-                <div>
-                  <CardTitle className="text-lg">PayPal</CardTitle>
-                  <CardDescription>Manual — TeeVents pays you every two weeks via PayPal</CardDescription>
-                </div>
-              </div>
-              {selectedMethod === "paypal" && paypalEmail && (
-                <Badge className="bg-blue-500/20 text-blue-700 border-blue-500/30">Active</Badge>
-              )}
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-4">
-              <li>TeeVents collects full payment, then pays you via PayPal every two weeks</li>
-              <li>TeeVents holds funds temporarily between batch payouts</li>
-            </ul>
-            <div className="space-y-2">
-              <Label htmlFor="paypal-email" className="text-sm">PayPal Email Address</Label>
-              <Input
-                id="paypal-email"
-                type="email"
-                placeholder="your-email@example.com"
-                value={paypalEmail}
-                onChange={(e) => setPaypalEmail(e.target.value)}
-              />
-            </div>
-            {pendingMethod === "paypal" && (
-              <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="ack-fee-paypal"
-                    checked={ackFee}
-                    onCheckedChange={(checked) => setAckFee(checked === true)}
-                  />
-                  <label htmlFor="ack-fee-paypal" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                    I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
-                  </label>
-                </div>
-                <div className="flex items-start gap-3">
-                  <Checkbox
-                    id="ack-escrow-paypal"
-                    checked={ackEscrow}
-                    onCheckedChange={(checked) => setAckEscrow(checked === true)}
-                  />
-                  <label htmlFor="ack-escrow-paypal" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                    I understand that if I select PayPal, my funds will be held in TeeVents' Stripe escrow account until I request a payout or until the next manual batch.
-                  </label>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button variant="secondary" className="money-main-save" onClick={handleSavePaypal} disabled={savingPaypal || !paypalEmail.trim()}>
-                    {savingPaypal ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-                    Save PayPal & Set as Active
-                  </Button>
-                  <Button variant="outline" onClick={clearPendingMethod}>Cancel</Button>
-                </div>
-              </div>
-            )}
-            <Button variant="outline" onClick={pendingMethod === "paypal" ? handleSavePaypal : () => beginMethodSelection("paypal")} disabled={savingPaypal || !paypalEmail.trim()}>
-              {savingPaypal && pendingMethod === "paypal" ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Mail className="h-4 w-4 mr-2" />}
-              {pendingMethod === "paypal" ? "Save PayPal & Set as Active" : "Select PayPal"}
-            </Button>
           </CardContent>
         </Card>
       </motion.div>

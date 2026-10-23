@@ -6,7 +6,8 @@ import WrapUpTabs, { WRAPUP_PATHS } from "@/components/dashboard/WrapUpTabs";
 import HelpSettingsTabs, { HELP_SETTINGS_PATHS } from "@/components/dashboard/HelpSettingsTabs";
 import FundraisingTabs, { FUNDRAISING_PATHS } from "@/components/dashboard/FundraisingTabs";
 import { ReactNode, useEffect, useState } from "react";
-import { useNavigate, Link, useSearchParams } from "react-router-dom";
+import { useNavigate, Link, useSearchParams, useLocation } from "react-router-dom";
+import { resolveDashboardContext, readDashboardContext, writeDashboardContext, clearDashboardContext } from "@/lib/dashboardContext";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider, SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { DashboardSidebar } from "./DashboardSidebar";
@@ -60,6 +61,24 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [searchParams] = useSearchParams();
   const { isDemoMode } = useDemoMode();
   const { isSampleMode, sampleDaysRemaining } = useSampleMode();
+  const location = useLocation();
+  const searchKey = searchParams.toString();
+
+  // Restore the remembered admin org / selected tournament before a page
+  // renders, so a link that forgot them can't drop the admin into another
+  // organization or tournament.
+  const [contextChecked, setContextChecked] = useState(false);
+  useEffect(() => {
+    const { redirect, next } = resolveDashboardContext(location.pathname, searchParams, readDashboardContext());
+    if (redirect) {
+      navigate(`${location.pathname}?${redirect.toString()}${location.hash || ""}`, { replace: true });
+      return;
+    }
+    writeDashboardContext(next);
+    setContextChecked(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname, searchKey]);
+
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {

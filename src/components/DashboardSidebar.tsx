@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { clearDashboardContext } from "@/lib/dashboardContext";
 import {
   LayoutDashboard, Trophy, ClipboardCheck, Users,
   DollarSign, Wallet, Award, ShoppingBag, Settings, LogOut, ShoppingCart,

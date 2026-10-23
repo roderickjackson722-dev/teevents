@@ -104,3 +104,7 @@
 ## Sample Event showcase page (done, preview only)
 - Static public page at /sample-event mirroring the classic public tournament layout: badge, hero, About, Registration (3 tiers), Sponsors (4 tiers + 6 placeholder logos), Live Leaderboard (10 rows), Pairings (4 foursomes), Schedule, FAQ, bottom CTA band to /get-started, sample disclaimer note.
 - Demo-only buttons scroll to the CTA band; no checkout, no database, no live data. Verified desktop + phone: no horizontal overflow, buttons scroll correctly.
+
+## Sample Event visual polish
+- [x] Add scoped sponsor wordmarks, generated golf photography, FCC emblem, card ribbons, and green/gold leaderboard without changing sample copy, prices, sections, or handlers
+- [ ] Verify desktop/phone rendering, full pairings, schedule alignment, photos, and demo button scrolling; preview only

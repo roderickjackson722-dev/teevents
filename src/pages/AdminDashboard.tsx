@@ -77,6 +77,12 @@ const AdminDashboard = () => {
   const { count: unreadNotifications, refresh: refreshNotificationCount } = useAdminNotificationCount();
   const [linkFailures, setLinkFailures] = useState(0);
 
+  // Back on the admin home: forget the last "view as admin" dashboard context
+  // so a later visit to your own dashboard isn't pinned to that organization.
+  useEffect(() => {
+    import("@/lib/dashboardContext").then((m) => m.clearDashboardContext());
+  }, []);
+
   // Link Health badge — number of failed checks in the most recent run.
   useEffect(() => {
     let cancelled = false;

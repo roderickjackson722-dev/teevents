@@ -954,12 +954,6 @@ const AdminDashboard = () => {
                   <School className="h-4 w-4" /> College Hub
                 </button>
                 <button
-                  onClick={() => navigate("/admin/college-hub?tab=scoring")}
-                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
-                >
-                  <GraduationCap className="h-4 w-4" /> College Scoring Add-on
-                </button>
-                <button
                   onClick={() => navigate("/admin/college-hub?tab=clippd")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >

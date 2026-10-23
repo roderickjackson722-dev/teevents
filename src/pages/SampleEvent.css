@@ -1,0 +1,49 @@
+.sample-event-page {
+  --primary: 152 56% 23%;
+  --secondary: 38 91% 55%;
+  --secondary-foreground: 152 56% 23%;
+  --background: 0 0% 100%;
+  --card: 0 0% 100%;
+  --foreground: 150 20% 10%;
+  --muted-foreground: 150 10% 35%;
+  --border: 140 15% 88%;
+  --sample-navy: oklch(.32 .065 255);
+  --sample-terracotta: oklch(.53 .12 40);
+  --sample-charcoal: oklch(.3 .015 250);
+  --sample-red: oklch(.55 .19 25);
+  --sample-blue: oklch(.48 .13 250);
+  --sample-copper: oklch(.54 .1 55);
+  --sample-teal: oklch(.47 .09 185);
+  --sample-shadow: 0 4px 16px hsl(var(--primary) / .07);
+  --sample-shadow-lift: 0 14px 28px hsl(var(--primary) / .13);
+  --sample-hero-overlay: linear-gradient(to bottom, rgb(0 0 0 / .3), rgb(0 0 0 / .15) 40%, rgb(0 0 0 / .5));
+  --sample-title-shadow: 0 2px 20px rgb(0 0 0 / .4);
+  min-width: 0;
+}
+.sample-event-page * { letter-spacing: 0; overflow-wrap: normal; word-break: normal; }
+.sample-event-page .sample-hero-overlay { background: var(--sample-hero-overlay); }
+.sample-event-page .sample-title { text-shadow: var(--sample-title-shadow); }
+.sample-event-page .sample-card, .sample-event-page .sample-logo { box-shadow: var(--sample-shadow); transition: transform .25s ease, box-shadow .25s ease; }
+@media (hover: hover) {
+  .sample-event-page .sample-card:hover, .sample-event-page .sample-logo:hover { transform: translateY(-4px); box-shadow: var(--sample-shadow-lift); }
+}
+.sample-event-page .sample-logo { min-height: 148px; }
+.sample-event-page .sample-logo-bank { color: var(--sample-navy); }
+.sample-event-page .sample-logo-realty { color: var(--sample-terracotta); }
+.sample-event-page .sample-logo-auto { color: var(--sample-charcoal); }
+.sample-event-page .sample-logo-auto svg { color: var(--sample-red); }
+.sample-event-page .sample-logo-insurance { color: var(--sample-blue); }
+.sample-event-page .sample-logo-roofing { color: var(--sample-copper); }
+.sample-event-page .sample-logo-dental { color: var(--sample-teal); }
+.sample-event-page .sample-leaderboard { display: table; min-width: 640px; white-space: nowrap; }
+.sample-event-page .sample-leaderboard th, .sample-event-page .sample-leaderboard td { white-space: nowrap; }
+.sample-event-page .sample-leaderboard tbody tr:first-child { background: hsl(var(--secondary) / .16); }
+.sample-event-page .sample-leaderboard tbody tr:nth-child(even) { background: hsl(var(--golf-cream)); }
+.sample-event-page .sample-ribbon { background: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); font-weight: 700; font-size: .6875rem; padding: .4rem .85rem; border-radius: 0 0 0 6px; }
+@media (max-width: 639px) {
+  .sample-event-page .sample-stack { grid-template-columns: minmax(0, 1fr); }
+  .sample-event-page .sample-logo { min-height: 132px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .sample-event-page .sample-card, .sample-event-page .sample-logo { transition: none; transform: none; }
+}

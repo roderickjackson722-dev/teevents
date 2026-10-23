@@ -21,7 +21,7 @@ import { createFlatRateCheckout } from "@/lib/flatRate.functions";
 import { createBrandingRemovalCheckout } from "@/lib/brandingRemoval.functions";
 import { COLLEGE_SCORING_CENTS, collegeScoringKey, dollars } from "@/lib/addonPricing";
 
-type Flow = "free" | "per_event" | "branding_sponsor" | "addon" | "college_scoring";
+type Flow = "free" | "per_event" | "branding_sponsor" | "addon";
 
 interface CheckoutItem {
   slug: string;
@@ -145,21 +145,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
     desc: "Brand your tournament URL (e.g. golf.yourclub.com) instead of a teevents.golf link.",
     features: ["Your own domain", "SSL included", "We handle the setup"],
   },
-  "college-scoring": {
-    slug: "college-scoring",
-    title: "College Golf Scoring & Leaderboard",
-    priceCents: COLLEGE_SCORING_CENTS[1],
-    unit: "per event",
-    icon: GraduationCap,
-    flow: "college_scoring",
-    desc: "High-speed score validation and entry for college events — divisions, team rosters, live leaderboard and printables.",
-    features: [
-      "Mobile live scoring — no app download",
-      "QR scoring codes & monitor leaderboard display",
-      "Team rosters with custom counting scores",
-      "Customizable printables & pairings templates",
-    ],
-  },
+
 };
 
 interface TournamentRow {
@@ -178,7 +164,7 @@ const Checkout = () => {
   const [searchParams] = useSearchParams();
   const item = CHECKOUT_ITEMS[slug];
 
-  const contactPurchase = !!item && ["addon", "branding_sponsor", "college_scoring"].includes(item.flow);
+  const contactPurchase = !!item && ["addon", "branding_sponsor"].includes(item.flow);
   const [checkingAuth, setCheckingAuth] = useState(true);
   const [signedIn, setSignedIn] = useState(false);
   const [tournaments, setTournaments] = useState<TournamentRow[]>([]);
@@ -216,9 +202,8 @@ const Checkout = () => {
 
   const priceCents = useMemo(() => {
     if (!item) return 0;
-    if (item.flow === "college_scoring") return COLLEGE_SCORING_CENTS[divisions];
     return item.priceCents;
-  }, [item, divisions]);
+  }, [item]);
 
   if (!item) {
     return (
@@ -251,12 +236,11 @@ const Checkout = () => {
         });
         if (res?.url) window.location.href = res.url;
       } else {
-        const addons = item.flow === "college_scoring" ? ["college_scoring"] : [item.addonKey];
+        const addons = [item.addonKey];
         const { data, error } = await supabase.functions.invoke("purchase-addons", {
           body: {
             tournament_id: tournamentId,
             addons,
-            divisions: item.flow === "college_scoring" ? divisions : undefined,
             discount_code: discountCode.trim() || undefined,
           },
         });
@@ -323,8 +307,7 @@ const Checkout = () => {
                   </Button>
                 ) : contactPurchase ? (
                   <div className="space-y-4">
-                    {item.flow === "college_scoring" && <div><Label>Divisions</Label><Select value={String(divisions)} onValueChange={v => setDivisions(Number(v))}><SelectTrigger aria-label="Divisions"><SelectValue /></SelectTrigger><SelectContent>{[1, 2, 3, 4].map(d => <SelectItem key={d} value={String(d)}>{d} division{d > 1 ? "s" : ""}</SelectItem>)}</SelectContent></Select></div>}
-                    <FeatureAddonContactForm addonKey={item.flow === "branding_sponsor" ? "branding_sponsor" : item.flow === "college_scoring" ? "college_scoring" : item.addonKey || ""} amount={priceCents} divisions={divisions} />
+                    <FeatureAddonContactForm addonKey={item.flow === "branding_sponsor" ? "branding_sponsor" : item.addonKey || ""} amount={priceCents} divisions={divisions} />
                   </div>
                 ) : checkingAuth ? (
                   <div className="py-6 flex justify-center">
@@ -371,37 +354,7 @@ const Checkout = () => {
                       )}
                     </div>
 
-                    {item.flow === "college_scoring" && (
-                      <div>
-                        <Label className="text-xs">Divisions</Label>
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-1">
-                          {[1, 2, 3, 4].map((d) => (
-                            <button
-                              key={d}
-                              type="button"
-                              onClick={() => setDivisions(d)}
-                              className={`rounded-lg border p-3 text-left transition-colors ${
-                                divisions === d
-                                  ? "border-secondary bg-secondary/10"
-                                  : "border-border hover:border-secondary/50"
-                              }`}
-                            >
-                              <p className="text-xs font-semibold text-foreground">
-                                {d} division{d > 1 ? "s" : ""}
-                              </p>
-                              <p className="font-display font-bold text-foreground">
-                                {dollars(COLLEGE_SCORING_CENTS[d])}
-                              </p>
-                            </button>
-                          ))}
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-1">
-                          Price key: {collegeScoringKey(divisions)}
-                        </p>
-                      </div>
-                    )}
-
-                    {(item.flow === "addon" || item.flow === "college_scoring") && (
+                    {item.flow === "addon" && (
                       <div className="max-w-xs">
                         <Label htmlFor="checkout-discount" className="text-xs">
                           Discount code (optional)

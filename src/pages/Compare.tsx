@@ -5,19 +5,19 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Callout, FinalCta, Hero, IconCard, SectionHead, fade } from "@/components/marketing/PageBits";
 
 const never = [
-  ["\"I had to build the whole event page myself.\"", "Your rep builds it for you."],
+  ["\"I was left to figure it all out alone.\"", "Your rep is on call, whether they build it or you do."],
   ["\"I could not get anyone on the phone.\"", "You have a named rep who knows your event."],
   ["\"I paid upfront and lost money.\"", "You only pay when your players pay."],
 ];
 type Mark = "x" | "warn";
 const rows: [string, Mark, string, string][] = [
   ["Dedicated rep", "x", "Self-service only", "Included on every plan, free or paid"],
-  ["Event page build", "x", "You build it yourself", "Your rep builds it for you"],
-  ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding"],
+  ["Event page build", "x", "You build it yourself", "Your choice: your rep builds it for you, or build it yourself with the same tools"],
+  ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
   ["Custom website", "x", "Basic form", "Fully branded event site"],
   ["Pricing model", "x", "Upfront fee or subscription", "Free to start, player-funded"],
   ["Payout timing", "warn", "Varies, sometimes delayed", "Direct to your Stripe account"],
-  ["Live leaderboard", "warn", "Often an add-on", "Built-in, branded"],
+  ["Live leaderboard", "warn", "Often an add-on", "Built-in, branded Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
   ["Mobile scoring", "warn", "Often requires an app", "Works in any browser"],
   ["Sponsor tools", "x", "Limited or none", "Clickable logos and sponsor packages"],
   ["White-label branding", "x", "Platform branding shows", "Remove our branding entirely"],
@@ -29,23 +29,23 @@ const rows: [string, Mark, string, string][] = [
 const pricing = [
   { title: "Most Platforms", hl: false, items: ["Charge $199 to $4,200 per year", "Fees due before your event", "You lose money if turnout is low", "Organizer pays upfront"] },
   { title: "TeeVents No Cost to Start", hl: true, items: ["$0 upfront", "5% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
-  { title: "TeeVents Enterprise", hl: false, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included"] },
+  { title: "TeeVents Enterprise", hl: false, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."] },
 ];
 const audiences = [
-  ["First-Time Organizers", "Free to start. Your rep builds everything. No risk."],
+  ["First-Time Organizers", "Free to start. Your rep builds it for you, or you build it yourself. You choose. No risk."],
   ["Nonprofits and Charities", "Player-funded fees. 501(c)(3) receipting. Auction tools."],
   ["Golf Courses and Clubs", "Enterprise plan with unlimited events. 0% transaction fees."],
   ["Repeat Tournament Directors", "Clone past events in one click. No double work."],
 ];
 const reasons = [
   [User, "A Named Rep on Every Plan", "Free or paid, you get a real person who knows your event."],
-  [Paintbrush, "Custom Leaderboard Colors", "Your rep matches every leaderboard to your event branding."],
+  [Paintbrush, "Custom Leaderboard Colors", "Your rep matches every leaderboard to your event branding. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
   [Globe, "Event Pages That Look Like Real Websites", "Fully branded microsites. Not a form. Not a template."],
   [Shield, "Payments You Can Trust", "Funds go directly to your Stripe account. We never hold your money."],
-  [Trophy, "Built for Golf, Not Generic Events", "Pairings, handicaps, scoring, and leaderboards built in."],
+  [Trophy, "Built for Golf, Not Generic Events", "Pairings, handicaps, scoring, and leaderboards built in. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
   [Rocket, "Zero Risk to Get Started", "Free to start. Pay only when your players register."],
 ] as const;
-const worries = ["Building your own event page from scratch", "Tracking down payments and chasing checks", "Printing and collecting paper scorecards", "Manually updating leaderboards", "Searching for someone to answer a question", "Paying for a platform that did not help you grow", "Rebuilding your event from scratch every year", "Wondering if your sponsors got enough visibility"];
+const worries = ["Being left to figure out your event page alone", "Tracking down payments and chasing checks", "Printing and collecting paper scorecards", "Manually updating leaderboards Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.", "Searching for someone to answer a question", "Paying for a platform that did not help you grow", "Rebuilding your event from scratch every year", "Wondering if your sponsors got enough visibility"];
 const quotes = [
   ["We have trusted the TeeVents team to organize and manage our NCAA-sanctioned golf tournaments for the past 10 years. That trust has only grown stronger, to the point where we would not choose any other organization to work with.", "Leonard Smoot", "President", "Black College Golf Coaches Association"],
   ["We turned over the golf tournament management duties to Roderick and the TeeVents team, and we have been beyond pleased with the service. From the initial setup to the conclusion of the event, everything was handled with the highest level of professionalism.", "Merral Jackson", "Tournament Director", "National Black College Alumni Hall of Fame"],
@@ -68,6 +68,8 @@ export default function Compare() {
       <Hero eyebrow="COMPARE" title="Why Organizers Choose TeeVents" subtitle="Most platforms sell you software and wish you luck. TeeVents delivers a finished event, with a dedicated rep who builds it for you.">
         <p className="mt-4 text-primary-foreground/70">See how TeeVents compares to other tournament and event management platforms.</p>
       </Hero>
+
+      <section className="py-10"><div className="container mx-auto max-w-4xl px-4"><SectionHead title="Your choice" /><p className="text-center leading-relaxed text-muted-foreground">Your rep builds your event page for you, live in 7 days or less. Or build it yourself with the same tools, with your rep on call if you want help. Either way, you keep full control and can edit anything, any time.</p></div></section>
 
       <section className="py-20"><div className="container mx-auto max-w-6xl px-4">
         <SectionHead title="Three Things You Will Never Hear From a TeeVents Customer" subtitle="These are the problems other platforms leave you to solve." />
@@ -118,7 +120,7 @@ export default function Compare() {
       <section className="bg-muted/40 py-20"><div className="container mx-auto max-w-4xl px-4">
         <SectionHead title="What You Will Never Worry About Again" subtitle="These are the things our customers stopped worrying about on day one." />
         <motion.ul {...fade} className="grid gap-4 md:grid-cols-2">{worries.map(w => <li key={w} className="flex gap-3 rounded-lg bg-card p-4 shadow-sm"><X className="h-5 w-5 shrink-0 text-destructive" />{w}</li>)}</motion.ul>
-        <Callout>Every one of these is handled by TeeVents and your dedicated rep.</Callout>
+        <Callout>Every one of these is handled, by your rep, or by you with the same tools.</Callout>
       </div></section>
 
       <section className="py-20"><div className="container mx-auto max-w-5xl px-4">
@@ -136,7 +138,7 @@ export default function Compare() {
           <AccordionItem key={q} value={q}><AccordionTrigger className="text-left">{q}</AccordionTrigger><AccordionContent className="text-muted-foreground">{a}</AccordionContent></AccordionItem>))}</Accordion>
       </div></section>
 
-      <FinalCta title="Ready to See the Difference?" subtitle="Free for organizers. A dedicated rep builds your event for you." />
+      <FinalCta title="Ready to See the Difference?" subtitle="Free for organizers. Your rep builds it for you, or you build it yourself. You choose." />
     </Layout>
   );
 }

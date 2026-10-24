@@ -1,3 +1,9 @@
+## October 24 scoped copy and Stripe invites
+- [ ] Rebalance Compare copy and add exact leaderboard qualifiers on four public pages
+- [ ] Add new-connection Stripe acknowledgments without re-prompting connected accounts
+- [ ] Add admin single-organizer invite/status and unconnected portal banner
+- [ ] Verify protected accounts, recipient isolation, and requested screens without publishing
+
 
 ## Seven-day promise and page-build sale removal
 - [x] Remove safe page-build sale presentation from Pricing/Plans, FAQ, bundle bullet and unowned Upgrades options; retain purchased-status display and all checkout/pricing logic

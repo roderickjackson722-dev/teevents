@@ -1,0 +1,2 @@
+ALTER TABLE public.tournament_refund_requests ADD COLUMN IF NOT EXISTS fee_breakdown jsonb;
+COMMENT ON COLUMN public.tournament_refund_requests.fee_breakdown IS 'Immutable amounts confirmed for new Stripe refunds; historical requests remain null.';

@@ -169,6 +169,13 @@
       "when": 1791845778764,
       "tag": "0023_feature_addon_requests",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1792833522039,
+      "tag": "0024_refund_fee_breakdown",
+      "breakpoints": true
     }
   ]
 }

@@ -11727,6 +11727,7 @@ export type Database = {
           amount_cents: number
           claim_token: string
           created_at: string
+          fee_breakdown: Json | null
           id: string
           reason: string
           registration_id: string
@@ -11741,6 +11742,7 @@ export type Database = {
           amount_cents: number
           claim_token?: string
           created_at?: string
+          fee_breakdown?: Json | null
           id?: string
           reason: string
           registration_id: string
@@ -11755,6 +11757,7 @@ export type Database = {
           amount_cents?: number
           claim_token?: string
           created_at?: string
+          fee_breakdown?: Json | null
           id?: string
           reason?: string
           registration_id?: string
@@ -15173,6 +15176,7 @@ export type Database = {
           amount_cents: number
           claim_token: string
           created_at: string
+          fee_breakdown: Json | null
           id: string
           reason: string
           registration_id: string

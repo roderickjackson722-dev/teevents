@@ -29,7 +29,7 @@ export async function prepareRefund(input: { registrationId: string; requestId?:
     admin.from("platform_transactions").select("stripe_session_id, stripe_payment_intent_id, metadata").eq("tournament_id", tournament.id).eq("type", "registration").in("status", ["paid", "succeeded"]).order("created_at", { ascending: false }),
   ]);
   if (txError) throw new Error("Original payment could not be read.");
-  const transaction = transactions?.find(row => {
+  const transaction = transactions?.find((row: { metadata: unknown }) => {
     const metadata = row.metadata as { registration_ids?: unknown } | null;
     const ids = metadata?.registration_ids;
     return Array.isArray(ids) ? ids.includes(registration.id) : typeof ids === "string" && ids.split(",").includes(registration.id);
@@ -54,6 +54,7 @@ export async function prepareRefund(input: { registrationId: string; requestId?:
   const ids = session.metadata?.registration_ids?.split(",").filter(Boolean) || [];
   const index = ids.indexOf(registration.id);
   const metadata = session.metadata || {};
+  if (metadata.tournament_id !== tournament.id) throw new Error("The payment does not belong to this tournament.");
   const cents = (field: string): number => {
     const value = Number(metadata[field]);
     if (metadata[field] == null || !Number.isSafeInteger(value) || value < 0) throw new Error("Original registration amounts are missing. No refund was issued.");
@@ -74,7 +75,7 @@ export async function prepareRefund(input: { registrationId: string; requestId?:
   let ownRefunded = 0;
   for await (const refund of stripe.refunds.list({ charge: charge.id, limit: 100 }, opts)) {
     if (refund.status === "failed" || refund.status === "canceled") continue;
-    const record = history?.find(row => row.stripe_refund_id === refund.id);
+    const record = history?.find((row: { stripe_refund_id: string | null }) => row.stripe_refund_id === refund.id);
     const refundRegistration = refund.metadata?.teevents_registration_id;
     if (!refundRegistration && !record) throw new Error("An existing Stripe refund needs review before another refund can be issued.");
     recordedTotal += refund.amount;

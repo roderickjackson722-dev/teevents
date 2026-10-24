@@ -25,9 +25,22 @@ export const confirmRegistrationRefund = createServerFn({ method: "POST" })
     if (prepared.fingerprint !== data.fingerprint) throw new Error("Refund amounts changed. Review the latest amounts before confirming.");
     const { quote, stripe, opts, admin, registration, tournament, charge } = prepared;
     const recordId = data.requestId || data.quoteId;
+    const { error: lockError } = await admin.from("refund_processing_locks").insert({ registration_id: registration.id, refund_record_id: recordId });
+    if (lockError) throw new Error("A refund for this registration is already being processed or needs review. No additional refund was issued.");
+    // Re-read after locking so two stale confirmations cannot refund the same balance.
+    try {
+      const locked = await prepareRefund(data, context);
+      if (locked.fingerprint !== data.fingerprint) throw new Error("Refund amounts changed. Review the latest amounts before confirming.");
+    } catch (error) {
+      await admin.from("refund_processing_locks").delete().eq("registration_id", registration.id).eq("refund_record_id", recordId);
+      throw error;
+    }
     if (!data.requestId) {
       const { error } = await admin.from("tournament_refund_requests").insert({ id: recordId, tournament_id: tournament.id, registration_id: registration.id, amount_cents: quote.refundAmountCents, reason: "Organizer-issued refund", status: "pending", fee_breakdown: quote as any, admin_notes: data.adminNotes || null });
-      if (error && error.code !== "23505") throw new Error("Could not create a refund record. No refund was issued.");
+      if (error) {
+        await admin.from("refund_processing_locks").delete().eq("registration_id", registration.id).eq("refund_record_id", recordId);
+        throw new Error("Could not create a refund record. No refund was issued.");
+      }
     }
     const params: import("stripe").default.RefundCreateParams = {
       payment_intent: quote.paymentIntentId,
@@ -44,5 +57,6 @@ export const confirmRegistrationRefund = createServerFn({ method: "POST" })
       const { error } = await admin.from("tournament_registrations").update({ payment_status: "refunded" }).eq("id", registration.id);
       if (error) throw new Error("Stripe refund completed and was recorded, but roster status could not be updated. Contact TeeVents.");
     }
+    if (succeeded) await admin.from("refund_processing_locks").delete().eq("registration_id", registration.id).eq("refund_record_id", recordId);
     return { refundId: refund.id, succeeded, fullyRefunded: succeeded && quote.refundAmountCents === quote.refundableCents };
   });

@@ -39,3 +39,7 @@ export function takeStripeLoginReminder(): boolean {
   try { sessionStorage.setItem(KEY, JSON.stringify({ ...current, pending: false })); } catch { return false; }
   return true;
 }
+
+export function shouldShowStripeLoginReminder(pending: boolean, linkedAccount: string | null | undefined, adminMode: boolean): boolean {
+  return pending && !linkedAccount && !adminMode;
+}

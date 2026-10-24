@@ -5,7 +5,7 @@ import { withDashboardContext } from "@/lib/dashboardContext";
 import { Button } from "@/components/ui/button";
 import { CreditCard } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { takeStripeLoginReminder } from "@/lib/stripeLoginReminder";
+import { takeStripeLoginReminder, shouldShowStripeLoginReminder } from "@/lib/stripeLoginReminder";
 
 export default function StripeConnectBanner({ organizationId, loginReminder = false }: { organizationId: string; loginReminder?: boolean }) {
   const [params] = useSearchParams();
@@ -18,7 +18,7 @@ export default function StripeConnectBanner({ organizationId, loginReminder = fa
       setNeedsConnection(disconnected);
       if (!disconnected || data?.stripe_account_id) setReminderOpen(false);
       // Consume only after a successful read. Never re-prompt any linked account.
-      if (loginReminder && takeStripeLoginReminder()) setReminderOpen(!data?.stripe_account_id);
+      if (loginReminder && takeStripeLoginReminder()) setReminderOpen(shouldShowStripeLoginReminder(true, data?.stripe_account_id, false));
     }
   }, [organizationId, loginReminder]);
   useEffect(() => {

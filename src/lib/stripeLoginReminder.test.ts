@@ -1,9 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { Session } from "@supabase/supabase-js";
-import { nextLoginReminder } from "./stripeLoginReminder";
+import { nextLoginReminder, shouldShowStripeLoginReminder } from "./stripeLoginReminder";
 
 const session = (id: string) => ({ access_token: `header.${btoa(JSON.stringify({ session_id: id }))}.signature`, user: { id: "organizer" } }) as Session;
 describe("organizer login reminder", () => {
+  it("never prompts linked accounts or admin mode", () => {
+    expect(shouldShowStripeLoginReminder(true, "acct_connected", false)).toBe(false);
+    expect(shouldShowStripeLoginReminder(true, null, true)).toBe(false);
+    expect(shouldShowStripeLoginReminder(true, null, false)).toBe(true);
+  });
   it("marks a new login for a reminder", () => {
     expect(nextLoginReminder("SIGNED_IN", session("new-login"), null)?.pending).toBe(true);
   });

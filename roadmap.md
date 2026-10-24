@@ -1,7 +1,7 @@
 ## Homepage/event search approval and Sample footer
 - [x] Add Platform → Sample linking to /sample-event and verify navigation; preview only
 - [x] Research search terms and inspect existing Google Business listing without changing it
-- [ ] Apply homepage/event search changes: waiting for user approval of proposed copy and metadata scope
+- [x] Apply approved homepage/event search copy, metadata and site icon in preview only; crawler and browser checks passed on homepage and four real event URLs, four formatter tests passed; existing Bolton fixture integration test remains failing because fixture is unavailable
 - [ ] Update existing Google listing: waiting for confirmation of intended profile and real-world business name
 
 ## October 24 scoped copy and Stripe invites

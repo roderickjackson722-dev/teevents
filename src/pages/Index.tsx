@@ -25,7 +25,7 @@ function HomeActions({ hero = false }: { hero?: boolean }) {
 export default function Index() {
   const testimonial = ORGANIZER_TESTIMONIALS[0];
   return <Layout>
-    <SEO title="TeeVents | The Golf Tournament Platform That Builds Your Event For You" description="Every event includes a dedicated TeeVents rep who builds your event page, registration, sponsor page, scoring, pairings, and leaderboard, free or paid." path="/" />
+    <SEO title="Golf Tournament Management Software for Organizers & Courses | TeeVents" description="Golf tournament management software for charities, organizers, and golf courses. Build your event page yourself or with an included dedicated TeeVents rep." path="/" />
     <div className="homepage">
       <section aria-labelledby="homepage-title" className="relative overflow-hidden bg-primary text-primary-foreground">
         <img src={heroGolf} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
@@ -33,6 +33,7 @@ export default function Index() {
         <div className="relative mx-auto flex min-h-[680px] max-w-5xl flex-col justify-center px-6 py-14 text-center md:py-20">
           <h1 id="homepage-title" className="font-display text-3xl font-bold leading-tight md:text-5xl lg:text-6xl">The Golf Tournament Platform That <span className="text-secondary">Builds Your Event For You</span></h1>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Every event includes a dedicated TeeVents rep, free or paid, who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard. You focus on running your tournament while we handle the software. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.</p>
+          <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Golf tournament management software for charity fundraisers, corporate golf outings, golf courses, and golf leagues.</p>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 md:text-base">No spreadsheets. No manual setup. No stress.</p>
           <div className="mt-8"><HomeActions hero /></div>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-primary-foreground/85">We build your event page for you — live in 7 days or less.</p>

@@ -69,6 +69,21 @@ export async function getLeagueMeta(slug: string): Promise<PageMeta> {
   };
 }
 
+/** Shared by crawler metadata and the hydrated public event page; never prompts registration. */
+export function tournamentSearchDescription(row: Record<string, unknown> | undefined): string {
+  const title = plain(row?.title) || "Golf Tournament";
+  const rawDate = plain(row?.date);
+  const parsedDate = /^\d{4}-\d{2}-\d{2}$/.test(rawDate) ? new Date(`${rawDate}T12:00:00Z`) : null;
+  const date = parsedDate && Number.isFinite(parsedDate.getTime())
+    ? parsedDate.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : "";
+  const course = plain(row?.course_name);
+  const location = plain(row?.location);
+  const where = [course, location].filter((value, index, values) => value && values.findIndex(item => item.toLowerCase() === value.toLowerCase()) === index).join(", ");
+  const details = `${title}${date ? ` on ${date}` : ""}${where ? ` at ${where}` : ""}.`;
+  const description = plain(row?.description);
+  return clamp(`${details} Golf tournament details${description ? `. ${description}` : " on TeeVents."}`);
+}
+
 export async function getTournamentMeta(slug: string, route: "t" | "tournament" | "pairings"): Promise<PageMeta> {
   const filter = `or=(custom_slug.eq.${encodeURIComponent(slug)},slug.eq.${encodeURIComponent(slug)})`;
   const params = `select=title,date,location,course_name,description,site_hero_image_url,site_logo_url,image_url&${filter}&site_published=eq.true&limit=1`;
@@ -86,7 +101,7 @@ export async function getTournamentMeta(slug: string, route: "t" | "tournament" 
       url: `${SITE}/pairings/${slug}`,
     };
   }
-  return { title: `${title} | TeeVents Golf Tournaments`, description: plain(row?.description) || `Join us for ${title}${date ? ` on ${date}` : ""}${where ? ` at ${where}` : ""}. Register now!`, image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url), url: `${SITE}/${route}/${slug}` };
+  return { title: `${title} | TeeVents Golf Tournaments`, description: tournamentSearchDescription(row), image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url), url: `${SITE}/${route}/${slug}` };
 }
 
 /** Player "Team HQ" mobile homepage: /team/{slug} */

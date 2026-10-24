@@ -25,6 +25,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { formatCents, formatMoney } from "@/lib/formatCurrency";
+import { tournamentSearchDescription } from "@/lib/serverMeta";
 
 
 interface PublicSponsor {
@@ -103,10 +104,10 @@ const tournamentShareMeta = (tournament: TournamentSite, fallbackSlug?: string) 
   const publicSlug = tournament.custom_slug || tournament.slug || fallbackSlug || "";
   const pageUrl = `${SHARE_BASE_URL}/t/${publicSlug}`;
   const imageUrl = toAbsoluteShareUrl(tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url);
-  const description = `Join us for ${tournament.title}${tournament.date ? ` on ${new Date(tournament.date).toLocaleDateString()}` : ""}${tournament.location ? ` at ${tournament.location}` : ""}. ${registrationCopy(publicSectionTitle(tournament.public_section_titles, "registration", "Registration")).action}!`;
+  const description = tournamentSearchDescription({ title: tournament.title, date: tournament.date, location: tournament.location, course_name: tournament.course_name, description: tournament.description });
 
   return {
-    pageTitle: `${tournament.title} – ${SHARE_SITE_NAME}`,
+    pageTitle: `${tournament.title} | ${SHARE_SITE_NAME}`,
     shareTitle: tournament.title,
     description,
     imageUrl,

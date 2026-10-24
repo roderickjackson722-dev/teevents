@@ -20,6 +20,7 @@ import {
   Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { hasStripeConnectionConsent, stripeConnectionAcknowledgments } from "@/lib/stripeConnectConsent";
 
 interface PayoutMethod {
   id: string;
@@ -63,6 +64,8 @@ export default function PayoutSettings() {
   const [searchParams] = useSearchParams();
   const [loading, setLoading] = useState(true);
   const [connectingStripe, setConnectingStripe] = useState(false);
+  const [stripeAcknowledgments, setStripeAcknowledgments] = useState<boolean[]>(Array(5).fill(false));
+  const stripeConsentComplete = hasStripeConnectionConsent(stripeAcknowledgments);
   const [openingDashboard, setOpeningDashboard] = useState(false);
 
   const handleOpenStripeDashboard = async () => {
@@ -111,6 +114,7 @@ export default function PayoutSettings() {
 
   useEffect(() => {
     if (org?.orgId) {
+      setStripeAcknowledgments(Array(5).fill(false));
       fetchPayoutMethodAndSync();
       fetchAuditLogs();
       fetchOrgSettings();
@@ -284,6 +288,10 @@ export default function PayoutSettings() {
   };
 
   const handleStripeConnect = async () => {
+    if (!stripeConsentComplete) {
+      toast.error("Please acknowledge all five Stripe connection statements before continuing.");
+      return;
+    }
     if (!ackFee) {
       toast.error("Please acknowledge the 5% platform fee before continuing.");
       return;
@@ -510,6 +518,7 @@ export default function PayoutSettings() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
+            {!stripeConnected && <p className="rounded-lg border border-border bg-muted/30 p-4 text-sm leading-relaxed">Connect your Stripe account so registration money goes straight to you. You will sign in to Stripe, or create a free account, and link it here. Setup takes about 5 to 10 minutes. The account should be in your organization's name.</p>}
             {/* Prominent 2-7 day clearing window notice — keep this front and center */}
             <div className="rounded-lg border-2 border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 p-4">
               <div className="flex items-start gap-3">
@@ -567,6 +576,7 @@ export default function PayoutSettings() {
                     {payoutMethod?.stripe_account_last4 && (
                       <p><span className="font-medium text-foreground">Account:</span> •••• {payoutMethod.stripe_account_last4}</p>
                     )}
+                    {payoutMethod?.bank_change_status !== "pending" && payoutMethod?.stripe_account_brand && payoutMethod?.stripe_account_last4 && <p className="pt-2 leading-relaxed">Stripe connected and verified. Payouts go to {payoutMethod.stripe_account_brand} ending in {payoutMethod.stripe_account_last4}. TeeVents sees only your bank name and last four digits, never your full account number.</p>}
                   </div>
                 </div>
                 {selectedMethod !== "stripe" && pendingMethod === "stripe" && (
@@ -608,6 +618,10 @@ export default function PayoutSettings() {
               </>
             ) : (
               <>
+                <div className="rounded-lg border-2 border-secondary bg-secondary/10 p-4 text-sm leading-relaxed text-foreground" role="note">TeeVents never sees, stores, or has access to your full bank account number, routing number, or card numbers. Your bank and card details are entered on Stripe's secure pages, not on TeeVents, and they stay with Stripe and your bank. TeeVents cannot withdraw money from your account or move your funds. Registration payments go from your golfers directly into your Stripe account, and Stripe deposits them to your bank. TeeVents never holds your money. Payments are processed by Stripe, certified to PCI DSS Level 1, with 256-bit SSL encryption and Stripe Radar fraud protection.</div>
+                <div className="space-y-3" aria-label="Stripe connection acknowledgments">
+                  {stripeConnectionAcknowledgments.map((label, index) => <div key={label} className="flex items-start gap-3"><Checkbox id={`stripe-privacy-${index}`} checked={stripeAcknowledgments[index]} onCheckedChange={checked => setStripeAcknowledgments(current => current.map((value, item) => item === index ? checked === true : value))} /><Label htmlFor={`stripe-privacy-${index}`} className="cursor-pointer text-sm font-normal leading-relaxed">{label}</Label></div>)}
+                </div>
                 <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-4">
                   <li>Automatic split at checkout — net proceeds go directly to your Stripe account</li>
                   <li>Fastest option: no manual work needed</li>
@@ -633,11 +647,11 @@ export default function PayoutSettings() {
                         Click below to securely finish connecting your bank account through Stripe. This is the last step required to save Stripe Connect as your payout method.
                       </p>
                       <div className="flex flex-wrap gap-2 pt-1">
-                        <Button variant="secondary" onClick={handleStripeConnect} disabled={connectingStripe} className="money-main-save">
+                        <Button variant="secondary" onClick={handleStripeConnect} disabled={connectingStripe || !stripeConsentComplete || !ackFee} className="money-main-save">
                           {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CheckCircle2 className="h-4 w-4 mr-2" />}
-                          {stripeStarted ? "Confirm & Finish Stripe Setup" : "Confirm & Connect Stripe Account"}
+                          {stripeStarted ? "Confirm & Finish Stripe Setup" : "Connect with Stripe"}
                         </Button>
-                        <Button variant="outline" onClick={handleStripeConnect} disabled={connectingStripe}>
+                        <Button variant="outline" onClick={handleStripeConnect} disabled={connectingStripe || !stripeConsentComplete || !ackFee}>
                           {connectingStripe ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <CreditCard className="h-4 w-4 mr-2" />}
                           Save Payment Method
                         </Button>
@@ -647,9 +661,9 @@ export default function PayoutSettings() {
                   </div>
                 )}
                 {pendingMethod !== "stripe" && (
-                  <Button variant="outline" onClick={() => beginMethodSelection("stripe")}>
+                  <Button variant="outline" disabled={!stripeConsentComplete} onClick={() => beginMethodSelection("stripe")}>
                     <CreditCard className="h-4 w-4 mr-2" />
-                    Select Stripe Connect
+                    Connect with Stripe
                   </Button>
                 )}
               </>

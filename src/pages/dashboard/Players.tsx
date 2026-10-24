@@ -1,3 +1,4 @@
+import RegistrationRefundButton from "@/components/dashboard/RegistrationRefundButton";
 import PairingsScoringSteps from "@/components/dashboard/PairingsScoringSteps";
 import PlayersTabs from "@/components/dashboard/PlayersTabs";
 import { paymentStatusClasses, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
@@ -3133,37 +3134,9 @@ const Players = () => {
                           <Pencil className="h-4 w-4" />
                         </button>
                         {p.payment_status === "paid" && (
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <button className="text-muted-foreground hover:text-amber-600 transition-colors" title="Issue refund">
-                                <RotateCcw className="h-4 w-4" />
-                              </button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Refund Player</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Process a full refund for {p.first_name} {p.last_name}? This will reverse the payment through Stripe.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction onClick={async () => {
-                                  const { data, error } = await supabase.functions.invoke("process-refund", {
-                                    body: { registration_id: p.id },
-                                  });
-                                  if (error || data?.error) {
-                                    toast({ title: "Refund failed", description: data?.error || error?.message, variant: "destructive" });
-                                  } else {
-                                    toast({ title: "Refund processed", description: `${p.first_name} ${p.last_name} has been refunded.` });
-                                    setAllPlayers((prev) => prev.map((pl) => pl.id === p.id ? { ...pl, payment_status: "refunded" } : pl));
-                                  }
-                                }}>
-                                  Process Refund
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+<RegistrationRefundButton registrationId={p.id} iconOnly demoGuard={demoGuard} onRefund={async fullyRefunded => {
+                            if (fullyRefunded) setAllPlayers(prev => prev.map(player => player.id === p.id ? { ...player, payment_status: "refunded" } : player));
+                          }} />
                         )}
                         {String(p.status || "active").toLowerCase() === "wd" ? (
                           <button

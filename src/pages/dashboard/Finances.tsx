@@ -1,3 +1,4 @@
+import RegistrationRefundButton, { RefundFeeRecord } from "@/components/dashboard/RegistrationRefundButton";
 import { normalizePaymentStatus, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useEffect, useState, useCallback, Fragment } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
@@ -48,6 +49,7 @@ interface RefundRequest {
   admin_notes: string | null;
   created_at: string;
   resolved_at: string | null;
+  fee_breakdown?: unknown;
   registration?: {
     first_name: string;
     last_name: string;
@@ -378,18 +380,11 @@ const Finances = () => {
   };
 
   // Refund actions
-  const handleRefundAction = async (requestId: string, action: "approved" | "denied") => {
+  const handleRefundAction = async (requestId: string, action: "denied") => {
     if (demoGuard()) return;
     setProcessingId(requestId);
     try {
-      if (action === "approved") {
-        const { data, error } = await supabase.functions.invoke("process-refund", {
-          body: { refund_request_id: requestId, admin_notes: adminNotes[requestId] || "" },
-        });
-        if (error) throw error;
-        if (data?.error) throw new Error(data.error);
-        toast.success("Refund processed successfully!");
-      } else {
+
         const { error } = await supabase
           .from("tournament_refund_requests")
           .update({
@@ -400,7 +395,6 @@ const Finances = () => {
           .eq("id", requestId);
         if (error) throw error;
         toast.success("Refund request denied.");
-      }
       await fetchData();
     } catch (err: any) {
       toast.error(err.message || "Failed to process refund");
@@ -408,22 +402,7 @@ const Finances = () => {
     setProcessingId(null);
   };
 
-  const handleDirectRefund = async (registrationId: string) => {
-    if (demoGuard()) return;
-    setProcessingId(registrationId);
-    try {
-      const { data, error } = await supabase.functions.invoke("process-refund", {
-        body: { registration_id: registrationId },
-      });
-      if (error) throw error;
-      if (data?.error) throw new Error(data.error);
-      toast.success("Refund processed successfully!");
-      await fetchData();
-    } catch (err: any) {
-      toast.error(err.message || "Failed to process refund");
-    }
-    setProcessingId(null);
-  };
+
 
   const handleResendConfirmation = async (registrationId: string) => {
     if (demoGuard()) return;
@@ -1060,6 +1039,7 @@ const Finances = () => {
                     </div>
                   )}
 
+<RefundFeeRecord breakdown={req.fee_breakdown} />
                   {req.status === "pending" && (
                     <div className="space-y-2 pt-2 border-t border-border">
                       <Textarea
@@ -1070,30 +1050,7 @@ const Finances = () => {
                         className="text-sm"
                       />
                       <div className="flex gap-2">
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button size="sm" disabled={processingId === req.id} className="bg-emerald-600 hover:bg-emerald-700">
-                              {processingId === req.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : <CheckCircle className="h-3.5 w-3.5 mr-1" />}
-                              Approve & Refund
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Confirm Refund</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Are you sure you want to approve a ${(req.amount_cents / 100).toFixed(2)} refund for{" "}
-                                <span className="font-semibold">{req.registration?.first_name} {req.registration?.last_name}</span>?
-                                The refund will be processed through Stripe and cannot be undone.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction onClick={() => handleRefundAction(req.id, "approved")} className="bg-emerald-600 hover:bg-emerald-700">
-                                Yes, Process Refund
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
+<RegistrationRefundButton registrationId={req.registration_id} requestId={req.id} amountCents={req.amount_cents} adminNotes={adminNotes[req.id]} demoGuard={demoGuard} disabled={processingId === req.id} onRefund={async () => { await fetchData(); }} />
 
                         <AlertDialog>
                           <AlertDialogTrigger asChild>

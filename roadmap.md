@@ -1,4 +1,11 @@
 ## October 24 scoped copy and Stripe invites
+## Homepage/event search approval and Sample footer
+- [x] Add Platform → Sample linking to /sample-event and verify navigation; preview only
+- [x] Research search terms and inspect existing Google Business listing without changing it
+- [ ] Apply homepage/event search changes: waiting for user approval of proposed copy and metadata scope
+- [ ] Update existing Google listing: waiting for confirmation of intended profile and real-world business name
+
+## October 24 scoped copy and Stripe invites
 - [x] Rebalance Compare copy and add exact leaderboard qualifiers on four public pages
 - [x] Add new-connection Stripe acknowledgments without re-prompting connected accounts
 - [x] Add admin single-organizer invite/status and unconnected portal banner using existing email audit records

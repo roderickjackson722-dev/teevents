@@ -44,7 +44,7 @@ const Footer = (_props: { includeLeagueSearch?: boolean }) => {
 
           <div className="grid w-full max-w-3xl grid-cols-2 gap-8 text-sm md:grid-cols-4">
             {[
-              ["Platform", [["Features", "/features"], ["Pricing", "/pricing"], ["How It Works", "/#how-it-works"], ["Compare", "/compare"]]],
+              ["Platform", [["Features", "/features"], ["Pricing", "/pricing"], ["How It Works", "/#how-it-works"], ["Compare", "/compare"], ["Sample", "/sample-event"]]],
               ["Who It's For", [["For Organizers", "/for-organizers"], ["For Golfers", "/for-golfers"], ["Services", "/services"]]],
               ["Resources", [["Organizer Login", "/get-started?mode=signin"], ["Contact", "/contact"]]],
               ["Company", [["About", "/about"], ["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"]]],

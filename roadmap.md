@@ -1,4 +1,3 @@
-## October 24 scoped copy and Stripe invites
 ## Homepage/event search approval and Sample footer
 - [x] Add Platform → Sample linking to /sample-event and verify navigation; preview only
 - [x] Research search terms and inspect existing Google Business listing without changing it

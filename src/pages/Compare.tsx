@@ -13,11 +13,11 @@ type Mark = "x" | "warn";
 const rows: [string, Mark, string, string][] = [
   ["Dedicated rep", "x", "Self-service only", "Included on every plan, free or paid"],
   ["Event page build", "x", "You build it yourself", "Your choice: your rep builds it for you, or build it yourself with the same tools"],
-  ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
+  ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding"],
   ["Custom website", "x", "Basic form", "Fully branded event site"],
   ["Pricing model", "x", "Upfront fee or subscription", "Free to start, player-funded"],
   ["Payout timing", "warn", "Varies, sometimes delayed", "Direct to your Stripe account"],
-  ["Live leaderboard", "warn", "Often an add-on", "Built-in, branded Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
+  ["Live leaderboard", "warn", "Often an add-on", "Built-in, branded"],
   ["Mobile scoring", "warn", "Often requires an app", "Works in any browser"],
   ["Sponsor tools", "x", "Limited or none", "Clickable logos and sponsor packages"],
   ["White-label branding", "x", "Platform branding shows", "Remove our branding entirely"],
@@ -91,7 +91,7 @@ export default function Compare() {
             <div key={c} className="grid grid-cols-[1fr_1fr_1fr] border-t border-border text-sm md:text-base">
               <div className="p-3 font-medium md:p-4">{c}</div>
               <div className="flex gap-2 p-3 text-muted-foreground md:p-4"><No m={m} />{t}</div>
-              <div className="flex gap-2 bg-secondary/15 p-3 font-medium md:p-4"><Yes />{us}</div>
+              <div className="flex gap-2 bg-secondary/15 p-3 font-medium md:p-4"><Yes /><span>{us}{(c === "Live leaderboard" || c === "Custom leaderboard colors") && <span className="mt-2 block text-sm font-normal">Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.</span>}</span></div>
             </div>))}
         </motion.div>
       </div></section>

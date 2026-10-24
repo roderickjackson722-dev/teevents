@@ -53,8 +53,10 @@ export const sendStripeConnectInvite = createServerFn({ method: "POST" })
     const firstName = (owner.name || ownerData.user.user_metadata?.full_name || ownerData.user.user_metadata?.name || "Organizer").trim().split(/\s+/)[0];
     const content = stripeConnectInviteContent(tournament.title, firstName, "https://www.teevents.golf/get-started?mode=signin");
     const messageId = crypto.randomUUID();
-    const { data: pending, error: pendingError } = await admin.from("email_send_log").insert({ message_id: messageId, template_name: templateName, recipient_email: email, subject: content.subject, status: "pending", source: "admin-stripe-connect-invite", tournament_id: data.tournamentId, organization_id: tournament.organization_id, triggered_by: context.userId }).select("id").single();
+    const audit = { message_id: messageId, template_name: templateName, recipient_email: email, subject: content.subject, source: "admin-stripe-connect-invite", tournament_id: data.tournamentId, organization_id: tournament.organization_id, triggered_by: context.userId };
+    const { data: pending, error: pendingError } = await admin.from("email_send_log").insert({ ...audit, status: "pending" }).select("id").single();
     if (pendingError || !pending) throw new Error("Could not record invite. No email was sent.");
+    let accepted = false;
     try {
       const response = await fetch("https://api.resend.com/emails", {
         method: "POST", headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json", "Idempotency-Key": messageId },
@@ -67,12 +69,13 @@ export const sendStripeConnectInvite = createServerFn({ method: "POST" })
         throw new Error(`Email provider failed [${response.status}]: ${body}`);
       }
       const result = await response.json() as { id?: string };
+      accepted = true;
       const sentAt = new Date().toISOString();
-      const { error: saveError } = await admin.from("email_send_log").update({ status: "sent", resend_id: result.id ?? null, created_at: sentAt }).eq("id", pending.id);
+      const { error: saveError } = await admin.from("email_send_log").insert({ ...audit, status: "sent", resend_id: result.id ?? null, created_at: sentAt });
       if (saveError) throw new Error("Email accepted, but invite status could not be saved. Do not resend until status is checked.");
       return { sentAt };
     } catch (error) {
-      await admin.from("email_send_log").update({ status: "failed", error_message: error instanceof Error ? error.message : "Email failed" }).eq("id", pending.id);
+      if (!accepted) await admin.from("email_send_log").insert({ ...audit, status: "failed", error_message: error instanceof Error ? error.message : "Email failed" });
       throw error;
     }
   });

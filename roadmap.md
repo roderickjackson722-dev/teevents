@@ -1,6 +1,6 @@
 ## October 24 login, check payments and refunds
 - [ ] Add organizer-login-only unconnected Stripe modal; preserve admins, connected accounts, banner and consent
-- [ ] Check existing check payments and remove offers only if no recorded/pending event uses them
+- [ ] Check-payment removal STOPPED: six paid check registrations on 21st Annual Huntsville Bible College Academic Golf Tournament Fundraiser; requires deliberate closeout first, no options changed
 - [ ] Add exact public Refund Policy page and Company footer link
 - [ ] Add confirmed actual refund-cost breakdown, retain platform fees and record new refund breakdowns; scoped exception authorized
 - [ ] Verify safety rules, signed-in flow and public page in preview only

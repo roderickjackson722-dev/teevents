@@ -8421,6 +8421,24 @@ export type Database = {
           },
         ]
       }
+      refund_processing_locks: {
+        Row: {
+          created_at: string
+          refund_record_id: string
+          registration_id: string
+        }
+        Insert: {
+          created_at?: string
+          refund_record_id: string
+          registration_id: string
+        }
+        Update: {
+          created_at?: string
+          refund_record_id?: string
+          registration_id?: string
+        }
+        Relationships: []
+      }
       registration_groups: {
         Row: {
           cart_sign_names: Json | null

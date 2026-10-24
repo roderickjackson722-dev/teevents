@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
         `🏌️ <strong>${playerName}</strong> was added manually to <strong>${tournament.title || "your tournament"}</strong>.`,
         reg.email ? `📧 ${reg.email}${reg.phone ? ` • 📱 ${reg.phone}` : ""}` : "",
         paymentLine,
-        `<em>This entry did not go through online checkout. Payment is being handled offline (cash, check, or invoice) and must be collected manually.</em>`,
+        `<em>This entry did not go through online checkout. Payment is being handled offline and must be collected manually.</em>`,
       ].filter(Boolean) as string[], answersHtml),
       tournament.id,
     );

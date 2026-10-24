@@ -16,14 +16,14 @@ import { Loader2, Download, Mail, Save, RotateCcw, Users, DollarSign, Send, Plus
 
 const ENTRY_TYPES = [
   { value: "online", label: "Paid (online)" },
-  { value: "cash", label: "Paid (cash/check)" },
+  { value: "cash", label: "Paid (cash)" },
   { value: "comped_free", label: "Comped (free)" },
   { value: "comped_discount", label: "Comped (discount)" },
 ];
 
 const ENTRY_LABEL: Record<string, string> = {
   online: "Online",
-  cash: "Cash/Check",
+  cash: "Cash",
   check: "Cash/Check",
   comped_free: "Comped",
   comped_discount: "Comped (disc.)",

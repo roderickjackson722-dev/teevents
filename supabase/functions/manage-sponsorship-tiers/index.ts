@@ -70,7 +70,7 @@ async function recordManualSponsorPayment(
         `🏢 <strong>${reg.company_name || "Sponsor"}</strong> was recorded as a <strong>${tierName}</strong> sponsor.`,
         reg.contact_email ? `📧 ${reg.contact_email}${reg.contact_phone ? ` • 📱 ${reg.contact_phone}` : ""}` : "",
         `💰 Sponsorship amount: <strong>$${(gross / 100).toFixed(2)}</strong>`,
-        `<em>This is a <strong>manual add-on</strong>. It did not go through online checkout — <strong>payment must be collected manually</strong> by the organizer (cash, check, or invoice).</em>`,
+        `<em>This is a <strong>manual add-on</strong>. It did not go through online checkout — <strong>payment must be collected manually</strong> by the organizer.</em>`,
       ].filter(Boolean) as string[]),
       tournament.id,
     );

@@ -77,7 +77,6 @@ export function buildPostEventOrganizerEmail(opts: {
 }) {
   const vars = { organizer_name: opts.organizerName, tournament_name: opts.tournamentName };
   const subject = fill(opts.config.subject || DEFAULT_POST_EVENT_EMAIL.subject, vars);
-  const base = opts.slug ? `${SITE}/t/${opts.slug}` : SITE;
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;padding:0;background:#f4f4f5;font-family:Arial,Helvetica,sans-serif;">
@@ -89,10 +88,6 @@ export function buildPostEventOrganizerEmail(opts: {
   <tr><td style="padding:26px 32px;">
     <p style="margin:0 0 14px;color:#374151;font-size:15px;line-height:1.7;">Dear ${esc(opts.organizerName) || "Organizer"},</p>
     ${paragraphs(fill(opts.config.intro || DEFAULT_POST_EVENT_EMAIL.intro, vars))}
-    ${HR}
-    <h3 style="margin:0 0 10px;color:#1a5c38;font-size:17px;">📸 Relive the Highlights</h3>
-    <p style="margin:0 0 12px;color:#374151;font-size:15px;line-height:1.7;">We've captured some of the best moments from your tournament. Share them with your players and sponsors to keep the excitement going!</p>
-    <div>${button(`${base}/gallery`, "Photo Gallery")}${button(`${base}/media`, "Media Clips")}</div>
     ${HR}
     <h3 style="margin:0 0 10px;color:#1a5c38;font-size:17px;">⛳ Start Planning Your Next Event</h3>
     <p style="margin:0 0 12px;color:#374151;font-size:15px;line-height:1.7;">Don't wait until next year to start planning. Early preparation leads to bigger and better tournaments. Here are a few ways we can help you get a head start:</p>

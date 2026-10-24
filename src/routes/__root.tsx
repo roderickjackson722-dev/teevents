@@ -7,6 +7,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { reportLovableError } from "@/lib/lovable-error-reporting";
 import AutoPaymentConfirm from "@/components/leagues/AutoPaymentConfirm";
 import styles from "../styles.css?url";
+import { supabase } from "@/integrations/supabase/client";
+import { observeStripeLogin } from "@/lib/stripeLoginReminder";
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
@@ -15,6 +17,10 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 function RootDocument({ children }: { children: ReactNode }) {
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(observeStripeLogin);
+    return () => subscription.unsubscribe();
+  }, []);
   return <html lang="en" suppressHydrationWarning><head><HeadContent /></head><body><QueryClientProvider client={Route.useRouteContext().queryClient}><TooltipProvider><Toaster /><Sonner /><AutoPaymentConfirm />{children}</TooltipProvider></QueryClientProvider><Scripts /></body></html>;
 }
 

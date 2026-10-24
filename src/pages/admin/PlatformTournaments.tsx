@@ -16,6 +16,7 @@ import { Switch } from "@/components/ui/switch";
 import { useServerFn } from "@tanstack/react-start";
 import { adminSetEventLeaderboard } from "@/lib/featureAddonRequests.functions";
 import FeatureAddonRequests from "@/components/admin/FeatureAddonRequests";
+import StripeConnectInvite from "@/components/admin/StripeConnectInvite";
 
 type Row = {
   id: string;
@@ -619,6 +620,9 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                               setLeaderboardBusy(r.id);
                               try { await setEventLeaderboard({ data: { tournamentId: r.id, enabled } }); await load(); toast.success(enabled ? "Live leaderboard enabled" : "Live leaderboard disabled"); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not update leaderboard"); } finally { setLeaderboardBusy(""); }
                             }} /><Badge variant="outline">{r.paid_features?.live_leaderboard ? "Purchased" : "Admin control"}</Badge></div>
+                            {r.organization_id && (
+                              <StripeConnectInvite tournamentId={r.id} />
+                            )}
                             {r.organization_id && (
                               <div className="flex flex-wrap items-center gap-3 mb-4">
                                 <span className="text-sm font-medium">Organizer plan</span>

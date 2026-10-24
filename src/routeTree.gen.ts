@@ -24,6 +24,7 @@ import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as SalesSheetRouteImport } from './routes/sales-sheet'
 import { Route as SampleEventRouteImport } from './routes/sample-event'
@@ -136,6 +137,11 @@ const PricingRoute = PricingRouteImport.update({
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RefundPolicyRoute = RefundPolicyRouteImport.update({
+  id: '/refund-policy',
+  path: '/refund-policy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReviewsRoute = ReviewsRouteImport.update({
@@ -362,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sample-event': typeof SampleEventRoute
@@ -417,6 +424,7 @@ export interface FileRoutesByTo {
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sample-event': typeof SampleEventRoute
@@ -473,6 +481,7 @@ export interface FileRoutesById {
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/refund-policy': typeof RefundPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
   '/sample-event': typeof SampleEventRoute
@@ -530,6 +539,7 @@ export interface FileRouteTypes {
     | '/plans'
     | '/pricing'
     | '/privacy'
+    | '/refund-policy'
     | '/reviews'
     | '/sales-sheet'
     | '/sample-event'
@@ -585,6 +595,7 @@ export interface FileRouteTypes {
     | '/plans'
     | '/pricing'
     | '/privacy'
+    | '/refund-policy'
     | '/reviews'
     | '/sales-sheet'
     | '/sample-event'
@@ -640,6 +651,7 @@ export interface FileRouteTypes {
     | '/plans'
     | '/pricing'
     | '/privacy'
+    | '/refund-policy'
     | '/reviews'
     | '/sales-sheet'
     | '/sample-event'
@@ -696,6 +708,7 @@ export interface RootRouteChildren {
   PlansRoute: typeof PlansRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  RefundPolicyRoute: typeof RefundPolicyRoute
   ReviewsRoute: typeof ReviewsRoute
   SalesSheetRoute: typeof SalesSheetRoute
   SampleEventRoute: typeof SampleEventRoute
@@ -840,6 +853,13 @@ declare module '@tanstack/react-router' {
       path: '/privacy'
       fullPath: '/privacy'
       preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/refund-policy': {
+      id: '/refund-policy'
+      path: '/refund-policy'
+      fullPath: '/refund-policy'
+      preLoaderRoute: typeof RefundPolicyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/reviews': {
@@ -1139,6 +1159,7 @@ const rootRouteChildren: RootRouteChildren = {
   PlansRoute: PlansRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  RefundPolicyRoute: RefundPolicyRoute,
   ReviewsRoute: ReviewsRoute,
   SalesSheetRoute: SalesSheetRoute,
   SampleEventRoute: SampleEventRoute,

@@ -594,7 +594,7 @@ const Finances = () => {
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}
           onClick={() => setBreakdown({
             title: "Net to Your Stripe",
-            description: "Net amount deposited to your connected Stripe account after platform and processing fees. Manual/offline payments (cash, check, manually approved sponsors) are excluded — those are collected directly by you.",
+            description: "Net amount deposited to your connected Stripe account after platform and processing fees. Manual/offline payments (cash, manually approved sponsors) are excluded — those are collected directly by you.",
             column: "net_amount_cents",
             items: stripeTx,
           })}

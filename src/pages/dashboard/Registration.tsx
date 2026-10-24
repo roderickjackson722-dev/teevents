@@ -1246,9 +1246,9 @@ const Registration = () => {
               {/* Cash payment registration */}
               <div className="flex items-center justify-between p-4 rounded-lg border border-border bg-muted/20">
                 <div>
-                  <Label className="text-sm font-semibold">Allow Cash or Check Payments</Label>
+                  <Label className="text-sm font-semibold">Allow Cash Payments</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Turn this off to require electronic payment for every registration. Turn it on only when you want staff to add cash or check payments manually.
+                    Turn this off to require electronic payment for every registration. Turn it on only when you want staff to add cash payments manually.
                   </p>
                 </div>
                 <Switch checked={allowCash} onCheckedChange={setAllowCash} />

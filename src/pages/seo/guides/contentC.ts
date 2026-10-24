@@ -394,7 +394,7 @@ export const onlineRegistration: GuideContent = {
     },
     {
       q: "Can I take payment offline for some teams?",
-      a: "Yes. Add players manually with a payment status of pending or paid, so checks and invoices sit on the same roster as online registrations.",
+      a: "Yes. Add players manually with a payment status of pending or paid, so manual entries sit on the same roster as online registrations.",
     },
     {
       q: "What happens when the field sells out?",

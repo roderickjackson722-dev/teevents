@@ -30,3 +30,4 @@
 - Stripe login reminders observe identity-session transitions without changing sign-in; the existing banner owns the payout lookup and consumes one prompt per new login, excluding linked accounts and admin overrides.
 - Dashboard registration refunds share authenticated preview/confirm functions with server-only original-charge lookup, retained application fees, exact processing-fee details and per-registration processing locks; record new breakdowns without backfilling historical requests or changing payout settings.
 - Public event search descriptions share a pure formatter in serverMeta across crawler and hydrated metadata, using existing public fields without registration prompts or changes to event queries.
+- Registration payment choices and cash-received eligibility share registrationPaymentMethods; historical check labels and offline-refund protections remain readable without offering new check entry or changing payout settings.

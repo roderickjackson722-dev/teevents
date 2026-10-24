@@ -2,6 +2,7 @@ import RegistrationRefundButton from "@/components/dashboard/RegistrationRefundB
 import PairingsScoringSteps from "@/components/dashboard/PairingsScoringSteps";
 import PlayersTabs from "@/components/dashboard/PlayersTabs";
 import { paymentStatusClasses, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
+import { canMarkCashReceived, manualRegistrationPaymentMethods } from "@/lib/registrationPaymentMethods";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import PublicPairingsPageEditor from "@/components/dashboard/PublicPairingsPageEditor";
@@ -870,7 +871,7 @@ const Players = () => {
     const proceed = await manualEntry.guard("player", regFeeCents);
     if (!proceed) return;
     setAddingPlayer(true);
-    const isCash = newPlayer.payment_method === "cash" || newPlayer.payment_method === "check";
+    const isCash = canMarkCashReceived(newPlayer.payment_method);
     const extraAnswers: Array<{ field_id: string; label: string; field_type: string; answer: unknown }> = [];
     if (newPlayer.age.trim()) extraAnswers.push({ field_id: RESERVED_AGE, label: "Age", field_type: "number", answer: newPlayer.age.trim() });
     if (newPlayer.city.trim()) extraAnswers.push({ field_id: RESERVED_CITY, label: "City", field_type: "text", answer: newPlayer.city.trim() });
@@ -959,6 +960,7 @@ const Players = () => {
 
   const markCashReceived = async (id: string) => {
     if (demoGuard()) return;
+    if (!canMarkCashReceived(allPlayers.find((player) => player.id === id)?.payment_method)) return;
     const { error } = await supabase
       .from("tournament_registrations")
       .update({ payment_status: "paid", cash_payment_received: true } as any)
@@ -2773,12 +2775,12 @@ const Players = () => {
                       <Select value={newPlayer.payment_method} onValueChange={(v) => setNewPlayer((p) => ({ ...p, payment_method: v }))}>
                         <SelectTrigger id="ap-method"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="online">Online</SelectItem>
-                          <SelectItem value="cash">Cash</SelectItem>
-                          <SelectItem value="check">Check</SelectItem>
+                          {manualRegistrationPaymentMethods.map((method) => (
+                            <SelectItem key={method} value={method}>{method === "online" ? "Online" : "Cash"}</SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
-                      <p className="text-xs text-muted-foreground mt-1">Cash/Check registrations skip online payment. Mark received once you collect.</p>
+                      <p className="text-xs text-muted-foreground mt-1">Cash registrations skip online payment. Mark received once you collect.</p>
                     </div>
                   ) : null;
                 })()}
@@ -3093,7 +3095,7 @@ const Players = () => {
                           {(p as any).payment_method && (p as any).payment_method !== "online" && (
                             <span className="text-[10px] uppercase tracking-wider text-muted-foreground">{(p as any).payment_method}</span>
                           )}
-                          {((p as any).payment_method === "cash" || (p as any).payment_method === "check") && p.payment_status !== "paid" && (
+                          {canMarkCashReceived(p.payment_method) && p.payment_status !== "paid" && (
                             <button onClick={() => markCashReceived(p.id)} className="text-[10px] text-primary hover:underline">
                               Mark Received
                             </button>

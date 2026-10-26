@@ -11,6 +11,8 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import SendPreviewDialog from "@/components/enterprise/SendPreviewDialog";
+import { dayBeforeAllRecipients, templateEmailRecipients } from "@/lib/sendPreview";
 import { toast } from "sonner";
 import { useTournamentIdParam, pickTournamentId, getPreferredTournamentId } from "@/hooks/useTournamentIdParam";
 import {
@@ -409,7 +411,7 @@ const VARIABLE_TAGS = [
   { label: "Receipt: Org Address", value: "{{org_address}}" },
 ];
 
-export default function EmailTemplateEditor() {
+export default function EmailTemplateEditor({ requirePreview = false }: { requirePreview?: boolean } = {}) {
   const { org } = useOrgContext();
   const { isDemoMode } = useDemoMode();
   // ?template=post_event deep link from the Setup Checklist opens the post-event editor.
@@ -677,11 +679,11 @@ export default function EmailTemplateEditor() {
     }
   };
 
-  const sendNow = async () => {
+  const sendNow = async (previewed = false) => {
     if (!selectedTournament) return;
     const withEmail = registrations.filter(r => r.email);
     if (withEmail.length === 0) { toast.error("No registrants with an email address"); return; }
-    if (!confirm(`Send the Day Before Event Reminder to all ${withEmail.length} registrant(s) now?`)) return;
+    if (!previewed && !confirm(`Send the Day Before Event Reminder to all ${withEmail.length} registrant(s) now?`)) return;
     setSending(true);
     try {
       const { data, error } = await supabase.functions.invoke("send-day-before-reminder", {
@@ -726,13 +728,12 @@ export default function EmailTemplateEditor() {
   }, [selectedTournament]);
 
   // Preview variables built from the ACTUAL selected tournament.
-  const previewVars = (() => {
+  const varsFor = (sampleReg: any) => {
     const t = tournaments.find((x: any) => x.id === selectedTournament);
     const scheduleHtml = String(t?.schedule_info_html || "").trim();
     const schedulePlain = String(t?.schedule_info || "").trim();
     const homepage = t?.slug ? `https://www.teevents.golf/t/${t.slug}` : "https://www.teevents.golf";
     const location = [t?.location, t?.state].filter(Boolean).join(", ");
-    const sampleReg = registrations[0];
     const pairings = parsePairingsConfig(t?.pairings_config);
     const previewRound = roundAware ? emailRound : 0;
     const previewDayCfg = dayCfgOf(pairings, previewRound);
@@ -803,11 +804,27 @@ export default function EmailTemplateEditor() {
     // falling back to the same agenda formatter only for legacy plain text.
     vars.event_schedule = scheduleSource || autoFormatAgenda(schedulePlain) || "See the event homepage for the full schedule.";
     return vars;
-  })();
+  };
+  const previewVars = varsFor(registrations[0]);
 
   // Day-before templates render each block independently and in the organizer's
   // chosen order, so the schedule / homepage link are no longer baked into the body.
   const previewConfig = templateKind === "day_before" ? normalizeDayBefore(config) : config;
+  /** One player's filled-in subject and email, built the same way as the live preview. */
+  const renderPreviewFor = (regId: string | null) => {
+    const reg = registrations.find((r: any) => r.id === regId) || registrations[0];
+    const vars = varsFor(reg);
+    return {
+      subject: replaceVariablesPlain(previewConfig.subject || "", vars),
+      html: renderEmailHtml(previewConfig, vars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+        includePlayerHub: templateKind === "confirmation",
+        addons: templateKind === "day_before" ? addons : [],
+        addonBaseUrl: vars.event_homepage,
+        showActionButtons: templateKind === "day_before",
+        sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
+      }),
+    };
+  };
 
 
 
@@ -949,6 +966,15 @@ export default function EmailTemplateEditor() {
       toast.error(e.message || "Failed to send emails");
     }
     setSending(false);
+  };
+
+  /** Enterprise: every send opens the Preview first; only the Preview sends. */
+  const [emailPreview, setEmailPreview] = useState<null | { kind: "registrants" | "day_before_all" | "day_before_schedule"; ids: string[] }>(null);
+  const requestSend = (ids?: string[]) => {
+    if (!requirePreview) { void sendEmails(ids); return; }
+    const targets = ids && ids.length > 0 ? ids : selectedRecipients;
+    if (targets.length === 0) { toast.error("Select at least one recipient"); return; }
+    setEmailPreview({ kind: "registrants", ids: targets });
   };
 
   /** Small inline badge showing this recipient's delivery result from the last send. */
@@ -1214,13 +1240,13 @@ export default function EmailTemplateEditor() {
               <Label htmlFor="auto-send" className="text-sm cursor-pointer">Send automatically at that time</Label>
             </div>
             <div className="flex flex-wrap gap-2">
-              <Button size="sm" variant="outline" onClick={saveSchedule} disabled={savingSchedule}>
+              <Button size="sm" variant="outline" onClick={() => (requirePreview && autoSend && sendAt ? setEmailPreview({ kind: "day_before_schedule", ids: [] }) : saveSchedule())} disabled={savingSchedule}>
                 {savingSchedule ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1" />}
-                Save Schedule
+                {requirePreview && autoSend && sendAt ? "Preview schedule" : "Save Schedule"}
               </Button>
-              <Button size="sm" variant="outline" onClick={sendNow} disabled={sending}>
+              <Button size="sm" variant="outline" onClick={() => (requirePreview ? setEmailPreview({ kind: "day_before_all", ids: [] }) : sendNow())} disabled={sending}>
                 {sending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Send className="h-4 w-4 mr-1" />}
-                Send Now
+                {requirePreview ? "Preview send to all" : "Send Now"}
               </Button>
               <Button size="sm" variant="outline" onClick={sendTestEmail} disabled={sendingTest || !testEmail.trim()}>
                 {sendingTest ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Mail className="h-4 w-4 mr-1" />}
@@ -1290,9 +1316,9 @@ export default function EmailTemplateEditor() {
                         size="sm"
                         className="gap-1 h-8"
                         disabled={sending || !r.email}
-                        onClick={() => sendEmails([r.id])}
+                        onClick={() => requestSend([r.id])}
                       >
-                        <Send className="h-3.5 w-3.5" /> Send
+                        <Send className="h-3.5 w-3.5" /> {requirePreview ? "Preview" : "Send"}
                       </Button>
                     </div>
                   ))}
@@ -1300,12 +1326,12 @@ export default function EmailTemplateEditor() {
             )}
             <div className="flex justify-end">
               <Button
-                onClick={() => sendEmails()}
+                onClick={() => requestSend()}
                 disabled={sending || selectedRecipients.length === 0}
                 className="gap-2"
               >
                 {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-                Send Reminder to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
+                {requirePreview ? "Preview" : "Send Reminder to"} {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
               </Button>
             </div>
           </div>
@@ -1921,9 +1947,9 @@ export default function EmailTemplateEditor() {
                       className="gap-1 h-8"
                       disabled={sending || (!r.email && !(altEmails[r.id] || "").trim())}
                       title={`Send ${TEMPLATE_LABELS[templateKind]} to ${(altEmails[r.id] || "").trim() || r.email || "this player"}`}
-                      onClick={() => sendEmails([r.id])}
+                      onClick={() => requestSend([r.id])}
                     >
-                      <Send className="h-3.5 w-3.5" /> Send
+                      <Send className="h-3.5 w-3.5" /> {requirePreview ? "Preview" : "Send"}
                     </Button>
                     <Button
                       variant="ghost"
@@ -1967,9 +1993,9 @@ export default function EmailTemplateEditor() {
                           size="sm"
                           className="h-8"
                           disabled={sending || !(altEmails[r.id] || "").trim()}
-                          onClick={() => sendEmails([r.id])}
+                          onClick={() => requestSend([r.id])}
                         >
-                          <Send className="h-3.5 w-3.5 mr-1" /> Send now
+                          <Send className="h-3.5 w-3.5 mr-1" /> {requirePreview ? "Preview" : "Send now"}
                         </Button>
                         {(altEmails[r.id] || "").trim() && (
                           <Button
@@ -1994,9 +2020,9 @@ export default function EmailTemplateEditor() {
           </div>
 
           <div className="flex justify-end gap-2">
-            <Button onClick={() => setConfirmSendOpen(true)} disabled={sending || selectedRecipients.length === 0} className="gap-2 bg-secondary text-primary hover:bg-secondary/80">
+            <Button onClick={() => (requirePreview ? requestSend() : setConfirmSendOpen(true))} disabled={sending || selectedRecipients.length === 0} className="gap-2 bg-secondary text-primary hover:bg-secondary/80">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Send {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
+              {requirePreview ? "Preview" : "Send"} {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
             </Button>
           </div>
 
@@ -2007,6 +2033,9 @@ export default function EmailTemplateEditor() {
               templateLabel={TEMPLATE_LABELS[templateKind]}
               selectedRecipients={selectedRecipients}
               totalRecipients={registrations.filter((r: any) => r.email).length}
+              requirePreview={requirePreview}
+              registrations={registrations}
+              renderPreview={renderPreviewFor}
             />
           )}
           </>
@@ -2048,6 +2077,9 @@ export default function EmailTemplateEditor() {
                 templateLabel={TEMPLATE_LABELS[templateKind]}
                 selectedRecipients={selectedRecipients}
                 totalRecipients={registrations.filter((r: any) => r.email).length}
+                requirePreview={requirePreview}
+                registrations={registrations}
+                renderPreview={renderPreviewFor}
               />
             </>
           )}
@@ -2068,6 +2100,54 @@ export default function EmailTemplateEditor() {
           <Copy className="h-4 w-4" /> Copy HTML
         </Button>
       </div>
+
+      {requirePreview && emailPreview && (() => {
+        const savedCfg = (() => {
+          const t: any = tournaments.find((x: any) => x.id === selectedTournament) || {};
+          return templateKind === "receipt" ? t.receipt_email_config?.[receiptType] : t[configKey];
+        })();
+        const unsaved = JSON.stringify(savedCfg ?? null) !== JSON.stringify(config);
+        const recips = emailPreview.kind === "registrants"
+          ? templateEmailRecipients(registrations, emailPreview.ids, altEmails, altMode)
+          : dayBeforeAllRecipients(registrations);
+        const sampleIds = emailPreview.kind === "registrants"
+          ? emailPreview.ids
+          : registrations.filter((r: any) => (r.payment_status || "").toLowerCase() === "paid").map((r: any) => r.id);
+        const sampleOptions = sampleIds.map((id) => {
+          const r: any = registrations.find((x: any) => x.id === id);
+          return { id, label: `${r?.first_name || ""} ${r?.last_name || ""}`.trim() || "Player" };
+        });
+        const scheduledFor = emailPreview.kind === "day_before_schedule" && sendAt ? new Date(sendAt).toLocaleString() : undefined;
+        return (
+          <SendPreviewDialog
+            open
+            title={TEMPLATE_LABELS[templateKind]}
+            recipients={recips}
+            sampleOptions={sampleOptions}
+            scheduledFor={emailPreview.kind === "day_before_schedule" ? (scheduledFor ?? null) : undefined}
+            notices={unsaved ? ["You have unsaved changes. The email that goes out uses your saved template, so Save Template first if you want these edits included."] : []}
+            action={emailPreview.kind === "day_before_schedule" ? "schedule" : "send"}
+            busy={sending || savingSchedule}
+            onBack={() => setEmailPreview(null)}
+            onConfirm={async () => {
+              const k = emailPreview;
+              setEmailPreview(null);
+              if (k.kind === "registrants") await sendEmails(k.ids);
+              else if (k.kind === "day_before_all") await sendNow(true);
+              else await saveSchedule();
+            }}
+            renderContent={(id) => {
+              const out = renderPreviewFor(id);
+              return (
+                <div className="space-y-2">
+                  <p><span className="font-medium text-foreground">Subject:</span> {out.subject}</p>
+                  <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border" dangerouslySetInnerHTML={{ __html: out.html }} />
+                </div>
+              );
+            }}
+          />
+        );
+      })()}
 
       {/* Send Confirmation Modal */}
       <Dialog open={confirmSendOpen} onOpenChange={setConfirmSendOpen}>

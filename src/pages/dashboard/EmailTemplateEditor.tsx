@@ -2039,9 +2039,6 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               requirePreview={requirePreview}
               registrations={registrations}
               renderPreview={renderPreviewFor}
-              requirePreview={requirePreview}
-              registrations={registrations}
-              renderPreview={renderPreviewFor}
             />
           )}
           </>
@@ -2083,9 +2080,6 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
                 templateLabel={TEMPLATE_LABELS[templateKind]}
                 selectedRecipients={selectedRecipients}
                 totalRecipients={registrations.filter((r: any) => r.email).length}
-                requirePreview={requirePreview}
-                registrations={registrations}
-                renderPreview={renderPreviewFor}
                 requirePreview={requirePreview}
                 registrations={registrations}
                 renderPreview={renderPreviewFor}

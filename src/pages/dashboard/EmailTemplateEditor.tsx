@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import SendPreviewDialog from "@/components/enterprise/SendPreviewDialog";
+import { brandEmailHtml, whiteLabelFrom } from "@/lib/whiteLabel";
 import { dayBeforeAllRecipients, templateEmailRecipients } from "@/lib/sendPreview";
 import { toast } from "sonner";
 import { useTournamentIdParam, pickTournamentId, getPreferredTournamentId } from "@/hooks/useTournamentIdParam";
@@ -589,7 +590,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
     const load = async () => {
       const { data } = await supabase
         .from("tournaments")
-        .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, pairings_update_email_config, tee_times_email_config, receipt_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url, pairings_config")
+        .select("id, is_enterprise, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, confirmation_email_config, post_event_email_config, sponsor_email_config, vendor_email_config, day_before_email_config, sponsor_day_of_email_config, sponsorship_day_of_email_config, pairings_update_email_config, tee_times_email_config, receipt_email_config, contact_email, org_contact_email, contact_name, contact_phone, day_of_director_name, day_of_director_phone, day_before_send_at, day_before_approved, day_before_sent_at, site_logo_url, pairings_config")
         .eq("organization_id", org.orgId)
         .order("created_at", { ascending: false });
       setTournaments(data || []);
@@ -711,7 +712,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   const refreshSelectedTournament = async () => {
     if (!selectedTournament) return;
     const { data } = await (supabase.from("tournaments") as any)
-      .select("id, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, site_logo_url")
+      .select("id, is_enterprise, title, date, location, state, course_name, slug, schedule_info, schedule_info_html, site_logo_url")
       .eq("id", selectedTournament)
       .maybeSingle();
     if (!data) return;
@@ -812,19 +813,22 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   // Day-before templates render each block independently and in the organizer's
   // chosen order, so the schedule / homepage link are no longer baked into the body.
   const previewConfig = templateKind === "day_before" ? normalizeDayBefore(config) : config;
+  /** Saved Enterprise course branding replaces the TeeVents footer exactly as the real send does. */
+  const whiteLabel = whiteLabelFrom(tournaments.find((x: any) => x.id === selectedTournament));
+  const brandHtml = (html: string) => brandEmailHtml(html, whiteLabel);
   /** One player's filled-in subject and email, built the same way as the live preview. */
   const renderPreviewFor = (regId: string | null) => {
     const reg = registrations.find((r: any) => r.id === regId) || registrations[0];
     const vars = varsFor(reg);
     return {
       subject: replaceVariablesPlain(previewConfig.subject || "", vars),
-      html: renderEmailHtml(previewConfig, vars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+      html: brandHtml(renderEmailHtml(previewConfig, vars, config.header_title || TEMPLATE_HEADERS[templateKind], {
         includePlayerHub: templateKind === "confirmation",
         addons: templateKind === "day_before" ? addons : [],
         addonBaseUrl: vars.event_homepage,
         showActionButtons: templateKind === "day_before",
         sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
-      }),
+      })),
     };
   };
 
@@ -876,7 +880,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
 
 
   const copyHtml = () => {
-    const html = renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind]);
+    const html = brandHtml(renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind]));
     navigator.clipboard.writeText(html);
     toast.success("HTML copied to clipboard");
   };
@@ -1833,14 +1837,14 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+              __html: brandHtml(renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
                 includePlayerHub: templateKind === "confirmation",
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,
                 showActionButtons: templateKind === "day_before",
                 sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
 
-              })
+              }))
             }} />
 
           </div>
@@ -1857,11 +1861,11 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               baseVars={previewVars}
               allowTaxReceipt={templateKind === "sponsorship_day_of"}
               renderHtml={(vars) =>
-                renderEmailHtml(
+                brandHtml(renderEmailHtml(
                   config,
                   { ...previewVars, ...vars },
                   config.header_title || TEMPLATE_HEADERS[templateKind],
-                )
+                ))
               }
             />
           )}
@@ -1878,11 +1882,11 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               subjectTemplate={config.subject}
               baseVars={previewVars}
               renderHtml={(vars) =>
-                renderEmailHtml(
+                brandHtml(renderEmailHtml(
                   config,
                   { ...previewVars, ...vars },
                   config.header_title || TEMPLATE_HEADERS[templateKind],
-                )
+                ))
               }
             />
           )}

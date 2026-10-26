@@ -1,4 +1,5 @@
 import logoAsset from "@/assets/teevents-logo-black.png.asset.json";
+import { whiteLabelFrom } from "@/lib/whiteLabel";
 
 export interface BrandingFooterFields {
   is_pro?: boolean | null;
@@ -22,6 +23,17 @@ const DEFAULT_TEXT =
  */
 export function TeeventsFooter({ tournament }: { tournament: BrandingFooterFields | null | undefined }) {
   if (!tournament) return null;
+
+  // Enterprise events with saved course branding show the course, never TeeVents.
+  const wl = whiteLabelFrom(tournament);
+  if (wl) {
+    return (
+      <footer className="w-full px-6 py-4 text-center text-xs" style={{ backgroundColor: wl.primary, color: "#ffffff" }}>
+        <img src={wl.logoUrl} alt={wl.name} style={{ height: 28, maxWidth: 160 }} className="mx-auto mb-1 object-contain" />
+        <span className="font-semibold">{wl.name}</span>
+      </footer>
+    );
+  }
 
   const isPro = !!tournament.is_pro;
   const adminOverride = tournament.branding_footer_admin_override === true;

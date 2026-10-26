@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendAndLog } from "./emailLogger.ts";
+import { brandEmailHtml, brandSender, loadWhiteLabel } from "./whiteLabel.ts";
 
 const SENDER_EMAIL = "info@notifications.teevents.golf";
 const SENDER_NAME = "TeeVents Golf Management";
@@ -301,15 +302,16 @@ export async function sendRegistrantConfirmationEmail(
     console.log(`[Confirmation] Sending registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
 
     const client = getAdminClient();
+    const wl = await loadWhiteLabel(client, tournamentId);
     const result = await sendAndLog(
       client,
       RESEND_API_KEY,
       {
-        from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+        from: brandSender(`${SENDER_NAME} <${SENDER_EMAIL}>`, wl),
         to: [recipientEmail],
         // No BCC to info@teevents.golf — admin only receives payout notices.
         subject: `${isTickets ? "Tickets Confirmed" : customTitle ? `${registrationTitle} Confirmed` : "You're Registered"} — ${tournamentTitle}`,
-        html,
+        html: brandEmailHtml(html, wl),
       },
       {
         templateName: "registration-confirmation",

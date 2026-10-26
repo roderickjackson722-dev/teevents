@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { brandEmailHtml, brandSender, loadWhiteLabel } from "../_shared/whiteLabel.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -344,6 +345,7 @@ Deno.serve(async (req) => {
       .eq("id", tournament_id)
       .single();
     if (!tournament) throw new Error("Tournament not found");
+    const wl = await loadWhiteLabel(admin, tournament_id);
 
     // Event-day variable follows the Round 1 play date set on Players & Pairings.
     // Multi-event weekends often list side events the day before the actual round.
@@ -510,12 +512,12 @@ Deno.serve(async (req) => {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
         body: JSON.stringify({
-          from: SENDER,
+          from: brandSender(SENDER, wl),
           to: [to],
           // Always copy the TeeVents admin inbox on day-before reminders
           bcc: ["info@teevents.golf"],
           subject,
-          html: buildHtml(config, vars, homepage, addons || [], homepage),
+          html: brandEmailHtml(buildHtml(config, vars, homepage, addons || [], homepage), wl),
         }),
       });
       const text = await res.text();

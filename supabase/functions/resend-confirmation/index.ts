@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { brandEmailHtml, brandSender, loadWhiteLabel } from "../_shared/whiteLabel.ts";
 import { sendRegistrantConfirmationEmail } from "../_shared/notify.ts";
 
 const corsHeaders = {
@@ -389,6 +390,7 @@ Deno.serve(async (req) => {
 
     // Get tournament info
     const tournamentId = registrations[0].tournament_id;
+    const wl = await loadWhiteLabel(supabaseAdmin, tournamentId);
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
       .select("title, date, location, state, course_name, organization_id, confirmation_email_config, post_event_email_config, day_before_email_config, sponsor_email_config, vendor_email_config, pairings_update_email_config, tee_times_email_config, survey_email_config, schedule_info, schedule_info_html, slug, pairings_config")
@@ -579,10 +581,10 @@ Deno.serve(async (req) => {
               Authorization: `Bearer ${RESEND_API_KEY}`,
             },
             body: JSON.stringify({
-              from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+              from: brandSender(`${SENDER_NAME} <${SENDER_EMAIL}>`, wl),
               to: [reg.email],
               subject,
-              html,
+              html: brandEmailHtml(html, wl),
             }),
           });
 

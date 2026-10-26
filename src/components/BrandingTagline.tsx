@@ -1,11 +1,13 @@
+import { whiteLabelFrom } from "@/lib/whiteLabel";
+
 export interface BrandingRemovalFields {
   branding_removed?: boolean | null;
   branding_removed_by_admin?: boolean | null;
 }
 
-/** True when TeeVents branding should be hidden (paid removal or admin override). */
+/** True when TeeVents branding should be hidden (paid removal, admin override, or saved Enterprise course branding). */
 export function isBrandingRemoved(t: BrandingRemovalFields | null | undefined) {
-  return !!(t?.branding_removed || t?.branding_removed_by_admin);
+  return !!(t?.branding_removed || t?.branding_removed_by_admin || whiteLabelFrom(t));
 }
 
 export const BRANDING_TAGLINE = "Need to run your tournament? Get started with TeeVents - The all in one platform for golf tournaments →";

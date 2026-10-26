@@ -1,5 +1,6 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { brandEmailHtml, brandSender, loadWhiteLabel } from "../_shared/whiteLabel.ts";
 import { sendNotificationEmails, buildNotificationHtml, buildSponsorAnswersHtml } from "../_shared/notify.ts";
 import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
 
@@ -251,14 +252,15 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
+            const sponsorWl = await loadWhiteLabel(supabaseAdmin, tournamentId);
             await fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },
               body: JSON.stringify({
-                from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+                from: brandSender(`${SENDER_NAME} <${SENDER_EMAIL}>`, sponsorWl),
                 to: [reg.contact_email],
                 subject: `Sponsorship Confirmed — ${tournament?.title || "Tournament"}`,
-                html: sponsorConfirmHtml,
+                html: brandEmailHtml(sponsorConfirmHtml, sponsorWl),
               }),
             });
             console.log(`[Confirmation] Sponsor confirmation sent to ${reg.contact_email}`);

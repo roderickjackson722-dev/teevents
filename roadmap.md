@@ -1,6 +1,6 @@
 ## Enterprise Manage League, step 5
-- [ ] Wrap existing league management tools in one Enterprise page; route Home and Leagues management links to it with selected league/workspace intact.
-- [ ] Check signed-in Home, Leagues, back navigation and regular league route without saving, sending, publishing or modifying data. Keep View Reports on Operations Reports/POS; stop before Purse and winners.
+- [x] Wrap existing league management tools in one Enterprise page; Home menu, Home league title and Leagues Manage use the same league-ID/context-preserving destination. Enterprise back and payout links remain inside Enterprise; regular routes unchanged.
+- [x] Signed-in real-league Home/Leagues links, Players/Events tabs, All Leagues, reload, sidebar and regular league route passed; 14 navigation/workspace tests passed, build OK, no page errors or write attempts. No saves, sends, publication or data changes. View Reports remains Operations Reports/POS; Purse and winners awaits next instruction. Season Standings auto-sync was not opened to avoid its existing write-on-mount behavior.
 
 ## Enterprise Admin settings, step 4
 - [x] Add Enterprise Organization details and Web address & branding using existing organization-info/site-builder tools; keep Payments canonical. Operations has no separate branding tool to duplicate.

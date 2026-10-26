@@ -19,6 +19,7 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 import SmsSendPreview from "@/components/enterprise/SmsSendPreview";
+import { smsSignature, whiteLabelFrom } from "@/lib/whiteLabel";
 
 /** Variables organizers can drop into a text. Mirrors the email template variables. */
 const SMS_VARIABLES: { token: string; label: string }[] = [
@@ -119,7 +120,7 @@ export default function Messages({ requirePreview = false }: { requirePreview?: 
     queryKey: ["sms-settings", selectedTournament],
     queryFn: async () => {
       const { data, error } = await (supabase.from("tournaments") as any)
-        .select("sms_enabled, sms_plan, sms_credits_used, sms_credits_limit")
+        .select("sms_enabled, sms_plan, sms_credits_used, sms_credits_limit, is_enterprise, site_logo_url, site_primary_color, course_name, title")
         .eq("id", selectedTournament)
         .maybeSingle();
       if (error) throw error;
@@ -414,7 +415,7 @@ export default function Messages({ requirePreview = false }: { requirePreview?: 
               <Select
                 onValueChange={(id) => {
                   const tpl = SMS_TEMPLATES.find((t) => t.id === id);
-                  if (tpl) setMessage(tpl.body);
+                  if (tpl) setMessage(tpl.body.replace(/— TeeVents$/, `— ${smsSignature(whiteLabelFrom(smsSettings))}`));
                 }}
               >
                 <SelectTrigger>

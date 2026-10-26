@@ -1,3 +1,7 @@
+## Enterprise Manage League, step 5
+- [ ] Wrap existing league management tools in one Enterprise page; route Home and Leagues management links to it with selected league/workspace intact.
+- [ ] Check signed-in Home, Leagues, back navigation and regular league route without saving, sending, publishing or modifying data. Keep View Reports on Operations Reports/POS; stop before Purse and winners.
+
 ## Enterprise Admin settings, step 4
 - [x] Add Enterprise Organization details and Web address & branding using existing organization-info/site-builder tools; keep Payments canonical. Operations has no separate branding tool to duplicate.
 - [x] Highlight Operations on Enterprise Payments; signed-in Admin Settings links, Branding/Domain tabs, selected workspace/event and Payments rendering checked; 10 navigation tests passed, no page errors, no settings saves, sends or payment/event writes. Preview only.

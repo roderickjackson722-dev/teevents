@@ -156,7 +156,7 @@ export default function EnterpriseAdmin() {
           <div className="grid gap-4 sm:grid-cols-2">
             {[
               { to: "/dashboard/organization-info", icon: Building2, title: "Organization details", body: "Name, logo, address and nonprofit receipts." },
-              { to: "/dashboard/payout-settings", icon: CreditCard, title: "Payments & payouts", body: "Connect your account so paid events can collect money." },
+              { to: "/enterprise/payments", icon: CreditCard, title: "Payments & payouts", body: "Connect your account so paid events can collect money." },
               { to: "/dashboard/public-page-editor", icon: Globe, title: "Web address & branding", body: "Public page look, colors and custom domain." },
               { to: "/enterprise/roster", icon: Users, title: "Club roster", body: "Reusable member list with handicaps and contacts." },
             ].map((c) => (

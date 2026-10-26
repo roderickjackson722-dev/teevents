@@ -273,7 +273,7 @@ export default function EnterpriseHome({ tournamentsOnly = false }: { tournament
               <h2 className="mr-auto font-display text-xl font-semibold text-primary">Quick Actions</h2>
               <Button asChild className="bg-secondary text-secondary-foreground hover:bg-secondary/90"><Link to="/enterprise/create"><Plus className="mr-1.5 h-4 w-4" /> New Tournament</Link></Button>
               <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"><Link to="/enterprise/leagues?new=1"><Plus className="mr-1.5 h-4 w-4" /> New League</Link></Button>
-              <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"><Link to="/dashboard/finances"><FileBarChart className="mr-1.5 h-4 w-4" /> View Reports</Link></Button>
+              <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"><Link to="/enterprise/operations?tab=reports"><FileBarChart className="mr-1.5 h-4 w-4" /> View Reports</Link></Button>
             </div>
           </section>
         </>

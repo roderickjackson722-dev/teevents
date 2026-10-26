@@ -110,7 +110,7 @@ export default function EnterprisePaymentsCard({ tournamentId }: { tournamentId:
         </div>
 
         <Button asChild variant={ready ? "outline" : "default"} className={ready ? "w-full" : "w-full bg-secondary text-primary hover:bg-secondary/90"}>
-          <Link to={ready ? "/dashboard/finances" : "/dashboard/payout-settings"}>
+          <Link to={"/enterprise/payments"}>
             <CreditCard className="mr-1.5 h-4 w-4" /> {ready ? "View all finances" : "Connect payout account"}
           </Link>
         </Button>

@@ -32,6 +32,7 @@ export default function SendPreviewDialog(p: SendPreviewProps) {
     if (p.open) setSampleId(p.sampleOptions?.[0]?.id ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [p.open]);
+  const effectiveSample = p.sampleOptions?.some((o) => o.id === sampleId) ? sampleId : p.sampleOptions?.[0]?.id ?? null;
   const deliverable = p.recipients.filter((r) => r.address).length;
 
   return (
@@ -65,7 +66,7 @@ export default function SendPreviewDialog(p: SendPreviewProps) {
           {p.sampleOptions && p.sampleOptions.length > 0 && (
             <div className="space-y-1">
               <p className="font-medium text-foreground">Show content for</p>
-              <Select value={sampleId ?? undefined} onValueChange={setSampleId}>
+              <Select value={effectiveSample ?? undefined} onValueChange={setSampleId}>
                 <SelectTrigger aria-label="Preview recipient"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {p.sampleOptions.map((o) => <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>)}
@@ -74,7 +75,7 @@ export default function SendPreviewDialog(p: SendPreviewProps) {
             </div>
           )}
 
-          <div>{p.renderContent(sampleId)}</div>
+          <div>{p.renderContent(effectiveSample)}</div>
 
           <div className="flex flex-wrap justify-end gap-2 border-t pt-3">
             <Button variant="outline" onClick={p.onBack}><ArrowLeft className="mr-1.5 h-4 w-4" /> Back to edit</Button>

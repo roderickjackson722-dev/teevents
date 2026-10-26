@@ -182,6 +182,100 @@ export default function EnterprisePrintables() {
     setBusy(false);
   };
 
+  const hasPlayers = printRegs.length > 0;
+  const hasGrouped = printRegs.some((r) => r.group_number != null);
+  const selectedGroupCount = new Set(printRegs.map((r) => r.group_number ?? "none")).size;
+  const typeTrigger = (value: string, icon: React.ReactNode, label: string, available: boolean) => (
+    <TabsTrigger value={value} disabled={!available} className="flex-col items-start gap-0 sm:flex-row sm:items-center">
+      <span className="flex items-center">{icon} {label}</span>
+      {!available && <span className="text-[11px] font-normal text-muted-foreground sm:ml-1.5">Not available for this event</span>}
+    </TabsTrigger>
+  );
+
+  const teamName = (n: number | null) => {
+    if (n == null) return "Not in a group";
+    const g = groups.find((x) => x.group_number === n) as any;
+    return g?.team_name ? `Group ${n} · ${g.team_name}` : `Group ${n}`;
+  };
+  const groupNumbers = [...new Set(draft.map((d) => d.group_number))].sort((a, b) => (a ?? 1e9) - (b ?? 1e9));
+  const patch = (id: string, change: Partial<DraftPlayer<RegRow>>) =>
+    setDraft((list) => list.map((d) => (d.id === id ? { ...d, ...change } : d)));
+  const setGroupIncluded = (n: number | null, include: boolean) =>
+    setDraft((list) => list.map((d) => (d.group_number === n ? { ...d, include } : d)));
+  const addPlayer = () => {
+    if (!newFirst.trim() && !newLast.trim()) { toast.error("Enter a name to add."); return; }
+    const g = newGroup.trim() ? Number(newGroup) : null;
+    setDraft((list) => [...list, addedPlayer(newFirst, newLast, Number.isFinite(g as number) ? g : null) as DraftPlayer<RegRow>]);
+    setNewFirst(""); setNewLast(""); setNewGroup("");
+  };
+  const includedCount = draft.filter((d) => d.include).length;
+
+  const selectionStep = (
+    <Card>
+      <CardHeader className="pb-3">
+        <CardTitle className="text-base">Choose who to include</CardTitle>
+        <p className="text-sm text-muted-foreground">Select players, teams and groups for this printout. Changes here affect the printout only, never the event, pairings or scores.</p>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex flex-wrap items-center gap-2">
+          <Button variant="outline" size="sm" onClick={() => setDraft((l) => l.map((d) => ({ ...d, include: true })))}>Select all</Button>
+          <Button variant="outline" size="sm" onClick={() => setDraft((l) => l.map((d) => ({ ...d, include: false })))}>Clear all</Button>
+          <Button variant="outline" size="sm" onClick={() => setEditing((v) => !v)}><Pencil className="mr-1.5 h-4 w-4" />Edit selections</Button>
+          <span className="text-sm text-muted-foreground">{includedCount} of {draft.length} selected</span>
+        </div>
+        {draft.length === 0 && <p className="text-sm text-muted-foreground">No players registered for this event yet.</p>}
+        <div className="space-y-3">
+          {groupNumbers.map((n) => {
+            const members = draft.filter((d) => d.group_number === n);
+            const all = members.every((m) => m.include);
+            const some = members.some((m) => m.include);
+            return (
+              <div key={String(n)} className="rounded-lg border border-border" data-testid="print-group">
+                <label className="flex items-center gap-2 border-b border-border bg-muted/40 px-3 py-2 text-sm font-medium">
+                  <Checkbox checked={all ? true : some ? "indeterminate" : false} onCheckedChange={(v) => setGroupIncluded(n, Boolean(v))} aria-label={`Include ${teamName(n)}`} />
+                  {teamName(n)}
+                </label>
+                <div className="divide-y divide-border">
+                  {members.map((m) => (
+                    <div key={m.id} className="flex flex-wrap items-center gap-3 px-3 py-2 text-sm">
+                      <label className="flex min-w-[10rem] flex-1 items-center gap-2">
+                        <Checkbox checked={m.include} onCheckedChange={(v) => patch(m.id, { include: Boolean(v) })} aria-label={`Include ${m.first_name} ${m.last_name}`} />
+                        {`${m.first_name} ${m.last_name}`.trim() || "Unnamed player"}
+                        {m.added && <span className="text-xs text-muted-foreground">(printout only)</span>}
+                      </label>
+                      {editing && (
+                        <>
+                          <div className="flex items-center gap-1.5">
+                            <Label className="text-xs">Tee time</Label>
+                            <Input className="h-8 w-28" value={m.tee_time ?? ""} onChange={(e) => patch(m.id, { tee_time: e.target.value || null })} aria-label={`Tee time for ${m.first_name}`} />
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Label className="text-xs">Group</Label>
+                            <Input className="h-8 w-20" type="number" min={1} value={m.group_number ?? ""} onChange={(e) => patch(m.id, { group_number: e.target.value ? Number(e.target.value) : null })} aria-label={`Group for ${m.first_name}`} />
+                          </div>
+                          {m.added && <Button variant="ghost" size="sm" onClick={() => setDraft((l) => l.filter((d) => d.id !== m.id))}>Remove</Button>}
+                        </>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        {editing && (
+          <div className="flex flex-wrap items-end gap-2 rounded-lg border border-dashed border-border p-3">
+            <div><Label className="text-xs">First name</Label><Input className="h-8 w-36" value={newFirst} onChange={(e) => setNewFirst(e.target.value)} /></div>
+            <div><Label className="text-xs">Last name</Label><Input className="h-8 w-36" value={newLast} onChange={(e) => setNewLast(e.target.value)} /></div>
+            <div><Label className="text-xs">Group</Label><Input className="h-8 w-20" type="number" min={1} value={newGroup} onChange={(e) => setNewGroup(e.target.value)} /></div>
+            <Button variant="outline" size="sm" onClick={addPlayer}><Plus className="mr-1.5 h-4 w-4" />Add player to printout</Button>
+          </div>
+        )}
+        <Button onClick={() => { setConfirmed(true); setEditing(false); }} disabled={includedCount === 0 && sponsors.length === 0}>Confirm selections</Button>
+      </CardContent>
+    </Card>
+  );
+
   return (
     <EnterpriseLayout
       title="Printables"
@@ -193,15 +287,25 @@ export default function EnterprisePrintables() {
         <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>
       ) : !event ? (
         <p className="text-sm text-muted-foreground">Create an event first.</p>
+      ) : !confirmed ? (
+        selectionStep
       ) : (
+        <div className="space-y-4">
+        <Card>
+          <CardContent className="flex flex-wrap items-center justify-between gap-3 p-4">
+            <p className="text-sm"><span className="font-medium">{printRegs.length}</span> player{printRegs.length === 1 ? "" : "s"} in {selectedGroupCount} group{selectedGroupCount === 1 ? "" : "s"} selected for this printout.</p>
+            <Button variant="outline" size="sm" onClick={() => { setConfirmed(false); setEditing(true); }}><Pencil className="mr-1.5 h-4 w-4" />Edit selections</Button>
+          </CardContent>
+        </Card>
         <Tabs defaultValue="scorecards">
           <TabsList className="flex h-auto flex-wrap justify-start gap-1">
-            <TabsTrigger value="scorecards"><Printer className="mr-1.5 h-4 w-4" /> Scorecards</TabsTrigger>
-            <TabsTrigger value="cart"><Car className="mr-1.5 h-4 w-4" /> Cart Signs</TabsTrigger>
-            <TabsTrigger value="alpha"><List className="mr-1.5 h-4 w-4" /> Alpha List</TabsTrigger>
-            <TabsTrigger value="badges"><IdCard className="mr-1.5 h-4 w-4" /> Name Badges</TabsTrigger>
-            <TabsTrigger value="pairings"><Users className="mr-1.5 h-4 w-4" /> Pairings</TabsTrigger>
-            <TabsTrigger value="sponsors"><Handshake className="mr-1.5 h-4 w-4" /> Sponsor Signs</TabsTrigger>
+            {typeTrigger("scorecards", <Printer className="mr-1.5 h-4 w-4" />, "Scorecards", hasPlayers)}
+            {typeTrigger("cart", <Car className="mr-1.5 h-4 w-4" />, "Cart Signs", hasPlayers)}
+            {typeTrigger("alpha", <List className="mr-1.5 h-4 w-4" />, "Alpha List", hasPlayers)}
+            {typeTrigger("badges", <IdCard className="mr-1.5 h-4 w-4" />, "Name Badges", hasPlayers)}
+            {typeTrigger("pairings", <Users className="mr-1.5 h-4 w-4" />, "Pairings", hasGrouped)}
+            {typeTrigger("checkin", <ClipboardCheck className="mr-1.5 h-4 w-4" />, "Check-In Roster", hasPlayers)}
+            {typeTrigger("sponsors", <Handshake className="mr-1.5 h-4 w-4" />, "Sponsor Signs", sponsors.length > 0)}
           </TabsList>
 
           <TabsContent value="scorecards" className="mt-3 space-y-4">
@@ -248,9 +352,14 @@ export default function EnterprisePrintables() {
                   </label>
                 </div>
                 <div className="sm:col-span-2 lg:col-span-4">
-                  <Button onClick={printCards} disabled={busy} className="bg-secondary text-primary hover:bg-secondary/90">
-                    <Printer className="mr-1.5 h-4 w-4" /> Print {cards.length} scorecard{cards.length === 1 ? "" : "s"}
-                  </Button>
+                  <div className="flex flex-wrap gap-2">
+                    <Button onClick={() => printCards()} disabled={busy} className="bg-secondary text-primary hover:bg-secondary/90">
+                      <Printer className="mr-1.5 h-4 w-4" /> Print {cards.length} scorecard{cards.length === 1 ? "" : "s"}
+                    </Button>
+                    <Button variant="outline" onClick={() => printCards(true)} disabled={busy}>
+                      <Download className="mr-1.5 h-4 w-4" /> Download
+                    </Button>
+                  </div>
                   <p className="mt-2 text-xs text-muted-foreground">
                     Every card prints the scoring web address, a scan-to-score QR code and a note that circled scores are birdies.
                     {showSkins && skins.length > 0 && " Skin holes list the winning score and winner."}
@@ -261,21 +370,25 @@ export default function EnterprisePrintables() {
           </TabsContent>
 
           <TabsContent value="cart" className="mt-3">
-            <CartSignsTab tournament={printTournament} registrations={regs} loading={false} groups={groups} />
+            <CartSignsTab tournament={printTournament} registrations={printRegs} loading={false} groups={printGroups} printOnly />
           </TabsContent>
           <TabsContent value="alpha" className="mt-3">
-            <AlphaListTab tournament={printTournament} registrations={regs} loading={false} showScoringCodes />
+            <AlphaListTab tournament={printTournament} registrations={printRegs} loading={false} showScoringCodes />
           </TabsContent>
           <TabsContent value="badges" className="mt-3">
-            <NameBadgesTab tournament={printTournament} registrations={regs} loading={false} groups={groups} />
+            <NameBadgesTab tournament={printTournament} registrations={printRegs} loading={false} groups={printGroups} />
           </TabsContent>
           <TabsContent value="pairings" className="mt-3">
-            <PairingsTab tournament={printTournament} registrations={regs} loading={false} groups={groups} />
+            <PairingsTab tournament={printTournament} registrations={printRegs} loading={false} groups={printGroups} />
+          </TabsContent>
+          <TabsContent value="checkin" className="mt-3">
+            <CheckInRosterTab tournament={printTournament ? { ...printTournament, slug: event.slug } : null} registrations={printRegs} loading={false} />
           </TabsContent>
           <TabsContent value="sponsors" className="mt-3">
             <SponsorSignsTab tournament={printTournament} sponsors={sponsors} loading={false} />
           </TabsContent>
         </Tabs>
+        </div>
       )}
     </EnterpriseLayout>
   );

@@ -281,7 +281,7 @@ export default function EnterprisePrintables() {
       title="Printables"
       description="Branded scorecards, signs, lists, badges and pairings for event day."
       crumbs={[{ label: "Printables" }]}
-      actions={<EnterpriseEventPicker events={events} eventId={event?.id} onChange={selectEvent} />}
+      actions={<div className="flex flex-col gap-1"><Label className="text-xs">Select event</Label><EnterpriseEventPicker events={events} eventId={event?.id} onChange={selectEvent} /></div>}
     >
       {loading ? (
         <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading…</div>

@@ -44,6 +44,8 @@ import EnterpriseHandicaps from "./pages/enterprise/EnterpriseHandicaps";
 import EnterpriseOperations from "./pages/enterprise/EnterpriseOperations";
 import EnterpriseCommsTool from "./pages/enterprise/EnterpriseCommsTool";
 import EnterpriseScores from "./pages/enterprise/EnterpriseScores";
+import EnterpriseLeaderboard from "./pages/enterprise/EnterpriseLeaderboard";
+import EnterpriseLeaderboardView from "./pages/enterprise/EnterpriseLeaderboardView";
 import EnterpriseSkinsPayouts from "./pages/enterprise/EnterpriseSkinsPayouts";
 import EnterprisePayments from "./pages/enterprise/EnterprisePayments";
 import EnterpriseSettings from "./pages/enterprise/EnterpriseSettings";
@@ -325,6 +327,8 @@ const App = () => (
           <Route path="/enterprise/registration" element={<EnterpriseRegistration />} />
           <Route path="/enterprise/leaderboard-settings" element={<EnterpriseLeaderboardSettings />} />
           <Route path="/enterprise/scores" element={<EnterpriseScores />} />
+          <Route path="/enterprise/leaderboard" element={<EnterpriseLeaderboard />} />
+          <Route path="/enterprise/leaderboard/view" element={<EnterpriseLeaderboardView />} />
           <Route path="/enterprise/skins-payouts" element={<EnterpriseSkinsPayouts />} />
           <Route path="/enterprise/payments" element={<EnterprisePayments />} />
           <Route path="/enterprise/settings/organization" element={<EnterpriseSettings view="organization" />} />

@@ -16,6 +16,7 @@ export function enterpriseItemIsActive(to: string, pathname: string): boolean {
   const base = to.split("?")[0];
   if (base === "/enterprise" || base === "/enterprise/tournaments") return pathname === base;
   if (base === "/enterprise/operations" && pathname === "/enterprise/payments") return true;
+  if (base === "/enterprise/leaderboard" && pathname === "/enterprise/leaderboard-settings") return true;
   if (base === "/enterprise/admin" && pathname.startsWith("/enterprise/settings/")) return true;
   return pathname === base || pathname.startsWith(`${base}/`);
 }

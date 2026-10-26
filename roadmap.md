@@ -1,3 +1,7 @@
+## Enterprise My Courses home course
+- [ ] Show search-only initial state, deduplicate course/tee results, and persist explicit home-course selection on the Enterprise account.
+- [ ] Default only unsaved new-event course selection; verify reload, search, review and protected existing events without publishing.
+
 ## True Skins carryover calculation
 - [x] Implement shared ordered carryover and recorded all-hole result summaries without automatic saved-result changes or schema changes; existing controls and Enterprise navigation retained.
 - [x] All four supplied scenarios passed signed-in preview with in-memory test data and intercepted Calculate writes, including table, summary, reset/unclaimed note, reload without recalculation and Enterprise-only content links; no page errors or real settings/winner changes, payouts, sends or publishing. Read-only audit: 2 saved game results (14 winning-hole amounts) would change on explicit recalculation; existing rows verified unchanged.

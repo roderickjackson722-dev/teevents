@@ -1,3 +1,7 @@
+## Enterprise Communications and Operations send previews
+- [x] Read-only audit completed; stopped under the supplied conflict rule before application changes or sends.
+- [ ] Blocked: exact personalized email/text previews need shared recipient/rendering support currently absent from sending endpoints; scheduled jobs resolve recipients and saved templates at delivery, not scheduling. Needs authorization for narrow preview API/rendering support and clarification of scheduled-preview expectations. Automations page only saves toggles, with no connected manual send to wrap. No previews added or browser checks claimed; no emails/texts/invoices sent, records changed or publication.
+
 ## Enterprise Home rep setup request
 - [x] Replace only the Home rep banner with the approved card and an in-Enterprise request form. User approved a narrow request-handling exception: authenticated, client/server-validated support ticket and conversation writes; no schema, route or existing API changes.
 - [x] Signed-in preview passed card, exact confirmation after real QA ticket persistence/readback, Admin support inbox visibility, optional date and invalid-input handling, phone form framing, unchanged Home stats/Recent Events/View Reports, and unchanged tournament readback. Fourteen tests passed, build OK and no page errors; one clearly labeled QA support request retained, no emails, event/settings/payment writes or publication.

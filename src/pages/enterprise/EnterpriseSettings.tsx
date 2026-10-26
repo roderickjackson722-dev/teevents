@@ -17,8 +17,7 @@ export default function EnterpriseSettings({ view }: { view: "organization" | "w
         <Link to={enterpriseLink("/enterprise/admin", search)}><ArrowLeft className="mr-1.5 h-4 w-4" />Back to Enterprise Admin</Link>
       </Button>
       {loading ? <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /> :
-        view === "organization" ? <OrganizationInfo /> :
-        event ? <SiteBuilder key={event.id} enterpriseEventId={event.id} /> :
+        event ? view === "organization" ? <OrganizationInfo key={event.id} enterpriseEventId={event.id} /> : <SiteBuilder key={event.id} enterpriseEventId={event.id} /> :
         <p className="text-muted-foreground">No Enterprise event available.</p>}
     </EnterpriseLayout>
   );

@@ -8,7 +8,8 @@ export function enterpriseLink(path: string, search: string): string {
     const value = current.get(key);
     if (value && !target.has(key)) target.set(key, value);
   }
-  return target.size ? `${pathname}?${target}` : pathname;
+  const queryString = target.toString();
+  return queryString ? `${pathname}?${queryString}` : pathname;
 }
 
 export function enterpriseItemIsActive(to: string, pathname: string): boolean {

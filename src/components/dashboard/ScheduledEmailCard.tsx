@@ -8,6 +8,8 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { CalendarClock, Loader2, Trash2, RefreshCw, RotateCcw, AlertTriangle } from "lucide-react";
+import SendPreviewDialog from "@/components/enterprise/SendPreviewDialog";
+import { scheduledEmailRecipients } from "@/lib/sendPreview";
 import { TIMEZONES, guessTimezone, zonedInputToUtc, formatInTimezone } from "@/lib/timezones";
 
 interface Props {
@@ -19,6 +21,10 @@ interface Props {
   selectedRecipients: string[];
   /** Total registrants with an email address (for the "everyone" label). */
   totalRecipients: number;
+  /** Enterprise: Schedule appears only on the Preview. */
+  requirePreview?: boolean;
+  registrations?: any[];
+  renderPreview?: (registrationId: string | null) => { subject: string; html: string };
 }
 
 interface Job {
@@ -54,7 +60,11 @@ export default function ScheduledEmailCard({
   templateLabel,
   selectedRecipients,
   totalRecipients,
+  requirePreview = false,
+  registrations = [],
+  renderPreview,
 }: Props) {
+  const [previewOpen, setPreviewOpen] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [sendAt, setSendAt] = useState("");
   const [timezone, setTimezone] = useState<string>(guessTimezone());
@@ -79,7 +89,7 @@ export default function ScheduledEmailCard({
 
   useEffect(() => { load(); }, [load]);
 
-  const schedule = async () => {
+  const schedule = async (previewed = false) => {
     if (!tournamentId) { toast.error("Select a tournament first"); return; }
     if (!sendAt) { toast.error("Choose a send date and time"); return; }
     const when = zonedInputToUtc(sendAt, timezone);
@@ -94,6 +104,8 @@ export default function ScheduledEmailCard({
       toast.error("Check at least one player in the list below");
       return;
     }
+    if (requirePreview && !previewed) { setPreviewOpen(true); return; }
+    setPreviewOpen(false);
     setSaving(true);
     const { data: userRes } = await supabase.auth.getUser();
     const { error } = await (supabase.from("scheduled_emails") as any).insert({
@@ -220,10 +232,49 @@ export default function ScheduledEmailCard({
         </p>
       )}
 
-      <Button onClick={schedule} disabled={saving} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
+      <Button onClick={() => schedule()} disabled={saving} className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
         {saving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <CalendarClock className="h-4 w-4 mr-1" />}
-        Schedule Email
+        {requirePreview ? "Preview" : "Schedule Email"}
       </Button>
+
+      {requirePreview && previewOpen && (() => {
+        const test = testEmail.trim();
+        const recips = scheduledEmailRecipients({ templateKind, audience, selectedIds: selectedRecipients, testEmail: test, registrations });
+        const sampleIds = test
+          ? (audience === "selected" && selectedRecipients.length ? selectedRecipients.slice(0, 1) : registrations.filter((r: any) => r.email).slice(0, 1).map((r: any) => r.id))
+          : recips.map((r) => r.id).filter((id) => !id.endsWith("-registered"));
+        const sampleOptions = sampleIds.map((id) => {
+          const r: any = registrations.find((x: any) => x.id === id);
+          return { id, label: `${r?.first_name || ""} ${r?.last_name || ""}`.trim() || "Player" };
+        });
+        return (
+          <SendPreviewDialog
+            open
+            title={`Scheduled ${templateLabel}`}
+            recipients={recips}
+            sampleOptions={sampleOptions}
+            scheduledFor={sendAt ? formatInTimezone(zonedInputToUtc(sendAt, timezone).toISOString(), timezone) : null}
+            notices={[
+              "The saved template and the player list at send time are what go out, so later edits and new registrations are included.",
+              ...(test ? ["Test copy: filled in with one player's details and delivered only to the test address."] : []),
+            ]}
+            action="schedule"
+            busy={saving}
+            onBack={() => setPreviewOpen(false)}
+            onConfirm={() => schedule(true)}
+            renderContent={(id) => {
+              if (!renderPreview) return null;
+              const out = renderPreview(id);
+              return (
+                <div className="space-y-2">
+                  <p><span className="font-medium text-foreground">Subject:</span> {out.subject}</p>
+                  <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border" dangerouslySetInnerHTML={{ __html: out.html }} />
+                </div>
+              );
+            }}
+          />
+        );
+      })()}
 
       <div className="border-t pt-4 space-y-2">
         <Label className="text-sm font-semibold">Scheduled &amp; Sent</Label>

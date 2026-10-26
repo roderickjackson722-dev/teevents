@@ -2,6 +2,11 @@ import { describe, expect, it } from "vitest";
 import { enterpriseItemIsActive, enterpriseLeagueManageLink, enterpriseLink } from "./enterpriseNavigation";
 
 describe("Enterprise settings navigation", () => {
+  it("carries the same selected event and admin workspace into Skins payouts and back to Scores", () => {
+    const search = "?admin_org=client&tournament_id=selected-event";
+    expect(enterpriseLink("/enterprise/skins-payouts", search)).toBe("/enterprise/skins-payouts?admin_org=client&tournament_id=selected-event");
+    expect(enterpriseLink("/enterprise/scores", search)).toBe("/enterprise/scores?admin_org=client&tournament_id=selected-event");
+  });
   it("assigns Payments to Operations rather than Home or Admin", () => {
     expect(enterpriseItemIsActive("/enterprise/operations", "/enterprise/payments")).toBe(true);
     expect(enterpriseItemIsActive("/enterprise", "/enterprise/payments")).toBe(false);

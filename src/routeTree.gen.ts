@@ -32,6 +32,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
+import { Route as EnterpriseSkinsPayoutsRouteImport } from './routes/enterprise.skins-payouts'
 import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
 import { Route as PairingsSlugRouteImport } from './routes/pairings/$slug'
 import { Route as SSlugRouteImport } from './routes/s/$slug'
@@ -180,6 +181,11 @@ const CollegeIndexRoute = CollegeIndexRouteImport.update({
 const CollegeSlugRoute = CollegeSlugRouteImport.update({
   id: '/college/$slug',
   path: '/college/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnterpriseSkinsPayoutsRoute = EnterpriseSkinsPayoutsRouteImport.update({
+  id: '/enterprise/skins-payouts',
+  path: '/enterprise/skins-payouts',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LeagueSlugRoute = LeagueSlugRouteImport.update({
@@ -396,6 +402,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
   '/s/$slug': typeof SSlugRoute
@@ -455,6 +462,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
   '/s/$slug': typeof SSlugRoute
@@ -515,6 +523,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
   '/s/$slug': typeof SSlugRoute
@@ -576,6 +585,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
     | '/s/$slug'
@@ -635,6 +645,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
     | '/s/$slug'
@@ -694,6 +705,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
     | '/s/$slug'
@@ -754,6 +766,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
+  EnterpriseSkinsPayoutsRoute: typeof EnterpriseSkinsPayoutsRoute
   LeagueSlugRoute: typeof LeagueSlugRoute
   PairingsSlugRoute: typeof PairingsSlugRoute
   SSlugRoute: typeof SSlugRoute
@@ -951,6 +964,13 @@ declare module '@tanstack/react-router' {
       path: '/college/$slug'
       fullPath: '/college/$slug'
       preLoaderRoute: typeof CollegeSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enterprise/skins-payouts': {
+      id: '/enterprise/skins-payouts'
+      path: '/enterprise/skins-payouts'
+      fullPath: '/enterprise/skins-payouts'
+      preLoaderRoute: typeof EnterpriseSkinsPayoutsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/league/$slug': {
@@ -1229,6 +1249,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CollegeSlugRoute: CollegeSlugRoute,
+  EnterpriseSkinsPayoutsRoute: EnterpriseSkinsPayoutsRoute,
   LeagueSlugRoute: LeagueSlugRoute,
   PairingsSlugRoute: PairingsSlugRoute,
   SSlugRoute: SSlugRoute,

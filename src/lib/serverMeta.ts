@@ -1,3 +1,4 @@
+import { whiteLabelFrom } from "@/lib/whiteLabel";
 const SITE = "https://www.teevents.golf";
 const DEFAULT_IMAGE = `${SITE}/og-image.png`;
 
@@ -81,27 +82,29 @@ export function tournamentSearchDescription(row: Record<string, unknown> | undef
   const where = [course, location].filter((value, index, values) => value && values.findIndex(item => item.toLowerCase() === value.toLowerCase()) === index).join(", ");
   const details = `${title}${date ? ` on ${date}` : ""}${where ? ` at ${where}` : ""}.`;
   const description = plain(row?.description);
-  return clamp(`${details} Golf tournament details${description ? `. ${description}` : " on TeeVents."}`);
+  const tail = whiteLabelFrom(row) ? "." : " on TeeVents.";
+  return clamp(`${details} Golf tournament details${description ? `. ${description}` : tail}`);
 }
 
 export async function getTournamentMeta(slug: string, route: "t" | "tournament" | "pairings"): Promise<PageMeta> {
   const filter = `or=(custom_slug.eq.${encodeURIComponent(slug)},slug.eq.${encodeURIComponent(slug)})`;
-  const params = `select=title,date,location,course_name,description,site_hero_image_url,site_logo_url,image_url&${filter}&site_published=eq.true&limit=1`;
+  const params = `select=title,date,location,course_name,description,site_hero_image_url,site_logo_url,image_url,is_enterprise,site_primary_color&${filter}&site_published=eq.true&limit=1`;
   const base = import.meta.env.VITE_SUPABASE_URL; const key = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
   let row: Record<string, unknown> | undefined;
   if (base && key) { const response = await fetch(`${base}/rest/v1/tournaments?${params}`, { headers: { apikey: key, Authorization: `Bearer ${key}` } }); if (response.ok) row = ((await response.json()) as Record<string, unknown>[])[0]; }
   const title = plain(row?.title) || "Golf Tournament";
   const date = row?.date ? new Date(`${row.date}T12:00:00Z`).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" }) : "";
   const where = plain(row?.location || row?.course_name);
+  const siteName = whiteLabelFrom(row)?.name;
   if (route === "pairings") {
     return {
-      title: `${title} — Tee Times & Pairings | TeeVents`,
+      title: `${title} — Tee Times & Pairings | ${siteName || "TeeVents"}`,
       description: `Tee times, groups and pairings for ${title}${date ? ` on ${date}` : ""}${where ? ` at ${where}` : ""}.`,
       image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url),
       url: `${SITE}/pairings/${slug}`,
     };
   }
-  return { title: `${title} | TeeVents Golf Tournaments`, description: tournamentSearchDescription(row), image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url), url: `${SITE}/${route}/${slug}` };
+  return { title: `${title} | ${siteName || "TeeVents Golf Tournaments"}`, description: tournamentSearchDescription(row), image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url), url: `${SITE}/${route}/${slug}` };
 }
 
 /** Player "Team HQ" mobile homepage: /team/{slug} */

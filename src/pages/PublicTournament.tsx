@@ -24,6 +24,7 @@ import { normalizeOrder, normalizeVisibility, normalizeSectionTitles, publicSect
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PublicAuctionsRaffles } from "@/components/public/PublicAuctionsRaffles";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import { whiteLabelFrom } from "@/lib/whiteLabel";
 import { formatCents, formatMoney } from "@/lib/formatCurrency";
 import { tournamentSearchDescription } from "@/lib/serverMeta";
 
@@ -107,7 +108,8 @@ const tournamentShareMeta = (tournament: TournamentSite, fallbackSlug?: string) 
   const description = tournamentSearchDescription({ title: tournament.title, date: tournament.date, location: tournament.location, course_name: tournament.course_name, description: tournament.description });
 
   return {
-    pageTitle: `${tournament.title} | ${SHARE_SITE_NAME}`,
+    pageTitle: `${tournament.title} | ${whiteLabelFrom(tournament)?.name || SHARE_SITE_NAME}`,
+    siteName: whiteLabelFrom(tournament)?.name || SHARE_SITE_NAME,
     shareTitle: tournament.title,
     description,
     imageUrl,
@@ -620,7 +622,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     upsertSingleMeta("property", "og:image:alt", meta.shareTitle);
     upsertSingleMeta("property", "og:url", meta.pageUrl);
     upsertSingleMeta("property", "og:type", "website");
-    upsertSingleMeta("property", "og:site_name", SHARE_SITE_NAME);
+    upsertSingleMeta("property", "og:site_name", (meta as any).siteName || SHARE_SITE_NAME);
     upsertSingleMeta("name", "twitter:card", "summary_large_image");
     upsertSingleMeta("name", "twitter:title", meta.shareTitle);
     upsertSingleMeta("name", "twitter:description", meta.description);

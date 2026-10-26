@@ -16,6 +16,7 @@ import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import FlightsManager from "@/components/dashboard/FlightsManager";
 import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
+import { enterpriseLink } from "@/lib/enterpriseNavigation";
 
 
 const EXTRA_FORMATS = [
@@ -28,7 +29,7 @@ const FORMAT_OPTIONS = [
   ...EXTRA_FORMATS,
 ];
 
-function AdvancedBlock({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
+function AdvancedBlock({ title, defaultOpen = false, mountWhenOpen = false, children }: { title: string; defaultOpen?: boolean; mountWhenOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   useEffect(() => { if (defaultOpen) setOpen(true); }, [defaultOpen]);
   return (
@@ -37,17 +38,18 @@ function AdvancedBlock({ title, defaultOpen = false, children }: { title: string
         {title}
         <ChevronDown className={`h-4 w-4 transition-transform ${open ? "rotate-180" : ""}`} />
       </CollapsibleTrigger>
-      <CollapsibleContent className="space-y-4 px-4 pb-4">{children}</CollapsibleContent>
+      <CollapsibleContent className="space-y-4 px-4 pb-4">{!mountWhenOpen || open ? children : null}</CollapsibleContent>
     </Collapsible>
   );
 }
 
-export default function ScoringPayouts() {
+export default function ScoringPayouts({ enterpriseEventId }: { enterpriseEventId?: string } = {}) {
   const { org } = useOrgContext();
   const [searchParams] = useSearchParams();
-  const flightsOpen = searchParams.get("section") === "flights";
+  const flightsOpen = !enterpriseEventId && searchParams.get("section") === "flights";
   const [tournaments, setTournaments] = useState<{ id: string; title: string }[]>([]);
-  const [selected, setSelected] = useTournamentIdParam();
+  const [contextSelected, setSelected] = useTournamentIdParam();
+  const selected = enterpriseEventId || contextSelected;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -70,7 +72,7 @@ export default function ScoringPayouts() {
         setTournaments(t);
         // Stay on the tournament already in context; only pick one when none is chosen.
         const keep = pickTournamentId(t, selected);
-        if (keep && keep !== selected) setSelected(keep);
+        if (!enterpriseEventId && keep && keep !== selected) setSelected(keep);
         setLoading(false);
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -134,13 +136,13 @@ export default function ScoringPayouts() {
 
   return (
     <div className="max-w-5xl space-y-6">
-      <PairingsScoringSteps />
-      <div>
+      {!enterpriseEventId && <PairingsScoringSteps />}
+      {!enterpriseEventId && <div>
         <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Scoring &amp; Payouts</h1>
         <p className="text-muted-foreground mt-1">
           Review your scoring format, turn on skins, flight the field, and confirm the payout breakdown.
         </p>
-      </div>
+      </div>}
 
 
       <Card>
@@ -155,7 +157,7 @@ export default function ScoringPayouts() {
             <p className="text-xs text-muted-foreground">The scoring format is set in Setup, Event Details.</p>
           </div>
           <Button variant="outline" size="sm" asChild>
-            <Link to="/dashboard/tournaments">Edit in Setup</Link>
+            <Link to={enterpriseEventId ? enterpriseLink(`/enterprise/create?tournament_id=${enterpriseEventId}`, searchParams.toString()) : "/dashboard/tournaments"}>Edit in Setup</Link>
           </Button>
         </CardContent>
       </Card>
@@ -218,7 +220,7 @@ export default function ScoringPayouts() {
 
       {selected && (
         <div id="flights">
-          <AdvancedBlock title="Advanced: Flights & Payout Breakdown" defaultOpen={flightsOpen}>
+          <AdvancedBlock title="Advanced: Flights & Payout Breakdown" defaultOpen={flightsOpen} mountWhenOpen={Boolean(enterpriseEventId)}>
             <FlightsManager tournamentId={selected} />
           </AdvancedBlock>
         </div>

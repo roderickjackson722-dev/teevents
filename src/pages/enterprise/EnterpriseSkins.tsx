@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
 import EnterpriseEventPicker from "@/components/enterprise/EnterpriseEventPicker";
@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Loader2, Coins, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { enterpriseLink } from "@/lib/enterpriseNavigation";
 
 interface PlayerRow {
   id: string;
@@ -19,6 +20,7 @@ interface PlayerRow {
 }
 
 export default function EnterpriseSkins() {
+  const { search } = useLocation();
   const { events, event, settings, loading, selectEvent, saveSettings } = useEnterpriseEvent();
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [busy, setBusy] = useState(false);
@@ -86,7 +88,7 @@ export default function EnterpriseSkins() {
                 </label>
               ))}
               <Button asChild variant="outline" size="sm" className="ml-auto">
-                <Link to={`/dashboard/scoring-payouts?tournament_id=${event.id}`}>
+                <Link to={enterpriseLink(`/enterprise/skins-payouts?tournament_id=${event.id}`, search)}>
                   Purse & winners <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
                 </Link>
               </Button>

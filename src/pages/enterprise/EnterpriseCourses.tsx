@@ -55,9 +55,12 @@ export default function EnterpriseCourses() {
       if (error) throw error;
       const current = data.enterprise_settings;
       const settings = current && typeof current === "object" && !Array.isArray(current) ? current : {};
-      const { data: saved, error: saveError } = await supabase.from("organizations")
+      const update = supabase.from("organizations")
         .update({ enterprise_settings: { ...settings, homeCourseId: selected.id } })
-        .eq("id", org.orgId).eq("enterprise_settings", current).select("id");
+        .eq("id", org.orgId);
+      const { data: saved, error: saveError } = await (current === null
+        ? update.is("enterprise_settings", null)
+        : update.eq("enterprise_settings", current)).select("id");
       if (saveError) throw saveError;
       if (!saved?.length) throw new Error("Your account settings changed. Please try again.");
       setHomeId(selected.id);
@@ -100,6 +103,7 @@ export default function EnterpriseCourses() {
             <div className="divide-y divide-border">
               {unique.map((c) => (
                 <div key={c.id} className="flex flex-wrap items-center gap-3 py-4 text-sm" data-course-result={c.id}>
+                  <input type="radio" name="home-course" aria-label={`Select ${c.course_name}, ${c.tee_name || "Tees not set"}`} checked={selectedId === c.id} onChange={() => setSelectedId(c.id)} disabled={saving} className="h-4 w-4 accent-primary" />
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="break-words font-medium">{c.course_name}</span>
                   <span className="text-muted-foreground">{[c.city, c.state].filter(Boolean).join(", ") || "—"}</span>
@@ -108,17 +112,13 @@ export default function EnterpriseCourses() {
                   <Button asChild variant="outline" size="sm">
                     <Link to={newCourseEventLink(c.id, location.search)}>Use in new event</Link>
                   </Button>
-                  <Button variant="outline" size="sm" disabled={saving || !org} onClick={() => setSelectedId(c.id)} aria-pressed={selectedId === c.id}>Save as home course</Button>
+                  <Button variant={selectedId === c.id ? "default" : "outline"} className={selectedId === c.id ? "bg-secondary text-primary hover:bg-secondary/90" : ""} size="sm" disabled={saving || !org || selectedId !== c.id} onClick={saveHome}>{saving && selectedId === c.id && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save as home course</Button>
                   </div>
                 </div>
               ))}
               {unique.length === 0 && <p className="py-4 text-sm text-muted-foreground">No courses matched that search.</p>}
             </div>
           )}
-          {selected && <div className="flex flex-wrap items-center gap-3 border-t border-border py-4">
-            <span className="break-words text-sm">{selected.course_name} · {selected.tee_name || "Tees not set"}</span>
-            <Button onClick={saveHome} disabled={saving} className="h-auto min-h-9 whitespace-normal bg-secondary text-primary hover:bg-secondary/90">{saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save as home course</Button>
-          </div>}
       </section>
     </EnterpriseLayout>
   );

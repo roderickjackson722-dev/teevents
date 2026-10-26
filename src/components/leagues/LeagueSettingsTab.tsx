@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
+import { enterpriseLink } from "@/lib/enterpriseNavigation";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const PLACES: [string, string][] = [
 
 export default function LeagueSettingsTab({ league, onSaved }: { league: any; onSaved: () => void }) {
   const navigate = useNavigate();
+  const { pathname, search } = useLocation();
   const [showEdit, setShowEdit] = useState(false);
   const [pts, setPts] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -120,7 +122,7 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
     const { error } = await (supabase as any).from("golf_leagues").delete().eq("id", league.id);
     if (error) return toast({ title: "Delete failed", description: error.message, variant: "destructive" });
     toast({ title: "League deleted" });
-    navigate("/dashboard/leagues");
+    navigate(pathname.startsWith("/enterprise/") ? enterpriseLink("/enterprise/leagues", search) : "/dashboard/leagues");
   };
 
   const paymentsCard = (

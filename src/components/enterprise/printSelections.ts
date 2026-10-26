@@ -11,7 +11,6 @@ export interface SelectablePlayer {
   group_position: number | null;
   group_label?: string | null;
   tee_time?: string | null;
-  [key: string]: unknown;
 }
 
 export interface DraftPlayer<T extends SelectablePlayer = SelectablePlayer> {
@@ -28,7 +27,6 @@ export interface DraftPlayer<T extends SelectablePlayer = SelectablePlayer> {
 export interface GroupLike {
   group_number: number | null;
   tee_time?: string | null;
-  [key: string]: unknown;
 }
 
 export function draftFrom<T extends SelectablePlayer>(rows: T[]): DraftPlayer<T>[] {

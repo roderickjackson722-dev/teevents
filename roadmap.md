@@ -1,3 +1,7 @@
+## True Skins carryover calculation
+- [ ] Implement shared ordered carryover and result summaries without automatic saved-result changes or schema/API changes.
+- [ ] Verify four supplied scenarios with isolated preview data, no real writes or payouts; read-only audit saved-result impact.
+
 ## Enterprise Skins and Payouts
 - [x] Added one Enterprise Skins and Payouts screen wrapping the existing ScoringPayouts/DivisionSkinsManager/FlightsManager tools; Scores and the existing Skins/Deuces/Putts tool's Purse & winners link target it with event/workspace context. Organizer default rendering, saves, API calls and calculations unchanged. Flights remains collapsed and is mounted only on expansion in Enterprise to avoid initial auto-sync.
 - [x] Signed-in Scores entry, Purse & winners, both back links, sidebar, event/workspace, unsaved toggle/type/fee/pot/search, carryover copy and collapsed Flights checked; 14 navigation tests passed and build OK. No page errors, saves/calculations/payouts/sends or publication; write requests blocked and selected event/player skins read back unchanged.

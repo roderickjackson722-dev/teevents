@@ -41,6 +41,8 @@ import { parsePairingsConfig } from "@/lib/pairingsConfig";
 import { ALLOWANCE_OPTIONS, computeHandicaps } from "@/lib/courseHandicap";
 import { HandicapLabel } from "@/components/handicap/HandicapBadges";
 import { syncEventHandicaps } from "@/lib/handicapClient";
+import { newEventCourse, uniqueCourseTees, type EnterpriseCourse } from "@/lib/enterpriseHomeCourse";
+import { loadEnterpriseCourseLibrary } from "@/lib/enterpriseCourses.client";
 
 const STEPS = ["Event Details", "Players", "Pairings", "Review & Publish"];
 const LETTERS = ["A", "B", "C"];
@@ -89,7 +91,9 @@ export default function EnterpriseCreate() {
   const [status, setStatus] = useState("draft");
   const [slug, setSlug] = useState<string | null>(null);
   const [settings, setSettings] = useState<EnterpriseSettings>(defaultEnterpriseSettings());
-  const [courses, setCourses] = useState<{ id: string; course_name: string; par_total: number | null; course_rating: number | null; slope_rating: number | null }[]>([]);
+  const [courses, setCourses] = useState<EnterpriseCourse[]>([]);
+  const [selectedCourseId, setSelectedCourseId] = useState("");
+  const [courseTouched, setCourseTouched] = useState(false);
   const [hcp, setHcp] = useState({ enabled: false, allowance: 100, customAllowance: false, courseRating: "", slope: "", par: "72", sync: false });
   const [hcpDirty, setHcpDirty] = useState(false);
   const [hcpSyncing, setHcpSyncing] = useState(false);
@@ -107,12 +111,8 @@ export default function EnterpriseCreate() {
   /* ---------------- load ---------------- */
   useEffect(() => {
     (async () => {
-      const { data: courseRows } = await supabase
-        .from("course_database")
-        .select("id, course_name, par_total, course_rating, slope_rating")
-        .order("course_name")
-        .limit(300);
-      setCourses((courseRows || []) as any);
+      try { setCourses(await loadEnterpriseCourseLibrary()); }
+      catch { toast.error("Could not load the course library."); }
 
       if (!tournamentId) { setLoading(false); return; }
       const { data } = await (supabase.from("tournaments") as any)
@@ -146,6 +146,20 @@ export default function EnterpriseCreate() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tournamentId]);
+
+  // Defaults are local state only; never mark handicaps dirty or touch saved events.
+  const requestedCourseId = params.get("course_id");
+  useEffect(() => {
+    if (!org || id || tournamentId || courseTouched) return;
+    const course = newEventCourse(courses, org.enterpriseSettings, tournamentId, requestedCourseId);
+    setCourseName(course?.course_name || "");
+    setSelectedCourseId(course?.id || "");
+    if (course) setHcp((current) => ({ ...current,
+      courseRating: course.course_rating != null ? String(course.course_rating) : "",
+      slope: course.slope_rating != null ? String(course.slope_rating) : "",
+      par: course.par_total != null ? String(course.par_total) : "72",
+    }));
+  }, [org, courses, id, tournamentId, requestedCourseId, courseTouched]);
 
   useEffect(() => {
     if (!org) return;
@@ -280,9 +294,12 @@ export default function EnterpriseCreate() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hcp, hcpDirty, id]);
 
-  const pickCourse = (name: string) => {
-    setCourseName(name);
-    const c = courses.find((x) => x.course_name === name);
+  const pickCourse = (courseId: string) => {
+    const c = courses.find((x) => x.id === courseId);
+    if (!c) return;
+    setCourseTouched(true);
+    setSelectedCourseId(c.id);
+    setCourseName(c.course_name);
     if (c && (c.course_rating || c.slope_rating || c.par_total)) {
       updateHcp({
         courseRating: c.course_rating != null ? String(c.course_rating) : hcp.courseRating,
@@ -533,18 +550,18 @@ export default function EnterpriseCreate() {
             </div>
             <div>
               <Label>Select Course</Label>
-              <Select value={courseName || undefined} onValueChange={pickCourse}>
-                <SelectTrigger><SelectValue placeholder="Choose a course" /></SelectTrigger>
+              <Select value={selectedCourseId || courses.find((c) => c.course_name === courseName)?.id || ""} onValueChange={pickCourse}>
+                <SelectTrigger aria-label="Select Course"><SelectValue placeholder="Choose a course" /></SelectTrigger>
                 <SelectContent>
-                  {courses.map((c) => (
-                    <SelectItem key={c.id} value={c.course_name}>{c.course_name}</SelectItem>
+                  {uniqueCourseTees(courses).map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.course_name}{c.tee_name ? ` · ${c.tee_name}` : ""}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
               <Input
                 className="mt-2"
                 value={courseName}
-                onChange={(e) => setCourseName(e.target.value)}
+                onChange={(e) => { setCourseTouched(true); setSelectedCourseId(""); setCourseName(e.target.value); }}
                 placeholder="Or type a course name"
               />
             </div>

@@ -41,6 +41,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [search, setSearch] = useState<Record<string, string>>({});
   const [roundNumber, setRoundNumber] = useState(1);
   const [roundCount, setRoundCount] = useState(1);
+  const [roundHoles, setRoundHoles] = useState<Record<number, number>>({});
 
   const [winners, setWinners] = useState<Record<string, WinnerRow[]>>({});
   const [loading, setLoading] = useState(true);
@@ -62,12 +63,14 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
         .select("id, first_name, last_name, flight_id, tier_id, status, skins_opt_in")
         .eq("tournament_id", tournamentId)
         .order("last_name"),
-      supabase.from("tournaments").select("pairings_config").eq("id", tournamentId).maybeSingle(),
+      supabase.from("tournaments").select("pairings_config, enterprise_settings").eq("id", tournamentId).maybeSingle(),
     ]);
 
     const divs = (dRes.data as Division[]) || [];
     const config = (tRes.data as any)?.pairings_config || {};
     const rounds = Math.max(1, Number(config.rounds) || 1);
+    const settings = (tRes.data as any)?.enterprise_settings;
+    setRoundHoles(Object.fromEntries(Array.from({ length: rounds }, (_, i) => [i + 1, Number(config.byDay?.[i]?.roundHoles || settings?.rounds?.[i]?.holes || 18)])));
     const preferredRound = Math.min(rounds, Math.max(1, Number(config.publishedRound || config.activeRound || 1)));
     setRoundCount(rounds);
     setRoundNumber((current) => (current > rounds || (current === 1 && preferredRound > 1) ? preferredRound : current));
@@ -435,7 +438,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
         {roundGames.filter((g) => g.status === "active").map((g) => {
           const rows = winners[g.id] || [];
           // Legacy results contain winners only; keep their recorded payout unchanged.
-          const isCarryoverResult = rows.some((r) => !r.registration_id);
+          const isCarryoverResult = rows.some((r) => !r.registration_id) || (rows.length === (roundHoles[g.round_number || 1] || 18) && rows.every((r, i) => r.hole_number === i + 1));
           const recorded = rows.length ? recordedSkinsResult(g.total_purse_cents, rows) : null;
           const displayRows = isCarryoverResult ? recorded?.rows || [] : rows.map((r) => ({ ...r, skins: 1 }));
           const totalPaid = rows.reduce((sum, r) => sum + r.amount_cents, 0);
@@ -462,7 +465,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                       ["Skins unclaimed", summary?.skinsUnclaimed ?? "Available after recalculation"],
                       ["Total paid", formatCents(totalPaid)],
                       ["Unclaimed amount", summary ? formatCents(summary.unclaimedAmountCents) : "Available after recalculation"],
-                    ].map(([label, value]) => <div key={label}><p className="text-sm text-muted-foreground">{label}</p><p className="font-bold text-primary">{value}</p></div>)}
+                    ].map(([label, value]) => <div key={label} data-skins-summary={label}><p className="text-sm text-muted-foreground">{label}</p><p className="font-bold text-primary">{value}</p></div>)}
                   </div>
                   {!isCarryoverResult && <p className="text-xs text-muted-foreground">Saved results remain unchanged until Calculate Skin Payouts is clicked again.</p>}
                   <div className="overflow-x-auto rounded-md border">

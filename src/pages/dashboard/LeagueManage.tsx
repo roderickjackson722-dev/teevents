@@ -149,7 +149,7 @@ export default function LeagueManage() {
       )}
 
 
-      <Tabs defaultValue="overview">
+      <Tabs defaultValue={new URLSearchParams(search).get("tab") || "overview"}>
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="overview">Dashboard</TabsTrigger>
           <TabsTrigger value="scoring-payouts">Scoring &amp; Payouts</TabsTrigger>

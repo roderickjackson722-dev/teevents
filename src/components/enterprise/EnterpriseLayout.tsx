@@ -49,7 +49,7 @@ const NAV: NavGroup[] = [
     items: [
       { label: "Tournaments", to: "/enterprise/tournaments", icon: Trophy },
       { label: "Leagues", to: "/enterprise/leagues", icon: Flag },
-      { label: "Leaderboard", to: "/enterprise/leaderboard-settings", icon: ListOrdered },
+      { label: "Leaderboard", to: "/enterprise/leaderboard", icon: ListOrdered },
       { label: "Printables", to: "/enterprise/printables", icon: Printer },
       { label: "My Courses", to: "/enterprise/courses", icon: MapPin },
       { label: "My Roster", to: "/enterprise/roster", icon: Users },

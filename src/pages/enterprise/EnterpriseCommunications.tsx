@@ -15,10 +15,10 @@ import { toast } from "sonner";
 import { sendEnterpriseRosterEmail } from "@/lib/enterpriseOperations.functions";
 
 const TOOLS = [
-  { icon: Mail, title: "Email your players", body: "Write and send an email to everyone signed up, or just one group.", to: "/dashboard/messages" },
-  { icon: MessageSquare, title: "Text messages", body: "Send a text now or schedule it for the morning of the event.", to: "/dashboard/messages" },
-  { icon: FileText, title: "Email templates", body: "Edit the wording of confirmations, reminders and results emails.", to: "/dashboard/email-templates" },
-  { icon: Receipt, title: "Receipts", body: "Send a payment or donation receipt to any player or sponsor.", to: "/dashboard/email-templates?template=receipt" },
+  { icon: Mail, title: "Email your players", body: "Write and send an email to everyone signed up, or just one group.", to: "/enterprise/communications/messages" },
+  { icon: MessageSquare, title: "Text messages", body: "Send a text now or schedule it for the morning of the event.", to: "/enterprise/communications/messages" },
+  { icon: FileText, title: "Email templates", body: "Edit the wording of confirmations, reminders and results emails.", to: "/enterprise/communications/email-templates" },
+  { icon: Receipt, title: "Receipts", body: "Send a payment or donation receipt to any player or sponsor.", to: "/enterprise/communications/email-templates?template=receipt" },
 ];
 
 export default function EnterpriseCommunications() {

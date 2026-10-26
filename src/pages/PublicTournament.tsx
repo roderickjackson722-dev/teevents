@@ -105,7 +105,7 @@ const tournamentShareMeta = (tournament: TournamentSite, fallbackSlug?: string) 
   const publicSlug = tournament.custom_slug || tournament.slug || fallbackSlug || "";
   const pageUrl = `${SHARE_BASE_URL}/t/${publicSlug}`;
   const imageUrl = toAbsoluteShareUrl(tournament.site_hero_image_url || tournament.image_url || tournament.site_logo_url);
-  const description = tournamentSearchDescription({ title: tournament.title, date: tournament.date, location: tournament.location, course_name: tournament.course_name, description: tournament.description });
+  const description = tournamentSearchDescription({ title: tournament.title, date: tournament.date, location: tournament.location, course_name: tournament.course_name, description: tournament.description, is_enterprise: tournament.is_enterprise, site_logo_url: tournament.site_logo_url });
 
   return {
     pageTitle: `${tournament.title} | ${whiteLabelFrom(tournament)?.name || SHARE_SITE_NAME}`,

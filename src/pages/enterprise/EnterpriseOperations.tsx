@@ -14,6 +14,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Download, FileText, Loader2, Mail, Printer, Save } from "lucide-react";
 import { toast } from "sonner";
 import { emailEnterpriseInvoice } from "@/lib/enterpriseOperations.functions";
+import { buildInvoiceEmail } from "@/lib/enterpriseInvoiceEmail";
 
 type Invoice = { id: string; invoice_number: string; billing_name: string; billing_email: string; billing_address: string; amount_cents: number; status: string; due_date: string; created_at: string };
 type EventRow = { id: string; title: string; date: string | null };
@@ -37,6 +38,7 @@ export default function EnterpriseOperations() {
   const [settings, setSettings] = useState({ acceptInvoicePayments: false, processingFeeHandling: "absorb" });
   const [form, setForm] = useState({ billing_name: "", billing_email: "", billing_address: "", amount: "" });
   const [saving, setSaving] = useState(false);
+  const [preview, setPreview] = useState<{ invoiceNumber: string; dueDate: string } | null>(null);
 
   const load = async () => {
     if (!org) return;
@@ -63,16 +65,23 @@ export default function EnterpriseOperations() {
     setSaving(false); if (error) toast.error(error.message); else toast.success("Enterprise payment settings saved.");
   };
 
-  const createInvoice = async () => {
+  const openPreview = () => {
     if (!org || !form.billing_name.trim() || !form.billing_email.trim() || !form.billing_address.trim() || Number(form.amount) <= 0) { toast.error("Complete every invoice field."); return; }
-    setSaving(true);
-    const invoiceNumber = `ENT-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`;
     const due = new Date(); due.setDate(due.getDate() + 30);
-    const { data, error } = await (supabase.from("enterprise_invoices") as any).insert({ organization_id: org.orgId, tournament_id: eventId === "all" ? null : eventId, invoice_number: invoiceNumber, billing_name: form.billing_name.trim(), billing_email: form.billing_email.trim(), billing_address: form.billing_address.trim(), amount_cents: Math.round(Number(form.amount) * 100), due_date: due.toISOString().slice(0, 10), created_by: org.userId }).select("*").single();
+    setPreview({ invoiceNumber: `ENT-${new Date().getFullYear()}-${Date.now().toString().slice(-6)}`, dueDate: due.toISOString().slice(0, 10) });
+  };
+
+  const previewEmail = preview ? buildInvoiceEmail({ invoice_number: preview.invoiceNumber, organization_name: org?.orgName, billing_name: form.billing_name.trim(), billing_address: form.billing_address.trim(), amount_cents: Math.round(Number(form.amount) * 100), due_date: preview.dueDate }) : null;
+
+  const createInvoice = async () => {
+    if (!org || !preview) return;
+    setSaving(true);
+    const invoiceNumber = preview.invoiceNumber;
+    const { data, error } = await (supabase.from("enterprise_invoices") as any).insert({ organization_id: org.orgId, tournament_id: eventId === "all" ? null : eventId, invoice_number: invoiceNumber, billing_name: form.billing_name.trim(), billing_email: form.billing_email.trim(), billing_address: form.billing_address.trim(), amount_cents: Math.round(Number(form.amount) * 100), due_date: preview.dueDate, created_by: org.userId }).select("*").single();
     if (error) { toast.error(error.message); setSaving(false); return; }
     await (supabase.from("enterprise_invoice_audit_log") as any).insert({ invoice_id: data.id, organization_id: org.orgId, actor_id: org.userId, action: "created" });
     try { await sendInvoice({ data: { organizationId: org.orgId, invoiceId: data.id } }); toast.success(`${invoiceNumber} created and emailed.`); } catch { toast.success(`${invoiceNumber} created. Email it from the invoice list.`); }
-    setForm({ billing_name: "", billing_email: "", billing_address: "", amount: "" }); await load(); setSaving(false);
+    setForm({ billing_name: "", billing_email: "", billing_address: "", amount: "" }); setPreview(null); await load(); setSaving(false);
   };
 
   const markPaid = async (invoice: Invoice) => {

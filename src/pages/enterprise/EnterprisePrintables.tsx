@@ -265,9 +265,9 @@ export default function EnterprisePrintables() {
         </div>
         {editing && (
           <div className="flex flex-wrap items-end gap-2 rounded-lg border border-dashed border-border p-3">
-            <div><Label className="text-xs">First name</Label><Input className="h-8 w-36" value={newFirst} onChange={(e) => setNewFirst(e.target.value)} /></div>
-            <div><Label className="text-xs">Last name</Label><Input className="h-8 w-36" value={newLast} onChange={(e) => setNewLast(e.target.value)} /></div>
-            <div><Label className="text-xs">Group</Label><Input className="h-8 w-20" type="number" min={1} value={newGroup} onChange={(e) => setNewGroup(e.target.value)} /></div>
+            <div><Label className="text-xs">First name</Label><Input className="h-8 w-36" aria-label="First name" value={newFirst} onChange={(e) => setNewFirst(e.target.value)} /></div>
+            <div><Label className="text-xs">Last name</Label><Input className="h-8 w-36" aria-label="Last name" value={newLast} onChange={(e) => setNewLast(e.target.value)} /></div>
+            <div><Label className="text-xs">Group</Label><Input className="h-8 w-20" type="number" min={1} aria-label="Group for new player" value={newGroup} onChange={(e) => setNewGroup(e.target.value)} /></div>
             <Button variant="outline" size="sm" onClick={addPlayer}><Plus className="mr-1.5 h-4 w-4" />Add player to printout</Button>
           </div>
         )}

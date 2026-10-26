@@ -157,3 +157,7 @@
 ## Sample Event visual polish
 - [x] Add scoped sponsor wordmarks, generated golf photography, FCC emblem, card ribbons, and green/gold leaderboard without changing sample copy, prices, sections, or handlers
 - [x] Verify desktop/phone rendering, all eight photo placements, four full foursomes, schedule alignment, no page overflow, and all demo button types scrolling only; original prices, data and section order confirmed unchanged; preview only
+
+## Enterprise send previews (Part 2, approved items 2, 3, 4 read-only, 5, 7)
+- [x] Personalized email preview per real player; text preview with exact text, characters, parts and plan count; read-only recipient lists; scheduled email/text previews with planned time and "may change" label; Send/Schedule only on Preview in Enterprise
+- [ ] Items 1 (shared email layout) and 6 (exact scheduled send) not approved

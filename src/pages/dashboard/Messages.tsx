@@ -13,11 +13,12 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { MessageSquare, Send, Users, Clock, CalendarIcon, Timer, Phone, CreditCard, FlaskConical } from "lucide-react";
+import { Eye, MessageSquare, Send, Users, Clock, CalendarIcon, Timer, Phone, CreditCard, FlaskConical } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
+import SmsSendPreview from "@/components/enterprise/SmsSendPreview";
 
 /** Variables organizers can drop into a text. Mirrors the email template variables. */
 const SMS_VARIABLES: { token: string; label: string }[] = [
@@ -72,7 +73,7 @@ const SMS_TEMPLATES: { id: string; name: string; body: string }[] = [
   },
 ];
 
-export default function Messages() {
+export default function Messages({ requirePreview = false }: { requirePreview?: boolean } = {}) {
   const { org, loading: orgLoading } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const queryClient = useQueryClient();
@@ -85,6 +86,20 @@ export default function Messages() {
   const [audience, setAudience] = useState<"registered" | "manual">("registered");
   const [manualNumbers, setManualNumbers] = useState("");
   const [testNumber, setTestNumber] = useState("");
+  const [previewOpen, setPreviewOpen] = useState(false);
+
+  // Enterprise preview only: read the same player rows and event details the send uses.
+  const { data: previewData } = useQuery({
+    queryKey: ["sms-preview-data", selectedTournament],
+    queryFn: async () => {
+      const [{ data: regs }, { data: t }] = await Promise.all([
+        supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).not("phone", "is", null),
+        (supabase.from("tournaments") as any).select("title, course_name, date, slug").eq("id", selectedTournament).maybeSingle(),
+      ]);
+      return { registrations: (regs || []) as any[], tournament: t };
+    },
+    enabled: requirePreview && previewOpen && !!selectedTournament,
+  });
 
   const { data: tournaments } = useQuery({
     queryKey: ["tournaments", org?.orgId],
@@ -239,6 +254,7 @@ export default function Messages() {
           description: `Successfully sent to ${data.sent} recipient${data.sent !== 1 ? "s" : ""}.${data.failed ? ` ${data.failed} failed.` : ""}`,
         });
       }
+      setPreviewOpen(false);
       setMessage("");
       setSendMode("now");
       setScheduleDate(undefined);
@@ -482,6 +498,7 @@ export default function Messages() {
             </div>
 
             {/* Test send */}
+            {!requirePreview && (
             <div className="space-y-2 rounded-lg border p-3">
               <label className="text-sm font-medium flex items-center gap-2">
                 <FlaskConical className="h-4 w-4" /> Send a test text
@@ -509,6 +526,7 @@ export default function Messages() {
                 Test texts go only to this number and aren't saved to message history.
               </p>
             </div>
+            )}
 
             {/* Send mode toggle */}
             <div className="space-y-3">
@@ -582,6 +600,11 @@ export default function Messages() {
                   {audienceCount !== 1 ? "s" : ""}
                 </div>
               )}
+              {requirePreview ? (
+                <Button onClick={() => setPreviewOpen(true)} disabled={!canSend} className="ml-auto bg-secondary text-primary hover:bg-secondary/80">
+                  <Eye className="mr-2 h-4 w-4" /> Preview
+                </Button>
+              ) : (
               <Button
                 onClick={() => sendMutation.mutate()}
                 disabled={!canSend}
@@ -593,6 +616,7 @@ export default function Messages() {
                   <><Send className="mr-2 h-4 w-4" />{sendMutation.isPending ? "Sending..." : "Send Now"}</>
                 )}
               </Button>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -687,6 +711,26 @@ export default function Messages() {
             </Table>
           </CardContent>
         </Card>
+      )}
+      {requirePreview && (
+        <SmsSendPreview
+          open={previewOpen}
+          message={message}
+          mode={sendMode}
+          scheduledFor={sendMode === "schedule" && scheduleDate ? (() => { const [h, m] = scheduleTime.split(":").map(Number); const d = new Date(scheduleDate); d.setHours(h, m, 0, 0); return d; })() : null}
+          audience={audience}
+          manualNumbers={parsedManualNumbers}
+          creditsRemaining={textsRemaining}
+          registrations={previewData?.registrations}
+          tournament={previewData?.tournament}
+          busy={sendMutation.isPending}
+          onBack={() => setPreviewOpen(false)}
+          onConfirm={() => sendMutation.mutate()}
+          testNumber={testNumber}
+          onTestNumberChange={setTestNumber}
+          onSendTest={() => testMutation.mutate()}
+          testBusy={testMutation.isPending}
+        />
       )}
     </div>
   );

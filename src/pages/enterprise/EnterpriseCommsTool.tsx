@@ -12,7 +12,7 @@ export default function EnterpriseCommsTool({ tool }: { tool: "messages" | "emai
       description={isMessages ? "Send emails or texts to your players." : "Edit email wording and send receipts."}
       crumbs={[{ label: "Communications", to: "/enterprise/communications" }, { label: title }]}
     >
-      {isMessages ? <DashboardMessages /> : <EmailTemplateEditor />}
+      {isMessages ? <DashboardMessages requirePreview /> : <EmailTemplateEditor requirePreview />}
     </EnterpriseLayout>
   );
 }

@@ -25,5 +25,14 @@ export const submitEnterpriseRepRequest = createServerFn({ method: "POST" })
       status: "open",
     }).select("id").single();
     if (error || !ticket) throw new Error("Could not submit your request. Please try again.");
+    const { error: chatError } = await supabaseAdmin.from("help_chat_messages").insert({
+      user_id: context.userId, user_email: userData.user.email ?? null,
+      organization_id: data.organizationId, role: "user", sender_type: "organizer",
+      sender_user_id: context.userId, content: repRequestQuestion(data), needs_human: true,
+    });
+    if (chatError) {
+      await supabaseAdmin.from("help_tickets").delete().eq("id", ticket.id);
+      throw new Error("Could not submit your request. Please try again.");
+    }
     return { ticketId: ticket.id };
   });

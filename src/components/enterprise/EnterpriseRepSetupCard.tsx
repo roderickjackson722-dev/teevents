@@ -47,7 +47,7 @@ export default function EnterpriseRepSetupCard({ organizationId }: { organizatio
         <Button disabled={!organizationId} className="shrink-0 bg-secondary text-secondary-foreground hover:bg-secondary/90" onClick={() => { setReceived(false); setError(""); setOpen(true); }}>Request rep setup</Button>
       </section>
       <Dialog open={open} onOpenChange={(value) => { if (!busy) setOpen(value); }}>
-        <DialogContent className="max-h-[90dvh] w-[calc(100%-2rem)] overflow-y-auto rounded-md">
+        <DialogContent className="max-h-[90dvh] w-[calc(100%_-_2rem)] overflow-y-auto rounded-md">
           <DialogHeader>
             <DialogTitle>Request rep setup</DialogTitle>
             <DialogDescription>Your dedicated TeeVents rep</DialogDescription>

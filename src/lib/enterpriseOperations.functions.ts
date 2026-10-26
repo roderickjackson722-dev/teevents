@@ -67,9 +67,9 @@ export const emailEnterpriseInvoice = createServerFn({ method: "POST" })
     if (!invoice || !EMAIL.test(invoice.billing_email)) throw new Error("Invoice or billing email was not found");
     const key = process.env["RESEND_API_KEY"];
     if (!key) throw new Error("Email service is not configured");
-    const amount = `$${(invoice.amount_cents / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    const html = `<div style="font-family:Arial,sans-serif;max-width:640px;margin:auto;color:#222"><div style="border-bottom:3px solid #F5A623;padding-bottom:12px"><strong style="color:#1a5c38">TeeVents Golf Management</strong></div><h1 style="font-size:24px">Invoice ${escapeHtml(invoice.invoice_number)}</h1><p><strong>${escapeHtml(organization?.name || "Enterprise account")}</strong></p><p>Bill to: ${escapeHtml(invoice.billing_name)}<br>${escapeHtml(invoice.billing_address).replace(/\n/g, "<br>")}</p><table style="width:100%;border-collapse:collapse"><tr><td style="padding:12px;border:1px solid #ddd">Amount due</td><td style="padding:12px;border:1px solid #ddd;text-align:right"><strong>${amount}</strong></td></tr><tr><td style="padding:12px;border:1px solid #ddd">Due date</td><td style="padding:12px;border:1px solid #ddd;text-align:right">${escapeHtml(invoice.due_date)}</td></tr></table><p style="color:#666">Please contact the event organizer to arrange payment.</p></div>`;
-    const response = await sendEmail(key, invoice.billing_email, `Invoice ${invoice.invoice_number} from ${organization?.name || "TeeVents"}`, html);
+    const { buildInvoiceEmail } = await import("@/lib/enterpriseInvoiceEmail");
+    const { subject, html } = buildInvoiceEmail({ ...invoice, organization_name: organization?.name });
+    const response = await sendEmail(key, invoice.billing_email, subject, html);
     if (!response.ok) throw new Error("Invoice email could not be sent");
     await supabaseAdmin.from("enterprise_invoice_audit_log").insert({ invoice_id: invoice.id, organization_id: data.organizationId, actor_id: context.userId, action: "emailed", details: { recipient: invoice.billing_email } });
     return { sent: true as const };

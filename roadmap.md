@@ -1,6 +1,6 @@
 ## Enterprise Communications and Operations send previews
-- [ ] Audit all Enterprise sends for exact recipient previews without API/payment behavior changes; stop and report any conflict.
-- [ ] Add Enterprise-only preview steps and retained drafts where authorized, verify email/text/invoice/schedule controls without real sends or record changes.
+- [x] Read-only audit completed; stopped under the supplied conflict rule before application changes or sends.
+- [ ] Blocked: exact personalized email/text previews need shared recipient/rendering support currently absent from sending endpoints; scheduled jobs resolve recipients and saved templates at delivery, not scheduling. Needs authorization for narrow preview API/rendering support and clarification of scheduled-preview expectations. Automations page only saves toggles, with no connected manual send to wrap. No previews added or browser checks claimed; no emails/texts/invoices sent, records changed or publication.
 
 ## Enterprise Home rep setup request
 - [x] Replace only the Home rep banner with the approved card and an in-Enterprise request form. User approved a narrow request-handling exception: authenticated, client/server-validated support ticket and conversation writes; no schema, route or existing API changes.

@@ -454,6 +454,8 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
 
   );
   const [saving, setSaving] = useState(false);
+  /** Template as last loaded or saved; the server sends the saved version. */
+  const [savedSnapshot, setSavedSnapshot] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [tournaments, setTournaments] = useState<any[]>([]);
   // Follow the event chosen in the dashboard header (shared ?tournament_id=).
@@ -555,11 +557,11 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
     const defaults = kind === "receipt"
       ? { ...DEFAULT_RECEIPT_CONFIG, ...(RECEIPT_TYPE_DEFAULTS[rType] || {}) }
       : defaultsForKind(kind);
-    if (stored) {
-      const loaded = { ...defaults, ...(stored as any) };
-      setConfig(kind === "day_before" ? normalizeDayBefore(loaded) : loaded);
-    }
-    else setConfig(defaults);
+    const next = stored
+      ? (kind === "day_before" ? normalizeDayBefore({ ...defaults, ...(stored as any) }) : { ...defaults, ...(stored as any) })
+      : defaults;
+    setConfig(next);
+    setSavedSnapshot(JSON.stringify(next));
   };
 
   const handleReceiptTypeChange = (rType: ReceiptType) => {
@@ -860,6 +862,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
       toast.error("Failed to save template");
     } else {
       toast.success(`${TEMPLATE_LABELS[templateKind]} saved`);
+      setSavedSnapshot(JSON.stringify(config));
       setTournaments(prev => prev.map(t =>
         t.id === selectedTournament ? { ...t, ...update } : t
       ));
@@ -2036,6 +2039,9 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               requirePreview={requirePreview}
               registrations={registrations}
               renderPreview={renderPreviewFor}
+              requirePreview={requirePreview}
+              registrations={registrations}
+              renderPreview={renderPreviewFor}
             />
           )}
           </>
@@ -2080,6 +2086,9 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
                 requirePreview={requirePreview}
                 registrations={registrations}
                 renderPreview={renderPreviewFor}
+                requirePreview={requirePreview}
+                registrations={registrations}
+                renderPreview={renderPreviewFor}
               />
             </>
           )}
@@ -2102,11 +2111,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
       </div>
 
       {requirePreview && emailPreview && (() => {
-        const savedCfg = (() => {
-          const t: any = tournaments.find((x: any) => x.id === selectedTournament) || {};
-          return templateKind === "receipt" ? t.receipt_email_config?.[receiptType] : t[configKey];
-        })();
-        const unsaved = JSON.stringify(savedCfg ?? null) !== JSON.stringify(config);
+        const unsaved = !!savedSnapshot && savedSnapshot !== JSON.stringify(config);
         const recips = emailPreview.kind === "registrants"
           ? templateEmailRecipients(registrations, emailPreview.ids, altEmails, altMode)
           : dayBeforeAllRecipients(registrations);

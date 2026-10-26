@@ -1,6 +1,6 @@
 ## Enterprise My Courses home course
-- [ ] Show search-only initial state, deduplicate course/tee results, and persist explicit home-course selection on the Enterprise account.
-- [ ] Default only unsaved new-event course selection; verify reload, search, review and protected existing events without publishing.
+- [x] Show search-only initial state, deduplicate course/tee results, and persist explicit home-course selection in existing Enterprise account settings, preserving other settings with a concurrency guard.
+- [x] Signed-in QA preview passed empty initial list, course search, five identical course/tee rows shown once, actual home-course save/readback/reload, direct Create default and home-card new-event link, blank no-home default, Review course name with intercepted tournament writes, unchanged existing-event course and mobile overflow check; 15 tests passed, build OK, no page errors. Temporary QA home preference restored, all QA tournament/library rows read back unchanged, nothing sent or published.
 
 ## True Skins carryover calculation
 - [x] Implement shared ordered carryover and recorded all-hole result summaries without automatic saved-result changes or schema changes; existing controls and Enterprise navigation retained.

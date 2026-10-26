@@ -1,3 +1,7 @@
+## Enterprise Home rep setup request
+- [ ] Replace only the Home rep banner with the approved card and an in-Enterprise request form, using existing request handling if available without API/schema changes.
+- [ ] Verify card, form, submission confirmation and unchanged Home stats/events without changing tournament records or publishing.
+
 ## Enterprise My Courses home course
 - [x] Show search-only initial state, deduplicate course/tee results, and persist explicit home-course selection in existing Enterprise account settings, preserving other settings with a concurrency guard.
 - [x] Signed-in QA preview passed empty initial list, course search, five identical course/tee rows shown once, actual home-course save/readback/reload, direct Create default and home-card new-event link, blank no-home default, Review course name with intercepted tournament writes, unchanged existing-event course and mobile overflow check; 15 tests passed, build OK, no page errors. Temporary QA home preference restored, all QA tournament/library rows read back unchanged, nothing sent or published.

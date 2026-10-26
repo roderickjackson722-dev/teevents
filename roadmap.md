@@ -1,6 +1,6 @@
 ## Enterprise Home rep setup request
-- [ ] Replace only the Home rep banner with the approved card and an in-Enterprise request form, using existing request handling if available without API/schema changes.
-- [ ] Verify card, form, submission confirmation and unchanged Home stats/events without changing tournament records or publishing.
+- [x] Replace only the Home rep banner with the approved card and an in-Enterprise request form. User approved a narrow request-handling exception: authenticated, client/server-validated support ticket and conversation writes; no schema, route or existing API changes.
+- [x] Signed-in preview passed card, exact confirmation after real QA ticket persistence/readback, Admin support inbox visibility, optional date and invalid-input handling, phone form framing, unchanged Home stats/Recent Events/View Reports, and unchanged tournament readback. Fourteen tests passed, build OK and no page errors; one clearly labeled QA support request retained, no emails, event/settings/payment writes or publication.
 
 ## Enterprise My Courses home course
 - [x] Show search-only initial state, deduplicate course/tee results, and persist explicit home-course selection in existing Enterprise account settings, preserving other settings with a concurrency guard.

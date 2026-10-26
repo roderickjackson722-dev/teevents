@@ -1,6 +1,6 @@
 ## Enterprise Admin settings, step 4
-- [ ] Add Enterprise Organization details and Web address & branding using existing tools; keep Payments canonical
-- [ ] Highlight Operations on Enterprise Payments and verify signed-in links without saves, sends or data changes
+- [x] Add Enterprise Organization details and Web address & branding using existing organization-info/site-builder tools; keep Payments canonical. Operations has no separate branding tool to duplicate.
+- [x] Highlight Operations on Enterprise Payments; signed-in Admin Settings links, Branding/Domain tabs, selected workspace/event and Payments rendering checked; 10 navigation tests passed, no page errors, no settings saves, sends or payment/event writes. Preview only.
 
 ## October 24 login, check payments and refunds
 - [x] Add organizer-login-only unconnected Stripe modal; linked accounts excluded, admin override excluded, existing banner and consent retained

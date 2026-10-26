@@ -44,7 +44,7 @@ const PLACEHOLDERS = {
   history: "Share your tournament's story — when did it start? How has it grown?",
 };
 
-const OrganizationInfo = () => {
+const OrganizationInfo = ({ enterpriseEventId }: { enterpriseEventId?: string } = {}) => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
 
@@ -71,12 +71,13 @@ const OrganizationInfo = () => {
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
-        const t = ((data as unknown) as Tournament[]) || [];
+        const rows = ((data as unknown) as Tournament[]) || [];
+        const t = enterpriseEventId ? rows.filter((row) => row.id === enterpriseEventId) : rows;
         setTournaments(t);
         if (t.length > 0) setSelected(pickTournamentId(t));
         setLoading(false);
       });
-  }, [org]);
+  }, [org, enterpriseEventId]);
 
   useEffect(() => {
     const t = tournaments.find((x) => x.id === selected);

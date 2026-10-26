@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { useEffect, useState, useCallback } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useDemoMode } from "@/hooks/useDemoMode";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { Button } from "@/components/ui/button";
@@ -50,6 +50,7 @@ import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
 import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { sharePreviewUrl } from "@/lib/shareLinks";
+import { enterpriseLink } from "@/lib/enterpriseNavigation";
 
 /** Advanced settings stay collapsed by default so the main path stays simple. */
 function AdvancedSection({ label, children }: { label: string; children: ReactNode }) {
@@ -300,8 +301,11 @@ interface SiteSettings {
   media_position: string | null;
 }
 
-const SiteBuilder = () => {
-  const { id } = useParams<{ id: string }>();
+const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {}) => {
+  const { id: routeId } = useParams<{ id: string }>();
+  const id = enterpriseEventId || routeId;
+  const enterprise = Boolean(enterpriseEventId);
+  const { search } = useLocation();
   const { org } = useOrgContext();
   const { toast } = useToast();
   const { demoGuard } = useDemoMode();
@@ -583,7 +587,7 @@ const SiteBuilder = () => {
     { key: "printables" as const, label: "Printables", icon: Printer },
     { key: "public_view" as const, label: "Public View", icon: EyeIcon },
     { key: "domain" as const, label: "Domain", icon: Globe },
-  ];
+  ].filter((tab) => !enterprise || tab.key === "branding" || tab.key === "domain");
 
   const stepIndex = Math.max(0, tabs.findIndex((t) => t.key === activeTab));
   const goBack = () => { if (stepIndex > 0) { setActiveTab(tabs[stepIndex - 1].key); window.scrollTo({ top: 0 }); } };
@@ -611,17 +615,17 @@ const SiteBuilder = () => {
       <div className="flex flex-col gap-4 mb-6 lg:flex-row lg:items-center lg:justify-between">
         <div className="min-w-0">
           <Link
-            to="/dashboard/tournaments"
+            to={enterprise ? enterpriseLink("/enterprise/admin", search) : "/dashboard/tournaments"}
             className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-2 transition-colors"
           >
             <ArrowLeft className="h-3.5 w-3.5" />
-            Back to Tournaments
+            {enterprise ? "Back to Enterprise Admin" : "Back to Tournaments"}
           </Link>
           <h1 className="text-xl sm:text-2xl font-display font-bold text-foreground break-words">
             Site Builder — {settings.title}
           </h1>
         </div>
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
+        {!enterprise && <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
           <label className="flex items-center gap-2 shrink-0">
             <Switch
               checked={!!settings.registration_open}
@@ -654,14 +658,14 @@ const SiteBuilder = () => {
               Only you can see the preview until you turn on Publish and save.
             </span>
           )}
-        </div>
+        </div>}
       </div>
 
       {/* Guided steps */}
       <ol className="mb-6 grid grid-cols-2 gap-1 rounded-lg border border-border bg-card p-1 sm:grid-cols-3 lg:grid-cols-6">
         {tabs.map((tab, i) => (
           <li key={tab.key}>
-            <button
+            <Button variant="ghost"
               type="button"
               onClick={() => setActiveTab(tab.key)}
               aria-current={activeTab === tab.key ? "step" : undefined}
@@ -673,14 +677,14 @@ const SiteBuilder = () => {
             >
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-current text-[11px]">{i + 1}</span>
               <span className="min-w-0">{tab.label}</span>
-            </button>
+            </Button>
           </li>
         ))}
       </ol>
 
       <p className="mb-4 text-sm text-muted-foreground">
         Tournament name, dates, course, location, fee, and scoring format are set once in{" "}
-        <Link to={`/dashboard/tournaments?tournament_id=${settings.id}`} className="font-medium text-primary hover:underline">Event Details</Link>.
+        <Link to={enterprise ? enterpriseLink(`/enterprise/create?tournament_id=${settings.id}`, search) : `/dashboard/tournaments?tournament_id=${settings.id}`} className="font-medium text-primary hover:underline">Event Details</Link>.
       </p>
 
       <div className="grid lg:grid-cols-2 gap-6">

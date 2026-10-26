@@ -52,6 +52,8 @@ import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/a
 import { Route as ApiPublicReceiptEmailRouteImport } from './routes/api/public/receipt-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as ApiPublicSampleShareEmailRouteImport } from './routes/api/public/sample-share-email'
+import { Route as EnterpriseSettingsOrganizationRouteImport } from './routes/enterprise.settings.organization'
+import { Route as EnterpriseSettingsWebAddressRouteImport } from './routes/enterprise.settings.web-address'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
 import { Route as TeamSlugStarterRouteImport } from './routes/team/$slug.starter'
 import { Route as ApiGhinSyncEventEventIdRouteImport } from './routes/api/ghin/sync-event.$eventId'
@@ -288,6 +290,18 @@ const ApiPublicSampleShareEmailRoute =
     path: '/api/public/sample-share-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const EnterpriseSettingsOrganizationRoute =
+  EnterpriseSettingsOrganizationRouteImport.update({
+    id: '/enterprise/settings/organization',
+    path: '/enterprise/settings/organization',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const EnterpriseSettingsWebAddressRoute =
+  EnterpriseSettingsWebAddressRouteImport.update({
+    id: '/enterprise/settings/web-address',
+    path: '/enterprise/settings/web-address',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const SSassurveyShareRoute = SSassurveyShareRouteImport.update({
   id: '/s/sassurvey/share',
   path: '/s/sassurvey/share',
@@ -396,6 +410,8 @@ export interface FileRoutesByFullPath {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
+  '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/ghin/sync-event/$eventId': typeof ApiGhinSyncEventEventIdRoute
@@ -452,6 +468,8 @@ export interface FileRoutesByTo {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
+  '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/ghin/sync-event/$eventId': typeof ApiGhinSyncEventEventIdRoute
@@ -509,6 +527,8 @@ export interface FileRoutesById {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
+  '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
   '/team/$slug/starter': typeof TeamSlugStarterRoute
   '/api/ghin/sync-event/$eventId': typeof ApiGhinSyncEventEventIdRoute
@@ -567,6 +587,8 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/settings/organization'
+    | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
     | '/api/ghin/sync-event/$eventId'
@@ -623,6 +645,8 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/settings/organization'
+    | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
     | '/api/ghin/sync-event/$eventId'
@@ -679,6 +703,8 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/settings/organization'
+    | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
     | '/team/$slug/starter'
     | '/api/ghin/sync-event/$eventId'
@@ -736,6 +762,8 @@ export interface RootRouteChildren {
   ApiPublicReceiptEmailRoute: typeof ApiPublicReceiptEmailRoute
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   ApiPublicSampleShareEmailRoute: typeof ApiPublicSampleShareEmailRoute
+  EnterpriseSettingsOrganizationRoute: typeof EnterpriseSettingsOrganizationRoute
+  EnterpriseSettingsWebAddressRoute: typeof EnterpriseSettingsWebAddressRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
   ApiGhinSyncEventEventIdRoute: typeof ApiGhinSyncEventEventIdRoute
   ApiGhinSyncLeagueLeagueIdRoute: typeof ApiGhinSyncLeagueLeagueIdRoute
@@ -1051,6 +1079,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSampleShareEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/enterprise/settings/organization': {
+      id: '/enterprise/settings/organization'
+      path: '/enterprise/settings/organization'
+      fullPath: '/enterprise/settings/organization'
+      preLoaderRoute: typeof EnterpriseSettingsOrganizationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enterprise/settings/web-address': {
+      id: '/enterprise/settings/web-address'
+      path: '/enterprise/settings/web-address'
+      fullPath: '/enterprise/settings/web-address'
+      preLoaderRoute: typeof EnterpriseSettingsWebAddressRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/s/sassurvey/share': {
       id: '/s/sassurvey/share'
       path: '/s/sassurvey/share'
@@ -1188,6 +1230,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicReceiptEmailRoute: ApiPublicReceiptEmailRoute,
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   ApiPublicSampleShareEmailRoute: ApiPublicSampleShareEmailRoute,
+  EnterpriseSettingsOrganizationRoute: EnterpriseSettingsOrganizationRoute,
+  EnterpriseSettingsWebAddressRoute: EnterpriseSettingsWebAddressRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,
   ApiGhinSyncEventEventIdRoute: ApiGhinSyncEventEventIdRoute,
   ApiGhinSyncLeagueLeagueIdRoute: ApiGhinSyncLeagueLeagueIdRoute,

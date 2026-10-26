@@ -1,3 +1,7 @@
+## Enterprise Admin settings, step 4
+- [x] Add Enterprise Organization details and Web address & branding using existing organization-info/site-builder tools; keep Payments canonical. Operations has no separate branding tool to duplicate.
+- [x] Highlight Operations on Enterprise Payments; signed-in Admin Settings links, Branding/Domain tabs, selected workspace/event and Payments rendering checked; 10 navigation tests passed, no page errors, no settings saves, sends or payment/event writes. Preview only.
+
 ## October 24 login, check payments and refunds
 - [x] Add organizer-login-only unconnected Stripe modal; linked accounts excluded, admin override excluded, existing banner and consent retained
 - [x] Remove check from Players manual-entry options and received tracking, Registration setting copy, league manual-entry offer, Finance description, registration guide and manual player/sponsor email copy; preserve historical check labels, manual entry, cash, Stripe and payout settings. Six payment-rule/refund tests passed; signed-in offline-enabled event selector verified Online/Cash only, no data saved. Email function source edits await deployment.

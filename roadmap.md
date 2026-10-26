@@ -1,3 +1,7 @@
+## Enterprise Skins and Payouts
+- [ ] Reuse the existing Skins/Flights tool in one Enterprise screen; carry the event from Scores and reroute Skins/Deuces/Putts Purse and winners links. Keep organizer behavior and all calculations unchanged.
+- [ ] Verify signed-in navigation and unsaved controls without writes; inspect live payout data read-only. Saving/calculating must not be tested on existing tournaments. Preview only.
+
 ## Enterprise Manage League, step 5
 - [x] Wrap existing league management tools in one Enterprise page; Home menu, Home league title and Leagues Manage use the same league-ID/context-preserving destination. Enterprise back and payout links remain inside Enterprise; regular routes unchanged.
 - [x] Signed-in real-league Home/Leagues links, Players/Events tabs, All Leagues, reload, sidebar and regular league route passed; 14 navigation/workspace tests passed, build OK, no page errors or write attempts. No saves, sends, publication or data changes. View Reports remains Operations Reports/POS; Purse and winners awaits next instruction. Season Standings auto-sync was not opened to avoid its existing write-on-mount behavior.

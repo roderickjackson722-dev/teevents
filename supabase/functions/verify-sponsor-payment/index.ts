@@ -252,6 +252,7 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
+            const sponsorWl = await loadWhiteLabel(supabaseAdmin, tournamentId);
             await fetch("https://api.resend.com/emails", {
               method: "POST",
               headers: { "Content-Type": "application/json", Authorization: `Bearer ${RESEND_API_KEY}` },

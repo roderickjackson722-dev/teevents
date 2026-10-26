@@ -34,6 +34,10 @@ serve(async (req) => {
     const siteUrl = supabaseUrl.replace(".supabase.co", "").replace("https://", "https://");
 
     const claimUrl = `${Deno.env.get("SUPABASE_URL")?.replace('.supabase.co', '')}/t/${tournament_id}?claim=${waitlist_id}`;
+    const wl = await loadWhiteLabel(
+      createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!, { auth: { persistSession: false } }),
+      tournament_id,
+    );
 
     const htmlBody = `
       <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -75,11 +79,11 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "TeeVents Golf Management <info@notifications.teevents.golf>",
+        from: brandSender("TeeVents Golf Management <info@notifications.teevents.golf>", wl),
         to: [email],
         bcc: ["info@teevents.golf"],
         subject: `🎉 A spot opened up for ${tournament_title}!`,
-        html: htmlBody,
+        html: brandEmailHtml(htmlBody, wl),
       }),
     });
 

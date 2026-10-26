@@ -37,3 +37,4 @@
 - Dashboard registration refunds share authenticated preview/confirm functions with server-only original-charge lookup, retained application fees, exact processing-fee details and per-registration processing locks; record new breakdowns without backfilling historical requests or changing payout settings.
 - Public event search descriptions share a pure formatter in serverMeta across crawler and hydrated metadata, using existing public fields without registration prompts or changes to event queries.
 - Registration payment choices and cash-received eligibility share registrationPaymentMethods; historical check labels and offline-refund protections remain readable without offering new check entry or changing payout settings.
+- Enterprise invoice emails render through the shared pure builder in enterpriseInvoiceEmail; the Operations Preview and the server send use it so the preview always matches what recipients receive.

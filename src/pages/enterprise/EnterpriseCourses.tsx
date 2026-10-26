@@ -60,7 +60,7 @@ export default function EnterpriseCourses() {
         .eq("id", org.orgId);
       const { data: saved, error: saveError } = await (current === null
         ? update.is("enterprise_settings", null)
-        : update.eq("enterprise_settings", current)).select("id");
+        : update.filter("enterprise_settings", "eq", JSON.stringify(current))).select("id");
       if (saveError) throw saveError;
       if (!saved?.length) throw new Error("Your account settings changed. Please try again.");
       setHomeId(selected.id);

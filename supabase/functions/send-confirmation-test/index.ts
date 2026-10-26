@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { brandEmailHtml, brandSender, loadWhiteLabel } from "../_shared/whiteLabel.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -128,6 +129,7 @@ Deno.serve(async (req) => {
 
     let tournamentSlug: string | null = null;
     let pairingsConfig: unknown = {};
+    const wl = await loadWhiteLabel(supabaseAdmin, tournament_id);
     if (tournament_id) {
       const { data: t } = await supabaseAdmin
         .from("tournaments")
@@ -213,10 +215,10 @@ Deno.serve(async (req) => {
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
+        from: brandSender(`${SENDER_NAME} <${SENDER_EMAIL}>`, wl),
         to: [recipient_email],
         subject,
-        html,
+        html: brandEmailHtml(html, wl),
       }),
     });
 

@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
@@ -7,52 +7,66 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Loader2, MapPin, Search } from "lucide-react";
-
-interface CourseRow {
-  id: string;
-  course_name: string;
-  city: string | null;
-  state: string | null;
-  tee_name: string | null;
-  par_total: number | null;
-  course_rating: number | null;
-  slope_rating: number | null;
-}
+import { toast } from "sonner";
+import { homeCourseId, matchingCourseTees, newCourseEventLink, type EnterpriseCourse } from "@/lib/enterpriseHomeCourse";
+import { loadEnterpriseCourseLibrary } from "@/lib/enterpriseCourses.client";
 
 export default function EnterpriseCourses() {
   const { org } = useOrgContext();
-  const [courses, setCourses] = useState<CourseRow[]>([]);
-  const [used, setUsed] = useState<string[]>([]);
+  const location = useLocation();
+  const searchInput = useRef<HTMLInputElement>(null);
+  const [courses, setCourses] = useState<EnterpriseCourse[]>([]);
+  const [homeId, setHomeId] = useState<string | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
   useEffect(() => {
-    (async () => {
-      const { data } = await supabase
-        .from("course_database")
-        .select("id, course_name, city, state, tee_name, par_total, course_rating, slope_rating")
-        .order("use_count", { ascending: false })
-        .limit(400);
-      setCourses((data || []) as CourseRow[]);
-      setLoading(false);
-    })();
+    let active = true;
+    loadEnterpriseCourseLibrary().then((rows) => { if (active) setCourses(rows); })
+      .catch(() => { if (active) setLoadError(true); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
   }, []);
 
   useEffect(() => {
-    if (!org) return;
-    (supabase.from("tournaments") as any)
-      .select("course_name")
-      .eq("organization_id", org.orgId)
-      .not("course_name", "is", null)
-      .then(({ data }: any) => setUsed([...new Set(((data || []) as any[]).map((r) => r.course_name))] as string[]));
+    setHomeId(org ? homeCourseId(org.enterpriseSettings) : null);
+    setSelectedId(null);
   }, [org]);
 
-  const q = search.trim().toLowerCase();
-  const filtered = q
-    ? courses.filter((c) => `${c.course_name} ${c.city || ""} ${c.state || ""}`.toLowerCase().includes(q))
-    : courses.filter((c) => used.includes(c.course_name)).concat(courses.slice(0, 25));
-
-  const unique = [...new Map(filtered.map((c) => [c.id, c])).values()];
+  const unique = matchingCourseTees(courses, search);
+  const home = courses.find((course) => course.id === homeId);
+  const selected = unique.find((course) => course.id === selectedId);
+  const details = (course: EnterpriseCourse) => (
+    <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+      <span>{course.tee_name || "Tees not set"}</span>
+      <span>Par {course.par_total ?? "—"}</span>
+      <span>Rating {course.course_rating ?? "—"}</span>
+      <span>Slope {course.slope_rating ?? "—"}</span>
+    </div>
+  );
+  const saveHome = async () => {
+    if (!org || !selected || saving) return;
+    setSaving(true);
+    try {
+      const { data, error } = await supabase.from("organizations").select("enterprise_settings").eq("id", org.orgId).single();
+      if (error) throw error;
+      const current = data.enterprise_settings;
+      const settings = current && typeof current === "object" && !Array.isArray(current) ? current : {};
+      const { data: saved, error: saveError } = await supabase.from("organizations")
+        .update({ enterprise_settings: { ...settings, homeCourseId: selected.id } })
+        .eq("id", org.orgId).eq("enterprise_settings", current).select("id");
+      if (saveError) throw saveError;
+      if (!saved?.length) throw new Error("Your account settings changed. Please try again.");
+      setHomeId(selected.id);
+      setSelectedId(null);
+      setSearch("");
+      toast.success("Home course saved.");
+    } catch (error) { toast.error(error instanceof Error ? error.message : "Could not save home course."); }
+    finally { setSaving(false); }
+  };
 
   return (
     <EnterpriseLayout
@@ -60,42 +74,52 @@ export default function EnterpriseCourses() {
       description="Courses and tee sets available to your events. Search the course library to add another."
       crumbs={[{ label: "My Courses" }]}
     >
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between gap-3 pb-3">
-          <CardTitle className="text-base">Courses</CardTitle>
-          <div className="relative w-56">
+      {home && (
+        <Card className="mb-6">
+          <CardHeader><CardTitle className="text-base">Home Course</CardTitle></CardHeader>
+          <CardContent className="space-y-3">
+            <p className="break-words font-semibold">{home.course_name}</p>
+            {details(home)}
+            <div className="flex flex-wrap gap-2">
+              <Button variant="outline" onClick={() => { setSearch(""); setSelectedId(null); searchInput.current?.focus(); }}>Change home course</Button>
+              <Button asChild variant="outline" className="h-auto min-h-9 whitespace-normal"><Link to={newCourseEventLink(home.id, location.search)}>Use home course in new event</Link></Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+      <section>
+          <div className="relative w-full max-w-lg">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input className="h-9 pl-8" placeholder="Search courses" value={search} onChange={(e) => setSearch(e.target.value)} />
+            <Input ref={searchInput} aria-label="Search courses" className="h-9 pl-8" placeholder="Search courses" value={search} onChange={(e) => { setSearch(e.target.value); setSelectedId(null); }} />
           </div>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
+          {!search.trim() ? <p className="py-4 text-sm text-muted-foreground">Search for your home course, then save it.</p> : loadError ? (
+            <p className="py-4 text-sm text-destructive">Could not load the course library. Please reload to try again.</p>
+          ) : loading ? (
             <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" /> Loading courses…</div>
           ) : (
             <div className="divide-y divide-border">
               {unique.map((c) => (
-                <div key={c.id} className="flex flex-wrap items-center gap-3 py-2.5 text-sm">
+                <div key={c.id} className="flex flex-wrap items-center gap-3 py-4 text-sm" data-course-result={c.id}>
                   <MapPin className="h-4 w-4 text-primary" />
-                  <span className="font-medium">{c.course_name}</span>
+                  <span className="break-words font-medium">{c.course_name}</span>
                   <span className="text-muted-foreground">{[c.city, c.state].filter(Boolean).join(", ") || "—"}</span>
-                  <span className="text-muted-foreground">{c.tee_name || "Tees not set"}</span>
-                  <span className="text-muted-foreground">Par {c.par_total ?? "—"}</span>
-                  <span className="text-muted-foreground">
-                    {c.course_rating ?? "—"} / {c.slope_rating ?? "—"}
-                  </span>
-                  {used.includes(c.course_name) && (
-                    <span className="rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-primary">In use</span>
-                  )}
-                  <Button asChild variant="ghost" size="sm" className="ml-auto">
-                    <Link to={`/enterprise/create?type=single_round`}>Use in new event</Link>
+                  {details(c)}
+                  <div className="ml-auto flex flex-wrap gap-2">
+                  <Button asChild variant="outline" size="sm">
+                    <Link to={newCourseEventLink(c.id, location.search)}>Use in new event</Link>
                   </Button>
+                  <Button variant="outline" size="sm" disabled={saving || !org} onClick={() => setSelectedId(c.id)} aria-pressed={selectedId === c.id}>Save as home course</Button>
+                  </div>
                 </div>
               ))}
               {unique.length === 0 && <p className="py-4 text-sm text-muted-foreground">No courses matched that search.</p>}
             </div>
           )}
-        </CardContent>
-      </Card>
+          {selected && <div className="flex flex-wrap items-center gap-3 border-t border-border py-4">
+            <span className="break-words text-sm">{selected.course_name} · {selected.tee_name || "Tees not set"}</span>
+            <Button onClick={saveHome} disabled={saving} className="h-auto min-h-9 whitespace-normal bg-secondary text-primary hover:bg-secondary/90">{saving && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}Save as home course</Button>
+          </div>}
+      </section>
     </EnterpriseLayout>
   );
 }

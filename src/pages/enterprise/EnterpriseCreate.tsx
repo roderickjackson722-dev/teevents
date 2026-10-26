@@ -1024,7 +1024,7 @@ export default function EnterpriseCreate() {
               {id && (
                 <>
                   <Button asChild variant="outline"><Link to="/enterprise">Back to Enterprise Home</Link></Button>
-                  <Button asChild variant="outline"><Link to={`/dashboard/scoring?tournament_id=${id}`}>Enter scores</Link></Button>
+                  <Button asChild variant="outline"><Link to={`/enterprise/scores?tournament_id=${id}`}>Enter scores</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/registration?tournament_id=${id}`}>Registration page</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/leaderboard-settings?tournament_id=${id}`}>Leaderboard settings</Link></Button>
                   <Button asChild variant="outline"><Link to={`/enterprise/printables?tournament_id=${id}`}>Print scorecards</Link></Button>

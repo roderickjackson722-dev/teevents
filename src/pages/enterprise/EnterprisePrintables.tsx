@@ -185,7 +185,7 @@ export default function EnterprisePrintables() {
   const hasPlayers = printRegs.length > 0;
   const hasGrouped = printRegs.some((r) => r.group_number != null);
   const selectedGroupCount = new Set(printRegs.map((r) => r.group_number ?? "none")).size;
-  const typeTrigger = (value: string, icon: React.ReactNode, label: string, available: boolean) => (
+  const typeTrigger = (value: string, icon: import("react").ReactNode, label: string, available: boolean) => (
     <TabsTrigger value={value} disabled={!available} className="flex-col items-start gap-0 sm:flex-row sm:items-center">
       <span className="flex items-center">{icon} {label}</span>
       {!available && <span className="text-[11px] font-normal text-muted-foreground sm:ml-1.5">Not available for this event</span>}

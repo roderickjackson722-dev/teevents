@@ -9,9 +9,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Printer, Loader2, IdCard, Car, List, Users, Handshake } from "lucide-react";
+import { Printer, Loader2, IdCard, Car, List, Users, Handshake, ClipboardCheck, Download, Pencil, Plus } from "lucide-react";
 import { toast } from "sonner";
-import { openPrintWindow } from "@/components/printables/printUtils";
+import { openPrintWindow, downloadHtmlAsPdf } from "@/components/printables/printUtils";
+import CheckInRosterTab from "@/components/printables/CheckInRosterTab";
+import { Checkbox } from "@/components/ui/checkbox";
+import { addedPlayer, draftFrom, printoutGroups, printoutPlayers, type DraftPlayer } from "@/components/enterprise/printSelections";
 import CartSignsTab from "@/components/printables/CartSignsTab";
 import AlphaListTab from "@/components/printables/AlphaListTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
@@ -49,6 +52,12 @@ export default function EnterprisePrintables() {
   const [showQr, setShowQr] = useState(true);
   const [showSkins, setShowSkins] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [draft, setDraft] = useState<DraftPlayer<RegRow>[]>([]);
+  const [editing, setEditing] = useState(false);
+  const [confirmed, setConfirmed] = useState(false);
+  const [newFirst, setNewFirst] = useState("");
+  const [newLast, setNewLast] = useState("");
+  const [newGroup, setNewGroup] = useState("");
 
   useEffect(() => {
     if (!event) return;
@@ -75,6 +84,9 @@ export default function EnterprisePrintables() {
       ]);
       const rows = (regRes.data || []) as RegRow[];
       setRegs(rows);
+      setDraft(draftFrom(rows));
+      setConfirmed(false);
+      setEditing(false);
       setGroups((groupRes.data || []) as RegistrationGroupRow[]);
       setSponsors((sponsorRes.data || []).map((row: any) => ({ id: row.id, name: row.company_name, tier: row.sponsorship_tiers?.name || "Sponsor", logo_url: row.logo_url, website_url: row.website_url })));
 
@@ -119,9 +131,12 @@ export default function EnterprisePrintables() {
       }
     : null;
 
+  const printRegs = useMemo(() => printoutPlayers(draft), [draft]);
+  const printGroups = useMemo(() => printoutGroups(groups, printRegs), [groups, printRegs]);
+
   const cards: ScorecardCardData[] = useMemo(() => {
     const byGroup = new Map<string, RegRow[]>();
-    regs.forEach((r) => {
+    printRegs.forEach((r) => {
       const key = r.group_label || (r.group_number != null ? String(r.group_number) : "Unassigned");
       byGroup.set(key, [...(byGroup.get(key) || []), r]);
     });
@@ -132,9 +147,9 @@ export default function EnterprisePrintables() {
       scoringCode: list[0]?.group_scoring_code || list[0]?.scoring_code || null,
       teeTime: list[0]?.tee_time || null,
     }));
-  }, [regs]);
+  }, [printRegs]);
 
-  const printCards = () => {
+  const printCards = (download = false) => {
     if (!event) return;
     if (!cards.length) { toast.error("Add players and pairings first."); return; }
     const numHoles = settings?.holes || 18;
@@ -157,7 +172,7 @@ export default function EnterprisePrintables() {
       template,
       rowHeightPx: rowHeight,
     };
-    openPrintWindow(`${event.title} — Scorecards`, scorecardsPrintHtml(cards, opts), undefined, scorecardsPrintCss(opts));
+    (download ? downloadHtmlAsPdf : openPrintWindow)(`${event.title} — Scorecards`, scorecardsPrintHtml(cards, opts), undefined, scorecardsPrintCss(opts));
   };
 
   const saveTemplate = async (key: string) => {

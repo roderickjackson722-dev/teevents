@@ -17,6 +17,7 @@ import {
   Trophy,
   Users,
   Zap, Gauge, ReceiptText } from "lucide-react";
+import { ListOrdered, Printer } from "lucide-react";
 import logoAsset from "@/assets/teevents-logo-final.png.asset.json";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -47,6 +48,8 @@ const NAV: NavGroup[] = [
     items: [
       { label: "Tournaments", to: "/enterprise/tournaments", icon: Trophy },
       { label: "Leagues", to: "/enterprise/leagues", icon: Flag },
+      { label: "Leaderboard", to: "/enterprise/leaderboard-settings", icon: ListOrdered },
+      { label: "Printables", to: "/enterprise/printables", icon: Printer },
       { label: "My Courses", to: "/enterprise/courses", icon: MapPin },
       { label: "My Roster", to: "/enterprise/roster", icon: Users },
       { label: "Handicaps", to: "/enterprise/handicaps", icon: Gauge },

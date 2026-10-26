@@ -131,7 +131,7 @@ export default function EnterpriseAdmin() {
                         </div>
                         <Badge className={meta.className}>{meta.label}</Badge>
                         <Button asChild size="sm" variant="outline">
-                          <Link to={`/dashboard?tournament_id=${e.id}`}>Main dashboard</Link>
+                          <Link to={`/enterprise/create?tournament_id=${e.id}`}>Open in Enterprise</Link>
                         </Button>
                         <Button asChild size="sm" variant="outline">
                           <Link to={`/dashboard/scoring?tournament_id=${e.id}`}>Scores</Link>

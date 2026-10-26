@@ -233,8 +233,8 @@ export default function EnterpriseHome({ tournamentsOnly = false }: { tournament
     const query = `?tournament_id=${row.id}`;
     return [
       ["Edit Event Information", `/enterprise/create${query}`],
-      ["Edit Teams", `/dashboard/players${query}`],
-      ["Edit Pairings / Handicaps", `/dashboard/tee-sheet${query}`],
+      ["Edit Teams", `/enterprise/create${query}`],
+      ["Edit Pairings / Handicaps", `/enterprise/create${query}`],
       ["Edit Scores", `/dashboard/scoring${query}`],
       ["Leaderboard Settings", `/enterprise/leaderboard-settings${query}`],
       ["Skins, Deuces and Putts", `/enterprise/skins${query}`],

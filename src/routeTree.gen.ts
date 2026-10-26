@@ -65,6 +65,7 @@ import { Route as ApiPublicHooksPlatformHealthMonitorRouteImport } from './route
 import { Route as ApiPublicHooksProcessLeagueRenewalsRouteImport } from './routes/api/public/hooks/process-league-renewals'
 import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
 import { Route as ApiPublicHooksTournamentPageCanaryRouteImport } from './routes/api/public/hooks/tournament-page-canary'
+import { Route as EnterpriseLeaguesLeagueIdManageRouteImport } from './routes/enterprise.leagues.$leagueId.manage'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -365,6 +366,12 @@ const ApiPublicHooksTournamentPageCanaryRoute =
     path: '/api/public/hooks/tournament-page-canary',
     getParentRoute: () => rootRouteImport,
   } as any)
+const EnterpriseLeaguesLeagueIdManageRoute =
+  EnterpriseLeaguesLeagueIdManageRouteImport.update({
+    id: '/enterprise/leagues/$leagueId/manage',
+    path: '/enterprise/leagues/$leagueId/manage',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -423,6 +430,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
+  '/enterprise/leagues/$leagueId/manage': typeof EnterpriseLeaguesLeagueIdManageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -481,6 +489,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
+  '/enterprise/leagues/$leagueId/manage': typeof EnterpriseLeaguesLeagueIdManageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -540,6 +549,7 @@ export interface FileRoutesById {
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
+  '/enterprise/leagues/$leagueId/manage': typeof EnterpriseLeaguesLeagueIdManageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -600,6 +610,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
+    | '/enterprise/leagues/$leagueId/manage'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -658,6 +669,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
+    | '/enterprise/leagues/$leagueId/manage'
   id:
     | '__root__'
     | '/'
@@ -716,6 +728,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
+    | '/enterprise/leagues/$leagueId/manage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -774,6 +787,7 @@ export interface RootRouteChildren {
   ApiPublicHooksProcessLeagueRenewalsRoute: typeof ApiPublicHooksProcessLeagueRenewalsRoute
   ApiPublicHooksProcessScheduledEmailsRoute: typeof ApiPublicHooksProcessScheduledEmailsRoute
   ApiPublicHooksTournamentPageCanaryRoute: typeof ApiPublicHooksTournamentPageCanaryRoute
+  EnterpriseLeaguesLeagueIdManageRoute: typeof EnterpriseLeaguesLeagueIdManageRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1170,6 +1184,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksTournamentPageCanaryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/enterprise/leagues/$leagueId/manage': {
+      id: '/enterprise/leagues/$leagueId/manage'
+      path: '/enterprise/leagues/$leagueId/manage'
+      fullPath: '/enterprise/leagues/$leagueId/manage'
+      preLoaderRoute: typeof EnterpriseLeaguesLeagueIdManageRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1248,6 +1269,7 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksProcessScheduledEmailsRoute,
   ApiPublicHooksTournamentPageCanaryRoute:
     ApiPublicHooksTournamentPageCanaryRoute,
+  EnterpriseLeaguesLeagueIdManageRoute: EnterpriseLeaguesLeagueIdManageRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

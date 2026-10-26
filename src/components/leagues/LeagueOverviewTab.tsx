@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Users, Calendar, Trophy, Sparkles, CreditCard, CheckCircle2, AlertCircle } from "lucide-react";
 import { useOrgContext } from "@/hooks/useOrgContext";
 
-export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
+export default function LeagueOverviewTab({ leagueId, payoutSettingsPath = "/dashboard/payout-settings" }: { leagueId: string; payoutSettingsPath?: string }) {
   const { org } = useOrgContext();
   const [stats, setStats] = useState({ members: 0, events: 0, upcoming: [] as any[], recent: [] as any[], topStandings: [] as any[] });
   const [stripe, setStripe] = useState<{ loading: boolean; connected: boolean; started: boolean }>({ loading: true, connected: false, started: false });
@@ -82,7 +82,7 @@ export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
                 Members pay directly to your bank account through Stripe. TeeVents keeps a 5% platform fee per transaction — same as tournaments.
               </p>
               <Button asChild size="sm" className="mt-3">
-                <Link to="/dashboard/payout-settings">{stripe.started ? "Complete Stripe Onboarding" : "Connect Stripe"}</Link>
+                <Link to={payoutSettingsPath}>{stripe.started ? "Complete Stripe Onboarding" : "Connect Stripe"}</Link>
               </Button>
             </div>
           </CardContent>
@@ -93,7 +93,7 @@ export default function LeagueOverviewTab({ leagueId }: { leagueId: string }) {
           <CardContent className="p-3 flex items-center gap-2 text-sm">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
             <span className="font-medium text-emerald-900">Stripe connected — collecting league payments with a 5% platform fee.</span>
-            <Link to="/dashboard/payout-settings" className="ml-auto text-emerald-700 underline text-xs">Manage</Link>
+            <Link to={payoutSettingsPath} className="ml-auto text-emerald-700 underline text-xs">Manage</Link>
           </CardContent>
         </Card>
       )}

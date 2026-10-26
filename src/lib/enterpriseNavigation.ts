@@ -19,3 +19,8 @@ export function enterpriseItemIsActive(to: string, pathname: string): boolean {
   if (base === "/enterprise/admin" && pathname.startsWith("/enterprise/settings/")) return true;
   return pathname === base || pathname.startsWith(`${base}/`);
 }
+
+/** The league ID is part of the URL, so a workspace's selected league cannot fall back to another row. */
+export function enterpriseLeagueManageLink(leagueId: string, search: string): string {
+  return enterpriseLink(`/enterprise/leagues/${encodeURIComponent(leagueId)}/manage`, search);
+}

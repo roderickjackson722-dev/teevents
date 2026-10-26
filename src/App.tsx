@@ -46,6 +46,7 @@ import EnterpriseCommsTool from "./pages/enterprise/EnterpriseCommsTool";
 import EnterpriseScores from "./pages/enterprise/EnterpriseScores";
 import EnterprisePayments from "./pages/enterprise/EnterprisePayments";
 import EnterpriseSettings from "./pages/enterprise/EnterpriseSettings";
+import EnterpriseLeagueManage from "./pages/enterprise/EnterpriseLeagueManage";
 import TeeSheet from "./pages/dashboard/TeeSheet";
 import Tournaments from "./pages/dashboard/Tournaments";
 import QuickActionsPage from "./pages/dashboard/QuickActions";
@@ -318,6 +319,7 @@ const App = () => (
           <Route path="/enterprise/operations" element={<EnterpriseOperations />} />
           <Route path="/enterprise/courses" element={<EnterpriseCourses />} />
           <Route path="/enterprise/leagues" element={<EnterpriseLeagues />} />
+          <Route path="/enterprise/leagues/:leagueId/manage" element={<EnterpriseLeagueManage />} />
           <Route path="/enterprise/printables" element={<EnterprisePrintables />} />
           <Route path="/enterprise/registration" element={<EnterpriseRegistration />} />
           <Route path="/enterprise/leaderboard-settings" element={<EnterpriseLeaderboardSettings />} />

@@ -2,6 +2,7 @@
 
 - Enterprise workspace navigation is owned by `EnterpriseLayout`; keep its sidebar groups and role filtering shared across every Enterprise page so navigation and permissions stay consistent.
 - Enterprise Admin settings wrap the existing organization-info and site-builder tools; keep event/workspace query context on internal links and map canonical Payments to Operations so navigation does not duplicate settings or payment behavior.
+- Enterprise league management uses one league-ID route wrapping the shared LeagueManage tools; Home and Leagues use the same context-preserving destination, with Enterprise back/payment links, so league behavior and regular organizer routes remain unchanged.
 - Enterprise tournaments remain ordinary `tournaments` rows with `is_enterprise=true`; keep scoring, registration, publishing, and payments on the existing shared tournament plumbing.
 - Handicap math lives only in `src/lib/courseHandicap.ts` (USGA formula, 9-hole halving, allowance); GHIN calls live only in `src/lib/ghin.server.ts` behind `/api/ghin/*` routes — one source of truth so client display and server sync always agree.
 - Pricing behavior is cohort-based: existing events and leagues remain `legacy`; only explicit post-cutover creation paths stamp the current pricing version, so edits never migrate grandfathered records.

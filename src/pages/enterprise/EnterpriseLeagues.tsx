@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useLocation, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Plus, Trophy, Users } from "lucide-react";
 import LeagueForm from "@/components/leagues/LeagueForm";
+import { enterpriseLeagueManageLink } from "@/lib/enterpriseNavigation";
 
 interface LeagueRow {
   id: string;
@@ -22,6 +23,7 @@ interface LeagueRow {
 
 export default function EnterpriseLeagues() {
   const { org } = useOrgContext();
+  const { search } = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
   const [leagues, setLeagues] = useState<LeagueRow[]>([]);
   const [counts, setCounts] = useState<Record<string, number>>({});
@@ -82,7 +84,7 @@ export default function EnterpriseLeagues() {
                   <span className="rounded-full bg-muted px-2 py-0.5 text-xs capitalize">{l.publish_status}</span>
                   <div className="ml-auto flex gap-2">
                     <Button asChild size="sm" variant="outline">
-                      <Link to={`/dashboard/leagues/${l.id}/manage`}>Manage</Link>
+                      <Link to={enterpriseLeagueManageLink(l.id, search)}>Manage</Link>
                     </Button>
                     <Button asChild size="sm" variant="ghost">
                       <Link to={`/league/${l.league_slug}`} target="_blank">View page</Link>

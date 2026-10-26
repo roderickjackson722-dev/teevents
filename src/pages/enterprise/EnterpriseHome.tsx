@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
@@ -28,6 +28,7 @@ import { CalendarDays, CalendarPlus, CheckCircle2, CircleDollarSign, Clock3, Fil
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { enterpriseStatusOf, gameTypeLabel, parseEnterpriseSettings, type EnterpriseEventRow } from "@/lib/enterprise";
+import { enterpriseLeagueManageLink } from "@/lib/enterpriseNavigation";
 
 type DashboardFilter = "all" | "tournaments" | "leagues" | "drafts" | "completed";
 
@@ -82,6 +83,7 @@ const money = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD
 export default function EnterpriseHome({ tournamentsOnly = false }: { tournamentsOnly?: boolean }) {
   const { org } = useOrgContext();
   const navigate = useNavigate();
+  const { search: workspaceSearch } = useLocation();
   const [events, setEvents] = useState<EnterpriseEventRow[]>([]);
   const [leagues, setLeagues] = useState<LeagueRow[]>([]);
   const [eventCounts, setEventCounts] = useState<Record<string, number>>({});
@@ -319,7 +321,7 @@ export default function EnterpriseHome({ tournamentsOnly = false }: { tournament
                     <span className={cn("rounded-sm px-2 py-0.5 text-[10px] font-bold uppercase tracking-[0.12em]", row.kind === "tournament" ? "bg-primary/10 text-primary" : "bg-secondary/25 text-primary")}>{row.kind}</span>
                     <span className={cn("rounded-full px-2.5 py-0.5 text-xs font-semibold capitalize", statusClass[row.status])}>{row.status}</span>
                   </div>
-                  <Link to={row.kind === "tournament" ? `/enterprise/create?tournament_id=${row.id}` : `/dashboard/leagues/${row.id}/manage`} className="block truncate font-display text-lg font-semibold text-foreground hover:text-primary">{row.title}</Link>
+                  <Link to={row.kind === "tournament" ? `/enterprise/create?tournament_id=${row.id}` : enterpriseLeagueManageLink(row.id, workspaceSearch)} className="block truncate font-display text-lg font-semibold text-foreground hover:text-primary">{row.title}</Link>
                   <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-muted-foreground"><CalendarDays className="h-3.5 w-3.5 shrink-0" /> {row.date || "Date not set"} · {row.course || "Course not set"}</p>
                 </div>
                 <div className="hidden min-w-0 md:block">
@@ -340,7 +342,7 @@ export default function EnterpriseHome({ tournamentsOnly = false }: { tournament
                       </>
                     ) : (
                       <>
-                        <DropdownMenuItem onClick={() => navigate(`/dashboard/leagues/${row.id}/manage`)}>Manage League</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => navigate(enterpriseLeagueManageLink(row.id, workspaceSearch))}>Manage League</DropdownMenuItem>
                         {row.league?.league_slug && <DropdownMenuItem onClick={() => navigate(`/league/${row.league?.league_slug}`)}>View Public Page</DropdownMenuItem>}
                       </>
                     )}

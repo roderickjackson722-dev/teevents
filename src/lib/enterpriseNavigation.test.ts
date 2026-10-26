@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { enterpriseItemIsActive, enterpriseLink } from "./enterpriseNavigation";
+import { enterpriseItemIsActive, enterpriseLeagueManageLink, enterpriseLink } from "./enterpriseNavigation";
 
 describe("Enterprise settings navigation", () => {
   it("assigns Payments to Operations rather than Home or Admin", () => {
@@ -15,5 +15,21 @@ describe("Enterprise settings navigation", () => {
     expect(enterpriseLink("/enterprise/payments?tournament_id=target", "?sample_org=sample&tournament_id=current"))
       .toBe("/enterprise/payments?tournament_id=target&sample_org=sample");
     expect(enterpriseLink("/dashboard/settings", "?admin_org=client")).toBe("/dashboard/settings");
+  });
+});
+
+describe("Enterprise league management navigation", () => {
+  it("uses one destination for the selected league with admin workspace and event preserved", () => {
+    expect(enterpriseLeagueManageLink("league-5", "?admin_org=client&tournament_id=event"))
+      .toBe("/enterprise/leagues/league-5/manage?admin_org=client&tournament_id=event");
+  });
+  it("keeps sample workspace context and different leagues distinct", () => {
+    expect(enterpriseLeagueManageLink("league-2", "?sample_org=sample&sample=1"))
+      .toBe("/enterprise/leagues/league-2/manage?sample_org=sample&sample=1");
+    expect(enterpriseLeagueManageLink("league-1", "")).not.toBe(enterpriseLeagueManageLink("league-2", ""));
+  });
+  it("highlights Leagues rather than Home on league management", () => {
+    expect(enterpriseItemIsActive("/enterprise/leagues", "/enterprise/leagues/league-5/manage")).toBe(true);
+    expect(enterpriseItemIsActive("/enterprise", "/enterprise/leagues/league-5/manage")).toBe(false);
   });
 });

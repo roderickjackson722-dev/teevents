@@ -66,7 +66,7 @@ export default function SendPreviewDialog(p: SendPreviewProps) {
           {p.sampleOptions && p.sampleOptions.length > 0 && (
             <div className="space-y-1">
               <p className="font-medium text-foreground">Show content for</p>
-              <Select value={effectiveSample ?? undefined} onValueChange={setSampleId}>
+              <Select key={`${p.sampleOptions.length}-${p.sampleOptions[0]?.id}`} value={effectiveSample ?? undefined} onValueChange={setSampleId}>
                 <SelectTrigger aria-label="Preview recipient"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {p.sampleOptions.map((o) => <SelectItem key={o.id} value={o.id}>{o.label}</SelectItem>)}

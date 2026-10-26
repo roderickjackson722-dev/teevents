@@ -56,7 +56,7 @@ export default function SmsSendPreview(p: Props) {
       renderContent={(sampleId) => {
         let text = p.message;
         if (personalized) {
-          const reg = regs.find((r) => r.id === sampleId);
+          const reg = regs.find((r) => r.id === sampleId) ?? regs.find((r) => r.id === recipients[0]?.id);
           if (reg) text = personalizeSms(p.message, reg, p.tournament);
         } else if (!scheduled) {
           const num = p.manualNumbers[0] ?? "";

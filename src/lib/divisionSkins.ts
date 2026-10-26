@@ -1,5 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
+import { calculateSkinsCarryover } from "@/lib/skinsCarryover";
 
 
 export type SkinsGame = {
@@ -31,20 +32,24 @@ function netStrokes(strokes: number, handicap: number, hole: number) {
 
 /**
  * Recompute skin winners + payouts for one division skins game.
- * Lowest (unique) score on a hole wins the skin. With carryover on, an unclaimed
- * hole's share rolls into the next hole; without it, the purse is split evenly
- * across the holes that were actually won. Withdrawn players are excluded.
+ * True carryover, isolated to this game's round/pot/format. Called only by Calculate.
+ * Persist all holes (null winner for ties) using existing fields, so reopening
+ * a result reconstructs its recorded skins without recalculating current scores.
  */
 export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]> {
   const roundNumber = Math.max(1, Number(game.round_number) || 1);
-  const [registrationsResult, allScores] = await Promise.all([
+  const [registrationsResult, allScores, tournamentResult] = await Promise.all([
     supabase
       .from("tournament_registrations")
       .select("id, handicap, status, flight_id, tier_id, payment_status, skins_opt_in")
       .eq("tournament_id", game.tournament_id),
     fetchAllTournamentScores(game.tournament_id, { roundNumber }),
+    supabase.from("tournaments").select("pairings_config, enterprise_settings").eq("id", game.tournament_id).maybeSingle(),
   ]);
   if (registrationsResult.error) throw registrationsResult.error;
+  if (tournamentResult.error) throw tournamentResult.error;
+  const tournament = tournamentResult.data as any;
+  const holeCount = Number(tournament?.pairings_config?.byDay?.[roundNumber - 1]?.roundHoles || tournament?.enterprise_settings?.rounds?.[roundNumber - 1]?.holes || 18);
   const regs = registrationsResult.data;
   const scores = allScores;
 
@@ -54,7 +59,7 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
   ((regs as any[]) || []).forEach((r) => {
     const status = String(r.status || "active").toLowerCase();
     const pay = String(r.payment_status || "").toLowerCase();
-    if (status === "wd" || status === "dq") return;
+    if (["wd", "withdrawn", "dq"].includes(status)) return;
     if (r.skins_opt_in === false) return; // organizer removed them from the pot
     if (["refunded", "cancelled", "canceled", "failed", "void"].includes(pay)) return;
     // A player's division can be stored as the selected flight OR the price tier.
@@ -77,39 +82,13 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
     (byHole[hole] ||= []).push({ registration_id: s.registration_id, score });
   });
 
-  // Determine which holes were won outright.
-  const wins: { hole_number: number; registration_id: string; score: number }[] = [];
-  const played: number[] = [];
-  for (let h = 1; h <= 18; h++) {
-    const rows = byHole[h];
-    if (!rows || rows.length === 0) continue;
-    played.push(h);
-    const min = Math.min(...rows.map((r) => r.score));
-    const winners = rows.filter((r) => r.score === min);
-    if (winners.length === 1) {
-      wins.push({ hole_number: h, registration_id: winners[0].registration_id, score: min });
-    }
-  }
-
-  const purse = game.total_purse_cents || 0;
-  const result: SkinRow[] = [];
-
-  // Total skins pot is divided equally by the number of skins actually won.
-  // Example: $500 pot with 5 skins = $100 per skin.
-  const share = wins.length > 0 ? Math.floor(purse / wins.length) : 0;
-  wins.forEach((w, i) => {
-    result.push({
-      hole_number: w.hole_number,
-      registration_id: w.registration_id,
-      score: w.score,
-      amount_cents: share + (i === wins.length - 1 ? purse - share * wins.length : 0),
-    });
-  });
+  const { rows: result } = calculateSkinsCarryover(game.total_purse_cents || 0, holeCount, byHole);
 
   // Persist
-  await (supabase as any).from("division_skin_winners").delete().eq("skins_game_id", game.id);
+  const { error: deleteError } = await (supabase as any).from("division_skin_winners").delete().eq("skins_game_id", game.id);
+  if (deleteError) throw deleteError;
   if (result.length > 0) {
-    await (supabase as any).from("division_skin_winners").insert(
+    const { error: insertError } = await (supabase as any).from("division_skin_winners").insert(
       result.map((r) => ({
         skins_game_id: game.id,
         registration_id: r.registration_id,
@@ -118,6 +97,7 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
         amount_cents: r.amount_cents,
       })),
     );
+    if (insertError) throw insertError;
   }
   return result;
 }

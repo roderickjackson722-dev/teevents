@@ -10,6 +10,7 @@ import { Loader2, Save, Coins, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { formatCents } from "@/lib/formatCurrency";
 import { recomputeDivisionSkins, type SkinsGame } from "@/lib/divisionSkins";
+import { recordedSkinsResult } from "@/lib/skinsCarryover";
 
 type Division = { id: string; tier_name: string; display_order: number };
 type WinnerRow = { hole_number: number; score: number | null; amount_cents: number; registration_id: string | null };
@@ -414,6 +415,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
               <Checkbox checked={carryover} onCheckedChange={(v) => setCarryover(!!v)} className="mt-0.5" />
               <span className="text-muted-foreground">
                 Carryover skins — if no one wins a hole outright, that hole's share rolls to the next hole.
+                <span className="block mt-1">Carryover resets each round. If the final hole is tied, unclaimed skins are shown as Unclaimed and are not paid.</span>
               </span>
             </label>
           </div>
@@ -432,7 +434,12 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
 
         {roundGames.filter((g) => g.status === "active").map((g) => {
           const rows = winners[g.id] || [];
-          const skinValueCents = rows.length > 0 ? Math.round(g.total_purse_cents / rows.length) : 0;
+          // Legacy results contain winners only; keep their recorded payout unchanged.
+          const isCarryoverResult = rows.some((r) => !r.registration_id);
+          const recorded = rows.length ? recordedSkinsResult(g.total_purse_cents, rows) : null;
+          const displayRows = isCarryoverResult ? recorded?.rows || [] : rows.map((r) => ({ ...r, skins: 1 }));
+          const totalPaid = rows.reduce((sum, r) => sum + r.amount_cents, 0);
+          const summary = isCarryoverResult ? recorded?.summary : null;
           return (
             <div key={g.id} className="space-y-3">
               <div className="flex items-baseline justify-between">
@@ -447,16 +454,17 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                 </p>
               ) : (
                 <>
-                  <div className="rounded-md border bg-primary/5 p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                    <div>
-                      <p className="text-sm text-muted-foreground">Skins won</p>
-                      <p className="text-2xl font-bold">{rows.length}</p>
-                    </div>
-                    <div className="sm:text-right">
-                      <p className="text-sm text-muted-foreground">Each skin is worth</p>
-                      <p className="text-2xl font-bold text-primary">{formatCents(skinValueCents)}</p>
-                    </div>
+                  <div className="rounded-md border bg-primary/5 p-4 grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {[
+                      ["Total Purse", formatCents(g.total_purse_cents)],
+                      ["Per-skin value", summary ? formatCents(summary.perSkinValueCents) : "Available after recalculation"],
+                      ["Skins awarded", summary?.skinsAwarded ?? rows.length],
+                      ["Skins unclaimed", summary?.skinsUnclaimed ?? "Available after recalculation"],
+                      ["Total paid", formatCents(totalPaid)],
+                      ["Unclaimed amount", summary ? formatCents(summary.unclaimedAmountCents) : "Available after recalculation"],
+                    ].map(([label, value]) => <div key={label}><p className="text-sm text-muted-foreground">{label}</p><p className="font-bold text-primary">{value}</p></div>)}
                   </div>
+                  {!isCarryoverResult && <p className="text-xs text-muted-foreground">Saved results remain unchanged until Calculate Skin Payouts is clicked again.</p>}
                   <div className="overflow-x-auto rounded-md border">
                     <table className="w-full text-sm">
                       <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
@@ -464,21 +472,24 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                           <th className="px-3 py-2 text-left">Hole</th>
                           <th className="px-3 py-2 text-left">Player</th>
                           <th className="px-3 py-2 text-center">Score</th>
-                          <th className="px-3 py-2 text-right">Payout</th>
+                          <th className="px-3 py-2 text-center">Skins</th>
+                          <th className="px-3 py-2 text-right">Amount</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y">
-                        {rows.map((r) => (
+                        {displayRows.map((r) => (
                           <tr key={`${g.id}-${r.hole_number}`}>
                             <td className="px-3 py-2">{r.hole_number}</td>
                             <td className="px-3 py-2">{names[r.registration_id || ""] || "—"}</td>
                             <td className="px-3 py-2 text-center">{r.score ?? "—"}</td>
+                            <td className="px-3 py-2 text-center">{r.skins}</td>
                             <td className="px-3 py-2 text-right font-medium">{formatCents(r.amount_cents)}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
+                  {summary && summary.skinsUnclaimed > 0 && <p className="text-sm text-muted-foreground">Unclaimed: {summary.skinsUnclaimed} skins, {formatCents(summary.unclaimedAmountCents)}. Not paid.</p>}
                 </>
               )}
             </div>

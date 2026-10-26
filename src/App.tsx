@@ -43,6 +43,7 @@ import EnterpriseAdmin from "./pages/enterprise/EnterpriseAdmin";
 import EnterpriseHandicaps from "./pages/enterprise/EnterpriseHandicaps";
 import EnterpriseOperations from "./pages/enterprise/EnterpriseOperations";
 import EnterpriseCommsTool from "./pages/enterprise/EnterpriseCommsTool";
+import EnterpriseScores from "./pages/enterprise/EnterpriseScores";
 import TeeSheet from "./pages/dashboard/TeeSheet";
 import Tournaments from "./pages/dashboard/Tournaments";
 import QuickActionsPage from "./pages/dashboard/QuickActions";
@@ -318,6 +319,7 @@ const App = () => (
           <Route path="/enterprise/printables" element={<EnterprisePrintables />} />
           <Route path="/enterprise/registration" element={<EnterpriseRegistration />} />
           <Route path="/enterprise/leaderboard-settings" element={<EnterpriseLeaderboardSettings />} />
+          <Route path="/enterprise/scores" element={<EnterpriseScores />} />
           <Route path="/enterprise/skins" element={<EnterpriseSkins />} />
           <Route path="/enterprise/communications" element={<EnterpriseCommunications />} />
           <Route path="/enterprise/communications/messages" element={<EnterpriseCommsTool tool="messages" />} />

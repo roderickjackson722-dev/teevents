@@ -235,7 +235,7 @@ export default function EnterpriseHome({ tournamentsOnly = false }: { tournament
       ["Edit Event Information", `/enterprise/create${query}`],
       ["Edit Teams", `/enterprise/create${query}`],
       ["Edit Pairings / Handicaps", `/enterprise/create${query}`],
-      ["Edit Scores", `/dashboard/scoring${query}`],
+      ["Edit Scores", `/enterprise/scores${query}`],
       ["Leaderboard Settings", `/enterprise/leaderboard-settings${query}`],
       ["Skins, Deuces and Putts", `/enterprise/skins${query}`],
       ["Print Scorecards and Reports", `/enterprise/printables${query}`],

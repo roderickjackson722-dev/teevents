@@ -872,13 +872,14 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     );
   };
 
+  const inEnterprise = typeof window !== "undefined" && window.location.pathname.startsWith("/enterprise");
   return (
     <div className="space-y-6">
       <Link
-        to="/dashboard"
+        to={inEnterprise ? "/enterprise" : "/dashboard"}
         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
       >
-        <ArrowLeft className="h-4 w-4" /> Back to Dashboard
+        <ArrowLeft className="h-4 w-4" /> {inEnterprise ? "Back to Enterprise Home" : "Back to Dashboard"}
       </Link>
       <div className="flex items-center justify-between gap-3 flex-wrap">
         <div>

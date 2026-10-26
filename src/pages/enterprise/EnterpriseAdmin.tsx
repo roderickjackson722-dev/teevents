@@ -134,7 +134,7 @@ export default function EnterpriseAdmin() {
                           <Link to={`/enterprise/create?tournament_id=${e.id}`}>Open in Enterprise</Link>
                         </Button>
                         <Button asChild size="sm" variant="outline">
-                          <Link to={`/dashboard/scoring?tournament_id=${e.id}`}>Scores</Link>
+                          <Link to={`/enterprise/scores?tournament_id=${e.id}`}>Scores</Link>
                         </Button>
                         {e.slug && (
                           <Button asChild size="sm" variant="ghost">

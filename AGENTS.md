@@ -1,6 +1,7 @@
 # Project Architecture Rules
 
 - Enterprise workspace navigation is owned by `EnterpriseLayout`; keep its sidebar groups and role filtering shared across every Enterprise page so navigation and permissions stay consistent.
+- Enterprise Home rep setup uses a shared client/server request schema and an authenticated support-ticket writer; verify workspace membership or platform admin access before server-only insertion so requests cannot mutate events or spoof another organization.
 - Enterprise home-course selection stores only the library row ID in existing organization enterprise_settings; resolve it for unsaved new events only, and remove tournament context from explicit new-course-event links to protect existing events.
 - Enterprise Admin settings wrap the existing organization-info and site-builder tools; keep event/workspace query context on internal links and map canonical Payments to Operations so navigation does not duplicate settings or payment behavior.
 - Enterprise league management uses one league-ID route wrapping the shared LeagueManage tools; Home and Leagues use the same context-preserving destination, with Enterprise back/payment links, so league behavior and regular organizer routes remain unchanged.

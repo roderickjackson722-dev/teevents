@@ -42,6 +42,7 @@ import EnterpriseResources from "./pages/enterprise/EnterpriseResources";
 import EnterpriseAdmin from "./pages/enterprise/EnterpriseAdmin";
 import EnterpriseHandicaps from "./pages/enterprise/EnterpriseHandicaps";
 import EnterpriseOperations from "./pages/enterprise/EnterpriseOperations";
+import EnterpriseCommsTool from "./pages/enterprise/EnterpriseCommsTool";
 import TeeSheet from "./pages/dashboard/TeeSheet";
 import Tournaments from "./pages/dashboard/Tournaments";
 import QuickActionsPage from "./pages/dashboard/QuickActions";
@@ -319,6 +320,8 @@ const App = () => (
           <Route path="/enterprise/leaderboard-settings" element={<EnterpriseLeaderboardSettings />} />
           <Route path="/enterprise/skins" element={<EnterpriseSkins />} />
           <Route path="/enterprise/communications" element={<EnterpriseCommunications />} />
+          <Route path="/enterprise/communications/messages" element={<EnterpriseCommsTool tool="messages" />} />
+          <Route path="/enterprise/communications/email-templates" element={<EnterpriseCommsTool tool="email-templates" />} />
           <Route path="/enterprise/automations" element={<EnterpriseAutomations />} />
           <Route path="/enterprise/resources/:section" element={<EnterpriseResources />} />
           <Route path="/enterprise/admin" element={<EnterpriseAdmin />} />

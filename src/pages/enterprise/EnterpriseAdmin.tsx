@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, ExternalLink, KeyRound, Building2, CreditCard, Globe, Users } from "lucide-react";
 import { statusMeta, eventTypeLabel } from "@/lib/enterprise";
+import { enterpriseLink } from "@/lib/enterpriseNavigation";
 
 interface EventStat {
   id: string;
@@ -28,6 +29,7 @@ interface EventStat {
  * place, reusing the organization team plumbing so there is no second portal.
  */
 export default function EnterpriseAdmin() {
+  const { search } = useLocation();
   const { org } = useOrgContext();
   const [events, setEvents] = useState<EventStat[]>([]);
   const [loading, setLoading] = useState(true);
@@ -155,9 +157,9 @@ export default function EnterpriseAdmin() {
         <TabsContent value="settings">
           <div className="grid gap-4 sm:grid-cols-2">
             {[
-              { to: "/dashboard/organization-info", icon: Building2, title: "Organization details", body: "Name, logo, address and nonprofit receipts." },
+              { to: "/enterprise/settings/organization", icon: Building2, title: "Organization details", body: "Name, logo, address and nonprofit receipts." },
               { to: "/enterprise/payments", icon: CreditCard, title: "Payments & payouts", body: "Connect your account so paid events can collect money." },
-              { to: "/dashboard/public-page-editor", icon: Globe, title: "Web address & branding", body: "Public page look, colors and custom domain." },
+              { to: "/enterprise/settings/web-address", icon: Globe, title: "Web address & branding", body: "Public page look, colors and custom domain." },
               { to: "/enterprise/roster", icon: Users, title: "Club roster", body: "Reusable member list with handicaps and contacts." },
             ].map((c) => (
               <Card key={c.to}>
@@ -169,7 +171,7 @@ export default function EnterpriseAdmin() {
                 </CardHeader>
                 <CardContent>
                   <Button asChild variant="outline" size="sm">
-                    <Link to={c.to}>Open</Link>
+                    <Link to={enterpriseLink(c.to, search)}>Open</Link>
                   </Button>
                 </CardContent>
               </Card>

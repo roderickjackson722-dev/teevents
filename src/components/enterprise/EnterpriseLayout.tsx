@@ -24,6 +24,7 @@ import { useOrgContext } from "@/hooks/useOrgContext";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { enterpriseItemIsActive, enterpriseLink } from "@/lib/enterpriseNavigation";
 
 interface NavItem {
   label: string;
@@ -94,15 +95,8 @@ export const visibleNav = (isAdmin: boolean, role?: string | null): NavGroup[] =
     .filter((group) => group.items.length > 0);
 };
 
-const itemIsActive = (to: string, pathname: string) => {
-  const base = to.split("?")[0];
-  if (base === "/enterprise") return pathname === "/enterprise";
-  if (base === "/enterprise/tournaments") return pathname === base;
-  return pathname.startsWith(base);
-};
-
 function EnterpriseNav({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?: () => void }) {
-  const { pathname } = useLocation();
+  const { pathname, search } = useLocation();
   return (
     <nav className="space-y-6 px-3 py-5" aria-label="Enterprise navigation">
       {groups.map((group) => (
@@ -112,12 +106,13 @@ function EnterpriseNav({ groups, onNavigate }: { groups: NavGroup[]; onNavigate?
           </p>
           <ul className="space-y-1">
             {group.items.map((item) => {
-              const active = itemIsActive(item.to, pathname);
+              const active = enterpriseItemIsActive(item.to, pathname);
               const Icon = item.icon;
               return (
                 <li key={item.to}>
                   <Link
-                    to={item.to}
+                    to={enterpriseLink(item.to, search)}
+                    aria-current={active ? "page" : undefined}
                     onClick={onNavigate}
                     className={cn(
                       "group flex min-h-10 items-center gap-3 rounded-md border-l-2 px-3 py-2 text-sm font-semibold transition-colors",
@@ -154,6 +149,7 @@ interface Props {
 
 export default function EnterpriseLayout({ children, title, description, crumbs = [], actions }: Props) {
   const navigate = useNavigate();
+  const { search } = useLocation();
   const { org, loading } = useOrgContext();
   const [isAdmin, setIsAdmin] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -180,7 +176,7 @@ export default function EnterpriseLayout({ children, title, description, crumbs 
     .join("");
 
   const Brand = () => (
-    <Link to="/enterprise" className="flex min-w-0 items-center gap-3">
+    <Link to={enterpriseLink("/enterprise", search)} className="flex min-w-0 items-center gap-3">
       <span className="grid h-11 w-11 shrink-0 place-items-center overflow-hidden rounded-md bg-sidebar-foreground">
         <img src={logoAsset.url} alt="TeeVents" className="h-9 w-9 object-contain" />
       </span>
@@ -224,11 +220,11 @@ export default function EnterpriseLayout({ children, title, description, crumbs 
 
             <div className="min-w-0">
               <div className="flex min-w-0 items-center gap-1 text-xs text-muted-foreground">
-                <Link to="/enterprise" className="shrink-0 font-semibold hover:text-primary">Enterprise</Link>
+                <Link to={enterpriseLink("/enterprise", search)} className="shrink-0 font-semibold hover:text-primary">Enterprise</Link>
                 {crumbs.map((crumb) => (
                   <span key={crumb.label} className="flex min-w-0 items-center gap-1">
                     <ChevronRight className="h-3 w-3 shrink-0" />
-                    {crumb.to ? <Link to={crumb.to} className="truncate hover:text-primary">{crumb.label}</Link> : <span className="truncate text-foreground">{crumb.label}</span>}
+                    {crumb.to ? <Link to={enterpriseLink(crumb.to, search)} className="truncate hover:text-primary">{crumb.label}</Link> : <span className="truncate text-foreground">{crumb.label}</span>}
                   </span>
                 ))}
               </div>

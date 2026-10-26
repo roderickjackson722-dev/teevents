@@ -22,6 +22,8 @@ interface Props {
   loading: boolean;
   groups?: RegistrationGroupRow[];
   onGroupsChanged?: () => void;
+  /** When true, Save Sign keeps names for this print run only and never writes to the event. */
+  printOnly?: boolean;
 }
 
 type CartNames = { cart1: string[]; cart2: string[] };
@@ -101,7 +103,7 @@ function paginateSigns(signHtml: string[], perPage: number): string {
 }
 
 
-export default function CartSignsTab({ tournament, registrations, loading, groups = [], onGroupsChanged }: Props) {
+export default function CartSignsTab({ tournament, registrations, loading, groups = [], onGroupsChanged, printOnly = false }: Props) {
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
   const [edits, setEdits] = useState<Record<string, CartNames>>({});
   const [saving, setSaving] = useState<string | null>(null);
@@ -193,7 +195,11 @@ export default function CartSignsTab({ tournament, registrations, loading, group
     const teeTime = (teeEdits[key] || "").trim() || null;
     setSaving(key);
     let error: any = null;
-    if (team.groupId) {
+    if (printOnly) {
+      setSaving(null);
+      toast.success("Cart names updated for this print run");
+      return;
+    } else if (team.groupId) {
       ({ error } = await (supabase.from("registration_groups") as any).update({ cart_sign_names: payload, tee_time: teeTime }).eq("id", team.groupId));
     } else if (team.groupNumber != null) {
       ({ error } = await (supabase.from("registration_groups") as any).insert({

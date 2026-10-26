@@ -382,7 +382,7 @@ export default function EnterprisePrintables() {
             <PairingsTab tournament={printTournament} registrations={printRegs} loading={false} groups={printGroups} />
           </TabsContent>
           <TabsContent value="checkin" className="mt-3">
-            <CheckInRosterTab tournament={printTournament ? { ...printTournament, slug: event.slug } : null} registrations={printRegs} loading={false} />
+            <CheckInRosterTab tournament={printTournament ? { ...printTournament, slug: event.slug } : null} registrations={printRegs as RegRow[]} loading={false} />
           </TabsContent>
           <TabsContent value="sponsors" className="mt-3">
             <SponsorSignsTab tournament={printTournament} sponsors={sponsors} loading={false} />

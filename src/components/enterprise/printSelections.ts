@@ -8,6 +8,7 @@ export interface SelectablePlayer {
   last_name: string;
   email: string;
   group_number: number | null;
+  group_position: number | null;
   group_label?: string | null;
   tee_time?: string | null;
   [key: string]: unknown;

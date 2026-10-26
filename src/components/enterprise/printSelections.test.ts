@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { addedPlayer, draftFrom, printoutGroups, printoutPlayers } from "./printSelections";
 
 const rows = [
-  { id: "a", first_name: "Ann", last_name: "Lee", email: "a@x", group_number: 1, group_label: "1A", tee_time: "8:00" },
-  { id: "b", first_name: "Bo", last_name: "Ray", email: "b@x", group_number: 1, group_label: "1A", tee_time: "8:00" },
+  { id: "a", first_name: "Ann", last_name: "Lee", email: "a@x", group_number: 1, group_position: 1, group_label: "1A", tee_time: "8:00" },
+  { id: "b", first_name: "Bo", last_name: "Ray", email: "b@x", group_number: 1, group_position: 1, group_label: "1A", tee_time: "8:00" },
 ];
 
 describe("printout-only selections", () => {

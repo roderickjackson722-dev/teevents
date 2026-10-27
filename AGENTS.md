@@ -1,5 +1,6 @@
 # Project Architecture Rules
 
+- Manual Enterprise approval lives in the admin-controlled enterprise_account_approvals table, separate from organization plans and billing; resolve verified owner emails server-side and list existing platform tournaments by organization without converting them.
 - Enterprise workspace navigation is owned by `EnterpriseLayout`; keep its sidebar groups and role filtering shared across every Enterprise page so navigation and permissions stay consistent.
 - Enterprise Home rep setup uses a shared client/server request schema and an authenticated support-ticket writer; verify workspace membership or platform admin access before server-only insertion so requests cannot mutate events or spoof another organization.
 - Enterprise home-course selection stores only the library row ID in existing organization enterprise_settings; resolve it for unsaved new events only, and remove tournament context from explicit new-course-event links to protect existing events.

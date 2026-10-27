@@ -1,0 +1,2 @@
+ALTER POLICY "Platform admins insert Enterprise approvals" ON public.enterprise_account_approvals WITH CHECK (public.has_role(auth.uid(), 'admin') AND approved_by = auth.uid());
+ALTER POLICY "Platform admins update Enterprise approvals" ON public.enterprise_account_approvals WITH CHECK (public.has_role(auth.uid(), 'admin') AND approved_by = auth.uid());

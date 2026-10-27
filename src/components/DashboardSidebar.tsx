@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { clearDashboardContext, withDashboardContext } from "@/lib/dashboardContext";
 import {
   LayoutDashboard, Trophy, ClipboardCheck, Users,
@@ -192,6 +193,16 @@ export function DashboardSidebar() {
   const activeCategories = isLeagueWorkspace ? leagueCategories : categories;
   const { hasFeature, requiredPlan } = usePlanFeatures();
   const { org } = useOrgContext();
+  const { data: enterpriseApproval } = useQuery({
+    queryKey: ["enterprise-account-approval", org?.orgId],
+    enabled: !!org?.orgId,
+    queryFn: async () => {
+      if (!org?.orgId) return null;
+      const { data, error } = await supabase.from("enterprise_account_approvals").select("organization_id").eq("organization_id", org.orgId).maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
   const [searchParams] = useSearchParams();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
   const [tournamentId, setTournamentId] = useState<string | null>(null);
@@ -365,6 +376,7 @@ export function DashboardSidebar() {
             )}
           </div>
 
+          {enterpriseApproval && <SidebarGroup><SidebarMenu>{renderItem({ title: "Enterprise Dashboard", url: "/enterprise", icon: Building2, feature: null })}</SidebarMenu></SidebarGroup>}
           {activeCategories.map((cat) => {
             let items = cat.items;
             // "Missing Age Records" was built for one specific event, so it is

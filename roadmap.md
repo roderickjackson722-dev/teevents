@@ -1,3 +1,7 @@
+## Admin Enterprise accounts
+- [x] Add admin-only account listing, verified-owner email approval, and linked platform tournaments without changing billing or existing events; 22 approval/navigation tests passed and build OK.
+- [x] Approved info@hbcu.golf for HBCU Golf Foundation through the signed-in admin UI; confirmed reload persistence, linked standard tournament and correct Enterprise workspace loading. Existing event classification, 5% fee and organization pricing unchanged; no sends or publication. Organizer entry link and team-login approval path added; separate owner-session browser check not performed.
+
 ## Enterprise Communications and Operations send previews
 - [x] Read-only audit completed; stopped under the supplied conflict rule before application changes or sends.
 - [ ] Blocked: exact personalized email/text previews need shared recipient/rendering support currently absent from sending endpoints; scheduled jobs resolve recipients and saved templates at delivery, not scheduling. Needs authorization for narrow preview API/rendering support and clarification of scheduled-preview expectations. Automations page only saves toggles, with no connected manual send to wrap. No previews added or browser checks claimed; no emails/texts/invoices sent, records changed or publication.

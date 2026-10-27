@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 
 export interface OrgContext {
@@ -35,6 +35,7 @@ export function useOrgContext() {
   const [org, setOrg] = useState<OrgContext | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchParams] = useSearchParams();
+  const { pathname } = useLocation();
 
   useEffect(() => {
     const init = async () => {
@@ -100,6 +101,15 @@ export function useOrgContext() {
         if (preferred) membership = preferred;
       }
 
+      // A manually approved club can open Enterprise before its first event.
+      // Never disturb explicit admin/sample context or regular-dashboard selection.
+      if (pathname.startsWith("/enterprise") && !sampleOrgId) {
+        const { data: approvals } = await supabase.from("enterprise_account_approvals")
+          .select("organization_id").in("organization_id", memberships.map((m) => m.organization_id));
+        const approved = memberships.find((m) => approvals?.some((a) => a.organization_id === m.organization_id));
+        if (approved) membership = approved;
+      }
+
       const { data: orgData } = await supabase
         .from("organizations")
         .select("id, name, plan, dashboard_name, feature_overrides, fee_override, pricing_model, enterprise_settings, enterprise_subscription_status, enterprise_subscription_renews_at")
@@ -127,7 +137,7 @@ export function useOrgContext() {
     };
 
     init();
-  }, [searchParams]);
+  }, [searchParams, pathname.startsWith("/enterprise")]);
 
   return { org, loading };
 }

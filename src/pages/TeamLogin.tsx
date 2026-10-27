@@ -22,6 +22,11 @@ export default function TeamLogin() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
+        const { data: approvals } = await supabase.from("enterprise_account_approvals").select("organization_id").limit(1);
+        if (approvals?.length) {
+          navigate("/enterprise");
+          return;
+        }
         const { data: m } = await supabase
           .from("org_members")
           .select("organization_id")

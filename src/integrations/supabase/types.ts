@@ -2854,6 +2854,38 @@ export type Database = {
           },
         ]
       }
+      enterprise_account_approvals: {
+        Row: {
+          approved_at: string
+          approved_by: string
+          approved_email: string
+          organization_id: string
+          owner_user_id: string
+        }
+        Insert: {
+          approved_at?: string
+          approved_by: string
+          approved_email: string
+          organization_id: string
+          owner_user_id: string
+        }
+        Update: {
+          approved_at?: string
+          approved_by?: string
+          approved_email?: string
+          organization_id?: string
+          owner_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_account_approvals_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: true
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enterprise_communication_log: {
         Row: {
           created_at: string

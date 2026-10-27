@@ -1,6 +1,6 @@
 ## Admin Enterprise accounts
-- [ ] Add admin-only account listing, verified-owner email approval, and linked platform tournaments without changing billing or existing events.
-- [ ] Approve the requested HBCU Golf Foundation workspace and verify approval persistence and admin/organizer access without sends or publication.
+- [x] Add admin-only account listing, verified-owner email approval, and linked platform tournaments without changing billing or existing events; 22 approval/navigation tests passed and build OK.
+- [x] Approved info@hbcu.golf for HBCU Golf Foundation through the signed-in admin UI; confirmed reload persistence, linked standard tournament and correct Enterprise workspace loading. Existing event classification, 5% fee and organization pricing unchanged; no sends or publication. Organizer entry link and team-login approval path added; separate owner-session browser check not performed.
 
 ## Enterprise Communications and Operations send previews
 - [x] Read-only audit completed; stopped under the supplied conflict rule before application changes or sends.

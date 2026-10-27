@@ -48,10 +48,10 @@ export const approveEnterpriseAccount = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { data: isAdmin, error: roleError } = await context.supabase.rpc("has_role", { _user_id: context.userId, _role: "admin" });
     if (roleError || !isAdmin) throw new Error("Platform admin access is required.");
-    const { data: owner, error: ownerError } = await context.supabase.from("org_members")
+    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
+    const { data: owner, error: ownerError } = await admin.from("org_members")
       .select("user_id").eq("organization_id", data.organizationId).eq("user_id", data.ownerUserId).eq("role", "owner").maybeSingle();
     if (ownerError || !owner) throw new Error("The selected account must own this organization.");
-    const { supabaseAdmin: admin } = await import("@/integrations/supabase/client.server");
     const { data: userData, error: userError } = await admin.auth.admin.getUserById(data.ownerUserId);
     if (userError) throw new Error("Could not verify the account email.");
     assertEnterpriseApprovalOwner(data.email, userData.user);

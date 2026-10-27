@@ -890,7 +890,9 @@ const Players = () => {
         ? (newPlayer.payment_status === "paid" ? "paid" : "pending")
         : newPlayer.payment_status,
       cash_payment_received: isCash && newPlayer.payment_status === "paid",
-      ...(extraAnswers.length ? { custom_answers: extraAnswers } : {}),
+      // Always send custom_answers: in a multi-row team insert a key missing
+      // from one row is sent as NULL, which the NOT NULL column rejects.
+      custom_answers: extraAnswers,
     };
     const mates = teamSize > 1 ? teammates.slice(0, teamSize - 1) : [];
     if (mates.some((t) => !t.first_name.trim() || !t.last_name.trim())) {

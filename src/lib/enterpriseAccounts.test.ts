@@ -7,7 +7,10 @@ vi.mock("@tanstack/react-start", () => ({ createServerFn: () => {
   return chain;
 } }));
 vi.mock("@/integrations/supabase/auth-middleware", () => ({ requireSupabaseAuth: {} }));
-vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { auth: { admin: { getUserById: async () => {
+vi.mock("@/integrations/supabase/client.server", () => ({ supabaseAdmin: { from: () => ({ select: () => {
+  const query = { eq: () => query, maybeSingle: async () => ({ data: mocks.owner ? { user_id: "2687d4ac-654e-42a9-9aca-036404513b91" } : null, error: null }) };
+  return query;
+} }), auth: { admin: { getUserById: async () => {
   mocks.lookup();
   return { data: { user: { email: mocks.email, email_confirmed_at: mocks.verified ? "2026-05-03" : null } }, error: null };
 } } } } }));

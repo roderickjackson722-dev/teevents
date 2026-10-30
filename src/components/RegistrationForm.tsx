@@ -15,6 +15,8 @@ import { z } from "zod";
 import { sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { formatCents } from "@/lib/formatCurrency";
 import type { GroupFieldKey, GroupFieldRules } from "@/lib/groupFieldRules";
+import PartnerRequestForm from "@/components/PartnerRequestForm";
+import { partnerTeamSizes } from "@/lib/partnerRequests.schema";
 
 
 interface AddonRow {
@@ -289,6 +291,17 @@ const PlayerFields = ({
 
 const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", showAddons = true, captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
   const copy = registrationCopy(sectionTitle);
+  const [partnerOption, setPartnerOption] = useState(false);
+  const [requestMode, setRequestMode] = useState(false);
+  const partnerSizes = partnerTeamSizes(maxGroupSize, allowedGroupSizes);
+  useEffect(() => {
+    let active = true;
+    setPartnerOption(false);
+    setRequestMode(false);
+    supabase.from("tournament_partner_settings").select("enabled").eq("tournament_id", tournamentId).maybeSingle()
+      .then(({ data }) => { if (active) setPartnerOption(data?.enabled === true); });
+    return () => { active = false; };
+  }, [tournamentId]);
   // When the organizer restricts group sizes (e.g. foursomes only), start at the
   // smallest allowed size so the total reflects the real number of players.
   const initialGroupSize = (() => {
@@ -766,6 +779,13 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
 
   return (
     <div className="space-y-6">
+      {partnerOption && partnerSizes.length > 0 && !submitted && (
+        <label className="flex items-center gap-3 border border-border rounded-md p-4 text-sm font-medium">
+          <Checkbox checked={requestMode} onCheckedChange={(value) => setRequestMode(value === true)} />
+          I’m looking for a partner or teammates
+        </label>
+      )}
+      {requestMode ? <PartnerRequestForm key={tournamentId} tournamentId={tournamentId} sizes={partnerSizes} fields={fields} /> : <>
       <AnimatePresence>
         {submitted && (
           <motion.div
@@ -1260,6 +1280,7 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
               : "Complete Registration"}
         </Button>
       </form>
+      </>}
     </div>
   );
 };

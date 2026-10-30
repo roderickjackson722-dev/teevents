@@ -1,4 +1,5 @@
 import PlayersTabs from "@/components/dashboard/PlayersTabs";
+import PartnerRequests from "@/components/dashboard/PartnerRequests";
 import { useState, useEffect, useCallback } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import DropdownOptionsEditor from "@/components/dashboard/DropdownOptionsEditor";
@@ -821,6 +822,7 @@ const Registration = () => {
               <TabsTrigger value="addons" className="shrink-0 whitespace-nowrap">Add-ons</TabsTrigger>
               <TabsTrigger value="promos" className="shrink-0 whitespace-nowrap">Promo Codes</TabsTrigger>
               <TabsTrigger value="submissions" className="shrink-0 whitespace-nowrap">Submissions</TabsTrigger>
+              <TabsTrigger value="partners" className="shrink-0 whitespace-nowrap">Partner requests</TabsTrigger>
               <TabsTrigger value="refunds" className="shrink-0 whitespace-nowrap flex items-center gap-1">
                 <RotateCcw className="h-3.5 w-3.5" />
                 Refunds
@@ -833,6 +835,7 @@ const Registration = () => {
 
 
           {/* ── Settings Tab ── */}
+          <TabsContent value="partners"><PartnerRequests key={selectedTournament} tournamentId={selectedTournament} configure /></TabsContent>
           <TabsContent value="settings">
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} className="bg-card rounded-lg border border-border p-6 space-y-6">
               <div className="flex items-center gap-3 mb-2">

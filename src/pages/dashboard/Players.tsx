@@ -1,6 +1,7 @@
 import RegistrationRefundButton from "@/components/dashboard/RegistrationRefundButton";
 import PairingsScoringSteps from "@/components/dashboard/PairingsScoringSteps";
 import PlayersTabs from "@/components/dashboard/PlayersTabs";
+import PartnerRequests from "@/components/dashboard/PartnerRequests";
 import { paymentStatusClasses, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
 import { canMarkCashReceived, manualRegistrationPaymentMethods } from "@/lib/registrationPaymentMethods";
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -2518,6 +2519,7 @@ const Players = () => {
       </div>
 
       {/* View Toggle + Actions */}
+      {view === "roster" && selectedTournament && <PartnerRequests key={selectedTournament} tournamentId={selectedTournament} />}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div className="flex gap-1 bg-card rounded-lg border border-border p-1">
           <button

@@ -197,6 +197,13 @@
       "when": 1793118794876,
       "tag": "0027_enterprise_approval_admin_policy",
       "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "7",
+      "when": 1793397377474,
+      "tag": "0028_partner_request_holding_list",
+      "breakpoints": true
     }
   ]
 }

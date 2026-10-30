@@ -1,3 +1,9 @@
+## Partner requests and event finances
+- [x] Added opt-in partner requests for teams of 2/3/4, configured player questions, CAPTCHA-validated private holding storage, existing-provider organizer notification and Players/Registration reminders; no payment or roster entry. Existing events remain opted out.
+- [x] Selected-event finance totals/details and Enterprise reports follow URL selection; separate all-event overview and account-wide Stripe balances retained. Enterprise portfolios include existing organization tournaments without converting them.
+- [x] Thirteen isolated rules/server-flow tests passed with simulated email only; signed-in Black Mecca event switching/reload passed (Shamble $6,087.97; Championships $16,427.80; all-account $23,297.83). Partner settings load and remain off; build OK; no event/registration/payment changes, sends or publication.
+- [ ] Live partner submission/email delivery remains unverified: current ATL preview event is unpublished and opted out; tests used simulated provider/storage. No live requests or emails created, existing sender configuration unchanged.
+
 ## Admin Enterprise accounts
 - [x] Add admin-only account listing, verified-owner email approval, and linked platform tournaments without changing billing or existing events; 22 approval/navigation tests passed and build OK.
 - [x] Approved info@hbcu.golf for HBCU Golf Foundation through the signed-in admin UI; confirmed reload persistence, linked standard tournament and correct Enterprise workspace loading. Existing event classification, 5% fee and organization pricing unchanged; no sends or publication. Organizer entry link and team-login approval path added; separate owner-session browser check not performed.

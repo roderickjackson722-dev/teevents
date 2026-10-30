@@ -17,6 +17,7 @@ import { formatCents } from "@/lib/formatCurrency";
 import type { GroupFieldKey, GroupFieldRules } from "@/lib/groupFieldRules";
 import PartnerRequestForm from "@/components/PartnerRequestForm";
 import { partnerTeamSizes } from "@/lib/partnerRequests.schema";
+import { isAllowedRegistrationGroupSize } from "../../supabase/functions/_shared/groupSize";
 
 
 interface AddonRow {
@@ -543,7 +544,9 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
   };
 
   const removePlayer = (index: number) => {
-    if (players.length > 1) setPlayers((prev) => prev.filter((_, i) => i !== index));
+    if (index <= 0) return;
+    setPlayers((prev) => isAllowedRegistrationGroupSize({ max_group_size: maxGroupSize, allowed_group_sizes: allowedGroupSizes }, prev.length - 1)
+      ? prev.filter((_, i) => i !== index) : prev);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -1132,7 +1135,7 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
               index={i}
               onChange={(p) => updatePlayer(i, p)}
               errors={errors}
-              showRemove={allowGroup && i > 0}
+              showRemove={allowGroup && i > 0 && isAllowedRegistrationGroupSize({ max_group_size: maxGroupSize, allowed_group_sizes: allowedGroupSizes }, players.length - 1)}
               onRemove={() => removePlayer(i)}
               fields={fields}
               captainLabel={captainLabel}

@@ -18,4 +18,15 @@ describe("registration group size rule", () => {
     expect(isAllowedRegistrationGroupSize(solo, 1)).toBe(true);
     expect(isAllowedRegistrationGroupSize(solo, 2)).toBe(false);
   });
+  for (const size of [2, 3, 4]) {
+    it(`blocks removing a required teammate from a team of ${size}`, () => {
+      expect(isAllowedRegistrationGroupSize({ max_group_size: size, allowed_group_sizes: [size] }, size - 1)).toBe(false);
+    });
+  }
+  it("allows removing an optional teammate when smaller teams are enabled", () => {
+    expect(isAllowedRegistrationGroupSize({ max_group_size: 4, allowed_group_sizes: [1, 2, 3, 4] }, 3)).toBe(true);
+  });
+  it("does not remove into a disallowed intermediate size", () => {
+    expect(isAllowedRegistrationGroupSize({ max_group_size: 4, allowed_group_sizes: [2, 4] }, 3)).toBe(false);
+  });
 });

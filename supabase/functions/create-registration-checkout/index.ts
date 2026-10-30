@@ -66,13 +66,20 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, event_fee_paid, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at")
+      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, event_fee_paid, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, max_group_size, foursome_registration, allowed_group_sizes")
       .eq("id", tournament_id)
       .single();
 
     if (tErr || !tournament) throw new Error("Tournament not found");
     if (!tournament.registration_open || !tournament.site_published) {
       throw new Error("Registration is not open for this tournament");
+    }
+
+    // Enforce the organizer's team-size rule on the server, not just in the form.
+    const allowedSizes = allowedRegistrationGroupSizes(tournament as any);
+    if (!Array.isArray(players) || !isAllowedRegistrationGroupSize(tournament as any, players.length)) {
+      const label = allowedSizes.map((n) => (n === 1 ? "1 player" : `${n} players`)).join(" or ");
+      throw new Error(`This event requires registrations of ${label}. Please add every player on your team and try again.`);
     }
 
     const rawTitle = (tournament.public_section_titles as Record<string, unknown> | null)?.registration;

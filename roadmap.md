@@ -1,3 +1,8 @@
+## Partner requests and event finances
+- [ ] Add an opt-in partner-request holding list for team-of-2/3/4 registration, player questions, organizer email notification and dashboard reminder; no payment or roster entry for a request.
+- [ ] Scope finance totals and breakdowns to the selected tournament for organizer and Enterprise accounts, retaining a separate all-event overview.
+- [ ] Verify rules, access controls and selected-event switching without charging or emailing real golfers; preview only.
+
 ## Admin Enterprise accounts
 - [x] Add admin-only account listing, verified-owner email approval, and linked platform tournaments without changing billing or existing events; 22 approval/navigation tests passed and build OK.
 - [x] Approved info@hbcu.golf for HBCU Golf Foundation through the signed-in admin UI; confirmed reload persistence, linked standard tournament and correct Enterprise workspace loading. Existing event classification, 5% fee and organization pricing unchanged; no sends or publication. Organizer entry link and team-login approval path added; separate owner-session browser check not performed.

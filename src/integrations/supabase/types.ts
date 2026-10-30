@@ -11668,6 +11668,85 @@ export type Database = {
           },
         ]
       }
+      tournament_partner_requests: {
+        Row: {
+          created_at: string
+          custom_answers: Json
+          email: string
+          first_name: string
+          id: string
+          last_name: string
+          message: string
+          notification_status: string
+          partners_needed: number
+          phone: string
+          status: string
+          team_size: number
+          tournament_id: string
+        }
+        Insert: {
+          created_at?: string
+          custom_answers?: Json
+          email: string
+          first_name: string
+          id?: string
+          last_name: string
+          message?: string
+          notification_status?: string
+          partners_needed: number
+          phone?: string
+          status?: string
+          team_size: number
+          tournament_id: string
+        }
+        Update: {
+          created_at?: string
+          custom_answers?: Json
+          email?: string
+          first_name?: string
+          id?: string
+          last_name?: string
+          message?: string
+          notification_status?: string
+          partners_needed?: number
+          phone?: string
+          status?: string
+          team_size?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_partner_requests_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_partner_settings: {
+        Row: {
+          enabled: boolean
+          tournament_id: string
+        }
+        Insert: {
+          enabled?: boolean
+          tournament_id: string
+        }
+        Update: {
+          enabled?: boolean
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_partner_settings_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: true
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_photos: {
         Row: {
           caption: string | null

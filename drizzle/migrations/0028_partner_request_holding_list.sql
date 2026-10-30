@@ -1,0 +1,16 @@
+CREATE TABLE public.tournament_partner_settings (tournament_id uuid PRIMARY KEY REFERENCES public.tournaments(id) ON DELETE CASCADE, enabled boolean NOT NULL DEFAULT false);
+GRANT SELECT ON public.tournament_partner_settings TO anon, authenticated;
+GRANT INSERT, UPDATE, DELETE ON public.tournament_partner_settings TO authenticated;
+GRANT ALL ON public.tournament_partner_settings TO service_role;
+ALTER TABLE public.tournament_partner_settings ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Public reads partner option" ON public.tournament_partner_settings FOR SELECT USING (true);
+CREATE POLICY "Managers configure partner option" ON public.tournament_partner_settings FOR ALL TO authenticated USING (EXISTS (SELECT 1 FROM public.tournaments t WHERE t.id = tournament_id AND (public.is_org_admin_or_owner(auth.uid(), t.organization_id) OR public.has_role(auth.uid(), 'admin')))) WITH CHECK (EXISTS (SELECT 1 FROM public.tournaments t WHERE t.id = tournament_id AND (public.is_org_admin_or_owner(auth.uid(), t.organization_id) OR public.has_role(auth.uid(), 'admin'))));
+CREATE TABLE public.tournament_partner_requests (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), tournament_id uuid NOT NULL REFERENCES public.tournaments(id) ON DELETE CASCADE, first_name text NOT NULL, last_name text NOT NULL, email text NOT NULL, phone text NOT NULL DEFAULT '', team_size integer NOT NULL CHECK (team_size IN (2,3,4)), partners_needed integer NOT NULL CHECK (partners_needed BETWEEN 1 AND 3), custom_answers jsonb NOT NULL DEFAULT '{}', message text NOT NULL DEFAULT '', status text NOT NULL DEFAULT 'open' CHECK (status IN ('open','contacted','matched','closed')), notification_status text NOT NULL DEFAULT 'pending' CHECK (notification_status IN ('pending','sent','failed')), created_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT ON public.tournament_partner_requests TO authenticated;
+GRANT UPDATE (status) ON public.tournament_partner_requests TO authenticated;
+GRANT ALL ON public.tournament_partner_requests TO service_role;
+ALTER TABLE public.tournament_partner_requests ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Managers read partner requests" ON public.tournament_partner_requests FOR SELECT TO authenticated USING (EXISTS (SELECT 1 FROM public.tournaments t WHERE t.id=tournament_id AND (public.is_org_admin_or_owner(auth.uid(), t.organization_id) OR public.has_role(auth.uid(), 'admin'))));
+CREATE POLICY "Managers update partner requests" ON public.tournament_partner_requests FOR UPDATE TO authenticated USING (EXISTS (SELECT 1 FROM public.tournaments t WHERE t.id=tournament_id AND (public.is_org_admin_or_owner(auth.uid(), t.organization_id) OR public.has_role(auth.uid(), 'admin')))) WITH CHECK (EXISTS (SELECT 1 FROM public.tournaments t WHERE t.id=tournament_id AND (public.is_org_admin_or_owner(auth.uid(), t.organization_id) OR public.has_role(auth.uid(), 'admin'))));
+CREATE INDEX tournament_partner_requests_event_status ON public.tournament_partner_requests(tournament_id, status);
+CREATE UNIQUE INDEX tournament_partner_requests_active_email ON public.tournament_partner_requests(tournament_id, lower(email)) WHERE status IN ('open','contacted');

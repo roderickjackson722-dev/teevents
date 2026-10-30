@@ -1006,7 +1006,7 @@ const Finances = () => {
           })()}
           <details className="rounded-lg border border-border bg-card p-3 sm:p-4">
             <summary className="cursor-pointer text-sm font-semibold">Submission details (Detailed Records)</summary>
-            <div className="mt-4"><TransactionDetails embedded /></div>
+            <div className="mt-4"><TransactionDetails key={selectedTournament} embedded eventId={selectedTournament} /></div>
           </details>
         </TabsContent>
 

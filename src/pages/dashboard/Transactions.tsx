@@ -116,7 +116,7 @@ interface Addon {
   unit_price_cents: number;
 }
 
-const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
+const Transactions = ({ embedded = false, eventId }: { embedded?: boolean; eventId?: string } = {}) => {
   const { org } = useOrgContext();
   const [loading, setLoading] = useState(true);
   const [txs, setTxs] = useState<Tx[]>([]);
@@ -138,6 +138,7 @@ const Transactions = ({ embedded = false }: { embedded?: boolean } = {}) => {
   const [dateFilter, setDateFilter] = useState("all");
   const [search, setSearch] = useState("");
   const [missingFilter, setMissingFilter] = useState("all");
+  useEffect(() => { if (eventId !== undefined) setTournamentFilter(eventId); }, [eventId]);
 
   const fetchAll = useCallback(async () => {
     if (!org) return;

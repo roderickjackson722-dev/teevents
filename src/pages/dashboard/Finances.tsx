@@ -187,12 +187,17 @@ const Finances = () => {
 
   useEffect(() => {
     if (!org) return;
+    let active = true;
+    setTournaments([]);
+    setPlatformTransactions([]);
+    setLoading(true);
     supabase
       .from("tournaments")
       .select("id, title, registration_fee_cents")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
+        if (!active) return;
         const list = (data || []) as Tournament[];
         setTournaments(list);
         if (list.length > 0) setSelectedTournament(pickTournamentId(list, selectedTournament));
@@ -205,8 +210,10 @@ const Finances = () => {
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }) => {
+        if (!active) return;
         setPlatformTransactions((data as PlatformTransaction[]) || []);
       });
+    return () => { active = false; };
   }, [org]);
 
   const fetchData = useCallback(async () => {

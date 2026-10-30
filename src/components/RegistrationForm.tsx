@@ -1280,6 +1280,7 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
               : "Complete Registration"}
         </Button>
       </form>
+      </>}
     </div>
   );
 };

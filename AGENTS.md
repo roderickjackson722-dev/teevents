@@ -1,6 +1,8 @@
 # Project Architecture Rules
 
-- Manual Enterprise approval lives in the admin-controlled enterprise_account_approvals table, separate from organization plans and billing; resolve verified owner emails server-side and list existing platform tournaments by organization without converting them.
+- Manual Enterprise approval is separate from billing; Enterprise portfolios list all existing organization tournaments without converting them.
+- Partner requests use separate private holding storage and CAPTCHA-validated submission; never create roster entries or checkout sessions.
+- Finance cards and details use strict event filtering with URL selection; account-wide Stripe balances and all-event totals stay separate.
 - Enterprise workspace navigation is owned by `EnterpriseLayout`; keep its sidebar groups and role filtering shared across every Enterprise page so navigation and permissions stay consistent.
 - Enterprise Home rep setup uses a shared client/server request schema and an authenticated support-ticket writer; verify workspace membership or platform admin access before server-only insertion so requests cannot mutate events or spoof another organization.
 - Enterprise home-course selection stores only the library row ID in existing organization enterprise_settings; resolve it for unsaved new events only, and remove tournament context from explicit new-course-event links to protect existing events.
@@ -14,7 +16,7 @@
 - Per-Event price changed to $399 on Oct 12, 2026: events created on or after that date are stamped `flat_rate_amount_cents = 39900` at creation and check out with the tracked $399 Stripe price; every earlier event keeps the price it was quoted ($299 current cohort, $150 legacy). Same for leagues created from that date ($599 vs earlier $499), recorded from the actual paid session amount. Never re-point existing rows to the new price.
 - College survey presentation and response-copy settings live on each `college_surveys` row so every survey can be configured independently.
 - Dedicated-rep marketing badges, service sections, and comparison rows share `DedicatedRep` components; keep these presentation-only so service copy never mutates event pricing, entitlements, or rep assignments.
-- New public sales pages use explicit TanStack leaf metadata while rendering through the existing App shell so shared navigation retains its required router context.
+- Public sales pages use leaf metadata and the existing App shell to preserve navigation context.
 - Pricing and its historical plans URL render the same presentation-only Plans page through explicit leaf routes; purchase links reuse existing checkout targets so marketing cannot alter event billing.
 - Founder biography and portrait live on About through `FounderSection`; partner imagery shares `founderPartnerLogos` CDN pointers so the compact homepage wall and detailed trust sections cannot diverge.
 - Homepage and the dedicated How It Works page share `HomeHowItWorks`; scope optional homepage-only service copy through props so other pages remain unchanged. Public audience pages render through the existing App shell with explicit TanStack leaf metadata to preserve navigation context and isolate marketing from event logic.

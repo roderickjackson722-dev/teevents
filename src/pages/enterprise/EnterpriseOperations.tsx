@@ -15,6 +15,7 @@ import { Download, FileText, Loader2, Mail, Printer, Save } from "lucide-react";
 import { toast } from "sonner";
 import { emailEnterpriseInvoice } from "@/lib/enterpriseOperations.functions";
 import { buildInvoiceEmail } from "@/lib/enterpriseInvoiceEmail";
+import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 type Invoice = { id: string; invoice_number: string; billing_name: string; billing_email: string; billing_address: string; amount_cents: number; status: string; due_date: string; created_at: string };
 type EventRow = { id: string; title: string; date: string | null };
@@ -34,6 +35,9 @@ export default function EnterpriseOperations() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [eventId, setEventId] = useState("all");
+  const [contextEventId, setContextEventId] = useTournamentIdParam();
+  useEffect(() => { setEventId(contextEventId || "all"); }, [contextEventId]);
+  const changeReportEvent = (id: string) => { setEventId(id); setContextEventId(id === "all" ? "" : id); };
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [settings, setSettings] = useState({ acceptInvoicePayments: false, processingFeeHandling: "absorb" });
   const [form, setForm] = useState({ billing_name: "", billing_email: "", billing_address: "", amount: "" });
@@ -44,7 +48,7 @@ export default function EnterpriseOperations() {
     if (!org) return;
     setLoading(true);
     const [eventRes, invoiceRes, txRes] = await Promise.all([
-      (supabase.from("tournaments") as any).select("id, title, date").eq("organization_id", org.orgId).eq("is_enterprise", true).order("date", { ascending: false }),
+      (supabase.from("tournaments") as any).select("id, title, date").eq("organization_id", org.orgId).order("date", { ascending: false }),
       (supabase.from("enterprise_invoices") as any).select("*").eq("organization_id", org.orgId).order("created_at", { ascending: false }),
       (supabase.from("platform_transactions") as any).select("golfer_name, golfer_email, amount_cents, created_at, stripe_payment_intent_id, payout_method, tournament_id, status").eq("organization_id", org.orgId).order("created_at", { ascending: false }).limit(5000),
     ]);

@@ -103,7 +103,6 @@ export default function EnterpriseHome({ tournamentsOnly = false }: { tournament
       (supabase.from("tournaments") as any)
         .select("id, title, date, course_name, status, slug, scoring_format, enterprise_event_type, enterprise_settings, max_players")
         .eq("organization_id", org.orgId)
-        .eq("is_enterprise", true)
         .order("created_at", { ascending: false }),
       (supabase.from("golf_leagues") as any)
         .select("id, league_name, league_slug, start_date, end_date, publish_status, is_active")

@@ -25,7 +25,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import TransactionDetails from "./Transactions";
-import { pickTournamentId } from "@/hooks/useTournamentIdParam";
+import { pickTournamentId, useTournamentIdParam } from "@/hooks/useTournamentIdParam";
+import { eventTransactions } from "@/lib/eventFinances";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";
@@ -95,7 +96,7 @@ const Finances = () => {
   const { org } = useOrgContext();
   const { demoGuard } = useDemoMode();
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [selectedTournament, setSelectedTournament] = useState("");
+  const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [tiers, setTiers] = useState<Tier[]>([]);
   const [refundRequests, setRefundRequests] = useState<RefundRequest[]>([]);
@@ -194,7 +195,7 @@ const Finances = () => {
       .then(({ data }) => {
         const list = (data || []) as Tournament[];
         setTournaments(list);
-        if (list.length > 0) setSelectedTournament(pickTournamentId(list));
+        if (list.length > 0) setSelectedTournament(pickTournamentId(list, selectedTournament));
         setLoading(false);
       });
 
@@ -209,7 +210,7 @@ const Finances = () => {
   }, [org]);
 
   const fetchData = useCallback(async () => {
-    if (!selectedTournament) return;
+    if (!selectedTournament || !tournaments.some(t => t.id === selectedTournament)) return;
     setLoading(true);
     const [regRes, refundRes, tierRes] = await Promise.all([
       supabase
@@ -236,13 +237,15 @@ const Finances = () => {
     );
     setTiers((tierRes.data as Tier[]) || []);
     setLoading(false);
-  }, [selectedTournament]);
+  }, [selectedTournament, tournaments]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
   const selectedTournamentData = tournaments.find((t) => t.id === selectedTournament);
+  const selectedTransactions = eventTransactions(platformTransactions, selectedTournamentData?.id || "");
+  useEffect(() => { setBreakdown(null); setExpandedTxRows(new Set()); }, [selectedTournament]);
 
   const getRegistrationAmount = (reg: Registration) => {
     if (reg.tier_id) {
@@ -268,8 +271,8 @@ const Finances = () => {
     if (pm && pm !== "stripe") return true;
     return false;
   };
-  const stripeTx = platformTransactions.filter((t) => !isManualOffline(t));
-  const totalCollected = platformTransactions.reduce((sum, t) => sum + t.amount_cents, 0);
+  const stripeTx = selectedTransactions.filter((t) => !isManualOffline(t));
+  const totalCollected = selectedTransactions.reduce((sum, t) => sum + t.amount_cents, 0);
   const totalPlatformFees = stripeTx.reduce((sum, t) => sum + t.platform_fee_cents, 0);
   const totalNetToOrganizer = stripeTx.reduce((sum, t) => sum + t.net_amount_cents, 0);
 
@@ -542,15 +545,16 @@ const Finances = () => {
 
 
       {/* Revenue Summary Cards */}
+      <p className="text-sm font-semibold mb-3">Selected event: {selectedTournamentData?.title || "Select an event"}</p>
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         <motion.button
           type="button"
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
           onClick={() => setBreakdown({
             title: "Total Collected",
-            description: `All ${platformTransactions.length} transactions processed for this organization (gross amount before fees).`,
+            description: `${selectedTransactions.length} transactions for ${selectedTournamentData?.title || "this event"} (gross amount before fees).`,
             column: "amount_cents",
-            items: platformTransactions,
+            items: selectedTransactions,
           })}
           className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
         >
@@ -563,7 +567,7 @@ const Finances = () => {
             </span>
           </div>
           <p className="text-2xl font-bold text-foreground">${(totalCollected / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">{platformTransactions.length} transactions · click for details</p>
+          <p className="text-xs text-muted-foreground mt-1">{selectedTransactions.length} transactions · click for details</p>
         </motion.button>
 
         <motion.button
@@ -573,7 +577,7 @@ const Finances = () => {
             title: "Platform Fees (5%)",
             description: "5% platform fee deducted from each transaction at checkout.",
             column: "platform_fee_cents",
-            items: platformTransactions.filter((t) => t.platform_fee_cents > 0),
+            items: selectedTransactions.filter((t) => !isManualOffline(t) && t.platform_fee_cents > 0),
           })}
           className="bg-card rounded-lg border border-border p-4 text-left hover:border-primary/40 hover:shadow-sm transition-all"
         >
@@ -614,6 +618,14 @@ const Finances = () => {
       </div>
 
       {/* Stripe Balance & Payout Timing */}
+      <details className="border-y border-border py-4 mb-6">
+        <summary className="cursor-pointer font-semibold text-sm">All events overview</summary>
+        <div className="grid gap-4 sm:grid-cols-3 mt-4 text-sm">
+          <div><p className="text-muted-foreground">Total collected, all events</p><strong>${(platformTransactions.reduce((sum, t) => sum + t.amount_cents, 0) / 100).toFixed(2)}</strong></div>
+          <div><p className="text-muted-foreground">Platform fees, all events</p><strong>${(platformTransactions.filter(t => !isManualOffline(t)).reduce((sum, t) => sum + t.platform_fee_cents, 0) / 100).toFixed(2)}</strong></div>
+          <div><p className="text-muted-foreground">Net to Stripe, all events</p><strong>${(platformTransactions.filter(t => !isManualOffline(t)).reduce((sum, t) => sum + t.net_amount_cents, 0) / 100).toFixed(2)}</strong></div>
+        </div>
+      </details>
       {(() => {
         const fmt = (cents: number, currency = "usd") =>
           new Intl.NumberFormat("en-US", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
@@ -637,10 +649,10 @@ const Finances = () => {
               <div>
                 <h3 className="text-base font-display font-semibold text-foreground flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-primary" />
-                  Stripe Balance & Payout Timing
+                  Account-wide Stripe Balance & Payout Timing
                 </h3>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Live balance from your connected Stripe account. Funds appear under <em>Balances</em>, not <em>Payments</em>.
+                  All events share this connected Stripe account balance; it is not an event-specific balance. Funds appear under <em>Balances</em>, not <em>Payments</em>.
                 </p>
               </div>
               {balanceLoading && <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />}

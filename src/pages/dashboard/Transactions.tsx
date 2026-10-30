@@ -844,7 +844,7 @@ const Transactions = ({ embedded = false, eventId }: { embedded?: boolean; event
             </div>
             <div>
               <label className="text-xs text-muted-foreground mb-1 block">Tournament</label>
-              <Select value={tournamentFilter} onValueChange={setTournamentFilter}>
+              <Select value={tournamentFilter} onValueChange={setTournamentFilter} disabled={eventId !== undefined}>
                 <SelectTrigger className="w-[220px]"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All tournaments</SelectItem>

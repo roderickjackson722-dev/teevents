@@ -12,6 +12,7 @@ export function validatePartnerAnswers(fields: {id: string; label: string; is_re
   for (const f of fields) {
     const value = f.label.toLowerCase() === 'phone' ? phone : (answers[f.id] || '').trim();
     if (f.is_required && !value) throw new Error(`${f.label} is required.`);
+    if (f.is_required && f.field_type === 'checkbox' && value !== 'true') throw new Error(`${f.label} is required.`);
     if (value && f.field_type === 'number' && !Number.isFinite(Number(value))) throw new Error(`${f.label} must be a number.`);
     if (value && f.field_type === 'dropdown' && Array.isArray(f.options) && !f.options.includes(value)) throw new Error(`Choose a valid ${f.label}.`);
   }

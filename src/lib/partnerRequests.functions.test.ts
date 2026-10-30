@@ -1,3 +1,4 @@
+// @vitest-environment node
 import {beforeEach,describe,it,expect,vi} from 'vitest';
 const state = vi.hoisted(()=>({handler: undefined as undefined | ((input:{data:unknown})=>Promise<unknown>), inserts:[] as Record<string,unknown>[], updates:[] as Record<string,unknown>[], enabled:true, sends:[] as Record<string,unknown>[]}));
 vi.mock('@tanstack/react-start',()=>({createServerFn:()=>({inputValidator:()=>({handler:(fn:typeof state.handler)=>{state.handler=fn;return fn;}})})}));

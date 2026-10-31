@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendRegistrantConfirmationEmail, sendNotificationEmails, buildNotificationHtml, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
-import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
+import { notifyPlatformFallbackForConfirmedSession, assertSessionAccountForTournament } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05; // 5% platform fee
 
@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
     // With Direct Charges the session lives on the organizer's connected account.
     // Legacy sessions (pre-migration) live on the platform — try connected first, then fall back.
     let session: any;
+    let sessionAcct: string | null = acct ? String(acct) : null;
     try {
       session = acct
         ? await stripe.checkout.sessions.retrieve(session_id, undefined, { stripeAccount: acct })
@@ -96,6 +97,7 @@ Deno.serve(async (req) => {
     } catch (e) {
       if (acct) {
         session = await stripe.checkout.sessions.retrieve(session_id);
+        sessionAcct = null;
       } else {
         throw e;
       }
@@ -121,8 +123,20 @@ Deno.serve(async (req) => {
       // reloaded, revisited, or kept open in a browser tab.
       const { data: existingRegs } = await supabaseAdmin
         .from("tournament_registrations")
-        .select("id, payment_status")
+        .select("id, payment_status, tournament_id")
         .in("id", registrationIds);
+
+      // Bind the paid session to the records it names: every registration must
+      // belong to the session's tournament, and a connected-account session must
+      // come from that tournament's organizer account.
+      const sessionTournamentId = session.metadata?.tournament_id;
+      if (
+        !existingRegs || existingRegs.length !== registrationIds.length ||
+        (sessionTournamentId && existingRegs.some((r: any) => r.tournament_id !== sessionTournamentId))
+      ) {
+        throw new Error("Payment could not be verified");
+      }
+      await assertSessionAccountForTournament(supabaseAdmin, sessionAcct, existingRegs[0].tournament_id);
 
       const allAlreadyPaid = existingRegs && existingRegs.length > 0
         && existingRegs.every((r: any) => r.payment_status === "paid");

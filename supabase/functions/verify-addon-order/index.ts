@@ -1,7 +1,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml } from "../_shared/notify.ts";
-import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
+import { notifyPlatformFallbackForConfirmedSession, assertSessionAccountForTournament } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -59,6 +59,7 @@ Deno.serve(async (req) => {
       .eq("stripe_session_id", session_id)
       .maybeSingle();
     if (!order) throw new Error("Order not found");
+    await assertSessionAccountForTournament(supabaseAdmin, acct ? String(acct) : null, order.tournament_id);
 
     if (session.payment_status !== "paid") {
       return new Response(JSON.stringify({ verified: false }), {

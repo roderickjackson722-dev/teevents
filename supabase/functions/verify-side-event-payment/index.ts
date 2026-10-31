@@ -4,7 +4,7 @@
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
+import { notifyPlatformFallbackForConfirmedSession, assertSessionAccountForTournament } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05;
 
@@ -32,12 +32,13 @@ Deno.serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
     let session: any;
+    let sessionAcct: string | null = acct ? String(acct) : null;
     try {
       session = acct
         ? await stripe.checkout.sessions.retrieve(session_id, undefined, { stripeAccount: acct })
         : await stripe.checkout.sessions.retrieve(session_id);
     } catch (e) {
-      if (acct) session = await stripe.checkout.sessions.retrieve(session_id);
+      if (acct) { session = await stripe.checkout.sessions.retrieve(session_id); sessionAcct = null; }
       else throw e;
     }
     if (session.payment_status !== "paid") {
@@ -59,6 +60,12 @@ Deno.serve(async (req) => {
       .select("id, payment_status, attendee_email, attendee_name, quantity, ticket_code, side_event_id, tournament_id")
       .eq("id", ticketId)
       .single();
+    if (!existing) throw new Error("Payment could not be verified");
+    if (session.metadata?.tournament_id && session.metadata.tournament_id !== (existing as any).tournament_id) {
+      throw new Error("Payment could not be verified");
+    }
+    await assertSessionAccountForTournament(supabaseAdmin, sessionAcct, (existing as any).tournament_id);
+
 
     if (existing && (existing as any).payment_status === "paid") {
       return new Response(

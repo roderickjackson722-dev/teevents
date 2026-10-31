@@ -1,3 +1,4 @@
+import { safeAppOrigin, safeReturnPath } from "@/lib/safeOrigin";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -54,8 +55,8 @@ export const createDigitalSponsorCheckout = createServerFn({ method: "POST" })
     const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" as any });
 
-    const origin = data.origin || "https://teevents.golf";
-    const returnPath = data.returnPath || "/dashboard/sponsorship-tools";
+    const origin = safeAppOrigin(data.origin);
+    const returnPath = safeReturnPath(data.returnPath, "/dashboard/sponsorship-tools");
     const amount = DIGITAL_SPONSOR_AMOUNT_CENTS;
 
     const session = await stripe.checkout.sessions.create({

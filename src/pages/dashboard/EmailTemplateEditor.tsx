@@ -32,6 +32,12 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
 import ReceiptEmailSender, { RECEIPT_TYPE_LABELS, type ReceiptType } from "@/components/dashboard/ReceiptEmailSender";
 import ScheduledEmailCard from "@/components/dashboard/ScheduledEmailCard";
+import DOMPurify from "dompurify";
+
+// Email previews keep inline styles/layout but strip scripts and event handlers.
+const DOMPURIFY_EMAIL_OPTS = { ADD_ATTR: ["target"] };
+const sanitizePreviewHtml = (html: string, _opts?: unknown) =>
+  typeof window === "undefined" || !DOMPurify.isSupported ? "" : DOMPurify.sanitize(html, DOMPURIFY_EMAIL_OPTS);
 
 interface EmailConfig {
   subject: string;
@@ -1837,14 +1843,14 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: brandHtml(renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+              __html: sanitizePreviewHtml(brandHtml(renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
                 includePlayerHub: templateKind === "confirmation",
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,
                 showActionButtons: templateKind === "day_before",
                 sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
 
-              }))
+              })))
             }} />
 
           </div>
@@ -2144,7 +2150,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               return (
                 <div className="space-y-2">
                   <p><span className="font-medium text-foreground">Subject:</span> {out.subject}</p>
-                  <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border" dangerouslySetInnerHTML={{ __html: out.html }} />
+                  <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border" dangerouslySetInnerHTML={{ __html: sanitizePreviewHtml(out.html) }} />
                 </div>
               );
             }}

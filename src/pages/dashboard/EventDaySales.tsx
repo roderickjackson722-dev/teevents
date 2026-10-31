@@ -168,6 +168,9 @@ const EventDaySales = () => {
   const publicSalesUrl = `${window.location.origin}/t/${slug}#event-day-sales`;
   const itemUrl = (id: string) => `${publicSalesUrl}?item=${id}`;
 
+  const escapeHtml = (v: unknown) =>
+    String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
   const printQrSheet = () => {
     const qrItems = items.filter((i) => i.is_active && i.show_qr_code);
     if (qrItems.length === 0) {
@@ -192,10 +195,10 @@ const EventDaySales = () => {
         .map(
           (i) => `<div class="card">
             <img src="https://api.qrserver.com/v1/create-qr-code/?size=240x240&data=${encodeURIComponent(itemUrl(i.id))}" alt="QR" />
-            <h3>${i.item_name}</h3>
+            <h3>${escapeHtml(i.item_name)}</h3>
             <div class="price">${fmt(i.price_cents)}</div>
-            ${i.description ? `<div class="desc">${i.description}</div>` : ""}
-            <div class="desc" style="margin-top:8px;word-break:break-all;">${itemUrl(i.id)}</div>
+            ${i.description ? `<div class="desc">${escapeHtml(i.description)}</div>` : ""}
+            <div class="desc" style="margin-top:8px;word-break:break-all;">${escapeHtml(itemUrl(i.id))}</div>
           </div>`
         )
         .join("")}

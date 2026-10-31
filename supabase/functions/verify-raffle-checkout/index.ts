@@ -1,7 +1,7 @@
 // Verify a raffle Stripe Checkout session and issue ticket numbers.
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { notifyPlatformFallbackForConfirmedSession } from "../_shared/connectRouting.ts";
+import { notifyPlatformFallbackForConfirmedSession, assertSessionAccountForTournament } from "../_shared/connectRouting.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -44,6 +44,12 @@ Deno.serve(async (req) => {
     const raffleId = m.raffle_id;
     const qty = Math.max(1, parseInt(m.quantity || "1", 10));
     if (!raffleId) throw new Error("Missing raffle_id in session metadata.");
+
+    // The session's connected account must belong to the raffle's organizer.
+    const { data: raffleRow } = await supabaseAdmin
+      .from("raffles").select("tournament_id").eq("id", raffleId).maybeSingle();
+    if (!raffleRow) throw new Error("Payment could not be verified");
+    await assertSessionAccountForTournament(supabaseAdmin, String(stripe_account_id), (raffleRow as any).tournament_id);
 
     // Allocate ticket numbers from current max + 1
     const { data: lastTicket } = await supabaseAdmin

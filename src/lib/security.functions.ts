@@ -13,7 +13,8 @@ export const recordSecurityEvent = createServerFn({ method: "POST" })
     userId?: string | null;
     details?: Record<string, unknown>;
   }) => input)
-  .handler(async ({ data }) => {
+  .handler(async ({ data: input }) => {
+    let data = input;
     const {
       getAdminClient, geoLookup, clientIpFromHeaders, logActivity, createFlag,
       ALLOWED_ACTION_TYPES,
@@ -27,8 +28,31 @@ export const recordSecurityEvent = createServerFn({ method: "POST" })
     const request = getRequest();
     const ip = clientIpFromHeaders(request.headers);
     const userAgent = request.headers.get("user-agent");
-    const email = (data.userEmail || "").trim().toLowerCase() || null;
     const admin = await getAdminClient();
+
+    // Identity comes only from a verified session token, never from the caller.
+    let verifiedUserId: string | null = null;
+    let verifiedEmail: string | null = null;
+    const authHeader = request.headers.get("authorization") || "";
+    const token = authHeader.toLowerCase().startsWith("bearer ") ? authHeader.slice(7).trim() : "";
+    if (token) {
+      try {
+        const { data: u } = await admin.auth.getUser(token);
+        if (u?.user) {
+          verifiedUserId = u.user.id;
+          verifiedEmail = (u.user.email || "").toLowerCase() || null;
+        }
+      } catch { /* treat as anonymous */ }
+    }
+    const isVerified = !!verifiedUserId;
+    // Without a verified session only pre-sign-in events may be recorded.
+    if (!isVerified && actionType !== "login_failed" && actionType !== "signup") {
+      return { allow: true, message: null as string | null };
+    }
+    const email = isVerified
+      ? verifiedEmail
+      : (String(data.userEmail || "").trim().toLowerCase().slice(0, 254) || null);
+    data = { ...data, userId: verifiedUserId, details: isVerified ? data.details : {} };
     const geo = await geoLookup(ip);
 
     await logActivity(admin, {
@@ -61,8 +85,9 @@ export const recordSecurityEvent = createServerFn({ method: "POST" })
       });
     }
 
-    // 2. Suspension check
-    if (allow && email) {
+    // 2. Suspension check (only for the verified account itself, so the
+    // response never reveals another person's suspension status)
+    if (allow && isVerified && email) {
       const { data: susp } = await admin
         .from("security_suspensions")
         .select("id, is_active, expires_at")

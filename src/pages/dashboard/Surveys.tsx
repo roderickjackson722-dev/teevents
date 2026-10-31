@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -100,7 +101,7 @@ export default function Surveys() {
   const exportEarlySignups = () => {
     if (!earlySignups || earlySignups.length === 0) return;
     const rows = [["Email", "Name", "Source", "Date"], ...earlySignups.map((s: any) => [s.email, s.name || "", s.source || "", new Date(s.created_at).toLocaleString()])];
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = rows.map(r => r.map(csvCell).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `early-signups-${selectedTournament}.csv`; a.click();

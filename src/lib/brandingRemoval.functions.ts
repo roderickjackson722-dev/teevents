@@ -1,3 +1,4 @@
+import { safeAppOrigin, safeReturnPath } from "@/lib/safeOrigin";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -31,7 +32,7 @@ export const createBrandingRemovalCheckout = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!membership) throw new Error("Not authorized for this tournament");
 
-    const origin = (data.origin || "https://www.teevents.golf").replace(/\/$/, "");
+    const origin = safeAppOrigin(data.origin);
     // Organizers can buy from the Leaderboard Branding card or the Upgrade page —
     // send them back to whichever surface they started from.
     const rawReturn = typeof data.returnPath === "string" ? data.returnPath : "";

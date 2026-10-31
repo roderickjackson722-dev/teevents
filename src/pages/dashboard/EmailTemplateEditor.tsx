@@ -32,6 +32,10 @@ import { RichTextEditor } from "@/components/ui/rich-text-editor";
 import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
 import ReceiptEmailSender, { RECEIPT_TYPE_LABELS, type ReceiptType } from "@/components/dashboard/ReceiptEmailSender";
 import ScheduledEmailCard from "@/components/dashboard/ScheduledEmailCard";
+import DOMPurify from "dompurify";
+
+// Email previews keep inline styles/layout but strip scripts and event handlers.
+const DOMPURIFY_EMAIL_OPTS = { WHOLE_DOCUMENT: false, ADD_ATTR: ["target"] };
 
 interface EmailConfig {
   subject: string;
@@ -1844,7 +1848,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
                 showActionButtons: templateKind === "day_before",
                 sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
 
-              }))
+              }), DOMPURIFY_EMAIL_OPTS)
             }} />
 
           </div>
@@ -2144,7 +2148,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               return (
                 <div className="space-y-2">
                   <p><span className="font-medium text-foreground">Subject:</span> {out.subject}</p>
-                  <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border" dangerouslySetInnerHTML={{ __html: out.html }} />
+                  <div className="mx-auto max-w-[600px] overflow-hidden rounded-lg border" dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(out.html, DOMPURIFY_EMAIL_OPTS) }} />
                 </div>
               );
             }}

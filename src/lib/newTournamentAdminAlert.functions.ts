@@ -34,7 +34,17 @@ export const notifyAdminNewTournament = createServerFn({ method: "POST" })
       _user_id: userId,
       _org_id: (t as any).organization_id,
     });
-    if (!isMember) return { sent: false };
+    let allowed = !!isMember;
+    if (!allowed) {
+      const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: userId, _role: "admin" });
+      allowed = !!isAdmin;
+    }
+    if (!allowed) {
+      const { data: owned } = await supabaseAdmin
+        .from("organizations").select("id").eq("id", (t as any).organization_id).eq("owner_id", userId).maybeSingle();
+      allowed = !!owned;
+    }
+    if (!allowed) return { sent: false };
 
     const { data: org } = await supabaseAdmin
       .from("organizations")

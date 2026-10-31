@@ -336,3 +336,28 @@ export async function logRoutingDecision(
     notes: params.notes ?? null,
   });
 }
+
+/**
+ * Security guard for client-triggered payment confirmations.
+ * When a Checkout session was retrieved from a connected account, that account
+ * MUST be the connected account of the organization owning the tournament the
+ * paid record belongs to. Otherwise someone could create their own "paid"
+ * session on a different account and use it to mark other records as paid.
+ * Platform sessions (sessionAcct null) are only created by our own server.
+ */
+export async function assertSessionAccountForTournament(
+  supabaseAdmin: any,
+  sessionAcct: string | null | undefined,
+  tournamentId: string | null | undefined,
+): Promise<void> {
+  if (!sessionAcct) return;
+  if (!tournamentId) throw new Error("Payment could not be verified");
+  const { data: t } = await supabaseAdmin
+    .from("tournaments").select("organization_id").eq("id", tournamentId).maybeSingle();
+  if (!t?.organization_id) throw new Error("Payment could not be verified");
+  const { data: org } = await supabaseAdmin
+    .from("organizations").select("stripe_account_id").eq("id", t.organization_id).maybeSingle();
+  if (!org?.stripe_account_id || org.stripe_account_id !== sessionAcct) {
+    throw new Error("Payment could not be verified");
+  }
+}

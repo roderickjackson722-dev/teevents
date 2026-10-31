@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { normalizePaymentStatus, paymentStatusBadgeVariant, paymentStatusIcon, paymentStatusLabel } from "@/lib/transactionStatus";
 import { useEffect, useState, useMemo, Fragment, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -582,7 +583,7 @@ const Transactions = ({ embedded = false, eventId }: { embedded?: boolean; event
     }
 
     const csv = [headers, ...rows]
-      .map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(","))
+      .map(r => r.map(csvCell).join(","))
       .join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const url = URL.createObjectURL(blob);

@@ -5,6 +5,7 @@
  */
 export function neutralizeCsvFormula(value: unknown): string {
   const s = String(value ?? "");
+  if (/^-?\d+(\.\d+)?$/.test(s)) return s; // plain numbers stay numbers
   return /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
 }
 

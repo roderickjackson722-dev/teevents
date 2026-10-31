@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import RegistrationRefundButton from "@/components/dashboard/RegistrationRefundButton";
 import PairingsScoringSteps from "@/components/dashboard/PairingsScoringSteps";
 import PlayersTabs from "@/components/dashboard/PlayersTabs";
@@ -852,7 +853,7 @@ const Players = () => {
       players.forEach((p) => rows.push(rowFor(p)));
     }
 
-    const csv = rows.map((r) => r.map((c) => `"${String(c ?? "").replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = rows.map((r) => r.map(csvCell).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

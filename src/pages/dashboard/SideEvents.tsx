@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -61,7 +62,7 @@ function exportTicketsCsv(tickets: any[], events: { id: string; name: string }[]
   const eventName = (id: string) => events.find((e) => e.id === id)?.name || "";
   const escape = (v: any) => {
     const s = v == null ? "" : String(v);
-    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    return csvCell(s);
   };
   const headers = ["Event", "Attendee Name", "Email", "Phone", "Quantity", "Status", "Ticket Code", "Checked In", "Purchased At"];
   const rows = tickets.map((t) => [

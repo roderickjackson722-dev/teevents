@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Plus, Copy, ExternalLink, Trash2, Pencil, Download, Eye, ArrowUp, ArrowDown } from "lucide-react";
@@ -440,7 +441,7 @@ function SurveyEditorDialog({ open, onOpenChange, survey, onSaved }: { open: boo
 
 function csvEscape(v: any) {
   const s = String(v ?? "");
-  return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  return csvCell(s);
 }
 
 function ResponsesDialog({ survey, onOpenChange }: { survey: Survey | null; onOpenChange: (o: boolean) => void }) {

@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Download, Search, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
@@ -141,7 +142,7 @@ const RegistrationSubmissions = ({ tournamentId, fields }: Props) => {
 
   const exportCsv = () => {
     const headers = ["Submitted", "Name", "Email", "Payment", ...questionCols.map((f) => f.label)];
-    const escape = (s: string) => `"${(s || "").replace(/"/g, '""')}"`;
+    const escape = (s: string) => csvCell(s || "");
     const lines = [headers.map(escape).join(",")];
     filtered.forEach((r) => {
       const row = [

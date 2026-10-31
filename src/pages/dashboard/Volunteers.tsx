@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useState } from "react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -202,7 +203,7 @@ export default function Volunteers() {
       ];
     });
     const csv = [headers, ...rows]
-      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .map((r) => r.map(csvCell).join(","))
       .join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8;" }));
     const a = document.createElement("a");

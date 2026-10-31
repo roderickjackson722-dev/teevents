@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
@@ -212,7 +213,7 @@ export default function WaitlistManagement() {
       e.deposit_paid ? `$${(e.deposit_amount / 100).toFixed(2)}` : "No",
       new Date(e.created_at).toLocaleDateString(),
     ]);
-    const csv = [headers, ...rows].map((r) => r.map((c) => `"${c}"`).join(",")).join("\n");
+    const csv = [headers, ...rows].map((r) => r.map(csvCell).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");

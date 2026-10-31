@@ -1837,7 +1837,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               Live preview — updates as you edit design and content
             </div>
             <div className="max-w-[600px] mx-auto shadow-lg rounded-lg overflow-hidden border" dangerouslySetInnerHTML={{
-              __html: brandHtml(renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+              __html: DOMPurify.sanitize(brandHtml(renderEmailHtml(previewConfig, previewVars, config.header_title || TEMPLATE_HEADERS[templateKind], {
                 includePlayerHub: templateKind === "confirmation",
                 addons: templateKind === "day_before" ? addons : [],
                 addonBaseUrl: previewVars.event_homepage,

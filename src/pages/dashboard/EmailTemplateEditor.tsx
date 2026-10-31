@@ -1850,7 +1850,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
                 showActionButtons: templateKind === "day_before",
                 sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
 
-              }), DOMPURIFY_EMAIL_OPTS)
+              })))
             }} />
 
           </div>

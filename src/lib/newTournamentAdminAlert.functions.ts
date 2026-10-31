@@ -29,6 +29,13 @@ export const notifyAdminNewTournament = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!t) return { sent: false };
 
+    // Only a member of the tournament's own organization may trigger this alert.
+    const { data: isMember } = await supabaseAdmin.rpc("is_org_member", {
+      _user_id: userId,
+      _org_id: (t as any).organization_id,
+    });
+    if (!isMember) return { sent: false };
+
     const { data: org } = await supabaseAdmin
       .from("organizations")
       .select("name, contact_email")

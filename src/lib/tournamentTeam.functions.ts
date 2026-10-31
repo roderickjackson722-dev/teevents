@@ -16,6 +16,10 @@ export const listTournamentTeam = createServerFn({ method: "POST" })
       _user_id: userId,
       _tournament_id: data.tournamentId,
     });
+    // Only people who can manage this tournament's team may list its members.
+    if (!canManage) {
+      return { canManage: false, members: [], invitations: [] };
+    }
 
     const { data: roles } = await supabaseAdmin
       .from("tournament_roles")

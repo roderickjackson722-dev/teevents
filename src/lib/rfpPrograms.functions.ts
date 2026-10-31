@@ -1,3 +1,4 @@
+import { safeAppOrigin, safeReturnPath } from "@/lib/safeOrigin";
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
@@ -510,8 +511,8 @@ export const submitRfpRegistration = createServerFn({ method: "POST" })
       "line_items[0][price_data][product_data][name]": `${season.name} registration`,
       "line_items[0][quantity]": "1",
       customer_email: data.participant_email,
-      success_url: `${data.origin}/rfp/register/${data.slug}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${data.origin}/rfp/register/${data.slug}?canceled=1`,
+      success_url: `${safeAppOrigin(data.origin)}/rfp/register/${data.slug}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${safeAppOrigin(data.origin)}/rfp/register/${data.slug}?canceled=1`,
       "metadata[rfp_registration_id]": inserted.id,
     });
 

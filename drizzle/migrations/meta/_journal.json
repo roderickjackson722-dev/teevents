@@ -211,6 +211,13 @@
       "when": 1793551720449,
       "tag": "0029_custom_domain_renewal",
       "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "7",
+      "when": 1793551825893,
+      "tag": "0030_internal_cron_tokens",
+      "breakpoints": true
     }
   ]
 }

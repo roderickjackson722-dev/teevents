@@ -29,7 +29,7 @@ export type DomainEmailInput = {
 };
 
 export function renewalLink(tournamentId: string) {
-  return `${SITE}/dashboard/tournaments/${encodeURIComponent(tournamentId)}/site?renew_domain=1`;
+  return `${SITE}/dashboard/tournaments/${encodeURIComponent(tournamentId)}/site-builder?renew_domain=1`;
 }
 
 export function buildDomainRenewalNotice(o: DomainEmailInput) {

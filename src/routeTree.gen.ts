@@ -64,6 +64,7 @@ import { Route as ApiPublicHooksCheckTournamentLinksRouteImport } from './routes
 import { Route as ApiPublicHooksHandicapDailySyncRouteImport } from './routes/api/public/hooks/handicap-daily-sync'
 import { Route as ApiPublicHooksLeadMagnetFollowupsRouteImport } from './routes/api/public/hooks/lead-magnet-followups'
 import { Route as ApiPublicHooksPlatformHealthMonitorRouteImport } from './routes/api/public/hooks/platform-health-monitor'
+import { Route as ApiPublicHooksProcessDomainRenewalsRouteImport } from './routes/api/public/hooks/process-domain-renewals'
 import { Route as ApiPublicHooksProcessLeagueRenewalsRouteImport } from './routes/api/public/hooks/process-league-renewals'
 import { Route as ApiPublicHooksProcessScheduledEmailsRouteImport } from './routes/api/public/hooks/process-scheduled-emails'
 import { Route as ApiPublicHooksTournamentPageCanaryRouteImport } from './routes/api/public/hooks/tournament-page-canary'
@@ -360,6 +361,12 @@ const ApiPublicHooksPlatformHealthMonitorRoute =
     path: '/api/public/hooks/platform-health-monitor',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksProcessDomainRenewalsRoute =
+  ApiPublicHooksProcessDomainRenewalsRouteImport.update({
+    id: '/api/public/hooks/process-domain-renewals',
+    path: '/api/public/hooks/process-domain-renewals',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHooksProcessLeagueRenewalsRoute =
   ApiPublicHooksProcessLeagueRenewalsRouteImport.update({
     id: '/api/public/hooks/process-league-renewals',
@@ -441,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/handicap-daily-sync': typeof ApiPublicHooksHandicapDailySyncRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
+  '/api/public/hooks/process-domain-renewals': typeof ApiPublicHooksProcessDomainRenewalsRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
@@ -502,6 +510,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/handicap-daily-sync': typeof ApiPublicHooksHandicapDailySyncRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
+  '/api/public/hooks/process-domain-renewals': typeof ApiPublicHooksProcessDomainRenewalsRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
@@ -564,6 +573,7 @@ export interface FileRoutesById {
   '/api/public/hooks/handicap-daily-sync': typeof ApiPublicHooksHandicapDailySyncRoute
   '/api/public/hooks/lead-magnet-followups': typeof ApiPublicHooksLeadMagnetFollowupsRoute
   '/api/public/hooks/platform-health-monitor': typeof ApiPublicHooksPlatformHealthMonitorRoute
+  '/api/public/hooks/process-domain-renewals': typeof ApiPublicHooksProcessDomainRenewalsRoute
   '/api/public/hooks/process-league-renewals': typeof ApiPublicHooksProcessLeagueRenewalsRoute
   '/api/public/hooks/process-scheduled-emails': typeof ApiPublicHooksProcessScheduledEmailsRoute
   '/api/public/hooks/tournament-page-canary': typeof ApiPublicHooksTournamentPageCanaryRoute
@@ -627,6 +637,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/handicap-daily-sync'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
+    | '/api/public/hooks/process-domain-renewals'
     | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
@@ -688,6 +699,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/handicap-daily-sync'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
+    | '/api/public/hooks/process-domain-renewals'
     | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
@@ -749,6 +761,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/handicap-daily-sync'
     | '/api/public/hooks/lead-magnet-followups'
     | '/api/public/hooks/platform-health-monitor'
+    | '/api/public/hooks/process-domain-renewals'
     | '/api/public/hooks/process-league-renewals'
     | '/api/public/hooks/process-scheduled-emails'
     | '/api/public/hooks/tournament-page-canary'
@@ -810,6 +823,7 @@ export interface RootRouteChildren {
   ApiPublicHooksHandicapDailySyncRoute: typeof ApiPublicHooksHandicapDailySyncRoute
   ApiPublicHooksLeadMagnetFollowupsRoute: typeof ApiPublicHooksLeadMagnetFollowupsRoute
   ApiPublicHooksPlatformHealthMonitorRoute: typeof ApiPublicHooksPlatformHealthMonitorRoute
+  ApiPublicHooksProcessDomainRenewalsRoute: typeof ApiPublicHooksProcessDomainRenewalsRoute
   ApiPublicHooksProcessLeagueRenewalsRoute: typeof ApiPublicHooksProcessLeagueRenewalsRoute
   ApiPublicHooksProcessScheduledEmailsRoute: typeof ApiPublicHooksProcessScheduledEmailsRoute
   ApiPublicHooksTournamentPageCanaryRoute: typeof ApiPublicHooksTournamentPageCanaryRoute
@@ -1203,6 +1217,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksPlatformHealthMonitorRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/process-domain-renewals': {
+      id: '/api/public/hooks/process-domain-renewals'
+      path: '/api/public/hooks/process-domain-renewals'
+      fullPath: '/api/public/hooks/process-domain-renewals'
+      preLoaderRoute: typeof ApiPublicHooksProcessDomainRenewalsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/process-league-renewals': {
       id: '/api/public/hooks/process-league-renewals'
       path: '/api/public/hooks/process-league-renewals'
@@ -1305,6 +1326,8 @@ const rootRouteChildren: RootRouteChildren = {
     ApiPublicHooksLeadMagnetFollowupsRoute,
   ApiPublicHooksPlatformHealthMonitorRoute:
     ApiPublicHooksPlatformHealthMonitorRoute,
+  ApiPublicHooksProcessDomainRenewalsRoute:
+    ApiPublicHooksProcessDomainRenewalsRoute,
   ApiPublicHooksProcessLeagueRenewalsRoute:
     ApiPublicHooksProcessLeagueRenewalsRoute,
   ApiPublicHooksProcessScheduledEmailsRoute:

@@ -20,6 +20,7 @@ const PRICES: Record<string, { name: string; cents: number }> = {
   auction_raffle: { name: "Auction Dashboard", cents: 9900 },
   custom_event_page: { name: "Full-Service Page Build Out", cents: 9900 },
   custom_domain: { name: "Custom Domain", cents: 9900 },
+  custom_domain_renewal: { name: "Custom Domain Renewal (1 year)", cents: 9900 },
   college_scoring: { name: "College Golf Scoring", cents: 19900 },
   sms_100: { name: "SMS Blasts – 100 Text Messages", cents: 2900 },
   sms_unlimited: { name: "SMS Blasts – Unlimited Text Messages", cents: 9900 },

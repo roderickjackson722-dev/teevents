@@ -13089,6 +13089,11 @@ export type Database = {
           created_at: string
           created_by_admin_id: string | null
           custom_domain: string | null
+          custom_domain_expires_at: string | null
+          custom_domain_notice1_sent_at: string | null
+          custom_domain_notice2_sent_at: string | null
+          custom_domain_renewal_session_id: string | null
+          custom_domain_renewed_at: string | null
           custom_org_sections: Json
           custom_slug: string | null
           date: string | null
@@ -13455,6 +13460,11 @@ export type Database = {
           created_at?: string
           created_by_admin_id?: string | null
           custom_domain?: string | null
+          custom_domain_expires_at?: string | null
+          custom_domain_notice1_sent_at?: string | null
+          custom_domain_notice2_sent_at?: string | null
+          custom_domain_renewal_session_id?: string | null
+          custom_domain_renewed_at?: string | null
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null
@@ -13821,6 +13831,11 @@ export type Database = {
           created_at?: string
           created_by_admin_id?: string | null
           custom_domain?: string | null
+          custom_domain_expires_at?: string | null
+          custom_domain_notice1_sent_at?: string | null
+          custom_domain_notice2_sent_at?: string | null
+          custom_domain_renewal_session_id?: string | null
+          custom_domain_renewed_at?: string | null
           custom_org_sections?: Json
           custom_slug?: string | null
           date?: string | null

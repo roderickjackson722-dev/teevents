@@ -46,7 +46,7 @@ serve(async (req) => {
 
     const current = (existing?.paid_features as Record<string, boolean>) || {};
     const next = { ...current };
-    for (const a of addons) next[a] = true;
+    for (const a of addons) if (a !== "custom_domain_renewal") next[a] = true;
 
     // Legacy bundle purchases unlock everything
     if (next["bundle"]) {
@@ -86,6 +86,33 @@ serve(async (req) => {
       if ((cur as any)?.sms_plan !== "unlimited") {
         update["sms_plan"] = "credits";
         update["sms_credits_limit"] = ((cur as any)?.sms_credits_limit ?? 0) + 100;
+      }
+    }
+
+    // Custom domain renewal: extend the expiry one year (once per paid session).
+    // Mirrors src/lib/domainRenewal.ts renewedExpiryMs.
+    if (addons.includes("custom_domain_renewal")) {
+      const { data: d } = await supabaseAdmin
+        .from("tournaments")
+        .select("date, end_date, custom_domain_expires_at, custom_domain_renewal_session_id")
+        .eq("id", tournamentId)
+        .maybeSingle();
+      if ((d as any)?.custom_domain_renewal_session_id !== session_id) {
+        const DAY = 86400000;
+        const toMs = (v: string | null | undefined) => {
+          if (!v) return null;
+          const iso = /^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T23:59:59Z` : v;
+          const ms = new Date(iso).getTime();
+          return Number.isNaN(ms) ? null : ms;
+        };
+        const now = Date.now();
+        const endMs = toMs((d as any)?.end_date || (d as any)?.date);
+        const current = toMs((d as any)?.custom_domain_expires_at) ?? (endMs != null ? endMs + 60 * DAY : now);
+        update["custom_domain_expires_at"] = new Date(Math.max(current, now) + 365 * DAY).toISOString();
+        update["custom_domain_renewed_at"] = new Date(now).toISOString();
+        update["custom_domain_renewal_session_id"] = session_id;
+        update["custom_domain_notice1_sent_at"] = null;
+        update["custom_domain_notice2_sent_at"] = null;
       }
     }
 

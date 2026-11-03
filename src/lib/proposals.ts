@@ -12,7 +12,7 @@ export const templates: Record<string, Record<string,string>> = {
     "Cancellation": "Plan purchases are non refundable on cancellation. If a golfer registration is refunded, the 5 percent platform fee stays with TeeVents. TeeVents does not issue refunds directly to golfers. Refunds to golfers are at the organizer discretion, and are issued by the organizer."
   },
   "Per Event": {
-    "Price": "$399 per event, label MOST POPULAR",
+    "Price": "$399 per event — MOST POPULAR",
     "Platform fee": "0 percent TeeVents platform fee",
     "Includes": "Live Leaderboard and Mobile Scoring included, unlimited manual entries, dedicated rep, event page built for you, live in 7 days or less",
     "Scope": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking",
@@ -21,7 +21,7 @@ export const templates: Record<string, Record<string,string>> = {
   },
   "Per League": {
     "Price": "$599 per league",
-    "Platform fee": "Editable line, do not prefill a platform fee percentage for Per League",
+    "Platform fee": "",
     "Includes": "Core platform tools for league play, dedicated rep",
     "Scope": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking, for league play",
     "Payment schedule": "$599 per league. Stripe processing is separate.",
@@ -29,7 +29,7 @@ export const templates: Record<string, Record<string,string>> = {
   },
   "Enterprise": {
     "Price": "$2,999 per year, for 10 or more events",
-    "Platform fee": "0 percent TeeVents platform fee, editable line",
+    "Platform fee": "0 percent TeeVents platform fee",
     "Includes": "Annual plan for golf courses, whole calendar in one place, dedicated rep",
     "Scope": "Branded event pages, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking, for the whole course calendar",
     "Payment schedule": "$2,999 per year. Stripe processing is separate.",
@@ -46,14 +46,15 @@ export const templates: Record<string, Record<string,string>> = {
     "Cancellation": "If the event cancels, a work fee applies for work already done: $1,500 after course negotiation and platform build, $3,000 after registration launch and sponsor packet, and the full $5,000 within 30 days of the event. If the event postpones once to a new date, the fee moves with it at no extra charge."
   },
   "Full Service Planning": {
-    "Price": "Starting at $5,000 per event, plus travel quoted separately, editable line",
-    "Platform fee": "Editable line, starting with: Platform stays No Cost to Start. Players pay the 5 percent platform fee at checkout. Stripe processing is separate.",
-    "Includes": "Dedicated manager from agreement through event day, editable line for minimum field and lead time",
-    "Scope": "Same scope as Hybrid Managed, editable: Branded TeeVents event page, registration, and sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers, pairings, check in setup, and live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
-    "Group handles, editable": "Recruiting players, selling sponsorships, paying course, food, awards, and vendor costs directly, providing logo, tournament details, and one contact who can approve decisions",
-    "Limits, editable": "TeeVents negotiates on your behalf, but does not pay for course, food, awards, or vendor costs. TeeVents does not guarantee a player count, sponsorship dollars, or profit.",
-    "Payment schedule, editable line, starting with the Hybrid Managed schedule, so you can change it per client": "$0 due at signing. $1,875 is due when $3,750 in registrations and sponsorships has been collected through TeeVents. Remaining $3,125 is due 7 days before event day. Only collections through TeeVents count toward the trigger. The organizer is liable for the full $5,000, even if proceeds are low.",
-    "Cancellation, editable line, starting with": "If the event cancels, a work fee applies for work already done: $1,500 after course negotiation and platform build, $3,000 after registration launch and sponsor packet, and the full $5,000 within 30 days of the event. If the event postpones once to a new date, the fee moves with it at no extra charge."
+    "Price": "Starting at $5,000 per event, plus travel quoted separately",
+    "Platform fee": "Platform stays No Cost to Start. Players pay the 5 percent platform fee at checkout. Stripe processing is separate.",
+    "Includes": "Dedicated manager from agreement through event day",
+    "Minimum field and lead time": "",
+    "Scope": "Branded TeeVents event page, registration, and sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers, pairings, check in setup, and live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
+    "Group handles": "Recruiting players, selling sponsorships, paying course, food, awards, and vendor costs directly, providing logo, tournament details, and one contact who can approve decisions",
+    "Limits": "TeeVents negotiates on your behalf, but does not pay for course, food, awards, or vendor costs. TeeVents does not guarantee a player count, sponsorship dollars, or profit.",
+    "Payment schedule": "$0 due at signing. $1,875 is due when $3,750 in registrations and sponsorships has been collected through TeeVents. Remaining $3,125 is due 7 days before event day. Only collections through TeeVents count toward the trigger. The organizer is liable for the full $5,000, even if proceeds are low.",
+    "Cancellation": "If the event cancels, a work fee applies for work already done: $1,500 after course negotiation and platform build, $3,000 after registration launch and sponsor packet, and the full $5,000 within 30 days of the event. If the event postpones once to a new date, the fee moves with it at no extra charge."
   }
 };
 export const typeWarning = "Changing the proposal type will replace the template pricing, scope, payment, and cancellation text. Your custom line items, About text, and basic information will stay.";

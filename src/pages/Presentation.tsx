@@ -142,7 +142,7 @@ export default function Presentation() {
             <p className="text-lg font-semibold text-foreground">No Cost to Start</p>
             <Block heading="Price" bullets={["$0 to start"]} />
             <Block heading="Includes" bullets={[
-              "5 percent platform fee, paid by players at checkout",
+              "5% platform fee, paid by players at checkout",
               "10 manual entries",
               "Dedicated rep",
               "Event page built for you, live in 7 days or less",
@@ -150,7 +150,7 @@ export default function Presentation() {
             <Block heading="Good for" bullets={[
               "Nonprofits",
               "Schools",
-              "PTA boards",
+              "Churches",
               "First time organizers with no budget to vote on yet",
             ]} />
             <Block heading="Note" bullets={["Live Leaderboard and Mobile Scoring is available as a $99 add on on this plan"]} />
@@ -163,7 +163,7 @@ export default function Presentation() {
             </div>
             <Block heading="Price" bullets={["$399 per event"]} />
             <Block heading="Includes" bullets={[
-              "0 percent TeeVents platform fee",
+              "0% TeeVents platform fee",
               "Live Leaderboard and Mobile Scoring included",
               "Unlimited manual entries",
             ]} />
@@ -207,8 +207,8 @@ export default function Presentation() {
           <p className="text-lg font-semibold text-foreground">Hybrid Managed</p>
           <Block heading="Price" bullets={[
             "Starting at $5,000 per event, plus travel quoted separately",
-            "Platform stays No Cost to Start",
-            "Management is paid from event proceeds",
+            "Platform stays No Cost to Start, Players pay 5% platform fee ",
+            "Management is paid from event proceeds ( Separate from platform fee)",
             "$0 due at signing",
             "Organizer is liable for the full $5,000, even if proceeds are low",
           ]} />

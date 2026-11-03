@@ -46,7 +46,7 @@ const steps = [
 const moneyBullets = [
   "Organizers connect their own Stripe account, so funds go directly to them",
   "TeeVents never holds your money",
-  "Stripe processing, at 2.9 percent plus $0.30, is separate, and applies in all cases",
+  "Stripe processing, at 2.9% plus $0.30, is separate, and applies in all cases",
   "TeeVents does not issue refunds directly to golfers, refunds to golfers are at the organizer discretion, and are issued by the organizer",
 ];
 

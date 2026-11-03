@@ -236,16 +236,22 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="min-h-screen flex flex-col w-full">
         {isAdminOverride && (
-          <div className="bg-destructive text-destructive-foreground px-4 py-2.5 flex items-center justify-center gap-3 text-sm font-medium z-50">
-            <ShieldCheck className="h-4 w-4 flex-shrink-0" />
-            <span>Admin Mode — Editing <strong>{displayName}</strong>'s dashboard</span>
-            {orgContext && <DashboardEventSwitcher orgId={orgContext.orgId} />}
+          <div className="bg-destructive text-destructive-foreground px-3 sm:px-4 py-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3 text-xs sm:text-sm font-medium z-50">
+            <span className="flex min-w-0 items-center gap-2">
+              <ShieldCheck className="h-4 w-4 shrink-0" />
+              <span className="truncate">Admin Mode — <strong>{displayName}</strong></span>
+            </span>
             <Link
               to="/admin"
-              className="inline-flex items-center gap-1 bg-destructive-foreground/20 hover:bg-destructive-foreground/30 px-3 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors"
+              className="shrink-0 whitespace-nowrap inline-flex items-center gap-1 bg-destructive-foreground/20 hover:bg-destructive-foreground/30 px-2.5 py-1 rounded-md text-xs font-semibold uppercase tracking-wider transition-colors sm:order-last"
             >
-              <ArrowLeft className="h-3 w-3" /> Back to Admin
+              <ArrowLeft className="h-3 w-3" /> Admin
             </Link>
+            {orgContext && (
+              <div className="col-span-2 min-w-0 sm:col-span-1">
+                <DashboardEventSwitcher orgId={orgContext.orgId} />
+              </div>
+            )}
           </div>
         )}
         {isDemoMode && !isSampleMode && (
@@ -319,7 +325,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               {isAdminOverride && (
                 <Link
                   to="/admin"
-                  className="inline-flex items-center gap-1.5 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                  className="hidden sm:inline-flex shrink-0 whitespace-nowrap items-center gap-1.5 text-sm font-medium text-primary-foreground/80 hover:text-primary-foreground transition-colors"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   Back to Admin

@@ -35,13 +35,18 @@ export async function prepareRefund(input: { registrationId: string; requestId?:
     return Array.isArray(ids) ? ids.includes(registration.id) : typeof ids === "string" && ids.split(",").includes(registration.id);
   });
   if (!transaction?.stripe_session_id) throw new Error("The original Stripe payment could not be verified. No refund was issued.");
+  const txIdsRaw = (transaction.metadata as { registration_ids?: unknown } | null)?.registration_ids;
+  const txIds: string[] = Array.isArray(txIdsRaw) ? txIdsRaw.map(String) : typeof txIdsRaw === "string" ? txIdsRaw.split(",").filter(Boolean) : [];
+  // Newer sessions carry a checkout hold instead of roster IDs (rows are created after payment).
+  const sessionIds = (s: import("stripe").default.Checkout.Session): string[] =>
+    s.metadata?.registration_ids ? s.metadata.registration_ids.split(",").filter(Boolean) : s.metadata?.checkout_hold_id ? txIds : [];
   const accountIds: Array<string | undefined> = [...new Set([payout?.stripe_account_id || organization?.stripe_account_id || undefined, undefined])];
   let session: import("stripe").default.Checkout.Session | null = null;
   let stripeAccount: string | undefined;
   for (const account of accountIds) {
     try {
       const candidate = await stripe.checkout.sessions.retrieve(transaction.stripe_session_id, {}, account ? { stripeAccount: account } : undefined);
-      if (candidate.payment_status === "paid" && candidate.metadata?.registration_ids?.split(",").includes(registration.id)) { session = candidate; stripeAccount = account; break; }
+      if (candidate.payment_status === "paid" && sessionIds(candidate).includes(registration.id)) { session = candidate; stripeAccount = account; break; }
     } catch { /* A historical payment can live on the platform rather than today's connected account. */ }
   }
   if (!session || typeof session.payment_intent !== "string") throw new Error("The original paid Stripe session could not be verified. No refund was issued.");
@@ -51,7 +56,7 @@ export async function prepareRefund(input: { registrationId: string; requestId?:
   if (!charge || typeof charge === "string" || !charge.paid) throw new Error("Stripe charge details are unavailable.");
   const balance = charge.balance_transaction;
   if (!balance || typeof balance === "string") throw new Error("Stripe processing fees are not available yet. Please try again later.");
-  const ids = session.metadata?.registration_ids?.split(",").filter(Boolean) || [];
+  const ids = sessionIds(session);
   const index = ids.indexOf(registration.id);
   const metadata = session.metadata || {};
   if (metadata.tournament_id !== tournament.id) throw new Error("The payment does not belong to this tournament.");

@@ -34,6 +34,7 @@ import { Badge } from "@/components/ui/badge";
 import CustomSlugEditor from "@/components/CustomSlugEditor";
 import AdminDefaultSlugEditor from "@/components/AdminDefaultSlugEditor";
 import { DomainInstructions } from "@/components/dashboard/DomainInstructions";
+import { RenewDomainCard } from "@/components/dashboard/RenewDomainCard";
 import { ImageCropperDialog, fileToDataUrl, AspectRatioOption } from "@/components/ui/image-cropper-dialog";
 import { Slider } from "@/components/ui/slider";
 import {
@@ -316,7 +317,9 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [uploadingHero, setUploadingHero] = useState(false);
   const [activeTab, setActiveTab] = useState<"branding" | "content" | "contact" | "domain" | "printables" | "public_view">(() => {
-    const st = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("step") : null;
+    const qs = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
+    if (qs?.get("renew_domain") === "1") return "domain";
+    const st = qs?.get("step") ?? null;
     return (["branding", "content", "contact", "domain", "printables", "public_view"] as const).find((k) => k === st) ?? "branding";
   });
 
@@ -1854,6 +1857,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
               />
 
 <AdvancedSection label="Custom Domain DNS">
+              {id && settings.custom_domain && <RenewDomainCard tournamentId={id} demoGuard={demoGuard} />}
               <DomainInstructions currentDomain={settings.custom_domain} />
 
 

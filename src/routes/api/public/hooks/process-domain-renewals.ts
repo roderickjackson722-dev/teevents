@@ -5,7 +5,7 @@
 // Caller must present the token stored in internal_cron_tokens('domain_renewal').
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { domainStage } from "@/lib/domainRenewal";
+import { noticeDue } from "@/lib/domainRenewal";
 import { buildDomainArchivedNotice, buildDomainRenewalNotice } from "@/lib/domainRenewalEmail";
 
 const SENDER = "TeeVents Golf <info@notifications.teevents.golf>";
@@ -68,10 +68,7 @@ async function handle(request: Request) {
   const results: any[] = [];
   const now = Date.now();
   for (const t of (rows ?? []) as any[]) {
-    const stage = domainStage(t, now);
-    const due =
-      (stage === "renewal_due" && !t.custom_domain_notice1_sent_at) ? "notice1" :
-      (stage === "archived" && t.custom_domain_notice1_sent_at && !t.custom_domain_notice2_sent_at) ? "notice2" : null;
+    const due = noticeDue(t, now);
     if (!due) continue;
 
     const to = await organizerEmail(admin, t);

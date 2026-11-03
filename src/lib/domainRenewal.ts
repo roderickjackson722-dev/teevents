@@ -58,3 +58,14 @@ export function renewedExpiryMs(t: DomainRenewalInput, nowMs: number = Date.now(
 export function archiveUrl(slug: string): string {
   return `https://www.teevents.golf/t/${encodeURIComponent(slug)}?archived=1`;
 }
+
+/** Which renewal email is due. The "moved" notice only follows a sent 30-day notice. */
+export function noticeDue(
+  t: DomainRenewalInput & { custom_domain_notice1_sent_at?: string | null; custom_domain_notice2_sent_at?: string | null },
+  nowMs: number = Date.now(),
+): "notice1" | "notice2" | null {
+  const stage = domainStage(t, nowMs);
+  if (stage === "renewal_due" && !t.custom_domain_notice1_sent_at) return "notice1";
+  if (stage === "archived" && t.custom_domain_notice1_sent_at && !t.custom_domain_notice2_sent_at) return "notice2";
+  return null;
+}

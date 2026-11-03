@@ -537,6 +537,33 @@ export type Database = {
           },
         ]
       }
+      admin_proposals: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          payload: Json
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          payload?: Json
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          payload?: Json
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       admin_user_notes: {
         Row: {
           created_at: string

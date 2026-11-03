@@ -9,7 +9,6 @@ const navLinks = [
   { label: "Features", to: "/features" },
   { label: "Pricing", to: "/pricing" },
   { label: "About", to: "/about" },
-  { label: "Hybrid", to: "/hybrid" },
 ];
 
 export default function Navbar() {

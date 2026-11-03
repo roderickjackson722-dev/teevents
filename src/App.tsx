@@ -137,6 +137,7 @@ import Survey from "./pages/Survey";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import RefundPolicy from "./pages/RefundPolicy";
+import CancellationPolicy from "./pages/CancellationPolicy";
 import { Navigate } from "react-router-dom";
 import NotFound from "./pages/NotFound";
 import SlugResolver from "./pages/SlugResolver";
@@ -411,6 +412,7 @@ const App = () => (
           <Route path="/privacy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/refund-policy" element={<RefundPolicy />} />
+          <Route path="/cancellation" element={<CancellationPolicy />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/request-sample" element={<RequestSample />} />

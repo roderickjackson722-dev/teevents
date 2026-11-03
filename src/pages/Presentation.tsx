@@ -207,10 +207,11 @@ export default function Presentation() {
           <p className="text-lg font-semibold text-foreground">Hybrid Managed</p>
           <Block heading="Price" bullets={[
             "Starting at $5,000 per event, plus travel quoted separately",
-            "Platform stays No Cost to Start, Players pay 5% platform fee ",
-            "Management is paid from event proceeds ( Separate from platform fee)",
+            "Platform stays No Cost to Start",
+            "Management is paid from event proceeds",
             "$0 due at signing",
             "Organizer is liable for the full $5,000, even if proceeds are low",
+            "The $5,000 management fee is separate from, and in addition to, the 5% platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
           ]} />
           <Block heading="Payment schedule" bullets={[
             "$1,875 is due when $3,750 in registrations and sponsorships has been collected through TeeVents",

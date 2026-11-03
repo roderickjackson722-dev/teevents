@@ -83,6 +83,20 @@ export default function Plans() {
         </div>
       </section>
 
+      <section aria-labelledby="hybrid-title" className={section}>
+        <div className="mx-auto max-w-4xl rounded-lg border border-border bg-muted/40 p-8 md:p-12">
+          <div className="grid items-center gap-8 md:grid-cols-[1fr_auto]">
+            <div className="min-w-0">
+              <p className="mb-3 text-sm font-semibold text-primary">FULLY MANAGED OPTION</p>
+              <h2 id="hybrid-title" className="text-3xl font-display font-bold md:text-4xl">Hybrid Managed</h2>
+              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">For groups that need a full tournament manager, but do not have money up front. $0 due at signing — the $5,000 management fee is paid from money the event raises.</p>
+              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">TeeVents negotiates your course, builds the branded event page and registration, provides sponsor packets and tiers, sets up pairings and check-in, and is on site from check-in through awards.</p>
+            </div>
+            <Button asChild variant="secondary" size="lg" className="w-full whitespace-normal font-bold md:w-auto"><Link to="/hybrid">SEE HYBRID MANAGED DETAILS<ArrowRight /></Link></Button>
+          </div>
+        </div>
+      </section>
+
       <section aria-labelledby="included-title" className={section}>
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center"><h2 id="included-title" className={heading}>What Every Plan Includes</h2><p className="mt-4 text-muted-foreground">No matter which plan you choose, you get the same dedicated service.</p></div>

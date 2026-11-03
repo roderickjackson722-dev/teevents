@@ -101,12 +101,23 @@ Deno.serve(async (req) => {
     let targetSession: any = null;
     const stripeAccount = org?.stripe_account_id || undefined;
 
+    // Online sign-ups created after payment are linked through their checkout hold.
+    const { data: holdRow } = await supabaseAdmin
+      .from("registration_checkout_holds")
+      .select("id")
+      .contains("registration_ids", [targetRegistrationId])
+      .maybeSingle();
+    const holdId: string | null = holdRow?.id ?? null;
+    const matchesTarget = (session: any) =>
+      session.metadata?.registration_ids?.includes(targetRegistrationId) ||
+      (!!holdId && session.metadata?.checkout_hold_id === holdId);
+
     if (stripeAccount) {
       const sessions = await stripe.checkout.sessions.list({ limit: 100 }, { stripeAccount });
       for (const session of sessions.data) {
         if (
           session.metadata?.type === "registration" &&
-          session.metadata?.registration_ids?.includes(targetRegistrationId) &&
+          matchesTarget(session) &&
           session.payment_status === "paid"
         ) {
           targetSession = session;

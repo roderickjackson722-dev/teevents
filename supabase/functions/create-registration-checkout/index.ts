@@ -282,28 +282,17 @@ Deno.serve(async (req) => {
       promoterId = promoter?.id ?? null;
     }
 
-    // Insert registration records. Donation is attached to the first (captain) row.
-    // Multi-player (twosome/threesome/foursome) sign-ups get a shared group id so
-    // organizers can see who registered together and keep them paired.
-    let groupId: string | null = null;
-    if (players.length > 1) {
-      const captain = players[0];
-      const teamName = typeof body.team_name === "string" ? body.team_name.trim().slice(0, 100) : "";
-      const { data: groupRow } = await supabaseAdmin
-        .from("registration_groups")
-        .insert({
-          tournament_id,
-          team_name: teamName || null,
-          group_name: teamName || `${(captain.first_name || "").trim()} ${(captain.last_name || "").trim()}`.trim() || "Team",
-        })
-        .select("id")
-        .maybeSingle();
-      groupId = groupRow?.id ?? null;
-    }
+    // Paid sign-ups never touch the roster until Stripe confirms payment: the
+    // player details are kept in a private checkout hold and the roster rows
+    // are created as "paid" by verify-registration. Only $0 sign-ups (which are
+    // complete immediately) are written to the roster here.
+    const teamNameInput = typeof body.team_name === "string" ? body.team_name.trim().slice(0, 100) : "";
+    const captainForGroup = players[0];
+    const groupNameInput = teamNameInput ||
+      `${(captainForGroup.first_name || "").trim()} ${(captainForGroup.last_name || "").trim()}`.trim() || "Team";
 
-    const registrationInserts = players.map((p: any, i: number) => ({
+    const buildInserts = (groupId: string | null, status: "paid") => players.map((p: any, i: number) => ({
       tournament_id,
-
       first_name: (p.first_name || "").trim(),
       last_name: (p.last_name || "").trim(),
       email: (p.email || "").trim(),
@@ -312,7 +301,7 @@ Deno.serve(async (req) => {
       shirt_size: p.shirt_size || null,
       dietary_restrictions: p.dietary_restrictions || null,
       notes: p.notes || null,
-      payment_status: hasAnyCharge ? "pending" : "paid",
+      payment_status: status,
       tier_id: tierId || null,
       flight_id: flightId || null,
       covered_fees: coverFees,
@@ -323,17 +312,41 @@ Deno.serve(async (req) => {
       group_id: groupId,
       group_leader: groupId ? i === 0 : false,
       is_captain: groupId ? i === 0 : false,
-
     }));
 
+    let registrationIds: string[] = [];
+    let holdId: string | null = null;
 
-    const { data: registrations, error: regErr } = await supabaseAdmin
-      .from("tournament_registrations")
-      .insert(registrationInserts)
-      .select("id");
-
-    if (regErr) throw new Error(regErr.message);
-    const registrationIds = (registrations || []).map((r: any) => r.id);
+    if (hasAnyCharge) {
+      const { data: hold, error: holdErr } = await supabaseAdmin
+        .from("registration_checkout_holds")
+        .insert({
+          tournament_id,
+          team_name: teamNameInput || null,
+          group_name: players.length > 1 ? groupNameInput : null,
+          players: buildInserts(null, "paid"),
+        })
+        .select("id")
+        .single();
+      if (holdErr || !hold) throw new Error(holdErr?.message || "Could not start checkout");
+      holdId = hold.id;
+    } else {
+      let groupId: string | null = null;
+      if (players.length > 1) {
+        const { data: groupRow } = await supabaseAdmin
+          .from("registration_groups")
+          .insert({ tournament_id, team_name: teamNameInput || null, group_name: groupNameInput })
+          .select("id")
+          .maybeSingle();
+        groupId = groupRow?.id ?? null;
+      }
+      const { data: registrations, error: regErr } = await supabaseAdmin
+        .from("tournament_registrations")
+        .insert(buildInserts(groupId, "paid"))
+        .select("id");
+      if (regErr) throw new Error(regErr.message);
+      registrationIds = (registrations || []).map((r: any) => r.id);
+    }
 
     // NOTE: Notification emails to the organizer + admin are intentionally NOT
     // sent here. They are sent ONLY after Stripe confirms payment in
@@ -548,7 +561,7 @@ Deno.serve(async (req) => {
         type: "registration",
         tournament_id,
         organization_id: tournament.organization_id,
-        registration_ids: registrationIds.join(","),
+        checkout_hold_id: holdId || "",
         pass_fees_to_golfer: String(golferPaysFees),
         cover_fees: String(coverFees),
         tier_id: tierId || "",

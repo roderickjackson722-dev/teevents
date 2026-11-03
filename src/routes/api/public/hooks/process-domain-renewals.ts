@@ -5,7 +5,7 @@
 // Caller must present the token stored in internal_cron_tokens('domain_renewal').
 import { createFileRoute } from "@tanstack/react-router";
 import { createClient } from "@supabase/supabase-js";
-import { domainStage } from "@/lib/domainRenewal";
+import { noticeDue } from "@/lib/domainRenewal";
 import { buildDomainArchivedNotice, buildDomainRenewalNotice } from "@/lib/domainRenewalEmail";
 
 const SENDER = "TeeVents Golf <info@notifications.teevents.golf>";
@@ -68,10 +68,7 @@ async function handle(request: Request) {
   const results: any[] = [];
   const now = Date.now();
   for (const t of (rows ?? []) as any[]) {
-    const stage = domainStage(t, now);
-    const due =
-      (stage === "renewal_due" && !t.custom_domain_notice1_sent_at) ? "notice1" :
-      (stage === "archived" && !t.custom_domain_notice2_sent_at) ? "notice2" : null;
+    const due = noticeDue(t, now);
     if (!due) continue;
 
     const to = await organizerEmail(admin, t);
@@ -88,9 +85,7 @@ async function handle(request: Request) {
     const ok = await send(admin, apiKey, t, to, subject, html, due === "notice1" ? "custom-domain-renewal-notice" : "custom-domain-archived-notice");
     if (ok) {
       const col = due === "notice1" ? "custom_domain_notice1_sent_at" : "custom_domain_notice2_sent_at";
-      // An archived domain also counts as having received notice #1.
       const update: Record<string, string> = { [col]: new Date().toISOString() };
-      if (due === "notice2" && !t.custom_domain_notice1_sent_at) update.custom_domain_notice1_sent_at = update[col];
       await admin.from("tournaments").update(update as any).eq("id", t.id);
     }
     results.push({ id: t.id, sent: due, ok });

@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Index from "@/pages/Index";
 import PublicTournament from "@/pages/PublicTournament";
 import { Loader2 } from "lucide-react";
+import { domainStage, archiveUrl } from "@/lib/domainRenewal";
 
 const PLATFORM_HOSTS = [
   "localhost",
@@ -31,12 +32,17 @@ const CustomDomainRouter = () => {
 
     supabase
       .from("tournaments")
-      .select("slug")
+      .select("slug, custom_domain, date, end_date, custom_domain_expires_at")
       .or(`custom_domain.eq.${cleanHost},custom_domain.eq.www.${cleanHost}`)
       .eq("site_published", true)
       .limit(1)
       .single()
       .then(({ data, error }) => {
+        if (data?.slug && domainStage(data as any) === "archived") {
+          // Expired web address: send visitors to the TeeVents event page.
+          window.location.replace(archiveUrl(data.slug));
+          return;
+        }
         if (data?.slug) {
           setTournamentSlug(data.slug);
           setState("tournament");

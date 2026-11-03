@@ -225,6 +225,13 @@
       "when": 1793730128446,
       "tag": "0031_registration_checkout_holds",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "7",
+      "when": 1793730273405,
+      "tag": "0032_public_registrations_never_pending",
+      "breakpoints": true
     }
   ]
 }

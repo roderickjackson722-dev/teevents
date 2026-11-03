@@ -766,6 +766,8 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
         // Attach the donation to the first (captain) registration row only
         donation_amount_cents: i === 0 ? donationCents : 0,
         custom_answers: buildCustomAnswers(i),
+        // No-fee sign-ups are complete immediately; the public never creates pending players.
+        payment_status: "paid",
       }));
 
       const { error } = await supabase.from("tournament_registrations").insert(inserts);

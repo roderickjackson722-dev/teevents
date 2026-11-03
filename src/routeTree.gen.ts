@@ -14,6 +14,7 @@ import { Route as SplatRouteImport } from './routes/$'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AddonConfirmationRouteImport } from './routes/addon-confirmation'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as CancellationRouteImport } from './routes/cancellation'
 import { Route as CompareRouteImport } from './routes/compare'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as FaqRouteImport } from './routes/faq'
@@ -93,6 +94,11 @@ const AddonConfirmationRoute = AddonConfirmationRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CancellationRoute = CancellationRouteImport.update({
+  id: '/cancellation',
+  path: '/cancellation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CompareRoute = CompareRouteImport.update({
@@ -398,6 +404,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/addon-confirmation': typeof AddonConfirmationRoute
   '/admin': typeof AdminRoute
+  '/cancellation': typeof CancellationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -460,6 +467,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/addon-confirmation': typeof AddonConfirmationRoute
   '/admin': typeof AdminRoute
+  '/cancellation': typeof CancellationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -523,6 +531,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/addon-confirmation': typeof AddonConfirmationRoute
   '/admin': typeof AdminRoute
+  '/cancellation': typeof CancellationRoute
   '/compare': typeof CompareRoute
   '/contact': typeof ContactRoute
   '/faq': typeof FaqRoute
@@ -587,6 +596,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/addon-confirmation'
     | '/admin'
+    | '/cancellation'
     | '/compare'
     | '/contact'
     | '/faq'
@@ -649,6 +659,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/addon-confirmation'
     | '/admin'
+    | '/cancellation'
     | '/compare'
     | '/contact'
     | '/faq'
@@ -711,6 +722,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/addon-confirmation'
     | '/admin'
+    | '/cancellation'
     | '/compare'
     | '/contact'
     | '/faq'
@@ -774,6 +786,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AddonConfirmationRoute: typeof AddonConfirmationRoute
   AdminRoute: typeof AdminRoute
+  CancellationRoute: typeof CancellationRoute
   CompareRoute: typeof CompareRoute
   ContactRoute: typeof ContactRoute
   FaqRoute: typeof FaqRoute
@@ -865,6 +878,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cancellation': {
+      id: '/cancellation'
+      path: '/cancellation'
+      fullPath: '/cancellation'
+      preLoaderRoute: typeof CancellationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/compare': {
@@ -1273,6 +1293,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AddonConfirmationRoute: AddonConfirmationRoute,
   AdminRoute: AdminRoute,
+  CancellationRoute: CancellationRoute,
   CompareRoute: CompareRoute,
   ContactRoute: ContactRoute,
   FaqRoute: FaqRoute,

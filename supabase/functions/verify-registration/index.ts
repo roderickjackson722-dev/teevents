@@ -104,18 +104,82 @@ Deno.serve(async (req) => {
     }
 
     if (session.payment_status === "paid") {
-      const registrationIds = session.metadata?.registration_ids
-        ? session.metadata.registration_ids.split(",")
-        : session.metadata?.registration_id
-          ? [session.metadata.registration_id]
-          : [];
-
-      if (registrationIds.length === 0) throw new Error("Missing registration IDs in session metadata");
-
       const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL")!,
         Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
       );
+
+      let registrationIds: string[] = session.metadata?.registration_ids
+        ? session.metadata.registration_ids.split(",")
+        : session.metadata?.registration_id
+          ? [session.metadata.registration_id]
+          : [];
+      let freshlyCreated = false;
+
+      // New flow: roster rows are created only now, after payment is confirmed.
+      const holdId = session.metadata?.checkout_hold_id;
+      if (holdId) {
+        const { data: hold } = await supabaseAdmin
+          .from("registration_checkout_holds")
+          .select("*")
+          .eq("id", holdId)
+          .maybeSingle();
+        if (!hold || (session.metadata?.tournament_id && hold.tournament_id !== session.metadata.tournament_id)) {
+          throw new Error("Payment could not be verified");
+        }
+        await assertSessionAccountForTournament(supabaseAdmin, sessionAcct, hold.tournament_id);
+
+        // Atomically claim the hold so a reload can never create the players twice.
+        const { data: claimed } = await supabaseAdmin
+          .from("registration_checkout_holds")
+          .update({ claimed_at: new Date().toISOString() })
+          .eq("id", holdId)
+          .is("claimed_at", null)
+          .select("id")
+          .maybeSingle();
+
+        if (!claimed) {
+          return new Response(
+            JSON.stringify({ verified: true, status: "paid", already_processed: true }),
+            { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
+          );
+        }
+
+        const heldPlayers: any[] = Array.isArray(hold.players) ? hold.players : [];
+        let groupId: string | null = null;
+        if (heldPlayers.length > 1) {
+          const { data: groupRow } = await supabaseAdmin
+            .from("registration_groups")
+            .insert({ tournament_id: hold.tournament_id, team_name: hold.team_name, group_name: hold.group_name || "Team" })
+            .select("id")
+            .maybeSingle();
+          groupId = groupRow?.id ?? null;
+        }
+        const rows = heldPlayers.map((p: any, i: number) => ({
+          ...p,
+          tournament_id: hold.tournament_id,
+          payment_status: "paid",
+          group_id: groupId,
+          group_leader: groupId ? i === 0 : false,
+          is_captain: groupId ? i === 0 : false,
+        }));
+        const { data: inserted, error: insErr } = await supabaseAdmin
+          .from("tournament_registrations")
+          .insert(rows)
+          .select("id");
+        if (insErr) {
+          await supabaseAdmin.from("registration_checkout_holds").update({ claimed_at: null }).eq("id", holdId);
+          throw new Error(insErr.message);
+        }
+        registrationIds = (inserted || []).map((r: any) => r.id);
+        await supabaseAdmin
+          .from("registration_checkout_holds")
+          .update({ registration_ids: registrationIds })
+          .eq("id", holdId);
+        freshlyCreated = true;
+      }
+
+      if (registrationIds.length === 0) throw new Error("Missing registration IDs in session metadata");
 
       // IDEMPOTENCY GUARD: if all these registrations are already marked paid,
       // skip all side effects (DB inserts, confirmation emails, notifications).
@@ -138,7 +202,7 @@ Deno.serve(async (req) => {
       }
       await assertSessionAccountForTournament(supabaseAdmin, sessionAcct, existingRegs[0].tournament_id);
 
-      const allAlreadyPaid = existingRegs && existingRegs.length > 0
+      const allAlreadyPaid = !freshlyCreated && existingRegs && existingRegs.length > 0
         && existingRegs.every((r: any) => r.payment_status === "paid");
 
       if (allAlreadyPaid) {

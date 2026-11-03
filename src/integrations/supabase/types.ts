@@ -8489,6 +8489,39 @@ export type Database = {
         }
         Relationships: []
       }
+      registration_checkout_holds: {
+        Row: {
+          claimed_at: string | null
+          created_at: string
+          group_name: string | null
+          id: string
+          players: Json
+          registration_ids: string[] | null
+          team_name: string | null
+          tournament_id: string
+        }
+        Insert: {
+          claimed_at?: string | null
+          created_at?: string
+          group_name?: string | null
+          id?: string
+          players: Json
+          registration_ids?: string[] | null
+          team_name?: string | null
+          tournament_id: string
+        }
+        Update: {
+          claimed_at?: string | null
+          created_at?: string
+          group_name?: string | null
+          id?: string
+          players?: Json
+          registration_ids?: string[] | null
+          team_name?: string | null
+          tournament_id?: string
+        }
+        Relationships: []
+      }
       registration_groups: {
         Row: {
           cart_sign_names: Json | null

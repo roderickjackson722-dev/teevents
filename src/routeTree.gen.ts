@@ -25,6 +25,7 @@ import { Route as ForOrganizersRouteImport } from './routes/for-organizers'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
 import { Route as HybridRouteImport } from './routes/hybrid'
 import { Route as PlansRouteImport } from './routes/plans'
+import { Route as PresentationRouteImport } from './routes/presentation'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
@@ -150,6 +151,11 @@ const HybridRoute = HybridRouteImport.update({
 const PlansRoute = PlansRouteImport.update({
   id: '/plans',
   path: '/plans',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PresentationRoute = PresentationRouteImport.update({
+  id: '/presentation',
+  path: '/presentation',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -421,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/how-it-works': typeof HowItWorksRoute
   '/hybrid': typeof HybridRoute
   '/plans': typeof PlansRoute
+  '/presentation': typeof PresentationRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refund-policy': typeof RefundPolicyRoute
@@ -485,6 +492,7 @@ export interface FileRoutesByTo {
   '/how-it-works': typeof HowItWorksRoute
   '/hybrid': typeof HybridRoute
   '/plans': typeof PlansRoute
+  '/presentation': typeof PresentationRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refund-policy': typeof RefundPolicyRoute
@@ -550,6 +558,7 @@ export interface FileRoutesById {
   '/how-it-works': typeof HowItWorksRoute
   '/hybrid': typeof HybridRoute
   '/plans': typeof PlansRoute
+  '/presentation': typeof PresentationRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
   '/refund-policy': typeof RefundPolicyRoute
@@ -616,6 +625,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/hybrid'
     | '/plans'
+    | '/presentation'
     | '/pricing'
     | '/privacy'
     | '/refund-policy'
@@ -680,6 +690,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/hybrid'
     | '/plans'
+    | '/presentation'
     | '/pricing'
     | '/privacy'
     | '/refund-policy'
@@ -744,6 +755,7 @@ export interface FileRouteTypes {
     | '/how-it-works'
     | '/hybrid'
     | '/plans'
+    | '/presentation'
     | '/pricing'
     | '/privacy'
     | '/refund-policy'
@@ -809,6 +821,7 @@ export interface RootRouteChildren {
   HowItWorksRoute: typeof HowItWorksRoute
   HybridRoute: typeof HybridRoute
   PlansRoute: typeof PlansRoute
+  PresentationRoute: typeof PresentationRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
   RefundPolicyRoute: typeof RefundPolicyRoute
@@ -968,6 +981,13 @@ declare module '@tanstack/react-router' {
       path: '/plans'
       fullPath: '/plans'
       preLoaderRoute: typeof PlansRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/presentation': {
+      id: '/presentation'
+      path: '/presentation'
+      fullPath: '/presentation'
+      preLoaderRoute: typeof PresentationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -1324,6 +1344,7 @@ const rootRouteChildren: RootRouteChildren = {
   HowItWorksRoute: HowItWorksRoute,
   HybridRoute: HybridRoute,
   PlansRoute: PlansRoute,
+  PresentationRoute: PresentationRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
   RefundPolicyRoute: RefundPolicyRoute,

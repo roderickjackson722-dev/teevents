@@ -165,7 +165,7 @@ export default function Presentation() {
           If this time no longer works, just reply to this invite and we can move it.
         </p>
         <div className="pt-2">
-          <Button asChild size="lg" className="font-semibold"><a href={emailHref}>Contact TeeVents</a></Button>
+          <Button asChild variant="secondary" size="lg" className="font-semibold"><a href={emailHref}>Contact TeeVents</a></Button>
         </div>
         <p className="text-sm leading-relaxed text-muted-foreground [overflow-wrap:normal]">
           Phone (602) 413 1338, Monday to Friday, 9 AM to 6 PM ET, and email info@teevents.golf.

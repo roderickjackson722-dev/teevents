@@ -23,6 +23,7 @@ import { Route as FindYourEventRouteImport } from './routes/find-your-event'
 import { Route as ForGolfersRouteImport } from './routes/for-golfers'
 import { Route as ForOrganizersRouteImport } from './routes/for-organizers'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as HybridRouteImport } from './routes/hybrid'
 import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -139,6 +140,11 @@ const ForOrganizersRoute = ForOrganizersRouteImport.update({
 const HowItWorksRoute = HowItWorksRouteImport.update({
   id: '/how-it-works',
   path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HybridRoute = HybridRouteImport.update({
+  id: '/hybrid',
+  path: '/hybrid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PlansRoute = PlansRouteImport.update({
@@ -413,6 +419,7 @@ export interface FileRoutesByFullPath {
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/hybrid': typeof HybridRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -476,6 +483,7 @@ export interface FileRoutesByTo {
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/hybrid': typeof HybridRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -540,6 +548,7 @@ export interface FileRoutesById {
   '/for-golfers': typeof ForGolfersRoute
   '/for-organizers': typeof ForOrganizersRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/hybrid': typeof HybridRoute
   '/plans': typeof PlansRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
@@ -605,6 +614,7 @@ export interface FileRouteTypes {
     | '/for-golfers'
     | '/for-organizers'
     | '/how-it-works'
+    | '/hybrid'
     | '/plans'
     | '/pricing'
     | '/privacy'
@@ -668,6 +678,7 @@ export interface FileRouteTypes {
     | '/for-golfers'
     | '/for-organizers'
     | '/how-it-works'
+    | '/hybrid'
     | '/plans'
     | '/pricing'
     | '/privacy'
@@ -731,6 +742,7 @@ export interface FileRouteTypes {
     | '/for-golfers'
     | '/for-organizers'
     | '/how-it-works'
+    | '/hybrid'
     | '/plans'
     | '/pricing'
     | '/privacy'
@@ -795,6 +807,7 @@ export interface RootRouteChildren {
   ForGolfersRoute: typeof ForGolfersRoute
   ForOrganizersRoute: typeof ForOrganizersRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  HybridRoute: typeof HybridRoute
   PlansRoute: typeof PlansRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -941,6 +954,13 @@ declare module '@tanstack/react-router' {
       path: '/how-it-works'
       fullPath: '/how-it-works'
       preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hybrid': {
+      id: '/hybrid'
+      path: '/hybrid'
+      fullPath: '/hybrid'
+      preLoaderRoute: typeof HybridRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/plans': {
@@ -1302,6 +1322,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForGolfersRoute: ForGolfersRoute,
   ForOrganizersRoute: ForOrganizersRoute,
   HowItWorksRoute: HowItWorksRoute,
+  HybridRoute: HybridRoute,
   PlansRoute: PlansRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,

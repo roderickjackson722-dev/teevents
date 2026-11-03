@@ -236,7 +236,7 @@ export default function Presentation() {
             "TeeVents does not guarantee a player count, sponsorship dollars, or profit",
           ]} />
           <Block heading="Good for" bullets={[
-            "PTA boards",
+            "Churches",
             "Schools",
             "Nonprofits and similar groups",
             "Groups that need a full tournament manager, but do not have money up front",

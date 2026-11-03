@@ -1,3 +1,7 @@
+## Admin Proposals
+- [ ] Add isolated admin-only proposal storage, list, editor, read-only view and browser printing; preserve all existing events, payment flows and auth.
+- [ ] Verify package rules, draft duplication, saves/readback and admin-only access; no sends or publication.
+
 ## Partner requests and event finances
 - [x] Added opt-in partner requests for teams of 2/3/4, configured player questions, CAPTCHA-validated private holding storage, existing-provider organizer notification and Players/Registration reminders; no payment or roster entry. Existing events remain opted out.
 - [x] Selected-event finance totals/details and Enterprise reports follow URL selection; separate all-event overview and account-wide Stripe balances retained. Enterprise portfolios include existing organization tournaments without converting them.

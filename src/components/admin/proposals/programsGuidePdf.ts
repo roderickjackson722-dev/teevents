@@ -69,7 +69,7 @@ export async function programsGuidePdf(): Promise<Blob> {
   };
   const label = (value: string) => { y += 3; write(value.toUpperCase(), 9, true, green); y += 0.5; };
   const bullets = (value: string) => {
-    for (const part of value.split(/,\s+(?![^()]*\))/).map((s) => s.trim()).filter(Boolean)) {
+    for (const part of value.split(/,\s+(?![^()]*\))/).map((s) => s.trim().replace(/^and\s+/i, "")).filter(Boolean)) {
       if (y > H - 22) newPage();
       doc.setFillColor(...gold);
       doc.circle(18, y - 1.3, 0.9, "F");

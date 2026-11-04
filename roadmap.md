@@ -1,3 +1,8 @@
+## Client proposal webpage
+- [ ] Add standalone hidden template, editable isolated client copies, private links, admin activity, print export and proposal-only Q&A; preserve existing pages and payments.
+- [ ] Verify signed-in save/reload, link privacy, tracking, calculator, chat and phone/print layouts without sending or publishing.
+- [ ] Approved portal screenshots await upload; named placeholders remain until supplied.
+
 ## Admin Proposals
 - [x] Added manual Sent/Accepted milestone dates, reusable templates with built-in packages and saved editable terms, and downloadable multi-page PDFs. Seventeen rules tests and signed-in save/reload/template reuse/status/PDF download checks passed; both PDF pages inspected, QA records removed, no sends or publication.
 - [x] Add isolated admin-only proposal storage, list, editor, read-only view and browser printing; preserve all existing events, payment flows and auth.

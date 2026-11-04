@@ -28,13 +28,20 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
   const start=Date.now();let activeSince=window.document.visibilityState==="visible"?Date.now():0;let elapsed=0;
   const seen=new Set<string>();
   void record("open").catch(()=>{});
-  const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting&&!seen.has(entry.target.id)){seen.add(entry.target.id);void record("section",entry.target.id).catch(()=>{});}}},{threshold:0.15});
+  const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting&&!seen.has(entry.target.id)){seen.add(entry.target.id);void record("section",entry.target.id).catch(()=>{});}}},{threshold:0.01});
   window.document.querySelectorAll(".proposal-web section[data-track]").forEach(el=>observer.observe(el));
   const tick=()=>{if(activeSince){elapsed+=Date.now()-activeSince;activeSince=Date.now();}void record("time",String(Math.min(999999,Math.round(elapsed/1000)))).catch(()=>{});};
   const visibility=()=>{if(window.document.visibilityState==="hidden"){tick();activeSince=0;}else activeSince=Date.now();};
   window.document.addEventListener("visibilitychange",visibility);const interval=setInterval(tick,15000);
   return ()=>{observer.disconnect();clearInterval(interval);window.document.removeEventListener("visibilitychange",visibility);if(Date.now()>start)tick();};
  },[token]);
+ useEffect(()=>{
+  const opened:HTMLDetailsElement[]=[];
+  const before=()=>{window.document.querySelectorAll<HTMLDetailsElement>(".proposal-web details").forEach(el=>{if(!el.open){opened.push(el);el.open=true;}});};
+  const after=()=>{opened.splice(0).forEach(el=>{el.open=false;});};
+  window.addEventListener("beforeprint",before);window.addEventListener("afterprint",after);
+  return ()=>{window.removeEventListener("beforeprint",before);window.removeEventListener("afterprint",after);};
+ },[]);
  const value=(key:keyof typeof fields)=>d.fields[key]||fields[key];
  const calc=calculator(players,fee);
  const editField=(key:keyof typeof fields,v:string)=>onEdit?.({...d,fields:{...d.fields,[key]:v}});
@@ -58,7 +65,7 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
    <section id="intro" data-track className="border-b border-border py-12">
     <h2 className="font-display text-3xl font-bold text-primary">A Quick Note From Rod</h2>
     <p className="mt-4 text-xl">Personalized for {value("preparedFor")}</p>
-    {edit?<div className="web-controls mt-6 space-y-5"><label className="block space-y-2"><span>Recommended Program</span><select aria-label="Recommended Program" className="w-full rounded-md border border-input bg-background p-3" value={d.recommended} onChange={e=>onEdit?.({...d,recommended:e.target.value as WebDocument["recommended"]})}><option value="">[Recommended Program, one of the 6 programs below]</option>{programNames.map(p=><option key={p}>{p}</option>)}</select></label><label className="block space-y-2"><span>Personalized intro</span><Textarea rows={5} value={d.intro} onChange={e=>onEdit?.({...d,intro:e.target.value})}/></label><label className="block space-y-2"><span>Personalized Reason</span><Textarea rows={5} value={d.reason} onChange={e=>onEdit?.({...d,reason:e.target.value})}/></label></div>:null}
+    {edit?<div className="web-controls mt-6 space-y-5"><label className="block space-y-2"><span>Recommended Program</span><select aria-label="Recommended Program" className="w-full rounded-md border border-input bg-background p-3" value={d.recommended} onChange={e=>onEdit?.({...d,recommended:e.target.value as WebDocument["recommended"]})}><option value="">[Recommended Program, one of the 6 programs below]</option>{programNames.map(p=><option key={p}>{p}</option>)}</select></label><label className="block space-y-2"><span>Personalized intro</span><Textarea aria-label="Personalized intro" rows={5} value={d.intro} onChange={e=>onEdit?.({...d,intro:e.target.value})}/></label><label className="block space-y-2"><span>Personalized Reason</span><Textarea aria-label="Personalized Reason" rows={5} value={d.reason} onChange={e=>onEdit?.({...d,reason:e.target.value})}/></label></div>:null}
     <p className="mt-6 whitespace-pre-wrap text-lg leading-8">{introText(d)}</p><p className="mt-5 whitespace-pre-wrap text-lg leading-8">{d.reason}</p>
     {d.recommended&&<a href={`#program-${d.recommended.replaceAll(" ","-")}`} className="mt-5 inline-block text-primary underline" onClick={()=>setSelected(d.recommended)}>See the {d.recommended} details below</a>}
    </section>
@@ -69,7 +76,7 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
    </section>
    <section id="programs" data-track className="border-b border-border py-12">
     <h2 className="font-display text-3xl font-bold text-primary">Programs at a Glance</h2><p className="mt-4 text-lg">Choose a program below to see its full details. All programs stay available on this page.</p>
-    <div className="web-controls mt-8 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Program selector">{programNames.map(p=><Button key={p} aria-pressed={selected===p} variant={selected===p?"secondary":"outline"} className="flex-col items-start p-4 text-left" onClick={()=>setSelected(p)}><span className="font-semibold">{p}{p==="No Cost to Start"&&<span className="ml-2 text-xs">MOST POPULAR</span>}</span><span className="text-xs leading-5">{programs[p].Price}</span>{"Platform fee" in programs[p]&&<span className="text-xs leading-5">{p==="Hybrid Managed"||p==="Full Service Planning"?"Platform stays No Cost to Start":programs[p]["Platform fee"]}</span>}</Button>)}</div>
+    <div className="web-controls mt-8 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Program selector">{programNames.map(p=><Button key={p} aria-pressed={selected===p} variant={selected===p?"secondary":"outline"} className="flex-col items-start p-4 text-left" onClick={()=>setSelected(p)}><span className="font-semibold">{p}{p==="No Cost to Start"&&<span className="ml-2 text-xs">MOST POPULAR</span>}</span><span className="text-xs leading-5">{programs[p].Price}</span>{"Platform fee" in programs[p]&&<span className="text-xs leading-5">{p==="Hybrid Managed"||p==="Full Service Planning"?"Platform stays No Cost to Start":String(programs[p]["Platform fee"])}</span>}</Button>)}</div>
     {selected&&<Button variant="link" className="web-controls mt-3 px-0" onClick={()=>setSelected("")}>Show all programs again</Button>}
    </section>
    <section id="details" data-track className="border-b border-border py-12">

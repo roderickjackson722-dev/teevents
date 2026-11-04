@@ -1,6 +1,6 @@
 ## Client proposal webpage
-- [ ] Add standalone hidden template, editable isolated client copies, private links, admin activity, print export and proposal-only Q&A; preserve existing pages and payments.
-- [ ] Verify signed-in save/reload, link privacy, tracking, calculator, chat and phone/print layouts without sending or publishing.
+- [x] Add standalone hidden template, editable isolated client copies, private links, admin activity, print export and proposal-only Q&A; preserve existing pages and payments.
+- [x] Six rule tests and signed-in save/reload, anonymous client access, intro recommendation, question/activity readback, calculator, revoked-link blocking and phone/print checks passed; no sends or publication.
 - [ ] Approved portal screenshots await upload; named placeholders remain until supplied.
 
 ## Admin Proposals

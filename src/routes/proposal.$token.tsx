@@ -9,4 +9,4 @@ export const Route=createFileRoute("/proposal/$token")({
  errorComponent:()=> <main className="mx-auto max-w-xl p-8"><h1 className="font-display text-3xl">Proposal unavailable</h1><p className="mt-5">This private proposal link is unavailable. Contact info@teevents.golf.</p></main>,
  component:ClientProposal,
 });
-function ClientProposal(){const d=Route.useLoaderData();const {token}=Route.useParams();return <ProposalPage document={d} token={token}/>;}
+function ClientProposal(){const d=Route.useLoaderData();const {token}=Route.useParams();if(!d)return <main className="mx-auto max-w-xl p-8"><h1 className="font-display text-3xl">Proposal unavailable</h1><p className="mt-5">This private proposal link is unavailable. Contact info@teevents.golf.</p></main>;return <ProposalPage document={d} token={token}/>;}

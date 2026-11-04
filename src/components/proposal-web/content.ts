@@ -83,9 +83,10 @@ export const about = ["I am Rod, founder of TeeVents. I have run golf tournament
 export const fields = { preparedFor: "[Client or Organization Name]", event: "[Event Name]", date: "[Event Date, or TBD]", contact: "[Contact Name]", proposalDate: "[Proposal Date]", validUntil: "[Valid Until, or blank]", conversationDate: "[Date You Spoke With The Client]" };
 export const introExample = "It was great speaking with you on [Conversation Date]. Based on what I understand, I feel the [Recommended Program] package will be best for your organization.";
 export const reasonExample = "[Personalized Reason: in 1 to 2 short sentences, say why this program fits this organization, based on your conversation, for example, no money up front, a single event, a full calendar, or a full tournament manager with no money up front.]";
-export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Hybrid Managed","Full Service Planning"]),z.literal("")]), intro:z.string().max(10000), reason:z.string().max(10000) });
+const programEnum=z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Hybrid Managed","Full Service Planning"]);
+export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(6).optional(), intro:z.string().max(10000), reason:z.string().max(10000) });
 export type WebDocument = z.infer<typeof documentSchema>;
-export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",intro:introExample,reason:reasonExample});
+export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:[...programNames],intro:introExample,reason:reasonExample});
 export const fallbackAnswer = "That is not in this proposal, so I will pass that question to Rod, and he will follow up. Thank you for asking.";
 export function sensitiveQuestion(q:string) { return /(password|bank account|card number|routing number|cvv|social security)|(?:\d[ -]?){12,19}/i.test(q); }
 export function calculator(players:number,fee:number) { const registrations=Math.max(0,players)*Math.max(0,fee); return {registrations,trigger:registrations>=3750,first:1875,balance:3125}; }
@@ -101,3 +102,6 @@ export function answerQuestion(q:string,d:WebDocument) {
  if(key) return `${programs[p][key]}\n\nFrom the ${p} ${key} in this proposal.`;}
  return fallbackAnswer;
 }
+
+/** Packages shown to the client; older copies without a choice show all six. */
+export function shownPrograms(d:WebDocument){const set=d.packages;return set?programNames.filter(p=>set.includes(p)):programNames;}

@@ -122,7 +122,12 @@ export default function Presentation() {
         <h2 className={sectionTitle}>Managed Service, On Site, Not Included In Software Plans</h2>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">{MANAGED_DEFINITION}</p>
         <div className={card}>
-          <Block heading={ON_SITE_HEADING} bullets={[...ON_SITE_BULLETS]} />
+          <div className="space-y-2">
+            <p className="text-sm font-semibold tracking-wide text-foreground">{ON_SITE_HEADING}</p>
+            <ul className={bulletList}>
+              {ON_SITE_BULLETS.map(item => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
         </div>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
           Managed Service is a separate service, starting at $5,000 per event, plus travel quoted separately. It is not included in No Cost to Start, Per Event, Per League, or Enterprise.
@@ -249,7 +254,12 @@ export default function Presentation() {
             "Timeline and consulting throughout",
             "On site event day coordination",
           ]} />
-          <Block heading={ON_SITE_HEADING} bullets={[...ON_SITE_BULLETS]} />
+          <div className="space-y-2">
+            <p className="text-sm font-semibold tracking-wide text-foreground">{ON_SITE_HEADING}</p>
+            <ul className={bulletList}>
+              {ON_SITE_BULLETS.map(item => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
           <Block heading="What your group handles" bullets={[
             "Recruiting players",
             "Selling sponsorships",

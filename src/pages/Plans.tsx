@@ -98,7 +98,7 @@ export default function Plans() {
               <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{MANAGED_DEFINITION}</p>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">TeeVents negotiates your course, builds the branded event page and registration, provides sponsor packets and tiers, sets up pairings and check-in, and is on site from check-in through awards.</p>
               <div className="mt-6">
-                <p className="text-sm font-semibold uppercase tracking-wide text-foreground">{ON_SITE_HEADING}</p>
+                <p className="text-sm font-semibold tracking-wide text-foreground">{ON_SITE_HEADING}</p>
                 <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">{ON_SITE_BULLETS.map(bullet => <li key={bullet}>{bullet}</li>)}</ul>
               </div>
             </div>

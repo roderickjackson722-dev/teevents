@@ -1,7 +1,10 @@
 import { z } from "zod";
+import { SOFTWARE_TAG, MANAGED_TAG, SOFTWARE_DEFINITION, MANAGED_DEFINITION } from "@/lib/programTypes";
 export const programs = {
   "No Cost to Start": {
+    "Type": SOFTWARE_TAG,
     "Price": "$0 to start",
+    "Definition": SOFTWARE_DEFINITION,
     "Platform fee": "5%, paid by players at checkout",
     "Includes": "10 manual entries, dedicated rep, event page built for you, live in 7 days or less",
     "What We Provide": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring only if the $99 Live Leaderboard and Mobile Scoring add on is added, sponsor and auction tools, live budget tracking",
@@ -9,7 +12,9 @@ export const programs = {
     "Cancellation": "Plan purchases are non refundable on cancellation. If a golfer registration is refunded, the 5% platform fee stays with TeeVents. TeeVents does not issue refunds directly to golfers. Refunds to golfers are at the organizer discretion, and are issued by the organizer."
   },
   "Per Event": {
+    "Type": SOFTWARE_TAG,
     "Price": "$399 per event",
+    "Definition": SOFTWARE_DEFINITION,
     "Platform fee": "0% TeeVents platform fee",
     "Includes": "Live Leaderboard and Mobile Scoring included, unlimited manual entries, dedicated rep, event page built for you, live in 7 days or less",
     "What We Provide": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking",
@@ -17,14 +22,18 @@ export const programs = {
     "Cancellation": "The $399 Per Event purchase is non refundable on cancellation. A postponed event $399 moves to the new date at no extra charge. If a golfer registration is refunded, the organizer absorbs Stripe processing. TeeVents does not issue refunds directly to golfers."
   },
   "Per League": {
+    "Type": SOFTWARE_TAG,
     "Price": "$599 per league",
+    "Definition": SOFTWARE_DEFINITION,
     "Includes": "Core platform tools for league play, dedicated rep",
     "What We Provide": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking, for league play",
     "Payment Schedule": "$599 per league. Stripe processing is separate.",
     "Cancellation": "Plan purchases are non refundable on cancellation. TeeVents does not issue refunds directly to golfers."
   },
   "Enterprise": {
+    "Type": SOFTWARE_TAG,
     "Price": "$2,999 per year, for 10 or more events",
+    "Definition": SOFTWARE_DEFINITION,
     "Platform fee": "0% TeeVents platform fee",
     "Includes": "Annual plan for golf courses, whole calendar in one place, dedicated rep",
     "What We Provide": "Branded event pages, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking, for the whole course calendar",
@@ -32,7 +41,9 @@ export const programs = {
     "Cancellation": "Plan purchases are non refundable on cancellation. TeeVents does not issue refunds directly to golfers."
   },
   "Hybrid Managed": {
+    "Type": MANAGED_TAG,
     "Price": "Starting at $5,000 per event, plus travel quoted separately",
+    "Definition": MANAGED_DEFINITION,
     "Platform fee": "Platform stays No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate. The $5,000 management fee is separate from, and in addition to, the 5% platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
     "Includes": "Dedicated manager from agreement through event day, minimum field of 50 players, events planned months in advance, signed agreement required before management work starts",
     "What We Provide": "Branded TeeVents event page, registration, sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers provided for the group to sell, pairings, check in setup, live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
@@ -42,7 +53,9 @@ export const programs = {
     "Cancellation": "If the event cancels, a work fee applies for work already done: $1,500 after course negotiation and platform build, $3,000 after registration launch and sponsor packet, and the full $5,000 within 30 days of the event. If the event postpones once to a new date, the fee moves with it at no extra charge."
   },
   "Full Service Planning": {
+    "Type": MANAGED_TAG,
     "Price": "Starting at $5,000 per event, plus travel quoted separately",
+    "Definition": MANAGED_DEFINITION,
     "Platform fee": "Platform stays No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate.",
     "Includes": "Dedicated manager from agreement through event day",
     "What We Provide": "Branded TeeVents event page, registration, sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers, pairings, check in setup, live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",

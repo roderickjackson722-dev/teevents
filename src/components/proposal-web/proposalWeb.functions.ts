@@ -41,7 +41,7 @@ export const getWebActivity=createServerFn({method:"POST"}).middleware([requireS
 });
 export const readWebDocument=createServerFn({method:"GET"}).inputValidator((v:unknown)=>z.object({token:tokenSchema}).parse(v)).handler(async({data})=>{
  const {data:payload,error}=await publicClient().rpc("read_proposal_web",{_token:data.token});
- if(error||!payload)throw new Error("This proposal link is unavailable.");return documentSchema.parse(payload);
+ if(error)throw new Error("Could not load this proposal.");if(!payload)return null;return documentSchema.parse(payload);
 });
 const eventSchema=z.object({token:tokenSchema,visit:z.string().uuid(),kind:z.enum(["open","section","time","call","print"]),value:z.string().max(2000).default("")});
 export const trackWebDocument=createServerFn({method:"POST"}).inputValidator((v:unknown)=>eventSchema.parse(v)).handler(async({data})=>{

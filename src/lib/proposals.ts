@@ -1,7 +1,7 @@
 import { z } from "zod";
 export const proposalTypes = ["No Cost to Start", "Per Event", "Per League", "Enterprise", "Hybrid Managed", "Full Service Planning"] as const;
 export const proposalStatuses = ["Draft", "Sent", "Accepted", "Declined", "Expired"] as const;
-export const aboutTemplate = "I am Rod, founder of TeeVents. I have run golf tournaments for more than a decade, including some of the largest HBCU tournaments, so I built TeeVents for the work I was doing by hand.\n\nTeeVents is a golf tournament and event management platform, built for organizers who want one branded page for the whole event, from registration and sponsorships to pairings, live scoring, and check in.\n\nAt TeeVents, we are a team of golf tournament directors, and every plan includes a dedicated rep. We bring that tournament day experience to your event, from planning through event day.\n\n- Tournament director for more than 10 years\n- Organizing golf tournaments since 2017\n- Worked for Troon Golf and Cleveland Golf\n- Golfer since the late 1990s";
+export const aboutTemplate = "TeeVents is a golf tournament and event management platform, built for organizers who want one branded page for the whole event, from registration and sponsorships to pairings, live scoring, and check in.\n\nAt TeeVents, we are a team of golf tournament directors, and every plan includes a dedicated rep. We bring that tournament day experience to your event, from planning through event day.";
 export const templates: Record<string, Record<string,string>> = {
   "No Cost to Start": {
     "Price": "$0 to start",

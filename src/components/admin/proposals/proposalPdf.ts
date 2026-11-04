@@ -4,7 +4,7 @@ export function proposalPdf(row:ProposalRow):Blob {
  const doc=new jsPDF({unit:"mm",format:"a4"});const p=row.payload;let y=25;
  const green=[26,92,56] as const;const muted=[90,100,94] as const;
  function page(){doc.addPage();y=22;}
- function text(value:string,size=10,bold=false){doc.setFont("helvetica",bold?"bold":"normal");doc.setFontSize(size);doc.setTextColor(...(bold?green:muted));const lines=doc.splitTextToSize(value||" ",174) as string[];for(const line of lines){if(y>275)page();doc.text(line,18,y);y+=size*0.45+1;}y+=2;}
+ function text(value:string,size=10,bold=false){doc.setFont("helvetica",bold?"bold":"normal");doc.setFontSize(size);const color=bold?green:muted;doc.setTextColor(color[0],color[1],color[2]);const lines=doc.splitTextToSize(value||" ",174) as string[];for(const line of lines){if(y>275)page();doc.text(line,18,y);y+=size*0.45+1;}y+=2;}
  function heading(value:string){if(y>255)page();y+=4;text(value,14,true);}
  doc.setProperties({title:`Proposal — ${p.basic["Event Name"]||p.basic["Client or Organization Name"]||"TeeVents"}`,author:p.basic["Prepared By"]||""});
  text("TeeVents",23,true);text("EVENT PROPOSAL",10,true);doc.setDrawColor(...green);doc.line(18,y,192,y);y+=9;

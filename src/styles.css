@@ -65,6 +65,13 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 .scoring-table-wrap thead tr.par-row th.sticky-col{background-color:hsl(var(--muted))}
 @media(max-width:768px){.scoring-table-wrap table{display:table}}
 
+/* Roster table: its own horizontal scroller. The pinned column header is a
+   mirrored row rendered by Players.tsx, because a horizontally scrolling
+   container cannot also stick its header to the top of the window. */
+.roster-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.roster-frozen-head{position:fixed;top:0;z-index:30}
+@media(max-width:768px){.roster-table-wrap table,.roster-frozen-head table{display:table}}
+
 /* Incomplete / complete score cells */
 .incomplete-score{background-color:#fef9c3;box-shadow:inset 0 0 0 2px #eab308}
 .complete-score{background-color:transparent}

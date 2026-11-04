@@ -239,6 +239,13 @@
       "when": 1793750131946,
       "tag": "0033_admin_draft_proposals",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1793750619859,
+      "tag": "0034_proposal_status_dates_and_templates",
+      "breakpoints": true
     }
   ]
 }

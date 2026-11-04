@@ -1,4 +1,5 @@
 ## Admin Proposals
+- [x] Added manual Sent/Accepted milestone dates, reusable templates with built-in packages and saved editable terms, and downloadable multi-page PDFs. Seventeen rules tests and signed-in save/reload/template reuse/status/PDF download checks passed; both PDF pages inspected, QA records removed, no sends or publication.
 - [x] Add isolated admin-only proposal storage, list, editor, read-only view and browser printing; preserve all existing events, payment flows and auth.
 - [x] Sixteen rules tests passed; signed-in draft create/save/reload, package-change preservation, $649 total, duplication, Sent status-only action, print layout and confirmed deletion passed. Temporary QA proposals removed; no sends, live-event/payment changes or publication.
 

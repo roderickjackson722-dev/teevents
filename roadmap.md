@@ -1,4 +1,5 @@
 ## Admin Proposals
+- [ ] Add status milestone dates, saved reusable templates and downloadable PDF; verify with temporary proposals only.
 - [x] Add isolated admin-only proposal storage, list, editor, read-only view and browser printing; preserve all existing events, payment flows and auth.
 - [x] Sixteen rules tests passed; signed-in draft create/save/reload, package-change preservation, $649 total, duplication, Sent status-only action, print layout and confirmed deletion passed. Temporary QA proposals removed; no sends, live-event/payment changes or publication.
 

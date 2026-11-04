@@ -65,7 +65,9 @@ export const addonNames = ["Live Leaderboard and Mobile Scoring", "Unlimited Man
 const itemSchema = z.object({ id:z.string(), description:z.string().max(2000), quantity:z.number().finite().min(0).max(1000000), unitPrice:z.number().finite().min(0).max(100000000), kind:z.enum(["package","travel","custom","addon"]) });
 export const proposalSchema = z.object({ basic:z.record(z.string().max(10000)), about:z.string().max(50000), type:z.union([z.enum(proposalTypes), z.literal("")]), sections:z.record(z.string().max(50000)), items:z.array(itemSchema).max(300) });
 export type Proposal = z.infer<typeof proposalSchema>;
-export type ProposalRow = { id:string; created_at:string; updated_at:string; status:typeof proposalStatuses[number]; payload:Proposal };
+export type ProposalRow = { id:string; created_at:string; updated_at:string; status:typeof proposalStatuses[number]; payload:Proposal; sent_at?:string|null; accepted_at?:string|null; status_changed_at?:string };
+export type ProposalTemplate = { id:string; name:string; payload:Proposal };
+export function draftFromTemplate(p:Proposal):Proposal { return {...structuredClone(p),basic:{"Prepared By":p.basic["Prepared By"]||"TeeVents"},items:p.items.map(i=>({...i,id:crypto.randomUUID()}))}; }
 export const packagePrices: Record<string,number> = {"No Cost to Start":0,"Per Event":399,"Per League":599,"Enterprise":2999,"Hybrid Managed":5000,"Full Service Planning":5000};
 export function newProposal():Proposal { return { basic:{"Prepared By":"TeeVents"}, about:aboutTemplate, type:"", sections:{}, items:[{id:crypto.randomUUID(),description:"Travel",quantity:1,unitPrice:0,kind:"travel"}] }; }
 export function changeProposalType(p:Proposal,type:typeof proposalTypes[number]):Proposal {

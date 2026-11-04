@@ -48,3 +48,4 @@ Proposals has its own AGENTS.md to read before changing files there.
 - Enterprise Leaderboard is a read-only list plus a view that embeds the existing live leaderboard; Enter scores and settings link to existing Enterprise Scores/Leaderboard settings, and leagues open the Enterprise Manage League page by tab, so scoring and leaderboard logic stay shared.
 - Enterprise Printables use an in-memory copy (printSelections.ts) and CartSignsTab printOnly, so printouts never write players, pairings or groups.
 - Paid online sign-ups wait in private registration_checkout_holds; verify-registration creates them as paid, and public inserts can't be pending.
+- Roster column names stay pinned with a mirrored fixed header row in Players.tsx, because a horizontally scrolling table wrapper cannot stick its own header to the window; keep the mirror and the real header rendered from the same header-row component so they stay identical.

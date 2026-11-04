@@ -28,6 +28,7 @@ import { Route as PlansRouteImport } from './routes/plans'
 import { Route as PresentationRouteImport } from './routes/presentation'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyRouteImport } from './routes/privacy'
+import { Route as ProposalTemplateRouteImport } from './routes/proposal-template'
 import { Route as RefundPolicyRouteImport } from './routes/refund-policy'
 import { Route as ReviewsRouteImport } from './routes/reviews'
 import { Route as SalesSheetRouteImport } from './routes/sales-sheet'
@@ -39,6 +40,7 @@ import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
 import { Route as EnterpriseSkinsPayoutsRouteImport } from './routes/enterprise.skins-payouts'
 import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
 import { Route as PairingsSlugRouteImport } from './routes/pairings/$slug'
+import { Route as ProposalTokenRouteImport } from './routes/proposal.$token'
 import { Route as SSlugRouteImport } from './routes/s/$slug'
 import { Route as TSlugRouteImport } from './routes/t/$slug'
 import { Route as TeamSlugRouteImport } from './routes/team/$slug'
@@ -168,6 +170,11 @@ const PrivacyRoute = PrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProposalTemplateRoute = ProposalTemplateRouteImport.update({
+  id: '/proposal-template',
+  path: '/proposal-template',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RefundPolicyRoute = RefundPolicyRouteImport.update({
   id: '/refund-policy',
   path: '/refund-policy',
@@ -221,6 +228,11 @@ const LeagueSlugRoute = LeagueSlugRouteImport.update({
 const PairingsSlugRoute = PairingsSlugRouteImport.update({
   id: '/pairings/$slug',
   path: '/pairings/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProposalTokenRoute = ProposalTokenRouteImport.update({
+  id: '/proposal/$token',
+  path: '/proposal/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SSlugRoute = SSlugRouteImport.update({
@@ -430,6 +442,7 @@ export interface FileRoutesByFullPath {
   '/presentation': typeof PresentationRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/proposal-template': typeof ProposalTemplateRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
@@ -440,6 +453,7 @@ export interface FileRoutesByFullPath {
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
+  '/proposal/$token': typeof ProposalTokenRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
   '/team/$slug': typeof TeamSlugRouteWithChildren
@@ -495,6 +509,7 @@ export interface FileRoutesByTo {
   '/presentation': typeof PresentationRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/proposal-template': typeof ProposalTemplateRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
@@ -505,6 +520,7 @@ export interface FileRoutesByTo {
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
+  '/proposal/$token': typeof ProposalTokenRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
   '/team/$slug': typeof TeamSlugRouteWithChildren
@@ -561,6 +577,7 @@ export interface FileRoutesById {
   '/presentation': typeof PresentationRoute
   '/pricing': typeof PricingRoute
   '/privacy': typeof PrivacyRoute
+  '/proposal-template': typeof ProposalTemplateRoute
   '/refund-policy': typeof RefundPolicyRoute
   '/reviews': typeof ReviewsRoute
   '/sales-sheet': typeof SalesSheetRoute
@@ -571,6 +588,7 @@ export interface FileRoutesById {
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
+  '/proposal/$token': typeof ProposalTokenRoute
   '/s/$slug': typeof SSlugRoute
   '/t/$slug': typeof TSlugRoute
   '/team/$slug': typeof TeamSlugRouteWithChildren
@@ -628,6 +646,7 @@ export interface FileRouteTypes {
     | '/presentation'
     | '/pricing'
     | '/privacy'
+    | '/proposal-template'
     | '/refund-policy'
     | '/reviews'
     | '/sales-sheet'
@@ -638,6 +657,7 @@ export interface FileRouteTypes {
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
+    | '/proposal/$token'
     | '/s/$slug'
     | '/t/$slug'
     | '/team/$slug'
@@ -693,6 +713,7 @@ export interface FileRouteTypes {
     | '/presentation'
     | '/pricing'
     | '/privacy'
+    | '/proposal-template'
     | '/refund-policy'
     | '/reviews'
     | '/sales-sheet'
@@ -703,6 +724,7 @@ export interface FileRouteTypes {
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
+    | '/proposal/$token'
     | '/s/$slug'
     | '/t/$slug'
     | '/team/$slug'
@@ -758,6 +780,7 @@ export interface FileRouteTypes {
     | '/presentation'
     | '/pricing'
     | '/privacy'
+    | '/proposal-template'
     | '/refund-policy'
     | '/reviews'
     | '/sales-sheet'
@@ -768,6 +791,7 @@ export interface FileRouteTypes {
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
+    | '/proposal/$token'
     | '/s/$slug'
     | '/t/$slug'
     | '/team/$slug'
@@ -824,6 +848,7 @@ export interface RootRouteChildren {
   PresentationRoute: typeof PresentationRoute
   PricingRoute: typeof PricingRoute
   PrivacyRoute: typeof PrivacyRoute
+  ProposalTemplateRoute: typeof ProposalTemplateRoute
   RefundPolicyRoute: typeof RefundPolicyRoute
   ReviewsRoute: typeof ReviewsRoute
   SalesSheetRoute: typeof SalesSheetRoute
@@ -834,6 +859,7 @@ export interface RootRouteChildren {
   EnterpriseSkinsPayoutsRoute: typeof EnterpriseSkinsPayoutsRoute
   LeagueSlugRoute: typeof LeagueSlugRoute
   PairingsSlugRoute: typeof PairingsSlugRoute
+  ProposalTokenRoute: typeof ProposalTokenRoute
   SSlugRoute: typeof SSlugRoute
   TSlugRoute: typeof TSlugRoute
   TeamSlugRoute: typeof TeamSlugRouteWithChildren
@@ -1004,6 +1030,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/proposal-template': {
+      id: '/proposal-template'
+      path: '/proposal-template'
+      fullPath: '/proposal-template'
+      preLoaderRoute: typeof ProposalTemplateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/refund-policy': {
       id: '/refund-policy'
       path: '/refund-policy'
@@ -1079,6 +1112,13 @@ declare module '@tanstack/react-router' {
       path: '/pairings/$slug'
       fullPath: '/pairings/$slug'
       preLoaderRoute: typeof PairingsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/proposal/$token': {
+      id: '/proposal/$token'
+      path: '/proposal/$token'
+      fullPath: '/proposal/$token'
+      preLoaderRoute: typeof ProposalTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/s/$slug': {
@@ -1347,6 +1387,7 @@ const rootRouteChildren: RootRouteChildren = {
   PresentationRoute: PresentationRoute,
   PricingRoute: PricingRoute,
   PrivacyRoute: PrivacyRoute,
+  ProposalTemplateRoute: ProposalTemplateRoute,
   RefundPolicyRoute: RefundPolicyRoute,
   ReviewsRoute: ReviewsRoute,
   SalesSheetRoute: SalesSheetRoute,
@@ -1357,6 +1398,7 @@ const rootRouteChildren: RootRouteChildren = {
   EnterpriseSkinsPayoutsRoute: EnterpriseSkinsPayoutsRoute,
   LeagueSlugRoute: LeagueSlugRoute,
   PairingsSlugRoute: PairingsSlugRoute,
+  ProposalTokenRoute: ProposalTokenRoute,
   SSlugRoute: SSlugRoute,
   TSlugRoute: TSlugRoute,
   TeamSlugRoute: TeamSlugRouteWithChildren,

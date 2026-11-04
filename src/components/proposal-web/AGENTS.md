@@ -1,0 +1,4 @@
+# Proposal web isolation
+- Client proposal webpages use separate capability-link documents and admin-only activity storage; never read or write events, billing or existing proposals.
+- Answers are deterministic extracts from the approved proposal content with section citations; unknown requests are saved for follow-up, not sent.
+- Portal image slots remain named placeholders until approved screenshots are supplied; reuse only the real founder portrait.

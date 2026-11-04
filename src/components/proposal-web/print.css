@@ -1,0 +1,12 @@
+.proposal-web * { letter-spacing: 0; }
+.proposal-web section { scroll-margin-top: 2rem; }
+.proposal-web button { white-space: normal; height: auto; min-height: 2.5rem; }
+@media print {
+ .proposal-web .web-controls,.proposal-web .web-chat { display:none !important; }
+ .proposal-web .program-detail { display:block !important; break-before:page; }
+ .proposal-web section { padding-top:1.5rem; padding-bottom:1.5rem; }
+ .proposal-web .web-cover { break-after:page; }
+ .proposal-web details > * { display:block !important; }
+ .proposal-web figure,.proposal-web h2,.proposal-web h3 { break-inside:avoid; }
+ .proposal-web { font-size:12pt; }
+}

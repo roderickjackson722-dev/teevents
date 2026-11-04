@@ -246,6 +246,13 @@
       "when": 1793750619859,
       "tag": "0034_proposal_status_dates_and_templates",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "7",
+      "when": 1793818263769,
+      "tag": "0035_isolated_client_proposal_webpages",
+      "breakpoints": true
     }
   ]
 }

@@ -1,0 +1,25 @@
+CREATE TABLE public.proposal_web_documents (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), created_by uuid NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now(), access_token text NOT NULL UNIQUE DEFAULT encode(gen_random_bytes(32),'hex'), payload jsonb NOT NULL DEFAULT '{}'::jsonb);
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.proposal_web_documents TO authenticated;
+GRANT ALL ON public.proposal_web_documents TO service_role;
+ALTER TABLE public.proposal_web_documents ENABLE ROW LEVEL SECURITY;
+CREATE POLICY admin_only ON public.proposal_web_documents FOR ALL TO authenticated USING (public.has_role(auth.uid(),'admin')) WITH CHECK (public.has_role(auth.uid(),'admin') AND created_by = auth.uid());
+CREATE TABLE public.proposal_web_activity (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), proposal_id uuid NOT NULL REFERENCES public.proposal_web_documents(id) ON DELETE CASCADE, recorded_at timestamptz NOT NULL DEFAULT now(), visit_id uuid NOT NULL, kind text NOT NULL CHECK (kind IN ('open','section','time','call','print','question')), value text NOT NULL DEFAULT '' CHECK (length(value)<=2000));
+GRANT SELECT ON public.proposal_web_activity TO authenticated;
+GRANT ALL ON public.proposal_web_activity TO service_role;
+ALTER TABLE public.proposal_web_activity ENABLE ROW LEVEL SECURITY;
+CREATE POLICY admin_read ON public.proposal_web_activity FOR SELECT TO authenticated USING (public.has_role(auth.uid(),'admin'));
+CREATE INDEX proposal_web_activity_document_idx ON public.proposal_web_activity(proposal_id, recorded_at);
+CREATE FUNCTION public.read_proposal_web(_token text) RETURNS jsonb LANGUAGE sql STABLE SECURITY DEFINER SET search_path='' AS $$ SELECT d.payload FROM public.proposal_web_documents d WHERE length(_token)=64 AND d.access_token=_token $$;
+REVOKE ALL ON FUNCTION public.read_proposal_web(text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.read_proposal_web(text) TO anon,authenticated,service_role;
+CREATE FUNCTION public.record_proposal_web(_token text,_visit uuid,_kind text,_value text) RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$ DECLARE target uuid; BEGIN
+IF length(_token)<>64 OR _kind NOT IN ('open','section','time','call','print','question') OR length(_value)>2000 THEN RETURN false; END IF;
+IF _kind='section' AND _value NOT IN ('cover','intro','about','programs','details','addons','questions','next','notice') THEN RETURN false; END IF;
+IF _kind='time' AND _value !~ '^[0-9]{1,6}$' THEN RETURN false; END IF;
+IF _kind='question' AND (_value ~* '(password|bank account|card number|routing number|cvv|social security)' OR _value ~ '[0-9]{12,19}') THEN RETURN false; END IF;
+SELECT id INTO target FROM public.proposal_web_documents WHERE access_token=_token;
+IF target IS NULL THEN RETURN false; END IF;
+IF (SELECT count(*) FROM public.proposal_web_activity WHERE proposal_id=target AND visit_id=_visit AND recorded_at>now()-interval '1 hour') >= 200 THEN RETURN false; END IF;
+INSERT INTO public.proposal_web_activity(proposal_id,visit_id,kind,value) VALUES(target,_visit,_kind,_value); RETURN true; END $$;
+REVOKE ALL ON FUNCTION public.record_proposal_web(text,uuid,text,text) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION public.record_proposal_web(text,uuid,text,text) TO anon,authenticated,service_role;

@@ -25,7 +25,7 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
  async function record(kind:"open"|"section"|"time"|"call"|"print",value=""){if(token)await track({data:{token,visit:visit.current,kind,value}});}
  useEffect(()=>{
   if(!token)return;
-  const start=Date.now();let activeSince=document.visibilityState==="visible"?Date.now():0;let elapsed=0;
+  const start=Date.now();let activeSince=window.document.visibilityState==="visible"?Date.now():0;let elapsed=0;
   const seen=new Set<string>();
   void record("open").catch(()=>{});
   const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting&&!seen.has(entry.target.id)){seen.add(entry.target.id);void record("section",entry.target.id).catch(()=>{});}}},{threshold:0.15});

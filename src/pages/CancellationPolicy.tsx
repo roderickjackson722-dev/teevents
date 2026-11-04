@@ -18,13 +18,13 @@ export default function CancellationPolicy() {
           TeeVents does not issue refunds directly to golfers. Refunds to golfers are at the organizer discretion, and are issued by the organizer.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          If a golfer registration is refunded, the 5 percent TeeVents platform fee stays with TeeVents. Stripe processing, at 2.9 percent plus $0.30, is also non refundable by Stripe policy, and the organizer absorbs it.
+          If a golfer registration is refunded, the 5% TeeVents platform fee stays with TeeVents. Stripe processing, at 2.9% plus $0.30, is also non refundable by Stripe policy, and the organizer absorbs it.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
           Per Event, Per League, Enterprise, and other plan and add on purchases are non refundable on cancellation. This includes the $399 Per Event purchase.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          No Cost to Start has no plan purchase to refund. The 5 percent platform fee paid by players at checkout on refunded registrations stays with TeeVents, as described above.
+          No Cost to Start has no plan purchase to refund. The 5% platform fee paid by players at checkout on refunded registrations stays with TeeVents, as described above.
         </p>
       </section>
 

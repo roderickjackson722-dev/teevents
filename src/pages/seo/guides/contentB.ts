@@ -179,7 +179,7 @@ export const eventbrite: GuideContent = {
       heading: "Fees and how money moves",
       mockup: "pricing",
       paragraphs: [
-        "TeeVents starts at $0 with a 5 percent player-funded service fee, so organizers keep their event revenue. Per-Event is a one-time $399 with no TeeVents transaction fee and includes live scoring plus a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
+        "TeeVents starts at $0 with a 5% player-funded service fee, so organizers keep their event revenue. Per-Event is a one-time $399 with no TeeVents transaction fee and includes live scoring plus a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
         "Funds settle directly to your own connected Stripe account as the merchant of record, so you are not waiting on a platform payout cycle to access your event revenue.",
       ],
     },
@@ -197,7 +197,7 @@ export const eventbrite: GuideContent = {
     },
     {
       q: "What does TeeVents cost compared to Eventbrite?",
-      a: "TeeVents charges a 5 percent platform fee plus card processing, with no required subscription. Fees can be passed to registrants at checkout.",
+      a: "TeeVents charges a 5% platform fee plus card processing, with no required subscription. Fees can be passed to registrants at checkout.",
     },
     {
       q: "Can I move an event that already started selling on Eventbrite?",
@@ -305,7 +305,7 @@ export const competitors: GuideContent = {
     },
     {
       q: "How do payouts work on TeeVents?",
-      a: "Payments settle directly to your connected Stripe account as merchant of record, with a 5 percent platform fee on paid transactions.",
+      a: "Payments settle directly to your connected Stripe account as merchant of record, with a 5% platform fee on paid transactions.",
     },
   ],
   related: [
@@ -445,7 +445,7 @@ export const pricing: GuideContent = {
       heading: "How TeeVents pricing works",
       mockup: "pricing",
       bullets: [
-        "No Cost to Start: $0 with a 5 percent player-funded service fee.",
+        "No Cost to Start: $0 with a 5% player-funded service fee.",
         "Per-Event: a one-time $399 for one tournament, with no TeeVents transaction fee and a dedicated representative. Dedicated rep included on every plan — even free.",
         "Per-League: $599 for the complete league season.",
         "Enterprise: $2,999 per year for unlimited events and zero TeeVents transaction fees.",
@@ -462,14 +462,14 @@ export const pricing: GuideContent = {
     {
       heading: "Who holds your money",
       paragraphs: [
-        "This is the question most organizers forget to ask. On TeeVents, payments settle directly into your own connected Stripe account and you are the merchant of record. TeeVents never takes custody of organizer funds — only the 5 percent platform fee is collected from each transaction.",
+        "This is the question most organizers forget to ask. On TeeVents, payments settle directly into your own connected Stripe account and you are the merchant of record. TeeVents never takes custody of organizer funds — only the 5% platform fee is collected from each transaction.",
         "Practically, that means you access your revenue on Stripe's normal payout schedule rather than waiting for a platform to reconcile and cut a check after the event. Payout options include automatic Stripe deposits or a check on request.",
       ],
     },
     {
       heading: "A realistic cost example",
       paragraphs: [
-        "Take a 144-player charity scramble at $200 per player with $30,000 in sponsorships. Registration revenue is $28,800, sponsorships $30,000, and add-ons and raffle another $6,000 — roughly $64,800 collected. The 5 percent platform fee is about $3,240, plus standard card processing on the portion paid by card.",
+        "Take a 144-player charity scramble at $200 per player with $30,000 in sponsorships. Registration revenue is $28,800, sponsorships $30,000, and add-ons and raffle another $6,000 — roughly $64,800 collected. The 5% platform fee is about $3,240, plus standard card processing on the portion paid by card.",
         "If you pass fees to buyers, your net is essentially the full $64,800. Compare that to a seasonal subscription you pay whether or not the event sells, plus the 20 to 40 volunteer hours a spreadsheet workflow consumes, and the transaction model is usually the better economics for an annual event.",
       ],
     },
@@ -499,7 +499,7 @@ export const pricing: GuideContent = {
   faqs: [
     {
       q: "How much does TeeVents cost?",
-      a: "Start at $0 with a 5 percent player-funded service fee. Per-Event is $399, Per-League is $599, and Enterprise is $2,999 per year.",
+      a: "Start at $0 with a 5% player-funded service fee. Per-Event is $399, Per-League is $599, and Enterprise is $2,999 per year.",
     },
     {
       q: "Is there a monthly subscription?",

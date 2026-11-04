@@ -139,7 +139,7 @@ export default function Presentation() {
         <h2 className={sectionTitle}>5. Pricing, and who each package is good for</h2>
         <div className="space-y-6">
           <div className={card}>
-            <p className="text-lg font-semibold text-foreground">No Cost to Start</p>
+            <div className="flex flex-wrap items-center gap-2"><p className="text-lg font-semibold text-foreground">No Cost to Start</p><span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">Most Popular</span></div>
             <Block heading="Price" bullets={["$0 to start"]} />
             <Block heading="Includes" bullets={[
               "5% platform fee, paid by players at checkout",
@@ -159,7 +159,6 @@ export default function Presentation() {
           <div className="rounded-lg border-2 border-secondary bg-muted/40 p-6 space-y-4">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-lg font-semibold text-foreground">Per Event</p>
-              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">Most Popular</span>
             </div>
             <Block heading="Price" bullets={["$399 per event"]} />
             <Block heading="Includes" bullets={[

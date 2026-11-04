@@ -4,16 +4,16 @@ export const proposalStatuses = ["Draft", "Sent", "Accepted", "Declined", "Expir
 export const aboutTemplate = "TeeVents is a golf tournament and event management platform, built for organizers who want one branded page for the whole event, from registration and sponsorships to pairings, live scoring, and check in.\n\nAt TeeVents, we are a team of golf tournament directors, and every plan includes a dedicated rep. We bring that tournament day experience to your event, from planning through event day.";
 export const templates: Record<string, Record<string,string>> = {
   "No Cost to Start": {
-    "Price": "$0 to start",
-    "Platform fee": "5 percent, paid by players at checkout",
+    "Price": "$0 to start — MOST POPULAR",
+    "Platform fee": "5%, paid by players at checkout",
     "Includes": "10 manual entries, dedicated rep, event page built for you, live in 7 days or less",
     "Scope": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring only if the $99 Live Leaderboard and Mobile Scoring add on is added, sponsor and auction tools, live budget tracking",
     "Payment schedule": "No plan purchase due at signing. Platform fee is paid by players at checkout. Stripe processing is separate.",
-    "Cancellation": "Plan purchases are non refundable on cancellation. If a golfer registration is refunded, the 5 percent platform fee stays with TeeVents. TeeVents does not issue refunds directly to golfers. Refunds to golfers are at the organizer discretion, and are issued by the organizer."
+    "Cancellation": "Plan purchases are non refundable on cancellation. If a golfer registration is refunded, the 5% platform fee stays with TeeVents. TeeVents does not issue refunds directly to golfers. Refunds to golfers are at the organizer discretion, and are issued by the organizer."
   },
   "Per Event": {
-    "Price": "$399 per event — MOST POPULAR",
-    "Platform fee": "0 percent TeeVents platform fee",
+    "Price": "$399 per event",
+    "Platform fee": "0% TeeVents platform fee",
     "Includes": "Live Leaderboard and Mobile Scoring included, unlimited manual entries, dedicated rep, event page built for you, live in 7 days or less",
     "Scope": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking",
     "Payment schedule": "$399 per event. Stripe processing is separate.",
@@ -29,7 +29,7 @@ export const templates: Record<string, Record<string,string>> = {
   },
   "Enterprise": {
     "Price": "$2,999 per year, for 10 or more events",
-    "Platform fee": "0 percent TeeVents platform fee",
+    "Platform fee": "0% TeeVents platform fee",
     "Includes": "Annual plan for golf courses, whole calendar in one place, dedicated rep",
     "Scope": "Branded event pages, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking, for the whole course calendar",
     "Payment schedule": "$2,999 per year. Stripe processing is separate.",
@@ -37,7 +37,7 @@ export const templates: Record<string, Record<string,string>> = {
   },
   "Hybrid Managed": {
     "Price": "Starting at $5,000 per event, plus travel quoted separately",
-    "Platform fee": "Platform stays No Cost to Start. Players pay the 5 percent platform fee at checkout. Stripe processing is separate. The $5,000 management fee is separate from, and in addition to, the 5 percent platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
+    "Platform fee": "Platform stays No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate. The $5,000 management fee is separate from, and in addition to, the 5% platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
     "Includes": "Dedicated manager from agreement through event day, minimum field of 50 players, events planned months in advance, signed agreement required before management work starts",
     "Scope": "Branded TeeVents event page, registration, and sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers provided for the group to sell, pairings, check in setup, and live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
     "Group handles": "Recruiting players, selling sponsorships, paying course, food, awards, and vendor costs directly, providing logo, tournament details, and one board contact who can approve decisions",
@@ -47,7 +47,7 @@ export const templates: Record<string, Record<string,string>> = {
   },
   "Full Service Planning": {
     "Price": "Starting at $5,000 per event, plus travel quoted separately",
-    "Platform fee": "Platform stays No Cost to Start. Players pay the 5 percent platform fee at checkout. Stripe processing is separate.",
+    "Platform fee": "Platform stays No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate.",
     "Includes": "Dedicated manager from agreement through event day",
     "Minimum field and lead time": "",
     "Scope": "Branded TeeVents event page, registration, and sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers, pairings, check in setup, and live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",

@@ -130,9 +130,9 @@ export const handicapSystem: GuideContent = {
       heading: "Allowances by format",
       bullets: [
         "Individual stroke play: full course handicap, subtracted from gross for net score.",
-        "Four-person scramble: a common approach is a percentage blend of the four course handicaps — for example 25/20/15/10 percent from low to high — producing a single team handicap.",
-        "Two-person scramble: typically 35 percent of the low handicap plus 15 percent of the high.",
-        "Best ball: a percentage of each player's course handicap, commonly 85 to 90 percent.",
+        "Four-person scramble: a common approach is a percentage blend of the four course handicaps — for example 25/20/15/10% from low to high — producing a single team handicap.",
+        "Two-person scramble: typically 35% of the low handicap plus 15% of the high.",
+        "Best ball: a percentage of each player's course handicap, commonly 85 to 90%.",
         "Stableford: full or near-full handicap, with points awarded relative to net score per hole.",
       ],
       paragraphs: [
@@ -183,7 +183,7 @@ export const handicapSystem: GuideContent = {
     },
     {
       q: "What handicap allowance is used for a four-person scramble?",
-      a: "A common convention is 25/20/15/10 percent of each player's course handicap from low to high, combined into one team handicap. Announce your method in advance.",
+      a: "A common convention is 25/20/15/10% of each player's course handicap from low to high, combined into one team handicap. Announce your method in advance.",
     },
     {
       q: "What if players do not know their handicap?",
@@ -487,7 +487,7 @@ export const websiteBuilderPage: GuideContent = {
     },
     {
       q: "What does the website cost?",
-      a: "The site is part of the platform. Start at $0 with a 5 percent player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee.",
+      a: "The site is part of the platform. Start at $0 with a 5% player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee.",
     },
   ],
   related: [

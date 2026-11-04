@@ -1,5 +1,6 @@
 import { jsPDF } from "jspdf";
-import logoUrl from "@/assets/logo-black.png";
+import logoUrl from "@/assets/logo-white.png";
+import { loadGaramond } from "./pdfFonts";
 import { addonNames, footerNote, templates } from "@/lib/proposals";
 
 // Admin-only "Programs & Services" proposal template. Built from the same
@@ -40,24 +41,25 @@ export async function programsGuidePdf(): Promise<Blob> {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
   const logo = await loadLogo();
+  const F = await loadGaramond(doc);
   let y = 0;
 
   const header = () => {
     doc.setFillColor(...green);
     doc.rect(0, 0, W, 16, "F");
     if (logo) doc.addImage(logo, "PNG", 16, 3, 10, 10);
-    doc.setFont("helvetica", "bold");
+    doc.setFont(F, "bold");
     doc.setFontSize(12);
     doc.setTextColor(255, 255, 255);
     doc.text("TeeVents", logo ? 29 : 16, 10.5);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(F, "normal");
     doc.setFontSize(9);
     doc.text(WEBSITE, W - 16, 10.5, { align: "right" });
     y = 30;
   };
   const newPage = () => { doc.addPage(); header(); };
   const write = (value: string, size = 10.5, bold = false, color: readonly number[] = muted, indent = 0) => {
-    doc.setFont("helvetica", bold ? "bold" : "normal");
+    doc.setFont(F, bold ? "bold" : "normal");
     doc.setFontSize(size);
     doc.setTextColor(color[0], color[1], color[2]);
     const lines = doc.splitTextToSize(value, W - 32 - indent) as string[];
@@ -81,18 +83,16 @@ export async function programsGuidePdf(): Promise<Blob> {
   doc.setFillColor(...green);
   doc.rect(0, 0, W, H, "F");
   if (logo) {
-    doc.setFillColor(255, 255, 255);
-    doc.roundedRect(W / 2 - 22, 50, 44, 44, 6, 6, "F");
     doc.addImage(logo, "PNG", W / 2 - 17, 55, 34, 34);
   }
   doc.setTextColor(255, 255, 255);
-  doc.setFont("helvetica", "bold");
+  doc.setFont(F, "bold");
   doc.setFontSize(34);
   doc.text("TeeVents", W / 2, 118, { align: "center" });
   doc.setFontSize(15);
   doc.setTextColor(...gold);
   doc.text("Golf Tournament Programs & Services", W / 2, 130, { align: "center" });
-  doc.setFont("helvetica", "normal");
+  doc.setFont(F, "normal");
   doc.setFontSize(11);
   doc.setTextColor(255, 255, 255);
   doc.text(doc.splitTextToSize("Every program includes a dedicated TeeVents rep who builds your event for you.", 140), W / 2, 145, { align: "center" });
@@ -102,9 +102,9 @@ export async function programsGuidePdf(): Promise<Blob> {
   doc.text("Prepared for: ______________________________", W / 2, 180, { align: "center" });
   doc.text("Event: ______________________________", W / 2, 190, { align: "center" });
   doc.text("Date: ______________________________", W / 2, 200, { align: "center" });
-  doc.setFont("helvetica", "bold");
+  doc.setFont(F, "bold");
   doc.text(WEBSITE, W / 2, H - 30, { align: "center" });
-  doc.setFont("helvetica", "normal");
+  doc.setFont(F, "normal");
   doc.text(`${EMAIL}  |  ${PHONE}`, W / 2, H - 23, { align: "center" });
 
   // About & overview
@@ -135,7 +135,7 @@ export async function programsGuidePdf(): Promise<Blob> {
     const priceLines = doc.splitTextToSize(t.Price, W - 44) as string[];
     const boxH = 8 + priceLines.length * 6;
     doc.roundedRect(16, y, W - 32, boxH, 3, 3, "F");
-    doc.setFont("helvetica", "bold");
+    doc.setFont(F, "bold");
     doc.setFontSize(13);
     doc.setTextColor(...green);
     doc.text(priceLines, 22, y + 8);
@@ -177,7 +177,7 @@ export async function programsGuidePdf(): Promise<Blob> {
   const count = doc.getNumberOfPages();
   for (let n = 2; n <= count; n++) {
     doc.setPage(n);
-    doc.setFont("helvetica", "normal");
+    doc.setFont(F, "normal");
     doc.setFontSize(8);
     doc.setTextColor(...muted);
     doc.text(`TeeVents  |  ${WEBSITE}  |  ${EMAIL}`, 16, H - 10);

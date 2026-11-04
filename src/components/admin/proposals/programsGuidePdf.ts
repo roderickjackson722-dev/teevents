@@ -36,7 +36,13 @@ async function loadLogo(): Promise<string | null> {
   }
 }
 
-export async function programsGuidePdf(): Promise<Blob> {
+export interface ProgramsGuideDetails {
+  preparedFor?: string;
+  event?: string;
+  date?: string;
+}
+
+export async function programsGuidePdf(details: ProgramsGuideDetails = {}): Promise<Blob> {
   const doc = new jsPDF({ unit: "mm", format: "letter" });
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
@@ -99,9 +105,11 @@ export async function programsGuidePdf(): Promise<Blob> {
   doc.setFillColor(...gold);
   doc.rect(W / 2 - 25, 160, 50, 0.8, "F");
   doc.setFontSize(11);
-  doc.text("Prepared for: ______________________________", W / 2, 180, { align: "center" });
-  doc.text("Event: ______________________________", W / 2, 190, { align: "center" });
-  doc.text("Date: ______________________________", W / 2, 200, { align: "center" });
+  const coverLine = (labelText: string, value?: string) =>
+    `${labelText}: ${value?.trim() ? value.trim() : "______________________________"}`;
+  doc.text(coverLine("Prepared for", details.preparedFor), W / 2, 180, { align: "center" });
+  doc.text(coverLine("Event", details.event), W / 2, 190, { align: "center" });
+  doc.text(coverLine("Date", details.date), W / 2, 200, { align: "center" });
   doc.setFont(F, "bold");
   doc.text(WEBSITE, W / 2, H - 30, { align: "center" });
   doc.setFont(F, "normal");
@@ -187,8 +195,8 @@ export async function programsGuidePdf(): Promise<Blob> {
   return doc.output("blob");
 }
 
-export async function downloadProgramsGuide() {
-  const blob = await programsGuidePdf();
+export async function downloadProgramsGuide(details: ProgramsGuideDetails = {}) {
+  const blob = await programsGuidePdf(details);
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;

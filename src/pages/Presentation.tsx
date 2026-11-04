@@ -1,9 +1,12 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+import { SOFTWARE_TAG, SOFTWARE_DEFINITION, MANAGED_TAG, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS } from "@/lib/programTypes";
 
 const emailHref = "mailto:info@teevents.golf?subject=TeeVents%20presentation%20follow%20up";
 
 const sectionTitle = "font-display text-2xl font-bold text-foreground md:text-3xl";
+const typeTag = "text-xs font-bold uppercase tracking-widest text-primary";
+const definitionLine = "text-sm leading-relaxed text-muted-foreground [overflow-wrap:normal]";
 const subHeading = "text-sm font-semibold uppercase tracking-wide text-foreground";
 const bulletList = "list-disc space-y-1.5 pl-5 text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]";
 const card = "rounded-lg border border-border bg-muted/40 p-6 space-y-4";
@@ -34,7 +37,6 @@ const offers = [
   { title: "Sponsor and auction tools", bullets: ["Sponsor visibility", "Auction tools to help raise more"] },
   { title: "Live budget tracking", bullets: ["Registrations, sponsorships, and money coming in, in one place"] },
   { title: "Done for you setup", bullets: ["We build your page, live in 7 days or less once logo and details arrive", "Every plan includes a dedicated rep"] },
-  { title: "On site tournament day help", bullets: ["In person management on event day, from check in to live scoring", "Separate service, travel quoted separately"] },
 ];
 
 const steps = [
@@ -114,6 +116,17 @@ export default function Presentation() {
             </ul>
           </div>)}
         </div>
+      </section>
+
+      <section className="space-y-5">
+        <h2 className={sectionTitle}>Managed Service, On Site, Not Included In Software Plans</h2>
+        <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">{MANAGED_DEFINITION}</p>
+        <div className={card}>
+          <Block heading={ON_SITE_HEADING} bullets={[...ON_SITE_BULLETS]} />
+        </div>
+        <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
+          Managed Service is a separate service, starting at $5,000 per event, plus travel quoted separately. It is not included in No Cost to Start, Per Event, Per League, or Enterprise.
+        </p>
       </section>
 
       <section className="space-y-5">

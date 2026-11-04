@@ -17,7 +17,7 @@ function load() {
   return cache;
 }
 /** Registers Garamond on the document and returns the font family name to use. */
-export async function useGaramond(doc: jsPDF): Promise<string> {
+export async function loadGaramond(doc: jsPDF): Promise<string> {
   const f = await load();
   if (!f) return "times";
   doc.addFileToVFS("EBGaramond-Regular.ttf", f[0]);

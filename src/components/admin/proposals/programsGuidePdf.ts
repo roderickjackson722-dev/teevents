@@ -1,6 +1,6 @@
 import { jsPDF } from "jspdf";
 import logoUrl from "@/assets/logo-white.png";
-import { useGaramond } from "./pdfFonts";
+import { loadGaramond } from "./pdfFonts";
 import { addonNames, footerNote, templates } from "@/lib/proposals";
 
 // Admin-only "Programs & Services" proposal template. Built from the same
@@ -41,7 +41,7 @@ export async function programsGuidePdf(): Promise<Blob> {
   const W = doc.internal.pageSize.getWidth();
   const H = doc.internal.pageSize.getHeight();
   const logo = await loadLogo();
-  const F = await useGaramond(doc);
+  const F = await loadGaramond(doc);
   let y = 0;
 
   const header = () => {

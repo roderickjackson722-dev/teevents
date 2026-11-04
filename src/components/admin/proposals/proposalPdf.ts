@@ -1,8 +1,8 @@
 import { jsPDF } from "jspdf";
-import { useGaramond } from "./pdfFonts";
+import { loadGaramond } from "./pdfFonts";
 import { basicFields, footerNote, itemAmount, money, proposalTotal, type ProposalRow } from "@/lib/proposals";
 export async function proposalPdf(row:ProposalRow):Promise<Blob> {
- const doc=new jsPDF({unit:"mm",format:"a4"});const F=await useGaramond(doc);const p=row.payload;let y=25;
+ const doc=new jsPDF({unit:"mm",format:"a4"});const F=await loadGaramond(doc);const p=row.payload;let y=25;
  const green=[26,92,56] as const;const muted=[90,100,94] as const;
  function page(){doc.addPage();y=22;}
  function text(value:string,size=10,bold=false){doc.setFont(F,bold?"bold":"normal");doc.setFontSize(size);const color=bold?green:muted;doc.setTextColor(color[0],color[1],color[2]);const lines=doc.splitTextToSize(value||" ",174) as string[];for(const line of lines){if(y>275)page();doc.text(line,18,y);y+=size*0.45+1;}y+=2;}

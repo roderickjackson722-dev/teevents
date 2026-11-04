@@ -1,5 +1,5 @@
 import { describe,it,expect } from "vitest";
-import { shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason } from "./content";
+import { programs,shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason } from "./content";
 describe("client proposal rules",()=>{
  it("uses the exact $3,750 trigger and $1,875/$3,125 payments",()=>{expect(calculator(50,75)).toEqual({registrations:3750,trigger:true,first:1875,balance:3125});expect(calculator(49,75).trigger).toBe(false);});
  it("accepts only the six approved recommended programs",()=>{expect(documentSchema.safeParse({...emptyDocument(),recommended:"Discount package"}).success).toBe(false);expect(documentSchema.safeParse({...emptyDocument(),recommended:"Hybrid Managed"}).success).toBe(true);});
@@ -26,4 +26,5 @@ describe("client proposal rules",()=>{
   expect(withReason("Real note","")).toBe("Real note");
  });
  it("lists the recommended program's templates first",()=>{expect(orderedReasonTemplates("Enterprise")[0]!.program).toBe("Enterprise");expect(orderedReasonTemplates("")[0]!.program).toBe(reasonTemplates[0]!.program);});
+ it("Full Service Planning takes a 50% deposit at initial sign up",()=>{expect(programs["Full Service Planning"]["Payment Schedule"]).toContain("50% deposit");expect(reasonTemplates.filter(t=>t.program==="Full Service Planning").every(t=>t.text.includes("50% deposit"))).toBe(true);});
 });

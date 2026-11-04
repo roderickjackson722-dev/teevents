@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SOFTWARE_TAG, MANAGED_TAG, SOFTWARE_DEFINITION, MANAGED_DEFINITION } from "@/lib/programTypes";
+import { SOFTWARE_TAG, MANAGED_TAG, SOFTWARE_DEFINITION, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS } from "@/lib/programTypes";
 export const programs = {
   "No Cost to Start": {
     "Type": SOFTWARE_TAG,
@@ -47,6 +47,7 @@ export const programs = {
     "Platform fee": "Platform stays No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate. The $5,000 management fee is separate from, and in addition to, the 5% platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
     "Includes": "Dedicated manager from agreement through event day, minimum field of 50 players, events planned months in advance, signed agreement required before management work starts",
     "What We Provide": "Branded TeeVents event page, registration, sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers provided for the group to sell, pairings, check in setup, live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
+    [ON_SITE_HEADING]: ON_SITE_BULLETS.join(". ") + ".",
     "Your Group Handles": "Recruiting players, selling sponsorships, paying course, food, awards, and vendor costs directly, providing logo, tournament details, and one board contact who can approve decisions",
     "Limits": "TeeVents negotiates on your behalf, but does not pay for course, food, awards, or vendor costs. TeeVents does not guarantee a player count, sponsorship dollars, or profit. TeeVents does not sell sponsorships for the group.",
     "Payment Schedule": "$0 due at signing. $1,875 is due when $3,750 in registrations and sponsorships has been collected through TeeVents. Remaining $3,125 is due 7 days before event day. Only registrations and sponsorships collected through TeeVents count toward the $3,750 trigger. Payments taken outside TeeVents do not count toward the trigger and do not reduce the fee. The organizer is liable for the full $5,000, even if proceeds are low.",
@@ -59,6 +60,7 @@ export const programs = {
     "Platform fee": "Platform stays No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate.",
     "Includes": "Dedicated manager from agreement through event day",
     "What We Provide": "Branded TeeVents event page, registration, sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers, pairings, check in setup, live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
+    [ON_SITE_HEADING]: ON_SITE_BULLETS.join(". ") + ".",
     "Your Group Handles": "Recruiting players, selling sponsorships, paying course, food, awards, and vendor costs directly, providing logo, tournament details, and one contact who can approve decisions",
     "Limits": "TeeVents negotiates on your behalf, but does not pay for course, food, awards, or vendor costs. TeeVents does not guarantee a player count, sponsorship dollars, or profit.",
     "Payment Schedule": "A 50% deposit of the management fee is due at initial sign up ($2,500 on a $5,000 fee). The remaining 50% ($2,500) is due 7 days before event day. The organizer is liable for the full management fee, even if proceeds are low.",

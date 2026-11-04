@@ -8204,6 +8204,68 @@ export type Database = {
           },
         ]
       }
+      proposal_web_activity: {
+        Row: {
+          id: string
+          kind: string
+          proposal_id: string
+          recorded_at: string
+          value: string
+          visit_id: string
+        }
+        Insert: {
+          id?: string
+          kind: string
+          proposal_id: string
+          recorded_at?: string
+          value?: string
+          visit_id: string
+        }
+        Update: {
+          id?: string
+          kind?: string
+          proposal_id?: string
+          recorded_at?: string
+          value?: string
+          visit_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "proposal_web_activity_proposal_id_fkey"
+            columns: ["proposal_id"]
+            isOneToOne: false
+            referencedRelation: "proposal_web_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      proposal_web_documents: {
+        Row: {
+          access_token: string
+          created_at: string
+          created_by: string
+          id: string
+          payload: Json
+          updated_at: string
+        }
+        Insert: {
+          access_token?: string
+          created_at?: string
+          created_by: string
+          id?: string
+          payload?: Json
+          updated_at?: string
+        }
+        Update: {
+          access_token?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          payload?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
       prospect_activities: {
         Row: {
           created_at: string
@@ -15619,6 +15681,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      read_proposal_web: { Args: { _token: string }; Returns: Json }
       recalculate_league_handicaps: {
         Args: { _league_id: string }
         Returns: number
@@ -15656,6 +15719,10 @@ export type Database = {
       record_org_login: {
         Args: { _organization_id: string; _user_agent?: string }
         Returns: undefined
+      }
+      record_proposal_web: {
+        Args: { _kind: string; _token: string; _value: string; _visit: string }
+        Returns: boolean
       }
       record_site_visit: {
         Args: {

@@ -71,7 +71,7 @@ export default function Hybrid() {
           Hybrid Managed, starting at $5,000 per event, plus travel quoted separately.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          Platform: No Cost to Start. Players pay the 5 percent platform fee at checkout. Stripe processing is separate.
+          Platform: No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
           Management fee: $5,000 per event, paid from event proceeds. The organizer is liable for the full $5,000, even if proceeds are low.

@@ -15,7 +15,7 @@ export function proposalPdf(row:ProposalRow):Blob {
  for(const group of [{title:"Pricing",keys:["Price","Platform fee"]},{title:"Scope",keys:["Includes","Minimum field and lead time","Scope","Group handles","Limits"]},{title:"Payment Schedule",keys:["Payment schedule"]},{title:"Cancellation",keys:["Cancellation"]}]){heading(group.title);for(const k of group.keys)if(k in p.sections)text(`${k}: ${p.sections[k]}`);}
  heading("Line Items and Total");
  for(const item of p.items){text(item.description,11,true);text(`${item.quantity} × ${money(item.unitPrice)}    Amount: ${money(itemAmount(item))}`);}
- text(`Total: ${money(proposalTotal(p))}`,16,true);text("Stripe processing is separate. Stripe processing: 2.9 percent plus $0.30.");
+ text(`Total: ${money(proposalTotal(p))}`,16,true);text("Stripe processing is separate. Stripe processing: 2.9% plus $0.30.");
  heading("Add ons");for(const item of p.items.filter(i=>i.kind==="addon"))text(`${item.description}: ${money(itemAmount(item))}`);
  if(p.type&&p.type!=="No Cost to Start")text("Live Leaderboard and Mobile Scoring included.");text("Page build out is included in done for you setup, not a separate add on.");y+=6;text(footerNote,9);
  const count=doc.getNumberOfPages();for(let n=1;n<=count;n++){doc.setPage(n);doc.setFontSize(8);doc.setTextColor(...muted);doc.text(`${p.basic["Prepared By"]||""} | Proposal`,18,289);doc.text(`${n} / ${count}`,190,289,{align:"right"});}

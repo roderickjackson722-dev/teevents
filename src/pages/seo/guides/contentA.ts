@@ -51,7 +51,7 @@ export const scramble: GuideContent = {
       heading: "Handicaps in a scramble",
       paragraphs: [
         "Because a scramble already suppresses scoring, most casual charity events skip handicaps entirely and simply hand out prizes for gross low team, along with fun contests such as closest to the pin, longest drive, and a putting contest. That keeps scoring simple and avoids arguments at the awards ceremony.",
-        "If you want a competitive scramble, the most widely used method is to take a percentage of each player's course handicap and add them together: commonly 25/20/15/10 percent of the first, second, third, and fourth handicaps respectively for a four-person team, or 35/15 percent for two-person teams. The resulting team handicap is subtracted from the gross team score. TeeVents supports handicap capture at registration and can display both gross and net leaderboards side by side so you do not have to run the math on a clipboard.",
+        "If you want a competitive scramble, the most widely used method is to take a percentage of each player's course handicap and add them together: commonly 25/20/15/10% of the first, second, third, and fourth handicaps respectively for a four-person team, or 35/15% for two-person teams. The resulting team handicap is subtracted from the gross team score. TeeVents supports handicap capture at registration and can display both gross and net leaderboards side by side so you do not have to run the math on a clipboard.",
       ],
     },
     {
@@ -128,14 +128,14 @@ export const charityGuide: GuideContent = {
     {
       heading: "Step 1: Set the goal and build the budget backwards",
       paragraphs: [
-        "Start with a net fundraising target, not a player count. If your board wants to raise $50,000, work backwards: sponsorship typically produces 55 to 70 percent of net revenue at a well-run charity outing, player registrations 20 to 30 percent, and on-course games, raffles, auctions, and donations the remainder.",
+        "Start with a net fundraising target, not a player count. If your board wants to raise $50,000, work backwards: sponsorship typically produces 55 to 70% of net revenue at a well-run charity outing, player registrations 20 to 30%, and on-course games, raffles, auctions, and donations the remainder.",
         "Then list every cost: course fee per player, carts, food and beverage, awards, signage, printing, insurance, and payment processing. A common mistake is pricing registration to cover only the course cost. Price it to cover the course cost plus a margin, and let sponsorship carry the profit.",
       ],
       bullets: [
         "Target net revenue and work backwards to gross.",
         "Confirm per-player course cost in writing before you set the registration price.",
         "Budget for payment processing and platform fees as a line item.",
-        "Leave 10 percent contingency for weather, extra food, and last-minute printing.",
+        "Leave 10% contingency for weather, extra food, and last-minute printing.",
       ],
     },
     {
@@ -176,7 +176,7 @@ export const charityGuide: GuideContent = {
         "Corporate matching gifts — remind sponsors in your confirmation email.",
       ],
       paragraphs: [
-        "These layers routinely add 20 to 40 percent to the net of a charity outing, and they cost almost nothing to run when they are digital. An online auction that opens a week early gives you seven extra days of bidding rather than three hours in a clubhouse.",
+        "These layers routinely add 20 to 40% to the net of a charity outing, and they cost almost nothing to run when they are digital. An online auction that opens a week early gives you seven extra days of bidding rather than three hours in a clubhouse.",
       ],
     },
     {
@@ -200,7 +200,7 @@ export const charityGuide: GuideContent = {
       heading: "Step 8: Follow up while goodwill is high",
       paragraphs: [
         "Within 72 hours, send a thank-you email with the final leaderboard, photos, the amount raised, and a sponsor logo wall. Send tax-compliant receipts to donors and sponsors — TeeVents generates 501(c)(3) receipting with the deductible portion calculated for you.",
-        "Then debrief while it is fresh. Note what sold out, which sponsor tier underperformed, where the schedule slipped, and what you would change. Lock next year's date with the course before you leave. Repeat organizers who secure the date immediately typically grow their event 20 to 30 percent in year two.",
+        "Then debrief while it is fresh. Note what sold out, which sponsor tier underperformed, where the schedule slipped, and what you would change. Lock next year's date with the course before you leave. Repeat organizers who secure the date immediately typically grow their event 20 to 30% in year two.",
       ],
     },
   ],

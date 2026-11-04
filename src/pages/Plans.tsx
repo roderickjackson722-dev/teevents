@@ -5,6 +5,7 @@ import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
+import { SOFTWARE_TAG, SOFTWARE_DEFINITION, MANAGED_TAG, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS } from "@/lib/programTypes";
 
 const plans = [
   { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "Free for you. A 5% service fee is included in each player's registration total, so you keep 100% of your event revenue.", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
@@ -32,6 +33,7 @@ const payments = [
   ["You Get Paid", "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2 to 7 business days."],
 ];
 const comparison = [
+  ["Type", "SOFTWARE", "SOFTWARE", "SOFTWARE", "SOFTWARE"],
   ["Upfront cost", "$0", "$399 per tournament", "$599 per league", "$2,999 per year"],
   ["Transaction fee", "5% (covered by players)", "0%", "0%", "0%"],
   ["Events included", "Pay as you go", "Pay as you go", "One league season", "Unlimited"],
@@ -71,7 +73,9 @@ export default function Plans() {
           {plans.map((plan, index) => <article key={plan.name} className={`relative flex min-w-0 flex-col rounded-lg border p-6 ${index === 1 ? "border-2 border-secondary bg-card lg:-my-3 lg:py-9" : index === 3 ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"}`}>
             <div className="mb-5 flex min-h-10 items-center">{plan.badge && <span className="rounded-sm bg-secondary px-3 py-2 text-center text-xs font-bold leading-relaxed text-secondary-foreground">{plan.badge}</span>}</div>
             <h2 className="text-2xl font-display font-bold">{plan.name}</h2>
+            <p className={`mt-2 text-xs font-bold uppercase tracking-widest ${index === 3 ? "text-secondary" : "text-primary"}`}>{SOFTWARE_TAG}</p>
             <div className="my-5"><span className="text-4xl font-display font-bold">{plan.price}</span>{plan.unit && <p className={`mt-1 text-sm ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{plan.unit}</p>}</div>
+            <p className={`mb-4 text-xs leading-relaxed ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{SOFTWARE_DEFINITION}</p>
             <p className={`mb-6 text-sm leading-relaxed ${index === 3 ? "text-primary-foreground/85" : "text-muted-foreground"}`}>{plan.description}</p>
             <ul className="mb-8 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2 text-sm leading-relaxed"><Check aria-hidden="true" className={`mt-1 h-4 w-4 shrink-0 ${index === 3 ? "text-secondary" : "text-primary"}`} /><span className={feature.startsWith("Live Leaderboard") ? "font-semibold" : undefined}>{feature}</span></li>)}</ul>
             <div className="mt-auto">
@@ -89,8 +93,14 @@ export default function Plans() {
             <div className="min-w-0">
               <p className="mb-3 text-sm font-semibold text-primary">FULLY MANAGED OPTION</p>
               <h2 id="hybrid-title" className="text-3xl font-display font-bold md:text-4xl">Hybrid Managed</h2>
+              <p className="mt-2 text-xs font-bold uppercase tracking-widest text-primary">{MANAGED_TAG}</p>
               <p className="mt-4 text-lg leading-relaxed text-muted-foreground">For groups that need a full tournament manager, but do not have money up front. $0 due at signing — the $5,000 management fee is paid from money the event raises.</p>
+              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{MANAGED_DEFINITION}</p>
               <p className="mt-4 text-sm leading-relaxed text-muted-foreground">TeeVents negotiates your course, builds the branded event page and registration, provides sponsor packets and tiers, sets up pairings and check-in, and is on site from check-in through awards.</p>
+              <div className="mt-6">
+                <p className="text-sm font-semibold uppercase tracking-wide text-foreground">{ON_SITE_HEADING}</p>
+                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">{ON_SITE_BULLETS.map(bullet => <li key={bullet}>{bullet}</li>)}</ul>
+              </div>
             </div>
             <Button asChild variant="secondary" size="lg" className="w-full whitespace-normal font-bold md:w-auto"><Link to="/hybrid">SEE HYBRID MANAGED DETAILS<ArrowRight /></Link></Button>
           </div>
@@ -126,6 +136,7 @@ export default function Plans() {
       <section aria-labelledby="real-cost-title" className={`${section} bg-muted/40`}>
         <div className="mx-auto max-w-6xl"><h2 id="real-cost-title" className={`${heading} text-center`}>What a Real Event Costs</h2><p className="mt-4 mb-10 text-center text-muted-foreground">An example event: 100 golfers at $150 each, $15,000 in registrations. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.</p>
           <div className="overflow-x-auto rounded-lg border border-border bg-card"><table className="pricing-comparison w-full min-w-[720px] text-left text-sm"><caption className="sr-only">Example event cost comparison</caption><thead className="bg-muted"><tr><th scope="col" className="p-5"><span className="sr-only">Cost</span></th><th scope="col" className="p-5">Eventbrite</th><th scope="col" className="p-5">TeeVents No Cost to Start</th><th scope="col" className="p-5 bg-secondary/15">TeeVents Per-Event</th></tr></thead><tbody>{[
+            ["Type", "—", "SOFTWARE", "SOFTWARE"],
             ["What your organization pays for the platform", "$0, when fees are passed to golfers", "$0", "$399, one time"],
             ["What your golfers pay in platform fees", "About $11.90 per golfer, $1,190 total", "$7.50 per golfer, $750 total", "$0"],
             ["Live leaderboard and mobile scoring", "Not offered", "$99 add-on", "Included"],

@@ -3,6 +3,7 @@ import { AlertTriangle, Check, Globe, Paintbrush, Rocket, Shield, Trophy, User, 
 import Layout from "@/components/Layout";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Callout, FinalCta, Hero, IconCard, SectionHead, fade } from "@/components/marketing/PageBits";
+import { SOFTWARE_TAG, SOFTWARE_DEFINITION } from "@/lib/programTypes";
 
 const never = [
   ["\"I was left to figure it all out alone.\"", "Your rep is on call, whether they build it or you do."],
@@ -26,10 +27,10 @@ const rows: [string, Mark, string, string][] = [
   ["League management", "warn", "Limited", "Full season-long tracking"],
   ["Support", "warn", "Email tickets only", "Named rep and priority support"],
 ];
-const pricing = [
+const pricing: { title: string; hl: boolean; tag?: string; def?: string; items: string[] }[] = [
   { title: "Most Platforms", hl: false, items: ["Charge $199 to $4,200 per year", "Fees due before your event", "You lose money if turnout is low", "Organizer pays upfront"] },
-  { title: "TeeVents No Cost to Start", hl: true, items: ["$0 upfront", "5% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
-  { title: "TeeVents Enterprise", hl: false, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."] },
+  { title: "TeeVents No Cost to Start", hl: true, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$0 upfront", "5% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
+  { title: "TeeVents Enterprise", hl: false, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."] },
 ];
 const audiences = [
   ["First-Time Organizers", "Free to start. Your rep builds it for you, or you build it yourself. You choose. No risk."],
@@ -101,6 +102,8 @@ export default function Compare() {
         <div className="grid gap-6 md:grid-cols-3">{pricing.map(p => (
           <motion.div {...fade} key={p.title} className={`rounded-xl border p-6 shadow-sm ${p.hl ? "border-2 border-secondary bg-card" : "border-border bg-card"}`}>
             <h3 className="font-display text-2xl font-bold text-primary">{p.title}</h3>
+            {p.tag && <p className="mt-2 text-xs font-bold uppercase tracking-widest text-primary">{p.tag}</p>}
+            {p.def && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.def}</p>}
             <ul className="mt-5 space-y-3">{p.items.map(i => <li key={i} className="flex gap-2">{p.title === "Most Platforms" ? <X className="h-5 w-5 shrink-0 text-muted-foreground" /> : <Yes />}{i}</li>)}</ul>
           </motion.div>))}</div>
         <Callout>If you run fewer than 10 events a year, No Cost to Start or Per-Event is almost always cheaper than a subscription. If you run 10 or more, Enterprise pays for itself.</Callout>

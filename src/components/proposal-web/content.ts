@@ -83,6 +83,64 @@ export const about = ["I am Rod, founder of TeeVents. I have run golf tournament
 export const fields = { preparedFor: "[Client or Organization Name]", event: "[Event Name]", date: "[Event Date, or TBD]", contact: "[Contact Name]", proposalDate: "[Proposal Date]", validUntil: "[Valid Until, or blank]", conversationDate: "[Date You Spoke With The Client]" };
 export const introExample = "It was great speaking with you on [Conversation Date]. Based on what I understand, I feel the [Recommended Program] package will be best for your organization.";
 export const reasonExample = "[Personalized Reason: in 1 to 2 short sentences, say why this program fits this organization, based on your conversation, for example, no money up front, a single event, a full calendar, or a full tournament manager with no money up front.]";
+/**
+ * Starting points for the Personalized Reason box. Each one fills the box with
+ * editable text; bracketed tokens such as [Organization] are for the admin to
+ * replace or delete before saving. Nothing here is sent automatically.
+ */
+export const reasonTemplates: Array<{ program: keyof typeof programs; label: string; text: string }> = [
+  {
+    program: "No Cost to Start",
+    label: "Experienced group, new platform",
+    text: "You have run tournaments before, likely on another platform, so you do not need to be walked through the process — you want one page that works and a cost you can see before you commit. No Cost to Start puts your branded event page, registration, sponsorships, pairings, check in, and live budget tracking in one place with no plan purchase up front, and players pay the 5% platform fee at checkout. A dedicated TeeVents rep still builds the event page for you."
+  },
+  {
+    program: "No Cost to Start",
+    label: "Wants to see the cost to start",
+    text: "You asked what it costs to get an event live, so I want to be plain about it: No Cost to Start has no plan purchase, and players pay the 5% platform fee at checkout. Your group still gets a branded event page built for you by a dedicated TeeVents rep, along with registration and sponsorships, pairings, check in, and live budget tracking, so you can see how the event performs before deciding on a paid plan."
+  },
+  {
+    program: "Per Event",
+    label: "Experienced group, known field",
+    text: "Your group already knows its field — roughly [number of golfers] players for one event — and that makes a flat plan the cleaner fit. Per Event is $399 for the event with no TeeVents platform fee, so your net stays predictable, and Live Leaderboard and Mobile Scoring plus unlimited manual entries are included. A dedicated TeeVents rep still builds the event page for you."
+  },
+  {
+    program: "Per League",
+    label: "Many events under one master title",
+    text: "You are not planning a single tournament — you are running a season of events under one master title. Per League covers that at $599 for the league, so your dates, rosters, and registrations sit under one branded page instead of a separate setup each time. A dedicated TeeVents rep builds the league page with you and stays on the account through the season."
+  },
+  {
+    program: "Enterprise",
+    label: "Ten or more events, or a course calendar",
+    text: "You are running 10 or more events, which is a calendar to manage rather than an event to plan. Enterprise puts the whole calendar on one annual plan at $2,999 with no TeeVents platform fee, so every date carries the same branded page, registration, sponsorships, pairings, check in, live scoring, and budget tracking. A dedicated TeeVents rep works with your team across the year, and new dates go up without starting over."
+  },
+  {
+    program: "Full Service Planning",
+    label: "New to running a golf tournament",
+    text: "[Organization] has not run a golf tournament before, and the work behind one is easy to underestimate: course negotiation and communication, tee times and pairings, food and vendor arrangements, sponsor packets, and weeks of back and forth with participants. Full Service Planning puts a dedicated manager on your event from agreement through event day, starting at $5,000 with nothing due at signing. Your group keeps the parts that matter to you — recruiting players, selling sponsorships, and approving decisions."
+  },
+  {
+    program: "Full Service Planning",
+    label: "Experienced committee, no time",
+    text: "Your committee has run events before, but the hours behind one land on the same few people every year. Full Service Planning hands the logistics to a dedicated manager — course communication, vendors, sponsor packets, pairings, check in, and event day coordination — starting at $5,000 with nothing due at signing, so your team can stay focused on recruiting players and selling sponsorships."
+  },
+  {
+    program: "Hybrid Managed",
+    label: "Personalized offer for a special audience",
+    text: "Your audience is a specific one, so I built this for [Organization] rather than pointing at a standard package. Hybrid Managed covers the same ground as Full Service Planning — course negotiation and communication, vendors, sponsor packets, pairings, check in, live scoring, event day coordination, and closeout — at a management rate that reflects the extra attention your event needs, with a dedicated TeeVents manager handling your registration and payment flow end to end. It starts at $5,000 with nothing due at signing, and the management fee is approved in the event budget."
+  }
+];
+/** Templates for the program picked in Recommended Program come first in the editor. */
+export function orderedReasonTemplates(recommended: string) {
+  return [...reasonTemplates.filter(t => t.program === recommended), ...reasonTemplates.filter(t => t.program !== recommended)];
+}
+/** Fills the Personalized Reason box: replaces the placeholder, otherwise appends, and never repeats. */
+export function withReason(current: string, text: string) {
+  if (!text.trim()) return current;
+  if (current.includes(text)) return current;
+  const base = current.trim() && current !== reasonExample ? current.trimEnd() : "";
+  return base ? `${base}\n\n${text}` : text;
+}
 const programEnum=z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Hybrid Managed","Full Service Planning"]);
 export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(6).optional(), intro:z.string().max(10000), reason:z.string().max(10000) });
 export type WebDocument = z.infer<typeof documentSchema>;

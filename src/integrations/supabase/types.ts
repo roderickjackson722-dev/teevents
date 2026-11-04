@@ -8246,6 +8246,11 @@ export type Database = {
           created_by: string
           id: string
           payload: Json
+          recipient_email: string | null
+          send_count: number
+          sent_at: string | null
+          sent_to: string | null
+          status: string
           updated_at: string
         }
         Insert: {
@@ -8254,6 +8259,11 @@ export type Database = {
           created_by: string
           id?: string
           payload?: Json
+          recipient_email?: string | null
+          send_count?: number
+          sent_at?: string | null
+          sent_to?: string | null
+          status?: string
           updated_at?: string
         }
         Update: {
@@ -8262,6 +8272,11 @@ export type Database = {
           created_by?: string
           id?: string
           payload?: Json
+          recipient_email?: string | null
+          send_count?: number
+          sent_at?: string | null
+          sent_to?: string | null
+          status?: string
           updated_at?: string
         }
         Relationships: []

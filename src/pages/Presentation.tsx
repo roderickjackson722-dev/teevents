@@ -153,7 +153,9 @@ export default function Presentation() {
         <div className="space-y-6">
           <div className={card}>
             <div className="flex flex-wrap items-center gap-2"><p className="text-lg font-semibold text-foreground">No Cost to Start</p><span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">Most Popular</span></div>
+            <p className={typeTag}>{SOFTWARE_TAG}</p>
             <Block heading="Price" bullets={["$0 to start"]} />
+            <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={[
               "5% platform fee, paid by players at checkout",
               "10 manual entries",
@@ -173,7 +175,9 @@ export default function Presentation() {
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-lg font-semibold text-foreground">Per Event</p>
             </div>
+            <p className={typeTag}>{SOFTWARE_TAG}</p>
             <Block heading="Price" bullets={["$399 per event"]} />
+            <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={[
               "0% TeeVents platform fee",
               "Live Leaderboard and Mobile Scoring included",
@@ -192,14 +196,18 @@ export default function Presentation() {
 
           <div className={card}>
             <p className="text-lg font-semibold text-foreground">Per League</p>
+            <p className={typeTag}>{SOFTWARE_TAG}</p>
             <Block heading="Price" bullets={["$599 per league"]} />
+            <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={["Same core platform tools for league play"]} />
             <Block heading="Good for" bullets={["Leagues that need one platform for the season, not just one event"]} />
           </div>
 
           <div className={card}>
             <p className="text-lg font-semibold text-foreground">Enterprise</p>
+            <p className={typeTag}>{SOFTWARE_TAG}</p>
             <Block heading="Price" bullets={["$2,999 per year, for 10 or more events"]} />
+            <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={[
               "Annual plan for golf courses",
               "Whole calendar in one place",
@@ -217,6 +225,7 @@ export default function Presentation() {
         <h2 className={sectionTitle}>6. Hybrid Managed</h2>
         <div className={card}>
           <p className="text-lg font-semibold text-foreground">Hybrid Managed</p>
+          <p className={typeTag}>{MANAGED_TAG}</p>
           <Block heading="Price" bullets={[
             "Starting at $5,000 per event, plus travel quoted separately",
             "Platform stays No Cost to Start",
@@ -225,6 +234,7 @@ export default function Presentation() {
             "Organizer is liable for the full $5,000, even if proceeds are low",
             "The $5,000 management fee is separate from, and in addition to, the 5% platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
           ]} />
+          <p className={definitionLine}>{MANAGED_DEFINITION}</p>
           <Block heading="Payment schedule" bullets={[
             "$1,875 is due when $3,750 in registrations and sponsorships has been collected through TeeVents",
             "Remaining $3,125 is due 7 days before event day",
@@ -239,6 +249,7 @@ export default function Presentation() {
             "Timeline and consulting throughout",
             "On site event day coordination",
           ]} />
+          <Block heading={ON_SITE_HEADING} bullets={[...ON_SITE_BULLETS]} />
           <Block heading="What your group handles" bullets={[
             "Recruiting players",
             "Selling sponsorships",

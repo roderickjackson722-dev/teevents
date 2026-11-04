@@ -1,9 +1,12 @@
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+import { SOFTWARE_TAG, SOFTWARE_DEFINITION, MANAGED_TAG, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS } from "@/lib/programTypes";
 
 const emailHref = "mailto:info@teevents.golf?subject=TeeVents%20presentation%20follow%20up";
 
 const sectionTitle = "font-display text-2xl font-bold text-foreground md:text-3xl";
+const typeTag = "text-xs font-bold uppercase tracking-widest text-primary";
+const definitionLine = "text-sm leading-relaxed text-muted-foreground [overflow-wrap:normal]";
 const subHeading = "text-sm font-semibold uppercase tracking-wide text-foreground";
 const bulletList = "list-disc space-y-1.5 pl-5 text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]";
 const card = "rounded-lg border border-border bg-muted/40 p-6 space-y-4";
@@ -34,7 +37,6 @@ const offers = [
   { title: "Sponsor and auction tools", bullets: ["Sponsor visibility", "Auction tools to help raise more"] },
   { title: "Live budget tracking", bullets: ["Registrations, sponsorships, and money coming in, in one place"] },
   { title: "Done for you setup", bullets: ["We build your page, live in 7 days or less once logo and details arrive", "Every plan includes a dedicated rep"] },
-  { title: "On site tournament day help", bullets: ["In person management on event day, from check in to live scoring", "Separate service, travel quoted separately"] },
 ];
 
 const steps = [
@@ -117,6 +119,22 @@ export default function Presentation() {
       </section>
 
       <section className="space-y-5">
+        <h2 className={sectionTitle}>Managed Service, On Site, Not Included In Software Plans</h2>
+        <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">{MANAGED_DEFINITION}</p>
+        <div className={card}>
+          <div className="space-y-2">
+            <p className="text-sm font-semibold tracking-wide text-foreground">{ON_SITE_HEADING}</p>
+            <ul className={bulletList}>
+              {ON_SITE_BULLETS.map(item => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
+        </div>
+        <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
+          Managed Service is a separate service, starting at $5,000 per event, plus travel quoted separately. It is not included in No Cost to Start, Per Event, Per League, or Enterprise.
+        </p>
+      </section>
+
+      <section className="space-y-5">
         <h2 className={sectionTitle}>3. How it works, in 3 steps</h2>
         <ol className="space-y-6">
           {steps.map(step => <li key={step.title} className="space-y-2">
@@ -140,7 +158,9 @@ export default function Presentation() {
         <div className="space-y-6">
           <div className={card}>
             <div className="flex flex-wrap items-center gap-2"><p className="text-lg font-semibold text-foreground">No Cost to Start</p><span className="rounded-full bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">Most Popular</span></div>
+            <p className={typeTag}>{SOFTWARE_TAG}</p>
             <Block heading="Price" bullets={["$0 to start"]} />
+            <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={[
               "5% platform fee, paid by players at checkout",
               "10 manual entries",
@@ -160,7 +180,9 @@ export default function Presentation() {
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-lg font-semibold text-foreground">Per Event</p>
             </div>
+            <p className={typeTag}>{SOFTWARE_TAG}</p>
             <Block heading="Price" bullets={["$399 per event"]} />
+            <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={[
               "0% TeeVents platform fee",
               "Live Leaderboard and Mobile Scoring included",
@@ -179,14 +201,18 @@ export default function Presentation() {
 
           <div className={card}>
             <p className="text-lg font-semibold text-foreground">Per League</p>
+            <p className={typeTag}>{SOFTWARE_TAG}</p>
             <Block heading="Price" bullets={["$599 per league"]} />
+            <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={["Same core platform tools for league play"]} />
             <Block heading="Good for" bullets={["Leagues that need one platform for the season, not just one event"]} />
           </div>
 
           <div className={card}>
             <p className="text-lg font-semibold text-foreground">Enterprise</p>
+            <p className={typeTag}>{SOFTWARE_TAG}</p>
             <Block heading="Price" bullets={["$2,999 per year, for 10 or more events"]} />
+            <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={[
               "Annual plan for golf courses",
               "Whole calendar in one place",
@@ -204,6 +230,7 @@ export default function Presentation() {
         <h2 className={sectionTitle}>6. Hybrid Managed</h2>
         <div className={card}>
           <p className="text-lg font-semibold text-foreground">Hybrid Managed</p>
+          <p className={typeTag}>{MANAGED_TAG}</p>
           <Block heading="Price" bullets={[
             "Starting at $5,000 per event, plus travel quoted separately",
             "Platform stays No Cost to Start",
@@ -212,6 +239,7 @@ export default function Presentation() {
             "Organizer is liable for the full $5,000, even if proceeds are low",
             "The $5,000 management fee is separate from, and in addition to, the 5% platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
           ]} />
+          <p className={definitionLine}>{MANAGED_DEFINITION}</p>
           <Block heading="Payment schedule" bullets={[
             "$1,875 is due when $3,750 in registrations and sponsorships has been collected through TeeVents",
             "Remaining $3,125 is due 7 days before event day",
@@ -226,6 +254,12 @@ export default function Presentation() {
             "Timeline and consulting throughout",
             "On site event day coordination",
           ]} />
+          <div className="space-y-2">
+            <p className="text-sm font-semibold tracking-wide text-foreground">{ON_SITE_HEADING}</p>
+            <ul className={bulletList}>
+              {ON_SITE_BULLETS.map(item => <li key={item}>{item}</li>)}
+            </ul>
+          </div>
           <Block heading="What your group handles" bullets={[
             "Recruiting players",
             "Selling sponsorships",

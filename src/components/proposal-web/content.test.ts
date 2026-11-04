@@ -27,4 +27,20 @@ describe("client proposal rules",()=>{
  });
  it("lists the recommended program's templates first",()=>{expect(orderedReasonTemplates("Enterprise")[0]!.program).toBe("Enterprise");expect(orderedReasonTemplates("")[0]!.program).toBe(reasonTemplates[0]!.program);});
  it("Full Service Planning takes a 50% deposit at initial sign up",()=>{expect(programs["Full Service Planning"]["Payment Schedule"]).toContain("50% deposit");expect(reasonTemplates.filter(t=>t.program==="Full Service Planning").every(t=>t.text.includes("50% deposit"))).toBe(true);});
+ it("tags every program as software or managed service with the exact definition under the price",()=>{
+  const softwareDef="Use the TeeVents software. A dedicated rep builds your event page for you. You run event day yourself, using the software.";
+  const managedDef="Everything in the software, plus a dedicated tournament manager who works with you from agreement through event day, on site.";
+  for(const p of ["No Cost to Start","Per Event","Per League","Enterprise"] as const){
+   const keys=Object.keys(programs[p]);
+   expect(keys[0]).toBe("Type");
+   expect(programs[p].Type).toBe("SOFTWARE");
+   expect(keys[keys.indexOf("Price")+1]).toBe("Definition");
+   expect(programs[p].Definition).toBe(softwareDef);
+  }
+  for(const p of ["Hybrid Managed","Full Service Planning"] as const){
+   expect(programs[p].Type).toBe("MANAGED SERVICE, ON SITE");
+   expect(programs[p].Definition).toBe(managedDef);
+   expect(programs[p]["On Site, What Your Manager Does On Event Day"]).toContain("On site event day coordination, from check in through awards");
+  }
+ });
 });

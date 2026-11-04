@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Check, ArrowRight, Loader2, Building2, Shield } from "lucide-react";
 import Layout from "@/components/Layout";
 import { DedicatedRepBadge, EnterpriseRepSection } from "@/components/DedicatedRep";
+import { SOFTWARE_TAG, SOFTWARE_DEFINITION } from "@/lib/programTypes";
 import SEO from "@/components/SEO";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -82,6 +83,8 @@ const EnterprisePricing = () => {
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
               Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. And a dedicated rep who builds every event for you.
             </p>
+            <p className="mt-3 text-xs font-bold uppercase tracking-widest text-secondary">{SOFTWARE_TAG}</p>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/60">{SOFTWARE_DEFINITION}</p>
             <p className="mt-4 text-secondary font-semibold">Run 10 events, and it pays for itself. Run more? You save more.</p>
           </motion.div>
         </div>

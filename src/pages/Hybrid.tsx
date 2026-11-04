@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
+import { MANAGED_TAG, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS } from "@/lib/programTypes";
 
 const emailHref = "mailto:info@teevents.golf?subject=Hybrid%20Managed";
 
@@ -44,6 +45,7 @@ export default function Hybrid() {
     <section className="bg-primary py-16 text-center text-primary-foreground md:py-20">
       <div className="container mx-auto max-w-4xl space-y-5 px-4">
         <h1 className="font-display text-4xl font-bold md:text-5xl">Hybrid Managed</h1>
+        <p className="text-xs font-bold uppercase tracking-widest text-secondary">{MANAGED_TAG}</p>
         <p className="text-xl font-medium md:text-2xl">For groups that need a full tournament manager, but do not have money up front.</p>
         <p className="mx-auto max-w-2xl text-lg leading-relaxed text-primary-foreground/85 [overflow-wrap:normal]">
           Start on TeeVents at no cost, and pay the management fee from money the event raises. We are successful when you are successful.
@@ -71,6 +73,9 @@ export default function Hybrid() {
           Hybrid Managed, starting at $5,000 per event, plus travel quoted separately.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
+          {MANAGED_DEFINITION}
+        </p>
+        <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
           Platform: No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
@@ -93,6 +98,13 @@ export default function Hybrid() {
         <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">What we manage for you</h2>
         <ul className="list-disc space-y-2 pl-6 text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
           {weManage.map(item => <li key={item}>{item}</li>)}
+        </ul>
+      </section>
+
+      <section className="space-y-4">
+        <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">{ON_SITE_HEADING}</h2>
+        <ul className="list-disc space-y-2 pl-6 text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
+          {ON_SITE_BULLETS.map(item => <li key={item}>{item}</li>)}
         </ul>
       </section>
 

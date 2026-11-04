@@ -3001,52 +3001,38 @@ const Players = () => {
 
         /* Roster View */
         <div className="space-y-6">
+        {frozenHead && (
+          <div
+            className="roster-frozen-head no-print"
+            style={{ left: frozenHead.left, width: frozenHead.width }}
+          >
+            <div className="overflow-hidden bg-card border-b border-border shadow-sm">
+              <table
+                className="text-sm"
+                style={{
+                  tableLayout: "fixed",
+                  width: frozenHead.total,
+                  transform: `translateX(${-frozenHead.scrollLeft}px)`,
+                }}
+              >
+                <colgroup>
+                  {frozenHead.widths.map((w, i) => (
+                    <col key={i} style={{ width: `${w}px` }} />
+                  ))}
+                </colgroup>
+                <thead>
+                  <RosterHeadRow />
+                </thead>
+              </table>
+            </div>
+          </div>
+        )}
         <div className="bg-card rounded-lg border border-border overflow-hidden">
 
-          <div className="roster-table-wrap">
+          <div className="roster-table-wrap" ref={rosterWrapRef}>
             <table className="min-w-full w-max text-sm">
               <thead>
-                {(() => {
-                  const SortableTh = ({ colKey, align = "left", children }: { colKey: string; align?: "left" | "center"; children: React.ReactNode }) => (
-                    <th
-                      className={`${align === "center" ? "text-center" : "text-left"} font-semibold px-4 py-3 cursor-pointer select-none whitespace-nowrap`}
-                      onClick={() => changeSort(colKey)}
-                    >
-                      <span className={`inline-flex items-center gap-1 ${align === "center" ? "justify-center" : ""}`}>
-                        {children}
-                        {sortKey === colKey
-                          ? (sortDir === "asc" ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />)
-                          : <span className="h-3 w-3 opacity-30">⇅</span>}
-                      </span>
-                    </th>
-                  );
-                  return (
-                    <tr className="border-b border-border bg-muted/30">
-                      {rosterCols.name !== false && <SortableTh colKey="name">Name</SortableTh>}
-                      {rosterCols.email !== false && <SortableTh colKey="email">Email</SortableTh>}
-                      {rosterCols.phone !== false && <SortableTh colKey="phone">Phone</SortableTh>}
-                      {rosterCols.hcp !== false && <SortableTh colKey="hcp" align="center">HCP</SortableTh>}
-                      {rosterCols.age !== false && <SortableTh colKey="age" align="center">Age</SortableTh>}
-
-                      {rosterCols.group !== false && <SortableTh colKey="group">Group / Team</SortableTh>}
-                      {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
-                      {rosterCols.flight !== false && <SortableTh colKey="flight">Flight</SortableTh>}
-                      {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
-                      {rosterCols.hole !== false && <SortableTh colKey="hole" align="center">Hole</SortableTh>}
-                      {rosterCols.teetime !== false && <SortableTh colKey="teetime" align="center">Tee Time</SortableTh>}
-                      {rosterCols.code !== false && (
-                        <SortableTh colKey="code" align="center">
-                          <QrCode className="h-3.5 w-3.5" /> Code
-                        </SortableTh>
-                      )}
-                      {rosterCols.payment !== false && <SortableTh colKey="payment" align="center">Payment</SortableTh>}
-                      {visibleAnswerCols.map((f) => (
-                        <SortableTh key={f.key} colKey={f.key}>{f.label}</SortableTh>
-                      ))}
-                      <th className="text-center font-semibold px-4 py-3 w-12"></th>
-                    </tr>
-                  );
-                })()}
+                <RosterHeadRow />
               </thead>
               <tbody>
                 {filteredPlayers.map((p, i) => (

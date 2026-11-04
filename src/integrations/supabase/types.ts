@@ -537,29 +537,65 @@ export type Database = {
           },
         ]
       }
-      admin_proposals: {
+      admin_proposal_templates: {
         Row: {
           created_at: string
           created_by: string
           id: string
+          name: string
           payload: Json
-          status: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           created_by?: string
           id?: string
+          name: string
           payload?: Json
-          status?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           created_by?: string
           id?: string
+          name?: string
           payload?: Json
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      admin_proposals: {
+        Row: {
+          accepted_at: string | null
+          created_at: string
+          created_by: string
+          id: string
+          payload: Json
+          sent_at: string | null
+          status: string
+          status_changed_at: string
+          updated_at: string
+        }
+        Insert: {
+          accepted_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          payload?: Json
+          sent_at?: string | null
           status?: string
+          status_changed_at?: string
+          updated_at?: string
+        }
+        Update: {
+          accepted_at?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          payload?: Json
+          sent_at?: string | null
+          status?: string
+          status_changed_at?: string
           updated_at?: string
         }
         Relationships: []

@@ -65,6 +65,11 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 .scoring-table-wrap thead tr.par-row th.sticky-col{background-color:hsl(var(--muted))}
 @media(max-width:768px){.scoring-table-wrap table{display:table}}
 
+/* Frozen roster header: the column names stay pinned while the player list scrolls */
+.roster-table-wrap{overflow:auto;max-height:80vh;-webkit-overflow-scrolling:touch}
+.roster-table-wrap thead th{position:sticky;top:0;z-index:20;background-color:hsl(var(--muted));box-shadow:inset 0 -1px 0 hsl(var(--border))}
+@media(max-width:768px){.roster-table-wrap table{display:table}}
+
 /* Incomplete / complete score cells */
 .incomplete-score{background-color:#fef9c3;box-shadow:inset 0 0 0 2px #eab308}
 .complete-score{background-color:transparent}

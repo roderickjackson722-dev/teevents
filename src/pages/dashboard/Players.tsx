@@ -2898,7 +2898,7 @@ const Players = () => {
         <div className="space-y-6">
         <div className="bg-card rounded-lg border border-border overflow-hidden">
 
-          <div className="overflow-x-auto">
+          <div className="roster-table-wrap">
             <table className="min-w-full w-max text-sm">
               <thead>
                 {(() => {

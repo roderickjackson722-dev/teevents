@@ -253,6 +253,13 @@
       "when": 1793818263769,
       "tag": "0035_isolated_client_proposal_webpages",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1793829924941,
+      "tag": "0036_proposal_web_send_status",
+      "breakpoints": true
     }
   ]
 }

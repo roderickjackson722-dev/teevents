@@ -48,7 +48,7 @@ export const programs = {
     "What We Provide": "Branded TeeVents event page, registration, sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers, pairings, check in setup, live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
     "Your Group Handles": "Recruiting players, selling sponsorships, paying course, food, awards, and vendor costs directly, providing logo, tournament details, and one contact who can approve decisions",
     "Limits": "TeeVents negotiates on your behalf, but does not pay for course, food, awards, or vendor costs. TeeVents does not guarantee a player count, sponsorship dollars, or profit.",
-    "Payment Schedule": "$0 due at signing. $1,875 is due when $3,750 in registrations and sponsorships has been collected through TeeVents. Remaining $3,125 is due 7 days before event day. Only collections through TeeVents count toward the trigger. The organizer is liable for the full $5,000, even if proceeds are low.",
+    "Payment Schedule": "A 50% deposit of the management fee is due at initial sign up ($2,500 on a $5,000 fee). The remaining 50% ($2,500) is due 7 days before event day. The organizer is liable for the full management fee, even if proceeds are low.",
     "Cancellation": "If the event cancels, a work fee applies for work already done: $1,500 after course negotiation and platform build, $3,000 after registration launch and sponsor packet, and the full $5,000 within 30 days of the event. If the event postpones once to a new date, the fee moves with it at no extra charge."
   }
 } as const;
@@ -56,7 +56,7 @@ export const programNames = Object.keys(programs) as Array<keyof typeof programs
 export const faq = [
   [
     "Do we need money up front to start?",
-    "No money is due at signing on No Cost to Start, Hybrid Managed, and Full Service Planning, as stated in each program detail. The management fee on Hybrid Managed and Full Service Planning is approved in the event budget at signing, and is paid from event proceeds."
+    "No money is due at signing on No Cost to Start and Hybrid Managed. Full Service Planning takes a 50% deposit of the management fee at initial sign up ($2,500 on a $5,000 fee), as stated in its program detail. The Hybrid Managed management fee is approved in the event budget at signing, and is paid from event proceeds."
   ],
   [
     "What happens if we raise less than expected on Hybrid Managed?",
@@ -117,12 +117,12 @@ export const reasonTemplates: Array<{ program: keyof typeof programs; label: str
   {
     program: "Full Service Planning",
     label: "New to running a golf tournament",
-    text: "[Organization] has not run a golf tournament before, and the work behind one is easy to underestimate: course negotiation and communication, tee times and pairings, food and vendor arrangements, sponsor packets, and weeks of back and forth with participants. Full Service Planning puts a dedicated manager on your event from agreement through event day, starting at $5,000 with nothing due at signing. Your group keeps the parts that matter to you — recruiting players, selling sponsorships, and approving decisions."
+    text: "[Organization] has not run a golf tournament before, and the work behind one is easy to underestimate: course negotiation and communication, tee times and pairings, food and vendor arrangements, sponsor packets, and weeks of back and forth with participants. Full Service Planning puts a dedicated manager on your event from agreement through event day, starting at $5,000 with a 50% deposit at initial sign up. Your group keeps the parts that matter to you — recruiting players, selling sponsorships, and approving decisions."
   },
   {
     program: "Full Service Planning",
     label: "Experienced committee, no time",
-    text: "Your committee has run events before, but the hours behind one land on the same few people every year. Full Service Planning hands the logistics to a dedicated manager — course communication, vendors, sponsor packets, pairings, check in, and event day coordination — starting at $5,000 with nothing due at signing, so your team can stay focused on recruiting players and selling sponsorships."
+    text: "Your committee has run events before, but the hours behind one land on the same few people every year. Full Service Planning hands the logistics to a dedicated manager — course communication, vendors, sponsor packets, pairings, check in, and event day coordination — starting at $5,000 with a 50% deposit at initial sign up, so your team can stay focused on recruiting players and selling sponsorships."
   },
   {
     program: "Hybrid Managed",

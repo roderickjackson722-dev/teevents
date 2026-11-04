@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { documentSchema, sensitiveQuestion, answerQuestion } from "./content";
 
+const COLS="id,access_token,payload,updated_at,recipient_email,status,sent_at,sent_to,send_count";
 const tokenSchema=z.string().regex(/^[a-f0-9]{64}$/);
 // Narrow capability RPCs return only the linked document, never activity or tokens.
 function publicClient() {
@@ -14,16 +15,16 @@ function publicClient() {
 export const listWebDocuments=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).handler(async({context})=>{
  const role=await context.supabase.rpc("has_role",{_user_id:context.userId,_role:"admin"});
  if(role.error||role.data!==true)throw new Error("Platform admin access is required.");
- const {data,error}=await context.supabase.from("proposal_web_documents").select("id,access_token,payload,updated_at").order("updated_at",{ascending:false});
+ const {data,error}=await context.supabase.from("proposal_web_documents").select(COLS).order("updated_at",{ascending:false});
  if(error)throw new Error("Could not load client proposals.");
  return (data||[]).map(r=>({...r,payload:documentSchema.parse(r.payload)}));
 });
-export const saveWebDocument=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({id:z.string().uuid().optional(),payload:documentSchema}).parse(v)).handler(async({context,data})=>{
+export const saveWebDocument=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({id:z.string().uuid().optional(),payload:documentSchema,recipientEmail:z.string().trim().max(320).email().or(z.literal("")).optional(),status:z.enum(["draft","sent","accepted","declined"]).optional()}).parse(v)).handler(async({context,data})=>{
  const role=await context.supabase.rpc("has_role",{_user_id:context.userId,_role:"admin"});
  if(role.error||role.data!==true)throw new Error("Platform admin access is required.");
- const value={payload:data.payload as unknown as Json,updated_at:new Date().toISOString()};
+ const value={payload:data.payload as unknown as Json,updated_at:new Date().toISOString(),...(data.recipientEmail!==undefined?{recipient_email:data.recipientEmail||null}:{}),...(data.status?{status:data.status}:{})};
  const q=data.id?context.supabase.from("proposal_web_documents").update(value).eq("id",data.id):context.supabase.from("proposal_web_documents").insert({...value,created_by:context.userId});
- const {data:row,error}=await q.select("id,access_token,payload,updated_at").single();
+ const {data:row,error}=await q.select(COLS).single();
  if(error||!row)throw new Error("Could not save client proposal.");
  return {...row,payload:documentSchema.parse(row.payload)};
 });
@@ -55,4 +56,25 @@ export const askWebQuestion=createServerFn({method:"POST"}).inputValidator((v:un
  const {data:ok,error:saveError}=await client.rpc("record_proposal_web",{_token:data.token,_visit:data.visit,_kind:"question",_value:data.question});
  if(saveError||!ok)throw new Error("Your question could not be saved. Please try again.");
  return {answer:answerQuestion(data.question,documentSchema.parse(payload))};
+});
+const esc=(v:string)=>v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));
+/** Admin-only: emails one client their private proposal link and records the send. */
+export const sendWebDocument=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({id:z.string().uuid(),to:z.string().trim().email().max(320),origin:z.string().url(),note:z.string().max(2000).default("")}).parse(v)).handler(async({context,data})=>{
+ const role=await context.supabase.rpc("has_role",{_user_id:context.userId,_role:"admin"});
+ if(role.error||role.data!==true)throw new Error("Platform admin access is required.");
+ const origin=new URL(data.origin).origin;
+ if(!/^(https:\/\/([a-z0-9-]+\.)*(teevents\.golf|lovable\.app)|http:\/\/localhost(:\d+)?)$/.test(origin))throw new Error("Unknown site address.");
+ const {data:row,error}=await context.supabase.from("proposal_web_documents").select(COLS).eq("id",data.id).single();
+ if(error||!row)throw new Error("Save the client copy before sending.");
+ const doc=documentSchema.parse(row.payload);const key=process.env["RESEND_API_KEY"];
+ if(!key)throw new Error("Email is not available right now. Copy the link and send it yourself.");
+ const link=`${origin}/proposal/${row.access_token}`;const who=doc.fields.preparedFor||"there";const ev=doc.fields.event?` for ${doc.fields.event}`:"";
+ const text=[`Hi ${who},`,"",`Thank you for talking with us. Here is your TeeVents proposal${ev}:`,link,...(data.note.trim()?["",data.note.trim()]:[]),"","Questions? Reply to this email or call (602) 413-1338.","","Rod Jackson","TeeVents Golf Management"].join("\n");
+ const html=`<div style="font-family:Georgia,serif;font-size:16px;color:#1a5c38;max-width:560px"><p>Hi ${esc(who)},</p><p>Thank you for talking with us. Here is your TeeVents proposal${esc(ev)}.</p><p><a href="${esc(link)}" style="display:inline-block;background:#F5A623;color:#1a5c38;padding:12px 22px;border-radius:6px;font-weight:bold;text-decoration:none">View your proposal</a></p>${data.note.trim()?`<p style="white-space:pre-line">${esc(data.note.trim())}</p>`:""}<p>Questions? Reply to this email or call (602) 413-1338.</p><p>Rod Jackson<br>TeeVents Golf Management</p></div>`;
+ const sent=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify({from:"TeeVents Golf Management <info@notifications.teevents.golf>",to:[data.to],reply_to:"info@teevents.golf",subject:`Your TeeVents proposal${doc.fields.event?` — ${doc.fields.event}`:""}`,text,html}),signal:AbortSignal.timeout(15000)});
+ if(!sent.ok)throw new Error("The email could not be sent. Nothing was marked as sent.");
+ const now=new Date().toISOString();
+ const {data:upd,error:ue}=await context.supabase.from("proposal_web_documents").update({recipient_email:data.to,sent_to:data.to,sent_at:now,status:row.status==="draft"?"sent":row.status,send_count:(row.send_count||0)+1}).eq("id",data.id).select(COLS).single();
+ if(ue||!upd)throw new Error("Email sent, but the status could not be saved.");
+ return {...upd,payload:documentSchema.parse(upd.payload)};
 });

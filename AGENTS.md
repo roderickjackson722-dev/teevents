@@ -1,6 +1,6 @@
 # Project Architecture Rules
 
-Proposals has its own AGENTS.md to read before changing files there.
+Proposals and proposal-web have local AGENTS.md isolation rules.
 
 - Manual Enterprise approval is separate from billing; Enterprise portfolios list all existing organization tournaments without converting them.
 - Partner requests use separate private holding storage and CAPTCHA-validated submission; never create roster entries or checkout sessions.

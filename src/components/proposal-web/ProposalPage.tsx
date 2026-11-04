@@ -28,13 +28,20 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
   const start=Date.now();let activeSince=window.document.visibilityState==="visible"?Date.now():0;let elapsed=0;
   const seen=new Set<string>();
   void record("open").catch(()=>{});
-  const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting&&!seen.has(entry.target.id)){seen.add(entry.target.id);void record("section",entry.target.id).catch(()=>{});}}},{threshold:0.15});
+  const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting&&!seen.has(entry.target.id)){seen.add(entry.target.id);void record("section",entry.target.id).catch(()=>{});}}},{threshold:0.01});
   window.document.querySelectorAll(".proposal-web section[data-track]").forEach(el=>observer.observe(el));
   const tick=()=>{if(activeSince){elapsed+=Date.now()-activeSince;activeSince=Date.now();}void record("time",String(Math.min(999999,Math.round(elapsed/1000)))).catch(()=>{});};
   const visibility=()=>{if(window.document.visibilityState==="hidden"){tick();activeSince=0;}else activeSince=Date.now();};
   window.document.addEventListener("visibilitychange",visibility);const interval=setInterval(tick,15000);
   return ()=>{observer.disconnect();clearInterval(interval);window.document.removeEventListener("visibilitychange",visibility);if(Date.now()>start)tick();};
  },[token]);
+ useEffect(()=>{
+  const opened:HTMLDetailsElement[]=[];
+  const before=()=>{window.document.querySelectorAll<HTMLDetailsElement>(".proposal-web details").forEach(el=>{if(!el.open){opened.push(el);el.open=true;}});};
+  const after=()=>{opened.splice(0).forEach(el=>{el.open=false;});};
+  window.addEventListener("beforeprint",before);window.addEventListener("afterprint",after);
+  return ()=>{window.removeEventListener("beforeprint",before);window.removeEventListener("afterprint",after);};
+ },[]);
  const value=(key:keyof typeof fields)=>d.fields[key]||fields[key];
  const calc=calculator(players,fee);
  const editField=(key:keyof typeof fields,v:string)=>onEdit?.({...d,fields:{...d.fields,[key]:v}});

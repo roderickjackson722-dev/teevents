@@ -10,7 +10,18 @@ import { programs,programNames,shownPrograms,fields,faq,about,calculator,introTe
 import { trackWebDocument,askWebQuestion } from "./proposalWeb.functions";
 import "./print.css";
 
+import shotCheckIn from "@/assets/proposal-Check_in.png.asset.json";
+import shotCover from "@/assets/proposal-Cover_and_Branded_event_page.png.asset.json";
+import shotBudget from "@/assets/proposal-Live_budget_tracking.png.asset.json";
+import shotScoring from "@/assets/proposal-Live_scoring_and_leaderboard.png.asset.json";
+import shotPairings from "@/assets/proposal-Pairings.png.asset.json";
+import shotRegistration from "@/assets/proposal-Registration.png.asset.json";
+import shotAuction from "@/assets/proposal-Sponsor_and_auction_tools.png.asset.json";
+import shotTiers from "@/assets/proposal-Sponsor_tiers.png.asset.json";
+const slotImages:Record<string,string>={"Cover and Branded event page":shotCover.url,"Registration":shotRegistration.url,"Sponsor tiers":shotTiers.url,"Pairings":shotPairings.url,"Check in":shotCheckIn.url,"Live scoring and leaderboard":shotScoring.url,"Sponsor and auction tools":shotAuction.url,"Live budget tracking":shotBudget.url};
 export function ScreenshotSlot({name,caption="Sample"}:{name:string;caption?:string}) {
+ const label=name.split(" — ")[0];const src=slotImages[label];
+ if(src) return <figure className="my-8"><img src={src} alt={label} loading="lazy" className="h-auto w-full max-w-full rounded-lg border border-border object-contain"/><figcaption className="mt-2 text-sm text-muted-foreground">{label} · {caption}</figcaption></figure>;
  return <figure className="my-8"><div className="flex min-h-48 items-center justify-center rounded-lg border border-dashed border-border bg-muted px-6 py-12 text-center text-muted-foreground"><span>{name}</span></div><figcaption className="mt-2 text-sm text-muted-foreground">{caption}</figcaption></figure>;
 }
 const cash=(n:number)=>new Intl.NumberFormat("en-US",{style:"currency",currency:"USD",maximumFractionDigits:2}).format(n);

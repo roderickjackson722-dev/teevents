@@ -1,0 +1,9 @@
+@media print {
+ body:has(.proposal-print) * { visibility: hidden; }
+ body:has(.proposal-print) .proposal-print, body:has(.proposal-print) .proposal-print * { visibility: visible; }
+ body:has(.proposal-print) .proposal-print { position: absolute; inset: 0; width: 100%; padding: 12mm; }
+ body:has(.proposal-print) .proposal-print section { break-inside: avoid; }
+ body:has(.proposal-print) .proposal-print table { display: table; white-space: normal; }
+ body:has(.proposal-print) .proposal-print td, body:has(.proposal-print) .proposal-print th { white-space: normal; }
+ body:has(.proposal-print) .proposal-controls { display: none; }
+}

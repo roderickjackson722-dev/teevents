@@ -21,6 +21,7 @@ import AdminVetting from "@/components/admin/AdminVetting";
 import AdminSiteRegistrations from "@/components/admin/AdminSiteRegistrations";
 import AdminEnterpriseDemos from "@/components/admin/AdminEnterpriseDemos";
 import AdminEnterpriseAccounts from "@/components/admin/AdminEnterpriseAccounts";
+import AdminProposals from "@/components/admin/AdminProposals";
 import AdminHandicapSettings from "@/components/admin/AdminHandicapSettings";
 import AdminPasswordResetHelper from "@/components/admin/AdminPasswordResetHelper";
 import AdminAccounting from "@/components/admin/AdminAccounting";
@@ -71,10 +72,11 @@ const AdminDashboard = () => {
     if (t === "site-registrations") return "site-registrations" as const;
     if (t === "enterprise-demos") return "enterprise-demos" as const;
     if (t === "enterprise-accounts") return "enterprise-accounts" as const;
+    if (t === "proposals") return "proposals" as const;
     if (t === "handicap-settings") return "handicap-settings" as const;
     return "all-tournaments" as const;
   })();
-  const [activeTab, setActiveTab] = useState<"events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "revenue" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "vetting" | "site-registrations" | "enterprise-demos" | "enterprise-accounts" | "handicap-settings" | "notification-center" | "password-reset" | "link-health" | "sample-requests" | "lead-magnets">(initialTab);
+  const [activeTab, setActiveTab] = useState<"proposals" | "events" | "requests" | "emails" | "reviews" | "promos" | "sales-hub" | "all-tournaments" | "teevents-managed" | "sponsorship-pages" | "analytics" | "store" | "college" | "flyer-templates" | "notifications" | "accounting" | "revenue" | "transactions" | "feature-flags" | "group-trips" | "routing-monitor" | "email-log" | "audit-log" | "feature-guide" | "setup-checklist" | "sales-demo" | "sales-outreach" | "invoices" | "tournament-invoices" | "feature-update-emails" | "signups" | "vetting" | "site-registrations" | "enterprise-demos" | "enterprise-accounts" | "handicap-settings" | "notification-center" | "password-reset" | "link-health" | "sample-requests" | "lead-magnets">(initialTab);
   const [editingTournament, setEditingTournament] = useState<any | null>(null);
   const { count: unreadNotifications, refresh: refreshNotificationCount } = useAdminNotificationCount();
   const [linkFailures, setLinkFailures] = useState(0);
@@ -830,6 +832,7 @@ const AdminDashboard = () => {
                     <Icon className="h-4 w-4" /> {label}
                   </button>
                 ))}
+                <Button variant={activeTab === "proposals" ? "secondary" : "ghost"} onClick={() => setActiveTab("proposals")}><FileText className="h-4 w-4" />Proposals</Button>
                 <button
                   onClick={() => navigate("/admin/users-events")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
@@ -1808,6 +1811,7 @@ const AdminDashboard = () => {
           {activeTab === "site-registrations" && <AdminSiteRegistrations />}
           {activeTab === "enterprise-demos" && <AdminEnterpriseDemos />}
           {activeTab === "enterprise-accounts" && <AdminEnterpriseAccounts />}
+          {activeTab === "proposals" && <AdminProposals />}
           {activeTab === "handicap-settings" && <AdminHandicapSettings />}
 
           {/* Transactions Tab */}

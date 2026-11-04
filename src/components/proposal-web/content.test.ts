@@ -1,5 +1,5 @@
 import { describe,it,expect } from "vitest";
-import { shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion } from "./content";
+import { shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason } from "./content";
 describe("client proposal rules",()=>{
  it("uses the exact $3,750 trigger and $1,875/$3,125 payments",()=>{expect(calculator(50,75)).toEqual({registrations:3750,trigger:true,first:1875,balance:3125});expect(calculator(49,75).trigger).toBe(false);});
  it("accepts only the six approved recommended programs",()=>{expect(documentSchema.safeParse({...emptyDocument(),recommended:"Discount package"}).success).toBe(false);expect(documentSchema.safeParse({...emptyDocument(),recommended:"Hybrid Managed"}).success).toBe(true);});
@@ -8,4 +8,22 @@ describe("client proposal rules",()=>{
  it("answers program payment questions from the approved $399 terms",()=>{expect(answerQuestion("What is the Per Event payment schedule?",emptyDocument())).toContain("$399 per event.");});
  it("rejects sensitive payment and password questions",()=>{expect(sensitiveQuestion("My card number is 4111 1111 1111 1111")).toBe(true);expect(sensitiveQuestion("Here is my password")).toBe(true);expect(sensitiveQuestion("Is travel included?")).toBe(false);});
  it("shows all six packages for older copies and only chosen ones when picked",()=>{const old=documentSchema.parse({fields:emptyDocument().fields,recommended:"",intro:"",reason:""});expect(shownPrograms(old)).toEqual(programNames);expect(shownPrograms({...old,packages:["Hybrid Managed","Per Event"]})).toEqual(["Per Event","Hybrid Managed"]);});
+ it("gives every approved program at least one editable reason template",()=>{for(const p of programNames)expect(reasonTemplates.filter(t=>t.program===p).length).toBeGreaterThan(0);});
+ it("keeps reason templates on approved prices, % signs, and a dedicated person",()=>{
+  for(const t of reasonTemplates){expect(t.text).not.toMatch(/percent/i);expect(t.text).not.toMatch(/\bfree\b/i);expect(t.text).toMatch(/dedicated (TeeVents )?(rep|manager)/i);}
+  expect(reasonTemplates.find(t=>t.program==="Per Event")!.text).toContain("$399");
+  expect(reasonTemplates.find(t=>t.program==="Per League")!.text).toContain("$599");
+  expect(reasonTemplates.find(t=>t.program==="Enterprise")!.text).toContain("$2,999");
+  expect(reasonTemplates.find(t=>t.program==="Hybrid Managed")!.text).toContain("$5,000");
+  expect(reasonTemplates.find(t=>t.program==="Full Service Planning")!.text).toContain("$5,000");
+  expect(reasonTemplates.find(t=>t.program==="No Cost to Start")!.text).toContain("5% platform fee");
+ });
+ it("fills the reason box without repeating or dropping written text",()=>{
+  expect(withReason(reasonExample,"T")).toBe("T");
+  expect(withReason("","T")).toBe("T");
+  expect(withReason("Real note","T")).toBe("Real note\n\nT");
+  expect(withReason("Real note\n\nT","T")).toBe("Real note\n\nT");
+  expect(withReason("Real note","")).toBe("Real note");
+ });
+ it("lists the recommended program's templates first",()=>{expect(orderedReasonTemplates("Enterprise")[0]!.program).toBe("Enterprise");expect(orderedReasonTemplates("")[0]!.program).toBe(reasonTemplates[0]!.program);});
 });

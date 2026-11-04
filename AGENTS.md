@@ -1,5 +1,7 @@
 # Project Architecture Rules
 
+Proposals has its own AGENTS.md to read before changing files there.
+
 - Manual Enterprise approval is separate from billing; Enterprise portfolios list all existing organization tournaments without converting them.
 - Partner requests use separate private holding storage and CAPTCHA-validated submission; never create roster entries or checkout sessions.
 - Finance cards and details use strict event filtering with URL selection; account-wide Stripe balances and all-event totals stay separate.

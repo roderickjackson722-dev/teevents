@@ -1,0 +1,14 @@
+import {describe,it,expect} from "vitest";
+import {defaultFullService,fullServiceTotals,fullServiceSchema,canChooseProgram} from "./pricing";
+import {emptyDocument,shownPrograms,programDetails} from "./content";
+describe("private proposal pricing",()=>{
+ it("defaults to only No Cost, Per Event and Management",()=>{expect(shownPrograms(emptyDocument())).toEqual(["No Cost to Start","Per Event","Full Service Management"]);});
+ it("starts at $5,000 and splits the final price into a 50% deposit and balance",()=>{expect(fullServiceTotals(defaultFullService())).toEqual({base:5000,discount:0,final:5000,deposit:2500,balance:2500});});
+ it("subtracts a dollar discount before calculating the deposit",()=>{expect(fullServiceTotals({...defaultFullService(),discountType:"dollar",discountAmount:750})).toEqual({base:5000,discount:750,final:4250,deposit:2125,balance:2125});});
+ it("subtracts a percentage discount before calculating the deposit",()=>{expect(fullServiceTotals({...defaultFullService(),discountType:"percentage",discountAmount:15})).toEqual({base:5000,discount:750,final:4250,deposit:2125,balance:2125});});
+ it("rejects negative prices and discounts exceeding the base or 100%",()=>{expect(fullServiceSchema.safeParse({...defaultFullService(),basePrice:-1}).success).toBe(false);expect(fullServiceSchema.safeParse({...defaultFullService(),discountType:"dollar",discountAmount:5001}).success).toBe(false);expect(fullServiceSchema.safeParse({...defaultFullService(),discountType:"percentage",discountAmount:101}).success).toBe(false);});
+ it("allows choices only after Sent",()=>{expect(canChooseProgram("draft",["Per Event"],"Per Event","")).toBe(false);expect(canChooseProgram("sent",["Per Event"],"Per Event","")).toBe(true);});
+ it("rejects unchecked choices",()=>{expect(canChooseProgram("sent",["Per Event"],"Enterprise","")).toBe(false);});
+ it("rejects choices after the valid-until date",()=>{expect(canChooseProgram("sent",["Per Event"],"Per Event","2026-11-05",new Date("2026-11-06T00:00:00Z"))).toBe(false);expect(canChooseProgram("sent",["Per Event"],"Per Event","2026-11-05",new Date("2026-11-05T12:00:00Z"))).toBe(true);});
+ it("reads management price and custom terms from the proposal, not public offers",()=>{const d=emptyDocument();d.fullService={...defaultFullService(),basePrice:6000,discountType:"percentage",discountAmount:10,paymentTerms:"Custom agreed terms",cancellationTerms:"Custom cancellation"};expect(programDetails(d,"Full Service Management").Price).toBe("$5,400.00 per event");expect(programDetails(d,"Full Service Management")["Payment Schedule"]).toBe("Custom agreed terms");expect(programDetails(d,"Full Service Management").Cancellation).toBe("Custom cancellation");});
+});

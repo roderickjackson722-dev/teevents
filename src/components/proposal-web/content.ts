@@ -181,6 +181,9 @@ export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Objec
 export const fallbackAnswer = "That is not in this proposal, so I will pass that question to Rod, and he will follow up. Thank you for asking.";
 export function sensitiveQuestion(q:string) { return /(password|bank account|card number|routing number|cvv|social security)|(?:\d[ -]?){12,19}/i.test(q); }
 export function calculator(players:number,fee:number) { const registrations=Math.max(0,players)*Math.max(0,fee); return {registrations,trigger:registrations>=3750,first:1875,balance:3125}; }
+export const founderExperience = "I have been a tournament director for more than 10 years and have organized golf tournaments since 2017, after working in the golf industry for over 20 years, including time with the largest golf management company in the world and one of the largest golf manufacturers in the world. That experience is built into every TeeVents event.";
+/** Fills [Organization] in the Personalized Reason with the Prepared for name. */
+export function reasonText(d:WebDocument) { return d.reason.replaceAll("[Organization]",d.fields.preparedFor||"[Organization]"); }
 export function introText(d:WebDocument) { return d.intro.replaceAll("[Conversation Date]",d.fields.conversationDate||"[Conversation Date]").replaceAll("[Recommended Program]",d.recommended||"[Recommended Program]"); }
 export function answerQuestion(q:string,d:WebDocument) {
  const n=q.toLowerCase().trim().replace(/[?!.]+$/g,"");
@@ -188,7 +191,7 @@ export function answerQuestion(q:string,d:WebDocument) {
  const availableFaq = isCurrentDocument(d) ? currentFaq : faq;
  const f=availableFaq.find(([question])=>question.toLowerCase().replace(/\?$/," ").trim()===n);
  if(f)return `${f[1]}\n\nFrom Common Questions in this proposal.`;
- if(n==="what program do you recommend" || n==="what is the recommended program") return `${introText(d)}\n${d.reason}\n\nFrom A Quick Note From Rod in this proposal.`;
+ if(n==="what program do you recommend" || n==="what is the recommended program") return `${introText(d)}\n${reasonText(d)}\n\nFrom A Quick Note From Rod in this proposal.`;
  const p=shownPrograms(d).find(name=>n.includes(name.toLowerCase()));
  if(p){const key=n.includes("cancel")?"Cancellation":n.includes("payment")?"Payment Schedule":n.includes("price")||n.includes("cost")?"Price":n.includes("include")?"Includes":null;
  if(key && key in programs[p]) return `${(programs[p] as Record<string,string>)[key]}\n\nFrom the ${p} ${key} in this proposal.`;}

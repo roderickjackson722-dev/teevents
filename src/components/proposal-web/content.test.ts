@@ -44,3 +44,10 @@ describe("client proposal rules",()=>{
   }
  });
 });
+
+import { test } from "vitest";
+import { reasonText as _rt, emptyDocument as _ed } from "./content";
+test("reason fills [Organization] from Prepared for", () => {
+  const d = { ..._ed(), reason: "Built for [Organization].", fields: { ..._ed().fields, preparedFor: "HBCU Golf" } };
+  expect(_rt(d)).toBe("Built for HBCU Golf.");
+});

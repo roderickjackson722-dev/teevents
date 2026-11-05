@@ -3889,6 +3889,33 @@ export type Database = {
         }
         Relationships: []
       }
+      full_service_inquiries: {
+        Row: {
+          answers: Json
+          email_provider_id: string | null
+          email_sent_at: string | null
+          id: string
+          request_key: string
+          submitted_at: string
+        }
+        Insert: {
+          answers: Json
+          email_provider_id?: string | null
+          email_sent_at?: string | null
+          id?: string
+          request_key: string
+          submitted_at?: string
+        }
+        Update: {
+          answers?: Json
+          email_provider_id?: string | null
+          email_sent_at?: string | null
+          id?: string
+          request_key?: string
+          submitted_at?: string
+        }
+        Relationships: []
+      }
       golf_courses: {
         Row: {
           course_address: string | null

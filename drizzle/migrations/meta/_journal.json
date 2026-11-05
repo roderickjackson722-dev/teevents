@@ -260,6 +260,13 @@
       "when": 1793829924941,
       "tag": "0036_proposal_web_send_status",
       "breakpoints": true
+    },
+    {
+      "idx": 37,
+      "version": "7",
+      "when": 1793852191456,
+      "tag": "0037_full_service_management_inquiries",
+      "breakpoints": true
     }
   ]
 }

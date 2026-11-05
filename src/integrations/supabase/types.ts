@@ -8268,11 +8268,14 @@ export type Database = {
       }
       proposal_web_documents: {
         Row: {
+          acceptance_email_sent_at: string | null
           access_token: string
           created_at: string
           created_by: string
           id: string
           payload: Json
+          program_chosen: string | null
+          program_chosen_at: string | null
           recipient_email: string | null
           send_count: number
           sent_at: string | null
@@ -8281,11 +8284,14 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          acceptance_email_sent_at?: string | null
           access_token?: string
           created_at?: string
           created_by: string
           id?: string
           payload?: Json
+          program_chosen?: string | null
+          program_chosen_at?: string | null
           recipient_email?: string | null
           send_count?: number
           sent_at?: string | null
@@ -8294,11 +8300,14 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          acceptance_email_sent_at?: string | null
           access_token?: string
           created_at?: string
           created_by?: string
           id?: string
           payload?: Json
+          program_chosen?: string | null
+          program_chosen_at?: string | null
           recipient_email?: string | null
           send_count?: number
           sent_at?: string | null
@@ -15111,6 +15120,10 @@ export type Database = {
           _max: number
           _window_seconds: number
         }
+        Returns: Json
+      }
+      choose_proposal_program: {
+        Args: { _expected_updated_at: string; _program: string; _token: string }
         Returns: Json
       }
       clear_group_hole_scores: {

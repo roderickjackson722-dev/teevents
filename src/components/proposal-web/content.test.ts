@@ -55,3 +55,10 @@ test("the email note starts with the approved follow-up line", async () => {
   const { defaultEmailNote } = await import("./content");
   expect(defaultEmailNote).toBe("Please don’t hesitate to reach out if you have any questions after reviewing the attached proposal.");
 });
+test("program panels alternate shaded, plain, shaded so each reads as its own item", async () => {
+  const { programPanelClass } = await import("./content");
+  expect(programPanelClass(0)).toBe("program-shaded");
+  expect(programPanelClass(1)).toBe("");
+  expect(programPanelClass(2)).toBe("program-shaded");
+  expect(programPanelClass(3)).toBe("");
+});

@@ -86,7 +86,8 @@ async function depositCheckout(token:string,program:string,rawOrigin?:string){
  if(!res.ok||!json.url){console.error("Proposal deposit checkout failed",res.status,json.error?.message);throw new Error("Your choice was recorded, but card checkout could not open. Please try again or contact info@teevents.golf.");}
  return json.url;
 }
-async function recordChoice(data:{token:string;program:string}):Promise<{ok:true}>{
+type Program="No Cost to Start"|"Per Event"|"Per League"|"Enterprise"|"Full Service Management";
+async function recordChoice(data:{token:string;program:Program}):Promise<{ok:true}>{
  const {supabaseAdmin}=await import("@/integrations/supabase/client.server");
  const {data:row,error}=await supabaseAdmin.from("proposal_web_documents").select("id,payload,status,updated_at,program_chosen,acceptance_email_sent_at").eq("access_token",data.token).single();
  if(error||!row)throw new Error("This proposal is unavailable.");
@@ -105,7 +106,7 @@ async function recordChoice(data:{token:string;program:string}):Promise<{ok:true
  const {error:ue}=await supabaseAdmin.from("proposal_web_documents").update({acceptance_email_sent_at:new Date().toISOString()}).eq("id",saved.id);
  if(ue)throw new Error("Your choice was recorded and Rod was emailed. Please refresh before retrying.");
  return {ok:true};
-});
+}
 const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));
 /** Admin-confirmed single-recipient send. Status becomes Sent only after Resend accepts the email. */
 export const sendWebDocument=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({id:z.string().uuid(),recipientEmail:z.string().trim().max(320).email(),note:z.string().max(2000).optional(),origin:z.string().url()}).parse(v)).handler(async({context,data})=>{

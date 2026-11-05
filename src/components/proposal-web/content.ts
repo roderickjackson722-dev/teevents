@@ -201,3 +201,6 @@ export function answerQuestion(q:string,d:WebDocument) {
 /** Packages shown to the client; older copies without a choice show all six. */
 export function shownPrograms(d:WebDocument){const set=d.packages;return set?programNames.filter(p=>set.includes(p)):programNames.filter(p=>p!=="Full Service Management");}
 export function isCurrentDocument(d:WebDocument) { return !!d.packages && !d.packages.some(p=>p==="Hybrid Managed"||p==="Full Service Planning"); }
+
+/** Starting text in the proposal email's Optional note box; the admin edits or deletes it before sending. */
+export const defaultEmailNote = "Please don’t hesitate to reach out if you have any questions after reviewing the attached proposal.";

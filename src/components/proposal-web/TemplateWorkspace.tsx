@@ -4,7 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Copy,Save,Trash2,Eye,Plus,ArrowLeft,Send } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { emptyDocument,type WebDocument } from "./content";
+import { emptyDocument,defaultEmailNote,type WebDocument } from "./content";
 import { listWebDocuments,saveWebDocument,sendWebDocument,getWebActivity,deleteWebDocument } from "./proposalWeb.functions";
 import ProposalPage from "./ProposalPage";
 
@@ -13,12 +13,12 @@ export default function TemplateWorkspace(){
  const sendFn=useServerFn(sendWebDocument);const queryClient=useQueryClient();const query=useQuery({queryKey:["proposal-web-documents"],queryFn:()=>list(),retry:false});
  const [draft,setDraft]=useState<WebDocument>(emptyDocument),[id,setId]=useState<string>(),[token,setToken]=useState<string>(),[preview,setPreview]=useState(false),[notice,setNotice]=useState(""),[busy,setBusy]=useState(false);
  const [activityId,setActivityId]=useState<string>();
- const [email,setEmail]=useState(""),[note,setNote]=useState(""),[status,setStatus]=useState("draft"),[sentInfo,setSentInfo]=useState<{at:string|null,to:string|null,count:number}>({at:null,to:null,count:0});
+ const [email,setEmail]=useState(""),[note,setNote]=useState(defaultEmailNote),[status,setStatus]=useState("draft"),[sentInfo,setSentInfo]=useState<{at:string|null,to:string|null,count:number}>({at:null,to:null,count:0});
  type Row={id:string;access_token:string;recipient_email:string|null;status:string;sent_at:string|null;sent_to:string|null;send_count:number};
  function load(r:Row){setId(r.id);setToken(r.access_token);setEmail(r.recipient_email||"");setStatus(r.status);setSentInfo({at:r.sent_at,to:r.sent_to,count:r.send_count});setActivityId(r.id);}
- function reset(){setEmail("");setNote("");setStatus("draft");setSentInfo({at:null,to:null,count:0});}
+ function reset(){setEmail("");setNote(defaultEmailNote);setStatus("draft");setSentInfo({at:null,to:null,count:0});}
  const log=useQuery({queryKey:["proposal-web-activity",activityId],queryFn:()=>activity({data:{id:activityId||""}}),enabled:!!activityId});
- async function sendNow(){const to=email.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){setNotice("Enter the client's email address first.");return;}if(!window.confirm(`Save and email this proposal link to ${to}?`))return;const row=await persist();if(!row)return;setBusy(true);try{const r=await sendFn({data:{id:row.id,to,origin:window.location.origin,note}});load(r);setNote("");await queryClient.invalidateQueries({queryKey:["proposal-web-documents"]});setNotice(`Proposal emailed to ${to}.`);}catch(e){setNotice(e instanceof Error?e.message:"Could not send.");}finally{setBusy(false);}}
+ async function sendNow(){const to=email.trim();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(to)){setNotice("Enter the client's email address first.");return;}if(!window.confirm(`Save and email this proposal link to ${to}?`))return;const row=await persist();if(!row)return;setBusy(true);try{const r=await sendFn({data:{id:row.id,to,origin:window.location.origin,note}});load(r);setNote(defaultEmailNote);await queryClient.invalidateQueries({queryKey:["proposal-web-documents"]});setNotice(`Proposal emailed to ${to}.`);}catch(e){setNotice(e instanceof Error?e.message:"Could not send.");}finally{setBusy(false);}}
  async function persist(){if(draft.packages&&!draft.packages.length){setNotice("Pick at least one package before saving.");return;}setBusy(true);setNotice("");try{const row=await save({data:{id,payload:draft,recipientEmail:email.trim(),status:status as "draft"}});load(row);await queryClient.invalidateQueries({queryKey:["proposal-web-documents"]});setNotice("Client copy saved. Nothing sent.");return row;}catch(e){setNotice(e instanceof Error?e.message:"Could not save.");}finally{setBusy(false);}}
  if(query.isPending)return <main className="p-8">Loading Proposal Template…</main>;
  if(query.error)return <main className="mx-auto max-w-xl p-8"><h1 className="font-display text-3xl">Proposal Template</h1><p role="alert" className="mt-6">{query.error.message}</p><p className="mt-4">Sign in with your TeeVents admin account to open this template.</p></main>;

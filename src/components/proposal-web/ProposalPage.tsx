@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle,Send,X,Download,Mail } from "lucide-react";
 import portrait from "@/assets/trust/roderick-jackson.jpg.asset.json";
 import logo from "@/assets/teevents-logo-final.png.asset.json";
-import { programs,programNames,currentProgramNames,currentFaq,shownPrograms,fields,faq,about,calculator,introText,answerQuestion,sensitiveQuestion,orderedReasonTemplates,withReason,reasonExample,type WebDocument } from "./content";
+import { programs,programNames,currentProgramNames,currentFaq,isCurrentDocument,shownPrograms,fields,faq,about,calculator,introText,answerQuestion,sensitiveQuestion,orderedReasonTemplates,withReason,reasonExample,type WebDocument } from "./content";
 import { trackWebDocument,askWebQuestion } from "./proposalWeb.functions";
 import "./print.css";
 import FullServiceQuoteDialog from "@/components/marketing/FullServiceQuoteDialog";
@@ -56,7 +56,7 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
   return ()=>{window.removeEventListener("beforeprint",before);window.removeEventListener("afterprint",after);};
  },[]);
  const shown=shownPrograms(d);
- const isCurrent = d.packages?.includes("Full Service Management") ?? false;
+ const isCurrent = isCurrentDocument(d);
  const choices = isCurrent ? currentProgramNames : programNames.filter(p=>p!=="Full Service Management");
  const displayedFaq = isCurrent ? currentFaq : faq;
  const togglePackage=(p:(typeof programNames)[number])=>{const next=shown.includes(p)?shown.filter(x=>x!==p):programNames.filter(x=>x===p||shown.includes(x));onEdit?.({...d,packages:next,recommended:next.includes(d.recommended as never)?d.recommended:""});};

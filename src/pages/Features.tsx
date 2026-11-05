@@ -16,6 +16,7 @@ import {
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
+import { SOFTWARE_TAG, SOFTWARE_DEFINITION } from "@/lib/programTypes";
 
 type Item = [LucideIcon, string, string];
 type Category = { id: string; nav: string; title: string; subtitle: string; items: Item[]; callout?: string };
@@ -154,7 +155,9 @@ function Section({ id, title, subtitle, items, callout, muted }: { id: string; t
         </div>
         {callout && (
           <motion.div {...fade} className="mx-auto mt-8 max-w-4xl rounded-xl border-l-4 border-secondary bg-primary p-6 text-primary-foreground">
+            {id === "registration" && <p className="mb-2 text-xs font-bold text-secondary">No Cost to Start · {SOFTWARE_TAG}</p>}
             <p className="text-base md:text-lg">{callout}</p>
+            {id === "registration" && <p className="mt-3 text-sm leading-relaxed">{SOFTWARE_DEFINITION}</p>}
           </motion.div>
         )}
       </div>

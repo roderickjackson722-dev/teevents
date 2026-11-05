@@ -185,11 +185,11 @@ export function introText(d:WebDocument) { return d.intro.replaceAll("[Conversat
 export function answerQuestion(q:string,d:WebDocument) {
  const n=q.toLowerCase().trim().replace(/[?!.]+$/g,"");
  if (/discount|custom price|guarantee|change|different|reduce|waive|book|accept|pay now/.test(n)) return fallbackAnswer;
- const availableFaq = d.packages?.includes("Full Service Management") ? currentFaq : faq;
+ const availableFaq = isCurrentDocument(d) ? currentFaq : faq;
  const f=availableFaq.find(([question])=>question.toLowerCase().replace(/\?$/," ").trim()===n);
  if(f)return `${f[1]}\n\nFrom Common Questions in this proposal.`;
  if(n==="what program do you recommend" || n==="what is the recommended program") return `${introText(d)}\n${d.reason}\n\nFrom A Quick Note From Rod in this proposal.`;
- const p=programNames.find(name=>n.includes(name.toLowerCase()));
+ const p=shownPrograms(d).find(name=>n.includes(name.toLowerCase()));
  if(p){const key=n.includes("cancel")?"Cancellation":n.includes("payment")?"Payment Schedule":n.includes("price")||n.includes("cost")?"Price":n.includes("include")?"Includes":null;
  if(key && key in programs[p]) return `${(programs[p] as Record<string,string>)[key]}\n\nFrom the ${p} ${key} in this proposal.`;}
  return fallbackAnswer;
@@ -197,3 +197,4 @@ export function answerQuestion(q:string,d:WebDocument) {
 
 /** Packages shown to the client; older copies without a choice show all six. */
 export function shownPrograms(d:WebDocument){const set=d.packages;return set?programNames.filter(p=>set.includes(p)):programNames.filter(p=>p!=="Full Service Management");}
+export function isCurrentDocument(d:WebDocument) { return !!d.packages && !d.packages.some(p=>p==="Hybrid Managed"||p==="Full Service Planning"); }

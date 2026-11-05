@@ -7,6 +7,7 @@ import { founderPartnerLogos } from "@/components/FounderPartners";
 import { ORGANIZER_TESTIMONIALS } from "@/components/OrganizerTestimonials";
 import { Button } from "@/components/ui/button";
 import heroGolf from "@/assets/hero-golf.jpg";
+import { SOFTWARE_TAG } from "@/lib/programTypes";
 
 const differentiators = [
   { icon: UserRoundCheck, title: "A Named Rep on Every Plan", text: "Your event built by a real person, free or paid." },
@@ -33,6 +34,7 @@ export default function Index() {
         <div className="relative mx-auto flex min-h-[680px] max-w-5xl flex-col justify-center px-6 py-14 text-center md:py-20">
           <h1 id="homepage-title" className="font-display text-3xl font-bold leading-tight md:text-5xl lg:text-6xl">The Golf Tournament Platform That <span className="text-secondary">Builds Your Event For You</span></h1>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Every event includes a dedicated TeeVents rep, free or paid, who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard. You focus on running your tournament while we handle the software. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.</p>
+          <p className="mt-2 text-xs font-bold text-secondary">{SOFTWARE_TAG}</p>
           <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Golf tournament management software for charity fundraisers, corporate golf outings, golf courses, and golf leagues.</p>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 md:text-base">No spreadsheets. No manual setup. No stress.</p>
           <div className="mt-8"><HomeActions hero /></div>

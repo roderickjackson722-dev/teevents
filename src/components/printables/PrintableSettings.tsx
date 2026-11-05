@@ -88,7 +88,10 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
     setUploading(true);
     try {
       const ext = file.name.split(".").pop();
-      const path = `${tournamentId}/printable-logo-${Date.now()}.${ext}`;
+      const { data: t, error: tErr } = await supabase.from("tournaments").select("organization_id").eq("id", tournamentId).maybeSingle();
+      if (tErr) throw tErr;
+      if (!t?.organization_id) throw new Error("This event isn't linked to an organization.");
+      const path = `${t.organization_id}/${tournamentId}/printable-logo-${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);

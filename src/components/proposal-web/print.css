@@ -7,6 +7,7 @@
  body:has(.proposal-web) .web-controls { display:none !important; }
  .proposal-web .web-controls,.proposal-web .web-chat { display:none !important; }
  .proposal-web .program-detail { display:block !important; break-before:page; }
+ .proposal-web .program-shaded { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
  .proposal-web .program-term, .proposal-web .closure-option { break-inside:avoid; }
  .proposal-web .program-detail h2,.proposal-web .program-detail h3 { break-after:avoid; }
  .proposal-web .program-jumps { display:none; }

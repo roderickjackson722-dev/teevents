@@ -2625,7 +2625,14 @@ const Players = () => {
       </div>
 
       {/* View Toggle + Actions */}
-      {view === "roster" && selectedTournament && <PartnerRequests key={selectedTournament} tournamentId={selectedTournament} />}
+      {view === "roster" && selectedTournament && <PartnerRequests key={selectedTournament} tournamentId={selectedTournament} onRosterChange={async () => {
+        const [regsRes, groupsRes]: any = await Promise.all([
+          supabase.from("tournament_registrations").select("*").eq("tournament_id", selectedTournament).order("created_at", { ascending: true }),
+          (supabase as any).from("registration_groups").select("id, group_name, team_name").eq("tournament_id", selectedTournament),
+        ]);
+        if (regsRes.data) setAllPlayers(regsRes.data as unknown as Registration[]);
+        if (groupsRes.data) setGroupNames((prev) => { const next = { ...prev }; groupsRes.data.forEach((g: any) => { if (!next[g.id]) next[g.id] = g.team_name || g.group_name || "team"; }); return next; });
+      }} />}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <div className="flex gap-1 bg-card rounded-lg border border-border p-1">
           <button

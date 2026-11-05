@@ -181,7 +181,7 @@ export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Objec
 export const fallbackAnswer = "That is not in this proposal, so I will pass that question to Rod, and he will follow up. Thank you for asking.";
 export function sensitiveQuestion(q:string) { return /(password|bank account|card number|routing number|cvv|social security)|(?:\d[ -]?){12,19}/i.test(q); }
 export function calculator(players:number,fee:number) { const registrations=Math.max(0,players)*Math.max(0,fee); return {registrations,trigger:registrations>=3750,first:1875,balance:3125}; }
-export const founderExperience = "I have been a tournament director for more than 10 years and have organized golf tournaments since 2017, after working in the golf industry for over 20 years, including time with the largest golf management company in the world and one of the largest golf manufacturers in the world. That experience is built into every TeeVents event.";
+export const founderExperience = "I have over a decade of experience as a tournament director and in organizing golf tournaments, after working in the golf industry for more than 20 years, including time with the largest golf management company in the world and one of the largest golf manufacturers in the world. That experience is built into every TeeVents event.";
 /** Fills [Organization] in the Personalized Reason with the Prepared for name. */
 export function reasonText(d:WebDocument) { return d.reason.replaceAll("[Organization]",d.fields.preparedFor||"[Organization]"); }
 export function introText(d:WebDocument) { return d.intro.replaceAll("[Conversation Date]",d.fields.conversationDate||"[Conversation Date]").replaceAll("[Recommended Program]",d.recommended||"[Recommended Program]"); }

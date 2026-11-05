@@ -2,6 +2,8 @@ import Layout from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { SOFTWARE_TAG, SOFTWARE_DEFINITION, MANAGED_TAG, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS } from "@/lib/programTypes";
 
+import FullServiceManagement from "@/components/marketing/FullServiceManagement";
+
 const emailHref = "mailto:info@teevents.golf?subject=TeeVents%20presentation%20follow%20up";
 
 const sectionTitle = "font-display text-2xl font-bold text-foreground md:text-3xl";
@@ -130,7 +132,7 @@ export default function Presentation() {
           </div>
         </div>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          Managed Service is a separate service, starting at $5,000 per event, plus travel quoted separately. It is not included in No Cost to Start, Per Event, Per League, or Enterprise.
+          Managed Service is a separate service, starting with a quote, plus travel quoted separately. It is not included in No Cost to Start, Per Event, Per League, or Enterprise.
         </p>
       </section>
 
@@ -227,62 +229,8 @@ export default function Presentation() {
       </section>
 
       <section className="space-y-5">
-        <h2 className={sectionTitle}>6. Hybrid Managed</h2>
-        <div className={card}>
-          <p className="text-lg font-semibold text-foreground">Hybrid Managed</p>
-          <p className={typeTag}>{MANAGED_TAG}</p>
-          <Block heading="Price" bullets={[
-            "Starting at $5,000 per event, plus travel quoted separately",
-            "Platform stays No Cost to Start",
-            "Management is paid from event proceeds",
-            "$0 due at signing",
-            "Organizer is liable for the full $5,000, even if proceeds are low",
-            "The $5,000 management fee is separate from, and in addition to, the 5% platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
-          ]} />
-          <p className={definitionLine}>{MANAGED_DEFINITION}</p>
-          <Block heading="Payment schedule" bullets={[
-            "$1,875 is due when $3,750 in registrations and sponsorships has been collected through TeeVents",
-            "Remaining $3,125 is due 7 days before event day",
-            "Only collections through TeeVents count toward the $3,750 trigger",
-            "Payments taken outside TeeVents do not count toward the trigger and do not reduce the fee",
-          ]} />
-          <Block heading="What we manage" bullets={[
-            "Course negotiation and communication",
-            "Food, awards, and vendor recommendations and negotiations",
-            "Sponsor packets and tiers",
-            "Pairings, check in, and live scoring",
-            "Timeline and consulting throughout",
-            "On site event day coordination",
-          ]} />
-          <div className="space-y-2">
-            <p className="text-sm font-semibold tracking-wide text-foreground">{ON_SITE_HEADING}</p>
-            <ul className={bulletList}>
-              {ON_SITE_BULLETS.map(item => <li key={item}>{item}</li>)}
-            </ul>
-          </div>
-          <Block heading="What your group handles" bullets={[
-            "Recruiting players",
-            "Selling sponsorships",
-            "Paying course, food, awards, and vendor costs directly",
-          ]} />
-          <Block heading="Limits" bullets={[
-            "TeeVents does not pay for course, food, awards, or vendor costs",
-            "TeeVents does not guarantee a player count, sponsorship dollars, or profit",
-          ]} />
-          <Block heading="Good for" bullets={[
-            "Churches",
-            "Schools",
-            "Nonprofits and similar groups",
-            "Groups that need a full tournament manager, but do not have money up front",
-            "Events planned months in advance, with a minimum field of 50 players",
-          ]} />
-          <Block heading="Cancellation" bullets={[
-            "$1,500 after course negotiation and platform build",
-            "$3,000 after registration launch and sponsor packet",
-            "Full $5,000 within 30 days of the event",
-            "If the event postpones once to a new date, the fee moves with it at no extra charge",
-          ]} />
-        </div>
+        <h2 className={sectionTitle}>6. Full Service Management</h2>
+        <FullServiceManagement showTitle={false} />
       </section>
 
       <section className="space-y-4">

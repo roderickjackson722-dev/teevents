@@ -145,6 +145,7 @@ const CompareEventbrite = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
+                <TableRow><TableCell className="font-medium">Type</TableCell><TableCell className="text-center">SOFTWARE</TableCell><TableCell className="text-center">SOFTWARE</TableCell></TableRow>
                 {data.map((section) => (
                   <>
                     <TableRow key={section.category} className="bg-muted/30">

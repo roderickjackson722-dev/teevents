@@ -5,7 +5,8 @@ import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
-import { SOFTWARE_TAG, SOFTWARE_DEFINITION, MANAGED_TAG, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS } from "@/lib/programTypes";
+import { SOFTWARE_TAG, SOFTWARE_DEFINITION } from "@/lib/programTypes";
+import FullServiceManagement from "@/components/marketing/FullServiceManagement";
 
 const plans = [
   { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "Free for you. A 5% service fee is included in each player's registration total, so you keep 100% of your event revenue.", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
@@ -87,24 +88,8 @@ export default function Plans() {
         </div>
       </section>
 
-      <section aria-labelledby="hybrid-title" className={section}>
-        <div className="mx-auto max-w-4xl rounded-lg border border-border bg-muted/40 p-8 md:p-12">
-          <div className="grid items-center gap-8 md:grid-cols-[1fr_auto]">
-            <div className="min-w-0">
-              <p className="mb-3 text-sm font-semibold text-primary">FULLY MANAGED OPTION</p>
-              <h2 id="hybrid-title" className="text-3xl font-display font-bold md:text-4xl">Hybrid Managed</h2>
-              <p className="mt-2 text-xs font-bold uppercase tracking-widest text-primary">{MANAGED_TAG}</p>
-              <p className="mt-4 text-lg leading-relaxed text-muted-foreground">For groups that need a full tournament manager, but do not have money up front. $0 due at signing — the $5,000 management fee is paid from money the event raises.</p>
-              <p className="mt-3 text-sm leading-relaxed text-muted-foreground">{MANAGED_DEFINITION}</p>
-              <p className="mt-4 text-sm leading-relaxed text-muted-foreground">TeeVents negotiates your course, builds the branded event page and registration, provides sponsor packets and tiers, sets up pairings and check-in, and is on site from check-in through awards.</p>
-              <div className="mt-6">
-                <p className="text-sm font-semibold tracking-wide text-foreground">{ON_SITE_HEADING}</p>
-                <ul className="mt-3 list-disc space-y-2 pl-5 text-sm leading-relaxed text-muted-foreground">{ON_SITE_BULLETS.map(bullet => <li key={bullet}>{bullet}</li>)}</ul>
-              </div>
-            </div>
-            <Button asChild variant="secondary" size="lg" className="w-full whitespace-normal font-bold md:w-auto"><Link to="/hybrid">SEE HYBRID MANAGED DETAILS<ArrowRight /></Link></Button>
-          </div>
-        </div>
+      <section id="full-service-management" aria-label="Full Service Management" className={section}>
+        <div className="mx-auto max-w-4xl"><FullServiceManagement /></div>
       </section>
 
       <section aria-labelledby="included-title" className={section}>

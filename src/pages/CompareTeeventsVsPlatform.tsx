@@ -95,6 +95,7 @@ const CompareTeeventsVsPlatform = ({ platform }: { platform: PlatformKey }) => {
                 </tr>
               </thead>
               <tbody>
+                <tr className="border-b border-border"><td className="p-4 font-medium">Type</td><td className="p-4 text-center">SOFTWARE</td><td className="bg-secondary/10 p-4 text-center font-semibold text-primary">SOFTWARE</td></tr>
                 {p.rows.map((r) => (
                   <tr key={r.feature} className="border-b border-border last:border-0">
                     <td className="p-4 font-medium text-foreground">{r.feature}</td>

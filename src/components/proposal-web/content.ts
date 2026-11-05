@@ -210,5 +210,8 @@ export function programDetails(d:WebDocument,p:(typeof programNames)[number]):Re
  return {...original,Price:`${money(t.final)} per event`,"Platform fee":managementPlatformFee,Includes:"Dedicated manager from agreement through event day",Limits:managementLimits,"Payment Schedule":d.fullService.paymentTerms,Cancellation:d.fullService.cancellationTerms};
 }
 
+/** Alternating panel shading so each program reads as its own item: shaded, plain, shaded. */
+export function programPanelClass(index:number){return index%2===0?"program-shaded":"";}
+
 /** Starting text in the proposal email's Optional note box; the admin edits or deletes it before sending. */
 export const defaultEmailNote = "Please don’t hesitate to reach out if you have any questions after reviewing the attached proposal.";

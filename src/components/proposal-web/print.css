@@ -1,3 +1,5 @@
+.proposal-web .program-detail { border-radius: 1rem; }
+.proposal-web .program-shaded { background-color: hsl(var(--primary) / 0.07); box-shadow: inset 0 0 0 1px hsl(var(--primary) / 0.12); }
 .proposal-web * { letter-spacing: 0; }
 .proposal-web section { scroll-margin-top: 2rem; }
 .proposal-web button { white-space: normal; height: auto; min-height: 2.5rem; }
@@ -5,6 +7,7 @@
  body:has(.proposal-web) .web-controls { display:none !important; }
  .proposal-web .web-controls,.proposal-web .web-chat { display:none !important; }
  .proposal-web .program-detail { display:block !important; break-before:page; }
+ .proposal-web .program-shaded { -webkit-print-color-adjust:exact; print-color-adjust:exact; }
  .proposal-web .program-term, .proposal-web .closure-option { break-inside:avoid; }
  .proposal-web .program-detail h2,.proposal-web .program-detail h3 { break-after:avoid; }
  .proposal-web .program-jumps { display:none; }

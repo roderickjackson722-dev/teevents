@@ -6,7 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle,Send,X,Download,Mail } from "lucide-react";
 import portrait from "@/assets/trust/roderick-jackson.jpg.asset.json";
 import logo from "@/assets/teevents-logo-final.png.asset.json";
-import { programs,programNames,currentProgramNames,currentFaq,isCurrentDocument,shownPrograms,fields,faq,about,calculator,introText,answerQuestion,sensitiveQuestion,orderedReasonTemplates,withReason,reasonExample,type WebDocument } from "./content";
+import { programs,programNames,currentProgramNames,currentFaq,isCurrentDocument,shownPrograms,fields,faq,about,calculator,introText,reasonText,founderExperience,answerQuestion,sensitiveQuestion,orderedReasonTemplates,withReason,reasonExample,type WebDocument } from "./content";
 import { trackWebDocument,askWebQuestion } from "./proposalWeb.functions";
 import "./print.css";
 import FullServiceQuoteDialog from "@/components/marketing/FullServiceQuoteDialog";

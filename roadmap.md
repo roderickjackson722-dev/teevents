@@ -1,3 +1,8 @@
+## Public Full Service Management
+- [ ] Replace public Hybrid offers with quote-only Full Service Management, preserve historical private proposals and software terms, and keep /hybrid working.
+- [ ] Add exact quote fields, validation, team email and admin-only inquiry review. Blocked pending permission for private inquiry storage: existing contact submission emails only, and no compatible admin-only intake storage exists without a data-model change.
+- [ ] Verify public offer, software pricing, proposal-template isolation, phone layout and quote submission/readback; do not publish.
+
 ## Client proposal webpage
 - [x] Add standalone hidden template, editable isolated client copies, private links, admin activity, print export and proposal-only Q&A; preserve existing pages and payments.
 - [x] Six rule tests and signed-in save/reload, anonymous client access, intro recommendation, question/activity readback, calculator, revoked-link blocking and phone/print checks passed; no sends or publication.

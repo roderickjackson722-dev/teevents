@@ -267,6 +267,13 @@
       "when": 1793852191456,
       "tag": "0037_full_service_management_inquiries",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1793888543690,
+      "tag": "0038_proposal_client_program_choice",
+      "breakpoints": true
     }
   ]
 }

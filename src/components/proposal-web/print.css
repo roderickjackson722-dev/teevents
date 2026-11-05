@@ -5,6 +5,11 @@
  body:has(.proposal-web) .web-controls { display:none !important; }
  .proposal-web .web-controls,.proposal-web .web-chat { display:none !important; }
  .proposal-web .program-detail { display:block !important; break-before:page; }
+ .proposal-web .program-term, .proposal-web .closure-option { break-inside:avoid; }
+ .proposal-web .program-detail h2,.proposal-web .program-detail h3 { break-after:avoid; }
+ .proposal-web .program-jumps { display:none; }
+ .proposal-web #closure > div { display:block; }
+ .proposal-web .closure-option { margin-bottom:1rem; }
  .proposal-web section { padding-top:1.5rem; padding-bottom:1.5rem; }
  .proposal-web .web-cover { break-after:page; }
  .proposal-web details > * { display:block !important; }

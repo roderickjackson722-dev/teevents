@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { fullServiceSchema, defaultFullService, fullServiceTotals, money, managementLimits, managementPlatformFee } from "./pricing";
 import { SOFTWARE_TAG, MANAGED_TAG, SOFTWARE_DEFINITION, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS, FULL_SERVICE_PRICE, FULL_SERVICE_SCOPE, FULL_SERVICE_GROUP, FULL_SERVICE_LIMITS } from "@/lib/programTypes";
 export const programs = {
   "Full Service Management": {
@@ -79,7 +80,7 @@ export const programs = {
 export const programNames = ["No Cost to Start", "Per Event", "Per League", "Enterprise", "Hybrid Managed", "Full Service Planning", "Full Service Management"] as const;
 export const currentProgramNames = ["No Cost to Start", "Per Event", "Per League", "Enterprise", "Full Service Management"] as const;
 export const currentFaq = [
- ["How do I request Full Service Management?", "Request a quote. Rod will reach out to book a meeting. No payment is taken on the quote form."],
+ ["How do I request Full Service Management?", "Full Service Management is quoted in this proposal, after a meeting. The price, deposit, and terms are in the Full Service Management details above. No payment is taken on this page."],
  ["Who pays the golf course, food, awards, and vendors?", FULL_SERVICE_LIMITS],
  ["What if we cancel?", "Software cancellation terms remain in the selected program detail. Full Service Management terms are quoted individually after the meeting, in a written proposal."],
  ["Is travel included?", "Travel is quoted separately."],
@@ -175,9 +176,9 @@ export function withReason(current: string, text: string) {
   return base ? `${base}\n\n${text}` : text;
 }
 const programEnum=z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Hybrid Managed","Full Service Planning","Full Service Management"]);
-export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000) });
+export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional() });
 export type WebDocument = z.infer<typeof documentSchema>;
-export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:[...currentProgramNames],intro:introExample,reason:reasonExample});
+export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:["No Cost to Start","Per Event","Full Service Management"],intro:introExample,reason:reasonExample,fullService:defaultFullService(),closureEnabled:true});
 export const fallbackAnswer = "That is not in this proposal, so I will pass that question to Rod, and he will follow up. Thank you for asking.";
 export function sensitiveQuestion(q:string) { return /(password|bank account|card number|routing number|cvv|social security)|(?:\d[ -]?){12,19}/i.test(q); }
 export function calculator(players:number,fee:number) { const registrations=Math.max(0,players)*Math.max(0,fee); return {registrations,trigger:registrations>=3750,first:1875,balance:3125}; }
@@ -194,13 +195,20 @@ export function answerQuestion(q:string,d:WebDocument) {
  if(n==="what program do you recommend" || n==="what is the recommended program") return `${introText(d)}\n${reasonText(d)}\n\nFrom A Quick Note From Rod in this proposal.`;
  const p=shownPrograms(d).find(name=>n.includes(name.toLowerCase()));
  if(p){const key=n.includes("cancel")?"Cancellation":n.includes("payment")?"Payment Schedule":n.includes("price")||n.includes("cost")?"Price":n.includes("include")?"Includes":null;
- if(key && key in programs[p]) return `${(programs[p] as Record<string,string>)[key]}\n\nFrom the ${p} ${key} in this proposal.`;}
+ if(key && key in programDetails(d,p)) return `${programDetails(d,p)[key]}\n\nFrom the ${p} ${key} in this proposal.`;}
  return fallbackAnswer;
 }
 
 /** Packages shown to the client; older copies without a choice show all six. */
 export function shownPrograms(d:WebDocument){const set=d.packages;return set?programNames.filter(p=>set.includes(p)):programNames.filter(p=>p!=="Full Service Management");}
 export function isCurrentDocument(d:WebDocument) { return !!d.packages && !d.packages.some(p=>p==="Hybrid Managed"||p==="Full Service Planning"); }
+
+export function programDetails(d:WebDocument,p:(typeof programNames)[number]):Record<string,string> {
+ const original=programs[p];
+ if(p!=="Full Service Management"||!d.fullService)return {...original};
+ const t=fullServiceTotals(d.fullService);
+ return {...original,Price:`${money(t.final)} per event`,"Platform fee":managementPlatformFee,Includes:"Dedicated manager from agreement through event day",Limits:managementLimits,"Payment Schedule":d.fullService.paymentTerms,Cancellation:d.fullService.cancellationTerms};
+}
 
 /** Starting text in the proposal email's Optional note box; the admin edits or deletes it before sending. */
 export const defaultEmailNote = "Please don’t hesitate to reach out if you have any questions after reviewing the attached proposal.";

@@ -3,9 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Json } from "@/integrations/supabase/types";
-import { documentSchema, sensitiveQuestion, answerQuestion } from "./content";
+import { documentSchema, sensitiveQuestion, answerQuestion, shownPrograms } from "./content";
+import { canChooseProgram, fullServiceTotals, money } from "./pricing";
 
-const COLS="id,access_token,payload,updated_at,recipient_email,status,sent_at,sent_to,send_count";
+const COLS="id,access_token,payload,updated_at,recipient_email,status,sent_at,sent_to,send_count,program_chosen,program_chosen_at";
 const tokenSchema=z.string().regex(/^[a-f0-9]{64}$/);
 // Narrow capability RPCs return only the linked document, never activity or tokens.
 function publicClient() {
@@ -19,9 +20,11 @@ export const listWebDocuments=createServerFn({method:"POST"}).middleware([requir
  if(error)throw new Error("Could not load client proposals.");
  return (data||[]).map(r=>({...r,payload:documentSchema.parse(r.payload)}));
 });
-export const saveWebDocument=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({id:z.string().uuid().optional(),payload:documentSchema,recipientEmail:z.string().trim().max(320).email().or(z.literal("")).optional(),status:z.enum(["draft","sent","accepted","declined"]).optional()}).parse(v)).handler(async({context,data})=>{
+export const saveWebDocument=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({id:z.string().uuid().optional(),payload:documentSchema,recipientEmail:z.string().trim().max(320).email().or(z.literal("")).optional(),status:z.enum(["draft","sent","accepted","declined","accepted_pending_confirmation"]).optional()}).parse(v)).handler(async({context,data})=>{
  const role=await context.supabase.rpc("has_role",{_user_id:context.userId,_role:"admin"});
  if(role.error||role.data!==true)throw new Error("Platform admin access is required.");
+ if(!shownPrograms(data.payload).length)throw new Error("Select at least one program.");
+ if(data.payload.closureEnabled&&shownPrograms(data.payload).includes("Full Service Management")&&!data.payload.fullService)throw new Error("Full Service pricing is required.");
  const value={payload:data.payload as unknown as Json,updated_at:new Date().toISOString(),...(data.recipientEmail!==undefined?{recipient_email:data.recipientEmail||null}:{}),...(data.status?{status:data.status}:{})};
  const q=data.id?context.supabase.from("proposal_web_documents").update(value).eq("id",data.id):context.supabase.from("proposal_web_documents").insert({...value,created_by:context.userId});
  const {data:row,error}=await q.select(COLS).single();
@@ -57,11 +60,13 @@ export const askWebQuestion=createServerFn({method:"POST"}).inputValidator((v:un
  if(saveError||!ok)throw new Error("Your question could not be saved. Please try again.");
  return {answer:answerQuestion(data.question,documentSchema.parse(payload))};
 });
-const esc=(v:string)=>v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));
+const esc=(v:string)=>v.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]||c));
 /** Admin-only: emails one client their private proposal link and records the send. */
 export const sendWebDocument=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({id:z.string().uuid(),to:z.string().trim().email().max(320),origin:z.string().url(),note:z.string().max(2000).default("")}).parse(v)).handler(async({context,data})=>{
  const role=await context.supabase.rpc("has_role",{_user_id:context.userId,_role:"admin"});
  if(role.error||role.data!==true)throw new Error("Platform admin access is required.");
+ throw new Error("Proposal sending is disabled. Save and Mark as Sent only changes status.");
+ /* Legacy email implementation retained for historical audit; never executed.
  const origin=new URL(data.origin).origin;
  if(!/^(https:\/\/([a-z0-9-]+\.)*(teevents\.golf|lovable\.app)|http:\/\/localhost(:\d+)?)$/.test(origin))throw new Error("Unknown site address.");
  const {data:row,error}=await context.supabase.from("proposal_web_documents").select(COLS).eq("id",data.id).single();
@@ -76,5 +81,28 @@ export const sendWebDocument=createServerFn({method:"POST"}).middleware([require
  const now=new Date().toISOString();
  const {data:upd,error:ue}=await context.supabase.from("proposal_web_documents").update({recipient_email:data.to,sent_to:data.to,sent_at:now,status:row.status==="draft"?"sent":row.status,send_count:(row.send_count||0)+1}).eq("id",data.id).select(COLS).single();
  if(ue||!upd)throw new Error("Email sent, but the status could not be saved.");
- return {...upd,payload:documentSchema.parse(upd.payload)};
+ return {...upd,payload:documentSchema.parse(upd.payload)}; */
+});
+
+export const chooseWebProgram=createServerFn({method:"POST"}).inputValidator((v:unknown)=>z.object({token:tokenSchema,program:z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Full Service Management"])}).parse(v)).handler(async({data})=>{
+ const {supabaseAdmin}=await import("@/integrations/supabase/client.server");
+ const {data:row,error}=await supabaseAdmin.from("proposal_web_documents").select("id,payload,status,updated_at,program_chosen,acceptance_email_sent_at").eq("access_token",data.token).single();
+ if(error||!row)throw new Error("This proposal is unavailable.");
+ const d=documentSchema.parse(row.payload);
+ if(!d.closureEnabled)throw new Error("This proposal is not available for a start choice.");
+ if(row.program_chosen&&row.program_chosen!==data.program)throw new Error("Your choice has already been recorded. Rod will follow up.");
+ if(!row.program_chosen&&!canChooseProgram(row.status,shownPrograms(d),data.program,d.fields.validUntil))throw new Error("This proposal must be marked Sent and still valid before you can choose a program. Please contact Rod.");
+ const key=process.env["RESEND_API_KEY"];
+ if(!key)throw new Error("Your choice could not be sent to Rod. Please contact info@teevents.golf.");
+ const {data:choice,error:ce}=await supabaseAdmin.rpc("choose_proposal_program",{_token:data.token,_program:data.program,_expected_updated_at:row.updated_at});
+ if(ce||!choice)throw new Error("The proposal changed or is not available. Refresh and try again.");
+ const saved=z.object({id:z.string().uuid(),payload:documentSchema,chosen_at:z.string(),email_sent_at:z.string().nullable()}).parse(choice);
+ if(saved.email_sent_at)return {ok:true};
+ const t=saved.payload.fullService?fullServiceTotals(saved.payload.fullService):null;
+ const text=[`Client: ${saved.payload.fields.preparedFor}`,`Event: ${saved.payload.fields.event}`,`Program chosen: ${data.program}`,...(data.program==="Full Service Management"&&t?[`Full Service Final Price: ${money(t.final)}`,`Deposit due at agreement: ${money(t.deposit)}`]:[]),`Date and time: ${saved.chosen_at}`].join("\n");
+ const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json","Idempotency-Key":`proposal-choice-${saved.id}`},body:JSON.stringify({from:"TeeVents Golf Management <info@notifications.teevents.golf>",to:["info@teevents.golf"],subject:`Proposal acceptance, ${saved.payload.fields.preparedFor.replace(/[\r\n]/g," ")}, ${data.program}`,text}),signal:AbortSignal.timeout(15000)});
+ if(!response.ok)throw new Error("Your choice was recorded, but Rod's email was not accepted. Please try the same button again.");
+ const {error:ue}=await supabaseAdmin.from("proposal_web_documents").update({acceptance_email_sent_at:new Date().toISOString()}).eq("id",saved.id);
+ if(ue)throw new Error("Your choice was recorded and Rod was emailed. Please refresh before retrying.");
+ return {ok:true};
 });

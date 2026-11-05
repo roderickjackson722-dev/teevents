@@ -50,6 +50,10 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
       const signup = SIGNUP[selected];
       if (signup) { window.location.href = signup; return; }
     } catch (e) {
+      // Software plans always continue to the regular website sign-up, even if this
+      // proposal already has a recorded choice or Rod's notification could not be sent.
+      const signup = SIGNUP[selected];
+      if (signup) { window.location.href = signup; return; }
       setMessage(e instanceof Error ? e.message : "Could not record your choice. Please try again.");
     }
     setBusy(false);

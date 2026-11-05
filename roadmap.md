@@ -1,3 +1,8 @@
+## Private proposal pricing and client choice
+- [ ] Add private program selection, editable pricing/discount/terms, expanded details and closure; preserve public offers and existing screenshots/sections.
+- [ ] Replace send action with status-only marking, add Sent-gated client choice recording/email and admin readback.
+- [ ] Verify pricing rules, saved private preview, phone/print and choice safeguards without real sends or event/payment writes.
+
 ## Public Full Service Management
 - [x] Replace public Hybrid offers with quote-only Full Service Management; keep /hybrid as the renamed-service page, preserve historical private proposals and software terms, add shared exact scope/responsibilities/limits and software/managed tags.
 - [x] Add supplied quote fields and conditional Other/TBD validation, CAPTCHA-verified private inquiry storage, existing team-email integration with receipt/idempotency, and Admin Full Service Inquiries review under the approved narrow storage exception.

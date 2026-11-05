@@ -48,5 +48,3 @@ Proposals and proposal-web have local AGENTS.md isolation rules.
 - Enterprise Leaderboard is a read-only list plus a view that embeds the existing live leaderboard; Enter scores and settings link to existing Enterprise Scores/Leaderboard settings, and leagues open the Enterprise Manage League page by tab, so scoring and leaderboard logic stay shared.
 - Enterprise Printables use an in-memory copy (printSelections.ts) and CartSignsTab printOnly, so printouts never write players, pairings or groups.
 - Paid online sign-ups wait in private registration_checkout_holds; verify-registration creates them as paid, and public inserts can't be pending.
-
-- Full Service public marketing shares FullServiceManagement and quote validation; CAPTCHA-verified server intake stores only private inquiry answers and sends the existing team email, while new proposal templates use the quote-only package and historical private documents retain their original package catalog.

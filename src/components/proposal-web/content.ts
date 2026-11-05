@@ -1,6 +1,15 @@
 import { z } from "zod";
-import { SOFTWARE_TAG, MANAGED_TAG, SOFTWARE_DEFINITION, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS } from "@/lib/programTypes";
+import { SOFTWARE_TAG, MANAGED_TAG, SOFTWARE_DEFINITION, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS, FULL_SERVICE_PRICE, FULL_SERVICE_SCOPE, FULL_SERVICE_GROUP, FULL_SERVICE_LIMITS } from "@/lib/programTypes";
 export const programs = {
+  "Full Service Management": {
+    "Type": MANAGED_TAG,
+    "Price": FULL_SERVICE_PRICE,
+    "Definition": MANAGED_DEFINITION,
+    "What We Provide": FULL_SERVICE_SCOPE,
+    [ON_SITE_HEADING]: ON_SITE_BULLETS.join(". ") + ".",
+    "Your Group Handles": FULL_SERVICE_GROUP,
+    "Limits": FULL_SERVICE_LIMITS,
+  },
   "No Cost to Start": {
     "Type": SOFTWARE_TAG,
     "Price": "$0 to start",
@@ -67,7 +76,14 @@ export const programs = {
     "Cancellation": "If the event cancels, a work fee applies for work already done: $1,500 after course negotiation and platform build, $3,000 after registration launch and sponsor packet, and the full $5,000 within 30 days of the event. If the event postpones once to a new date, the fee moves with it at no extra charge."
   }
 } as const;
-export const programNames = Object.keys(programs) as Array<keyof typeof programs>;
+export const programNames = ["No Cost to Start", "Per Event", "Per League", "Enterprise", "Hybrid Managed", "Full Service Planning", "Full Service Management"] as const;
+export const currentProgramNames = ["No Cost to Start", "Per Event", "Per League", "Enterprise", "Full Service Management"] as const;
+export const currentFaq = [
+ ["How do I request Full Service Management?", "Request a quote. Rod will reach out to book a meeting. No payment is taken on the quote form."],
+ ["Who pays the golf course, food, awards, and vendors?", FULL_SERVICE_LIMITS],
+ ["What if we cancel?", "Software cancellation terms remain in the selected program detail. Full Service Management terms are quoted individually after the meeting, in a written proposal."],
+ ["Is travel included?", "Travel is quoted separately."],
+];
 export const faq = [
   [
     "Do we need money up front to start?",
@@ -143,11 +159,13 @@ export const reasonTemplates: Array<{ program: keyof typeof programs; label: str
     program: "Hybrid Managed",
     label: "Personalized offer for a special audience",
     text: "Your audience is a specific one, so I built this for [Organization] rather than pointing at a standard package. Hybrid Managed covers the same ground as Full Service Planning — course negotiation and communication, vendors, sponsor packets, pairings, check in, live scoring, event day coordination, and closeout — at a management rate that reflects the extra attention your event needs, with a dedicated TeeVents manager handling your registration and payment flow end to end. It starts at $5,000 with nothing due at signing, and the management fee is approved in the event budget."
-  }
+  },
+  { program: "Full Service Management", label: "Dedicated manager, quoted for your event", text: "Full Service Management gives [Organization] a dedicated manager from agreement through on site event day coordination and post event closeout. Your group recruits players, sells sponsorships, and approves decisions. Contact us for a quote tailored to your event." }
 ];
 /** Templates for the program picked in Recommended Program come first in the editor. */
-export function orderedReasonTemplates(recommended: string) {
-  return [...reasonTemplates.filter(t => t.program === recommended), ...reasonTemplates.filter(t => t.program !== recommended)];
+export function orderedReasonTemplates(recommended: string, current = false) {
+  const available = current ? reasonTemplates.filter(t => currentProgramNames.includes(t.program as never)) : reasonTemplates;
+  return [...available.filter(t => t.program === recommended), ...available.filter(t => t.program !== recommended)];
 }
 /** Fills the Personalized Reason box: replaces the placeholder, otherwise appends, and never repeats. */
 export function withReason(current: string, text: string) {
@@ -156,10 +174,10 @@ export function withReason(current: string, text: string) {
   const base = current.trim() && current !== reasonExample ? current.trimEnd() : "";
   return base ? `${base}\n\n${text}` : text;
 }
-const programEnum=z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Hybrid Managed","Full Service Planning"]);
-export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(6).optional(), intro:z.string().max(10000), reason:z.string().max(10000) });
+const programEnum=z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Hybrid Managed","Full Service Planning","Full Service Management"]);
+export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000) });
 export type WebDocument = z.infer<typeof documentSchema>;
-export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:[...programNames],intro:introExample,reason:reasonExample});
+export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:[...currentProgramNames],intro:introExample,reason:reasonExample});
 export const fallbackAnswer = "That is not in this proposal, so I will pass that question to Rod, and he will follow up. Thank you for asking.";
 export function sensitiveQuestion(q:string) { return /(password|bank account|card number|routing number|cvv|social security)|(?:\d[ -]?){12,19}/i.test(q); }
 export function calculator(players:number,fee:number) { const registrations=Math.max(0,players)*Math.max(0,fee); return {registrations,trigger:registrations>=3750,first:1875,balance:3125}; }
@@ -167,14 +185,15 @@ export function introText(d:WebDocument) { return d.intro.replaceAll("[Conversat
 export function answerQuestion(q:string,d:WebDocument) {
  const n=q.toLowerCase().trim().replace(/[?!.]+$/g,"");
  if (/discount|custom price|guarantee|change|different|reduce|waive|book|accept|pay now/.test(n)) return fallbackAnswer;
- const f=faq.find(([question])=>question.toLowerCase().replace(/\?$/," ").trim()===n);
+ const availableFaq = d.packages?.includes("Full Service Management") ? currentFaq : faq;
+ const f=availableFaq.find(([question])=>question.toLowerCase().replace(/\?$/," ").trim()===n);
  if(f)return `${f[1]}\n\nFrom Common Questions in this proposal.`;
  if(n==="what program do you recommend" || n==="what is the recommended program") return `${introText(d)}\n${d.reason}\n\nFrom A Quick Note From Rod in this proposal.`;
  const p=programNames.find(name=>n.includes(name.toLowerCase()));
  if(p){const key=n.includes("cancel")?"Cancellation":n.includes("payment")?"Payment Schedule":n.includes("price")||n.includes("cost")?"Price":n.includes("include")?"Includes":null;
- if(key) return `${programs[p][key]}\n\nFrom the ${p} ${key} in this proposal.`;}
+ if(key && key in programs[p]) return `${(programs[p] as Record<string,string>)[key]}\n\nFrom the ${p} ${key} in this proposal.`;}
  return fallbackAnswer;
 }
 
 /** Packages shown to the client; older copies without a choice show all six. */
-export function shownPrograms(d:WebDocument){const set=d.packages;return set?programNames.filter(p=>set.includes(p)):programNames;}
+export function shownPrograms(d:WebDocument){const set=d.packages;return set?programNames.filter(p=>set.includes(p)):programNames.filter(p=>p!=="Full Service Management");}

@@ -77,14 +77,15 @@ const EnterprisePricing = () => {
             <div className="inline-flex items-center gap-2 bg-secondary/20 text-secondary px-4 py-1.5 rounded-full text-xs font-bold tracking-widest uppercase mb-4">
               <Building2 className="h-3.5 w-3.5" /> Enterprise
             </div>
+            <p className="text-xs font-bold uppercase tracking-widest text-secondary">{SOFTWARE_TAG}</p>
+            <p className="mt-3 text-xl font-semibold text-secondary">$2,999 per year</p>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/60">{SOFTWARE_DEFINITION}</p>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
               Running 10 or more events a year?
             </h1>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
               Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. And a dedicated rep who builds every event for you.
             </p>
-            <p className="mt-3 text-xs font-bold uppercase tracking-widest text-secondary">{SOFTWARE_TAG}</p>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/60">{SOFTWARE_DEFINITION}</p>
             <p className="mt-4 text-secondary font-semibold">Run 10 events, and it pays for itself. Run more? You save more.</p>
           </motion.div>
         </div>

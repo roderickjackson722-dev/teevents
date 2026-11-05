@@ -81,3 +81,25 @@ export const chooseWebProgram=createServerFn({method:"POST"}).inputValidator((v:
  if(ue)throw new Error("Your choice was recorded and Rod was emailed. Please refresh before retrying.");
  return {ok:true};
 });
+const esc=(s:string)=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));
+/** Admin-confirmed single-recipient send. Status becomes Sent only after Resend accepts the email. */
+export const sendWebDocument=createServerFn({method:"POST"}).middleware([requireSupabaseAuth]).inputValidator((v:unknown)=>z.object({id:z.string().uuid(),recipientEmail:z.string().trim().max(320).email(),note:z.string().max(2000).optional(),origin:z.string().url()}).parse(v)).handler(async({context,data})=>{
+ const role=await context.supabase.rpc("has_role",{_user_id:context.userId,_role:"admin"});
+ if(role.error||role.data!==true)throw new Error("Platform admin access is required.");
+ const allowed=["https://www.teevents.golf","https://teevents.golf","https://teevents.lovable.app"];
+ const origin=allowed.includes(data.origin)||/^https:\/\/[a-z0-9-]+(--[a-z0-9-]+)?\.lovable\.app$/.test(data.origin)||data.origin.startsWith("http://localhost")?data.origin:"https://www.teevents.golf";
+ const {data:row,error}=await context.supabase.from("proposal_web_documents").select("id,access_token,payload,send_count").eq("id",data.id).single();
+ if(error||!row)throw new Error("Save the client copy before sending.");
+ const d=documentSchema.parse(row.payload);
+ const key=process.env["RESEND_API_KEY"];if(!key)throw new Error("Email is not configured. Nothing was sent.");
+ const link=`${origin}/proposal/${row.access_token}`;const name=d.fields.preparedFor||"there";const ev=d.fields.event?` for ${d.fields.event}`:"";
+ const note=(data.note||"").trim();
+ const html=`<div style="font-family:Georgia,serif;color:#1a1a1a;max-width:560px"><p>Hello ${esc(name)},</p><p>Thank you for considering TeeVents. Your golf tournament proposal${esc(ev)} is ready to review.</p>${note?`<p>${esc(note).replace(/\n/g,"<br>")}</p>`:""}<p><a href="${link}" style="display:inline-block;background:#F5A623;color:#1a5c38;padding:12px 20px;border-radius:6px;font-weight:bold;text-decoration:none">View Your Proposal</a></p><p>Rod Jackson<br>TeeVents Golf Management<br>info@teevents.golf</p></div>`;
+ const text=`Hello ${name},\n\nThank you for considering TeeVents. Your golf tournament proposal${ev} is ready to review.\n\n${note?note+"\n\n":""}View your proposal: ${link}\n\nRod Jackson\nTeeVents Golf Management\ninfo@teevents.golf`;
+ const res=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json"},body:JSON.stringify({from:"TeeVents Golf Management <info@notifications.teevents.golf>",reply_to:"info@teevents.golf",to:[data.recipientEmail],subject:`Your TeeVents Proposal${ev}`,html,text}),signal:AbortSignal.timeout(15000)});
+ if(!res.ok){const body=await res.text();console.error(`Proposal send failed [${res.status}]: ${body}`);throw new Error(`The email was not accepted (${res.status}). Nothing was marked Sent.`);}
+ const now=new Date().toISOString();
+ const {data:upd,error:ue}=await context.supabase.from("proposal_web_documents").update({status:"sent",sent_at:now,sent_to:data.recipientEmail,recipient_email:data.recipientEmail,send_count:(row.send_count||0)+1}).eq("id",row.id).select(COLS).single();
+ if(ue||!upd)throw new Error("The email was sent, but the Sent status could not be saved. Refresh before sending again.");
+ return {...upd,payload:documentSchema.parse(upd.payload)};
+});

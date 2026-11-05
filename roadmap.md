@@ -1,7 +1,8 @@
 ## Public Full Service Management
-- [ ] Replace public Hybrid offers with quote-only Full Service Management, preserve historical private proposals and software terms, and keep /hybrid working.
-- [ ] Add exact quote fields, validation, team email and admin-only inquiry review. Blocked pending permission for private inquiry storage: existing contact submission emails only, and no compatible admin-only intake storage exists without a data-model change.
-- [ ] Verify public offer, software pricing, proposal-template isolation, phone layout and quote submission/readback; do not publish.
+- [x] Replace public Hybrid offers with quote-only Full Service Management; keep /hybrid as the renamed-service page, preserve historical private proposals and software terms, add shared exact scope/responsibilities/limits and software/managed tags.
+- [x] Add supplied quote fields and conditional Other/TBD validation, CAPTCHA-verified private inquiry storage, existing team-email integration with receipt/idempotency, and Admin Full Service Inquiries review under the approved narrow storage exception.
+- [x] Verify public offers, unchanged software amounts, new-template isolation, phone layout, field-only validation/input retention and populated signed-in admin readback; 29 tests passed, build OK. Temporary QA record removed; no event/payment writes, real sends or publication.
+- [ ] Live quote submission and email acceptance remain unverified: CAPTCHA rejects localhost; existing email key is send-only, so sender verification could not be read. Requires a real CAPTCHA-completed quote request in preview; no safeguards bypassed or success simulated.
 
 ## Client proposal webpage
 - [x] Add standalone hidden template, editable isolated client copies, private links, admin activity, print export and proposal-only Q&A; preserve existing pages and payments.

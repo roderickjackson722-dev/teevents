@@ -24,4 +24,9 @@ export const ON_SITE_BULLETS = [
 ] as const;
 
 export const SOFTWARE_PROGRAMS = ["No Cost to Start", "Per Event", "Per League", "Enterprise"] as const;
-export const MANAGED_PROGRAMS = ["Hybrid Managed", "Full Service Planning"] as const;
+export const MANAGED_PROGRAMS = ["Full Service Management"] as const;
+export const FULL_SERVICE_NAME = "Full Service Management";
+export const FULL_SERVICE_PRICE = "Contact us for a quote";
+export const FULL_SERVICE_SCOPE = "Branded TeeVents event page, registration, sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers, pairings, check in setup, live scoring, timeline and consulting throughout, on site event day coordination, post event closeout";
+export const FULL_SERVICE_GROUP = "Recruiting players, selling sponsorships, paying course, food, awards, and vendor costs directly, providing logo and tournament details, and naming one contact who can approve decisions";
+export const FULL_SERVICE_LIMITS = "TeeVents negotiates on your behalf, but does not pay for course, food, awards, or vendor costs. TeeVents does not guarantee a player count, sponsorship dollars, or profit. Travel is quoted separately.";

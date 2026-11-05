@@ -5,6 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { documentSchema, sensitiveQuestion, answerQuestion, shownPrograms } from "./content";
 import { canChooseProgram, fullServiceTotals, money } from "./pricing";
+import { choiceNotification } from "./choiceNotification";
 
 const COLS="id,access_token,payload,updated_at,recipient_email,status,sent_at,sent_to,send_count,program_chosen,program_chosen_at";
 const tokenSchema=z.string().regex(/^[a-f0-9]{64}$/);
@@ -74,9 +75,7 @@ export const chooseWebProgram=createServerFn({method:"POST"}).inputValidator((v:
  if(ce||!choice)throw new Error("The proposal changed or is not available. Refresh and try again.");
  const saved=z.object({id:z.string().uuid(),payload:documentSchema,chosen_at:z.string(),email_sent_at:z.string().nullable()}).parse(choice);
  if(saved.email_sent_at)return {ok:true};
- const t=saved.payload.fullService?fullServiceTotals(saved.payload.fullService):null;
- const text=[`Client: ${saved.payload.fields.preparedFor}`,`Event: ${saved.payload.fields.event}`,`Program chosen: ${data.program}`,...(data.program==="Full Service Management"&&t?[`Full Service Final Price: ${money(t.final)}`,`Deposit due at agreement: ${money(t.deposit)}`]:[]),`Date and time: ${saved.chosen_at}`].join("\n");
- const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json","Idempotency-Key":`proposal-choice-${saved.id}`},body:JSON.stringify({from:"TeeVents Golf Management <info@notifications.teevents.golf>",to:["info@teevents.golf"],subject:`Proposal acceptance, ${saved.payload.fields.preparedFor.replace(/[\r\n]/g," ")}, ${data.program}`,text}),signal:AbortSignal.timeout(15000)});
+ const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json","Idempotency-Key":`proposal-choice-${saved.id}`},body:JSON.stringify({from:"TeeVents Golf Management <info@notifications.teevents.golf>",...choiceNotification(saved.payload,data.program,saved.chosen_at)}),signal:AbortSignal.timeout(15000)});
  if(!response.ok)throw new Error("Your choice was recorded, but Rod's email was not accepted. Please try the same button again.");
  const {error:ue}=await supabaseAdmin.from("proposal_web_documents").update({acceptance_email_sent_at:new Date().toISOString()}).eq("id",saved.id);
  if(ue)throw new Error("Your choice was recorded and Rod was emailed. Please refresh before retrying.");

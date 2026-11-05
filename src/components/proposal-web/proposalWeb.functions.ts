@@ -61,7 +61,32 @@ export const askWebQuestion=createServerFn({method:"POST"}).inputValidator((v:un
  if(saveError||!ok)throw new Error("Your question could not be saved. Please try again.");
  return {answer:answerQuestion(data.question,documentSchema.parse(payload))};
 });
-export const chooseWebProgram=createServerFn({method:"POST"}).inputValidator((v:unknown)=>z.object({token:tokenSchema,program:z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Full Service Management"])}).parse(v)).handler(async({data})=>{
+export const chooseWebProgram=createServerFn({method:"POST"}).inputValidator((v:unknown)=>z.object({token:tokenSchema,program:z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Full Service Management"]),origin:z.string().url().optional()}).parse(v)).handler(async({data}):Promise<{ok:true;checkoutUrl?:string}>=>{
+ const result=await recordChoice(data);
+ if(data.program!=="Enterprise"&&data.program!=="Full Service Management")return result;
+ return {ok:true,checkoutUrl:await depositCheckout(data.token,data.program,data.origin)};
+});
+const DEPOSIT_PROGRAMS=new Set(["Enterprise","Full Service Management"]);
+/** Card checkout for the deposit; amount is always computed server-side from the saved proposal. */
+async function depositCheckout(token:string,program:string,rawOrigin?:string){
+ if(!DEPOSIT_PROGRAMS.has(program))throw new Error("No deposit for this program.");
+ const {supabaseAdmin}=await import("@/integrations/supabase/client.server");
+ const {data:row}=await supabaseAdmin.from("proposal_web_documents").select("id,payload,program_chosen").eq("access_token",token).single();
+ if(!row||row.program_chosen!==program)throw new Error("Your choice could not be confirmed. Please contact info@teevents.golf.");
+ const d=documentSchema.parse(row.payload);
+ const cents=program==="Enterprise"?299900:Math.round((d.fullService?fullServiceTotals(d.fullService).deposit:0)*100);
+ if(!Number.isFinite(cents)||cents<50)throw new Error("The deposit amount isn't set on this proposal. Please contact info@teevents.golf.");
+ const allowed=["https://www.teevents.golf","https://teevents.golf","https://teevents.lovable.app"];
+ const origin=rawOrigin&&(allowed.includes(rawOrigin)||/^https:\/\/[a-z0-9-]+(--[a-z0-9-]+)?\.lovable\.app$/.test(rawOrigin)||rawOrigin.startsWith("http://localhost"))?rawOrigin:"https://www.teevents.golf";
+ const key=process.env["STRIPE_SECRET_KEY"];if(!key)throw new Error("Card payments are not available right now. Your choice was recorded; Rod will follow up.");
+ const label=program==="Enterprise"?"TeeVents Enterprise, annual ($2,999)":`TeeVents Full Service Management, 50% deposit${d.fields.event?` for ${d.fields.event}`:""}`;
+ const body=new URLSearchParams({mode:"payment","line_items[0][quantity]":"1","line_items[0][price_data][currency]":"usd","line_items[0][price_data][unit_amount]":String(cents),"line_items[0][price_data][product_data][name]":label.slice(0,250),success_url:`${origin}/proposal/${token}?deposit=paid`,cancel_url:`${origin}/proposal/${token}?deposit=cancelled#closure`,"metadata[proposal_web_document_id]":row.id,"metadata[program]":program,"metadata[source]":"proposal_deposit","payment_intent_data[metadata][proposal_web_document_id]":row.id,"payment_intent_data[metadata][program]":program});
+ const res=await fetch("https://api.stripe.com/v1/checkout/sessions",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/x-www-form-urlencoded","Idempotency-Key":`proposal-deposit-${row.id}-${cents}-${Math.floor(Date.now()/3600000)}`},body,signal:AbortSignal.timeout(15000)});
+ const json=await res.json() as {url?:string;error?:{message?:string}};
+ if(!res.ok||!json.url){console.error("Proposal deposit checkout failed",res.status,json.error?.message);throw new Error("Your choice was recorded, but card checkout could not open. Please try again or contact info@teevents.golf.");}
+ return json.url;
+}
+async function recordChoice(data:{token:string;program:string}):Promise<{ok:true}>{
  const {supabaseAdmin}=await import("@/integrations/supabase/client.server");
  const {data:row,error}=await supabaseAdmin.from("proposal_web_documents").select("id,payload,status,updated_at,program_chosen,acceptance_email_sent_at").eq("access_token",data.token).single();
  if(error||!row)throw new Error("This proposal is unavailable.");

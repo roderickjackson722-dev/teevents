@@ -10,7 +10,7 @@ export default function CancellationPolicy() {
     </section>
     <article className="container mx-auto max-w-3xl space-y-10 px-4 py-12 md:py-16">
       <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-        This page covers cancellation for TeeVents platform plans, and for in person tournament management services, including Hybrid Managed. Please read the section that applies to your purchase, and contact us if you have questions before you cancel.
+        This page covers cancellation for TeeVents platform plans, and for in person tournament management services, including Full Service Management. Please read the section that applies to your purchase, and contact us if you have questions before you cancel.
       </p>
 
       <section className="space-y-4">
@@ -31,22 +31,11 @@ export default function CancellationPolicy() {
       </section>
 
       <section className="space-y-4">
-        <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">In person tournament management services</h2>
-        <p className="text-xs font-bold uppercase tracking-widest text-primary">{MANAGED_TAG} — Hybrid Managed, Full Service Planning</p>
-        <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          In person management starts at $5,000 per event, plus travel quoted separately. The organizer is liable for the full management fee, even if event proceeds are low.
-        </p>
-        <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          If the event cancels, a work fee applies for work already done:
-        </p>
-        <ul className="list-disc space-y-2 pl-6 text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          <li>$1,500 after course negotiation and platform build</li>
-          <li>$3,000 after registration launch and sponsor packet</li>
-          <li>The full $5,000 within 30 days of the event</li>
-        </ul>
-        <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          Travel is quoted separately, on top of the management fee. Any travel costs already incurred are handled as agreed in the individual event agreement.
-        </p>
+        <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">Full Service Management</h2>
+        <p className="text-xs font-bold text-primary">{MANAGED_TAG}</p>
+        <p className="text-lg font-semibold">Contact us for a quote</p>
+        <p className="text-lg leading-relaxed text-foreground/85">Everything in the software, plus a dedicated tournament manager who works with you from agreement through event day, on site.</p>
+        <p className="text-lg leading-relaxed text-foreground/85">Management terms are quoted individually after the meeting, in a written proposal.</p>
       </section>
 
       <section className="space-y-4">
@@ -58,7 +47,7 @@ export default function CancellationPolicy() {
           A postponed Per Event $399 purchase moves to the new date at no extra charge.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          A postponed Hybrid Managed event moves its management fee to the new date at no extra charge, for one postponement. A second postponement is treated as a cancellation, and the work fee schedule in Section 3 applies.
+          Full Service Management postponement terms are quoted individually after the meeting, in a written proposal.
         </p>
       </section>
 
@@ -68,7 +57,7 @@ export default function CancellationPolicy() {
           To cancel, send a written cancellation notice to info@teevents.golf, with your event name, event date, and the name of the person authorized to cancel for the organizer.
         </p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
-          The cancellation date is the date TeeVents receives that written notice. Work fees are based on work already done by that date, using the schedules above.
+          The cancellation date is the date TeeVents receives that written notice. Full Service Management cancellation terms are provided in the individual written proposal.
         </p>
         <p className="text-lg leading-relaxed">
           <a href="mailto:info@teevents.golf" className="text-primary underline underline-offset-4">Contact us</a>

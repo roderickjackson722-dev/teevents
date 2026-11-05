@@ -12,6 +12,7 @@ const never = [
 ];
 type Mark = "x" | "warn";
 const rows: [string, Mark, string, string][] = [
+  ["Type", "x", "SOFTWARE", "SOFTWARE"],
   ["Dedicated rep", "x", "Self-service only", "Included on every plan, free or paid"],
   ["Event page build", "x", "You build it yourself", "Your choice: your rep builds it for you, or build it yourself with the same tools"],
   ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding"],
@@ -103,8 +104,9 @@ export default function Compare() {
           <motion.div {...fade} key={p.title} className={`rounded-xl border p-6 shadow-sm ${p.hl ? "border-2 border-secondary bg-card" : "border-border bg-card"}`}>
             <h3 className="font-display text-2xl font-bold text-primary">{p.title}</h3>
             {p.tag && <p className="mt-2 text-xs font-bold uppercase tracking-widest text-primary">{p.tag}</p>}
+            {p.tag && <p className="mt-4 font-semibold">{p.items[0]}</p>}
             {p.def && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.def}</p>}
-            <ul className="mt-5 space-y-3">{p.items.map(i => <li key={i} className="flex gap-2">{p.title === "Most Platforms" ? <X className="h-5 w-5 shrink-0 text-muted-foreground" /> : <Yes />}{i}</li>)}</ul>
+            <ul className="mt-5 space-y-3">{(p.tag ? p.items.slice(1) : p.items).map(i => <li key={i} className="flex gap-2">{p.title === "Most Platforms" ? <X className="h-5 w-5 shrink-0 text-muted-foreground" /> : <Yes />}{i}</li>)}</ul>
           </motion.div>))}</div>
         <Callout>If you run fewer than 10 events a year, No Cost to Start or Per-Event is almost always cheaper than a subscription. If you run 10 or more, Enterprise pays for itself.</Callout>
       </div></section>

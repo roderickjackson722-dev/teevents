@@ -57,6 +57,7 @@ const CompareEventbritePdf = () => {
         <table>
           <thead><tr><th style="width:30%">Feature</th><th class="eb" style="width:35%">Eventbrite</th><th class="tv" style="width:35%">TeeVents</th></tr></thead>
           <tbody>
+            <tr><td>Type</td><td>SOFTWARE</td><td>SOFTWARE</td></tr>
             <tr><td>Dedicated account representative</td><td class="no">✗ Not offered</td><td class="yes">✓ Included on every plan — even free</td></tr>
             <tr><td>Custom event page built for you</td><td>You build it</td><td class="yes">✓ We build it</td></tr>
             <tr><td>Leaderboard set up with your branding</td><td>You configure the template</td><td class="yes">✓ Custom-built by your rep</td></tr>

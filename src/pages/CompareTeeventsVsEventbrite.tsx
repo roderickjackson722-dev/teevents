@@ -21,6 +21,7 @@ interface CompRow {
 }
 
 const rows: CompRow[] = [
+  { feature: "Type", eventbrite: "SOFTWARE", teevents: "SOFTWARE" },
   ...repComparisonRows.map(([feature, eventbrite, teevents]): CompRow => ({ feature, eventbrite, teevents })),
   { feature: "Cost per tournament", eventbrite: "3.7% + $1.79/ticket + 2.9% processing", teevents: "$399 flat" },
   { feature: "$150 ticket (144 players)", eventbrite: "~$958", teevents: "$399 total Per-Event price" },

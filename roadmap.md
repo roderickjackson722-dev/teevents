@@ -1,7 +1,8 @@
 ## Private proposal pricing and client choice
-- [ ] Add private program selection, editable pricing/discount/terms, expanded details and closure; preserve public offers and existing screenshots/sections.
-- [ ] Replace send action with status-only marking, add Sent-gated client choice recording/email and admin readback.
-- [ ] Verify pricing rules, saved private preview, phone/print and choice safeguards without real sends or event/payment writes.
+- [x] Add private program selection, editable pricing/discount/terms, expanded details and closure; preserve public offers and existing screenshots/sections.
+- [x] Replace send action with status-only marking, add atomically Sent-gated client choice recording/email and Program Chosen/time admin readback.
+- [x] Verify 26 rules tests, signed-in draft save/reload, $6,000 minus 10% = $5,400 with $2,700 deposit/balance, anonymous draft-choice rejection, expanded jump links, phone overflow and 13 nonblank print pages; temporary proposals removed, no sends/event/payment writes/publication.
+- [ ] Live client acceptance/email receipt remains unverified because it sends a real notification; requires Rod's first intentional Start choice on a Sent proposal.
 
 ## Public Full Service Management
 - [x] Replace public Hybrid offers with quote-only Full Service Management; keep /hybrid as the renamed-service page, preserve historical private proposals and software terms, add shared exact scope/responsibilities/limits and software/managed tags.

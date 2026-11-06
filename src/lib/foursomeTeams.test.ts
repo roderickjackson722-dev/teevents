@@ -28,8 +28,8 @@ describe("two 2-person teams in one foursome", () => {
     ];
     const lb = buildLeaderboard(scores, { scoring_format: "shamble", course_par: 72 }, [4]);
     expect(lb.map((r) => [r.name, r.total])).toEqual([
-      ["Adams / Jackson", 3],
-      ["Martin / Williamson", 4],
+      ["Team Adams/Jackson", 3],
+      ["Team Martin/Williamson", 4],
       ["Team 5", 5],
     ]);
   });

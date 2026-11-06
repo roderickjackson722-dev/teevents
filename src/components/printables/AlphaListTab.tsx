@@ -35,7 +35,7 @@ function valueOf(r: Registration, col: AlphaColumnId, index: number): string {
     case "tee_time":
       return formatTeeTime((r as any).tee_time) || NA;
     case "group":
-      return (r as any).team_name || (r as any).group_label || (r.group_number != null ? `Group ${r.group_number}` : NA);
+      { const lbl = (r as any).group_label as string | null; return (r as any).team_name || (lbl && !/^\s*\d+\s*[A-Za-z]?\s*$/.test(lbl) ? lbl : NA); }
     case "email":
       return r.email || NA;
     case "scoring_code":
@@ -54,7 +54,7 @@ const labelOf = (col: AlphaColumnId) =>
     first_name: "First Name",
     hole: "Hole",
     tee_time: "Tee Time",
-    group: "Group / Team",
+    group: "Team",
     email: "Email",
     scoring_code: "Scoring Code",
     checked_in: "Checked In",

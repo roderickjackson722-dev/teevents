@@ -313,7 +313,7 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
                             >
                               <QRCodeSVG value={qrUrl} size={140} />
                               <div className="text-center">
-                                <h4 className="font-semibold">Group {groupNum}</h4>
+                                <h4 className="font-semibold">Scoring QR</h4>
                                 <div className="text-xs text-muted-foreground">
                                   {players.map((p) => `${p.first_name} ${p.last_name?.[0] || ""}.`).join(", ")}
                                 </div>
@@ -349,7 +349,7 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
                         <TableRow>
                           <TableHead>Player</TableHead>
                           <TableHead>Email</TableHead>
-                          <TableHead className="text-center">Group</TableHead>
+                          <TableHead className="text-center">Paired</TableHead>
                           <TableHead>Scoring Code</TableHead>
                           <TableHead className="text-center">Direct Link</TableHead>
                         </TableRow>
@@ -363,7 +363,7 @@ export default function Scoring({ embedded = false }: { embedded?: boolean }) {
                             <TableCell className="text-muted-foreground text-sm">{r.email}</TableCell>
                             <TableCell className="text-center">
                               {r.group_number != null ? (
-                                <Badge variant="secondary">Group {r.group_number}</Badge>
+                                <Badge variant="secondary">Paired</Badge>
                               ) : (
                                 <span className="text-xs text-muted-foreground">—</span>
                               )}

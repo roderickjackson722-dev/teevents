@@ -116,7 +116,7 @@ export default function MinimumDrivesTracker({ tournamentId, holes = 18 }: Props
             return (
               <div key={String(key)} className="rounded-md border bg-card p-3 space-y-2">
                 <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-medium text-sm">{isGroup ? `Group ${key}` : "Unassigned players"}</span>
+                  <span className="font-medium text-sm">{isGroup ? "Team" : "Unassigned players"}</span>
                   {isGroup && (
                     result.valid ? (
                       <Badge variant="outline" className="text-xs">

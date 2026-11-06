@@ -943,7 +943,7 @@ export default function EnterpriseCreate() {
                       <span className="font-medium">{p.first_name} {p.last_name}</span>
                       <span className="text-muted-foreground">HCP {p.handicap_index ?? "—"}</span>
                       <span className="text-muted-foreground">
-                        {p.group_number ? `Group ${p.group_label || p.group_number}` : "Unassigned"}
+                        {p.group_number ? "Paired" : "Unassigned"}
                       </span>
                       <Button variant="ghost" size="icon" className="ml-auto text-destructive" onClick={() => removePlayer(p.id)} aria-label="Remove player">
                         <Trash2 className="h-4 w-4" />

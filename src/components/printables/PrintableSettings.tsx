@@ -1,3 +1,4 @@
+import { parsePairingsConfig, dayCfgOf } from "@/lib/pairingsConfig";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -59,9 +60,10 @@ interface Props {
 }
 
 export function getDefaultOptions(
-  tournament: { printable_font?: string | null; printable_layout?: string | null; pairings_start_format?: string | null } | null,
+  tournament: { printable_font?: string | null; printable_layout?: string | null; pairings_start_format?: string | null; pairings_config?: unknown } | null,
 ): PrintableOptions {
-  const teeTimes = (tournament?.pairings_start_format || "") === "tee_times";
+  const fmt = tournament?.pairings_start_format || (tournament?.pairings_config ? dayCfgOf(parsePairingsConfig(tournament.pairings_config), 0).startFormat : "");
+  const teeTimes = fmt === "tee_times";
   return {
     font: tournament?.printable_font || "georgia",
     layout: tournament?.printable_layout || "classic",
@@ -167,7 +169,7 @@ export default function PrintableSettings({ options, onChange, showCourseName = 
             </div>
             <div className="flex items-center gap-2">
               <Switch checked={options.showStartingHole} onCheckedChange={(v) => update({ showStartingHole: v })} id="toggle-hole" />
-              <Label htmlFor="toggle-hole" className="text-xs cursor-pointer">Starting Hole</Label>
+              <Label htmlFor="toggle-hole" className="text-xs cursor-pointer">Starting Hole Number</Label>
             </div>
             {showTeeTimeToggle && (
               <div className="flex items-center gap-2">

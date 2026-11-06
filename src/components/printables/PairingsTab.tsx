@@ -68,7 +68,7 @@ export default function PairingsTab({ tournament, registrations, loading, groups
         <tr style="background:#f2f2f2;">
           <th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;">Hole</th>
           ${opts.showTeeTime ? `<th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;">Tee Time</th>` : ""}
-          <th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;text-align:left;">Group</th>
+          <th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;text-align:left;">Team</th>
           <th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;text-align:left;">Players</th>
           ${opts.showFlight ? `<th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;text-align:left;">Flight</th>` : ""}
           <th style="border:1px solid #ddd;padding:6px 8px;font-size:11px;text-transform:uppercase;">Scoring Code</th>
@@ -99,7 +99,7 @@ export default function PairingsTab({ tournament, registrations, loading, groups
             <tr className="bg-muted/50 text-xs uppercase text-muted-foreground">
               <th className="px-3 py-2 text-center">Hole</th>
               {opts.showTeeTime && <th className="px-3 py-2 text-center">Tee Time</th>}
-              <th className="px-3 py-2 text-left">Group</th>
+              <th className="px-3 py-2 text-left">Team</th>
               <th className="px-3 py-2 text-left">Players</th>
               {opts.showFlight && <th className="px-3 py-2 text-left">Flight</th>}
               <th className="px-3 py-2 text-center">Scoring Code</th>

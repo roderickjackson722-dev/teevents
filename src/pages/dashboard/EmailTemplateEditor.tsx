@@ -247,7 +247,7 @@ const DEFAULT_TEE_TIMES_CONFIG: EmailConfig = {
   header_title: "Your Tee Time",
   greeting: "Hello {{first_name}},",
   body_text:
-    "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Group: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Team: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
   closing_text:
     "Please arrive at least 30 minutes before your tee time and check in at the registration table.\n\nQuestions? Contact {{contact_name}} at {{contact_phone}}.",
   footer_text: "See you on the course! ⛳",
@@ -778,7 +778,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
         : "https://www.teevents.golf",
       tee_time: pairingTeeTime || sampleReg?.tee_time || "TBD",
       hole_number: pairingStartingHole || "TBD",
-      team_name: sampleReg?.team_name || (sampleReg?.group_number != null ? `Group ${sampleReg.group_number}` : "To be assigned"),
+      team_name: sampleReg?.team_name || "To be assigned",
       contact_name: t?.day_of_director_name || t?.contact_name || "Tournament Organizer",
       contact_phone: t?.day_of_director_phone || t?.contact_phone || "",
       checkin_time: "TBD",
@@ -1945,7 +1945,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
                           <span className="font-mono font-semibold text-foreground">
                             {r.group_scoring_code || r.scoring_code || "Not assigned yet"}
                           </span>
-                          {r.group_number ? <span className="ml-1">(Group {r.group_number})</span> : null}
+                          
                         </p>
                       </div>
                     </label>

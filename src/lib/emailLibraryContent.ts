@@ -191,7 +191,7 @@ const DEFAULT_PAIRINGS_UPDATE_CONFIG: EmailConfig = {
   header_title: "Updated Hole Assignments",
   greeting: "Hello {{first_name}},",
   body_text:
-    "We've updated the pairings for {{event_name}}. Please review your current assignment below — it may be different from your original confirmation email.\n\n🏌️ Starting Hole: {{hole_number}}\n👥 Team / Group: {{team_name}}\n⏰ Tee Time: {{tee_time}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    "We've updated the pairings for {{event_name}}. Please review your current assignment below — it may be different from your original confirmation email.\n\n🏌️ Starting Hole: {{hole_number}}\n👥 Team: {{team_name}}\n⏰ Tee Time: {{tee_time}}\n🔑 Your Scoring Code: {{scoring_code}}",
   closing_text:
     "Please plan to check in 30 minutes before your tee time and report directly to your starting hole.\n\nQuestions? Reply to this email or contact {{contact_name}} at {{contact_phone}}.",
   footer_text: "See you on the course! ⛳",
@@ -207,7 +207,7 @@ const DEFAULT_TEE_TIMES_CONFIG: EmailConfig = {
   header_title: "Your Tee Time",
   greeting: "Hello {{first_name}},",
   body_text:
-    "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Group: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Team: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
   closing_text:
     "Please arrive at least 30 minutes before your tee time and check in at the registration table.\n\nQuestions? Contact {{contact_name}} at {{contact_phone}}.",
   footer_text: "See you on the course! ⛳",

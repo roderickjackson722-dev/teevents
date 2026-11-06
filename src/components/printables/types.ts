@@ -27,6 +27,8 @@ export interface Registration {
   payment_status?: string | null;
   group_number: number | null;
   group_position: number | null;
+  /** Registered team (registration_groups.id) */
+  group_id?: string | null;
   /** Flight / division id (tournament_tiers) */
   flight_id?: string | null;
   /** Exact starting-hole label from pairings, e.g. "11A" */

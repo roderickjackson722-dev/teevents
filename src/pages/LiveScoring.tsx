@@ -755,7 +755,7 @@ export default function LiveScoring() {
                         const tt = pairingsCfg ? teeTimeForGroup(pairingsCfg, o.group_number, Math.max(0, roundNumber - 1)) : null;
                         const m = tt?.match(/^(\d{1,2}):(\d{2})/);
                         const time = m ? `${((Number(m[1]) + 11) % 12) + 1}:${m[2]} ${Number(m[1]) >= 12 ? "PM" : "AM"}` : null;
-                        const hole = holeLabel ? `Starting Hole ${holeLabel}` : `Group ${o.group_number}`;
+                        const hole = holeLabel ? `Starting Hole ${holeLabel}` : "Your Pairing";
                         return time ? `${time} Tee Time · ${hole}` : hole;
                       })()}
                     </span>
@@ -873,7 +873,7 @@ export default function LiveScoring() {
             <div className="flex items-center gap-2 mb-2">
               <Users className="h-4 w-4 text-primary" />
               <p className="text-sm font-semibold">
-                {teamName ? teamName : `Group ${groupNumber}${startingHole != null ? ` — Starting Hole ${startingHole}` : ""}`}
+                {teamName ? teamName : startingHole != null ? `Your Pairing — Starting Hole ${startingHole}` : "Your Pairing"}
                 <span className="text-muted-foreground font-normal"> · {players.length} player{players.length === 1 ? "" : "s"}</span>
               </p>
             </div>

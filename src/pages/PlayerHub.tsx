@@ -133,12 +133,6 @@ export default function PlayerHub() {
           )}
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-6">
-            {data.group_number != null && (
-              <div className="bg-primary-foreground/10 rounded-lg p-3">
-                <p className="text-xs text-primary-foreground/60">Group</p>
-                <p className="text-xl font-bold text-secondary">#{data.group_number}</p>
-              </div>
-            )}
             {data.group_position != null && (
               <div className="bg-primary-foreground/10 rounded-lg p-3">
                 <p className="text-xs text-primary-foreground/60">Position</p>

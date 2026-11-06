@@ -189,7 +189,7 @@ export default function PublicPairings() {
               <div key={g.number} className="bg-card border border-border rounded-xl p-4">
                 <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
                   <p className="font-semibold text-foreground">
-                    {teamName || (teeTimeStart || !hole ? `Group ${g.number}` : `Hole ${hole}`)}
+                    {teamName || (hole ? `Starting Hole ${hole}` : "Pairing")}
                   </p>
                   <div className="flex items-center gap-3 text-sm">
                     {cfg.show_flights && flight && <span className="text-muted-foreground">{flight}</span>}

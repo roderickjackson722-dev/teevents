@@ -357,7 +357,7 @@ export default function TeamHomepage() {
                 <span className="flex items-center gap-2 shrink-0">
                   <span className="text-xs text-muted-foreground">
                     {r.group_number != null
-                      ? `Group ${r.group_number} • Hole ${startingHoleLabelForGroup(pairings, r.group_number, 0) || "—"}`
+                      ? `Starting Hole ${startingHoleLabelForGroup(pairings, r.group_number, 0) || "—"}`
                       : "Not assigned"}
                   </span>
                   <span className="text-xs font-mono tracking-wider text-foreground">
@@ -384,7 +384,7 @@ export default function TeamHomepage() {
               <div key={g.groupNumber} className="rounded-xl border border-border bg-card p-3">
                 <div className="flex items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-foreground">
-                    Group {g.groupNumber} • Hole {g.startingHole || "—"}{g.teamName !== `Group ${g.groupNumber}` ? `: ${g.teamName}` : ""}
+                    Starting Hole {g.startingHole || "—"}{g.teamName !== `Group ${g.groupNumber}` ? `: ${g.teamName}` : ""}
                   </p>
                   {hq.show_tee_times && g.teeTime && <span className="text-xs font-semibold text-foreground">{formatTeeTime(g.teeTime)}</span>}
                 </div>

@@ -11,7 +11,7 @@ import PrintLogo from "./PrintLogo";
 import type { Tournament, Registration } from "./types";
 import { getPrimaryColor, getPrintLogo } from "./types";
 import type { PrintableOptions } from "./PrintableSettings";
-import { buildTeams, playerName, type RegistrationGroupRow } from "./teamGrouping";
+import { buildTeams, playerName, splitTeamsForScorecards, type RegistrationGroupRow } from "./teamGrouping";
 
 interface CourseDataProp {
   hole_pars: number[] | null;
@@ -144,7 +144,7 @@ function teamScorecardHtml(
 }
 
 export default function TeamScorecards({ tournament, registrations, groups = [], numHoles, opts, courseData, slug }: Props) {
-  const teams = useMemo(() => buildTeams(registrations, groups), [registrations, groups]);
+  const teams = useMemo(() => splitTeamsForScorecards(buildTeams(registrations, groups), groups), [registrations, groups]);
   const [edits, setEdits] = useState<Record<string, TeamEdit>>({});
   const [perPage, setPerPage] = useState<1 | 2 | 3>(2);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -152,7 +152,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
   useEffect(() => {
     const next: Record<string, TeamEdit> = {};
     teams.forEach((t) => {
-      next[t.key] = { teamName: t.teamName, playersLine: t.players.map(playerName).join(", ") };
+      next[t.key] = { teamName: t.teamName, playersLine: t.players.map(playerName).join(" & ") };
     });
     setEdits(next);
     setSelectedKeys(teams.map((t) => t.key));
@@ -168,7 +168,7 @@ export default function TeamScorecards({ tournament, registrations, groups = [],
 
   const selectorItems = teams.map((t, i) => ({
     key: t.key,
-    label: `${t.groupNumber != null ? `Group ${t.groupNumber} – ` : ""}${t.teamName}${(t.startingHoleLabel ?? t.startingHole) != null ? ` (Hole ${t.startingHoleLabel ?? t.startingHole})` : ""}`,
+    label: `${t.teamName}${(t.startingHoleLabel ?? t.startingHole) != null ? ` (Hole ${t.startingHoleLabel ?? t.startingHole})` : ""}`,
     hole: t.groupNumber,
   }));
 

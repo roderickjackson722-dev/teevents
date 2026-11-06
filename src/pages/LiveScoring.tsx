@@ -438,6 +438,11 @@ export default function LiveScoring() {
       });
       if (!data) { setError("Player not found or not assigned to a hole."); return; }
       gNum = data as number;
+      // Load through the same round-aware group lookup as code logins so
+      // team lines (e.g. 2-person shamble) render identically.
+      setPinnedGroup(gNum);
+      await loadGroup(gNum, undefined, undefined, gNum);
+      return;
     } else {
       setError(emailLoginAllowed ? "Enter your scoring code or email." : "Enter your scoring code."); return;
     }

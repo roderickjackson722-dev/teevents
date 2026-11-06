@@ -1,3 +1,8 @@
+## Organizer templates and Enterprise Past Players email
+- [ ] Add isolated account-owned My Templates library with locked originals, copying, editing, sample previews and typed single-address tests.
+- [ ] Add Enterprise-only event/year/attendance audiences, deduplication, enforced account unsubscribes, five-step review and private send logs.
+- [ ] Verify signed-in save/reload, copies, sample previews, phone layout and isolated delivery tests without sending real email or changing existing event/template/payment records.
+
 ## Private proposal pricing and client choice
 - [x] Add private program selection, editable pricing/discount/terms, expanded details and closure; preserve public offers and existing screenshots/sections.
 - [x] Replace send action with status-only marking, add atomically Sent-gated client choice recording/email and Program Chosen/time admin readback.

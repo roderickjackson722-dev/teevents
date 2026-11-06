@@ -809,6 +809,42 @@ const Transactions = ({ embedded = false, eventId }: { embedded?: boolean; event
         <Card><CardHeader className="pb-2"><CardTitle className="text-sm">Net to You</CardTitle></CardHeader><CardContent><div className="text-2xl font-bold text-primary">${(totalNet / 100).toFixed(2)}</div></CardContent></Card>
       </div>
 
+      {(() => {
+        const summary = new Map<string, Array<{ id: string; name: string; qty: number; reg: any }>>();
+        addons.forEach((list, regId) => {
+          const reg: any = regs.get(regId);
+          if (!reg) return;
+          if (tournamentFilter !== "all" && reg.tournament_id !== tournamentFilter) return;
+          list.forEach((a) => {
+            const arr = summary.get(a.addon_name) || [];
+            arr.push({ id: a.id, name: `${reg.first_name || ""} ${reg.last_name || ""}`.trim() || reg.email, qty: a.quantity, reg });
+            summary.set(a.addon_name, arr);
+          });
+        });
+        if (!summary.size) return null;
+        return (
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm">Add-On Buyers</CardTitle></CardHeader>
+            <CardContent className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {Array.from(summary.entries()).sort(([a], [b]) => a.localeCompare(b)).map(([nm, buyers]) => (
+                <div key={nm} className="rounded-md border border-border p-3">
+                  <div className="font-semibold text-sm mb-2">{nm} <span className="text-muted-foreground font-normal">({buyers.reduce((s, b) => s + b.qty, 0)})</span></div>
+                  <ul className="space-y-1 text-sm">
+                    {buyers.sort((a, b) => a.name.localeCompare(b.name)).map((b) => (
+                      <li key={b.id}>
+                        <button type="button" className="hover:underline text-left" onClick={() => setSelectedRegistration(b.reg)}>
+                          {b.name}{b.qty > 1 ? ` ×${b.qty}` : ""}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        );
+      })()}
+
       {missingRegistrationRows.length > 0 && (
         <Card className="border-destructive/50 bg-destructive/5">
           <CardContent className="pt-4">

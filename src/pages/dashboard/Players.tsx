@@ -209,6 +209,8 @@ const Players = () => {
   const [allPlayers, setAllPlayers] = useState<Registration[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [addonsByReg, setAddonsByReg] = useState<Record<string, Array<{ name: string; qty: number }>>>({});
+  const [addonFilter, setAddonFilter] = useState("all");
   // Roster payment view: paid players only (default), pending-only, or everyone.
   const [paymentView, setPaymentView] = useState<"paid" | "pending" | "all">("all");
   const [view, setView] = useState<"roster" | "pairings">("roster");
@@ -406,8 +408,24 @@ const Players = () => {
       })));
 
       setLoading(false);
+      const ids = ((regsRes.data as any[]) || []).map((r) => r.id);
+      setAddonFilter("all");
+      if (!ids.length) { setAddonsByReg({}); return; }
+      (supabase as any).from("tournament_registration_addon_purchases")
+        .select("registration_id, addon_name, quantity").in("registration_id", ids)
+        .then(({ data }: any) => {
+          const m: Record<string, Array<{ name: string; qty: number }>> = {};
+          (data || []).forEach((a: any) => {
+            (m[a.registration_id] ||= []).push({ name: a.addon_name, qty: Number(a.quantity || 1) });
+          });
+          setAddonsByReg(m);
+        });
     });
   }, [selectedTournament]);
+  const addonNames = useMemo(
+    () => Array.from(new Set(Object.values(addonsByReg).flat().map((a) => a.name))).sort(),
+    [addonsByReg],
+  );
 
   useEffect(() => {
     const t: any = tournaments.find((x: any) => x.id === selectedTournament);
@@ -544,6 +562,7 @@ const Players = () => {
   const filteredPlayers = rosterBase
 
     .filter(ageVisible)
+    .filter((p) => addonFilter === "all" || (addonsByReg[p.id] || []).some((a) => a.name === addonFilter))
     .filter((p) => {
       const q = search.toLowerCase();
       if (!q) return true;
@@ -2685,6 +2704,20 @@ const Players = () => {
                 />
               </div>
 
+              {addonNames.length > 0 && (
+                <Select value={addonFilter} onValueChange={setAddonFilter}>
+                  <SelectTrigger className="w-[190px] bg-card" aria-label="Filter by add-on">
+                    <SelectValue placeholder="All add-ons" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All players</SelectItem>
+                    {addonNames.map((n) => (
+                      <SelectItem key={n} value={n}>Bought: {n}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
 
               <Popover>
                 <PopoverTrigger asChild>
@@ -3053,6 +3086,15 @@ const Players = () => {
                     {rosterCols.name !== false && (
                       <td className="px-4 py-3 font-medium text-foreground">
                         {p.first_name} {p.last_name}
+                        {(addonsByReg[p.id] || []).length > 0 && (
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {addonsByReg[p.id].map((a, k) => (
+                              <span key={k} className="rounded-full bg-accent/20 text-foreground border border-accent/40 px-2 py-0.5 text-[10px] font-medium">
+                                {a.name}{a.qty > 1 ? ` ×${a.qty}` : ""}
+                              </span>
+                            ))}
+                          </div>
+                        )}
                       </td>
                     )}
                     {rosterCols.email !== false && (

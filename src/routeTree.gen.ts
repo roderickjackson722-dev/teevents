@@ -37,6 +37,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
+import { Route as DashboardEmailSendRouteImport } from './routes/dashboard.email-send'
 import { Route as DashboardEmailTemplatesRouteImport } from './routes/dashboard.email-templates'
 import { Route as EnterpriseSkinsPayoutsRouteImport } from './routes/enterprise.skins-payouts'
 import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
@@ -216,6 +217,11 @@ const CollegeIndexRoute = CollegeIndexRouteImport.update({
 const CollegeSlugRoute = CollegeSlugRouteImport.update({
   id: '/college/$slug',
   path: '/college/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardEmailSendRoute = DashboardEmailSendRouteImport.update({
+  id: '/dashboard/email-send',
+  path: '/dashboard/email-send',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardEmailTemplatesRoute = DashboardEmailTemplatesRouteImport.update({
@@ -470,6 +476,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
@@ -540,6 +547,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
@@ -611,6 +619,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
@@ -683,6 +692,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-send'
     | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
@@ -753,6 +763,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-send'
     | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
@@ -823,6 +834,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-send'
     | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
@@ -894,6 +906,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
+  DashboardEmailSendRoute: typeof DashboardEmailSendRoute
   DashboardEmailTemplatesRoute: typeof DashboardEmailTemplatesRoute
   EnterpriseSkinsPayoutsRoute: typeof EnterpriseSkinsPayoutsRoute
   LeagueSlugRoute: typeof LeagueSlugRoute
@@ -1132,6 +1145,13 @@ declare module '@tanstack/react-router' {
       path: '/college/$slug'
       fullPath: '/college/$slug'
       preLoaderRoute: typeof CollegeSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/email-send': {
+      id: '/dashboard/email-send'
+      path: '/dashboard/email-send'
+      fullPath: '/dashboard/email-send'
+      preLoaderRoute: typeof DashboardEmailSendRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dashboard/email-templates': {
@@ -1457,6 +1477,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CollegeSlugRoute: CollegeSlugRoute,
+  DashboardEmailSendRoute: DashboardEmailSendRoute,
   DashboardEmailTemplatesRoute: DashboardEmailTemplatesRoute,
   EnterpriseSkinsPayoutsRoute: EnterpriseSkinsPayoutsRoute,
   LeagueSlugRoute: LeagueSlugRoute,

@@ -1,5 +1,6 @@
 import EnterpriseLayout from "@/components/enterprise/EnterpriseLayout";
 import DashboardMessages from "@/pages/dashboard/Messages";
+import EmailTemplateEditor from "@/pages/dashboard/EmailTemplateEditor";
 import EmailLibraryScreen from "@/components/email-library/EmailLibraryScreen";
 
 /** Renders the existing messaging tools inside the Enterprise shell (no behavior changes). */
@@ -12,7 +13,7 @@ export default function EnterpriseCommsTool({ tool }: { tool: "messages" | "emai
       description={isMessages ? "Send emails or texts to your players." : "Edit email wording and send receipts."}
       crumbs={[{ label: "Communications", to: "/enterprise/communications" }, { label: title }]}
     >
-      {isMessages ? <DashboardMessages requirePreview /> : <EmailLibraryScreen enterprise />}
+      {isMessages ? <DashboardMessages requirePreview /> : <><EmailTemplateEditor requirePreview /><EmailLibraryScreen enterprise /></>}
     </EnterpriseLayout>
   );
 }

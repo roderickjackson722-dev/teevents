@@ -32,7 +32,8 @@ function qrImg(url: string, size = 180): string {
 function buildHtml(
   tournament: (Tournament & { slug?: string | null }) | null,
   list: Reg[],
-  opts: { layout: string; showQr: boolean; showDetails: boolean; showStatus: boolean }
+  opts: { layout: string; showQr: boolean; showDetails: boolean; showStatus: boolean },
+  teamOf: (r: Reg) => string,
 ) {
   if (opts.layout === "list") {
     const checkedIn = list.filter((r) => r.checked_in).length;
@@ -41,7 +42,7 @@ function buildHtml(
       <p style="color:#666;font-size:13px;margin:0 0 18px;">Check-In List · ${checkedIn} of ${list.length} checked in</p>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
         <thead><tr style="background:#1a5c38;color:#fff;"><th style="padding:8px;text-align:left;">Player</th><th style="padding:8px;text-align:left;">Team</th><th style="padding:8px;text-align:center;">Hole</th><th style="padding:8px;text-align:center;">Status</th></tr></thead>
-        <tbody>${list.map((r) => `<tr style="border-bottom:1px solid #ddd;${r.checked_in ? "background:#dcfce7;" : ""}"><td style="padding:8px;font-weight:700;">${escapeHtml(r.last_name)}, ${escapeHtml(r.first_name)}</td><td style="padding:8px;">${escapeHtml(r.group_label || "—")}</td><td style="padding:8px;text-align:center;">${startingHoleOf(r as any) ?? "—"}</td><td style="padding:8px;text-align:center;font-weight:700;color:${r.checked_in ? "#166534" : "#92400e"};">${r.checked_in ? "✓ CHECKED IN" : "☐ NOT CHECKED IN"}</td></tr>`).join("")}</tbody>
+        <tbody>${list.map((r) => `<tr style="border-bottom:1px solid #ddd;${r.checked_in ? "background:#dcfce7;" : ""}"><td style="padding:8px;font-weight:700;">${escapeHtml(r.last_name)}, ${escapeHtml(r.first_name)}</td><td style="padding:8px;">${escapeHtml(teamOf(r) || "—")}</td><td style="padding:8px;text-align:center;">${startingHoleOf(r as any) ?? "—"}</td><td style="padding:8px;text-align:center;font-weight:700;color:${r.checked_in ? "#166534" : "#92400e"};">${r.checked_in ? "✓ CHECKED IN" : "☐ NOT CHECKED IN"}</td></tr>`).join("")}</tbody>
       </table>
     </div>`;
   }
@@ -61,8 +62,8 @@ function buildHtml(
           <div style="font-weight:800;font-size:${nameSize};color:#111;line-height:1.15;">${escapeHtml(r.last_name)}, ${escapeHtml(r.first_name)}</div>
           ${opts.showDetails ? `
             <div style="margin-top:8px;font-size:${detailSize};color:#444;line-height:1.6;">
-              ${r.group_label ? `<div><strong>Team:</strong> ${escapeHtml(r.group_label)}</div>` : ""}
-              <div><strong>Starting Hole:</strong> ${startingHoleOf(r as any) ?? "—"}${r.group_position ? ` · Pos ${r.group_position}` : ""}</div>
+              ${teamOf(r) ? `<div><strong>Team:</strong> ${escapeHtml(teamOf(r))}</div>` : ""}
+              <div><strong>Starting Hole:</strong> ${startingHoleOf(r as any) ?? "—"}</div>
               ${r.email ? `<div style="color:#666;">${escapeHtml(r.email)}</div>` : ""}
             </div>
           ` : ""}
@@ -102,7 +103,9 @@ function escapeHtml(s: string | null | undefined): string {
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
 }
 
-export default function CheckInRosterTab({ tournament, registrations, loading }: Props) {
+export default function CheckInRosterTab({ tournament, registrations, loading, teamNames = {} }: Props) {
+  // Team names only — never the numeric group/pairing label.
+  const teamOf = (r: Reg) => teamNames[r.id] || "";
   const [sortBy, setSortBy] = useState<"alpha" | "created" | "team" | "hole" | "tee">("alpha");
   const [filterMode, setFilterMode] = useState<"all" | "group" | "hole">("all");
   const [filterValue, setFilterValue] = useState<string>("all");
@@ -119,21 +122,21 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
 
   const groups = useMemo(() => {
     const s = new Set<string>();
-    registrations.forEach((r) => r.group_label && s.add(r.group_label));
+    registrations.forEach((r) => teamOf(r) && s.add(teamOf(r)));
     return Array.from(s).sort();
-  }, [registrations]);
+  }, [registrations, teamNames]);
 
   const filtered = useMemo(() => {
     let list = [...registrations];
     if (filterMode === "hole" && filterValue !== "all") list = list.filter((r) => String(startingHoleOf(r as any)) === filterValue);
-    if (filterMode === "group" && filterValue !== "all") list = list.filter((r) => r.group_label === filterValue);
+    if (filterMode === "group" && filterValue !== "all") list = list.filter((r) => teamOf(r) === filterValue);
 
     list.sort((a, b) => {
       switch (sortBy) {
         case "created":
           return (a.created_at || "").localeCompare(b.created_at || "");
         case "team":
-          return (a.group_label || "").localeCompare(b.group_label || "") || a.last_name.localeCompare(b.last_name);
+          return teamOf(a).localeCompare(teamOf(b)) || a.last_name.localeCompare(b.last_name);
         case "hole":
         case "tee":
           return (startingHoleOf(a as any) ?? 999) - (startingHoleOf(b as any) ?? 999) || (a.group_position ?? 0) - (b.group_position ?? 0);
@@ -143,11 +146,11 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
       }
     });
     return list;
-  }, [registrations, filterMode, filterValue, sortBy]);
+  }, [registrations, filterMode, filterValue, sortBy, teamNames]);
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
-  const html = buildHtml(tournament, filtered, { layout, showQr, showDetails, showStatus });
+  const html = buildHtml(tournament, filtered, { layout, showQr, showDetails, showStatus }, teamOf);
 
   return (
     <div className="space-y-6">

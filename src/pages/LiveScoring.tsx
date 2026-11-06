@@ -8,7 +8,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
-import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, startingHoleLabelForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
+import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, startingHoleLabelForGroup, teeTimeForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, resolveStartingHole, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import { getFormatById } from "@/lib/scoringFormats";
 import { splitFoursomeTeams, teamDisplayName } from "@/lib/foursomeTeams";
@@ -739,7 +739,13 @@ export default function LiveScoring() {
                     }}
                   >
                     <span className="font-semibold">
-                      {holeLabel ? `Starting Hole ${holeLabel}` : `Group ${o.group_number}`}
+                      {(() => {
+                        const tt = pairingsCfg ? teeTimeForGroup(pairingsCfg, o.group_number, Math.max(0, roundNumber - 1)) : null;
+                        const m = tt?.match(/^(\d{1,2}):(\d{2})/);
+                        const time = m ? `${((Number(m[1]) + 11) % 12) + 1}:${m[2]} ${Number(m[1]) >= 12 ? "PM" : "AM"}` : null;
+                        const hole = holeLabel ? `Starting Hole ${holeLabel}` : `Group ${o.group_number}`;
+                        return time ? `${time} Tee Time · ${hole}` : hole;
+                      })()}
                     </span>
                     <span className="text-xs text-muted-foreground whitespace-normal">{o.players}</span>
                   </Button>

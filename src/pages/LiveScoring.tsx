@@ -11,7 +11,7 @@ import { SponsorBanner } from "@/components/SponsorBanner";
 import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, startingHoleLabelForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, resolveStartingHole, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import { getFormatById } from "@/lib/scoringFormats";
-import { splitFoursomeTeams, defaultTeamLabel } from "@/lib/foursomeTeams";
+import { splitFoursomeTeams, teamDisplayName } from "@/lib/foursomeTeams";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 
@@ -534,7 +534,7 @@ export default function LiveScoring() {
     return parts.map((t) => ({
       key: t.key,
       members: t.members,
-      label: t.members.find((m) => m.team_name)?.team_name || defaultTeamLabel(t.members),
+      label: teamDisplayName(t.members.find((m) => m.team_name)?.team_name, t.members),
       names: t.members.map((m) => `${m.first_name} ${m.last_name}`).join(" & "),
     }));
   })();
@@ -955,12 +955,12 @@ export default function LiveScoring() {
                 const val = getTeamScore(focusHole, t.members);
                 const display = typeof val === "number" ? val : "";
                 return (
-                  <div key={t.key} className="flex items-center justify-between gap-4 border rounded-lg p-3 bg-card" data-testid="team-line">
+                  <div key={t.key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border rounded-lg p-3 bg-card" data-testid="team-line">
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-base truncate">{t.label}</div>
-                      <div className="text-xs text-muted-foreground truncate">{t.names}</div>
+                      <div className="font-semibold text-base break-words">{t.label}</div>
+                      <div className="text-xs text-muted-foreground break-words">{t.names}</div>
                     </div>
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-3 self-end sm:self-auto">
                       <button
                         onClick={() => adjustTeamScore(focusHole, -1, t.members)}
                         disabled={roundLocked}

@@ -1,5 +1,5 @@
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
-import { splitFoursomeTeams, defaultTeamLabel } from "@/lib/foursomeTeams";
+import { splitFoursomeTeams, teamDisplayName } from "@/lib/foursomeTeams";
 
 /**
  * Shared leaderboard row builder used by BOTH the standalone live leaderboard
@@ -121,6 +121,7 @@ export function buildLeaderboard(
     group: number | null;
     teamId: string | null;
     lastName: string | null;
+    firstName: string | null;
     teamName: string | null;
     holes: Record<number, number>;
     holesByRound: Record<number, Record<number, number>>;
@@ -137,6 +138,7 @@ export function buildLeaderboard(
         group: grp,
         teamId: (reg?.group_id ?? s.group_id ?? null) || null,
         lastName: last ?? null,
+        firstName: first ?? null,
         teamName: (reg?.team_name ?? s.team_name ?? null) || null,
         holes: {},
         holesByRound: {},
@@ -182,10 +184,10 @@ export function buildLeaderboard(
         });
         const s = summarize(holesByRound, currentRound, holePars, cPar);
         // Prefer the organizer-entered team name; fall back to the default "Team X".
-        const teamName =
-          players.find((p) => p.teamName)?.teamName ||
-          (split ? defaultTeamLabel(players.map((p) => ({ last_name: p.lastName, first_name: p.name }))) : "") ||
-          `Team ${gn}`;
+        const rawName = players.find((p) => p.teamName)?.teamName || null;
+        const teamName = split
+          ? teamDisplayName(rawName, players.map((p) => ({ first_name: p.firstName, last_name: p.lastName })))
+          : rawName || `Team ${gn}`;
         return {
           name: teamName,
           total: s.total,

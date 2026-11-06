@@ -23,6 +23,21 @@ export function splitFoursomeTeams<T extends FoursomeMember>(members: T[]): { ke
   return Array.from(out.entries()).map(([key, list]) => ({ key, members: list }));
 }
 
+/**
+ * Team label for a split foursome: the organizer's team name, unless it is
+ * just one player's name (the captain default), then "Last / Last".
+ */
+export function teamDisplayName(
+  teamName: string | null | undefined,
+  members: { first_name?: string | null; last_name?: string | null }[],
+): string {
+  const n = (teamName || "").trim();
+  const isPersonName = members.some(
+    (m) => `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim().toLowerCase() === n.toLowerCase(),
+  );
+  return n && !isPersonName ? n : defaultTeamLabel(members);
+}
+
 /** Default team label from last names, e.g. "Martin / Williamson". */
 export function defaultTeamLabel(names: { first_name?: string | null; last_name?: string | null }[]): string {
   return names

@@ -822,7 +822,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   const tabHasData: Record<PublicTabKey, boolean> = {
     about_event: !!(tournament as any).description_html?.replace(/<[^>]*>/g, "").trim() || !!tournament.description,
-    registration: !!tournament.registration_open,
+    registration: !!tournament.registration_open || inviteOk,
     leaderboard: tournament.live_leaderboard_enabled !== false && leaderboard.length > 0,
     sponsors: ((tournament as any).show_sponsorships ?? true) && (sponsors.length > 0 || sponsorshipTiers.length > 0),
     gallery: photos.length > 0,
@@ -1135,7 +1135,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       )}
 
       {/* ===== REGISTRATION ===== */}
-      {tournament.registration_open && !regClosedByTime && !tournament.registration_url && (
+      {((tournament.registration_open && !regClosedByTime) || inviteOk) && !tournament.registration_url && (
 
         <section id="register" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-xl mx-auto px-4">
@@ -1837,7 +1837,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         >
           <div className={`flex flex-wrap gap-3 ${flexJustify[buttonPos]}`}>
             {/* Registration button */}
-            {((tournament.registration_open && !regClosedByTime) || tournament.registration_url || showClosedNotice) && (
+            {((tournament.registration_open && !regClosedByTime) || inviteOk || tournament.registration_url || showClosedNotice) && (
               <a
                 href={tournament.registration_url || "#register"}
                 onClick={(e) => {
@@ -1853,7 +1853,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                   fontSize: `${buttonSize}px`,
                 }}
               >
-                {showClosedNotice ? regCopy.closed : regCopy.custom ? regCopy.label : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
+                {showClosedNotice && !inviteOk ? regCopy.closed : regCopy.custom ? regCopy.label : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
               </a>
             )}
 

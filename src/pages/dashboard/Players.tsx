@@ -2508,7 +2508,7 @@ const Players = () => {
         {rosterCols.hcp !== false && <SortableTh colKey="hcp" align="center">HCP</SortableTh>}
         {rosterCols.age !== false && <SortableTh colKey="age" align="center">Age</SortableTh>}
 
-        {rosterCols.group !== false && <SortableTh colKey="group">Group / Team</SortableTh>}
+        {rosterCols.group !== false && <SortableTh colKey="group">Team</SortableTh>}
         {rosterCols.tier !== false && <SortableTh colKey="tier">Division / Tier</SortableTh>}
         {rosterCols.flight !== false && <SortableTh colKey="flight">Flight</SortableTh>}
         {rosterCols.shirt !== false && <SortableTh colKey="shirt" align="center">Shirt</SortableTh>}
@@ -3130,7 +3130,6 @@ const Players = () => {
                           {teamGroups.map((t) => (
                             <option key={t.id} value={t.id}>
                               {groupNames[t.id] || t.name}
-                              {t.group_number != null ? ` (Hole ${t.group_number})` : ""}
                             </option>
                           ))}
                           <option value="__new">+ Create new team…</option>
@@ -3177,7 +3176,7 @@ const Players = () => {
                         {p.group_number != null ? (
                           <span
                             className="bg-primary/10 text-primary text-xs font-semibold px-2 py-0.5 rounded-full"
-                            title={`Group ${p.group_number} — starting hole set in Pairings`}
+                            title="Starting hole set in Pairings"
                           >
                             #{startHoleOf(p.group_number)}
                           </span>
@@ -3218,7 +3217,7 @@ const Players = () => {
                             title={codeOf(p) ? "Click to edit this group's scoring code" : "Scoring codes are generated when pairings are assigned"}
                           >
                             {codeOf(p)
-                              ? `${codeOf(p)}${p.group_number != null ? ` (Group ${holeLabels[p.group_number] || p.group_number})` : ""}`
+                              ? codeOf(p)
                               : "— Not assigned"}
                             <Pencil className="h-2.5 w-2.5 opacity-0 group-hover:opacity-100" />
                           </button>
@@ -4047,7 +4046,7 @@ const Players = () => {
                   </h3>
                   <div className="ml-auto inline-flex rounded-md border border-border overflow-hidden">
                     {([
-                      { key: "group", label: "Sort by Group" },
+                      { key: "group", label: "Sort by Order" },
                       { key: "division", label: "Sort by Division" },
                       { key: "teetime", label: "Sort by Tee Time" },
                     ] as const).map((opt, i) => (
@@ -4118,6 +4117,10 @@ const Players = () => {
                               <X className="h-3.5 w-3.5" />
                             </Button>
                           </div>
+                        ) : startFormat === "tee_times" ? (
+                          <span className="text-sm font-bold text-foreground">
+                            {holeTeeTimes[group.number] ? `${fmtTee12(holeTeeTimes[group.number])} · ` : ""}Starting Hole {startHoleOf(group.number)}
+                          </span>
                         ) : (
                           <button
                             className="text-sm font-bold text-foreground hover:text-primary inline-flex items-center gap-1"
@@ -4155,7 +4158,7 @@ const Players = () => {
                             onClick={() => { setEditingTeamNum(group.number); setTeamNameInput(teamNamesByHole[group.number] || ""); }}
                             title="Edit the team name shown on the live leaderboard"
                           >
-                            {teamNamesByHole[group.number] || `Team ${group.number} — add name`}
+                            {teamNamesByHole[group.number] || "Add team name"}
                             <Pencil className="h-2.5 w-2.5 opacity-70" />
                           </button>
                         )}
@@ -4506,7 +4509,7 @@ const Players = () => {
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <p className="text-xs text-muted-foreground">Hole Assignment</p>
-                  <p className="text-sm text-foreground">{viewingPlayer.group_number != null ? `Group ${viewingPlayer.group_number} · Hole #${startHoleOf(viewingPlayer.group_number)}` : "Unassigned"}</p>
+                  <p className="text-sm text-foreground">{viewingPlayer.group_number != null ? `Starting Hole #${startHoleOf(viewingPlayer.group_number)}${holeTeeTimes[viewingPlayer.group_number] ? ` · ${fmtTee12(holeTeeTimes[viewingPlayer.group_number])}` : ""}` : "Unassigned"}</p>
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground">Scoring Code</p>

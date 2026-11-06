@@ -101,6 +101,7 @@ import PostEventReport from "./pages/dashboard/PostEventReport";
 import Finances from "./pages/dashboard/Finances";
 import Transactions from "./pages/dashboard/Transactions";
 import EmailTemplateEditor from "./pages/dashboard/EmailTemplateEditor";
+import EmailLibraryScreen from "./components/email-library/EmailLibraryScreen";
 import MissingAges from "./pages/dashboard/MissingAges";
 import UpdateAge from "./pages/UpdateAge";
 
@@ -393,7 +394,7 @@ const App = () => (
           <Route path="/dashboard/post-event-report" element={<DashboardLayout><PostEventReport /></DashboardLayout>} />
           <Route path="/dashboard/finances" element={<DashboardLayout><Finances /></DashboardLayout>} />
           <Route path="/dashboard/transactions" element={<DashboardLayout><Transactions /></DashboardLayout>} />
-          <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailTemplateEditor /></DashboardLayout>} />
+          <Route path="/dashboard/email-templates" element={<DashboardLayout><EmailLibraryScreen /></DashboardLayout>} />
           <Route path="/dashboard/missing-ages" element={<DashboardLayout><MissingAges /></DashboardLayout>} />
 
           <Route path="/dashboard/email-log" element={<DashboardLayout><EmailLog /></DashboardLayout>} />

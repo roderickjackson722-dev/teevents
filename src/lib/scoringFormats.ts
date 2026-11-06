@@ -73,9 +73,24 @@ export const SCORING_FORMATS: ScoringFormat[] = [
     scoring: "alternate_shot",
   },
   {
+    id: "shamble_2",
+    name: "2-Person Shamble",
+    description: "Both players tee off and pick the best drive, then each plays their own ball in. The team enters one score per hole. Most popular shamble format.",
+    teamSize: 2,
+    scoring: "shamble",
+  },
+  {
+    id: "shamble_3",
+    name: "3-Person Shamble",
+    description: "All 3 players tee off and pick the best drive, then each plays their own ball in. The team enters one score per hole.",
+    teamSize: 3,
+    scoring: "shamble",
+  },
+  {
+    // Kept as "shamble" so existing events keep their saved format.
     id: "shamble",
-    name: "Shamble",
-    description: "All players tee off and pick the best drive, then each plays their own ball from that spot. Best individual score counts.",
+    name: "4-Person Shamble",
+    description: "All 4 players tee off and pick the best drive, then each plays their own ball in. The team enters one score per hole.",
     teamSize: 4,
     scoring: "shamble",
   },

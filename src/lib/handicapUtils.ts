@@ -90,6 +90,8 @@ export const FORMAT_ALLOWANCES: Record<string, { label: string; allowance: numbe
   scramble_2: { label: "2-Person Scramble", allowance: 35 },
   best_ball_2: { label: "2-Person Best Ball", allowance: 90 },
   best_ball_4: { label: "4-Person Best Ball", allowance: 85 },
+  shamble_2: { label: "2-Person Shamble", allowance: 80 },
+  shamble_3: { label: "3-Person Shamble", allowance: 80 },
   shamble_4: { label: "4-Person Shamble", allowance: 80 },
   stableford: { label: "Stableford", allowance: 95 },
   alternate_shot: { label: "Alternate Shot", allowance: 50 },

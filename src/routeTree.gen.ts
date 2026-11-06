@@ -47,6 +47,7 @@ import { Route as TeamSlugRouteImport } from './routes/team/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
 import { Route as ApiGhinLookupRouteImport } from './routes/api/ghin/lookup'
 import { Route as ApiGhinSyncAllRouteImport } from './routes/api/ghin/sync-all'
+import { Route as ApiPublicEnterpriseEmailUnsubscribeRouteImport } from './routes/api/public/enterprise-email-unsubscribe'
 import { Route as ApiPublicHelpChatDailySummaryRouteImport } from './routes/api/public/help-chat-daily-summary'
 import { Route as ApiPublicLeadMagnetDownloadRouteImport } from './routes/api/public/lead-magnet-download'
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
@@ -265,6 +266,12 @@ const ApiGhinSyncAllRoute = ApiGhinSyncAllRouteImport.update({
   path: '/api/ghin/sync-all',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEnterpriseEmailUnsubscribeRoute =
+  ApiPublicEnterpriseEmailUnsubscribeRouteImport.update({
+    id: '/api/public/enterprise-email-unsubscribe',
+    path: '/api/public/enterprise-email-unsubscribe',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHelpChatDailySummaryRoute =
   ApiPublicHelpChatDailySummaryRouteImport.update({
     id: '/api/public/help-chat-daily-summary',
@@ -461,6 +468,7 @@ export interface FileRoutesByFullPath {
   '/college/': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/enterprise-email-unsubscribe': typeof ApiPublicEnterpriseEmailUnsubscribeRoute
   '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -528,6 +536,7 @@ export interface FileRoutesByTo {
   '/college': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/enterprise-email-unsubscribe': typeof ApiPublicEnterpriseEmailUnsubscribeRoute
   '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -596,6 +605,7 @@ export interface FileRoutesById {
   '/college/': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/enterprise-email-unsubscribe': typeof ApiPublicEnterpriseEmailUnsubscribeRoute
   '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -665,6 +675,7 @@ export interface FileRouteTypes {
     | '/college/'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/enterprise-email-unsubscribe'
     | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
@@ -732,6 +743,7 @@ export interface FileRouteTypes {
     | '/college'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/enterprise-email-unsubscribe'
     | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
@@ -799,6 +811,7 @@ export interface FileRouteTypes {
     | '/college/'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/enterprise-email-unsubscribe'
     | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
@@ -867,6 +880,7 @@ export interface RootRouteChildren {
   CollegeIndexRoute: typeof CollegeIndexRoute
   ApiGhinLookupRoute: typeof ApiGhinLookupRoute
   ApiGhinSyncAllRoute: typeof ApiGhinSyncAllRoute
+  ApiPublicEnterpriseEmailUnsubscribeRoute: typeof ApiPublicEnterpriseEmailUnsubscribeRoute
   ApiPublicHelpChatDailySummaryRoute: typeof ApiPublicHelpChatDailySummaryRoute
   ApiPublicLeadMagnetDownloadRoute: typeof ApiPublicLeadMagnetDownloadRoute
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
@@ -1163,6 +1177,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGhinSyncAllRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/enterprise-email-unsubscribe': {
+      id: '/api/public/enterprise-email-unsubscribe'
+      path: '/api/public/enterprise-email-unsubscribe'
+      fullPath: '/api/public/enterprise-email-unsubscribe'
+      preLoaderRoute: typeof ApiPublicEnterpriseEmailUnsubscribeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/help-chat-daily-summary': {
       id: '/api/public/help-chat-daily-summary'
       path: '/api/public/help-chat-daily-summary'
@@ -1406,6 +1427,8 @@ const rootRouteChildren: RootRouteChildren = {
   CollegeIndexRoute: CollegeIndexRoute,
   ApiGhinLookupRoute: ApiGhinLookupRoute,
   ApiGhinSyncAllRoute: ApiGhinSyncAllRoute,
+  ApiPublicEnterpriseEmailUnsubscribeRoute:
+    ApiPublicEnterpriseEmailUnsubscribeRoute,
   ApiPublicHelpChatDailySummaryRoute: ApiPublicHelpChatDailySummaryRoute,
   ApiPublicLeadMagnetDownloadRoute: ApiPublicLeadMagnetDownloadRoute,
   ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,

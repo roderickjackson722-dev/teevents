@@ -35,7 +35,9 @@ export function teamDisplayName(
   const isPersonName = members.some(
     (m) => `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim().toLowerCase() === n.toLowerCase(),
   );
-  return n && !isPersonName ? n : defaultTeamLabel(members);
+  if (n && !isPersonName) return n;
+  const fallback = defaultTeamLabel(members).replace(/ \/ /g, "/");
+  return fallback ? `Team ${fallback}` : "Team";
 }
 
 /** Default team label from last names, e.g. "Martin / Williamson". */

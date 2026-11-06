@@ -684,7 +684,7 @@ function LiveLeaderboardBoard({
         open={!!scorecardRow}
         onOpenChange={(v) => !v && setScorecardRow(null)}
         playerName={scorecardRow?.name || ""}
-        subtitle={scorecardRow?.players?.join(", ")}
+        subtitle={scorecardRow?.players?.join(" & ")}
         holesByRound={scorecardRow?.holesByRound || {}}
         course={course}
         coursePar={tournament.course_par || 72}

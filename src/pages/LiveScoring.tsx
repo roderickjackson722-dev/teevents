@@ -963,8 +963,12 @@ export default function LiveScoring() {
                 return (
                   <div key={t.key} className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border rounded-lg p-3 bg-card" data-testid="team-line">
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-base break-words">{t.label}</div>
-                      <div className="text-xs text-muted-foreground break-words">{t.names}</div>
+                      <div className="text-[11px] uppercase tracking-wide text-muted-foreground break-words">{t.label}</div>
+                      {t.members.map((m) => (
+                        <div key={m.id} className="font-semibold text-base leading-snug break-words">
+                          {m.first_name} {m.last_name}
+                        </div>
+                      ))}
                     </div>
                     <div className="flex items-center gap-3 self-end sm:self-auto">
                       <button

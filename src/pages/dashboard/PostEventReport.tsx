@@ -132,6 +132,7 @@ const PostEventReport = () => {
                 first_name: reg.first_name,
                 last_name: reg.last_name,
                 group_number: reg.group_number ?? null,
+                group_id: reg.group_id ?? null,
                 team_name: reg.team_name ?? null,
               }
             : null;

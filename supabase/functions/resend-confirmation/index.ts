@@ -124,7 +124,7 @@ const DEFAULT_CONFIGS: Record<string, any> = {
     subject: "{{event_name}} – Updated Hole Assignments",
     greeting: "Hello {{first_name}},",
     header_title: "Updated Hole Assignments",
-    body_text: "We've updated the pairings for {{event_name}}. Here are your current assignments:\n\n🏌️ Starting Hole: {{hole_number}}\n👥 Team / Group: {{team_name}}\n⏰ Tee Time: {{tee_time}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    body_text: "We've updated the pairings for {{event_name}}. Here are your current assignments:\n\n🏌️ Starting Hole: {{hole_number}}\n👥 Team: {{team_name}}\n⏰ Tee Time: {{tee_time}}\n🔑 Your Scoring Code: {{scoring_code}}",
     closing_text: "Please double-check your starting hole before you arrive — assignments have changed since your original confirmation. Plan to check in 30 minutes before your tee time.",
     footer_text: "See you on the course! ⛳",
     button_text: "View Event Homepage",
@@ -135,7 +135,7 @@ const DEFAULT_CONFIGS: Record<string, any> = {
     subject: "{{event_name}} – Your Tee Time & Pairings",
     greeting: "Hello {{first_name}},",
     header_title: "Your Tee Time",
-    body_text: "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Group: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    body_text: "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Team: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
     closing_text: "Please arrive at least 30 minutes before your tee time and check in at the registration table.",
     footer_text: "See you on the course! ⛳",
     button_text: "View All Tee Times & Pairings",
@@ -344,7 +344,7 @@ Deno.serve(async (req) => {
     // Get registrations with tournament info
     const { data: registrations, error: regErr } = await supabaseAdmin
       .from("tournament_registrations")
-      .select("id, first_name, last_name, email, tournament_id, qr_token, survey_response_token, scoring_code, group_scoring_code, group_number, tee_time")
+      .select("id, first_name, last_name, email, tournament_id, qr_token, survey_response_token, scoring_code, group_scoring_code, group_number, group_id, tee_time")
       .in("id", registration_ids);
 
     if (regErr || !registrations || registrations.length === 0) {
@@ -357,7 +357,7 @@ Deno.serve(async (req) => {
     const tId = registrations[0].tournament_id;
     const { data: allRegs } = await supabaseAdmin
       .from("tournament_registrations")
-      .select("group_number, scoring_code, group_scoring_code")
+      .select("group_number, group_id, first_name, last_name, scoring_code, group_scoring_code")
       .eq("tournament_id", tId);
     const groupCodes = new Map<number, string>();
     for (const r of (allRegs || []) as any[]) {
@@ -369,7 +369,7 @@ Deno.serve(async (req) => {
     // Tee times are finalized in Players & Pairings at the GROUP level; prefer those.
     const { data: pairGroups } = await supabaseAdmin
       .from("registration_groups")
-      .select("group_number, tee_time, team_name, group_name")
+      .select("id, group_number, tee_time, team_name, group_name")
       .eq("tournament_id", tId);
     const groupTeeTimes = new Map<number, string>();
     const groupNames = new Map<number, string>();
@@ -378,9 +378,21 @@ Deno.serve(async (req) => {
       const name = g.team_name || g.group_name;
       if (g.group_number != null && name) groupNames.set(g.group_number, String(name));
     }
+    // Registered team (e.g. a 2-person team) name — never a group number.
+    const registeredTeamName = (groupId: string | null | undefined): string | undefined => {
+      if (!groupId) return undefined;
+      const g = ((pairGroups || []) as any[]).find((x) => x.id === groupId);
+      const members = ((allRegs || []) as any[]).filter((m) => m.group_id === groupId);
+      const n = String(g?.team_name || g?.group_name || "").trim();
+      const isPerson = members.some((m) => `${m.first_name ?? ""} ${m.last_name ?? ""}`.trim().toLowerCase() === n.toLowerCase());
+      if (n && !isPerson) return n;
+      const surnames = members.map((m) => String(m.last_name || m.first_name || "").trim()).filter(Boolean).join("/");
+      return surnames ? `Team ${surnames}` : undefined;
+    };
     const teamNameFor = (r: any) =>
-      (r.group_number != null ? groupNames.get(r.group_number) : undefined)
-      || (r.group_number != null ? `Group ${r.group_number}` : "To be assigned");
+      registeredTeamName(r.group_id)
+      || (r.group_number != null ? groupNames.get(r.group_number) : undefined)
+      || "To be assigned";
 
 
     const codeFor = (r: any) =>

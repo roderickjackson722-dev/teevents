@@ -238,9 +238,9 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
       </div>
 
       <div className="bg-muted/30 rounded-lg border border-border p-4">
-        <p className="text-xs text-muted-foreground mb-3">Preview ({filtered.length} players) — first 4 shown</p>
+        <p className="text-xs text-muted-foreground mb-3">Preview — all {filtered.length} players</p>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filtered.slice(0, 4).map((r) => {
+          {filtered.map((r) => {
             const link = `${BASE_URL}/day-of/${tournament?.slug || ""}/${effectiveScoringCode(r) || "DEMO"}`;
             return (
               <div key={r.id} className="flex items-center gap-3 bg-white p-3 rounded border">
@@ -249,7 +249,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading }:
                   <div className="font-bold text-sm truncate">{r.last_name}, {r.first_name}</div>
                   {showDetails && (
                     <div className="text-xs text-muted-foreground">
-                      Hole {startingHoleOf(r as any) ?? "—"}{r.group_number != null ? ` · Group ${r.group_number}` : ""}
+                      Starting Hole {startingHoleOf(r as any) ?? "—"}
                     </div>
                   )}
                   {showStatus && (

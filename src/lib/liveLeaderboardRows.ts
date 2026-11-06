@@ -1,4 +1,5 @@
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
+import { splitFoursomeTeams, teamDisplayName } from "@/lib/foursomeTeams";
 
 /**
  * Shared leaderboard row builder used by BOTH the standalone live leaderboard
@@ -118,6 +119,9 @@ export function buildLeaderboard(
   const playerData: Record<string, {
     name: string;
     group: number | null;
+    teamId: string | null;
+    lastName: string | null;
+    firstName: string | null;
     teamName: string | null;
     holes: Record<number, number>;
     holesByRound: Record<number, Record<number, number>>;
@@ -132,6 +136,9 @@ export function buildLeaderboard(
       playerData[key] = {
         name: first || last ? `${first ?? ""} ${last ?? ""}`.trim() : "Unknown",
         group: grp,
+        teamId: (reg?.group_id ?? s.group_id ?? null) || null,
+        lastName: last ?? null,
+        firstName: first ?? null,
         teamName: (reg?.team_name ?? s.team_name ?? null) || null,
         holes: {},
         holesByRound: {},
@@ -151,8 +158,16 @@ export function buildLeaderboard(
         groups[p.group].push({ key: regId, player: p });
       }
     });
-    return Object.entries(groups)
-      .map(([gn, entries]) => {
+    // Two registered teams paired in one foursome stay separate leaderboard lines.
+    const units = Object.entries(groups).flatMap(([gn, entries]) => {
+      const parts = splitFoursomeTeams(
+        entries.map((e) => ({ id: e.key, group_id: e.player.teamId, entry: e })),
+      );
+      if (parts.length === 1) return [{ gn, key: `group-${gn}`, entries, split: false }];
+      return parts.map((p) => ({ gn, key: `team-${p.key}`, entries: p.members.map((m) => m.entry), split: true }));
+    });
+    return units
+      .map(({ gn, key, entries, split }) => {
         const players = entries.map((e) => e.player);
         const rounds = new Set<number>();
         players.forEach((p) => Object.keys(p.holesByRound).forEach((r) => rounds.add(Number(r))));
@@ -169,14 +184,17 @@ export function buildLeaderboard(
         });
         const s = summarize(holesByRound, currentRound, holePars, cPar);
         // Prefer the organizer-entered team name; fall back to the default "Team X".
-        const teamName = players.find((p) => p.teamName)?.teamName || `Team ${gn}`;
+        const rawName = players.find((p) => p.teamName)?.teamName || null;
+        const teamName = split
+          ? teamDisplayName(rawName, players.map((p) => ({ first_name: p.firstName, last_name: p.lastName })))
+          : rawName || `Team ${gn}`;
         return {
           name: teamName,
           total: s.total,
           thru: s.thru,
           isTeam: true,
           players: players.map((p) => p.name),
-          key: `group-${gn}`,
+          key,
           today: s.today,
           parPlayed: s.parPlayed,
           parToday: s.parToday,

@@ -281,6 +281,13 @@
       "when": 1793930541143,
       "tag": "0039_private_email_libraries_and_enterprise_blasts",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "7",
+      "when": 1793991779464,
+      "tag": "0040_team_lines_in_live_scoring",
+      "breakpoints": true
     }
   ]
 }

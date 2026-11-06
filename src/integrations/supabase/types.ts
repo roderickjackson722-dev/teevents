@@ -15621,6 +15621,7 @@ export type Database = {
           first_name: string
           flight_id: string
           flight_name: string
+          group_id: string
           group_number: number
           hole_number: number
           last_name: string

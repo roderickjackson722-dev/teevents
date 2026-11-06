@@ -1,0 +1,1 @@
+- Foursomes with 2+ registered teams split via `splitFoursomeTeams` in live scoring and leaderboard; others stay one team.

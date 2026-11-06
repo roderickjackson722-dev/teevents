@@ -578,7 +578,9 @@ Deno.serve(async (req) => {
             ? { ...emailConfig, button_url: vars.survey_link }
             : emailConfig;
 
-          const subject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
+          const baseSubject = replaceVars(emailConfig.subject || `You're Registered — ${tournament.title}`, vars);
+          const subjectPrefix = typeof body.subject_prefix === "string" ? body.subject_prefix.trim().slice(0, 60) : "";
+          const subject = subjectPrefix ? `${subjectPrefix} ${baseSubject}` : baseSubject;
           regSubject = subject;
           regTeeTime = vars.tee_time;
           const slug = (tournament as any).slug;

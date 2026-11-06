@@ -944,7 +944,66 @@ export default function LiveScoring() {
           )}
         </div>
 
-        {viewMode === "single" && isScramble ? (
+        {viewMode === "single" && teamLines ? (
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Team Scores · Hole {focusHole}</CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 pt-0 space-y-3">
+              {teamLines.map((t) => {
+                const par = courseData?.hole_pars?.[focusHole - 1] ?? Math.round((tournament.course_par || 72) / 18);
+                const val = getTeamScore(focusHole, t.members);
+                const display = typeof val === "number" ? val : "";
+                return (
+                  <div key={t.key} className="flex items-center justify-between gap-4 border rounded-lg p-3 bg-card" data-testid="team-line">
+                    <div className="min-w-0 flex-1">
+                      <div className="font-semibold text-base truncate">{t.label}</div>
+                      <div className="text-xs text-muted-foreground truncate">{t.names}</div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => adjustTeamScore(focusHole, -1, t.members)}
+                        disabled={roundLocked}
+                        className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center"
+                        aria-label={`Decrease score for ${t.label}`}
+                      >
+                        <Minus className="h-5 w-5" />
+                      </button>
+                      <div
+                        className={`w-16 h-16 rounded-lg border-2 bg-card text-center text-3xl flex items-center justify-center ${
+                          display === "" ? "opacity-50 text-muted-foreground font-normal" : "opacity-100 text-primary font-bold"
+                        }`}
+                      >
+                        {display === "" ? par : display}
+                      </div>
+                      <button
+                        onClick={() => adjustTeamScore(focusHole, +1, t.members)}
+                        disabled={roundLocked}
+                        className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 flex items-center justify-center"
+                        aria-label={`Increase score for ${t.label}`}
+                      >
+                        <Plus className="h-5 w-5" />
+                      </button>
+                      <button
+                        onClick={() => clearHole(focusHole, t.members.map((m) => m.id), t.label)}
+                        disabled={saving || display === "" || roundLocked}
+                        className="h-7 w-7 -mr-1 rounded-full border bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
+                        aria-label={`Clear Hole ${focusHole} score for ${t.label}`}
+                        title="Clear this hole's score"
+                      >
+                        <Eraser className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+              <p className="text-xs text-muted-foreground">
+                Enter one score per team on each hole — your team and the team you're paired with.
+                Entered a score on the wrong hole? Tap the eraser to clear it.
+              </p>
+            </CardContent>
+          </Card>
+        ) : viewMode === "single" && isScramble ? (
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Team Score Entry</CardTitle>
@@ -1087,7 +1146,7 @@ export default function LiveScoring() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">{isScramble ? "Team" : "Player"}</TableHead>
+                    <TableHead className="sticky left-0 bg-card z-10 min-w-[120px]">{isScramble || teamLines ? "Team" : "Player"}</TableHead>
                     {holes.map((h) => (
                       <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs border-r border-border last:border-r-0">{h}</TableHead>
                     ))}
@@ -1122,7 +1181,45 @@ export default function LiveScoring() {
                   )}
                 </TableHeader>
                 <TableBody>
-                  {isScramble ? (
+                  {teamLines ? teamLines.map((t) => {
+                    const total = holes.reduce((sum, h) => {
+                      const v = getTeamScore(h, t.members);
+                      return sum + (typeof v === "number" ? v : 0);
+                    }, 0);
+                    return (
+                      <TableRow key={t.key}>
+                        <TableCell className="sticky left-0 bg-card z-10 font-medium text-sm">
+                          {t.label}
+                          <div className="text-[10px] text-muted-foreground font-normal">{t.names}</div>
+                        </TableCell>
+                        {holes.map((h) => {
+                          const val = getTeamScore(h, t.members);
+                          const display = typeof val === "number" ? val : "";
+                          return (
+                            <TableCell key={h} className="p-0.5 text-center border-r border-border">
+                              <div className="inline-flex items-center gap-0.5">
+                                <button type="button" aria-label="Decrease" disabled={roundLocked}
+                                  onClick={() => adjustTeamScore(h, -1, t.members)}
+                                  className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center disabled:opacity-40">
+                                  <Minus className="h-3 w-3" />
+                                </button>
+                                <div className="w-7 h-7 rounded border bg-card text-center text-sm font-semibold flex items-center justify-center">
+                                  {display === "" ? (courseData?.hole_pars?.[h - 1] ?? "·") : display}
+                                </div>
+                                <button type="button" aria-label="Increase" disabled={roundLocked}
+                                  onClick={() => adjustTeamScore(h, +1, t.members)}
+                                  className="h-7 w-5 rounded border bg-background hover:bg-muted text-xs leading-none flex items-center justify-center disabled:opacity-40">
+                                  <Plus className="h-3 w-3" />
+                                </button>
+                              </div>
+                            </TableCell>
+                          );
+                        })}
+                        <TableCell className="text-center font-bold">{total > 0 ? total : "—"}</TableCell>
+                        {handicapEnabled && <TableCell className="text-center font-bold text-primary">—</TableCell>}
+                      </TableRow>
+                    );
+                  }) : isScramble ? (
                     <TableRow>
                       <TableCell className="sticky left-0 bg-card z-10 font-medium text-sm">Team</TableCell>
                       {holes.map((h) => {

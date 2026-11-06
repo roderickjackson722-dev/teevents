@@ -1,0 +1,18 @@
+CREATE TABLE public.organizer_email_templates (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE, name text NOT NULL, subject text NOT NULL, config jsonb NOT NULL, source_kind text NOT NULL DEFAULT 'custom', created_by uuid NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), updated_at timestamptz NOT NULL DEFAULT now());
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.organizer_email_templates TO authenticated;
+GRANT ALL ON public.organizer_email_templates TO service_role;
+ALTER TABLE public.organizer_email_templates ENABLE ROW LEVEL SECURITY;
+CREATE POLICY template_account_access ON public.organizer_email_templates FOR ALL TO authenticated USING (public.has_role(auth.uid(), 'admin') OR EXISTS (SELECT 1 FROM public.org_members m WHERE m.organization_id = organizer_email_templates.organization_id AND m.user_id = auth.uid() AND (m.role IN ('owner','admin') OR 'manage_messages' = ANY(m.permissions::text[])))) WITH CHECK ((public.has_role(auth.uid(), 'admin') OR EXISTS (SELECT 1 FROM public.org_members m WHERE m.organization_id = organizer_email_templates.organization_id AND m.user_id = auth.uid() AND (m.role IN ('owner','admin') OR 'manage_messages' = ANY(m.permissions::text[])))) AND created_by = auth.uid());
+ALTER TABLE public.tournament_registrations ADD COLUMN IF NOT EXISTS enterprise_email_opt_out boolean NOT NULL DEFAULT false;
+CREATE TABLE public.enterprise_email_preferences (organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE, email text NOT NULL, token uuid NOT NULL DEFAULT gen_random_uuid() UNIQUE, unsubscribed_at timestamptz, PRIMARY KEY (organization_id,email));
+GRANT ALL ON public.enterprise_email_preferences TO service_role;
+ALTER TABLE public.enterprise_email_preferences ENABLE ROW LEVEL SECURITY;
+CREATE TABLE public.enterprise_email_blasts (id uuid PRIMARY KEY DEFAULT gen_random_uuid(), organization_id uuid NOT NULL REFERENCES public.organizations(id) ON DELETE CASCADE, tournament_id uuid NOT NULL REFERENCES public.tournaments(id), template_name text NOT NULL, subject text NOT NULL, sender_name text NOT NULL, config jsonb NOT NULL, source_kind text NOT NULL, filters jsonb NOT NULL, audience_count integer NOT NULL, sent_count integer NOT NULL DEFAULT 0, failed_count integer NOT NULL DEFAULT 0, status text NOT NULL DEFAULT 'prepared', is_test boolean NOT NULL DEFAULT false, created_by uuid NOT NULL, sender_label text NOT NULL, created_at timestamptz NOT NULL DEFAULT now(), sent_at timestamptz);
+GRANT SELECT ON public.enterprise_email_blasts TO authenticated;
+GRANT ALL ON public.enterprise_email_blasts TO service_role;
+ALTER TABLE public.enterprise_email_blasts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY blast_account_read ON public.enterprise_email_blasts FOR SELECT TO authenticated USING (public.has_role(auth.uid(), 'admin') OR EXISTS (SELECT 1 FROM public.org_members m WHERE m.organization_id = enterprise_email_blasts.organization_id AND m.user_id = auth.uid() AND (m.role IN ('owner','admin') OR 'manage_messages' = ANY(m.permissions::text[]))));
+CREATE TABLE public.enterprise_email_blast_recipients (blast_id uuid NOT NULL REFERENCES public.enterprise_email_blasts(id) ON DELETE CASCADE, email text NOT NULL, registration_id uuid REFERENCES public.tournament_registrations(id), name text NOT NULL, status text NOT NULL DEFAULT 'queued', PRIMARY KEY(blast_id,email));
+GRANT ALL ON public.enterprise_email_blast_recipients TO service_role;
+ALTER TABLE public.enterprise_email_blast_recipients ENABLE ROW LEVEL SECURITY;
+CREATE INDEX enterprise_email_blasts_account_date ON public.enterprise_email_blasts(organization_id,created_at DESC);

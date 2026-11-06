@@ -37,6 +37,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
+import { Route as DashboardEmailTemplatesRouteImport } from './routes/dashboard.email-templates'
 import { Route as EnterpriseSkinsPayoutsRouteImport } from './routes/enterprise.skins-payouts'
 import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
 import { Route as PairingsSlugRouteImport } from './routes/pairings/$slug'
@@ -47,6 +48,7 @@ import { Route as TeamSlugRouteImport } from './routes/team/$slug'
 import { Route as TournamentSlugRouteImport } from './routes/tournament/$slug'
 import { Route as ApiGhinLookupRouteImport } from './routes/api/ghin/lookup'
 import { Route as ApiGhinSyncAllRouteImport } from './routes/api/ghin/sync-all'
+import { Route as ApiPublicEnterpriseEmailUnsubscribeRouteImport } from './routes/api/public/enterprise-email-unsubscribe'
 import { Route as ApiPublicHelpChatDailySummaryRouteImport } from './routes/api/public/help-chat-daily-summary'
 import { Route as ApiPublicLeadMagnetDownloadRouteImport } from './routes/api/public/lead-magnet-download'
 import { Route as ApiPublicLeagueEventConfirmationRouteImport } from './routes/api/public/league-event-confirmation'
@@ -59,6 +61,7 @@ import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/a
 import { Route as ApiPublicReceiptEmailRouteImport } from './routes/api/public/receipt-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as ApiPublicSampleShareEmailRouteImport } from './routes/api/public/sample-share-email'
+import { Route as EnterpriseCommunicationsEmailTemplatesRouteImport } from './routes/enterprise.communications.email-templates'
 import { Route as EnterpriseSettingsOrganizationRouteImport } from './routes/enterprise.settings.organization'
 import { Route as EnterpriseSettingsWebAddressRouteImport } from './routes/enterprise.settings.web-address'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
@@ -215,6 +218,11 @@ const CollegeSlugRoute = CollegeSlugRouteImport.update({
   path: '/college/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardEmailTemplatesRoute = DashboardEmailTemplatesRouteImport.update({
+  id: '/dashboard/email-templates',
+  path: '/dashboard/email-templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EnterpriseSkinsPayoutsRoute = EnterpriseSkinsPayoutsRouteImport.update({
   id: '/enterprise/skins-payouts',
   path: '/enterprise/skins-payouts',
@@ -265,6 +273,12 @@ const ApiGhinSyncAllRoute = ApiGhinSyncAllRouteImport.update({
   path: '/api/ghin/sync-all',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicEnterpriseEmailUnsubscribeRoute =
+  ApiPublicEnterpriseEmailUnsubscribeRouteImport.update({
+    id: '/api/public/enterprise-email-unsubscribe',
+    path: '/api/public/enterprise-email-unsubscribe',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHelpChatDailySummaryRoute =
   ApiPublicHelpChatDailySummaryRouteImport.update({
     id: '/api/public/help-chat-daily-summary',
@@ -332,6 +346,12 @@ const ApiPublicSampleShareEmailRoute =
   ApiPublicSampleShareEmailRouteImport.update({
     id: '/api/public/sample-share-email',
     path: '/api/public/sample-share-email',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const EnterpriseCommunicationsEmailTemplatesRoute =
+  EnterpriseCommunicationsEmailTemplatesRouteImport.update({
+    id: '/enterprise/communications/email-templates',
+    path: '/enterprise/communications/email-templates',
     getParentRoute: () => rootRouteImport,
   } as any)
 const EnterpriseSettingsOrganizationRoute =
@@ -450,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -461,6 +482,7 @@ export interface FileRoutesByFullPath {
   '/college/': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/enterprise-email-unsubscribe': typeof ApiPublicEnterpriseEmailUnsubscribeRoute
   '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -473,6 +495,7 @@ export interface FileRoutesByFullPath {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -517,6 +540,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -528,6 +552,7 @@ export interface FileRoutesByTo {
   '/college': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/enterprise-email-unsubscribe': typeof ApiPublicEnterpriseEmailUnsubscribeRoute
   '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -540,6 +565,7 @@ export interface FileRoutesByTo {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -585,6 +611,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -596,6 +623,7 @@ export interface FileRoutesById {
   '/college/': typeof CollegeIndexRoute
   '/api/ghin/lookup': typeof ApiGhinLookupRoute
   '/api/ghin/sync-all': typeof ApiGhinSyncAllRoute
+  '/api/public/enterprise-email-unsubscribe': typeof ApiPublicEnterpriseEmailUnsubscribeRoute
   '/api/public/help-chat-daily-summary': typeof ApiPublicHelpChatDailySummaryRoute
   '/api/public/lead-magnet-download': typeof ApiPublicLeadMagnetDownloadRoute
   '/api/public/league-event-confirmation': typeof ApiPublicLeagueEventConfirmationRoute
@@ -608,6 +636,7 @@ export interface FileRoutesById {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -654,6 +683,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -665,6 +695,7 @@ export interface FileRouteTypes {
     | '/college/'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/enterprise-email-unsubscribe'
     | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
@@ -677,6 +708,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
@@ -721,6 +753,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -732,6 +765,7 @@ export interface FileRouteTypes {
     | '/college'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/enterprise-email-unsubscribe'
     | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
@@ -744,6 +778,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
@@ -788,6 +823,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -799,6 +835,7 @@ export interface FileRouteTypes {
     | '/college/'
     | '/api/ghin/lookup'
     | '/api/ghin/sync-all'
+    | '/api/public/enterprise-email-unsubscribe'
     | '/api/public/help-chat-daily-summary'
     | '/api/public/lead-magnet-download'
     | '/api/public/league-event-confirmation'
@@ -811,6 +848,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
@@ -856,6 +894,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
+  DashboardEmailTemplatesRoute: typeof DashboardEmailTemplatesRoute
   EnterpriseSkinsPayoutsRoute: typeof EnterpriseSkinsPayoutsRoute
   LeagueSlugRoute: typeof LeagueSlugRoute
   PairingsSlugRoute: typeof PairingsSlugRoute
@@ -867,6 +906,7 @@ export interface RootRouteChildren {
   CollegeIndexRoute: typeof CollegeIndexRoute
   ApiGhinLookupRoute: typeof ApiGhinLookupRoute
   ApiGhinSyncAllRoute: typeof ApiGhinSyncAllRoute
+  ApiPublicEnterpriseEmailUnsubscribeRoute: typeof ApiPublicEnterpriseEmailUnsubscribeRoute
   ApiPublicHelpChatDailySummaryRoute: typeof ApiPublicHelpChatDailySummaryRoute
   ApiPublicLeadMagnetDownloadRoute: typeof ApiPublicLeadMagnetDownloadRoute
   ApiPublicLeagueEventConfirmationRoute: typeof ApiPublicLeagueEventConfirmationRoute
@@ -879,6 +919,7 @@ export interface RootRouteChildren {
   ApiPublicReceiptEmailRoute: typeof ApiPublicReceiptEmailRoute
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   ApiPublicSampleShareEmailRoute: typeof ApiPublicSampleShareEmailRoute
+  EnterpriseCommunicationsEmailTemplatesRoute: typeof EnterpriseCommunicationsEmailTemplatesRoute
   EnterpriseSettingsOrganizationRoute: typeof EnterpriseSettingsOrganizationRoute
   EnterpriseSettingsWebAddressRoute: typeof EnterpriseSettingsWebAddressRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
@@ -1093,6 +1134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollegeSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/email-templates': {
+      id: '/dashboard/email-templates'
+      path: '/dashboard/email-templates'
+      fullPath: '/dashboard/email-templates'
+      preLoaderRoute: typeof DashboardEmailTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/enterprise/skins-payouts': {
       id: '/enterprise/skins-payouts'
       path: '/enterprise/skins-payouts'
@@ -1161,6 +1209,13 @@ declare module '@tanstack/react-router' {
       path: '/api/ghin/sync-all'
       fullPath: '/api/ghin/sync-all'
       preLoaderRoute: typeof ApiGhinSyncAllRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/enterprise-email-unsubscribe': {
+      id: '/api/public/enterprise-email-unsubscribe'
+      path: '/api/public/enterprise-email-unsubscribe'
+      fullPath: '/api/public/enterprise-email-unsubscribe'
+      preLoaderRoute: typeof ApiPublicEnterpriseEmailUnsubscribeRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/help-chat-daily-summary': {
@@ -1245,6 +1300,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/sample-share-email'
       fullPath: '/api/public/sample-share-email'
       preLoaderRoute: typeof ApiPublicSampleShareEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enterprise/communications/email-templates': {
+      id: '/enterprise/communications/email-templates'
+      path: '/enterprise/communications/email-templates'
+      fullPath: '/enterprise/communications/email-templates'
+      preLoaderRoute: typeof EnterpriseCommunicationsEmailTemplatesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/enterprise/settings/organization': {
@@ -1395,6 +1457,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CollegeSlugRoute: CollegeSlugRoute,
+  DashboardEmailTemplatesRoute: DashboardEmailTemplatesRoute,
   EnterpriseSkinsPayoutsRoute: EnterpriseSkinsPayoutsRoute,
   LeagueSlugRoute: LeagueSlugRoute,
   PairingsSlugRoute: PairingsSlugRoute,
@@ -1406,6 +1469,8 @@ const rootRouteChildren: RootRouteChildren = {
   CollegeIndexRoute: CollegeIndexRoute,
   ApiGhinLookupRoute: ApiGhinLookupRoute,
   ApiGhinSyncAllRoute: ApiGhinSyncAllRoute,
+  ApiPublicEnterpriseEmailUnsubscribeRoute:
+    ApiPublicEnterpriseEmailUnsubscribeRoute,
   ApiPublicHelpChatDailySummaryRoute: ApiPublicHelpChatDailySummaryRoute,
   ApiPublicLeadMagnetDownloadRoute: ApiPublicLeadMagnetDownloadRoute,
   ApiPublicLeagueEventConfirmationRoute: ApiPublicLeagueEventConfirmationRoute,
@@ -1419,6 +1484,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicReceiptEmailRoute: ApiPublicReceiptEmailRoute,
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   ApiPublicSampleShareEmailRoute: ApiPublicSampleShareEmailRoute,
+  EnterpriseCommunicationsEmailTemplatesRoute:
+    EnterpriseCommunicationsEmailTemplatesRoute,
   EnterpriseSettingsOrganizationRoute: EnterpriseSettingsOrganizationRoute,
   EnterpriseSettingsWebAddressRoute: EnterpriseSettingsWebAddressRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,

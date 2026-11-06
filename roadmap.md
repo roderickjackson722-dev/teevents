@@ -1,3 +1,9 @@
+## Organizer templates and Enterprise Past Players email
+- [x] Add isolated account-owned My Templates library with locked originals, copying, editing, sample previews and typed single-address tests.
+- [x] Add Enterprise-only event/year/attendance audiences, deduplication, enforced account unsubscribes, five-step review and private send logs; approved accounts include their linked ordinary events without converting them.
+- [x] Verified signed-in copy/save/reload, blank template save, confirmed deletion and QA cleanup, real ATL participant preview, Enterprise sidebar/selection and zero future-event audience, phone overflow checks, 23 isolated safety/delivery/log tests and build OK; no real emails, event/template/payment writes or publishing.
+- [ ] Live Enterprise five-step delivery and send-log UI readback await an eligible past event in the approved account and an intentional typed-address test; current approved account has only a future 2027 event. Provider delivery/log tested with simulated acceptance only.
+
 ## Private proposal pricing and client choice
 - [x] Add private program selection, editable pricing/discount/terms, expanded details and closure; preserve public offers and existing screenshots/sections.
 - [x] Replace send action with status-only marking, add atomically Sent-gated client choice recording/email and Program Chosen/time admin readback.

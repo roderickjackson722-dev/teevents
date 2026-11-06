@@ -1,0 +1,4 @@
+# Email library isolation
+- These two screens use separate organization-owned templates and authenticated Enterprise audience snapshots, never live tournament config writes, so template edits cannot alter automatic event emails.
+- Keep catalog wording and rendering in client-safe emailLibraryContent, access and delivery in server-only helpers, and use the existing Resend sender; account unsubscribe tokens and recipient snapshots are never readable from browser tables.
+- Eligibility is rebuilt before sending and suppression is checked for each recipient so no imported or stale audience can bypass opt-outs.

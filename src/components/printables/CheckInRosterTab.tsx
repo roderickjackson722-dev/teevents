@@ -117,6 +117,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading, t
   const [showQr, setShowQr] = useState(true);
   const [showDetails, setShowDetails] = useState(true);
   const [showStatus, setShowStatus] = useState(true);
+  const [showTeeTime, setShowTeeTime] = useState(true);
 
   const holes = useMemo(() => {
     const s = new Set<number>();
@@ -154,7 +155,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading, t
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
-  const html = buildHtml(tournament, filtered, { layout, showQr, showDetails, showStatus }, teamOf);
+  const html = buildHtml(tournament, filtered, { layout, showQr, showDetails, showStatus, showTeeTime }, teamOf);
 
   return (
     <div className="space-y-6">
@@ -232,6 +233,9 @@ export default function CheckInRosterTab({ tournament, registrations, loading, t
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={showStatus} onCheckedChange={(v) => setShowStatus(!!v)} /> Include check-in status
           </label>
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox checked={showTeeTime} onCheckedChange={(v) => setShowTeeTime(!!v)} /> Include tee time
+          </label>
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t">
@@ -256,6 +260,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading, t
                   <div className="font-bold text-sm truncate">{r.last_name}, {r.first_name}</div>
                   {showDetails && (
                     <div className="text-xs text-muted-foreground">
+                      {showTeeTime && <div>Tee Time {formatTeeTime((r as any).tee_time) || "—"}</div>}
                       Starting Hole {startingHoleOf(r as any) ?? "—"}
                     </div>
                   )}

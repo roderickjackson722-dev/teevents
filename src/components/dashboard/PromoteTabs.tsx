@@ -5,12 +5,13 @@ import { withDashboardContext } from "@/lib/dashboardContext";
 const TABS = [
   { label: "Share", url: "/dashboard/share-promote", match: ["/dashboard/share-promote"] },
   { label: "Flyers", url: "/dashboard/flyer-studio", match: ["/dashboard/flyer-studio"] },
-  { label: "Email", url: "/dashboard/email-templates", match: ["/dashboard/email-templates", "/dashboard/email-log"] },
+  { label: "Email", url: "/dashboard/email-templates", match: ["/dashboard/email-send", "/dashboard/email-templates", "/dashboard/email-log"] },
   { label: "SMS", url: "/dashboard/messages", match: ["/dashboard/messages"] },
   { label: "Public", url: "/dashboard/public-search", match: ["/dashboard/public-search"] },
 ];
 
 const EMAIL_SUB = [
+  { label: "Send Emails", url: "/dashboard/email-send" },
   { label: "Templates", url: "/dashboard/email-templates" },
   { label: "Log", url: "/dashboard/email-log" },
 ];
@@ -20,7 +21,7 @@ export const PROMOTE_PATHS = TABS.flatMap((t) => t.match);
 /** Shared Promote tab bar. Navigation only. */
 export default function PromoteTabs() {
   const { pathname, search } = useLocation();
-  const inEmail = pathname === "/dashboard/email-templates" || pathname === "/dashboard/email-log";
+  const inEmail = pathname === "/dashboard/email-send" || pathname === "/dashboard/email-templates" || pathname === "/dashboard/email-log";
   const linkCls = (active: boolean) =>
     cn("inline-block px-3 py-2 text-sm font-medium border-b-2 -mb-px transition-colors",
       active ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground");

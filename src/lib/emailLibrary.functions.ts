@@ -8,7 +8,7 @@ export const loadEmailLibrary=createServerFn({method:'POST'}).middleware([requir
  const event=await h.ownedEvent(admin,data.organizationId,data.eventId,data.enterprise);
  const [templates,events,sample,logs]=await Promise.all([
   h.allRows(()=>admin.from('organizer_email_templates').select('*').eq('organization_id',data.organizationId).order('updated_at',{ascending:false}).order('id')),
-  h.allRows(()=>{let q=admin.from('tournaments').select('id,title,date,is_enterprise').eq('organization_id',data.organizationId).order('date',{ascending:false}).order('id');if(data.enterprise) q=q.eq('is_enterprise',true);return q;}),
+  h.allRows(()=>admin.from('tournaments').select('id,title,date,is_enterprise').eq('organization_id',data.organizationId).order('date',{ascending:false}).order('id')),
   admin.from('tournament_registrations').select('id,first_name,last_name,email').eq('tournament_id',event.id).order('created_at').limit(1).maybeSingle(),
   data.enterprise?admin.from('enterprise_email_blasts').select('id,created_at,sent_at,template_name,subject,sender_name,sender_label,audience_count,sent_count,failed_count,status,is_test,filters').eq('organization_id',data.organizationId).order('created_at',{ascending:false}).limit(100):Promise.resolve({data:[]}),
  ]);

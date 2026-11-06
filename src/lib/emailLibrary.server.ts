@@ -23,7 +23,7 @@ export async function allRows(query: () => any) {
 }
 export async function ownedEvent(admin: any, orgId: string, eventId: string, enterprise = false) {
  const {data,error}=await admin.from("tournaments").select("*").eq("organization_id",orgId).eq("id",eventId).maybeSingle();
- if(error || !data || (enterprise && !data.is_enterprise)) throw new Error("Choose an event belonging to this account."); return data;
+ if(error || !data) throw new Error("Choose an event belonging to this account."); return data;
 }
 export async function resolveTemplate(admin: any, orgId: string, event: any, id: string) {
  if(id.startsWith('builtin:')) { const item=catalogForEvent(event).find(t=>t.id===id); if(!item) throw new Error("Template not found."); return {...item,subject:item.config.subject}; }
@@ -31,7 +31,7 @@ export async function resolveTemplate(admin: any, orgId: string, event: any, id:
  if(error || !data) throw new Error("Template not found."); return data;
 }
 export async function pastAudience(admin: any, organizationId: string, filters: AudienceFilters) {
- const events = await allRows(()=>admin.from("tournaments").select("id,title,date,post_event_email_opt_out").eq("organization_id",organizationId).eq("is_enterprise",true).order("id"));
+ const events = await allRows(()=>admin.from("tournaments").select("id,title,date,post_event_email_opt_out").eq("organization_id",organizationId).order("id"));
  const rows: any[]=[];
  for (const event of events) rows.push(...await allRows(()=>admin.from("tournament_registrations").select("id,tournament_id,first_name,last_name,email,enterprise_email_opt_out,checked_in,group_score,team_score_count,status").eq("tournament_id",event.id).order("id")));
  const preferences = await allRows(()=>admin.from("enterprise_email_preferences").select("email").eq("organization_id",organizationId).not("unsubscribed_at","is",null).order("email"));

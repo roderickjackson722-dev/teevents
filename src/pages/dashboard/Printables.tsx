@@ -46,7 +46,7 @@ const Printables = () => {
   useEffect(() => {
     if (!selectedTournament) { setGroups([]); return; }
     (supabase.from("registration_groups") as any)
-      .select("id, group_number, team_name, tee_time, cart_sign_names, starting_hole")
+      .select("id, group_number, team_name, group_name, tee_time, cart_sign_names, starting_hole")
       .eq("tournament_id", selectedTournament)
       .then(({ data }: any) => setGroups((data || []) as RegistrationGroupRow[]));
   }, [selectedTournament, groupsRefresh]);
@@ -83,7 +83,7 @@ const Printables = () => {
     Promise.all([
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, email, payment_status, group_number, group_position, group_label, scoring_code, group_scoring_code, checked_in, created_at, tee_time, flight_id")
+        .select("id, first_name, last_name, email, payment_status, group_number, group_position, group_id, group_label, scoring_code, group_scoring_code, checked_in, created_at, tee_time, flight_id")
 
         .eq("tournament_id", selectedTournament)
         .order("last_name", { ascending: true }),

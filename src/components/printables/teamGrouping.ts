@@ -1,5 +1,6 @@
 import { effectiveScoringCode } from "./scoringCodes";
 import { startingHoleLabelOf, type Registration } from "./types";
+import { splitFoursomeTeams, teamDisplayName, defaultTeamLabel } from "@/lib/foursomeTeams";
 
 export interface RegistrationGroupRow {
   id: string;
@@ -71,7 +72,7 @@ export function buildTeams(registrations: Registration[], groups: RegistrationGr
         players.map((p) => startingHoleLabelOf(p as any)).find((v) => v != null) ??
         (g?.starting_hole != null ? String(g.starting_hole) : String(num)),
       groupId: g?.id,
-      teamName: g?.team_name || `Group ${num}`,
+      teamName: g?.team_name || pairingLabel(players, groups),
       teeTime: g?.tee_time ?? (players.map((p) => (p as any).tee_time).find(Boolean) || null),
       players,
       scoringCode: players.map((p) => effectiveScoringCode(p)).find(Boolean) || null,
@@ -105,4 +106,45 @@ export function splitCarts(team: PrintTeam, override?: { cart1?: string[]; cart2
     cart1: cart1.filter((n) => (n || "").trim().length > 0),
     cart2: cart2.filter((n) => (n || "").trim().length > 0),
   };
+}
+
+/** Name of a registered team (registration_groups row) by id. */
+function registeredTeamName(groups: RegistrationGroupRow[], id: string | null | undefined): string | null {
+  if (!id) return null;
+  const g = groups.find((x) => x.id === id);
+  return g?.team_name || (g as any)?.group_name || null;
+}
+
+/** Label for a pairing without a saved name — team names, never a group number. */
+export function pairingLabel(players: Registration[], groups: RegistrationGroupRow[] = []): string {
+  const split = splitFoursomeTeams(players as any[]);
+  if (split.length > 1) {
+    return split
+      .map((t) => teamDisplayName(registeredTeamName(groups, t.key), t.members as Registration[]))
+      .join(" & ");
+  }
+  const surnames = defaultTeamLabel(players).replace(/ \/ /g, "/");
+  return surnames ? `Team ${surnames}` : "Team";
+}
+
+/**
+ * Scorecards: a pairing made of several registered teams (e.g. two 2-person
+ * teams) prints one scorecard per team, matching mobile scoring and the leaderboard.
+ */
+export function splitTeamsForScorecards(teams: PrintTeam[], groups: RegistrationGroupRow[] = []): PrintTeam[] {
+  const out: PrintTeam[] = [];
+  teams.forEach((t) => {
+    const split = t.groupNumber != null ? splitFoursomeTeams(t.players as any[]) : [];
+    if (split.length < 2) { out.push(t); return; }
+    split.forEach((sub) => {
+      out.push({
+        ...t,
+        key: `${t.key}-${sub.key}`,
+        groupId: sub.key,
+        teamName: teamDisplayName(registeredTeamName(groups, sub.key), sub.members as Registration[]),
+        players: sub.members as Registration[],
+      });
+    });
+  });
+  return out;
 }

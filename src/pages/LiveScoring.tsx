@@ -11,6 +11,7 @@ import { SponsorBanner } from "@/components/SponsorBanner";
 import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, startingHoleLabelForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, resolveStartingHole, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import { getFormatById } from "@/lib/scoringFormats";
+import { splitFoursomeTeams, defaultTeamLabel } from "@/lib/foursomeTeams";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 
@@ -24,6 +25,8 @@ interface Player {
   strokes_per_hole: number[] | null;
   is_captain?: boolean;
   group_leader?: boolean;
+  group_id?: string | null;
+  team_name?: string | null;
 }
 
 interface TournamentData {
@@ -331,6 +334,8 @@ export default function LiveScoring() {
       strokes_per_hole: p.strokes_per_hole as number[] | null,
       is_captain: !!p.is_captain,
       group_leader: !!p.group_leader,
+      group_id: p.group_id ?? null,
+      team_name: p.team_name ?? null,
     }));
 
     // Remember a scoring_code from the group so we can authorize saves
@@ -520,32 +525,46 @@ export default function LiveScoring() {
 
 
 
+  // Two registered teams paired in one foursome (e.g. a 2-person shamble):
+  // each team gets ONE scoring line with both names, and the login can score both.
+  const teamLines = (() => {
+    if (isScramble || !activeFormat || activeFormat.teamSize <= 1) return null;
+    const parts = splitFoursomeTeams(players);
+    if (parts.length < 2) return null;
+    return parts.map((t) => ({
+      key: t.key,
+      members: t.members,
+      label: t.members.find((m) => m.team_name)?.team_name || defaultTeamLabel(t.members),
+      names: t.members.map((m) => `${m.first_name} ${m.last_name}`).join(" & "),
+    }));
+  })();
+
   // Scramble: one score for the whole group — applied to every player
-  const getTeamScore = (hole: number) => {
-    for (const p of players) {
+  const getTeamScore = (hole: number, members: Player[] = players) => {
+    for (const p of members) {
       const v = editedScores[p.id]?.[hole] ?? scores[p.id]?.[hole];
       if (typeof v === "number") return v;
     }
     return "" as const;
   };
 
-  const setTeamScore = (hole: number, num: number) => {
+  const setTeamScore = (hole: number, num: number, members: Player[] = players) => {
     const clamped = Math.max(1, Math.min(12, num));
     setEditedScores((prev) => {
       const next = { ...prev };
-      players.forEach((p) => {
+      members.forEach((p) => {
         next[p.id] = { ...(next[p.id] || {}), [hole]: clamped };
       });
       return next;
     });
   };
 
-  const adjustTeamScore = (hole: number, delta: number) => {
-    const current = getTeamScore(hole);
+  const adjustTeamScore = (hole: number, delta: number, members: Player[] = players) => {
+    const current = getTeamScore(hole, members);
     const base = typeof current === "number"
       ? current
       : (courseData?.hole_pars?.[hole - 1] ?? Math.round((tournament?.course_par || 72) / 18));
-    setTeamScore(hole, base + delta);
+    setTeamScore(hole, base + delta, members);
   };
 
   /** Save only the current hole's pending edits. Returns false if the save failed. */

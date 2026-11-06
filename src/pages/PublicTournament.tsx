@@ -198,6 +198,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [showConfirmation, setShowConfirmation] = useState(registered);
   const sessionId = searchParams.get("session_id");
   const acct = searchParams.get("acct");
+  // Private invite link (?invite=token) lets requested players register while public registration is closed.
+  const inviteParam = searchParams.get("invite");
+  const [inviteOk, setInviteOk] = useState(false);
   // Legacy add-on links (?addon=<id>#register) land here — send buyers straight
   // to the dedicated add-on page so they never have to go through registration.
   const addonParam = searchParams.get("addon");

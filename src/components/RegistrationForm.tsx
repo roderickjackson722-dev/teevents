@@ -721,6 +721,8 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
             : { tournament_id: tournamentId, cover_fees: coverFees, tier_id: selectedTier, flight_id: selectedFlight, addons: addonSelections, referral_code: referralCode, promo_code: promoCodeToSend, donation_amount_cents: donationCents, ...singleData };
 
 
+          const inviteToken = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("invite") : null;
+          if (inviteToken) (body as any).private_registration_token = inviteToken;
           const { data, error } = await supabase.functions.invoke("create-registration-checkout", { body });
           if (error) throw error;
           if (data?.checkout_url) { window.location.href = data.checkout_url; return; }

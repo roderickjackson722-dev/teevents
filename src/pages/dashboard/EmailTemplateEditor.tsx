@@ -247,7 +247,7 @@ const DEFAULT_TEE_TIMES_CONFIG: EmailConfig = {
   header_title: "Your Tee Time",
   greeting: "Hello {{first_name}},",
   body_text:
-    "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Group: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
+    "Here are your tee time details for {{event_name}}:\n\n⏰ Tee Time: {{tee_time}}\n🏌️ Starting Hole: {{hole_number}}\n👥 Your Team: {{team_name}}\n📅 Date: {{event_date}}\n📍 Course: {{course_name}}\n🔑 Your Scoring Code: {{scoring_code}}",
   closing_text:
     "Please arrive at least 30 minutes before your tee time and check in at the registration table.\n\nQuestions? Contact {{contact_name}} at {{contact_phone}}.",
   footer_text: "See you on the course! ⛳",

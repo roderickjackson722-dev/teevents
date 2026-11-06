@@ -611,27 +611,32 @@ export default function LiveScoring() {
   };
 
   /** Erase saved + pending scores for a hole (whole group, or one player). */
-  const clearHole = async (hole: number, regId?: string) => {
+  const clearHole = async (hole: number, regId?: string | string[], teamLabel?: string) => {
     if (!tournament) return;
     if (!scoringCode) {
       toast.error("Missing scoring code. Please log in again with your code.");
       return;
     }
-    const who = regId ? players.find((p) => p.id === regId) : undefined;
-    const label = who ? `${who.first_name} ${who.last_name}` : "this group";
+    const ids = Array.isArray(regId) ? regId : regId ? [regId] : null;
+    const who = ids?.length === 1 ? players.find((p) => p.id === ids[0]) : undefined;
+    const label = teamLabel || (who ? `${who.first_name} ${who.last_name}` : "this group");
     if (!window.confirm(`Clear the Hole ${hole} score for ${label}? This cannot be undone.`)) return;
     setSaving(true);
-    const { error } = await (supabase as any).rpc("clear_group_hole_scores", {
-      _tournament_id: tournament.id,
-      _code: scoringCode,
-      _hole_number: hole,
-      _round_number: roundNumber,
-      _registration_id: regId ?? null,
-      _group_number: groupNumber ?? null,
-    } as any);
+    let error: any = null;
+    for (const id of ids ?? [null]) {
+      const res = await (supabase as any).rpc("clear_group_hole_scores", {
+        _tournament_id: tournament.id,
+        _code: scoringCode,
+        _hole_number: hole,
+        _round_number: roundNumber,
+        _registration_id: id,
+        _group_number: groupNumber ?? null,
+      } as any);
+      if (res.error) { error = res.error; break; }
+    }
     setSaving(false);
     if (error) { toast.error(error.message); return; }
-    const targets = regId ? [regId] : players.map((p) => p.id);
+    const targets = ids ?? players.map((p) => p.id);
     setScores((prev) => {
       const next = { ...prev };
       targets.forEach((id) => {

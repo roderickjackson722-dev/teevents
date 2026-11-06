@@ -20,6 +20,8 @@ interface Props {
   tournament: (Tournament & { slug?: string | null }) | null;
   registrations: Reg[];
   loading: boolean;
+  /** Registration id → registered team name */
+  teamNames?: Record<string, string>;
 }
 
 const BASE_URL = "https://www.teevents.golf";

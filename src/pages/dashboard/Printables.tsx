@@ -11,6 +11,7 @@ import CartSignsTab from "@/components/printables/CartSignsTab";
 import AlphaListTab from "@/components/printables/AlphaListTab";
 import HoleAssignmentsTab from "@/components/printables/HoleAssignmentsTab";
 import ScorecardsTab from "@/components/printables/ScorecardsTab";
+import { teamDisplayName } from "@/lib/foursomeTeams";
 import CheckInRosterTab from "@/components/printables/CheckInRosterTab";
 import NameBadgesTab from "@/components/printables/NameBadgesTab";
 import QRCodesTab, { type PrintableAddon } from "@/components/printables/QRCodesTab";
@@ -201,6 +202,19 @@ const Printables = () => {
     });
   }, [registrations, options.data_source, printGroups, pairingsCfg, round]);
 
+  /** Registered team name per player (e.g. "Team Black"), used instead of group numbers. */
+  const teamNamesByReg = useMemo(() => {
+    const byTeam = new Map<string, Registration[]>();
+    printRegistrations.forEach((r) => { if (r.group_id) byTeam.set(r.group_id, [...(byTeam.get(r.group_id) || []), r]); });
+    const out: Record<string, string> = {};
+    byTeam.forEach((members, id) => {
+      const g = groups.find((x) => x.id === id) as any;
+      const name = teamDisplayName(g?.team_name || g?.group_name, members);
+      members.forEach((m) => { out[m.id] = name; });
+    });
+    return out;
+  }, [printRegistrations, groups]);
+
   const handleUpdateHole = (regId: string, newGroup: number | null) => {
     setRegistrations((prev) =>
       prev.map((r) => (r.id === regId ? { ...r, group_number: newGroup } : r))
@@ -289,7 +303,7 @@ const Printables = () => {
         </TabsList>
 
         <TabsContent value="check-in-roster">
-          <CheckInRosterTab tournament={printTournament} registrations={printRegistrations as any} loading={loading} />
+          <CheckInRosterTab tournament={printTournament} registrations={printRegistrations as any} loading={loading} teamNames={teamNamesByReg} />
         </TabsContent>
 
         <TabsContent value="qr-codes">

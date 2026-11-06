@@ -873,7 +873,7 @@ export default function LiveScoring() {
             <div className="flex items-center gap-2 mb-2">
               <Users className="h-4 w-4 text-primary" />
               <p className="text-sm font-semibold">
-                {teamName ? teamName : `Your Group — Starting Hole ${groupNumber}`}
+                {teamName ? teamName : `Group ${groupNumber}${startingHole != null ? ` — Starting Hole ${startingHole}` : ""}`}
                 <span className="text-muted-foreground font-normal"> · {players.length} player{players.length === 1 ? "" : "s"}</span>
               </p>
             </div>

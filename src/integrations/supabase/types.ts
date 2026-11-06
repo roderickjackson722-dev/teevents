@@ -3044,6 +3044,152 @@ export type Database = {
         }
         Relationships: []
       }
+      enterprise_email_blast_recipients: {
+        Row: {
+          blast_id: string
+          email: string
+          name: string
+          registration_id: string | null
+          status: string
+        }
+        Insert: {
+          blast_id: string
+          email: string
+          name: string
+          registration_id?: string | null
+          status?: string
+        }
+        Update: {
+          blast_id?: string
+          email?: string
+          name?: string
+          registration_id?: string | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_email_blast_recipients_blast_id_fkey"
+            columns: ["blast_id"]
+            isOneToOne: false
+            referencedRelation: "enterprise_email_blasts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enterprise_email_blast_recipients_registration_id_fkey"
+            columns: ["registration_id"]
+            isOneToOne: false
+            referencedRelation: "tournament_registrations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enterprise_email_blasts: {
+        Row: {
+          audience_count: number
+          config: Json
+          created_at: string
+          created_by: string
+          failed_count: number
+          filters: Json
+          id: string
+          is_test: boolean
+          organization_id: string
+          sender_label: string
+          sender_name: string
+          sent_at: string | null
+          sent_count: number
+          source_kind: string
+          status: string
+          subject: string
+          template_name: string
+          tournament_id: string
+        }
+        Insert: {
+          audience_count: number
+          config: Json
+          created_at?: string
+          created_by: string
+          failed_count?: number
+          filters: Json
+          id?: string
+          is_test?: boolean
+          organization_id: string
+          sender_label: string
+          sender_name: string
+          sent_at?: string | null
+          sent_count?: number
+          source_kind: string
+          status?: string
+          subject: string
+          template_name: string
+          tournament_id: string
+        }
+        Update: {
+          audience_count?: number
+          config?: Json
+          created_at?: string
+          created_by?: string
+          failed_count?: number
+          filters?: Json
+          id?: string
+          is_test?: boolean
+          organization_id?: string
+          sender_label?: string
+          sender_name?: string
+          sent_at?: string | null
+          sent_count?: number
+          source_kind?: string
+          status?: string
+          subject?: string
+          template_name?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_email_blasts_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "enterprise_email_blasts_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      enterprise_email_preferences: {
+        Row: {
+          email: string
+          organization_id: string
+          token: string
+          unsubscribed_at: string | null
+        }
+        Insert: {
+          email: string
+          organization_id: string
+          token?: string
+          unsubscribed_at?: string | null
+        }
+        Update: {
+          email?: string
+          organization_id?: string
+          token?: string
+          unsubscribed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "enterprise_email_preferences_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       enterprise_invoice_audit_log: {
         Row: {
           action: string
@@ -6855,6 +7001,50 @@ export type Database = {
           workspace_type?: string
         }
         Relationships: []
+      }
+      organizer_email_templates: {
+        Row: {
+          config: Json
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          organization_id: string
+          source_kind: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          config: Json
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          organization_id: string
+          source_kind?: string
+          subject: string
+          updated_at?: string
+        }
+        Update: {
+          config?: Json
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          organization_id?: string
+          source_kind?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "organizer_email_templates_organization_id_fkey"
+            columns: ["organization_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organizer_messages: {
         Row: {
@@ -12342,6 +12532,7 @@ export type Database = {
           donation_amount_cents: number
           drives_used: number
           email: string
+          enterprise_email_opt_out: boolean
           first_name: string
           flight_id: string | null
           ghin_id: string | null
@@ -12404,6 +12595,7 @@ export type Database = {
           donation_amount_cents?: number
           drives_used?: number
           email: string
+          enterprise_email_opt_out?: boolean
           first_name: string
           flight_id?: string | null
           ghin_id?: string | null
@@ -12466,6 +12658,7 @@ export type Database = {
           donation_amount_cents?: number
           drives_used?: number
           email?: string
+          enterprise_email_opt_out?: boolean
           first_name?: string
           flight_id?: string | null
           ghin_id?: string | null

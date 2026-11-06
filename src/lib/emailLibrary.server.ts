@@ -33,7 +33,12 @@ export async function resolveTemplate(admin: any, orgId: string, event: any, id:
 export async function pastAudience(admin: any, organizationId: string, filters: AudienceFilters) {
  const events = await allRows(()=>admin.from("tournaments").select("id,title,date,post_event_email_opt_out").eq("organization_id",organizationId).order("id"));
  const rows: any[]=[];
- for (const event of events) rows.push(...await allRows(()=>admin.from("tournament_registrations").select("id,tournament_id,first_name,last_name,email,enterprise_email_opt_out,checked_in,group_score,team_score_count,status").eq("tournament_id",event.id).order("id")));
+ for (const event of events) {
+  const registrations=await allRows(()=>admin.from("tournament_registrations").select("id,tournament_id,first_name,last_name,email,enterprise_email_opt_out,checked_in,group_score,team_score_count,status").eq("tournament_id",event.id).order("id"));
+  const scores=await allRows(()=>admin.from('tournament_scores').select('registration_id').eq('tournament_id',event.id).order('id'));
+  const scored=new Set(scores.map(s=>s.registration_id));
+  rows.push(...registrations.map(r=>({...r,team_score_count:scored.has(r.id)?Math.max(1,r.team_score_count):r.team_score_count})));
+ }
  const preferences = await allRows(()=>admin.from("enterprise_email_preferences").select("email").eq("organization_id",organizationId).not("unsubscribed_at","is",null).order("email"));
  // Existing newsletter opt-outs are a conservative global suppression source too.
  const newsletter = await allRows(()=>admin.from("newsletter_subscribers").select("email").not("unsubscribed_at","is",null).order("email"));
@@ -44,6 +49,7 @@ export async function mergeVars(admin: any, event: any, org: any, reg?: any) {
  const homepage=`https://www.teevents.golf/t/${event.slug}`;
  const pairings=parsePairingsConfig(event.pairings_config); const cfg=dayCfgOf(pairings,0);
  const vars: Record<string,string>={first_name:reg?.first_name||"",last_name:reg?.last_name||"",event_name:event.title,event_date:event.date?formatTournamentDate(event.date,{weekday:"long",year:"numeric",month:"long",day:"numeric"}):"",event_location:[event.location,event.state].filter(Boolean).join(", "),course_name:event.course_name||event.location||"",course_address:course?.course_address||"",event_schedule:event.schedule_info_html||event.schedule_info||"",event_homepage:homepage,registration_link:homepage,scoring_link:`${homepage}/scoring`,leaderboard_link:`https://www.teevents.golf/live/${event.slug}`,pairings_link:`https://www.teevents.golf/pairings/${event.slug}`,tee_time:teeTimeForGroup(pairings,reg?.group_number,0)||cfg.shotgunTime||reg?.tee_time||"TBD",hole_number:startingHoleLabelForGroup(pairings,reg?.group_number,0)||"TBD",team_name:reg?.group_label||"",group_number:String(reg?.group_number||""),scoring_code:reg?.group_scoring_code||reg?.scoring_code||"",contact_name:event.contact_name||"",contact_phone:event.contact_phone||"",contact_email:event.contact_email||event.org_contact_email||"",organization_name:org.name,payer_name:`${reg?.first_name||""} ${reg?.last_name||""}`.trim(),survey_link:reg?.survey_response_token?`https://www.teevents.golf/survey/${reg.survey_response_token}`:homepage};
+ Object.assign(vars,{round_label:'Round 1',round_number:'1',total_rounds:String(pairings.rounds||1),checkin_time:'TBD',parking_info:'',custom_notes:'',sponsor_name:'Sample Sponsor',sponsor_tier:'Sponsor',receipt_type:'Registration',receipt_number:'Sample',receipt_date:event.date||'',receipt_item:event.title,receipt_subtotal:'Sample',service_fee:'Sample',processing_fee:'Sample',receipt_total:'Sample',payment_method:'Sample',nonprofit_name:org.name,ein:'',org_address:''});
  return vars;
 }
 export async function rendered(admin: any, event: any, org: any, template: any, reg: any, unsubscribeUrl?: string) {

@@ -7,6 +7,7 @@ import { Printer, Download, Loader2 } from "lucide-react";
 import { openPrintWindow, downloadHtmlAsPdf } from "./printUtils";
 import type { Tournament, Registration } from "./types";
 import { effectiveScoringCode } from "./scoringCodes";
+import { formatTeeTime } from "./CartSignsTab";
 import { startingHoleOf } from "./types";
 
 type Reg = Registration & {
@@ -34,7 +35,7 @@ function qrImg(url: string, size = 180): string {
 function buildHtml(
   tournament: (Tournament & { slug?: string | null }) | null,
   list: Reg[],
-  opts: { layout: string; showQr: boolean; showDetails: boolean; showStatus: boolean },
+  opts: { layout: string; showQr: boolean; showDetails: boolean; showStatus: boolean; showTeeTime: boolean },
   teamOf: (r: Reg) => string,
 ) {
   if (opts.layout === "list") {
@@ -43,8 +44,8 @@ function buildHtml(
       <h1 style="font-size:24px;margin:0 0 4px;color:#1a5c38;">${escapeHtml(tournament?.title || "")}</h1>
       <p style="color:#666;font-size:13px;margin:0 0 18px;">Check-In List · ${checkedIn} of ${list.length} checked in</p>
       <table style="width:100%;border-collapse:collapse;font-size:12px;">
-        <thead><tr style="background:#1a5c38;color:#fff;"><th style="padding:8px;text-align:left;">Player</th><th style="padding:8px;text-align:left;">Team</th><th style="padding:8px;text-align:center;">Hole</th><th style="padding:8px;text-align:center;">Status</th></tr></thead>
-        <tbody>${list.map((r) => `<tr style="border-bottom:1px solid #ddd;${r.checked_in ? "background:#dcfce7;" : ""}"><td style="padding:8px;font-weight:700;">${escapeHtml(r.last_name)}, ${escapeHtml(r.first_name)}</td><td style="padding:8px;">${escapeHtml(teamOf(r) || "—")}</td><td style="padding:8px;text-align:center;">${startingHoleOf(r as any) ?? "—"}</td><td style="padding:8px;text-align:center;font-weight:700;color:${r.checked_in ? "#166534" : "#92400e"};">${r.checked_in ? "✓ CHECKED IN" : "☐ NOT CHECKED IN"}</td></tr>`).join("")}</tbody>
+        <thead><tr style="background:#1a5c38;color:#fff;"><th style="padding:8px;text-align:left;">Player</th><th style="padding:8px;text-align:left;">Team</th>${opts.showTeeTime ? `<th style="padding:8px;text-align:center;">Tee Time</th>` : ""}<th style="padding:8px;text-align:center;">Hole</th><th style="padding:8px;text-align:center;">Status</th></tr></thead>
+        <tbody>${list.map((r) => `<tr style="border-bottom:1px solid #ddd;${r.checked_in ? "background:#dcfce7;" : ""}"><td style="padding:8px;font-weight:700;">${escapeHtml(r.last_name)}, ${escapeHtml(r.first_name)}</td><td style="padding:8px;">${escapeHtml(teamOf(r) || "—")}</td>${opts.showTeeTime ? `<td style="padding:8px;text-align:center;font-weight:700;">${escapeHtml(formatTeeTime((r as any).tee_time) || "—")}</td>` : ""}<td style="padding:8px;text-align:center;">${startingHoleOf(r as any) ?? "—"}</td><td style="padding:8px;text-align:center;font-weight:700;color:${r.checked_in ? "#166534" : "#92400e"};">${r.checked_in ? "✓ CHECKED IN" : "☐ NOT CHECKED IN"}</td></tr>`).join("")}</tbody>
       </table>
     </div>`;
   }
@@ -62,6 +63,7 @@ function buildHtml(
         ${opts.showQr ? `<img src="${qrImg(link, qrSize)}" alt="QR" style="width:${qrSize}px;height:${qrSize}px;flex-shrink:0;" />` : ""}
         <div style="flex:1;min-width:0;">
           <div style="font-weight:800;font-size:${nameSize};color:#111;line-height:1.15;">${escapeHtml(r.last_name)}, ${escapeHtml(r.first_name)}</div>
+          ${opts.showTeeTime ? `<div style="margin-top:6px;font-size:${detailSize};font-weight:800;color:#1a5c38;">Tee Time: ${escapeHtml(formatTeeTime((r as any).tee_time) || "—")}</div>` : ""}
           ${opts.showDetails ? `
             <div style="margin-top:8px;font-size:${detailSize};color:#444;line-height:1.6;">
               ${teamOf(r) ? `<div><strong>Team:</strong> ${escapeHtml(teamOf(r))}</div>` : ""}
@@ -115,6 +117,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading, t
   const [showQr, setShowQr] = useState(true);
   const [showDetails, setShowDetails] = useState(true);
   const [showStatus, setShowStatus] = useState(true);
+  const [showTeeTime, setShowTeeTime] = useState(true);
 
   const holes = useMemo(() => {
     const s = new Set<number>();
@@ -152,7 +155,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading, t
 
   if (loading) return <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>;
 
-  const html = buildHtml(tournament, filtered, { layout, showQr, showDetails, showStatus }, teamOf);
+  const html = buildHtml(tournament, filtered, { layout, showQr, showDetails, showStatus, showTeeTime }, teamOf);
 
   return (
     <div className="space-y-6">
@@ -230,6 +233,9 @@ export default function CheckInRosterTab({ tournament, registrations, loading, t
           <label className="flex items-center gap-2 text-sm">
             <Checkbox checked={showStatus} onCheckedChange={(v) => setShowStatus(!!v)} /> Include check-in status
           </label>
+          <label className="flex items-center gap-2 text-sm">
+            <Checkbox checked={showTeeTime} onCheckedChange={(v) => setShowTeeTime(!!v)} /> Include tee time
+          </label>
         </div>
 
         <div className="flex justify-end gap-2 pt-2 border-t">
@@ -254,6 +260,7 @@ export default function CheckInRosterTab({ tournament, registrations, loading, t
                   <div className="font-bold text-sm truncate">{r.last_name}, {r.first_name}</div>
                   {showDetails && (
                     <div className="text-xs text-muted-foreground">
+                      {showTeeTime && <div>Tee Time {formatTeeTime((r as any).tee_time) || "—"}</div>}
                       Starting Hole {startingHoleOf(r as any) ?? "—"}
                     </div>
                   )}

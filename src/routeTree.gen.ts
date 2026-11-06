@@ -37,6 +37,7 @@ import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
+import { Route as DashboardEmailTemplatesRouteImport } from './routes/dashboard.email-templates'
 import { Route as EnterpriseSkinsPayoutsRouteImport } from './routes/enterprise.skins-payouts'
 import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
 import { Route as PairingsSlugRouteImport } from './routes/pairings/$slug'
@@ -60,6 +61,7 @@ import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/a
 import { Route as ApiPublicReceiptEmailRouteImport } from './routes/api/public/receipt-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as ApiPublicSampleShareEmailRouteImport } from './routes/api/public/sample-share-email'
+import { Route as EnterpriseCommunicationsEmailTemplatesRouteImport } from './routes/enterprise.communications.email-templates'
 import { Route as EnterpriseSettingsOrganizationRouteImport } from './routes/enterprise.settings.organization'
 import { Route as EnterpriseSettingsWebAddressRouteImport } from './routes/enterprise.settings.web-address'
 import { Route as SSassurveyShareRouteImport } from './routes/s/sassurvey/share'
@@ -216,6 +218,11 @@ const CollegeSlugRoute = CollegeSlugRouteImport.update({
   path: '/college/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DashboardEmailTemplatesRoute = DashboardEmailTemplatesRouteImport.update({
+  id: '/dashboard/email-templates',
+  path: '/dashboard/email-templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EnterpriseSkinsPayoutsRoute = EnterpriseSkinsPayoutsRouteImport.update({
   id: '/enterprise/skins-payouts',
   path: '/enterprise/skins-payouts',
@@ -341,6 +348,12 @@ const ApiPublicSampleShareEmailRoute =
     path: '/api/public/sample-share-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const EnterpriseCommunicationsEmailTemplatesRoute =
+  EnterpriseCommunicationsEmailTemplatesRouteImport.update({
+    id: '/enterprise/communications/email-templates',
+    path: '/enterprise/communications/email-templates',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const EnterpriseSettingsOrganizationRoute =
   EnterpriseSettingsOrganizationRouteImport.update({
     id: '/enterprise/settings/organization',
@@ -457,6 +470,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -481,6 +495,7 @@ export interface FileRoutesByFullPath {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -525,6 +540,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -549,6 +565,7 @@ export interface FileRoutesByTo {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -594,6 +611,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/college/$slug': typeof CollegeSlugRoute
+  '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -618,6 +636,7 @@ export interface FileRoutesById {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
   '/s/sassurvey/share': typeof SSassurveyShareRoute
@@ -664,6 +683,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -688,6 +708,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
@@ -732,6 +753,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -756,6 +778,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
@@ -800,6 +823,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/college/$slug'
+    | '/dashboard/email-templates'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -824,6 +848,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
     | '/s/sassurvey/share'
@@ -869,6 +894,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
+  DashboardEmailTemplatesRoute: typeof DashboardEmailTemplatesRoute
   EnterpriseSkinsPayoutsRoute: typeof EnterpriseSkinsPayoutsRoute
   LeagueSlugRoute: typeof LeagueSlugRoute
   PairingsSlugRoute: typeof PairingsSlugRoute
@@ -893,6 +919,7 @@ export interface RootRouteChildren {
   ApiPublicReceiptEmailRoute: typeof ApiPublicReceiptEmailRoute
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   ApiPublicSampleShareEmailRoute: typeof ApiPublicSampleShareEmailRoute
+  EnterpriseCommunicationsEmailTemplatesRoute: typeof EnterpriseCommunicationsEmailTemplatesRoute
   EnterpriseSettingsOrganizationRoute: typeof EnterpriseSettingsOrganizationRoute
   EnterpriseSettingsWebAddressRoute: typeof EnterpriseSettingsWebAddressRoute
   SSassurveyShareRoute: typeof SSassurveyShareRoute
@@ -1107,6 +1134,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CollegeSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/dashboard/email-templates': {
+      id: '/dashboard/email-templates'
+      path: '/dashboard/email-templates'
+      fullPath: '/dashboard/email-templates'
+      preLoaderRoute: typeof DashboardEmailTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/enterprise/skins-payouts': {
       id: '/enterprise/skins-payouts'
       path: '/enterprise/skins-payouts'
@@ -1268,6 +1302,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSampleShareEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/enterprise/communications/email-templates': {
+      id: '/enterprise/communications/email-templates'
+      path: '/enterprise/communications/email-templates'
+      fullPath: '/enterprise/communications/email-templates'
+      preLoaderRoute: typeof EnterpriseCommunicationsEmailTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/enterprise/settings/organization': {
       id: '/enterprise/settings/organization'
       path: '/enterprise/settings/organization'
@@ -1416,6 +1457,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   CollegeSlugRoute: CollegeSlugRoute,
+  DashboardEmailTemplatesRoute: DashboardEmailTemplatesRoute,
   EnterpriseSkinsPayoutsRoute: EnterpriseSkinsPayoutsRoute,
   LeagueSlugRoute: LeagueSlugRoute,
   PairingsSlugRoute: PairingsSlugRoute,
@@ -1442,6 +1484,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicReceiptEmailRoute: ApiPublicReceiptEmailRoute,
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   ApiPublicSampleShareEmailRoute: ApiPublicSampleShareEmailRoute,
+  EnterpriseCommunicationsEmailTemplatesRoute:
+    EnterpriseCommunicationsEmailTemplatesRoute,
   EnterpriseSettingsOrganizationRoute: EnterpriseSettingsOrganizationRoute,
   EnterpriseSettingsWebAddressRoute: EnterpriseSettingsWebAddressRoute,
   SSassurveyShareRoute: SSassurveyShareRoute,

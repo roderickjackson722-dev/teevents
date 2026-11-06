@@ -144,7 +144,7 @@ const BASE_ROSTER_COLS: { key: RosterColKey; label: string }[] = [
   { key: "phone", label: "Phone" },
   { key: "hcp", label: "Handicap" },
   { key: "age", label: "Age" },
-  { key: "group", label: "Group / Team" },
+  { key: "group", label: "Team" },
   { key: "tier", label: "Division / Tier" },
   { key: "flight", label: "Flight" },
   { key: "shirt", label: "Shirt" },
@@ -3356,7 +3356,7 @@ const Players = () => {
           <div className="bg-card rounded-lg border border-border p-4 space-y-4">
             <div className="flex items-center gap-2">
               <Users className="h-4 w-4 text-primary" />
-              <h3 className="font-display font-bold text-foreground">Team / Group Registrations</h3>
+              <h3 className="font-display font-bold text-foreground">Team Registrations</h3>
               <span className="text-xs text-muted-foreground">{registrationGroups.length} group{registrationGroups.length !== 1 ? "s" : ""} signed up together</span>
             </div>
             <div className="grid gap-4 md:grid-cols-2">

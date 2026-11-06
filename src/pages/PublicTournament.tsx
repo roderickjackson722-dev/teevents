@@ -712,6 +712,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     }
   };
 
+  useEffect(() => {
+    if (!tournament?.id || !inviteParam) { setInviteOk(false); return; }
+    let cancelled = false;
+    (supabase as any).rpc("check_private_registration_token", { _tournament_id: tournament.id, _token: inviteParam })
+      .then(({ data }: any) => { if (!cancelled) setInviteOk(data === true); });
+    return () => { cancelled = true; };
+  }, [tournament?.id, inviteParam]);
+
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   }

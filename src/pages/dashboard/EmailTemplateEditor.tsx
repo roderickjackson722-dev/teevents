@@ -778,7 +778,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
         : "https://www.teevents.golf",
       tee_time: pairingTeeTime || sampleReg?.tee_time || "TBD",
       hole_number: pairingStartingHole || "TBD",
-      team_name: sampleReg?.team_name || (sampleReg?.group_number != null ? `Group ${sampleReg.group_number}` : "To be assigned"),
+      team_name: sampleReg?.team_name || "To be assigned",
       contact_name: t?.day_of_director_name || t?.contact_name || "Tournament Organizer",
       contact_phone: t?.day_of_director_phone || t?.contact_phone || "",
       checkin_time: "TBD",

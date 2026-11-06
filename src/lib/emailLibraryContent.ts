@@ -298,7 +298,7 @@ const TEMPLATE_LABELS: Record<TemplateKind, string> = {
   receipt: "Payment Receipt",
 };
 
-const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
+export const TEMPLATE_HEADERS: Record<TemplateKind, string> = {
   confirmation: "Registration Confirmed!",
   sponsor: "Thank You for Sponsoring!",
   vendor: "Vendor Registration Confirmed!",

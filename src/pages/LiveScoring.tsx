@@ -440,8 +440,15 @@ export default function LiveScoring() {
       gNum = data as number;
       // Load through the same round-aware group lookup as code logins so
       // team lines (e.g. 2-person shamble) render identically.
+      // Email logins save with the player's team/group scoring code.
+      const { data: emailCode } = await (supabase as any).rpc("live_scoring_code_for_email", {
+        _tournament_id: tournament.id,
+        _email: emailInput.trim(),
+      });
+      const code = typeof emailCode === "string" && emailCode ? emailCode.toUpperCase() : undefined;
+      if (code) setScoringCode(code);
       setPinnedGroup(gNum);
-      await loadGroup(gNum, undefined, undefined, gNum);
+      await loadGroup(gNum, code, undefined, gNum);
       return;
     } else {
       setError(emailLoginAllowed ? "Enter your scoring code or email." : "Enter your scoring code."); return;

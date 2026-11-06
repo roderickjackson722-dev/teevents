@@ -72,7 +72,18 @@ Deno.serve(async (req) => {
       .single();
 
     if (tErr || !tournament) throw new Error("Tournament not found");
-    if (!tournament.registration_open || !tournament.site_published) {
+    // A private invite link lets requested players register while public registration is closed.
+    let inviteOk = false;
+    const inviteToken = typeof body.private_registration_token === "string" ? body.private_registration_token.trim() : "";
+    if (!tournament.registration_open && inviteToken.length >= 16) {
+      const { data: link } = await supabaseAdmin
+        .from("tournament_private_registration_links")
+        .select("token")
+        .eq("tournament_id", tournament_id)
+        .maybeSingle();
+      inviteOk = !!link && link.token === inviteToken;
+    }
+    if ((!tournament.registration_open && !inviteOk) || !tournament.site_published) {
       throw new Error("Registration is not open for this tournament");
     }
 

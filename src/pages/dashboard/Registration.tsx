@@ -20,6 +20,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import GroupRegistrationSettings from "@/components/dashboard/GroupRegistrationSettings";
 import AddonDisplaySettings from "@/components/dashboard/AddonDisplaySettings";
+import PrivateRegistrationLink from "@/components/dashboard/PrivateRegistrationLink";
 
 import {
   ClipboardList,
@@ -247,7 +248,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, registration_fee_cents, registration_open, show_in_public_search, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label, registration_auto_close_enabled, registration_close_at, registration_closed_message, registration_closed_contact_email, registration_closed_contact_phone, registration_close_includes_addons")
+      .select("id, title, slug, registration_fee_cents, registration_open, show_in_public_search, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label, registration_auto_close_enabled, registration_close_at, registration_closed_message, registration_closed_contact_email, registration_closed_contact_phone, registration_close_includes_addons")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -923,6 +924,13 @@ const Registration = () => {
                     This event is {publicListing ? "public" : "private"}. Change it in{" "}
                     <a href={`/dashboard/public-page-editor?step=public_view${typeof window !== "undefined" ? window.location.search.replace(/^\?/, "&") : ""}`} className="font-medium text-primary hover:underline">Setup &gt; Public View</a>.
                   </p>
+                  {selectedTournament && !regOpen && (
+                    <PrivateRegistrationLink
+                      key={selectedTournament}
+                      tournamentId={selectedTournament}
+                      slug={((tournaments.find((t) => t.id === selectedTournament) as any)?.slug) ?? null}
+                    />
+                  )}
 
                 </div>
               </div>

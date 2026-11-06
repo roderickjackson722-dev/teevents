@@ -12199,6 +12199,38 @@ export type Database = {
           },
         ]
       }
+      tournament_private_registration_links: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          token: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          token: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          token?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_private_registration_links_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: true
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_promo_codes: {
         Row: {
           alert_enabled: boolean
@@ -15314,6 +15346,10 @@ export type Database = {
           _window_seconds: number
         }
         Returns: Json
+      }
+      check_private_registration_token: {
+        Args: { _token: string; _tournament_id: string }
+        Returns: boolean
       }
       choose_proposal_program: {
         Args: { _expected_updated_at: string; _program: string; _token: string }

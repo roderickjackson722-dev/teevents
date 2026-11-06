@@ -198,6 +198,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   const [showConfirmation, setShowConfirmation] = useState(registered);
   const sessionId = searchParams.get("session_id");
   const acct = searchParams.get("acct");
+  // Private invite link (?invite=token) lets requested players register while public registration is closed.
+  const inviteParam = searchParams.get("invite");
+  const [inviteOk, setInviteOk] = useState(false);
   // Legacy add-on links (?addon=<id>#register) land here — send buyers straight
   // to the dedicated add-on page so they never have to go through registration.
   const addonParam = searchParams.get("addon");
@@ -708,6 +711,14 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
       setAuctionBuyLoading(null);
     }
   };
+
+  useEffect(() => {
+    if (!tournament?.id || !inviteParam) { setInviteOk(false); return; }
+    let cancelled = false;
+    (supabase as any).rpc("check_private_registration_token", { _tournament_id: tournament.id, _token: inviteParam })
+      .then(({ data }: any) => { if (!cancelled) setInviteOk(data === true); });
+    return () => { cancelled = true; };
+  }, [tournament?.id, inviteParam]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;

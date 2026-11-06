@@ -1945,7 +1945,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
                           <span className="font-mono font-semibold text-foreground">
                             {r.group_scoring_code || r.scoring_code || "Not assigned yet"}
                           </span>
-                          {r.group_number ? <span className="ml-1">(Group {r.group_number})</span> : null}
+                          
                         </p>
                       </div>
                     </label>

@@ -193,9 +193,9 @@ export default function EnterprisePrintables() {
   );
 
   const teamName = (n: number | null) => {
-    if (n == null) return "Not in a group";
+    if (n == null) return "Not paired yet";
     const g = groups.find((x) => x.group_number === n) as any;
-    return g?.team_name ? `Group ${n} · ${g.team_name}` : `Group ${n}`;
+    return g?.team_name ? `Pairing · ${g.team_name}` : `Pairing ${n}`;
   };
   const groupNumbers = [...new Set(draft.map((d) => d.group_number))].sort((a, b) => (a ?? 1e9) - (b ?? 1e9));
   const patch = (id: string, change: Partial<DraftPlayer<RegRow>>) =>

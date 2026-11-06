@@ -270,7 +270,7 @@ export default function StarterAnnouncements() {
               <div className="flex items-center justify-between gap-2 border-b border-border bg-muted/40 px-3 py-2">
                 <p className="text-sm font-semibold text-foreground">
                   {g.groupNumber != null
-                    ? `Group ${g.groupNumber}${g.holeLabel ? ` • Hole ${g.holeLabel}` : ""}`
+                    ? (g.holeLabel ? `Starting Hole ${g.holeLabel}` : "Pairing")
                     : "Not assigned to pairings yet"}
                   {g.teamName ? `: ${g.teamName}` : ""}
                 </p>

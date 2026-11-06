@@ -285,7 +285,7 @@ export default function ScanCheckIn() {
                 <div className="min-w-0">
                   <p className="font-semibold truncate">{lastCheckedIn.first_name} {lastCheckedIn.last_name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {lastCheckedIn.group_number ? `Group ${lastCheckedIn.group_number}` : "No group assigned"}
+                    {lastCheckedIn.group_number ? "Paired" : "Not paired yet"}
                   </p>
                 </div>
               </div>

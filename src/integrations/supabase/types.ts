@@ -15829,6 +15829,10 @@ export type Database = {
         Args: { _trip_id: string; _user_id: string }
         Returns: boolean
       }
+      live_scoring_code_for_email: {
+        Args: { _email: string; _tournament_id: string }
+        Returns: string
+      }
       live_scoring_lookup_group: {
         Args: { _email: string; _scoring_code: string; _tournament_id: string }
         Returns: number

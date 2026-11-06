@@ -147,6 +147,8 @@ export default function ScorecardsTab({ tournament, registrations, loading, slug
   const [teamMode, setTeamMode] = useState(teamFormat);
   const [numHoles, setNumHoles] = useState<9 | 18>(18);
   const [opts, setOpts] = useState<PrintableOptions>(() => getDefaultOptions(tournament));
+  // Re-apply defaults when the event changes: tee-time starts hide the hole number, shotgun shows it.
+  useEffect(() => { setOpts(getDefaultOptions(tournament)); }, [tournament?.id]); // eslint-disable-line react-hooks/exhaustive-deps
   const [edits, setEdits] = useState<Record<string, EditableReg>>({});
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ firstName: "", lastName: "", groupNumber: "" });

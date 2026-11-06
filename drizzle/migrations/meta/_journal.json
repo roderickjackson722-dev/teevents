@@ -288,6 +288,13 @@
       "when": 1793991779464,
       "tag": "0040_team_lines_in_live_scoring",
       "breakpoints": true
+    },
+    {
+      "idx": 41,
+      "version": "7",
+      "when": 1793995878905,
+      "tag": "0041_live_scoring_code_for_email",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { RECEIPT_TYPE_LABELS } from "@/components/dashboard/ReceiptEmailSender";
+const RECEIPT_TYPE_LABELS = { registration: "Registration", addon: "Add-On / Extras", sponsorship: "Sponsorship", tax_deductible: "Tax-Deductible Donation" };
 export interface EmailConfig {
   subject: string;
   greeting: string;

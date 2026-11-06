@@ -30,7 +30,7 @@ describe("two 2-person teams in one foursome", () => {
     expect(lb.map((r) => [r.name, r.total])).toEqual([
       ["Adams / Jackson", 3],
       ["Martin / Williamson", 4],
-      ["Joyce / Evans", 5].length ? ["Team 5", 5] : [],
+      ["Team 5", 5],
     ]);
   });
 });

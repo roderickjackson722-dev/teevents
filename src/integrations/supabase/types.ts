@@ -2774,6 +2774,7 @@ export type Database = {
           id: string
           name: string
           round_number: number
+          selected_division_ids: string[] | null
           skin_format: string
           status: string
           total_purse_cents: number
@@ -2787,6 +2788,7 @@ export type Database = {
           id?: string
           name: string
           round_number?: number
+          selected_division_ids?: string[] | null
           skin_format?: string
           status?: string
           total_purse_cents?: number
@@ -2800,6 +2802,7 @@ export type Database = {
           id?: string
           name?: string
           round_number?: number
+          selected_division_ids?: string[] | null
           skin_format?: string
           status?: string
           total_purse_cents?: number

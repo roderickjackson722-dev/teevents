@@ -302,6 +302,13 @@
       "when": 1794004195048,
       "tag": "0042_private_registration_links",
       "breakpoints": true
+    },
+    {
+      "idx": 43,
+      "version": "7",
+      "when": 1794090527519,
+      "tag": "0043_combined_division_skins",
+      "breakpoints": true
     }
   ]
 }

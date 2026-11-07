@@ -7,6 +7,7 @@ export type SkinsGame = {
   id: string;
   tournament_id: string;
   division_id: string | null;
+  selected_division_ids?: string[] | null;
   name: string;
   total_purse_cents: number;
   skin_format: "gross" | "net" | string;
@@ -65,6 +66,7 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
     // A player's division can be stored as the selected flight OR the price tier.
     // Anyone the organizer explicitly added to the pot stays eligible either way.
     const divisionId = r.flight_id || r.tier_id || null;
+    if (game.selected_division_ids != null && (!divisionId || !game.selected_division_ids.includes(divisionId))) return;
     if (game.division_id && divisionId !== game.division_id && r.skins_opt_in !== true) return;
     eligible.set(r.id, Number(r.handicap) || 0);
   });

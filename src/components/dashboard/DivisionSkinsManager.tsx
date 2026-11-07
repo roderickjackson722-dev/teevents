@@ -32,7 +32,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [selected, setSelected] = useState<Record<string, boolean>>({});
   const [purse, setPurse] = useState<Record<string, string>>({});
   const [format, setFormat] = useState<"gross" | "net">("gross");
-  const [potMode, setPotMode] = useState<"total" | "division">("total");
+  const [potMode, setPotMode] = useState<"total" | "division" | "combined">("total");
+  const [combinedDivisions, setCombinedDivisions] = useState<string[]>([]);
   const [carryover, setCarryover] = useState(true);
   const [names, setNames] = useState<Record<string, string>>({});
   const [players, setPlayers] = useState<PlayerRow[]>([]);
@@ -88,7 +89,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       ),
     );
     // One total pot for the whole field = a single game with no division.
-    if (gs.length > 0) setPotMode(gs.some((g) => g.division_id) ? "division" : "total");
+    if (gs.length > 0) setPotMode(gs.some((g) => g.selected_division_ids != null) ? "combined" : gs.some((g) => g.division_id) ? "division" : "total");
     if (gs[0]) {
       setFormat((gs[0].skin_format === "net" ? "net" : "gross") as "gross" | "net");
       setCarryover(gs[0].carryover !== false);
@@ -132,7 +133,8 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
         : Object.fromEntries(roundGames.map((g) => [g.division_id || "__overall", true])),
     );
     setPurse(Object.fromEntries(roundGames.map((g) => [g.division_id || "__overall", ((g.total_purse_cents || 0) / 100).toString()])));
-    if (roundGames.length > 0) setPotMode(roundGames.some((g) => g.division_id) ? "division" : "total");
+    setCombinedDivisions(roundGames.find((g) => g.selected_division_ids != null)?.selected_division_ids || []);
+    setPotMode(roundGames.some((g) => g.selected_division_ids != null) ? "combined" : roundGames.some((g) => g.division_id) ? "division" : "total");
     if (roundGames[0]) {
       setFormat(roundGames[0].skin_format === "net" ? "net" : "gross");
       setCarryover(roundGames[0].carryover !== false);
@@ -140,9 +142,9 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   }, [roundGames]);
 
   const keys =
-    potMode === "total" || divisions.length === 0 ? ["__overall"] : divisions.map((d) => d.id);
+    potMode !== "division" || divisions.length === 0 ? ["__overall"] : divisions.map((d) => d.id);
   const labelFor = (key: string) =>
-    key === "__overall" ? "Whole field" : divisions.find((d) => d.id === key)?.tier_name || "Division";
+    key === "__overall" ? potMode === "combined" ? `Combined divisions: ${divisions.filter((d) => combinedDivisions.includes(d.id)).map((d) => d.tier_name).join(" + ") || "None selected"}` : "Whole field" : divisions.find((d) => d.id === key)?.tier_name || "Division";
 
   /** A player's division: the flight they picked, falling back to their price tier. */
   const divisionOf = (p: PlayerRow) => p.flight_id || p.tier_id || null;
@@ -153,8 +155,9 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
 
   /** Players shown for a division key — optionally the whole field, with a name search. */
   const playersFor = (key: string) => {
-    const base =
-      key === "__overall" || showAll[key] ? players : players.filter((p) => divisionOf(p) === key);
+    const base = potMode === "combined"
+      ? players.filter((p) => combinedDivisions.includes(divisionOf(p) || ""))
+      : key === "__overall" || showAll[key] ? players : players.filter((p) => divisionOf(p) === key);
     const q = (search[key] || "").trim().toLowerCase();
     if (!q) return base;
     return base.filter((p) => `${p.first_name || ""} ${p.last_name || ""}`.toLowerCase().includes(q));
@@ -178,13 +181,20 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
 
 
   async function save() {
+    if (potMode === "combined" && combinedDivisions.length === 0) {
+      toast.error("Select at least one division for the combined pot");
+      return;
+    }
     setSaving(true);
     try {
       for (const key of keys) {
         const divisionId = key === "__overall" ? null : key;
         const existing = roundGames.find((g) => (g.division_id || "__overall") === key);
         if (!selected[key]) {
-          if (existing) await (supabase as any).from("division_skins_games").delete().eq("id", existing.id);
+          if (existing) {
+            const { error } = await (supabase as any).from("division_skins_games").delete().eq("id", existing.id);
+            if (error) throw error;
+          }
           continue;
         }
         const cents = Math.round((parseFloat(purse[key] || "0") || 0) * 100);
@@ -192,6 +202,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
           tournament_id: tournamentId,
           round_number: roundNumber,
           division_id: divisionId,
+          selected_division_ids: potMode === "combined" ? combinedDivisions : null,
           name: `${labelFor(key)} Skins`,
           total_purse_cents: cents,
           skin_format: format,
@@ -199,15 +210,18 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
           status: "active",
         };
         if (existing) {
-          await (supabase as any).from("division_skins_games").update(payload).eq("id", existing.id);
+          const { error } = await (supabase as any).from("division_skins_games").update(payload).eq("id", existing.id);
+          if (error) throw error;
         } else {
-          await (supabase as any).from("division_skins_games").insert(payload);
+          const { error } = await (supabase as any).from("division_skins_games").insert(payload);
+          if (error) throw error;
         }
       }
       // Remove games that no longer belong to the chosen pot mode.
       const stale = roundGames.filter((g) => !keys.includes(g.division_id || "__overall"));
       for (const g of stale) {
-        await (supabase as any).from("division_skins_games").delete().eq("id", g.id);
+        const { error } = await (supabase as any).from("division_skins_games").delete().eq("id", g.id);
+        if (error) throw error;
       }
       toast.success("Skins settings saved");
       await load();
@@ -281,22 +295,35 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
           <Label>Skins Pot</Label>
           <RadioGroup
             value={potMode}
-            onValueChange={(v) => setPotMode(v as "total" | "division")}
+            onValueChange={(v) => { setPotMode(v as "total" | "division" | "combined"); if (v !== "division") setSelected((s) => ({ ...s, __overall: true })); }}
             className="mt-2 mb-4 space-y-2"
           >
             {[
               ["total", "One total pot for the entire field"],
               ["division", "A separate pot for each division"],
+              ["combined", "One combined pot for selected divisions"],
             ].map(([v, label]) => (
               <div key={v} className="flex items-center gap-2">
-                <RadioGroupItem value={v} id={`potmode-${v}`} disabled={v === "division" && divisions.length === 0} />
+                <RadioGroupItem value={v} id={`potmode-${v}`} disabled={v !== "total" && divisions.length === 0} />
                 <Label htmlFor={`potmode-${v}`} className="font-normal cursor-pointer">{label}</Label>
               </div>
             ))}
           </RadioGroup>
+          {potMode === "combined" && (
+            <fieldset className="mb-4 space-y-2">
+              <legend className="mb-2 text-sm font-medium">Divisions in the combined pot</legend>
+              {divisions.map((division) => (
+                <label key={division.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                  <Checkbox checked={combinedDivisions.includes(division.id)} onCheckedChange={(checked) => setCombinedDivisions((ids) => checked ? [...ids.filter((id) => id !== division.id), division.id] : ids.filter((id) => id !== division.id))} />
+                  {division.tier_name}
+                </label>
+              ))}
+            </fieldset>
+          )}
           <p className="text-sm text-muted-foreground mb-3">
             {potMode === "total"
               ? "Set one purse for the whole field, then choose which players are in the pot. Withdrawn (WD) players are never eligible."
+              : potMode === "combined" ? "Selected divisions share one purse. Withdrawn (WD) players are never eligible."
               : "Pick which divisions play a skins game and set each purse. Withdrawn (WD) players are never eligible."}
           </p>
           <div className="rounded-md border divide-y">

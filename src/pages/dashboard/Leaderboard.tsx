@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, Fragment } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,8 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, ChevronLeft, ChevronRight, Minus, Plus, RefreshCw } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -24,7 +23,8 @@ import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCar
 import TickerSponsorsCard from "@/components/dashboard/TickerSponsorsCard";
 
 import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard";
-import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
+import ScoringWorkspace, { type ScoringEntry, entryStatus } from "@/components/dashboard/ScoringWorkspace";
+import { loadVerifiedTeams, saveVerifiedTeams } from "@/lib/teamVerification";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
 import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
@@ -95,72 +95,6 @@ function computeTeamHoleScore(
   return null;
 }
 
-/**
- * Expanded edit area shown inside the selected scoring row. Keeps the
- * organizer's focus on the row they picked (no jumping to the top of the page)
- * and offers plus/minus entry with a Save & Next Hole action.
- */
-function InlineHoleEditor({
-  label,
-  hole,
-  par,
-  value,
-  maxHole,
-  disabled,
-  saving,
-  onHole,
-  onValue,
-  onSaveNext,
-}: {
-  label: string;
-  hole: number;
-  par: number;
-  value: number;
-  maxHole: number;
-  disabled?: boolean;
-  saving?: boolean;
-  onHole: (h: number) => void;
-  onValue: (n: number) => void;
-  onSaveNext: () => void;
-}) {
-  return (
-    <div className="rounded-md border-2 border-secondary bg-card p-3 flex flex-wrap items-center gap-4">
-      <div className="font-semibold">{label}</div>
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onHole(Math.max(1, hole - 1))} disabled={hole <= 1} aria-label="Previous hole">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-sm whitespace-nowrap">Hole {hole} · Par {par}</span>
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onHole(Math.min(maxHole, hole + 1))} disabled={hole >= maxHole} aria-label="Next hole">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="flex items-center gap-1">
-        <Button variant="outline" size="icon" className="h-9 w-9" disabled={disabled || value <= 0} onClick={() => onValue(Math.max(0, value - 1))} aria-label="Decrease score">
-          <Minus className="h-4 w-4" />
-        </Button>
-        <div className="w-14 h-9 rounded border flex items-center justify-center text-lg font-bold">{value}</div>
-        <Button variant="outline" size="icon" className="h-9 w-9" disabled={disabled || value >= 20} onClick={() => onValue(Math.min(20, value + 1))} aria-label="Increase score">
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-      <Button
-        onClick={onSaveNext}
-        disabled={saving || hole >= maxHole}
-        style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
-      >
-        {saving ? "Saving…" : disabled ? "Next Hole →" : "Save & Next Hole →"}
-      </Button>
-      <p className="text-xs text-muted-foreground w-full">
-        {disabled
-          ? "View-only: this button just moves to the next hole — no scores are changed."
-          : "Saving will automatically advance to the next hole. Existing scores for other holes are untouched."}
-      </p>
-
-    </div>
-  );
-}
-
 export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings" | "entry" }) {
   const showEntry = mode !== "settings";
   const showSettings = mode !== "entry";
@@ -172,11 +106,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const [playerScores, setPlayerScores] = useState<PlayerScore[]>([]);
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [scoreView, setScoreView] = useState<"gross" | "net">("gross");
-  // Score-entry helpers: name/team filter, expanded row selection, and the hole
-  // targeted by the expanded inline editor.
+  // Score-entry helpers: name/team filter and the selected team/player in the
+  // two-panel scoring workspace.
   const [scoreSearch, setScoreSearch] = useState("");
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
-  const [editHole, setEditHole] = useState(1);
   const [workingRound, setWorkingRound] = useState(1);
   const initializedTournamentRef = useRef<string | null>(null);
 
@@ -705,83 +638,194 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     });
   };
 
-  const updateScore = (regId: string, hole: number, value: string) => {
-    const parsed = parseScoreInput(value);
-    if (parsed.kind === "clear") clearScore(regId, hole);
-    else if (parsed.kind === "value") setScore(regId, hole, parsed.value);
-    else if (parsed.kind === "invalid") {
-      // Show inline error immediately; don't commit the bad value.
-      setScoreErrors((prev) => ({
-        ...prev,
-        [regId]: { ...(prev[regId] || {}), [hole]: `1–${MAX_STROKES} only` },
-      }));
-    }
-  };
-
   const getScore = (ps: PlayerScore, hole: number) => {
     return editedScores[ps.registration_id]?.[hole] ?? ps.scores[hole] ?? "";
-  };
-  const getScoreError = (regId: string, hole: number): string | undefined =>
-    scoreErrors[regId]?.[hole];
-
-  /** Team formats share one score per hole — apply the edit to every player on the team. */
-  const updateTeamScore = (players: PlayerScore[], hole: number, raw: string) => {
-    players.forEach((p) => updateScore(p.registration_id, hole, raw));
-  };
-  const setTeamScoreValue = (players: PlayerScore[], hole: number, n: number) => {
-    players.forEach((p) => setScore(p.registration_id, hole, n));
   };
 
   const hasEdits = Object.keys(editedScores).length > 0;
 
   const hasErrors = Object.keys(scoreErrors).length > 0;
 
-  // ---- Filter by player or team name (a player match shows the whole team) ----
-  const searchTerm = scoreSearch.trim().toLowerCase();
-  const matchesPlayer = (ps: PlayerScore) =>
-    `${ps.first_name} ${ps.last_name}`.toLowerCase().includes(searchTerm);
+  // ---- Per-team verification (review marker only — stored in this browser,
+  // never written to scores, teams or any tournament data) ----
+  const [verifiedKeys, setVerifiedKeys] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!selectedTournament) {
+      setVerifiedKeys(new Set());
+      return;
+    }
+    setVerifiedKeys(loadVerifiedTeams(selectedTournament, workingRound));
+  }, [selectedTournament, workingRound]);
 
-  const visibleTeamScores = useMemo(() => {
-    if (!searchTerm) return teamScores;
-    return teamScores.filter(
-      (t) => t.label.toLowerCase().includes(searchTerm) || t.players.some(matchesPlayer)
+  const setEntryVerified = (key: string, on: boolean) => {
+    setVerifiedKeys((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(key);
+      else next.delete(key);
+      if (selectedTournament) saveVerifiedTeams(selectedTournament, workingRound, next);
+      return next;
+    });
+  };
+
+  // Typing a number saves it for that hole: pending edits auto-save shortly
+  // after the last keystroke, through the exact same save path as Save Scores.
+  useEffect(() => {
+    if (!selectedTournament || !hasEdits || !canEditScores || isFrozen || roundLocked || hasErrors) return;
+    const t = window.setTimeout(() => {
+      setSaveState("idle");
+      saveMutation.mutate(editedScores);
+    }, 800);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editedScores, hasEdits, canEditScores, isFrozen, roundLocked, hasErrors, selectedTournament]);
+
+  const saveNow = () => {
+    if (!hasEdits || !canEditScores || isFrozen || roundLocked) return;
+    setSaveState("idle");
+    saveMutation.mutate(editedScores);
+  };
+
+  // ---- Unified entries for the two-panel scoring workspace ----
+  // Team formats: one entry per team (team scoring rules already applied).
+  // Individual/stableford: one entry per player. Totals come from the same
+  // calculations the old tables used — nothing about scoring changes.
+  const allEntries = useMemo<ScoringEntry[]>(() => {
+    if (isTeamFormat) {
+      return teamScores.map((t) => ({
+        key: t.key,
+        label: t.label,
+        isUnassigned: t.isUnassigned,
+        players: t.players,
+        holeScores: t.holeScores,
+        total: t.total,
+      }));
+    }
+    const buildHoleScores = (ps: PlayerScore) => {
+      const rec: Record<number, number> = {};
+      holes.forEach((h) => {
+        const v = getScore(ps, h);
+        if (typeof v === "number") rec[h] = v;
+      });
+      return rec;
+    };
+    if (isStableford) {
+      return stablefordScores.map((ps) => ({
+        key: `p-${ps.registration_id}`,
+        label: `${ps.first_name} ${ps.last_name}`,
+        players: [ps],
+        holeScores: buildHoleScores(ps),
+        total: ps.points,
+        points: ps.points,
+      }));
+    }
+    return activePlayerScores.map((ps) => {
+      const holeScores = buildHoleScores(ps);
+      const gross = Object.values(holeScores).reduce((s, v) => s + v, 0);
+      const net =
+        handicapEnabled && ps.strokes_per_hole
+          ? holes.reduce((sum, h) => {
+              const v = holeScores[h];
+              if (typeof v !== "number") return sum;
+              return sum + v - (ps.strokes_per_hole?.[h - 1] || 0);
+            }, 0)
+          : gross;
+      return {
+        key: `p-${ps.registration_id}`,
+        label: `${ps.first_name} ${ps.last_name}`,
+        players: [ps],
+        holeScores,
+        total: gross,
+        netTotal: net,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTeamFormat, isStableford, teamScores, stablefordScores, activePlayerScores, editedScores, handicapEnabled, holes]);
+
+  const visibleEntries = useMemo(() => {
+    const term = scoreSearch.trim().toLowerCase();
+    if (!term) return allEntries;
+    return allEntries.filter(
+      (e) =>
+        e.label.toLowerCase().includes(term) ||
+        e.players.some((p) => `${p.first_name} ${p.last_name}`.toLowerCase().includes(term)),
     );
-  }, [teamScores, searchTerm]);
+  }, [allEntries, scoreSearch]);
 
-  const visiblePlayerScores = useMemo(() => {
-    if (!searchTerm) return activePlayerScores;
-    return activePlayerScores.filter(matchesPlayer);
-  }, [activePlayerScores, searchTerm]);
+  const entryCounts = useMemo(() => {
+    let verified = 0;
+    let entered = 0;
+    let notStarted = 0;
+    allEntries.forEach((e) => {
+      const s = entryStatus(e, holes.length, verifiedKeys.has(e.key));
+      if (s === "verified") verified++;
+      else if (s === "entered") entered++;
+      else notStarted++;
+    });
+    return { total: allEntries.length, verified, entered, notStarted };
+  }, [allEntries, verifiedKeys, holes]);
 
-  const visibleStablefordScores = useMemo(() => {
-    if (!searchTerm) return stablefordScores;
-    return stablefordScores.filter(matchesPlayer);
-  }, [stablefordScores, searchTerm]);
+  // Keep the selection valid as the filter changes; default to the first row.
+  const selectedEntryKey =
+    selectedRowKey && visibleEntries.some((e) => e.key === selectedRowKey)
+      ? selectedRowKey
+      : (visibleEntries[0]?.key ?? null);
+
+  const selectedTeamGroupNumber = useMemo(() => {
+    if (!isTeamFormat || !selectedEntryKey) return null;
+    return teamScores.find((t) => t.key === selectedEntryKey)?.groupNumber ?? null;
+  }, [isTeamFormat, selectedEntryKey, teamScores]);
+
+  const selectedWithdrawnPlayers = useMemo(() => {
+    if (selectedTeamGroupNumber == null) return [];
+    return withdrawnPlayerScores.filter((ps) => ps.group_number === selectedTeamGroupNumber);
+  }, [selectedTeamGroupNumber, withdrawnPlayerScores]);
+
+  /** Team formats share one score per hole — apply the edit to every player on the entry. */
+  const handleCellValue = (entry: ScoringEntry, hole: number, value: number) => {
+    entry.players.forEach((p) => setScore(p.registration_id, hole, value));
+  };
+  const handleCellClear = (entry: ScoringEntry, hole: number) => {
+    entry.players.forEach((p) => clearScore(p.registration_id, hole));
+  };
 
   // ---- Progress: which hole entries are still missing a score? ----
-  // Uses the shared, unit-tested helper so the yellow highlight and this
-  // summary always agree, and both react instantly to unsaved edits.
-  const progress = useMemo(() => {
-    const rows: ProgressRow[] = isTeamFormat
+  // Uses the shared, unit-tested helper so the highlight and this summary
+  // always agree, and both react instantly to unsaved edits.
+  const progressRows = useMemo<(ProgressRow & { key: string })[]>(() => {
+    return isTeamFormat
       ? teamScores.map((t) => ({
+          key: t.key,
           label: t.label,
           registrationId: t.players[0]?.registration_id ?? t.key,
           saved: t.holeScores,
         }))
       : activePlayerScores.map((ps) => ({
+          key: `p-${ps.registration_id}`,
           label: `${ps.first_name} ${ps.last_name}`,
           registrationId: ps.registration_id,
           saved: ps.scores,
         }));
-    return computeScoreProgress(rows, holes, editedScores);
-  }, [isTeamFormat, teamScores, activePlayerScores, holes, editedScores]);
+  }, [isTeamFormat, teamScores, activePlayerScores]);
+
+  // All rows — drives the Final Leaderboard gate and the "all scores entered"
+  // notice, so verification never changes final standings behavior.
+  const progress = useMemo(
+    () => computeScoreProgress(progressRows, holes, editedScores),
+    [progressRows, holes, editedScores],
+  );
+
+  // Banner view: verified teams drop out of the Missing Scores count.
+  const progressVisible = useMemo(
+    () => computeScoreProgress(progressRows.filter((r) => !verifiedKeys.has(r.key)), holes, editedScores),
+    [progressRows, verifiedKeys, holes, editedScores],
+  );
 
   const allScoresEntered = progress.complete;
 
-  /** Missing holes collapsed to one line per player/team. */
+  /** Missing holes collapsed to one line per player/team (verified teams excluded). */
   const missingByLabel = useMemo(() => {
     const map = new Map<string, number[]>();
-    progress.missing.forEach((m) => {
+    progressVisible.missing.forEach((m) => {
       const list = map.get(m.label) || [];
       list.push(m.hole);
       map.set(m.label, list);
@@ -789,7 +833,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     return Array.from(map.entries())
       .map(([label, holesList]) => ({ label, holes: holesList.sort((a, b) => a - b) }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [progress.missing]);
+  }, [progressVisible.missing]);
 
   /** Email info@teevents.golf a summary of the holes still missing scores. */
   const alertMissingScores = async () => {
@@ -805,8 +849,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             tournament_id: selectedTournament,
             tournament_title: selectedTournamentData?.title || "",
             round: workingRound,
-            missing_count: progress.missing.length,
-            total_entries: progress.total,
+            missing_count: progressVisible.missing.length,
+            total_entries: progressVisible.total,
             lines: missingByLabel
               .slice(0, 50)
               .map((row) => `${row.label}: Holes ${row.holes.join(", ")}`),
@@ -841,36 +885,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     }
   }, [allScoresEntered, selectedTournament]);
 
-  /**
-   * Save pending edits (when the user may edit), then advance the inline editor
-   * to the next hole. For view-only roles or a frozen leaderboard this only
-   * changes the selected hole — it never writes scores.
-   */
-  const saveAndNext = async () => {
-    const mayWrite = canEditScores && !isFrozen && !roundLocked;
-    try {
-      if (mayWrite && hasEdits) await saveMutation.mutateAsync(editedScores);
-      setEditHole((h) => Math.min(holes.length, h + 1));
-    } catch {
-      /* mutation surfaces its own toast */
-    }
-  };
+
 
 
 
 
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
-
-  const renderStablefordCell = (strokes: number | "", hole: number) => {
-    if (strokes === "" || typeof strokes !== "number") return null;
-    const pts = stablefordPoints(strokes, Math.round(holePar));
-    return (
-      <span className={`text-[10px] block mt-0.5 font-semibold ${pts >= 3 ? "text-primary" : pts === 0 ? "text-destructive" : "text-muted-foreground"}`}>
-        {pts}pt
-      </span>
-    );
-  };
 
   const inEnterprise = typeof window !== "undefined" && window.location.pathname.startsWith("/enterprise");
   return (
@@ -943,6 +964,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           )}
           {hasEdits && canEditScores && (
             <Button
+              variant="outline"
               onClick={() => { setSaveState("idle"); saveMutation.mutate(editedScores); }}
               disabled={saveMutation.isPending || isFrozen || roundLocked}
               title={roundLocked ? `${roundLabel(workingRound - 1)} is closed` : isFrozen ? "Leaderboard is frozen" : undefined}
@@ -1103,13 +1125,14 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                   </a>
                 </Button>
                 {allScoresEntered ? (
-                  <Button size="sm" asChild style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
+                  <Button variant="outline" size="sm" asChild>
                     <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
                       <Trophy className="h-4 w-4 mr-1.5" /> View Final Leaderboard
                     </a>
                   </Button>
                 ) : (
                   <Button
+                    variant="outline"
                     size="sm"
                     disabled
                     title={
@@ -1126,11 +1149,11 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
           </div>
 
-          {progress.total > 0 && progress.missing.length > 0 && (
+          {progressVisible.total > 0 && progressVisible.missing.length > 0 && (
             <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
               <div className="flex items-center gap-2 font-semibold flex-wrap">
                 <AlertTriangle className="h-4 w-4" />
-                Missing Scores: {progress.missing.length} of {progress.total} hole entries need scores.
+                Missing Scores: {progressVisible.missing.length} of {progressVisible.total} hole entries need scores.
                 <Button
                   variant="outline"
                   size="sm"
@@ -1154,7 +1177,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             </div>
           )}
 
-          {progress.total > 0 && progress.missing.length === 0 && (
+          {progressVisible.total > 0 && progressVisible.missing.length === 0 && (
             <div className="rounded-md border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
               <div className="flex items-center gap-2 font-semibold text-primary">
                 <CheckCircle2 className="h-4 w-4" /> All Scores Entered!
@@ -1172,366 +1195,65 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         </div>
       )}
 
-      {/* ===== TEAM LEADERBOARD ===== */}
-      {showEntry && selectedTournament && isTeamFormat && teamScores.length > 0 && (
-
+      {/* ===== SCORING WORKSPACE (teams or players, all formats) ===== */}
+      {showEntry && selectedTournament && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 flex-wrap">
-              <Users className="h-5 w-5" /> Team Leaderboard
-              <Badge variant="secondary" className="text-xs font-normal">{scoringFormat?.name}</Badge>
-              <span className="text-sm font-normal text-muted-foreground ml-2">Par {coursePar}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="overflow-x-auto scoring-table-wrap">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10 text-center sticky-col left-0">#</TableHead>
-                    <TableHead className="min-w-[180px] sticky-col left-10">Team</TableHead>
-                    {holes.map((h) => (
-                      <TableHead key={h} className="text-center w-10 min-w-[40px] text-xs">{h}</TableHead>
-                    ))}
-                    <TableHead className="text-center font-bold min-w-[60px]">Total</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleTeamScores.map((team, i) => {
-                    const isSelected = selectedRowKey === team.key;
-                    return (
-                    <Fragment key={team.key}>
-                    <TableRow
-                      className={isSelected ? "bg-secondary/10 outline outline-2 outline-secondary" : undefined}
-                    >
-                      <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
-                      <TableCell className="font-medium sticky-col left-10">
-
-                        <button
-                          type="button"
-                          className="font-semibold flex items-center gap-2 text-left hover:underline"
-                          onClick={() => setSelectedRowKey(isSelected ? null : team.key)}
-                        >
-                          {team.label}
-                          {team.isUnassigned && (
-                            <Badge variant="outline" className="text-[10px] font-normal">No pairing</Badge>
-                          )}
-                        </button>
-                        <div className="text-xs text-muted-foreground">
-                          {team.players.map((p) => `${p.first_name} ${p.last_name[0]}.`).join(", ")}
-                        </div>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {team.players.map((p) => (
-                            <span key={p.registration_id} className="inline-flex items-center gap-1">
-                              <span className="text-[10px] text-muted-foreground">{p.first_name}</span>
-                              <ScoreEntryWd
-                                registrationId={p.registration_id}
-                                playerName={`${p.first_name} ${p.last_name}`}
-                                status={p.status}
-                                disabled={!canEditScores}
-                                onChanged={() => queryClient.invalidateQueries({ queryKey: ["leaderboard-players", selectedTournament, workingRound] })}
-                              />
-                            </span>
-                          ))}
-                        </div>
-                      </TableCell>
-                      {holes.map((h) => {
-                        const val = team.holeScores[h];
-                        const missing = val == null;
-                        if (canEditScores && !isFrozen && !roundLocked) {
-                          return (
-                            <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
-                              <ScoreInput
-                                value={typeof val === "number" ? val : ""}
-                                par={getHolePar(h)}
-                                ariaLabel={`${team.label} hole ${h}`}
-                                onChange={(raw) => updateTeamScore(team.players, h, raw)}
-                                onSet={(n) => setTeamScoreValue(team.players, h, n)}
-                              />
-                            </TableCell>
-                          );
-                        }
-                        return (
-                          <TableCell key={h} className={`text-center text-sm p-1 ${missing ? "incomplete-score" : ""}`}>
-                            {val != null ? (
-                              <span className={
-                                val < Math.round(holePar) ? "text-primary font-bold" :
-                                val > Math.round(holePar) ? "text-destructive" : ""
-                              }>
-                                {val}
-                              </span>
-                            ) : "—"}
-                          </TableCell>
-                        );
-                      })}
-                      <TableCell className="text-center font-bold text-lg">
-                        {team.total > 0 ? team.total : "—"}
-                      </TableCell>
-                    </TableRow>
-                    {isSelected && (
-                      <TableRow key={`${team.key}-edit`} className="bg-secondary/10">
-                        <TableCell colSpan={holes.length + 3} className="p-3">
-                          <InlineHoleEditor
-                            label={team.label}
-                            hole={editHole}
-                            par={getHolePar(editHole)}
-                            value={Number(
-                              editedScores[team.players[0].registration_id]?.[editHole] ??
-                              team.holeScores[editHole] ?? 0
-                            )}
-                            maxHole={holes.length}
-                            disabled={!canEditScores || isFrozen || roundLocked}
-                            saving={saveMutation.isPending}
-                            onHole={setEditHole}
-                            onValue={(n) => setTeamScoreValue(team.players, editHole, n)}
-                            onSaveNext={saveAndNext}
-                          />
-                        </TableCell>
-                      </TableRow>
-                    )}
-                    </Fragment>
-                    );
-                  })}
-
-
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ===== STABLEFORD LEADERBOARD ===== */}
-      {showEntry && selectedTournament && isStableford && stablefordScores.length > 0 && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 flex-wrap">
-              <Trophy className="h-5 w-5" /> Stableford Leaderboard
-              <Badge variant="secondary" className="text-xs font-normal">Stableford</Badge>
-              <span className="text-sm font-normal text-muted-foreground ml-2">Par {coursePar}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-xs text-muted-foreground mb-3 flex gap-4">
-              <span>Eagle+ = 4pt</span>
-              <span>Birdie = 3pt</span>
-              <span className="font-semibold">Par = 2pt</span>
-              <span>Bogey = 1pt</span>
-              <span>Double+ = 0pt</span>
-            </div>
-            <div className="overflow-x-auto scoring-table-wrap">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-10 text-center sticky-col left-0">#</TableHead>
-                    <TableHead className="sticky-col left-10 min-w-[150px]">Player</TableHead>
-                    {holes.map((h) => (
-                      <TableHead key={h} className="text-center w-12 min-w-[48px] text-xs">{h}</TableHead>
-                    ))}
-                    <TableHead className="text-center font-bold min-w-[60px]">Points</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {visibleStablefordScores.map((ps, i) => (
-                    <TableRow key={ps.registration_id}>
-                      <TableCell className="text-center font-bold text-muted-foreground sticky-col left-0">{i + 1}</TableCell>
-                      <TableCell className="sticky-col left-10 font-medium">
-
-                        {ps.first_name} {ps.last_name}
-                        {ps.handicap !== null && (
-                          <span className="text-xs text-muted-foreground ml-1">({ps.handicap})</span>
-                        )}
-                      </TableCell>
-                      {holes.map((h) => {
-                        const val = getScore(ps, h);
-                        const hp = getHolePar(h);
-                        const err = getScoreError(ps.registration_id, h);
-                        return (
-                          <TableCell key={h} className="p-1 text-center">
-                            <ScoreInput
-                              value={typeof val === "number" ? val : ""}
-                              par={hp}
-                              ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
-                              onChange={(raw) => updateScore(ps.registration_id, h, raw)}
-                              onSet={(n) => setScore(ps.registration_id, h, n)}
-                              className={err ? "border-destructive ring-1 ring-destructive" : undefined}
-                            />
-                            {err ? (
-                              <span className="text-[10px] block mt-0.5 font-semibold text-destructive">{err}</span>
-                            ) : (
-                              renderStablefordCell(val, h)
-                            )}
-                          </TableCell>
-                        );
-                      })}
-                      <TableCell className="text-center font-bold text-lg text-primary">
-                        {ps.points > 0 ? ps.points : "—"}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ===== INDIVIDUAL SCORECARD (stroke play only — team formats score from the team leaderboard) ===== */}
-      {showEntry && selectedTournament && !isTeamFormat && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 flex-wrap">
-              <Trophy className="h-5 w-5" /> {isTeamFormat ? "Individual Score Entry" : "Scorecard"}
-              {selectedTournamentData && !isTeamFormat && !isStableford && (
-                <>
-                  <span className="text-sm font-normal text-muted-foreground ml-2">
-                    Par {coursePar}
-                  </span>
-                  {scoringFormat && (
-                    <Badge variant="secondary" className="text-xs font-normal">{scoringFormat.name}</Badge>
-                  )}
-                </>
+              {isTeamFormat ? <Users className="h-5 w-5" /> : <Trophy className="h-5 w-5" />}
+              {isTeamFormat ? "Team Leaderboard" : isStableford ? "Stableford Leaderboard" : "Scorecard"}
+              {scoringFormat && (
+                <Badge variant="secondary" className="text-xs font-normal">{scoringFormat.name}</Badge>
               )}
+              <span className="text-sm font-normal text-muted-foreground ml-2">Par {coursePar}</span>
             </CardTitle>
           </CardHeader>
           <CardContent>
+            {isStableford && (
+              <div className="text-xs text-muted-foreground mb-3 flex gap-4 flex-wrap">
+                <span>Eagle+ = 4pt</span>
+                <span>Birdie = 3pt</span>
+                <span className="font-semibold">Par = 2pt</span>
+                <span>Bogey = 1pt</span>
+                <span>Double+ = 0pt</span>
+              </div>
+            )}
             {scoresLoading ? (
               <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div>
             ) : playerScores.length === 0 ? (
               <p className="text-center text-muted-foreground py-8">No registered players yet.</p>
             ) : (
-              <div className="overflow-x-auto scoring-table-wrap">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="sticky-col left-0 min-w-[150px]">Player</TableHead>
-                      {isTeamFormat && <TableHead className="text-center w-14">Grp</TableHead>}
-                      {holes.map((h) => (
-                        <TableHead key={h} className="text-center w-12 min-w-[48px]">{h}</TableHead>
-                      ))}
-                      <TableHead className="text-center font-bold min-w-[60px]">Gross</TableHead>
-                      {handicapEnabled && <TableHead className="text-center font-bold min-w-[60px]">Net</TableHead>}
-                    </TableRow>
-                    {/* Par row */}
-                    {holePars && (
-                      <TableRow className="bg-muted/30 par-row">
-                        <TableHead className="sticky-col left-0 text-xs text-muted-foreground font-semibold">Par</TableHead>
-
-                        {isTeamFormat && <TableHead />}
-                        {holes.map((h) => (
-                          <TableHead key={h} className="text-center text-xs text-muted-foreground">{getHolePar(h)}</TableHead>
-                        ))}
-                        <TableHead className="text-center text-xs font-semibold text-muted-foreground">{coursePar}</TableHead>
-                        {handicapEnabled && <TableHead />}
-                      </TableRow>
-                    )}
-                  </TableHeader>
-                  <TableBody>
-                    {visiblePlayerScores.map((ps) => {
-                      const grossTotal = holes.reduce((sum, h) => {
-                        const val = getScore(ps, h);
-                        return sum + (typeof val === "number" ? val : 0);
-                      }, 0);
-                      const netTotal = handicapEnabled && ps.strokes_per_hole
-                        ? holes.reduce((sum, h) => {
-                            const val = getScore(ps, h);
-                            if (typeof val !== "number") return sum;
-                            return sum + val - (ps.strokes_per_hole?.[h - 1] || 0);
-                          }, 0)
-                        : grossTotal;
-                      const rowKey = `p-${ps.registration_id}`;
-                      const isSelected = selectedRowKey === rowKey;
-                      return (
-                        <Fragment key={ps.registration_id}>
-                        <TableRow
-                          className={isSelected ? "bg-secondary/10 outline outline-2 outline-secondary" : undefined}
-                        >
-                          <TableCell className="sticky-col left-0 font-medium">
-                            <button
-                              type="button"
-                              className="text-left hover:underline"
-                              onClick={() => setSelectedRowKey(isSelected ? null : rowKey)}
-                            >
-                              {ps.first_name} {ps.last_name}
-                            </button>
-                            {handicapEnabled && ps.playing_handicap != null ? (
-                              <span className="text-xs text-muted-foreground ml-1">({ps.playing_handicap})</span>
-                            ) : ps.handicap !== null ? (
-                              <span className="text-xs text-muted-foreground ml-1">({ps.handicap})</span>
-                            ) : null}
-                            <div className="mt-1">
-                              <ScoreEntryWd
-                                registrationId={ps.registration_id}
-                                playerName={`${ps.first_name} ${ps.last_name}`}
-                                status={ps.status}
-                                disabled={!canEditScores}
-                                onChanged={() => queryClient.invalidateQueries({ queryKey: ["leaderboard-players", selectedTournament, workingRound] })}
-                              />
-                            </div>
-                          </TableCell>
-                          {isTeamFormat && (
-                            <TableCell className="text-center text-xs text-muted-foreground">
-                              {ps.group_number ?? "—"}
-                            </TableCell>
-                          )}
-                          {holes.map((h) => {
-                            const val = getScore(ps, h);
-                            const hp = getHolePar(h);
-                            const err = getScoreError(ps.registration_id, h);
-                            const scoreColorClass = typeof val === "number"
-                              ? val < hp ? "text-primary font-bold" : val > hp ? "text-destructive" : ""
-                              : "";
-                            const missing = typeof val !== "number";
-                            return (
-                              <TableCell key={h} className={`p-1 text-center ${missing ? "incomplete-score" : "complete-score"}`}>
-                                <ScoreInput
-                                  value={typeof val === "number" ? val : ""}
-                                  par={hp}
-                                  ariaLabel={`${ps.first_name} ${ps.last_name} hole ${h}`}
-                                  onChange={(raw) => updateScore(ps.registration_id, h, raw)}
-                                  onSet={(n) => setScore(ps.registration_id, h, n)}
-                                  className={`${scoreColorClass} ${err ? "border-destructive ring-1 ring-destructive" : ""}`}
-                                />
-                                {err && (
-                                  <span className="text-[10px] block mt-0.5 font-semibold text-destructive">{err}</span>
-                                )}
-                              </TableCell>
-                            );
-                          })}
-                          <TableCell className="text-center font-bold text-lg">
-                            {grossTotal > 0 ? grossTotal : "—"}
-                          </TableCell>
-                          {handicapEnabled && (
-                            <TableCell className="text-center font-bold text-lg text-primary">
-                              {grossTotal > 0 ? netTotal : "—"}
-                            </TableCell>
-                          )}
-                        </TableRow>
-                        {isSelected && (
-                          <TableRow key={`${ps.registration_id}-edit`} className="bg-secondary/10">
-                            <TableCell colSpan={holes.length + (isTeamFormat ? 3 : 2) + (handicapEnabled ? 1 : 0)} className="p-3">
-                              <InlineHoleEditor
-                                label={`${ps.first_name} ${ps.last_name}`}
-                                hole={editHole}
-                                par={getHolePar(editHole)}
-                                value={Number(editedScores[ps.registration_id]?.[editHole] ?? ps.scores[editHole] ?? 0)}
-                                maxHole={holes.length}
-                                disabled={!canEditScores || isFrozen || roundLocked}
-                                saving={saveMutation.isPending}
-                                onHole={setEditHole}
-                                onValue={(n) => setScore(ps.registration_id, editHole, n)}
-                                onSaveNext={saveAndNext}
-                              />
-                            </TableCell>
-                          </TableRow>
-                        )}
-                        </Fragment>
-                      );
-                    })}
-
-                  </TableBody>
-                </Table>
-              </div>
+              <ScoringWorkspace
+                entries={visibleEntries}
+                counts={entryCounts}
+                verifiedKeys={verifiedKeys}
+                selectedKey={selectedEntryKey}
+                onSelect={setSelectedRowKey}
+                onVerify={(key) => setEntryVerified(key, true)}
+                onUnverify={(key) => setEntryVerified(key, false)}
+                isTeamFormat={!!isTeamFormat}
+                isStableford={!!isStableford}
+                showNet={handicapEnabled && !isTeamFormat && !isStableford}
+                holes={holes}
+                getHolePar={getHolePar}
+                coursePar={coursePar}
+                formatName={scoringFormat?.name || ""}
+                canEdit={canEditScores && !isFrozen && !roundLocked}
+                saving={saveMutation.isPending}
+                onSave={saveNow}
+                onCellValue={handleCellValue}
+                onCellClear={handleCellClear}
+                renderPlayerWd={(p) => (
+                  <ScoreEntryWd
+                    registrationId={p.registration_id}
+                    playerName={`${p.first_name} ${p.last_name}`}
+                    status={p.status}
+                    disabled={!canEditScores}
+                    onChanged={() => queryClient.invalidateQueries({ queryKey: ["leaderboard-players", selectedTournament, workingRound] })}
+                  />
+                )}
+                withdrawnTeammates={selectedWithdrawnPlayers}
+              />
             )}
           </CardContent>
         </Card>
@@ -1671,7 +1393,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       {showEntry && selectedTournament && hasEdits && canEditScores && (
         <div className="sticky bottom-3 z-30 flex justify-end pointer-events-none">
           <Button
-            className="pointer-events-auto shadow-lg"
+            variant="outline"
+            className="pointer-events-auto shadow-lg bg-card"
             onClick={() => saveMutation.mutate(editedScores)}
             disabled={saveMutation.isPending || isFrozen || roundLocked || hasErrors}
           >

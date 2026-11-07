@@ -670,6 +670,146 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
   const hasErrors = Object.keys(scoreErrors).length > 0;
 
+  // ---- Per-team verification (review marker only — stored in this browser,
+  // never written to scores, teams or any tournament data) ----
+  const [verifiedKeys, setVerifiedKeys] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    if (!selectedTournament) {
+      setVerifiedKeys(new Set());
+      return;
+    }
+    setVerifiedKeys(loadVerifiedTeams(selectedTournament, workingRound));
+  }, [selectedTournament, workingRound]);
+
+  const setEntryVerified = (key: string, on: boolean) => {
+    setVerifiedKeys((prev) => {
+      const next = new Set(prev);
+      if (on) next.add(key);
+      else next.delete(key);
+      if (selectedTournament) saveVerifiedTeams(selectedTournament, workingRound, next);
+      return next;
+    });
+  };
+
+  // Typing a number saves it for that hole: pending edits auto-save shortly
+  // after the last keystroke, through the exact same save path as Save Scores.
+  useEffect(() => {
+    if (!selectedTournament || !hasEdits || !canEditScores || isFrozen || roundLocked || hasErrors) return;
+    const t = window.setTimeout(() => {
+      setSaveState("idle");
+      saveMutation.mutate(editedScores);
+    }, 800);
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editedScores, hasEdits, canEditScores, isFrozen, roundLocked, hasErrors, selectedTournament]);
+
+  const saveNow = () => {
+    if (!hasEdits || !canEditScores || isFrozen || roundLocked) return;
+    setSaveState("idle");
+    saveMutation.mutate(editedScores);
+  };
+
+  // ---- Unified entries for the two-panel scoring workspace ----
+  // Team formats: one entry per team (team scoring rules already applied).
+  // Individual/stableford: one entry per player. Totals come from the same
+  // calculations the old tables used — nothing about scoring changes.
+  const allEntries = useMemo<ScoringEntry[]>(() => {
+    if (isTeamFormat) {
+      return teamScores.map((t) => ({
+        key: t.key,
+        label: t.label,
+        isUnassigned: t.isUnassigned,
+        players: t.players,
+        holeScores: t.holeScores,
+        total: t.total,
+      }));
+    }
+    const buildHoleScores = (ps: PlayerScore) => {
+      const rec: Record<number, number> = {};
+      holes.forEach((h) => {
+        const v = getScore(ps, h);
+        if (typeof v === "number") rec[h] = v;
+      });
+      return rec;
+    };
+    if (isStableford) {
+      return stablefordScores.map((ps) => ({
+        key: `p-${ps.registration_id}`,
+        label: `${ps.first_name} ${ps.last_name}`,
+        players: [ps],
+        holeScores: buildHoleScores(ps),
+        total: ps.points,
+        points: ps.points,
+      }));
+    }
+    return activePlayerScores.map((ps) => {
+      const holeScores = buildHoleScores(ps);
+      const gross = Object.values(holeScores).reduce((s, v) => s + v, 0);
+      const net =
+        handicapEnabled && ps.strokes_per_hole
+          ? holes.reduce((sum, h) => {
+              const v = holeScores[h];
+              if (typeof v !== "number") return sum;
+              return sum + v - (ps.strokes_per_hole?.[h - 1] || 0);
+            }, 0)
+          : gross;
+      return {
+        key: `p-${ps.registration_id}`,
+        label: `${ps.first_name} ${ps.last_name}`,
+        players: [ps],
+        holeScores,
+        total: gross,
+        netTotal: net,
+      };
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTeamFormat, isStableford, teamScores, stablefordScores, activePlayerScores, editedScores, handicapEnabled, holes]);
+
+  const visibleEntries = useMemo(() => {
+    if (!searchTerm) return allEntries;
+    return allEntries.filter(
+      (e) => e.label.toLowerCase().includes(searchTerm) || e.players.some(matchesPlayer),
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [allEntries, searchTerm]);
+
+  const entryCounts = useMemo(() => {
+    let verified = 0;
+    let entered = 0;
+    let notStarted = 0;
+    allEntries.forEach((e) => {
+      const s = entryStatus(e, holes.length, verifiedKeys.has(e.key));
+      if (s === "verified") verified++;
+      else if (s === "entered") entered++;
+      else notStarted++;
+    });
+    return { total: allEntries.length, verified, entered, notStarted };
+  }, [allEntries, verifiedKeys, holes]);
+
+  // Keep the selection valid as the filter changes; default to the first row.
+  const selectedEntryKey =
+    selectedRowKey && visibleEntries.some((e) => e.key === selectedRowKey)
+      ? selectedRowKey
+      : (visibleEntries[0]?.key ?? null);
+
+  const selectedTeamGroupNumber = useMemo(() => {
+    if (!isTeamFormat || !selectedEntryKey) return null;
+    return teamScores.find((t) => t.key === selectedEntryKey)?.groupNumber ?? null;
+  }, [isTeamFormat, selectedEntryKey, teamScores]);
+
+  const selectedWithdrawnPlayers = useMemo(() => {
+    if (selectedTeamGroupNumber == null) return [];
+    return withdrawnPlayerScores.filter((ps) => ps.group_number === selectedTeamGroupNumber);
+  }, [selectedTeamGroupNumber, withdrawnPlayerScores]);
+
+  /** Team formats share one score per hole — apply the edit to every player on the entry. */
+  const handleCellValue = (entry: ScoringEntry, hole: number, value: number) => {
+    entry.players.forEach((p) => setScore(p.registration_id, hole, value));
+  };
+  const handleCellClear = (entry: ScoringEntry, hole: number) => {
+    entry.players.forEach((p) => clearScore(p.registration_id, hole));
+  };
+
   // ---- Filter by player or team name (a player match shows the whole team) ----
   const searchTerm = scoreSearch.trim().toLowerCase();
   const matchesPlayer = (ps: PlayerScore) =>

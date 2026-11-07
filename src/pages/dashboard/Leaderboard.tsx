@@ -107,11 +107,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const [playerScores, setPlayerScores] = useState<PlayerScore[]>([]);
   const [editedScores, setEditedScores] = useState<Record<string, Record<number, number>>>({});
   const [scoreView, setScoreView] = useState<"gross" | "net">("gross");
-  // Score-entry helpers: name/team filter, expanded row selection, and the hole
-  // targeted by the expanded inline editor.
+  // Score-entry helpers: name/team filter and the selected team/player in the
+  // two-panel scoring workspace.
   const [scoreSearch, setScoreSearch] = useState("");
   const [selectedRowKey, setSelectedRowKey] = useState<string | null>(null);
-  const [editHole, setEditHole] = useState(1);
   const [workingRound, setWorkingRound] = useState(1);
   const initializedTournamentRef = useRef<string | null>(null);
 
@@ -676,40 +675,37 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   const matchesPlayer = (ps: PlayerScore) =>
     `${ps.first_name} ${ps.last_name}`.toLowerCase().includes(searchTerm);
 
-  const visibleTeamScores = useMemo(() => {
-    if (!searchTerm) return teamScores;
-    return teamScores.filter(
-      (t) => t.label.toLowerCase().includes(searchTerm) || t.players.some(matchesPlayer)
-    );
-  }, [teamScores, searchTerm]);
-
-  const visiblePlayerScores = useMemo(() => {
-    if (!searchTerm) return activePlayerScores;
-    return activePlayerScores.filter(matchesPlayer);
-  }, [activePlayerScores, searchTerm]);
-
-  const visibleStablefordScores = useMemo(() => {
-    if (!searchTerm) return stablefordScores;
-    return stablefordScores.filter(matchesPlayer);
-  }, [stablefordScores, searchTerm]);
-
   // ---- Progress: which hole entries are still missing a score? ----
-  // Uses the shared, unit-tested helper so the yellow highlight and this
-  // summary always agree, and both react instantly to unsaved edits.
-  const progress = useMemo(() => {
-    const rows: ProgressRow[] = isTeamFormat
+  // Uses the shared, unit-tested helper so the highlight and this summary
+  // always agree, and both react instantly to unsaved edits.
+  const progressRows = useMemo<(ProgressRow & { key: string })[]>(() => {
+    return isTeamFormat
       ? teamScores.map((t) => ({
+          key: t.key,
           label: t.label,
           registrationId: t.players[0]?.registration_id ?? t.key,
           saved: t.holeScores,
         }))
       : activePlayerScores.map((ps) => ({
+          key: `p-${ps.registration_id}`,
           label: `${ps.first_name} ${ps.last_name}`,
           registrationId: ps.registration_id,
           saved: ps.scores,
         }));
-    return computeScoreProgress(rows, holes, editedScores);
-  }, [isTeamFormat, teamScores, activePlayerScores, holes, editedScores]);
+  }, [isTeamFormat, teamScores, activePlayerScores]);
+
+  // All rows — drives the Final Leaderboard gate and the "all scores entered"
+  // notice, so verification never changes final standings behavior.
+  const progress = useMemo(
+    () => computeScoreProgress(progressRows, holes, editedScores),
+    [progressRows, holes, editedScores],
+  );
+
+  // Banner view: verified teams drop out of the Missing Scores count.
+  const progressVisible = useMemo(
+    () => computeScoreProgress(progressRows.filter((r) => !verifiedKeys.has(r.key)), holes, editedScores),
+    [progressRows, verifiedKeys, holes, editedScores],
+  );
 
   const allScoresEntered = progress.complete;
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef, Fragment } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import { Link } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -10,8 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, ChevronLeft, ChevronRight, Minus, Plus, RefreshCw } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -24,7 +23,9 @@ import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCar
 import TickerSponsorsCard from "@/components/dashboard/TickerSponsorsCard";
 
 import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard";
-import { ScoreInput, parseScoreInput } from "@/components/dashboard/ScoreInput";
+import { parseScoreInput } from "@/components/dashboard/ScoreInput";
+import ScoringWorkspace, { type ScoringEntry, entryStatus } from "@/components/dashboard/ScoringWorkspace";
+import { loadVerifiedTeams, saveVerifiedTeams } from "@/lib/teamVerification";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
 import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
@@ -93,72 +94,6 @@ function computeTeamHoleScore(
     return Math.min(...strokes);
   }
   return null;
-}
-
-/**
- * Expanded edit area shown inside the selected scoring row. Keeps the
- * organizer's focus on the row they picked (no jumping to the top of the page)
- * and offers plus/minus entry with a Save & Next Hole action.
- */
-function InlineHoleEditor({
-  label,
-  hole,
-  par,
-  value,
-  maxHole,
-  disabled,
-  saving,
-  onHole,
-  onValue,
-  onSaveNext,
-}: {
-  label: string;
-  hole: number;
-  par: number;
-  value: number;
-  maxHole: number;
-  disabled?: boolean;
-  saving?: boolean;
-  onHole: (h: number) => void;
-  onValue: (n: number) => void;
-  onSaveNext: () => void;
-}) {
-  return (
-    <div className="rounded-md border-2 border-secondary bg-card p-3 flex flex-wrap items-center gap-4">
-      <div className="font-semibold">{label}</div>
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onHole(Math.max(1, hole - 1))} disabled={hole <= 1} aria-label="Previous hole">
-          <ChevronLeft className="h-4 w-4" />
-        </Button>
-        <span className="text-sm whitespace-nowrap">Hole {hole} · Par {par}</span>
-        <Button variant="outline" size="icon" className="h-8 w-8" onClick={() => onHole(Math.min(maxHole, hole + 1))} disabled={hole >= maxHole} aria-label="Next hole">
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
-      <div className="flex items-center gap-1">
-        <Button variant="outline" size="icon" className="h-9 w-9" disabled={disabled || value <= 0} onClick={() => onValue(Math.max(0, value - 1))} aria-label="Decrease score">
-          <Minus className="h-4 w-4" />
-        </Button>
-        <div className="w-14 h-9 rounded border flex items-center justify-center text-lg font-bold">{value}</div>
-        <Button variant="outline" size="icon" className="h-9 w-9" disabled={disabled || value >= 20} onClick={() => onValue(Math.min(20, value + 1))} aria-label="Increase score">
-          <Plus className="h-4 w-4" />
-        </Button>
-      </div>
-      <Button
-        onClick={onSaveNext}
-        disabled={saving || hole >= maxHole}
-        style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
-      >
-        {saving ? "Saving…" : disabled ? "Next Hole →" : "Save & Next Hole →"}
-      </Button>
-      <p className="text-xs text-muted-foreground w-full">
-        {disabled
-          ? "View-only: this button just moves to the next hole — no scores are changed."
-          : "Saving will automatically advance to the next hole. Existing scores for other holes are untouched."}
-      </p>
-
-    </div>
-  );
 }
 
 export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings" | "entry" }) {

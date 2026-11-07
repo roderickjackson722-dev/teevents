@@ -163,7 +163,16 @@ export function buildLeaderboard(
       const parts = splitFoursomeTeams(
         entries.map((e) => ({ id: e.key, group_id: e.player.teamId, entry: e })),
       );
-      if (parts.length === 1) return [{ gn, key: `group-${gn}`, entries, split: false }];
+      if (parts.length === 1) {
+        // 2-/3-person formats: when only one registered team in the pairing has
+        // posted scores, still show it as that team (same label as when both have).
+        const ids = new Set(entries.map((e) => e.player.teamId));
+        const oneTeam = ids.size === 1 && !ids.has(null);
+        if (fmt.teamSize < 4 && oneTeam) {
+          return [{ gn, key: `team-${[...ids][0]}`, entries, split: true }];
+        }
+        return [{ gn, key: `group-${gn}`, entries, split: false }];
+      }
       return parts.map((p) => ({ gn, key: `team-${p.key}`, entries: p.members.map((m) => m.entry), split: true }));
     });
     return units

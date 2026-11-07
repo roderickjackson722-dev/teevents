@@ -788,11 +788,6 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     entry.players.forEach((p) => clearScore(p.registration_id, hole));
   };
 
-  // ---- Filter by player or team name (a player match shows the whole team) ----
-  const searchTerm = scoreSearch.trim().toLowerCase();
-  const matchesPlayer = (ps: PlayerScore) =>
-    `${ps.first_name} ${ps.last_name}`.toLowerCase().includes(searchTerm);
-
   // ---- Progress: which hole entries are still missing a score? ----
   // Uses the shared, unit-tested helper so the highlight and this summary
   // always agree, and both react instantly to unsaved edits.

@@ -1,0 +1,2 @@
+ALTER TABLE public.division_skins_games ADD COLUMN selected_division_ids uuid[];
+COMMENT ON COLUMN public.division_skins_games.selected_division_ids IS 'NULL preserves whole-field or individual-division games; a nonempty array restricts one combined pot to the selected divisions. Empty arrays fail closed.';

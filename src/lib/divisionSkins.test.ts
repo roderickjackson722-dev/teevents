@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ from: vi.fn(), scores: vi.fn(), inserted: [] as any[], registrations: [] as any[], scoringFormat: "stroke_play" }));
+const mocks = vi.hoisted(() => ({ from: vi.fn(), scores: vi.fn(), inserted: [] as any[], registrations: [] as any[], scoringFormat: "stroke_play", holeCount: 4 }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: mocks.from } }));
 vi.mock("@/lib/fetchLeaderboardScores", () => ({ fetchAllTournamentScores: mocks.scores }));
 import { recomputeDivisionSkins, type SkinsGame } from "./divisionSkins";
@@ -8,11 +8,12 @@ describe("shared Calculate persistence boundary", () => {
   beforeEach(() => {
     mocks.inserted=[];mocks.from.mockReset();mocks.scores.mockReset();
     mocks.scoringFormat="stroke_play";
+    mocks.holeCount=4;
     mocks.registrations=[{id:"a",handicap:0,status:"active"},{id:"b",handicap:0,status:"active"},{id:"wd",status:"wd"},{id:"out",status:"active",skins_opt_in:false}];
     mocks.from.mockImplementation((table:string) => {
       const builder:any={select:()=>builder,eq:()=>builder,maybeSingle:()=>builder,
         delete:()=>builder,insert:(rows:any[])=>{mocks.inserted=rows;return builder;},
-        then:(resolve:any)=>resolve({error:null,data:table==="tournaments"?{scoring_format:mocks.scoringFormat,pairings_config:{byDay:{0:{roundHoles:4}}}}:table==="tournament_registrations"?mocks.registrations:[]})};
+        then:(resolve:any)=>resolve({error:null,data:table==="tournaments"?{scoring_format:mocks.scoringFormat,pairings_config:{byDay:{0:{roundHoles:mocks.holeCount}}}}:table==="tournament_registrations"?mocks.registrations:[]})};
       return builder;
     });
     mocks.scores.mockResolvedValue([1,2,3,4].flatMap(h=>[
@@ -41,6 +42,19 @@ describe("shared Calculate persistence boundary", () => {
     mocks.registrations=[{id:"a",flight_id:"division-a"},{id:"b",flight_id:"division-b",skins_opt_in:false},{id:"wd",flight_id:"division-b",status:"wd"}];
     const rows=await recomputeDivisionSkins({...game,selected_division_ids:["division-a","division-b"]});
     expect(rows.map((r)=>r.registration_id)).toEqual(["a","a","a","a"]);
+  });
+  it("Calculate persists eight $110 outright wins from an $880 combined purse even with carryover selected", async () => {
+    mocks.holeCount=18;
+    mocks.registrations=[{id:"a",flight_id:"division-a"},{id:"b",flight_id:"division-b"}];
+    const wins=[1,3,4,11,14,15,16,17];
+    mocks.scores.mockResolvedValue(Array.from({length:18},(_,i)=>i+1).flatMap(h=>[
+      {registration_id:"a",hole_number:h,strokes:3},
+      {registration_id:"b",hole_number:h,strokes:wins.includes(h)?4:3},
+    ]));
+    await recomputeDivisionSkins({...game,total_purse_cents:88000,carryover:true,selected_division_ids:["division-a","division-b"]});
+    expect(mocks.inserted.filter(r=>r.registration_id).map(r=>r.amount_cents)).toEqual(Array(8).fill(11000));
+    expect(mocks.inserted.reduce((sum,r)=>sum+r.amount_cents,0)).toBe(88000);
+    expect(mocks.inserted.filter(r=>!r.registration_id).every(r=>r.amount_cents===0)).toBe(true);
   });
   it("fails closed for an empty combined selection instead of using the whole field", async () => {
     const rows=await recomputeDivisionSkins({...game,selected_division_ids:[]});

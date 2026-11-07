@@ -3,7 +3,7 @@ import { applyHoleInput, isAllowedScoreKey } from "@/lib/scoreEntryFocus";
 import { stablefordPoints } from "@/lib/scoringFormats";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, ShieldCheck, Undo2 } from "lucide-react";
+import { CheckCircle2, ShieldCheck, Undo2, Eraser, X } from "lucide-react";
 
 export interface ScoringEntryPlayer {
   registration_id: string;
@@ -65,6 +65,8 @@ interface ScoringWorkspaceProps {
   onSave: () => void;
   onCellValue: (entry: ScoringEntry, hole: number, value: number) => void;
   onCellClear: (entry: ScoringEntry, hole: number) => void;
+  /** Delete saved scores for holes (null = all) of an entry. */
+  onClearSaved?: (entry: ScoringEntry, holes: number[] | null) => void | Promise<void>;
   renderPlayerWd?: (p: ScoringEntryPlayer) => React.ReactNode;
   /** Withdrawn teammates of the selected entry (team formats). */
   withdrawnTeammates?: ScoringEntryPlayer[];
@@ -96,6 +98,7 @@ export default function ScoringWorkspace({
   onSave,
   onCellValue,
   onCellClear,
+  onClearSaved,
   renderPlayerWd,
   withdrawnTeammates = [],
 }: ScoringWorkspaceProps) {
@@ -189,6 +192,7 @@ export default function ScoringWorkspace({
             onUnverify={() => onUnverify(selected.key)}
             onCellValue={onCellValue}
             onCellClear={onCellClear}
+            onClearSaved={onClearSaved}
             renderPlayerWd={renderPlayerWd}
             withdrawnTeammates={withdrawnTeammates}
           />
@@ -215,6 +219,7 @@ function SelectedEntryPanel({
   onUnverify,
   onCellValue,
   onCellClear,
+  onClearSaved,
   renderPlayerWd,
   withdrawnTeammates,
 }: {
@@ -234,6 +239,7 @@ function SelectedEntryPanel({
   onUnverify: () => void;
   onCellValue: (entry: ScoringEntry, hole: number, value: number) => void;
   onCellClear: (entry: ScoringEntry, hole: number) => void;
+  onClearSaved?: (entry: ScoringEntry, holes: number[] | null) => void | Promise<void>;
   renderPlayerWd?: (p: ScoringEntryPlayer) => React.ReactNode;
   withdrawnTeammates: ScoringEntryPlayer[];
 }) {
@@ -314,6 +320,18 @@ function SelectedEntryPanel({
           </div>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
+          {onClearSaved && editable && Object.keys(entry.holeScores).length > 0 && (
+            <Button
+              variant="outline"
+              onClick={() => {
+                if (window.confirm(`Clear ALL saved scores for ${entry.label}? This cannot be undone.`)) {
+                  onClearSaved(entry, null);
+                }
+              }}
+            >
+              <Eraser className="h-4 w-4 mr-1.5" /> Clear All Scores
+            </Button>
+          )}
           {isVerified ? (
             <Button variant="outline" onClick={onUnverify} disabled={!canEdit}>
               <Undo2 className="h-4 w-4 mr-1.5" /> Unverify &amp; Unapprove
@@ -338,8 +356,14 @@ function SelectedEntryPanel({
 
       {/* Hole-by-hole grid: wraps inside its own panel, never scrolls the page sideways. */}
       <div className="rounded-md border border-border p-3">
+        {[holes.slice(0, 9), holes.slice(9)].filter((row) => row.length > 0).map((row, rowIdx) => (
+        <div key={rowIdx} className={rowIdx > 0 ? "mt-3 pt-3 border-t border-border" : ""}>
+        <div className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground mb-1.5">
+          {rowIdx === 0 ? "Front 9 (Out)" : "Back 9 (In)"}
+        </div>
         <div className="flex flex-wrap gap-2">
-          {holes.map((h, idx) => {
+          {row.map((h, rowPos) => {
+            const idx = rowIdx * 9 + rowPos;
             const val = entry.holeScores[h];
             const par = getHolePar(h);
             return (
@@ -380,6 +404,18 @@ function SelectedEntryPanel({
                   }`}
                 />
                 <span className="text-[10px] text-muted-foreground">Par {par}</span>
+                {onClearSaved && editable && typeof val === "number" && (
+                  <button
+                    type="button"
+                    aria-label={`Clear hole ${h} score`}
+                    onClick={() => {
+                      if (window.confirm(`Clear the Hole ${h} score for ${entry.label}?`)) onClearSaved(entry, [h]);
+                    }}
+                    className="text-[10px] text-destructive inline-flex items-center gap-0.5 hover:underline"
+                  >
+                    <X className="h-3 w-3" /> Clear
+                  </button>
+                )}
                 {isStableford && typeof val === "number" && (
                   <span className="text-[10px] font-semibold text-muted-foreground">
                     {stablefordPoints(val, par)}pt
@@ -389,6 +425,8 @@ function SelectedEntryPanel({
             );
           })}
         </div>
+        </div>
+        ))}
       </div>
 
       <div className="flex items-center gap-3 flex-wrap">

@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, RefreshCw } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, RefreshCw, ChevronDown } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -821,6 +821,37 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     entry.players.forEach((p) => clearScore(p.registration_id, hole));
   };
 
+  /** Permanently delete saved scores for the given holes (null = all holes) of one entry, this round. */
+  const handleClearSaved = async (entry: ScoringEntry, holesToClear: number[] | null) => {
+    if (!selectedTournament) return;
+    const regIds = entry.players.map((p) => p.registration_id);
+    let q = supabase
+      .from("tournament_scores")
+      .delete()
+      .eq("tournament_id", selectedTournament)
+      .eq("round_number", workingRound)
+      .in("registration_id", regIds);
+    if (holesToClear) q = q.in("hole_number", holesToClear);
+    const { error } = await q;
+    if (error) {
+      toast({ title: "Couldn't clear scores", description: error.message, variant: "destructive" });
+      return;
+    }
+    regIds.forEach((id) => (holesToClear ?? holes).forEach((h) => clearScore(id, h)));
+    queryClient.setQueryData(
+      ["tournament-scores", selectedTournament, workingRound],
+      (current: Array<{ registration_id: string; hole_number: number }> | undefined) =>
+        (current || []).filter(
+          (s) => !(regIds.includes(s.registration_id) && (!holesToClear || holesToClear.includes(s.hole_number))),
+        ),
+    );
+    queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
+    toast({
+      title: holesToClear ? `Cleared Hole ${holesToClear.join(", ")}` : "Cleared all scores",
+      description: entry.label,
+    });
+  };
+
   // ---- Progress: which hole entries are still missing a score? ----
   // Uses the shared, unit-tested helper so the highlight and this summary
   // always agree, and both react instantly to unsaved edits.
@@ -1183,21 +1214,23 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           </div>
 
           {progressVisible.total > 0 && progressVisible.missing.length > 0 && (
-            <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
-              <div className="flex items-center gap-2 font-semibold flex-wrap">
+            <details className="group rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-2 text-sm text-amber-900 dark:text-amber-200">
+              <summary className="flex items-center gap-2 font-semibold flex-wrap cursor-pointer list-none">
+                <ChevronDown className="h-4 w-4 transition-transform group-open:rotate-180" />
                 <AlertTriangle className="h-4 w-4" />
-                Missing Scores: {progressVisible.missing.length} of {progressVisible.total} hole entries need scores.
+                Missing Scores: {progressVisible.missing.length} of {progressVisible.total}
+                <span className="font-normal text-xs opacity-80">(tap to view)</span>
                 <Button
                   variant="outline"
                   size="sm"
                   className="ml-auto"
                   disabled={alertingSupport}
-                  onClick={alertMissingScores}
+                  onClick={(e) => { e.preventDefault(); alertMissingScores(); }}
                 >
                   {alertingSupport ? <Loader2 className="h-3.5 w-3.5 mr-1 animate-spin" /> : null}
                   Alert TeeVents Support
                 </Button>
-              </div>
+              </summary>
               {/* One compact line per player/team, scrollable when the list is long. */}
               <div className="mt-2 max-h-48 overflow-y-auto rounded border border-amber-500/30 bg-background/40 divide-y divide-amber-500/20">
                 {missingByLabel.map((row) => (
@@ -1207,7 +1240,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                   </p>
                 ))}
               </div>
-            </div>
+            </details>
           )}
 
           {progressVisible.total > 0 && progressVisible.missing.length === 0 && (
@@ -1276,6 +1309,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                 onSave={saveNow}
                 onCellValue={handleCellValue}
                 onCellClear={handleCellClear}
+                onClearSaved={handleClearSaved}
                 renderPlayerWd={(p) => (
                   <ScoreEntryWd
                     registrationId={p.registration_id}

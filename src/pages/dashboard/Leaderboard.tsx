@@ -991,6 +991,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           )}
           {hasEdits && canEditScores && (
             <Button
+              variant="outline"
               onClick={() => { setSaveState("idle"); saveMutation.mutate(editedScores); }}
               disabled={saveMutation.isPending || isFrozen || roundLocked}
               title={roundLocked ? `${roundLabel(workingRound - 1)} is closed` : isFrozen ? "Leaderboard is frozen" : undefined}
@@ -1151,13 +1152,14 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
                   </a>
                 </Button>
                 {allScoresEntered ? (
-                  <Button size="sm" asChild style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
+                  <Button variant="outline" size="sm" asChild>
                     <a href={`/live/${selectedTournamentData.slug}`} target="_blank" rel="noopener noreferrer">
                       <Trophy className="h-4 w-4 mr-1.5" /> View Final Leaderboard
                     </a>
                   </Button>
                 ) : (
                   <Button
+                    variant="outline"
                     size="sm"
                     disabled
                     title={
@@ -1174,11 +1176,11 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
           </div>
 
-          {progress.total > 0 && progress.missing.length > 0 && (
+          {progressVisible.total > 0 && progressVisible.missing.length > 0 && (
             <div className="rounded-md border border-amber-500/50 bg-amber-500/10 px-4 py-3 text-sm text-amber-900 dark:text-amber-200">
               <div className="flex items-center gap-2 font-semibold flex-wrap">
                 <AlertTriangle className="h-4 w-4" />
-                Missing Scores: {progress.missing.length} of {progress.total} hole entries need scores.
+                Missing Scores: {progressVisible.missing.length} of {progressVisible.total} hole entries need scores.
                 <Button
                   variant="outline"
                   size="sm"
@@ -1202,7 +1204,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             </div>
           )}
 
-          {progress.total > 0 && progress.missing.length === 0 && (
+          {progressVisible.total > 0 && progressVisible.missing.length === 0 && (
             <div className="rounded-md border border-primary/40 bg-primary/10 px-4 py-3 text-sm">
               <div className="flex items-center gap-2 font-semibold text-primary">
                 <CheckCircle2 className="h-4 w-4" /> All Scores Entered!
@@ -1418,7 +1420,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       {showEntry && selectedTournament && hasEdits && canEditScores && (
         <div className="sticky bottom-3 z-30 flex justify-end pointer-events-none">
           <Button
-            className="pointer-events-auto shadow-lg"
+            variant="outline"
+            className="pointer-events-auto shadow-lg bg-card"
             onClick={() => saveMutation.mutate(editedScores)}
             disabled={saveMutation.isPending || isFrozen || roundLocked || hasErrors}
           >

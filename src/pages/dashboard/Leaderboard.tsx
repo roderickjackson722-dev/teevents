@@ -772,36 +772,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     }
   }, [allScoresEntered, selectedTournament]);
 
-  /**
-   * Save pending edits (when the user may edit), then advance the inline editor
-   * to the next hole. For view-only roles or a frozen leaderboard this only
-   * changes the selected hole — it never writes scores.
-   */
-  const saveAndNext = async () => {
-    const mayWrite = canEditScores && !isFrozen && !roundLocked;
-    try {
-      if (mayWrite && hasEdits) await saveMutation.mutateAsync(editedScores);
-      setEditHole((h) => Math.min(holes.length, h + 1));
-    } catch {
-      /* mutation surfaces its own toast */
-    }
-  };
+
 
 
 
 
 
   if (orgLoading) return <div className="p-6">Loading...</div>;
-
-  const renderStablefordCell = (strokes: number | "", hole: number) => {
-    if (strokes === "" || typeof strokes !== "number") return null;
-    const pts = stablefordPoints(strokes, Math.round(holePar));
-    return (
-      <span className={`text-[10px] block mt-0.5 font-semibold ${pts >= 3 ? "text-primary" : pts === 0 ? "text-destructive" : "text-muted-foreground"}`}>
-        {pts}pt
-      </span>
-    );
-  };
 
   const inEnterprise = typeof window !== "undefined" && window.location.pathname.startsWith("/enterprise");
   return (

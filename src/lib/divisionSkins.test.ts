@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const mocks = vi.hoisted(() => ({ from: vi.fn(), scores: vi.fn(), inserted: [] as any[], registrations: [] as any[] }));
+const mocks = vi.hoisted(() => ({ from: vi.fn(), scores: vi.fn(), inserted: [] as any[], registrations: [] as any[], scoringFormat: "stroke_play" }));
 vi.mock("@/integrations/supabase/client", () => ({ supabase: { from: mocks.from } }));
 vi.mock("@/lib/fetchLeaderboardScores", () => ({ fetchAllTournamentScores: mocks.scores }));
 import { recomputeDivisionSkins, type SkinsGame } from "./divisionSkins";
@@ -7,11 +7,12 @@ const game: SkinsGame = { id:"game", tournament_id:"test", division_id:null, nam
 describe("shared Calculate persistence boundary", () => {
   beforeEach(() => {
     mocks.inserted=[];mocks.from.mockReset();mocks.scores.mockReset();
+    mocks.scoringFormat="stroke_play";
     mocks.registrations=[{id:"a",handicap:0,status:"active"},{id:"b",handicap:0,status:"active"},{id:"wd",status:"wd"},{id:"out",status:"active",skins_opt_in:false}];
     mocks.from.mockImplementation((table:string) => {
       const builder:any={select:()=>builder,eq:()=>builder,maybeSingle:()=>builder,
         delete:()=>builder,insert:(rows:any[])=>{mocks.inserted=rows;return builder;},
-        then:(resolve:any)=>resolve({error:null,data:table==="tournaments"?{pairings_config:{byDay:{0:{roundHoles:4}}}}:table==="tournament_registrations"?mocks.registrations:[]})};
+        then:(resolve:any)=>resolve({error:null,data:table==="tournaments"?{scoring_format:mocks.scoringFormat,pairings_config:{byDay:{0:{roundHoles:4}}}}:table==="tournament_registrations"?mocks.registrations:[]})};
       return builder;
     });
     mocks.scores.mockResolvedValue([1,2,3,4].flatMap(h=>[
@@ -49,5 +50,39 @@ describe("shared Calculate persistence boundary", () => {
     mocks.registrations=[{id:"a",flight_id:"division-a"},{id:"b",flight_id:"division-b",skins_opt_in:true}];
     const rows=await recomputeDivisionSkins({...game,division_id:"division-a"});
     expect(rows.map((r)=>r.registration_id)).toEqual(["a",null,"a",null]);
+  });
+  it("counts a two-person shamble team's shared score once across combined divisions", async () => {
+    mocks.scoringFormat="shamble_2";
+    mocks.registrations=[
+      {id:"a",group_id:"team-ab",group_number:8,flight_id:"division-a"},
+      {id:"b",group_id:"team-ab",group_number:8,flight_id:"division-a"},
+      {id:"c",group_id:"team-cd",group_number:8,flight_id:"division-b"},
+      {id:"d",group_id:"team-cd",group_number:8,flight_id:"division-b"},
+    ];
+    mocks.scores.mockResolvedValue([1,2].flatMap(h=>[
+      {registration_id:"a",hole_number:h,strokes:3},{registration_id:"b",hole_number:h,strokes:3},
+      {registration_id:"c",hole_number:h,strokes:h===1?4:3},{registration_id:"d",hole_number:h,strokes:h===1?4:3},
+    ]));
+    const rows=await recomputeDivisionSkins({...game,selected_division_ids:["division-a","division-b"]});
+    expect(rows[0]).toMatchObject({registration_id:"a",score:3,amount_cents:1000,skins:1});
+    expect(rows[1]).toMatchObject({registration_id:null,score:3,amount_cents:0});
+  });
+  it("preserves individual ties even when players share a registration or pairing", async () => {
+    mocks.registrations=[{id:"a",group_id:"ab",group_number:8},{id:"b",group_id:"ab",group_number:8}];
+    mocks.scores.mockResolvedValue([{registration_id:"a",hole_number:1,strokes:3},{registration_id:"b",hole_number:1,strokes:3}]);
+    const rows=await recomputeDivisionSkins(game);
+    expect(rows[0].registration_id).toBeNull();
+  });
+  it("does not admit excluded teammates or divisions through team aggregation", async () => {
+    mocks.scoringFormat="shamble_2";
+    mocks.registrations=[
+      {id:"a",group_id:"ab",group_number:8,flight_id:"division-a"},
+      {id:"b",group_id:"ab",group_number:8,flight_id:"division-a",skins_opt_in:false},
+      {id:"c",group_id:"cd",group_number:8,flight_id:"division-c",skins_opt_in:true},
+      {id:"d",group_id:"cd",group_number:8,flight_id:"division-c",status:"wd"},
+    ];
+    mocks.scores.mockResolvedValue(["a","b","c","d"].map(id=>({registration_id:id,hole_number:1,strokes:id==="a"?4:1})));
+    const rows=await recomputeDivisionSkins({...game,selected_division_ids:["division-a"]});
+    expect(rows[0]).toMatchObject({registration_id:"a",score:4,amount_cents:1000});
   });
 });

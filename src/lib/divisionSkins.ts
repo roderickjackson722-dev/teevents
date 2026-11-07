@@ -1,6 +1,23 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
 import { calculateSkinsCarryover } from "@/lib/skinsCarryover";
+import { getFormatById } from "@/lib/scoringFormats";
+import { splitFoursomeTeams } from "@/lib/foursomeTeams";
+
+/** Resolve playing teams from the full pairing, before pot eligibility is applied. */
+export function skinsCompetitionMembers<T extends { id: string; group_id?: string | null; group_number?: number | null }>(
+  registrations: T[], scoringFormat?: string | null,
+): T[][] {
+  if ((getFormatById(scoringFormat || "stroke_play")?.teamSize || 1) <= 1) {
+    return registrations.map((r) => [r]);
+  }
+  const pairings = new Map<string, T[]>();
+  registrations.forEach((r) => {
+    const key = r.group_number != null ? `pairing-${r.group_number}` : r.group_id ? `team-${r.group_id}` : `player-${r.id}`;
+    pairings.set(key, [...(pairings.get(key) || []), r]);
+  });
+  return [...pairings.values()].flatMap((members) => splitFoursomeTeams(members).map((part) => part.members));
+}
 
 
 export type SkinsGame = {
@@ -42,10 +59,10 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
   const [registrationsResult, allScores, tournamentResult] = await Promise.all([
     supabase
       .from("tournament_registrations")
-      .select("id, handicap, status, flight_id, tier_id, payment_status, skins_opt_in")
+      .select("id, group_id, group_number, handicap, status, flight_id, tier_id, payment_status, skins_opt_in")
       .eq("tournament_id", game.tournament_id),
     fetchAllTournamentScores(game.tournament_id, { roundNumber }),
-    supabase.from("tournaments").select("pairings_config, enterprise_settings").eq("id", game.tournament_id).maybeSingle(),
+    supabase.from("tournaments").select("pairings_config, enterprise_settings, scoring_format").eq("id", game.tournament_id).maybeSingle(),
   ]);
   if (registrationsResult.error) throw registrationsResult.error;
   if (tournamentResult.error) throw tournamentResult.error;
@@ -73,7 +90,18 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
 
 
 
-  const byHole: Record<number, { registration_id: string; score: number }[]> = {};
+  // Team scoring stores the same hole score against both teammates. Count their
+  // playing team once, not as two tied competitors. Keep a real eligible player
+  // ID for the existing winner foreign key; no score rows are changed.
+  const competitorFor = new Map<string, string>();
+  skinsCompetitionMembers((regs || []) as { id: string; group_id: string | null; group_number: number | null }[], tournament?.scoring_format)
+    .forEach((members) => {
+      const included = members.filter((r) => eligible.has(r.id)).sort((a, b) => a.id.localeCompare(b.id));
+      const representative = included[0];
+      if (!representative) return;
+      included.forEach((r) => competitorFor.set(r.id, representative.id));
+    });
+  const teamScores = new Map<number, Map<string, number>>();
   ((scores as any[]) || []).forEach((s) => {
     if (!eligible.has(s.registration_id)) return;
     if (s.strokes == null || Number(s.strokes) <= 0) return;
@@ -81,8 +109,16 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
     const raw = Number(s.strokes);
     const score =
       game.skin_format === "net" ? netStrokes(raw, eligible.get(s.registration_id) || 0, hole) : raw;
-    (byHole[hole] ||= []).push({ registration_id: s.registration_id, score });
+    const competitor = competitorFor.get(s.registration_id);
+    if (!competitor) return;
+    const entries = teamScores.get(hole) || new Map<string, number>();
+    entries.set(competitor, Math.min(entries.get(competitor) ?? Infinity, score));
+    teamScores.set(hole, entries);
   });
+
+  const byHole = Object.fromEntries([...teamScores].map(([hole, entries]) => [hole,
+    [...entries].map(([registration_id, score]) => ({ registration_id, score })),
+  ]));
 
   const { rows: result } = calculateSkinsCarryover(game.total_purse_cents || 0, holeCount, byHole);
 

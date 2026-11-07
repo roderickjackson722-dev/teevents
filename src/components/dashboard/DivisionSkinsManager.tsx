@@ -9,8 +9,10 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, Save, Coins, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { formatCents } from "@/lib/formatCurrency";
-import { recomputeDivisionSkins, type SkinsGame } from "@/lib/divisionSkins";
+import { recomputeDivisionSkins, skinsCompetitionMembers, type SkinsGame } from "@/lib/divisionSkins";
 import { recordedSkinsResult } from "@/lib/skinsCarryover";
+import { getFormatById } from "@/lib/scoringFormats";
+import { teamDisplayName } from "@/lib/foursomeTeams";
 
 type Division = { id: string; tier_name: string; display_order: number };
 type WinnerRow = { hole_number: number; score: number | null; amount_cents: number; registration_id: string | null };
@@ -22,6 +24,8 @@ type PlayerRow = {
   tier_id: string | null;
   status: string | null;
   skins_opt_in: boolean | null;
+  group_id: string | null;
+  group_number: number | null;
 };
 
 
@@ -36,6 +40,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   const [combinedDivisions, setCombinedDivisions] = useState<string[]>([]);
   const [carryover, setCarryover] = useState(true);
   const [names, setNames] = useState<Record<string, string>>({});
+  const [teamFormat, setTeamFormat] = useState(false);
   const [players, setPlayers] = useState<PlayerRow[]>([]);
   const [openPot, setOpenPot] = useState<Record<string, boolean>>({});
   const [showAll, setShowAll] = useState<Record<string, boolean>>({});
@@ -61,10 +66,10 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
       (supabase as any).from("division_skins_games").select("*").eq("tournament_id", tournamentId),
       supabase
         .from("tournament_registrations")
-        .select("id, first_name, last_name, flight_id, tier_id, status, skins_opt_in")
+        .select("id, first_name, last_name, flight_id, tier_id, status, skins_opt_in, group_id, group_number")
         .eq("tournament_id", tournamentId)
         .order("last_name"),
-      supabase.from("tournaments").select("pairings_config, enterprise_settings").eq("id", tournamentId).maybeSingle(),
+      supabase.from("tournaments").select("pairings_config, enterprise_settings, scoring_format").eq("id", tournamentId).maybeSingle(),
     ]);
 
     const divs = (dRes.data as Division[]) || [];
@@ -98,6 +103,20 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
     ((rRes.data as any[]) || []).forEach((r) => {
       nameMap[r.id] = `${r.first_name || ""} ${r.last_name || ""}`.trim();
     });
+    const scoringFormat = tRes.data?.scoring_format;
+    const isTeam = (getFormatById(scoringFormat || "stroke_play")?.teamSize || 1) > 1;
+    setTeamFormat(isTeam);
+    if (isTeam) {
+      const { data: registeredTeams, error } = await supabase.from("registration_groups")
+        .select("id, team_name").eq("tournament_id", tournamentId);
+      if (error) toast.error(error.message);
+      const teamNames = new Map((registeredTeams || []).map((team) => [team.id, team.team_name]));
+      skinsCompetitionMembers((rRes.data || []) as PlayerRow[], scoringFormat).forEach((members) => {
+        const label = teamDisplayName(members[0]?.group_id ? teamNames.get(members[0].group_id) : null, members);
+        const playerNames = members.map((r) => `${r.first_name || ""} ${r.last_name || ""}`.trim()).join(" / ");
+        members.forEach((r) => { nameMap[r.id] = `${label} — ${playerNames}`; });
+      });
+    }
     setNames(nameMap);
     setPlayers(((rRes.data as PlayerRow[]) || []).filter((p) => String(p.status || "active").toLowerCase() !== "wd"));
 
@@ -235,11 +254,12 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
   async function recompute() {
     setComputing(true);
     try {
-      const { data } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from("division_skins_games")
         .select("*")
         .eq("tournament_id", tournamentId)
         .eq("round_number", roundNumber);
+      if (error) throw error;
       const gs = ((data as SkinsGame[]) || []).filter((g) => g.status === "active");
       if (gs.length === 0) {
         toast.error("Save a skins game first");
@@ -500,7 +520,7 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
                       <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
                         <tr>
                           <th className="px-3 py-2 text-left">Hole</th>
-                          <th className="px-3 py-2 text-left">Player</th>
+                          <th className="px-3 py-2 text-left">{teamFormat ? "Team / Players" : "Player"}</th>
                           <th className="px-3 py-2 text-center">Score</th>
                           <th className="px-3 py-2 text-center">Skins</th>
                           <th className="px-3 py-2 text-right">Amount</th>

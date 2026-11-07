@@ -1,5 +1,5 @@
 # Roadmap (Nov 6 2026 request)
-- [ ] Add a combined selected-divisions skins pot; verify eligibility and preserve existing games.
+- [x] Add a combined selected-divisions skins pot; verified signed-in desktop/mobile selection and 13 passing eligibility/payout tests without saving or recalculating existing events.
 - [x] Hide group numbers everywhere for all events (roster, pairings, scoring, printables, mobile scoring header) — display only, keep internal grouping
 - [x] Scorecards: 2-person teams show team names (like mobile scoring/leaderboard)
 - [x] Scorecard customization: option to hide hole number (tee time starts)

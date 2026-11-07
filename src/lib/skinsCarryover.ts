@@ -15,6 +15,23 @@ export type SkinsSummary = {
   unclaimedAmountCents: number;
 };
 
+/** Combined divisions share the whole purse equally per outright winning hole. */
+export function calculateEqualWinningHolePayouts(
+  totalPurseCents: number,
+  rows: Omit<CarryoverRow, "skins">[],
+): CarryoverRow[] {
+  const ordered = [...rows].sort((a, b) => a.hole_number - b.hole_number);
+  const winCount = ordered.filter((row) => row.registration_id != null).length;
+  const base = winCount ? Math.floor(totalPurseCents / winCount) : 0;
+  let remainder = winCount ? totalPurseCents - base * winCount : 0;
+  return ordered.map((row) => {
+    if (row.registration_id == null) return { ...row, skins: 0, amount_cents: 0 };
+    const amount_cents = base + (remainder > 0 ? 1 : 0);
+    remainder = Math.max(0, remainder - 1);
+    return { ...row, skins: 1, amount_cents };
+  });
+}
+
 /** One call is one round, pot and score format. Never shares carry with another call. */
 export function calculateSkinsCarryover(
   totalPurseCents: number,

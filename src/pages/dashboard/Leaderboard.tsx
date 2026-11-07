@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, FlaskConical, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, RefreshCw } from "lucide-react";
+import { Trophy, Loader2, Save, Copy, ExternalLink, Users, ArrowLeft, Lock, WifiOff, CloudUpload, AlertTriangle, Search, CheckCircle2, RefreshCw } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints, type ScoringFormat } from "@/lib/scoringFormats";
@@ -23,7 +23,6 @@ import LeaderboardSponsorCard from "@/components/dashboard/LeaderboardSponsorCar
 import TickerSponsorsCard from "@/components/dashboard/TickerSponsorsCard";
 
 import LeaderboardFreezeCard from "@/components/dashboard/LeaderboardFreezeCard";
-import { parseScoreInput } from "@/components/dashboard/ScoreInput";
 import ScoringWorkspace, { type ScoringEntry, entryStatus } from "@/components/dashboard/ScoringWorkspace";
 import { loadVerifiedTeams, saveVerifiedTeams } from "@/lib/teamVerification";
 import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
@@ -639,31 +638,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     });
   };
 
-  const updateScore = (regId: string, hole: number, value: string) => {
-    const parsed = parseScoreInput(value);
-    if (parsed.kind === "clear") clearScore(regId, hole);
-    else if (parsed.kind === "value") setScore(regId, hole, parsed.value);
-    else if (parsed.kind === "invalid") {
-      // Show inline error immediately; don't commit the bad value.
-      setScoreErrors((prev) => ({
-        ...prev,
-        [regId]: { ...(prev[regId] || {}), [hole]: `1–${MAX_STROKES} only` },
-      }));
-    }
-  };
-
   const getScore = (ps: PlayerScore, hole: number) => {
     return editedScores[ps.registration_id]?.[hole] ?? ps.scores[hole] ?? "";
-  };
-  const getScoreError = (regId: string, hole: number): string | undefined =>
-    scoreErrors[regId]?.[hole];
-
-  /** Team formats share one score per hole — apply the edit to every player on the team. */
-  const updateTeamScore = (players: PlayerScore[], hole: number, raw: string) => {
-    players.forEach((p) => updateScore(p.registration_id, hole, raw));
-  };
-  const setTeamScoreValue = (players: PlayerScore[], hole: number, n: number) => {
-    players.forEach((p) => setScore(p.registration_id, hole, n));
   };
 
   const hasEdits = Object.keys(editedScores).length > 0;

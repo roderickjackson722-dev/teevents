@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllTournamentScores } from "@/lib/fetchLeaderboardScores";
-import { calculateSkinsCarryover } from "@/lib/skinsCarryover";
+import { calculateSkinsCarryover, calculateEqualWinningHolePayouts } from "@/lib/skinsCarryover";
 import { getFormatById } from "@/lib/scoringFormats";
 import { splitFoursomeTeams } from "@/lib/foursomeTeams";
 
@@ -50,7 +50,8 @@ function netStrokes(strokes: number, handicap: number, hole: number) {
 
 /**
  * Recompute skin winners + payouts for one division skins game.
- * True carryover, isolated to this game's round/pot/format. Called only by Calculate.
+ * Combined divisions pay equally per outright winning hole; other pots retain
+ * ordered carryover. Isolated to this game's round/pot/format, only on Calculate.
  * Persist all holes (null winner for ties) using existing fields, so reopening
  * a result reconstructs its recorded skins without recalculating current scores.
  */
@@ -120,7 +121,10 @@ export async function recomputeDivisionSkins(game: SkinsGame): Promise<SkinRow[]
     [...entries].map(([registration_id, score]) => ({ registration_id, score })),
   ]));
 
-  const { rows: result } = calculateSkinsCarryover(game.total_purse_cents || 0, holeCount, byHole);
+  const { rows } = calculateSkinsCarryover(game.total_purse_cents || 0, holeCount, byHole);
+  const result = game.selected_division_ids != null
+    ? calculateEqualWinningHolePayouts(game.total_purse_cents || 0, rows)
+    : rows;
 
   // Persist
   const { error: deleteError } = await (supabase as any).from("division_skin_winners").delete().eq("skins_game_id", game.id);

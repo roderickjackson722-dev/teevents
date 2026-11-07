@@ -34,7 +34,7 @@ describe("shared Calculate persistence boundary", () => {
     mocks.registrations=[{id:"a",flight_id:"division-a"},{id:"b",tier_id:"division-b"},{id:"other",flight_id:"division-c",skins_opt_in:true}];
     mocks.scores.mockResolvedValue([{registration_id:"a",hole_number:1,strokes:3},{registration_id:"b",hole_number:1,strokes:2},{registration_id:"other",hole_number:1,strokes:1}]);
     const rows=await recomputeDivisionSkins({...game,selected_division_ids:["division-a","division-b"]});
-    expect(rows[0]).toEqual({hole_number:1,registration_id:"b",score:2,amount_cents:1000,skins:1});
+    expect(rows[0]).toEqual({hole_number:1,registration_id:"b",score:2,amount_cents:4000,skins:1});
     expect(mocks.inserted.every((row)=>row.skins_game_id==="game")).toBe(true);
   });
   it("keeps withdrawn and opted-out players excluded in a combined pot", async () => {
@@ -64,7 +64,7 @@ describe("shared Calculate persistence boundary", () => {
       {registration_id:"c",hole_number:h,strokes:h===1?4:3},{registration_id:"d",hole_number:h,strokes:h===1?4:3},
     ]));
     const rows=await recomputeDivisionSkins({...game,selected_division_ids:["division-a","division-b"]});
-    expect(rows[0]).toMatchObject({registration_id:"a",score:3,amount_cents:1000,skins:1});
+    expect(rows[0]).toMatchObject({registration_id:"a",score:3,amount_cents:4000,skins:1});
     expect(rows[1]).toMatchObject({registration_id:null,score:3,amount_cents:0});
   });
   it("preserves individual ties even when players share a registration or pairing", async () => {
@@ -83,6 +83,6 @@ describe("shared Calculate persistence boundary", () => {
     ];
     mocks.scores.mockResolvedValue(["a","b","c","d"].map(id=>({registration_id:id,hole_number:1,strokes:id==="a"?4:1})));
     const rows=await recomputeDivisionSkins({...game,selected_division_ids:["division-a"]});
-    expect(rows[0]).toMatchObject({registration_id:"a",score:4,amount_cents:1000});
+    expect(rows[0]).toMatchObject({registration_id:"a",score:4,amount_cents:4000});
   });
 });

@@ -742,12 +742,14 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
   }, [isTeamFormat, isStableford, teamScores, stablefordScores, activePlayerScores, editedScores, handicapEnabled, holes]);
 
   const visibleEntries = useMemo(() => {
-    if (!searchTerm) return allEntries;
+    const term = scoreSearch.trim().toLowerCase();
+    if (!term) return allEntries;
     return allEntries.filter(
-      (e) => e.label.toLowerCase().includes(searchTerm) || e.players.some(matchesPlayer),
+      (e) =>
+        e.label.toLowerCase().includes(term) ||
+        e.players.some((p) => `${p.first_name} ${p.last_name}`.toLowerCase().includes(term)),
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allEntries, searchTerm]);
+  }, [allEntries, scoreSearch]);
 
   const entryCounts = useMemo(() => {
     let verified = 0;

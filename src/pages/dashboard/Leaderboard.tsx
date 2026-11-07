@@ -709,10 +709,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
 
   const allScoresEntered = progress.complete;
 
-  /** Missing holes collapsed to one line per player/team. */
+  /** Missing holes collapsed to one line per player/team (verified teams excluded). */
   const missingByLabel = useMemo(() => {
     const map = new Map<string, number[]>();
-    progress.missing.forEach((m) => {
+    progressVisible.missing.forEach((m) => {
       const list = map.get(m.label) || [];
       list.push(m.hole);
       map.set(m.label, list);
@@ -720,7 +720,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     return Array.from(map.entries())
       .map(([label, holesList]) => ({ label, holes: holesList.sort((a, b) => a - b) }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [progress.missing]);
+  }, [progressVisible.missing]);
 
   /** Email info@teevents.golf a summary of the holes still missing scores. */
   const alertMissingScores = async () => {
@@ -736,8 +736,8 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
             tournament_id: selectedTournament,
             tournament_title: selectedTournamentData?.title || "",
             round: workingRound,
-            missing_count: progress.missing.length,
-            total_entries: progress.total,
+            missing_count: progressVisible.missing.length,
+            total_entries: progressVisible.total,
             lines: missingByLabel
               .slice(0, 50)
               .map((row) => `${row.label}: Holes ${row.holes.join(", ")}`),

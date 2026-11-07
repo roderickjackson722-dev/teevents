@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Trophy, Award, Pause, Play } from "lucide-react";
+import { Trophy, Award } from "lucide-react";
 import { useLeaderboardPaused } from "@/lib/leaderboardPause";
 import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
 
@@ -173,7 +173,7 @@ export function LeaderboardRenderer({
     : rows.length;
   const pageCount = pageMode ? Math.max(1, Math.ceil(longestBoard / perPage)) : 1;
   const [pageIdx, setPageIdx] = useState(0);
-  const [isPaused, setIsPaused] = useLeaderboardPaused();
+  const [isPaused] = useLeaderboardPaused();
   useEffect(() => {
     if (!pageMode || pageCount < 2 || isPaused) {
       if (!pageMode || pageCount < 2) setPageIdx(0);
@@ -403,19 +403,6 @@ export function LeaderboardRenderer({
       className={`relative flex flex-col ${compact ? "rounded-lg overflow-hidden border" : "min-h-screen"}`}
       style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
     >
-      {!compact && (
-        <button
-          type="button"
-          onClick={() => setIsPaused(!isPaused)}
-          aria-label={isPaused ? "Resume scrolling" : "Pause scrolling"}
-          title={isPaused ? "Resume scrolling" : "Pause scrolling"}
-          className="fixed bottom-4 right-4 z-50 flex items-center gap-2 rounded-full px-3 py-2 text-xs sm:text-sm font-semibold shadow-lg transition-transform hover:scale-105 active:scale-95"
-          style={{ backgroundColor: headerBg, color: textColor, border: `1px solid ${accent}55` }}
-        >
-          {isPaused ? <Play className="h-4 w-4" /> : <Pause className="h-4 w-4" />}
-          {isPaused ? "Resume" : "Pause"}
-        </button>
-      )}
       {topNotice}
 
       {scrollPos === "top" && sponsorMarquee}

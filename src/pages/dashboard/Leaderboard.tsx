@@ -1,3 +1,4 @@
+import { splitFoursomeTeams, teamDisplayName } from "@/lib/foursomeTeams";
 import { useEffect, useState, useMemo, useRef } from "react";
 import { computeScoreProgress, type ProgressRow } from "@/lib/scoreProgress";
 import { Link } from "react-router-dom";
@@ -57,6 +58,7 @@ interface PlayerScore {
   total: number;
   playing_handicap: number | null;
   strokes_per_hole: number[] | null;
+  group_id?: string | null;
   /** Registration status — "wd" players are excluded from scoring. */
   status?: string | null;
 }
@@ -364,6 +366,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       last_name: r.last_name,
       handicap: r.handicap,
       group_number: r.group_number,
+      group_id: r.group_id ?? null,
       scores: scoreMap[r.id] || {},
       total: Object.values(scoreMap[r.id] || {}).reduce((sum, s) => sum + s, 0),
       playing_handicap: r.playing_handicap ?? null,

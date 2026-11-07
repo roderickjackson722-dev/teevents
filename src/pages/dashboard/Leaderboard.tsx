@@ -74,6 +74,10 @@ interface TeamScore {
 
 const DEFAULT_HOLE_PAR = 4;
 
+function defaultTeamLabelOrTeam(players: PlayerScore[]): string {
+  return teamDisplayName(null, players);
+}
+
 function computeTeamHoleScore(
   players: PlayerScore[],
   hole: number,
@@ -230,7 +234,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     queryFn: async () => {
       const data = await fetchAllRegistrations(
         selectedTournament,
-        "id, first_name, last_name, handicap, group_number, playing_handicap, strokes_per_hole, payment_status, status",
+        "id, first_name, last_name, handicap, group_number, group_id, playing_handicap, strokes_per_hole, payment_status, status",
         { orderBy: "last_name" },
       );
 
@@ -250,11 +254,10 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from("registration_groups")
-        .select("group_number, team_name, group_name")
-        .eq("tournament_id", selectedTournament)
-        .not("group_number", "is", null);
+        .select("id, group_number, team_name, group_name")
+        .eq("tournament_id", selectedTournament);
       if (error) throw error;
-      return (data || []) as Array<{ group_number: number; team_name: string | null; group_name: string | null }>;
+      return (data || []) as Array<{ id: string; group_number: number | null; team_name: string | null; group_name: string | null }>;
     },
     enabled: !!selectedTournament,
   });
@@ -263,7 +266,17 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
     const m: Record<number, string> = {};
     (teamNameRows || []).forEach((r) => {
       const nm = String(r.team_name || r.group_name || "").trim();
-      if (nm) m[r.group_number] = nm;
+      if (nm && r.group_number != null) m[r.group_number] = nm;
+    });
+    return m;
+  }, [teamNameRows]);
+
+  // Registered team names by registration-group id (used to split foursomes
+  // into their registered teams, matching mobile scoring and the live leaderboard).
+  const teamNamesById = useMemo(() => {
+    const m: Record<string, string | null> = {};
+    (teamNameRows || []).forEach((r) => {
+      m[r.id] = r.team_name || null;
     });
     return m;
   }, [teamNameRows]);
@@ -403,13 +416,30 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       return { holeScores, total };
     };
 
-    const assigned: TeamScore[] = Object.entries(groups).map(([gn, players]) => ({
-      key: `g-${gn}`,
-      label: teamNamesByHole[parseInt(gn)] || `Team ${gn}`,
-      groupNumber: parseInt(gn),
-      players,
-      ...build(players),
-    }));
+    // A pairing with 2+ registered teams (e.g. two 2-person shamble teams)
+    // becomes one entry per team — one score per team, same as mobile scoring.
+    const assigned: TeamScore[] = Object.entries(groups).flatMap(([gn, players]) => {
+      const parts = splitFoursomeTeams(players.map((p) => ({ ...p, id: p.registration_id })));
+      if (parts.length < 2) {
+        return [{
+          key: `g-${gn}`,
+          label: teamNamesByHole[parseInt(gn)] || defaultTeamLabelOrTeam(players),
+          groupNumber: parseInt(gn),
+          players,
+          ...build(players),
+        }];
+      }
+      return parts.map((part) => {
+        const members = part.members as unknown as PlayerScore[];
+        return {
+          key: `g-${gn}-${part.key}`,
+          label: teamDisplayName(teamNamesById[part.key], members),
+          groupNumber: parseInt(gn),
+          players: members,
+          ...build(members),
+        };
+      });
+    });
 
     // Players without a pairing assignment still need to appear — show each as
     // their own single-player "team" so nobody is missing from the leaderboard.
@@ -430,7 +460,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       if (b.total === 0) return -1;
       return a.total - b.total;
     });
-  }, [activePlayerScores, isTeamFormat, scoringFormat, editedScores, teamNamesByHole]);
+  }, [activePlayerScores, isTeamFormat, scoringFormat, editedScores, teamNamesByHole, teamNamesById]);
 
 
   // Stableford leaderboard

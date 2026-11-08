@@ -9660,10 +9660,12 @@ export type Database = {
       sample_tournaments: {
         Row: {
           admin_id: string | null
+          background_color: string | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
           converted_tournament_id: string | null
+          course_name: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null
@@ -9699,10 +9701,12 @@ export type Database = {
         }
         Insert: {
           admin_id?: string | null
+          background_color?: string | null
           conversion_notes?: string | null
           conversion_status?: string
           converted_at?: string | null
           converted_tournament_id?: string | null
+          course_name?: string | null
           created_at?: string
           crm_notes?: string | null
           crm_status?: string | null
@@ -9738,10 +9742,12 @@ export type Database = {
         }
         Update: {
           admin_id?: string | null
+          background_color?: string | null
           conversion_notes?: string | null
           conversion_status?: string
           converted_at?: string | null
           converted_tournament_id?: string | null
+          course_name?: string | null
           created_at?: string
           crm_notes?: string | null
           crm_status?: string | null
@@ -15225,10 +15231,12 @@ export type Database = {
         Args: { _id: string }
         Returns: {
           admin_id: string | null
+          background_color: string | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
           converted_tournament_id: string | null
+          course_name: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null
@@ -15277,10 +15285,12 @@ export type Database = {
         Args: never
         Returns: {
           admin_id: string | null
+          background_color: string | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
           converted_tournament_id: string | null
+          course_name: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null

@@ -309,6 +309,13 @@
       "when": 1794090527519,
       "tag": "0043_combined_division_skins",
       "breakpoints": true
+    },
+    {
+      "idx": 44,
+      "version": "7",
+      "when": 1794143264287,
+      "tag": "0044_sample_flyer_branding",
+      "breakpoints": true
     }
   ]
 }

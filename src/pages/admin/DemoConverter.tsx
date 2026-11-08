@@ -58,7 +58,7 @@ const SCORING_FORMATS = [
   { value: "chapman", label: "Chapman" },
 ];
 
-export default function DemoConverter() {
+export default function ClientSampleTracking({ embedded = false, reloadKey = 0 }: { embedded?: boolean; reloadKey?: number }) {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -655,8 +655,8 @@ export default function DemoConverter() {
   if (!isAdmin) return <div className="p-8">Admin access required.</div>;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-card">
+    <div className={embedded ? "" : "min-h-screen bg-background"}>
+      {!embedded && <div className="border-b border-border bg-card">
         <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
           <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
             <ArrowLeft className="h-4 w-4 mr-1" /> Admin
@@ -666,10 +666,11 @@ export default function DemoConverter() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        <SampleWizard onCreated={() => setSampleReload((n) => n + 1)} />
+      }
+      <div className={embedded ? "space-y-6" : "max-w-5xl mx-auto px-4 py-6 space-y-6"}>
+        {!embedded && <SampleWizard onCreated={() => setSampleReload((n) => n + 1)} />}
 
-        <SampleTournamentsList reloadKey={sampleReload} />
+        <SampleTournamentsList reloadKey={sampleReload + reloadKey} />
 
         <Card>
           <CardHeader>

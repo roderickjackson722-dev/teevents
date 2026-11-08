@@ -347,12 +347,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             {tournamentSlug && (
               <div className="border-b bg-secondary/10 px-3 sm:px-4 py-3">
                 <a
-                  href={`/t/${tournamentSlug}`}
+                  href={clientDemoSlug ? `/sample/${clientDemoSlug}` : `/t/${tournamentSlug}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-3 text-sm sm:text-base font-bold text-primary shadow-sm transition-colors hover:bg-secondary/80"
                 >
-                  <ExternalLink className="h-5 w-5" /> View Live Tournament Page
+                  <ExternalLink className="h-5 w-5" /> {clientDemoSlug ? "Preview Sample Event" : "View Live Tournament Page"}
                 </a>
               </div>
             )}

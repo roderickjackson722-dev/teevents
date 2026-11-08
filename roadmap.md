@@ -1,4 +1,5 @@
 # Roadmap (Nov 6 2026 request)
+- [ ] Add Platform Tournaments → Demos for flyer-created samples, with editable event dashboard, preview and client conversion; preserve sample-only protections and existing records.
 - [x] Consolidate client sample builder, JPG/PNG/PDF flyer extraction, editable field/color review, tracking and welcome settings; real AI extraction and temporary sample build/readback verified, test sample removed, no sends or existing tournament changes.
 - [x] Remove Demo Converter navigation/page after signed-in preservation check; original sample and 1/1/0/0% statistics, legacy empty states and welcome preview retained; old URL forwards to Platform Tournaments.
 - [x] Combined-division payouts: split the full purse equally per outright winning hole, remove carryover weighting/Skins column, test $880 across eight wins; preserve live data.

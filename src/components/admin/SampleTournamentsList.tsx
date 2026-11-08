@@ -173,6 +173,7 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
   }
 
   async function setStatus(r: SampleRow, status: string) {
+    if (status === "converted" && r.conversion_status !== "converted") { await openConvert(r); return; }
     const patch: Record<string, unknown> = { conversion_status: status };
     if (status === "converted" && !r.converted_at) patch.converted_at = new Date().toISOString();
     if (status !== "converted") patch.converted_at = null;
@@ -246,7 +247,9 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
     await markShared(target);
   }
 
-  function openEdit(r: SampleRow) {
+  async function openEdit(r: SampleRow) {
+    const { data: demo } = await supabase.from("tournaments").select("id").eq("client_sample_id", r.id).maybeSingle();
+    if (demo) { await openDashboard(r); return; }
     setEditTarget(r);
     setEditForm({
       tournament_name: r.tournament_name || "",
@@ -321,6 +324,10 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
   async function openConvert(r: SampleRow) {
     setClientOrgId(""); setConvertConfirmed(false); setHasEditableDemo(false);
     setConvTarget(r);
+    if (r.conversion_status !== "converted") {
+      try { await provisionDemo({ data: { sampleId: r.id } }); }
+      catch (error) { setConvTarget(null); toast({ title: "Could not prepare conversion", description: error instanceof Error ? error.message : "Please try again", variant: "destructive" }); return; }
+    }
     setConvForm({
       conversion_status: r.conversion_status === "converted" ? "converted" : "converted",
       converted_tournament_id: r.converted_tournament_id || "",

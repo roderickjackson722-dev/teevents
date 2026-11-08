@@ -1,6 +1,7 @@
 import { overridesToCss, cleanOverrides } from "@/lib/siteStyleOverrides";
 import { applyContentEdits, googleFontsHref } from "@/lib/liveEdits";
 import { LiveEditor } from "@/components/site-builder/LiveEditor";
+import { getTemplateById, templateOrDefault, templateSectionCss } from "@/lib/siteTemplates";
 import { useEffect, useState, useCallback, type CSSProperties } from "react";
 import { useParams, useSearchParams, useNavigate } from "@/lib/router-compat";
 import { motion } from "framer-motion";
@@ -159,37 +160,6 @@ interface VolunteerRole {
 interface SurveyQuestion {
   id: string; question: string; type: string; survey_id: string;
 }
-
-// Template style configs
-const templateStyles = {
-  classic: {
-    navBg: "rgba(0,0,0,0.85)",
-    navText: "#ffffff",
-    heroOverlay: "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.5) 100%)",
-    heroAlign: "center" as const,
-    ctaLayout: "three" as const,
-    sectionDivider: true,
-    footerStyle: "classic",
-  },
-  modern: {
-    navBg: "rgba(15,25,40,0.92)",
-    navText: "#ffffff",
-    heroOverlay: "linear-gradient(135deg, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.5) 100%)",
-    heroAlign: "right" as const,
-    ctaLayout: "three" as const,
-    sectionDivider: false,
-    footerStyle: "modern",
-  },
-  charity: {
-    navBg: "rgba(0,0,0,0.9)",
-    navText: "#ffffff",
-    heroOverlay: "linear-gradient(to bottom, rgba(0,0,0,0.35) 0%, rgba(0,0,0,0.1) 30%, rgba(0,0,0,0.55) 100%)",
-    heroAlign: "center" as const,
-    ctaLayout: "two" as const,
-    sectionDivider: true,
-    footerStyle: "charity",
-  },
-};
 
 const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: string; clientSampleSlug?: string }) => {
   const { slug: paramSlug } = useParams<{ slug: string }>();
@@ -781,19 +751,36 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
     );
   }
 
-  const primary = tournament.site_primary_color || "#1a5c38";
-  const secondary = tournament.site_secondary_color || "#c8a84e";
+  // "Preview full page" from the Site Template picker: show this event in a
+  // different template without saving anything.
+  const previewTemplate = getTemplateById(searchParams.get("preview_template"));
+  const template = previewTemplate ?? templateOrDefault(tournament.template);
+  const layout = template.layout;
+  const primary = previewTemplate ? previewTemplate.colors.primary : tournament.site_primary_color || template.colors.primary;
+  const secondary = previewTemplate ? previewTemplate.colors.secondary : tournament.site_secondary_color || template.colors.secondary;
   const heroTitle = tournament.site_hero_title || tournament.title;
   const coursePar = tournament.course_par || 72;
-  const tpl = tournament.template || "classic";
-  const style = templateStyles[tpl as keyof typeof templateStyles] || templateStyles.classic;
+  const tpl = template.id;
+  const lightNav = tpl === "modern" || tpl === "country_club";
+  const style = {
+    navBg: tpl === "modern" ? "#ffffff" : tpl === "country_club" ? layout.pageBg : tpl === "midnight" ? "#0f0f14" : "rgba(0,0,0,0.88)",
+    navText: lightNav ? primary : "#ffffff",
+    navBorder: lightNav ? "rgba(0,0,0,0.08)" : "rgba(255,255,255,0.1)",
+    heroOverlay: layout.align === "right"
+      ? "linear-gradient(to left, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.2) 60%, rgba(0,0,0,0.1) 100%)"
+      : "linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.15) 40%, rgba(0,0,0,0.5) 100%)",
+  };
+  const heroJustify = layout.align === "left" ? "justify-start" : layout.align === "right" ? "justify-end" : "justify-center";
+  const heroItems = layout.align === "left" ? "items-start" : layout.align === "right" ? "items-end" : "items-center";
+  const ctaRadius = layout.pillButtons ? 9999 : (tournament.site_button_radius ?? 8);
 
   // Public Page Design (organizer-customizable)
   const showLogo = tournament.site_show_logo !== false;
-  const textColor = tournament.site_text_color || "#1F2937";
+  const textColor = layout.dark && (!tournament.site_text_color || tournament.site_text_color.toUpperCase() === "#1F2937") ? "#e5e7eb" : tournament.site_text_color || "#1F2937";
   const styleOverrideCss = overridesToCss((tournament as any).site_style_overrides);
   const liveFontsHref = googleFontsHref(liveElementEdits);
-  const pageBg = tournament.site_background_color || "#ffffff";
+  const savedBg = (tournament.site_background_color || "").toLowerCase();
+  const pageBg = savedBg && savedBg !== "#ffffff" && !previewTemplate ? tournament.site_background_color! : layout.pageBg;
   const fontFamilyId = tournament.site_font_family || "Inter";
   const fontStackCss = (() => {
     const stacks: Record<string, string> = {
@@ -815,8 +802,11 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   const titlePos = (tournament.site_title_position || "center") as "left" | "center" | "right";
   const buttonPos = (tournament.site_button_position || "center") as "left" | "center" | "right";
   const buttonRadius = tournament.site_button_radius ?? 8;
+  void buttonRadius;
   const flexJustify: Record<string, string> = { left: "justify-start", center: "justify-center", right: "justify-end" };
   const textAlignClass: Record<string, "left" | "center" | "right"> = { left: "left", center: "center", right: "right" };
+  // Layout now comes from the selected template; older per-event position settings are kept but unused here.
+  void [logoPos, titlePos, buttonPos, flexJustify, textAlignClass];
 
   // Organizer-controlled public page tabs (visibility + order).
   // A tab is shown only if (a) the organizer enabled it AND (b) it has data to render.
@@ -1552,7 +1542,9 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
   return (
 
-    <div ref={setLiveRoot} className="min-h-screen tv-public" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top" onSubmitCapture={clientSampleSlug ? e => { e.preventDefault(); e.stopPropagation(); } : undefined} onClickCapture={clientSampleSlug ? e => {
+    <div ref={setLiveRoot} data-tv-tpl={tpl} className="min-h-screen tv-public overflow-x-hidden" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top" onSubmitCapture={clientSampleSlug ? e => { if (!e.currentTarget.contains(e.target as Node)) return; e.preventDefault(); e.stopPropagation(); } : undefined} onClickCapture={clientSampleSlug ? e => {
+      // Portaled tools (the live page editor) bubble through React here; leave them alone.
+      if (!e.currentTarget.contains(e.target as Node)) return;
       const target = e.target instanceof Element ? e.target.closest("button,a") : null;
       if (!target) return;
       if (target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("#")) return;
@@ -1602,16 +1594,33 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           onOverridesChange={(next) => setTournament((prev) => (prev ? ({ ...(prev as any), site_style_overrides: next } as TournamentSite) : prev))}
         />
       )}
+      <style>{templateSectionCss(template)}</style>
+      {previewTemplate && (
+        <div className="bg-amber-500 text-black text-center text-xs sm:text-sm font-semibold px-3 py-2">
+          Template preview: {previewTemplate.name}. Nothing is applied or saved.
+        </div>
+      )}
+      {/* Logo above the menu (Centered Photo Hero) or alone at the top (Bright Summer) */}
+      {(layout.logo === "above-nav-center" || layout.logo === "top-center") && showLogo && tournament.site_logo_url && (
+        <div data-tv="top-logo" className="flex justify-center px-4 py-4" style={{ backgroundColor: layout.logo === "top-center" ? pageBg : primary }}>
+          {renderLogo(tournament.site_logo_url, heroTitle, "object-contain h-16 sm:h-20 w-auto max-w-[240px]", { transform: `translate(${tournament.site_logo_offset_x ?? 0}px, ${tournament.site_logo_offset_y ?? 0}px)` })}
+        </div>
+      )}
       {/* ===== TOP NAVIGATION BAR ===== */}
       <nav
         data-tv="nav"
-        className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b"
-        style={{ background: style.navBg, borderColor: "rgba(255,255,255,0.1)" }}
+        className={`${layout.nav === "none" ? "hidden" : layout.nav === "sticky" ? "sticky top-0" : "relative"} left-0 right-0 z-50 backdrop-blur-sm border-b`}
+        style={{ background: style.navBg, borderColor: style.navBorder }}
       >
-        <div className="max-w-7xl mx-auto flex items-center justify-between h-14 px-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between h-14 px-4 gap-3">
+          {layout.logo === "nav-left" && showLogo && tournament.site_logo_url && (
+            <div className="shrink-0 flex items-center">
+              {renderLogo(tournament.site_logo_url, heroTitle, "object-contain h-10 w-auto max-w-[140px]")}
+            </div>
+          )}
 
           {/* Desktop links */}
-          <div className="hidden md:flex items-center gap-1 flex-1 justify-center">
+          <div className={`hidden md:flex items-center gap-1 flex-1 ${layout.logo === "nav-left" ? "justify-end" : "justify-center"}`}>
             {navLinks.map((link) => (
               <button
                 key={link.href}
@@ -1644,7 +1653,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
         {/* Mobile menu */}
         {mobileNavOpen && (
-          <div className="md:hidden border-t" style={{ background: style.navBg, borderColor: "rgba(255,255,255,0.1)" }}>
+          <div className="md:hidden border-t" style={{ background: style.navBg, borderColor: style.navBorder }}>
             <div className="flex flex-col p-4 gap-2">
               {navLinks.map((link) => (
                 <button
@@ -1664,13 +1673,22 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
       {/* ===== HERO SECTION ===== */}
       <section
         id="hero"
-        className="relative min-h-[75vh] sm:min-h-screen flex flex-col items-center justify-center pt-14 pb-10 sm:pb-0"
+        data-tv-hero={layout.hero}
+        className={`relative flex flex-col ${
+          layout.hero === "banner" ? "py-16 sm:py-24"
+          : layout.hero === "split" || layout.hero === "dark-split" ? "md:min-h-[70vh] md:justify-center"
+          : layout.hero === "framed" ? "min-h-[65vh] sm:min-h-[80vh] justify-center p-3 sm:p-6"
+          : "min-h-[70vh] sm:min-h-[85vh] justify-center pb-10 sm:pb-0"
+        }`}
         style={{
-          backgroundColor: primary,
+          background: layout.hero === "banner" ? `linear-gradient(135deg, ${primary} 0%, ${secondary} 140%)`
+            : layout.hero === "framed" ? pageBg
+            : layout.hero === "dark-split" ? "#1b1b23"
+            : primary,
         }}
       >
         {/* Background image — organizer chooses fill vs. show-whole-image and focal point */}
-        {tournament.site_hero_image_url && (() => {
+        {layout.hero !== "banner" && tournament.site_hero_image_url && (() => {
           const fit = (tournament as any).site_hero_fit === "contain" ? "contain" : "cover";
           const posKey = (tournament as any).site_hero_position || "center";
           const objectPosition =
@@ -1678,8 +1696,14 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           const showBlurBackdrop = fit === "contain" && (tournament as any).site_hero_blur !== false;
           return (
             <div
-              className="absolute inset-0 overflow-hidden"
-              style={{ opacity: (tournament.site_hero_opacity ?? 100) / 100 }}
+              data-tv="hero-photo"
+              className={`overflow-hidden ${
+                layout.hero === "split" ? "relative h-64 md:h-auto md:absolute md:inset-y-0 md:right-0 md:w-1/2"
+                : layout.hero === "dark-split" ? "relative h-60 mx-4 mt-6 rounded-xl border-2 md:h-auto md:m-0 md:absolute md:top-10 md:bottom-10 md:right-8 md:w-[42%]"
+                : layout.hero === "framed" ? "absolute inset-3 sm:inset-6 rounded-[2rem]"
+                : "absolute inset-0"
+              }`}
+              style={{ opacity: (tournament.site_hero_opacity ?? 100) / 100, borderColor: layout.hero === "dark-split" ? secondary : undefined }}
             >
               {showBlurBackdrop && (
                 <img
@@ -1703,23 +1727,28 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
 
         {/* Overlay */}
-        <div className="absolute inset-0" style={{ background: style.heroOverlay }} />
+        {(layout.hero === "photo" || layout.hero === "framed") && (
+          <div className={`absolute ${layout.hero === "framed" ? "inset-3 sm:inset-6 rounded-[2rem]" : "inset-0"}`} style={{ background: style.heroOverlay }} />
+        )}
+        <div className={`relative z-10 flex flex-col justify-center w-full ${
+          layout.hero === "split" || layout.hero === "dark-split" ? "md:w-1/2 py-10 md:py-16" : "flex-1 py-10"
+        }`}>
 
         {/* Hero content */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8 }}
-          className="relative z-10 flex-1 flex flex-col items-center justify-center px-4 w-full max-w-4xl mx-auto"
-          style={{ textAlign: style.heroAlign }}
+          className={`relative z-10 flex flex-col ${heroItems} justify-center px-4 sm:px-8 w-full max-w-4xl mx-auto`}
+          style={{ textAlign: layout.align }}
         >
-          {/* Logo */}
-          {showLogo && tournament.site_logo_url && (
-            <div className={`w-full flex mb-6 ${flexJustify[logoPos]}`}>
+          {/* Logo inside the hero (Banner First) */}
+          {layout.logo === "in-hero" && showLogo && tournament.site_logo_url && (
+            <div className={`w-full flex mb-6 ${heroJustify}`}>
               {renderLogo(
                 tournament.site_logo_url,
                 heroTitle,
-                `object-contain ${tpl === "charity" ? "h-20 w-20" : "h-28 w-auto max-w-xs"}`,
+                "object-contain h-20 w-auto max-w-[200px]",
                 { transform: `translate(${tournament.site_logo_offset_x ?? 0}px, ${tournament.site_logo_offset_y ?? 0}px)` },
               )}
             </div>
@@ -1734,7 +1763,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
               textShadow: "0 2px 20px rgba(0,0,0,0.4)",
               fontSize: `clamp(${Math.max(24, Math.round(headingSize * 0.5))}px, ${Math.max(5, Math.round(headingSize / 12))}vw, ${headingSize}px)`,
               letterSpacing: "normal",
-              textAlign: textAlignClass[titlePos],
+              textAlign: layout.align,
               width: "100%",
               fontFamily: fontStackCss,
             }}
@@ -1746,8 +1775,9 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           {tournament.site_hero_subtitle && (
             <p
               data-tv="hero-subtitle"
-              className="mt-4 mx-auto text-center max-w-full sm:max-w-2xl whitespace-pre-line break-words"
+              className={`mt-4 max-w-full sm:max-w-2xl whitespace-pre-line break-words ${layout.align === "center" ? "mx-auto" : ""}`}
               style={{
+                textAlign: layout.align,
                 color: "rgba(255,255,255,0.85)",
                 fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
                 lineHeight: 1.45,
@@ -1759,7 +1789,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
 
           {/* Event meta badges */}
-          <div data-tv="hero-badges" className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">
+          <div data-tv="hero-badges" className={`mt-6 flex flex-wrap items-center ${heroJustify} gap-2 sm:gap-3 w-full`}>
             {formattedEventDate && (
               <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">
                 <Calendar className="h-4 w-4 shrink-0" />
@@ -1869,9 +1899,9 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.4 }}
-          className="relative z-10 w-full max-w-3xl mx-auto px-4 pb-0 -mb-[1px]"
+          className="relative z-10 w-full max-w-4xl mx-auto px-4 sm:px-8 mt-8"
         >
-          <div className={`flex flex-wrap gap-3 ${flexJustify[buttonPos]}`}>
+          <div data-tv="hero-buttons" className={`flex flex-wrap gap-3 ${heroJustify}`}>
             {/* Registration button */}
             {((tournament.registration_open && !regClosedByTime) || inviteOk || tournament.registration_url || showClosedNotice || !!clientSampleSlug) && (
               <a
@@ -1881,28 +1911,29 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                 }}
                 target={tournament.registration_url ? "_blank" : undefined}
                 rel={tournament.registration_url ? "noopener noreferrer" : undefined}
-                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
+                className={`tv-design-btn flex-1 text-center font-bold tracking-wider uppercase ${layout.buttons === 1 ? "min-w-[220px] max-w-[360px] py-5" : "min-w-[160px] max-w-[260px] py-4"}`}
                 style={{
-                  backgroundColor: tpl === "modern" ? "#1565c0" : secondary,
-                  color: tpl === "modern" ? "#ffffff" : primary,
-                  borderRadius: `${buttonRadius}px`,
-                  fontSize: `${buttonSize}px`,
+                  backgroundColor: secondary,
+                  color: primary,
+                  borderRadius: `${ctaRadius}px`,
+                  fontSize: `${layout.buttons === 1 ? buttonSize + 4 : buttonSize}px`,
                 }}
               >
-                {showClosedNotice && !inviteOk && !clientSampleSlug ? regCopy.closed : regCopy.custom ? regCopy.label : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
+                {showClosedNotice && !inviteOk && !clientSampleSlug ? regCopy.closed : regCopy.custom ? regCopy.label : "Register"}
               </a>
             )}
 
             {/* Sponsors button */}
-            {style.ctaLayout === "three" && isTabVisible("sponsors") && (
+            {layout.buttons >= 2 && isTabVisible("sponsors") && (
               <button
                 data-sample-nav
                 onClick={() => scrollTo("#become-a-sponsor")}
-                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
+                className="tv-design-btn flex-1 min-w-[160px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
                 style={{
-                  backgroundColor: tpl === "modern" ? "#b71c1c" : primary,
+                  backgroundColor: layout.hero === "photo" || layout.hero === "framed" ? primary : "transparent",
                   color: "#ffffff",
-                  borderRadius: `${buttonRadius}px`,
+                  border: layout.hero === "photo" || layout.hero === "framed" ? undefined : "2px solid rgba(255,255,255,0.85)",
+                  borderRadius: `${ctaRadius}px`,
                   fontSize: `${buttonSize}px`,
                 }}
               >
@@ -1910,23 +1941,30 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
               </button>
             )}
 
-            {/* Auction button */}
-            {auctionItems.length > 0 && (
-              <button
-                onClick={() => scrollTo("#auction")}
-                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
-                style={{
-                  backgroundColor: tpl === "modern" ? "#424242" : tpl === "charity" ? "#1a1a1a" : "#333333",
-                  color: "#ffffff",
-                  borderRadius: `${buttonRadius}px`,
-                  fontSize: `${buttonSize}px`,
-                }}
-              >
-                View Auction Items
-              </button>
-            )}
+            {/* Third button: auction when there are items, otherwise event details */}
+            {layout.buttons >= 3 && (() => {
+              const fallback = navLinks.find((l) => !["#top", "#register", "#sponsors", "#become-a-sponsor", "#contact"].includes(l.href));
+              const href = auctionItems.length > 0 ? "#auction" : fallback?.href;
+              if (!href) return null;
+              return (
+                <button
+                  data-sample-nav
+                  onClick={() => scrollTo(href)}
+                  className="tv-design-btn flex-1 min-w-[160px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
+                  style={{
+                    backgroundColor: layout.dark ? "#c0c0c8" : "#333333",
+                    color: layout.dark ? "#111118" : "#ffffff",
+                    borderRadius: `${ctaRadius}px`,
+                    fontSize: `${buttonSize}px`,
+                  }}
+                >
+                  {auctionItems.length > 0 ? "View Auction Items" : fallback?.label}
+                </button>
+              );
+            })()}
           </div>
         </motion.div>
+        </div>
       </section>
 
       {galleryPosition === "top" && galleryNode}

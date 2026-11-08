@@ -16,6 +16,8 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Eye, Gavel, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { TabTitleInput } from "@/components/dashboard/TabTitleInput";
+import { TemplatePicker } from "@/components/dashboard/TemplatePicker";
+import { AUCTION_ITEM_TEMPLATES } from "@/lib/contentTemplates";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 interface AuctionRow {
@@ -218,7 +220,18 @@ export default function Auctions() {
                   <Input value={form.item_name} onChange={(e) => setForm({ ...form, item_name: e.target.value })} />
                 </div>
                 <div>
-                  <Label>Description</Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label>Description</Label>
+                    <TemplatePicker
+                      hasContent={!!form.description.trim()}
+                      onBlank={() => setForm({ ...form, description: "" })}
+                      options={AUCTION_ITEM_TEMPLATES.map((t) => ({
+                        id: t.id,
+                        label: t.label,
+                        apply: () => setForm({ ...form, description: t.text }),
+                      }))}
+                    />
+                  </div>
                   <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} rows={3} />
                 </div>
                 <div>

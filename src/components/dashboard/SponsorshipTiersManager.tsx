@@ -10,6 +10,8 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { TemplatePicker } from "@/components/dashboard/TemplatePicker";
+import { SPONSOR_TIER_TEMPLATES } from "@/lib/contentTemplates";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
@@ -557,6 +559,18 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                   <DialogTitle className="font-display">{editTier ? "Edit Tier" : "Add Sponsorship Tier"}</DialogTitle>
                 </DialogHeader>
                 <form onSubmit={handleSave} className="space-y-4 mt-2">
+                  <div className="flex justify-end">
+                    <TemplatePicker
+                      hasContent={!!(form.name.trim() || form.benefits.trim())}
+                      onBlank={() => setForm({ ...form, name: "", price: "", benefits: "" })}
+                      options={SPONSOR_TIER_TEMPLATES.map((t) => ({
+                        id: t.id,
+                        label: t.label,
+                        detail: `$${Number(t.price).toLocaleString()}`,
+                        apply: () => setForm({ ...form, name: t.label, price: t.price, benefits: t.benefits }),
+                      }))}
+                    />
+                  </div>
                   <div>
                     <Label>Tier Name *</Label>
                     <Input value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} placeholder="e.g. Gold Sponsor" required maxLength={100} />

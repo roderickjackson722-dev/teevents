@@ -188,7 +188,7 @@ const templateStyles = {
   },
 };
 
-const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
+const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: string; clientSampleSlug?: string }) => {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = slugOverride || paramSlug;
   const [searchParams] = useSearchParams();
@@ -417,9 +417,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setLoading(false);
     };
     (supabase as any)
-      .rpc("get_public_tournament_site", { _slug: slug })
+      .rpc(clientSampleSlug ? "client_sample_site" : "get_public_tournament_site", { _slug: clientSampleSlug || slug })
       .then(handleSite);
-  }, [slug]);
+  }, [slug, clientSampleSlug]);
 
   useEffect(() => {
     if (!tournament || loading) return;
@@ -1537,10 +1537,17 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   return (
 
-    <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
+    <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top" onSubmitCapture={clientSampleSlug ? e => { e.preventDefault(); e.stopPropagation(); } : undefined} onClickCapture={clientSampleSlug ? e => {
+      const target = e.target instanceof Element ? e.target.closest("button,a") : null;
+      if (!target) return;
+      if (target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("#")) return;
+      e.preventDefault(); e.stopPropagation();
+      toast({ title: "Sample preview", description: "No payments, sign-ups or messages are accepted on this sample." });
+    } : undefined}>
+      {clientSampleSlug && <div className="bg-secondary text-secondary-foreground text-center px-3 py-2 text-sm font-semibold">Sample • No payments or public registration</div>}
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
-      {isPreview && (
+      {isPreview && !clientSampleSlug && (
         <div className="bg-amber-500 text-black text-center text-xs sm:text-sm font-semibold px-3 py-2">
           Organizer preview — this page is not published yet. Turn on <strong>Publish</strong> in the
           Public Page Editor to make it visible to everyone.

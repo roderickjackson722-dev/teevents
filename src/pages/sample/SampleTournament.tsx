@@ -29,6 +29,7 @@ import SampleOrganizerDashboardTeaser from "@/components/sample/SampleOrganizerD
 import SampleLeaderboard from "@/components/sample/SampleLeaderboard";
 import SampleSponsorStrip from "@/components/sample/SampleSponsorStrip";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import PublicTournament from "@/pages/PublicTournament";
 
 interface Sample {
   id: string;
@@ -58,6 +59,7 @@ export default function SampleTournament() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDashIntro, setShowDashIntro] = useState(false);
+  const [linkedDemo, setLinkedDemo] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -72,6 +74,8 @@ export default function SampleTournament() {
         return;
       }
       setSample(s as Sample);
+      const { data: demoSite } = await supabase.rpc("client_sample_site", { _slug: slug });
+      setLinkedDemo(Boolean(demoSite));
       supabase.rpc("increment_sample_view", { _slug: slug });
       const [{ data: p }, { data: sp }, { data: lb }] = await Promise.all([
         supabase
@@ -114,6 +118,7 @@ export default function SampleTournament() {
   const heroBg =
     sample.hero_image_url ||
     "https://images.unsplash.com/photo-1592919505780-303950717480?w=1600";
+  if (linkedDemo && slug) return <><PublicTournament slugOverride={slug} clientSampleSlug={slug} />{sample.guided_tour && <SampleGuidedTour slug={slug} customerName={sample.prospect_name} eventName={sample.tournament_name} />}</>;
   const primary = sample.primary_color || "#1a5c38";
   const secondary = sample.secondary_color || "#F5A623";
 

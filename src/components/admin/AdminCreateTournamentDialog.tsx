@@ -1,6 +1,6 @@
 import { useState } from "react";
 import SampleWizard from "./SampleWizard";
-import ClientSampleTracking from "@/pages/admin/DemoConverter";
+import ClientSampleTracking from "./ClientSampleTracking";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription,
 } from "@/components/ui/dialog";

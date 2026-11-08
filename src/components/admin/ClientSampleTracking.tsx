@@ -14,7 +14,6 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, Send, Copy, RotateCw, Save, Eye, Ban } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
-import SampleWizard from "@/components/admin/SampleWizard";
 import SampleTournamentsList from "@/components/admin/SampleTournamentsList";
 
 interface DemoTournamentRow {
@@ -656,20 +655,7 @@ export default function ClientSampleTracking({ embedded = false, reloadKey = 0 }
 
   return (
     <div className={embedded ? "" : "min-h-screen bg-background"}>
-      {!embedded && <div className="border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> Admin
-          </Button>
-          <h1 className="text-xl font-semibold">Demo Converter</h1>
-          <Badge variant="secondary" className="ml-2">Real tournaments for screen-share demos</Badge>
-        </div>
-      </div>
-
-      }
-      <div className={embedded ? "space-y-6" : "max-w-5xl mx-auto px-4 py-6 space-y-6"}>
-        {!embedded && <SampleWizard onCreated={() => setSampleReload((n) => n + 1)} />}
-
+      <div className="space-y-6">
         <SampleTournamentsList reloadKey={sampleReload + reloadKey} />
 
         <Card>

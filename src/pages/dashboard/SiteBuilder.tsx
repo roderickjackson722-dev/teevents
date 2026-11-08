@@ -55,6 +55,7 @@ import {
   SCHEDULE_TEMPLATES,
   templateTextToHtml,
   htmlHasContent,
+  fillTemplatePlaceholders,
 } from "@/lib/contentTemplates";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { sharePreviewUrl } from "@/lib/shareLinks";
@@ -1416,7 +1417,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                     options={EVENT_DESCRIPTION_TEMPLATES.map((t) => ({
                       id: t.id,
                       label: t.label,
-                      apply: () => updateField("description_html" as any, templateTextToHtml(t.text)),
+                      apply: () => updateField("description_html" as any, templateTextToHtml(fillTemplatePlaceholders(t.text, settings as any))),
                     }))}
                   />
                 </div>
@@ -1496,7 +1497,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                       label: t.label,
                       apply: () =>
                         updateFields({
-                          schedule_info_html: templateTextToHtml(t.text),
+                          schedule_info_html: templateTextToHtml(fillTemplatePlaceholders(t.text, settings as any)),
                           schedule_info: t.text,
                         }),
                     }))}

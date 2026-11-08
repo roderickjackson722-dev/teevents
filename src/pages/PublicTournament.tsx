@@ -1141,7 +1141,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
       )}
 
       {/* ===== REGISTRATION ===== */}
-      {((tournament.registration_open && !regClosedByTime) || inviteOk) && !tournament.registration_url && (
+      {((tournament.registration_open && !regClosedByTime) || inviteOk || !!clientSampleSlug) && !tournament.registration_url && (
 
         <section id="register" className="py-16" style={{ backgroundColor: "#fafafa" }}>
           <div className="max-w-xl mx-auto px-4">

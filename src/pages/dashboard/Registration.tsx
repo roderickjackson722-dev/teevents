@@ -29,6 +29,7 @@ import {
   DONATION_SUGGESTED_AMOUNTS,
   templateTextToHtml,
   htmlHasContent,
+  fillTemplatePlaceholders,
 } from "@/lib/contentTemplates";
 
 import {
@@ -257,7 +258,7 @@ const Registration = () => {
     if (!org) return;
     (supabase as any)
       .from("tournaments")
-      .select("id, title, slug, registration_fee_cents, registration_open, show_in_public_search, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label, registration_auto_close_enabled, registration_close_at, registration_closed_message, registration_closed_contact_email, registration_closed_contact_phone, registration_close_includes_addons")
+      .select("id, title, slug, date, course_name, location, contact_email, client_sample_id, registration_fee_cents, registration_open, show_in_public_search, max_players, foursome_registration, max_group_size, allowed_group_sizes, allow_cover_fees, captain_label, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, allow_cash_registration, registration_intro_html, registration_promo_html, show_registration_count, show_promo_code_input, donation_prompt_enabled, donation_prompt_title, donation_prompt_description, donation_preset_amounts, donation_allow_custom, donation_custom_label, registration_auto_close_enabled, registration_close_at, registration_closed_message, registration_closed_contact_email, registration_closed_contact_phone, registration_close_includes_addons")
       .eq("organization_id", org.orgId)
       .order("created_at", { ascending: false })
       .then(({ data }: any) => {
@@ -417,6 +418,9 @@ const Registration = () => {
         toast.success(`Saved — registration closes ${formatCloseAt(updates.registration_close_at as string)}`);
       } else {
         toast.success("Registration settings saved!");
+        if (regOpen && (tournaments.find((x) => x.id === selectedTournament) as any)?.client_sample_id) {
+          toast.info("This is a sample event, so registration stays closed until it is converted to a client event. Your other changes were saved.");
+        }
       }
       setTournaments((prev) =>
         prev.map((t) =>
@@ -1286,7 +1290,7 @@ const Registration = () => {
                       options={REGISTRATION_INTRO_TEMPLATES.map((t) => ({
                         id: t.id,
                         label: t.label,
-                        apply: () => setRegistrationIntroHtml(templateTextToHtml(t.text)),
+                        apply: () => setRegistrationIntroHtml(templateTextToHtml(fillTemplatePlaceholders(t.text, tournaments.find((x) => x.id === selectedTournament) as any))),
                       }))}
                     />
                   </div>
@@ -1308,7 +1312,7 @@ const Registration = () => {
                       options={PROMO_TEMPLATES.map((t) => ({
                         id: t.id,
                         label: t.label,
-                        apply: () => setRegistrationPromoHtml(templateTextToHtml(t.text)),
+                        apply: () => setRegistrationPromoHtml(templateTextToHtml(fillTemplatePlaceholders(t.text, tournaments.find((x) => x.id === selectedTournament) as any))),
                       }))}
                     />
                   </div>
@@ -1363,7 +1367,7 @@ const Registration = () => {
                             label: DONATION_INTRO_TEMPLATE.label,
                             detail: "fills intro + suggested amounts",
                             apply: () => {
-                              setDonationDescription(DONATION_INTRO_TEMPLATE.text);
+                              setDonationDescription(fillTemplatePlaceholders(DONATION_INTRO_TEMPLATE.text, tournaments.find((x) => x.id === selectedTournament) as any));
                               setDonationPresetsDisplay(DONATION_SUGGESTED_AMOUNTS);
                             },
                           }]}

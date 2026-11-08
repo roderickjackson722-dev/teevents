@@ -1547,6 +1547,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
       const target = e.target instanceof Element ? e.target.closest("button,a") : null;
       if (!target) return;
       if (target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("#")) return;
+      if (target.hasAttribute("data-sample-nav")) return;
       e.preventDefault(); e.stopPropagation();
       toast({ title: "Sample preview", description: "No payments, sign-ups or messages are accepted on this sample." });
     } : undefined}>
@@ -1850,7 +1851,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
         >
           <div className={`flex flex-wrap gap-3 ${flexJustify[buttonPos]}`}>
             {/* Registration button */}
-            {((tournament.registration_open && !regClosedByTime) || inviteOk || tournament.registration_url || showClosedNotice) && (
+            {((tournament.registration_open && !regClosedByTime) || inviteOk || tournament.registration_url || showClosedNotice || !!clientSampleSlug) && (
               <a
                 href={tournament.registration_url || "#register"}
                 onClick={(e) => {
@@ -1866,13 +1867,14 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                   fontSize: `${buttonSize}px`,
                 }}
               >
-                {showClosedNotice && !inviteOk ? regCopy.closed : regCopy.custom ? regCopy.label : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
+                {showClosedNotice && !inviteOk && !clientSampleSlug ? regCopy.closed : regCopy.custom ? regCopy.label : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
               </a>
             )}
 
             {/* Sponsors button */}
             {style.ctaLayout === "three" && isTabVisible("sponsors") && (
               <button
+                data-sample-nav
                 onClick={() => scrollTo("#become-a-sponsor")}
                 className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
                 style={{

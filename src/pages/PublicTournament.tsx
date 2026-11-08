@@ -1,3 +1,4 @@
+import { overridesToCss } from "@/lib/siteStyleOverrides";
 import { useEffect, useState, useCallback, type CSSProperties } from "react";
 import { useParams, useSearchParams, useNavigate } from "@/lib/router-compat";
 import { motion } from "framer-motion";
@@ -784,6 +785,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   // Public Page Design (organizer-customizable)
   const showLogo = tournament.site_show_logo !== false;
   const textColor = tournament.site_text_color || "#1F2937";
+  const styleOverrideCss = overridesToCss((tournament as any).site_style_overrides);
   const pageBg = tournament.site_background_color || "#ffffff";
   const fontFamilyId = tournament.site_font_family || "Inter";
   const fontStackCss = (() => {
@@ -1306,12 +1308,12 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
       )}
 
       {tournament.registration_url && (
-        <section id="register" className="py-16" style={{ backgroundColor: primary }}>
+        <section id="register" data-tv-band className="py-16" style={{ backgroundColor: primary }}>
           <div className="max-w-4xl mx-auto px-4 text-center">
             <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
               <h2 className="text-3xl md:text-4xl font-display font-bold text-white mb-4">{regCopy.custom ? regCopy.label : "Ready to Play?"}</h2>
               <p className="text-white/70 max-w-xl mx-auto mb-8">Secure your spot today. Space is limited!</p>
-              <a href={tournament.registration_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 rounded-md text-lg font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: secondary, color: primary }}>
+              <a href={tournament.registration_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-8 py-3 rounded-md text-lg font-semibold transition-opacity hover:opacity-90" data-tv-btn style={{ backgroundColor: secondary, color: primary }}>
                 {regCopy.action} <ExternalLink className="h-4 w-4" />
               </a>
             </motion.div>
@@ -1514,7 +1516,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                             <a
                               href={`/t/${slug}/sponsor?tier=${tier.id}`}
                               className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
-                              style={{ backgroundColor: secondary, color: primary }}
+                              data-tv-btn style={{ backgroundColor: secondary, color: primary }}
                             >
                               Select
                             </a>
@@ -1543,7 +1545,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
   return (
 
-    <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top" onSubmitCapture={clientSampleSlug ? e => { e.preventDefault(); e.stopPropagation(); } : undefined} onClickCapture={clientSampleSlug ? e => {
+    <div className="min-h-screen tv-public" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top" onSubmitCapture={clientSampleSlug ? e => { e.preventDefault(); e.stopPropagation(); } : undefined} onClickCapture={clientSampleSlug ? e => {
       const target = e.target instanceof Element ? e.target.closest("button,a") : null;
       if (!target) return;
       if (target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("#")) return;
@@ -1583,8 +1585,10 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           </motion.div>
         </div>
       )}
+      {styleOverrideCss && <style dangerouslySetInnerHTML={{ __html: styleOverrideCss }} />}
       {/* ===== TOP NAVIGATION BAR ===== */}
       <nav
+        data-tv="nav"
         className="fixed top-0 left-0 right-0 z-50 backdrop-blur-sm border-b"
         style={{ background: style.navBg, borderColor: "rgba(255,255,255,0.1)" }}
       >
@@ -1707,6 +1711,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
           {/* Title */}
           <h1
+            data-tv="hero-title"
             className="font-bold leading-tight tournament-title"
             style={{
               color: "#ffffff",
@@ -1724,6 +1729,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           {/* Subtitle */}
           {tournament.site_hero_subtitle && (
             <p
+              data-tv="hero-subtitle"
               className="mt-4 mx-auto text-center max-w-full sm:max-w-2xl whitespace-pre-line break-words"
               style={{
                 color: "rgba(255,255,255,0.85)",
@@ -1737,7 +1743,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
 
           {/* Event meta badges */}
-          <div className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">
+          <div data-tv="hero-badges" className="mt-6 flex flex-wrap items-center justify-center gap-2 sm:gap-3 w-full">
             {formattedEventDate && (
               <span className="inline-flex items-center gap-2 bg-white/15 backdrop-blur-sm text-white px-3 sm:px-4 py-2 rounded-full text-xs sm:text-sm font-medium whitespace-nowrap">
                 <Calendar className="h-4 w-4 shrink-0" />
@@ -1988,7 +1994,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                             type="button"
                             onClick={() => { setSideEventDialog({ id: ev.id, name: ev.name, price_cents: ev.price_cents, custom_questions: Array.isArray((ev as any).custom_questions) ? (ev as any).custom_questions : [] }); setSeForm({ name: "", email: "", phone: "", quantity: "1" }); setSeAnswers({}); }}
                             className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
-                            style={{ backgroundColor: secondary, color: primary }}
+                            data-tv-btn style={{ backgroundColor: secondary, color: primary }}
                           >
                             Buy Tickets
                           </button>
@@ -2214,7 +2220,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                             <a
                               href={`/t/${slug}/vendors?tier=${tier.id}`}
                               className="block w-full py-3 rounded-lg text-center font-bold text-sm tracking-wider uppercase transition-opacity hover:opacity-90"
-                              style={{ backgroundColor: secondary, color: primary }}
+                              data-tv-btn style={{ backgroundColor: secondary, color: primary }}
                             >
                               Reserve Booth
                             </a>
@@ -2398,7 +2404,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                           <Input placeholder="Your email" type="email" value={bidForm.email} onChange={(e) => setBidForm({ ...bidForm, email: e.target.value })} />
                           <Input placeholder="Bid amount" type="number" value={bidForm.amount} onChange={(e) => setBidForm({ ...bidForm, amount: e.target.value })} />
                           <div className="flex gap-2">
-                            <Button size="sm" onClick={handlePlaceBid} style={{ backgroundColor: primary, color: "white" }}>Place Bid</Button>
+                            <Button size="sm" onClick={handlePlaceBid} data-tv-btn style={{ backgroundColor: primary, color: "white" }}>Place Bid</Button>
                             <Button size="sm" variant="outline" onClick={() => setBidForm(null)}>Cancel</Button>
                           </div>
                         </div>
@@ -2412,7 +2418,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                               size="sm"
                               onClick={() => handleAuctionBuyNow(item.id)}
                               disabled={auctionBuyLoading === item.id}
-                              style={{ backgroundColor: secondary, color: primary }}
+                              data-tv-btn style={{ backgroundColor: secondary, color: primary }}
                             >
                               {auctionBuyLoading === item.id ? <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> : null}
                               Buy Now ${Number(item.buy_now_price).toFixed(0)}
@@ -2468,13 +2474,13 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                           onClick={() => handleStoreBuy(p.id)}
                           disabled={storeBuyLoading === p.id}
                           className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90 disabled:opacity-50"
-                          style={{ backgroundColor: primary, color: "white" }}
+                          data-tv-btn style={{ backgroundColor: primary, color: "white" }}
                         >
                           {storeBuyLoading === p.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShoppingBag className="h-3.5 w-3.5" />}
                           Buy Now
                         </button>
                       ) : p.purchase_url && /^https?:\/\//i.test(p.purchase_url) ? (
-                        <a href={p.purchase_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90" style={{ backgroundColor: primary, color: "white" }}>
+                        <a href={p.purchase_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 mt-3 px-4 py-2 rounded-md text-sm font-semibold transition-opacity hover:opacity-90" data-tv-btn style={{ backgroundColor: primary, color: "white" }}>
                           Learn More <ExternalLink className="h-3.5 w-3.5" />
                         </a>
                       ) : null}
@@ -2522,7 +2528,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                             <Input placeholder="Email" type="email" value={volForm.email} onChange={(e) => setVolForm({ ...volForm, email: e.target.value })} />
                             <Input placeholder="Phone (optional)" value={volForm.phone} onChange={(e) => setVolForm({ ...volForm, phone: e.target.value })} />
                             <div className="flex gap-2">
-                              <Button size="sm" onClick={handleVolunteerSignup} style={{ backgroundColor: primary, color: "white" }}>Sign Up</Button>
+                              <Button size="sm" onClick={handleVolunteerSignup} data-tv-btn style={{ backgroundColor: primary, color: "white" }}>Sign Up</Button>
                               <Button size="sm" variant="outline" onClick={() => setVolForm(null)}>Cancel</Button>
                             </div>
                           </div>
@@ -2584,7 +2590,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
       {/* ===== DONATION ===== */}
       {isTabVisible("donations") && (
-      <section id="donation" className="py-16" style={{ backgroundColor: primary }}>
+      <section id="donation" data-tv-band className="py-16" style={{ backgroundColor: primary }}>
         <div className="max-w-3xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}>
             {donated ? (
@@ -2713,7 +2719,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                     }
                   }}
                   className="inline-flex items-center gap-2 px-10 py-3.5 rounded-lg text-lg font-bold transition-all hover:opacity-90 disabled:opacity-50"
-                  style={{ backgroundColor: secondary, color: primary }}
+                  data-tv-btn style={{ backgroundColor: secondary, color: primary }}
                 >
                   {donationLoading ? (
                     <Loader2 className="h-5 w-5 animate-spin" />
@@ -2913,7 +2919,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
         </div>
       </section>
 
-      <TeeventsFooter tournament={tournament as any} />
+      <div data-tv="footer"><TeeventsFooter tournament={tournament as any} /></div>
     </div>
   );
 };

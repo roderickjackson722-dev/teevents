@@ -13854,6 +13854,8 @@ export type Database = {
           site_button_hover_effect: string | null
           site_button_position: string | null
           site_button_radius: number | null
+          site_design_history: Json
+          site_design_original: Json | null
           site_font_family: string | null
           site_heading_font_size: number | null
           site_hero_blur: boolean
@@ -13873,6 +13875,7 @@ export type Database = {
           site_published: boolean | null
           site_secondary_color: string | null
           site_show_logo: boolean | null
+          site_style_overrides: Json
           site_text_color: string | null
           site_title_position: string | null
           skins_enabled: boolean
@@ -14226,6 +14229,8 @@ export type Database = {
           site_button_hover_effect?: string | null
           site_button_position?: string | null
           site_button_radius?: number | null
+          site_design_history?: Json
+          site_design_original?: Json | null
           site_font_family?: string | null
           site_heading_font_size?: number | null
           site_hero_blur?: boolean
@@ -14245,6 +14250,7 @@ export type Database = {
           site_published?: boolean | null
           site_secondary_color?: string | null
           site_show_logo?: boolean | null
+          site_style_overrides?: Json
           site_text_color?: string | null
           site_title_position?: string | null
           skins_enabled?: boolean
@@ -14598,6 +14604,8 @@ export type Database = {
           site_button_hover_effect?: string | null
           site_button_position?: string | null
           site_button_radius?: number | null
+          site_design_history?: Json
+          site_design_original?: Json | null
           site_font_family?: string | null
           site_heading_font_size?: number | null
           site_hero_blur?: boolean
@@ -14617,6 +14625,7 @@ export type Database = {
           site_published?: boolean | null
           site_secondary_color?: string | null
           site_show_logo?: boolean | null
+          site_style_overrides?: Json
           site_text_color?: string | null
           site_title_position?: string | null
           skins_enabled?: boolean

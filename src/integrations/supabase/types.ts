@@ -15917,6 +15917,10 @@ export type Database = {
         Returns: undefined
       }
       increment_sample_view: { Args: { _slug: string }; Returns: undefined }
+      is_client_demo_tournament: {
+        Args: { _tournament_id: string }
+        Returns: boolean
+      }
       is_org_admin_or_owner: {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean

@@ -942,14 +942,16 @@ const Registration = () => {
                       {regOpen ? "Registration Open" : "Registration Closed"}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Toggle on = players can register. Toggle off to close registration.
-                  </p>
+                  {!(tournaments.find((t) => t.id === selectedTournament) as any)?.client_sample_id && (
+                    <p className="text-xs text-muted-foreground">
+                      Toggle on = players can register. Toggle off to close registration.
+                    </p>
+                  )}
                   <p className="mt-3 text-xs text-muted-foreground">
                     This event is {publicListing ? "public" : "private"}. Change it in{" "}
                     <a href={`/dashboard/public-page-editor?step=public_view${typeof window !== "undefined" ? window.location.search.replace(/^\?/, "&") : ""}`} className="font-medium text-primary hover:underline">Setup &gt; Public View</a>.
                   </p>
-                  {selectedTournament && !regOpen && (
+                  {selectedTournament && !regOpen && !(tournaments.find((t) => t.id === selectedTournament) as any)?.client_sample_id && (
                     <PrivateRegistrationLink
                       key={selectedTournament}
                       tournamentId={selectedTournament}

@@ -74,6 +74,8 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
   });
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [heroUrl, setHeroUrl] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [heroFile, setHeroFile] = useState<File | null>(null);
 
   async function extract(file: File) {
     setFlyer(file); setFlyerPreview(URL.createObjectURL(file)); setExtracting(true); setReport("");
@@ -112,29 +114,31 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
       toast({ title: "Logo too large", description: "Please use a PNG or JPG under 2MB.", variant: "destructive" });
       return;
     }
-    setBusy(true);
-    const ext = file.name.split(".").pop() || "png";
-    const path = `samples/${Date.now()}-${kind}.${ext}`;
-    const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
-    setBusy(false);
-    if (error) {
-      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
-      return;
-    }
-    const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
-    if (kind === "logo") setLogoUrl(data.publicUrl);
-    else setHeroUrl(data.publicUrl);
-    toast({ title: kind === "logo" ? "Logo uploaded" : "Hero image uploaded" });
+    const url = URL.createObjectURL(file);
+    if (kind === "logo") { setLogoFile(file); setLogoUrl(url); }
+    else { setHeroFile(file); setHeroUrl(url); }
   };
 
   const generate = async () => {
+    if (step !== 4 || built || busy) return;
     if (!f.event_name.trim()) {
       toast({ title: "Event name is required", variant: "destructive" });
       return;
     }
     setBusy(true);
+    let createdId: string | null = null;
     try {
       const { data: auth } = await supabase.auth.getUser();
+      if (!auth.user) throw new Error("Please sign in again");
+      const uploadConfirmed = async (file: File | null, kind: string, fallback: string | null) => {
+        if (!file) return fallback;
+        const path = `samples/${Date.now()}-${kind}-${file.name.replace(/[^a-z0-9.]/gi, "_")}`;
+        const uploaded = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: false });
+        if (uploaded.error) throw uploaded.error;
+        return supabase.storage.from("tournament-assets").getPublicUrl(path).data.publicUrl;
+      };
+      const savedLogo = await uploadConfirmed(logoFile, "logo", logoUrl);
+      const savedHero = await uploadConfirmed(heroFile, "hero", heroUrl);
       const slug = `${slugify(f.event_name)}-${Math.random().toString(36).slice(2, 6)}`;
       const link = `https://teevents.golf/sample/${slug}`;
       const feeCents = f.registration_fee.trim() ? Math.max(0, Math.round(Number(f.registration_fee) * 100)) : null;
@@ -152,12 +156,11 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
           scoring_format: f.scoring_format || null,
           background_color: f.background_color,
           is_sample: true,
-          crm_notes: notes.trim() || null,
           description: f.organization_name
             ? `A custom TeeVents sample built for ${f.organization_name}.`
             : null,
-          logo_url: logoUrl,
-          hero_image_url: heroUrl,
+          logo_url: savedLogo,
+          hero_image_url: savedHero,
           registration_fee_cents: feeCents,
           team_fee_cents: feeCents == null ? null : feeCents * 4,
           primary_color: f.primary_color,
@@ -172,6 +175,10 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
         .select("id")
         .single();
       if (error) throw error;
+      if (!sample) throw new Error("Sample was not created");
+      createdId = sample.id;
+      const noteResult = await supabase.from("sample_build_notes").insert({ sample_id: sample.id, admin_notes: notes.trim() || null, organizer_mode: mode, organizer_email: organizerEmail.trim() || null, organizer_organization: organizerOrg.trim() || null });
+      if (noteResult.error) throw noteResult.error;
 
       const count = Math.min(Math.max(Number(f.participants || "8"), 1), 12);
       const players = SAMPLE_NAMES.slice(0, count);
@@ -201,6 +208,7 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
       onCreated?.();
       toast({ title: "Sample created", description: "Copy the link and send it to your customer." });
     } catch (e: any) {
+      if (createdId) await supabase.from("sample_tournaments").delete().eq("id", createdId);
       toast({ title: "Could not create sample", description: e.message, variant: "destructive" });
     } finally {
       setBusy(false);
@@ -317,10 +325,10 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
                 <a
                   href={`mailto:${f.prospect_email}?subject=${encodeURIComponent(`Your sample event page – ${built.eventName}`)}&body=${encodeURIComponent(emailBody)}`}
                 >
-                  <Button size="sm" variant="outline"><Mail className="h-4 w-4 mr-1" /> Send Email</Button>
+                  <Button size="sm" variant="outline" disabled={!f.prospect_email.trim()}><Mail className="h-4 w-4 mr-1" /> Send Email</Button>
                 </a>
                 <a href={`sms:${f.prospect_phone}?&body=${encodeURIComponent(`Hi ${built.customerName || "there"} — here's the sample event page for ${built.eventName}: ${built.link}`)}`}>
-                  <Button size="sm" variant="outline"><MessageSquare className="h-4 w-4 mr-1" /> Send Text</Button>
+                  <Button size="sm" variant="outline" disabled={!f.prospect_phone.trim()}><MessageSquare className="h-4 w-4 mr-1" /> Send Text</Button>
                 </a>
               </div>
             </div>

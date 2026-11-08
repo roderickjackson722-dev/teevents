@@ -418,9 +418,6 @@ const Registration = () => {
         toast.success(`Saved — registration closes ${formatCloseAt(updates.registration_close_at as string)}`);
       } else {
         toast.success("Registration settings saved!");
-        if (regOpen && (tournaments.find((x) => x.id === selectedTournament) as any)?.client_sample_id) {
-          toast.info("This is a sample event, so registration stays closed until it is converted to a client event. Your other changes were saved.");
-        }
       }
       setTournaments((prev) =>
         prev.map((t) =>
@@ -911,7 +908,22 @@ const Registration = () => {
                 </div>
                 <div className="flex flex-col gap-2">
                   <Label>Registration Status</Label>
-                  <div className="flex items-center gap-3 mt-1">
+                  {(() => {
+                    const sampleRow = tournaments.find((t) => t.id === selectedTournament) as any;
+                    if (!sampleRow?.client_sample_id) return null;
+                    return (
+                      <div className="mt-1 space-y-1">
+                        <div className="flex items-center gap-3">
+                          <Switch checked disabled aria-label="Registration shown on sample page" />
+                          <span className="text-sm font-medium text-foreground">Shown on your sample page</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Customers can see the Registration button and the full form on the sample link. Submitting only shows a sample preview message, so no one is signed up or charged until you convert this sample to a client event.
+                        </p>
+                      </div>
+                    );
+                  })()}
+                  <div className={`flex items-center gap-3 mt-1 ${(tournaments.find((t) => t.id === selectedTournament) as any)?.client_sample_id ? "hidden" : ""}`}>
                     <Switch
                       checked={regOpen}
                       onCheckedChange={(v) => {
@@ -930,14 +942,16 @@ const Registration = () => {
                       {regOpen ? "Registration Open" : "Registration Closed"}
                     </span>
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Toggle on = players can register. Toggle off to close registration.
-                  </p>
+                  {!(tournaments.find((t) => t.id === selectedTournament) as any)?.client_sample_id && (
+                    <p className="text-xs text-muted-foreground">
+                      Toggle on = players can register. Toggle off to close registration.
+                    </p>
+                  )}
                   <p className="mt-3 text-xs text-muted-foreground">
                     This event is {publicListing ? "public" : "private"}. Change it in{" "}
                     <a href={`/dashboard/public-page-editor?step=public_view${typeof window !== "undefined" ? window.location.search.replace(/^\?/, "&") : ""}`} className="font-medium text-primary hover:underline">Setup &gt; Public View</a>.
                   </p>
-                  {selectedTournament && !regOpen && (
+                  {selectedTournament && !regOpen && !(tournaments.find((t) => t.id === selectedTournament) as any)?.client_sample_id && (
                     <PrivateRegistrationLink
                       key={selectedTournament}
                       tournamentId={selectedTournament}

@@ -29,6 +29,7 @@ import {
   Eye as EyeIcon,
 } from "lucide-react";
 import { SITE_TEMPLATES } from "@/lib/siteTemplates";
+import { TemplateWireframe } from "@/components/site-builder/TemplateWireframe";
 import { PRINTABLE_FONTS, PRINTABLE_LAYOUTS } from "@/components/printables/types";
 import { Badge } from "@/components/ui/badge";
 import CustomSlugEditor from "@/components/CustomSlugEditor";
@@ -1102,39 +1103,54 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                 <Label>Site Template</Label>
                 <p className="text-xs text-muted-foreground mb-2">Change your site layout at any time.</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {SITE_TEMPLATES.map((tpl) => (
-                    <button
-                      key={tpl.id}
-                      onClick={() =>
-                        // Picking a template also applies its branding colors so the
-                        // whole public page (hero, buttons, headings) matches it.
-                        updateFields({
-                          template: tpl.id,
-                          site_primary_color: tpl.colors.primary,
-                          site_secondary_color: tpl.colors.secondary,
-                        })
-                      }
-                      className={`relative text-left rounded-lg border-2 overflow-hidden transition-all ${
-                        (settings.template || "classic") === tpl.id
-                          ? "border-primary ring-1 ring-primary/30"
-                          : "border-border hover:border-primary/40"
-                      }`}
-                    >
-                      {(settings.template || "classic") === tpl.id && (
-                        <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5">
-                          <Check className="h-3 w-3" />
-                        </div>
-                      )}
-                      {/* Mini preview */}
-                      <div className="relative h-16 w-full" style={{ backgroundColor: tpl.colors.primary }}>
-                        <div className="absolute top-0 left-0 right-0 h-3 flex items-center px-2" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-                          {tpl.preview.navStyle === "left-logo" && (
-                            <div className="w-3 h-2 rounded-sm" style={{ backgroundColor: "rgba(255,255,255,0.6)" }} />
+                  {SITE_TEMPLATES.map((tpl) => {
+                    const selected = (settings.template || "classic") === tpl.id;
+                    const apply = () =>
+                      // Picking a template also applies its branding colors so the
+                      // whole public page (hero, buttons, headings) matches it.
+                      updateFields({
+                        template: tpl.id,
+                        site_primary_color: tpl.colors.primary,
+                        site_secondary_color: tpl.colors.secondary,
+                      });
+                    return (
+                      <div
+                        key={tpl.id}
+                        role="button"
+                        tabIndex={0}
+                        aria-pressed={selected}
+                        onClick={apply}
+                        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); apply(); } }}
+                        className={`relative min-w-0 text-left rounded-lg border-2 overflow-hidden transition-all cursor-pointer ${
+                          selected ? "border-primary ring-1 ring-primary/30" : "border-border hover:border-primary/40"
+                        }`}
+                      >
+                        {selected && (
+                          <div className="absolute top-2 right-2 z-10 bg-primary text-primary-foreground rounded-full p-0.5">
+                            <Check className="h-3 w-3" />
+                          </div>
+                        )}
+                        <TemplateWireframe template={tpl} />
+                        <div className="p-2 space-y-1">
+                          <p className="text-xs font-semibold text-foreground">{tpl.name}</p>
+                          <p className="text-[11px] text-muted-foreground leading-snug">
+                            <span className="font-medium text-foreground">What changes:</span> {tpl.whatChanges}
+                          </p>
+                          {publicUrl && (
+                            <a
+                              href={`${publicUrl}?preview_template=${tpl.id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              onClick={(e) => e.stopPropagation()}
+                              className="inline-block text-[11px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                            >
+                              Preview full page
+                            </a>
                           )}
-                          <div className="flex gap-1 mx-auto">
-                            {[0,1,2].map((i) => (
-                              <div key={i} className="w-4 h-0.5 rounded-full" style={{ backgroundColor: "rgba(255,255,255,0.4)" }} />
-                            ))}
+                        </div>
+                      </div>
+                    );
+                  })}
                           </div>
                         </div>
                         <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-0">

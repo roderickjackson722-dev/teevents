@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { readClientFlyer } from "@/lib/flyerSample.functions";
 import { flyerImages } from "@/lib/flyerImages";
-import { sampleFormats, blankFlyerFields } from "@/lib/flyerSample";
+import { sampleFormats } from "@/lib/flyerSample";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
@@ -231,7 +231,7 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
           {flyerPreview && (flyer?.type === "application/pdf" ? <object data={flyerPreview} type="application/pdf" className="h-64 w-full"><a href={flyerPreview} target="_blank" rel="noreferrer">View uploaded flyer</a></object> : <img src={flyerPreview} alt="Uploaded event flyer" className="max-h-64 max-w-full object-contain" />)}
           {report && <p role="status" className="text-sm text-muted-foreground">{report}</p>}
         </div>}
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {["Customer", "Event", "Branding", "Share"].map((label, i) => (
             <span
               key={label}

@@ -4,6 +4,11 @@
 @plugin "@tailwindcss/typography";
 @custom-variant dark (&:is(.dark *));
 
+.client-sample-preview { background: var(--sample-background); color: hsl(var(--foreground)); }
+.client-sample-banner { background: var(--sample-primary); color: hsl(var(--primary-foreground)); }
+.client-sample-accent { background: var(--sample-accent); color: var(--sample-primary); }
+.client-sample-flow { --primary: 38 91% 55%; --primary-foreground: 150 56% 23%; }
+
 @theme inline {
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: Raleway, system-ui, sans-serif;

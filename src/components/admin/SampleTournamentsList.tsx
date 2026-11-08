@@ -403,7 +403,7 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
                               />
                             )}
                             <div>
-                              <div className="font-medium">{r.tournament_name}</div>
+                              <div className="font-medium">{r.tournament_name} <Badge variant="outline">Sample</Badge></div>
                               <div className="text-xs text-muted-foreground">
                                 {r.event_date || "No date"} {r.location ? `• ${r.location}` : ""}
                               </div>

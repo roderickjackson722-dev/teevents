@@ -36,6 +36,8 @@ interface Sample {
   tournament_name: string;
   event_date: string | null;
   location: string | null;
+  course_name: string | null;
+  background_color: string | null;
   description: string | null;
   logo_url: string | null;
   hero_image_url: string | null;
@@ -116,7 +118,7 @@ export default function SampleTournament() {
   const secondary = sample.secondary_color || "#F5A623";
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background" style={sample.background_color ? { backgroundColor: sample.background_color } : undefined}>
       <SEO
         title={`${sample.tournament_name} – Sample`}
         description={sample.description || ""}
@@ -126,7 +128,7 @@ export default function SampleTournament() {
         className="text-white text-center text-sm py-2 px-4"
         style={{ backgroundColor: primary }}
       >
-        This is a <strong>custom TeeVents mockup</strong> created for{" "}
+        <strong>Sample — no payments or public registration.</strong> Created for{" "}
         {sample.tournament_name} •{" "}
         <a href="https://teevents.golf" className="underline">
           Learn more about TeeVents
@@ -167,6 +169,7 @@ export default function SampleTournament() {
                 {sample.location}
               </span>
             )}
+            {sample.course_name && <span>{sample.course_name}</span>}
           </div>
           <div className="mt-6 inline-flex flex-col items-center gap-1 rounded-lg p-1">
             <Button

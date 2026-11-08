@@ -337,6 +337,13 @@
       "when": 1794146902165,
       "tag": "0047_client_demo_conversion_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 48,
+      "version": "7",
+      "when": 1794147333923,
+      "tag": "0048_private_client_demo_reads_and_retention",
+      "breakpoints": true
     }
   ]
 }

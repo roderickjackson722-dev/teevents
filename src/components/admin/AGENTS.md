@@ -1,0 +1,2 @@
+- Client flyer builds write only isolated sample tables after final review; defer media uploads until confirmation and store organizer choices/internal notes in the admin-only sample_build_notes table so sample pages never expose them or assign accounts.
+- ClientSampleTracking owns the moved sample list, legacy demos, conversion history and welcome settings with existing handlers unchanged; the former Demo Converter URL is compatibility-only, not a second page.

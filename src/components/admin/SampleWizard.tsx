@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { readClientFlyer } from "@/lib/flyerSample.functions";
 import { flyerImages } from "@/lib/flyerImages";
-import { sampleFormats } from "@/lib/flyerSample";
+import { canBuildClientSample, sampleFormats } from "@/lib/flyerSample";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
@@ -120,7 +120,7 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
   };
 
   const generate = async () => {
-    if (step !== 4 || built || busy) return;
+    if (!canBuildClientSample(step, Boolean(built), busy, f.event_name)) return;
     if (!f.event_name.trim()) {
       toast({ title: "Event name is required", variant: "destructive" });
       return;
@@ -335,7 +335,7 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
             <Button
               variant="ghost"
               size="sm"
-              onClick={() => { setBuilt(null); setStep(1); setLogoUrl(null); setHeroUrl(null); }}
+              onClick={() => { setBuilt(null); setStep(1); setLogoUrl(null); setHeroUrl(null); setLogoFile(null); setHeroFile(null); setFlyer(null); setFlyerPreview(""); setReport(""); setNotes(""); setMode("defer"); setOrganizerEmail(""); setOrganizerOrg(""); setF({ customer_name: "", organization_name: "", event_name: "", event_date: "", location: "", prospect_email: "", prospect_phone: "", primary_color: DEFAULT_PRIMARY, secondary_color: DEFAULT_SECONDARY, course_name: "", scoring_format: "Scramble", background_color: "#ffffff", registration_fee: "", participants: "8" }); }}
             >
               Build another sample
             </Button>

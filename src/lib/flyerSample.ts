@@ -11,6 +11,9 @@ export const flyerResultSchema = z.object({
 });
 export type FlyerResult = z.infer<typeof flyerResultSchema>;
 export const blankFlyerFields = { tournament_name: "", event_date: "", course_name: "", location: "", registration_fee: "", scoring_format: "" };
+export function canBuildClientSample(step: number, built: boolean, busy: boolean, title: string) {
+  return step === 4 && !built && !busy && title.trim().length > 0;
+}
 export function reviewedFlyer(result: FlyerResult) {
   const text = (field: z.infer<typeof statedText>) => field.certain && field.evidence?.trim() && field.value?.trim() ? field.value.trim() : "";
   const fields = { ...blankFlyerFields };

@@ -188,7 +188,7 @@ const templateStyles = {
   },
 };
 
-const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
+const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: string; clientSampleSlug?: string }) => {
   const { slug: paramSlug } = useParams<{ slug: string }>();
   const slug = slugOverride || paramSlug;
   const [searchParams] = useSearchParams();
@@ -417,9 +417,9 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
         setLoading(false);
     };
     (supabase as any)
-      .rpc("get_public_tournament_site", { _slug: slug })
+      .rpc(clientSampleSlug ? "client_sample_site" : "get_public_tournament_site", { _slug: clientSampleSlug || slug })
       .then(handleSite);
-  }, [slug]);
+  }, [slug, clientSampleSlug]);
 
   useEffect(() => {
     if (!tournament || loading) return;
@@ -613,6 +613,12 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   useEffect(() => {
     if (!tournament || loading) return;
 
+    if (clientSampleSlug) {
+      document.title = `${tournament.title} — Sample | TeeVents`;
+      upsertSingleMeta("property", "og:title", `${tournament.title} — Sample`);
+      upsertSingleMeta("name", "robots", "noindex, nofollow");
+      return;
+    }
     const meta = tournamentShareMeta(tournament, slug);
     document.title = meta.pageTitle;
     upsertSingleMeta("name", "description", meta.description);
@@ -632,10 +638,10 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
     upsertSingleMeta("name", "twitter:image", meta.imageUrl);
     upsertSingleMeta("name", "twitter:image:alt", meta.shareTitle);
     upsertSingleCanonical(meta.pageUrl);
-  }, [loading, slug, tournament]);
+  }, [loading, slug, tournament, clientSampleSlug]);
 
   const handlePlaceBid = async () => {
-    if (!bidForm) return;
+    if (clientSampleSlug || !bidForm) return;
     const amount = parseFloat(bidForm.amount);
     if (!amount || !bidForm.name || !bidForm.email) return;
     const { error } = await supabase.from("tournament_auction_bids").insert({
@@ -650,7 +656,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   };
 
   const handleVolunteerSignup = async () => {
-    if (!volForm || !tournament) return;
+    if (clientSampleSlug || !volForm || !tournament) return;
     const { error } = await supabase.from("tournament_volunteers").insert({
       role_id: volForm.roleId, tournament_id: tournament.id, name: volForm.name, email: volForm.email, phone: volForm.phone || null,
     });
@@ -660,7 +666,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   };
 
   const handleSurveySubmit = async () => {
-    if (!surveyEmail || surveyQuestions.length === 0) return;
+    if (clientSampleSlug || !surveyEmail || surveyQuestions.length === 0) return;
     const inserts = surveyQuestions.map((q) => ({
       survey_id: q.survey_id, question_id: q.id, respondent_email: surveyEmail, answer: surveyAnswers[q.id] || "",
     })).filter((r) => r.answer);
@@ -671,7 +677,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   };
 
   const handleStoreBuy = async (productId: string) => {
-    if (!tournament) return;
+    if (clientSampleSlug || !tournament) return;
     setStoreBuyLoading(productId);
     try {
       const { data, error } = await supabase.functions.invoke("create-store-checkout", {
@@ -697,7 +703,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
   };
 
   const handleAuctionBuyNow = async (itemId: string) => {
-    if (!tournament) return;
+    if (clientSampleSlug || !tournament) return;
     setAuctionBuyLoading(itemId);
     try {
       const { data, error } = await supabase.functions.invoke("create-auction-checkout", {
@@ -1537,10 +1543,17 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
 
   return (
 
-    <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top">
+    <div className="min-h-screen" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top" onSubmitCapture={clientSampleSlug ? e => { e.preventDefault(); e.stopPropagation(); } : undefined} onClickCapture={clientSampleSlug ? e => {
+      const target = e.target instanceof Element ? e.target.closest("button,a") : null;
+      if (!target) return;
+      if (target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("#")) return;
+      e.preventDefault(); e.stopPropagation();
+      toast({ title: "Sample preview", description: "No payments, sign-ups or messages are accepted on this sample." });
+    } : undefined}>
+      {clientSampleSlug && <div className="fixed bottom-0 inset-x-0 z-50 bg-secondary text-secondary-foreground text-center px-3 py-2 text-sm font-semibold">Sample • No payments or public registration</div>}
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
-      {isPreview && (
+      {isPreview && !clientSampleSlug && (
         <div className="bg-amber-500 text-black text-center text-xs sm:text-sm font-semibold px-3 py-2">
           Organizer preview — this page is not published yet. Turn on <strong>Publish</strong> in the
           Public Page Editor to make it visible to everyone.
@@ -2068,7 +2081,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
             <Button
               disabled={seSubmitting}
               onClick={async () => {
-                if (!sideEventDialog) return;
+                if (clientSampleSlug || !sideEventDialog) return;
                 if (!seForm.name.trim() || !seForm.email.trim()) {
                   toast({ title: "Name and email required", variant: "destructive" });
                   return;
@@ -2670,6 +2683,7 @@ const PublicTournament = ({ slugOverride }: { slugOverride?: string }) => {
                 <button
                   disabled={donationLoading || (!donationAmount && !customDonation)}
                   onClick={async () => {
+                    if (clientSampleSlug) return;
                     const cents = donationAmount
                       ? donationAmount * 100
                       : Math.round(parseFloat(customDonation) * 100);

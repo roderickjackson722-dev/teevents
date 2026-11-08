@@ -43,6 +43,16 @@ export async function requireConnectedAccount(
     return fallback(null);
   }
 
+  // Only the new flyer-linked client sandbox is payment-free. Preserve
+  // existing live/legacy demo routing and platform fallback behavior.
+  const { data: clientDemo, error: demoError } = await supabaseAdmin
+    .from("organizations")
+    .select("client_demo_sample_id")
+    .eq("id", organizationId)
+    .single();
+  if (demoError) throw new Error("Unable to verify event payment eligibility");
+  if (clientDemo?.client_demo_sample_id) throw new Error("Sample events cannot accept payments. Convert the sample to a client event first.");
+
   const { data: org } = await supabaseAdmin
     .from("organizations")
     .select("stripe_account_id, name")

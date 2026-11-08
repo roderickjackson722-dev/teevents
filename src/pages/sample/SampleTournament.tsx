@@ -29,6 +29,7 @@ import SampleOrganizerDashboardTeaser from "@/components/sample/SampleOrganizerD
 import SampleLeaderboard from "@/components/sample/SampleLeaderboard";
 import SampleSponsorStrip from "@/components/sample/SampleSponsorStrip";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import PublicTournament from "@/pages/PublicTournament";
 
 interface Sample {
   id: string;
@@ -58,6 +59,7 @@ export default function SampleTournament() {
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDashIntro, setShowDashIntro] = useState(false);
+  const [linkedDemo, setLinkedDemo] = useState(false);
 
   useEffect(() => {
     if (!slug) return;
@@ -72,6 +74,8 @@ export default function SampleTournament() {
         return;
       }
       setSample(s as Sample);
+      const { data: demoSite } = await supabase.rpc("client_sample_site", { _slug: slug });
+      setLinkedDemo(Boolean(demoSite));
       supabase.rpc("increment_sample_view", { _slug: slug });
       const [{ data: p }, { data: sp }, { data: lb }] = await Promise.all([
         supabase
@@ -116,6 +120,7 @@ export default function SampleTournament() {
     "https://images.unsplash.com/photo-1592919505780-303950717480?w=1600";
   const primary = sample.primary_color || "#1a5c38";
   const secondary = sample.secondary_color || "#F5A623";
+  if (linkedDemo && slug) return <><div data-tour="event-page"><PublicTournament slugOverride={slug} clientSampleSlug={slug} /></div><section className="max-w-6xl mx-auto px-4 py-8 space-y-8 pb-20"><div data-tour="registration"><SampleRegistrationPreview eventName={sample.tournament_name} feeCents={sample.registration_fee_cents} primaryColor={primary} secondaryColor={secondary} /></div><div data-tour="leaderboard"><SampleLeaderboard eventName={sample.tournament_name} rows={leaderboard} primaryColor={primary} secondaryColor={secondary} /></div><div data-tour="mobile-scoring" className="space-y-2"><h2 className="text-xl font-semibold">Sample scoring</h2><Button variant="outline" asChild><Link to={`/sample/${slug}/live`}>Preview scoring</Link></Button></div><div data-tour="organizer-dashboard" className="space-y-2"><h2 className="text-xl font-semibold">Sample organizer dashboard</h2><Button variant="outline" asChild><Link to={`/sample/${slug}/dashboard`}>Preview dashboard</Link></Button></div></section>{sample.guided_tour && <SampleGuidedTour slug={slug} customerName={sample.prospect_name} eventName={sample.tournament_name} primaryColor={primary} secondaryColor={secondary} />}</>;
 
   return (
     <div className="min-h-screen bg-background" style={sample.background_color ? { backgroundColor: sample.background_color } : undefined}>

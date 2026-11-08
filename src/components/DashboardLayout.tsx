@@ -16,6 +16,7 @@ import { DashboardChatAssistant } from "./DashboardChatAssistant";
 import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck, Sparkles, ExternalLink } from "lucide-react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useSampleMode, setSampleModeActive } from "@/hooks/useSampleMode";
+import { Button } from "@/components/ui/button";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -58,6 +59,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [loading, setLoading] = useState(true);
   const [orgContext, setOrgContext] = useState<OrgContext | null>(null);
   const [isAdminOverride, setIsAdminOverride] = useState(false);
+  const [clientDemoSlug, setClientDemoSlug] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isDemoMode } = useDemoMode();
@@ -113,6 +115,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             .single();
 
           if (org) {
+            const eventId = searchParams.get("tournament_id");
+            setClientDemoSlug(null);
+            if (eventId) {
+              const { data: event } = await supabase.from("tournaments").select("client_sample_id, is_converted_from_sample").eq("id", eventId).eq("organization_id", org.id).maybeSingle();
+              if (event?.client_sample_id && !event.is_converted_from_sample) {
+                const { data: sample } = await supabase.from("sample_tournaments").select("unique_slug").eq("id", event.client_sample_id).maybeSingle();
+                setClientDemoSlug(sample?.unique_slug || null);
+              }
+            }
             setOrgContext({ orgId: org.id, orgName: (org as any).dashboard_name || org.name });
             setIsAdminOverride(true);
             setLoading(false);
@@ -235,6 +246,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="min-h-screen flex flex-col w-full">
+        {clientDemoSlug && <div className="bg-secondary text-secondary-foreground px-3 py-2 flex flex-wrap justify-center items-center gap-3 text-sm font-semibold"><span>Sample • No payments or public registration</span><Button size="sm" variant="outline" asChild><a href={`/sample/${clientDemoSlug}`} target="_blank" rel="noreferrer"><Eye className="h-4 w-4 mr-1" /> Preview Sample</a></Button></div>}
         {isAdminOverride && (
           <div className="bg-destructive text-destructive-foreground px-3 sm:px-4 py-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3 text-xs sm:text-sm font-medium z-50">
             <span className="flex min-w-0 items-center gap-2">
@@ -335,17 +347,17 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             {tournamentSlug && (
               <div className="border-b bg-secondary/10 px-3 sm:px-4 py-3">
                 <a
-                  href={`/t/${tournamentSlug}`}
+                  href={clientDemoSlug ? `/sample/${clientDemoSlug}` : `/t/${tournamentSlug}`}
                   target="_blank"
                   rel="noopener noreferrer"
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-secondary px-4 py-3 text-sm sm:text-base font-bold text-primary shadow-sm transition-colors hover:bg-secondary/80"
                 >
-                  <ExternalLink className="h-5 w-5" /> View Live Tournament Page
+                  <ExternalLink className="h-5 w-5" /> {clientDemoSlug ? "Preview Sample Event" : "View Live Tournament Page"}
                 </a>
               </div>
             )}
             <main className="flex-1 bg-muted/30 p-3 sm:p-4 md:p-8 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
-              {orgContext && !isDemoMode && !isSampleMode && <StripeConnectBanner organizationId={orgContext.orgId} loginReminder={!isAdminOverride && !searchParams.has("admin_org")} />}
+              {orgContext && !isDemoMode && !isSampleMode && !clientDemoSlug && <StripeConnectBanner organizationId={orgContext.orgId} loginReminder={!isAdminOverride && !searchParams.has("admin_org")} />}
               {typeof window !== "undefined" && FUNDRAISING_PATHS.includes(window.location.pathname) ? (
                 <div className="fundraising-stack"><FundraisingTabs />{children}</div>
               ) : typeof window !== "undefined" && MONEY_PATHS.includes(window.location.pathname) ? (

@@ -17,6 +17,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { adminSetEventLeaderboard } from "@/lib/featureAddonRequests.functions";
 import FeatureAddonRequests from "@/components/admin/FeatureAddonRequests";
 import StripeConnectInvite from "@/components/admin/StripeConnectInvite";
+import ClientSampleTracking from "@/components/admin/ClientSampleTracking";
 
 type Row = {
   id: string;
@@ -28,6 +29,7 @@ type Row = {
   location: string | null;
   organization_id: string | null;
   is_demo: boolean | null;
+  client_sample_id?: string | null;
   is_pro: boolean | null;
   site_published: boolean | null;
   registration_open: boolean | null;
@@ -67,6 +69,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const [sampleReloadKey, setSampleReloadKey] = useState(0);
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
   const [attaching, setAttaching] = useState<string | null>(null);
   const [sampleFor, setSampleFor] = useState<Row | null>(null);
@@ -95,7 +98,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants, show_in_public_search, payment_method_override, max_players, live_leaderboard_enabled, paid_features")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants, show_in_public_search, payment_method_override, max_players, live_leaderboard_enabled, paid_features, client_sample_id")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];
@@ -374,6 +377,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
     const from = dateFrom || null;
     const to = dateTo || null;
     return rows.filter((r) => {
+      if (r.client_sample_id && r.is_sample && filter !== "demo") return false;
       // Status pill filters
       if (filter === "live" && !(r.site_published && (r.date ? r.date >= today : true))) return false;
       if (filter === "draft" && r.site_published) return false;
@@ -435,7 +439,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
       <AdminCreateTournamentDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={() => load()}
+        onCreated={() => { load(); setSampleReloadKey(key => key + 1); }}
       />
 
       {sampleFor && (
@@ -475,7 +479,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                 <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9 w-[150px]" />
               </div>
               {(["all", "live", "draft", "ended", "demo", "pro", "managed"] as const).map((f) => (
-                <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)} className="capitalize">{f}</Button>
+                <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)} className="capitalize">{f === "demo" ? "Demos" : f}</Button>
               ))}
               {(search || dateFrom || dateTo || filter !== "all") && (
                 <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setDateFrom(""); setDateTo(""); setFilter("all"); }}>Reset</Button>
@@ -483,7 +487,8 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
               <Button size="sm" variant="outline" onClick={load} disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}</Button>
             </div>
 
-            {loading ? (
+            {filter === "demo" && <ClientSampleTracking embedded reloadKey={sampleReloadKey} />}
+            {filter === "demo" ? null : loading ? (
               <div className="py-10 text-center text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Loading…</div>
             ) : (
               <div className="border rounded-md">

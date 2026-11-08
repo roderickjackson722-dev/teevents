@@ -6887,6 +6887,7 @@ export type Database = {
       }
       organizations: {
         Row: {
+          client_demo_sample_id: string | null
           created_at: string
           dashboard_name: string | null
           dedicated_rep_avatar_url: string | null
@@ -6926,6 +6927,7 @@ export type Database = {
           workspace_type: string
         }
         Insert: {
+          client_demo_sample_id?: string | null
           created_at?: string
           dashboard_name?: string | null
           dedicated_rep_avatar_url?: string | null
@@ -6965,6 +6967,7 @@ export type Database = {
           workspace_type?: string
         }
         Update: {
+          client_demo_sample_id?: string | null
           created_at?: string
           dashboard_name?: string | null
           dedicated_rep_avatar_url?: string | null
@@ -7003,7 +7006,15 @@ export type Database = {
           updated_at?: string
           workspace_type?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "organizations_client_demo_sample_id_fkey"
+            columns: ["client_demo_sample_id"]
+            isOneToOne: false
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       organizer_email_templates: {
         Row: {
@@ -13558,6 +13569,7 @@ export type Database = {
           branding_removed_paid: boolean
           branding_removed_paid_at: string | null
           captain_label: string | null
+          client_sample_id: string | null
           clippd_api_key: string | null
           clippd_integration_enabled: boolean
           clippd_last_sync: string | null
@@ -13929,6 +13941,7 @@ export type Database = {
           branding_removed_paid?: boolean
           branding_removed_paid_at?: string | null
           captain_label?: string | null
+          client_sample_id?: string | null
           clippd_api_key?: string | null
           clippd_integration_enabled?: boolean
           clippd_last_sync?: string | null
@@ -14300,6 +14313,7 @@ export type Database = {
           branding_removed_paid?: boolean
           branding_removed_paid_at?: string | null
           captain_label?: string | null
+          client_sample_id?: string | null
           clippd_api_key?: string | null
           clippd_integration_enabled?: boolean
           clippd_last_sync?: string | null
@@ -14643,6 +14657,13 @@ export type Database = {
           white_glove_requested?: boolean
         }
         Relationships: [
+          {
+            foreignKeyName: "tournaments_client_sample_id_fkey"
+            columns: ["client_sample_id"]
+            isOneToOne: false
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "tournaments_golf_course_id_fkey"
             columns: ["golf_course_id"]
@@ -15411,6 +15432,7 @@ export type Database = {
         }
         Returns: number
       }
+      client_sample_site: { Args: { _slug: string }; Returns: Json }
       college_player_insert_allowed: {
         Args: { _registration_id: string }
         Returns: boolean
@@ -15419,7 +15441,12 @@ export type Database = {
         Args: { _tournament_id: string }
         Returns: boolean
       }
+      convert_client_demo: {
+        Args: { _notes?: string; _organization_id: string; _sample_id: string }
+        Returns: Json
+      }
       delete_old_demo_tournaments: { Args: never; Returns: number }
+      ensure_client_demo: { Args: { _sample_id: string }; Returns: Json }
       find_leagues: {
         Args: { _query: string }
         Returns: {

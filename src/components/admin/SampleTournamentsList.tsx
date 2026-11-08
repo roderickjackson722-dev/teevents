@@ -1,4 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { openClientDemo, convertClientDemo } from "@/lib/clientDemo.functions";
+import { clientDemoDashboardLink } from "@/lib/clientDemo";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +31,7 @@ import {
   Trash2,
   TrendingUp,
   Upload,
+  LayoutDashboard,
 } from "lucide-react";
 
 export interface SampleRow {
@@ -85,6 +89,13 @@ const SELECT_COLS =
   "id, tournament_name, unique_slug, event_date, location, registration_fee_cents, logo_url, hero_image_url, primary_color, secondary_color, prospect_name, prospect_email, prospect_phone, prospect_company, sample_share_link, view_count, tour_completed, conversion_status, converted_at, converted_tournament_id, conversion_notes, created_at";
 
 export default function SampleTournamentsList({ reloadKey }: { reloadKey?: number }) {
+  const provisionDemo = useServerFn(openClientDemo);
+  const convertDemo = useServerFn(convertClientDemo);
+  const [dashboardBusy, setDashboardBusy] = useState<string | null>(null);
+  const [clientOrgs, setClientOrgs] = useState<{ id: string; name: string }[]>([]);
+  const [clientOrgId, setClientOrgId] = useState("");
+  const [convertConfirmed, setConvertConfirmed] = useState(false);
+  const [hasEditableDemo, setHasEditableDemo] = useState(false);
   const [rows, setRows] = useState<SampleRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -144,7 +155,25 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
     return r.sample_share_link || `${window.location.origin}/sample/${r.unique_slug}`;
   }
 
+  async function openDashboard(r: SampleRow) {
+    setDashboardBusy(r.id);
+    try {
+      if (r.conversion_status === "converted" && r.converted_tournament_id) {
+        const { data, error } = await supabase.from("tournaments").select("id, organization_id").eq("id", r.converted_tournament_id).single();
+        if (error || !data) throw new Error(error?.message || "Client event not found");
+        window.location.assign(clientDemoDashboardLink({ tournament_id: data.id, organization_id: data.organization_id }));
+      } else {
+        const demo = await provisionDemo({ data: { sampleId: r.id } });
+        window.location.assign(clientDemoDashboardLink(demo));
+      }
+    } catch (error) {
+      toast({ title: "Could not open dashboard", description: error instanceof Error ? error.message : "Please try again", variant: "destructive" });
+      setDashboardBusy(null);
+    }
+  }
+
   async function setStatus(r: SampleRow, status: string) {
+    if (status === "converted" && r.conversion_status !== "converted") { await openConvert(r); return; }
     const patch: Record<string, unknown> = { conversion_status: status };
     if (status === "converted" && !r.converted_at) patch.converted_at = new Date().toISOString();
     if (status !== "converted") patch.converted_at = null;
@@ -218,7 +247,9 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
     await markShared(target);
   }
 
-  function openEdit(r: SampleRow) {
+  async function openEdit(r: SampleRow) {
+    const { data: demo } = await supabase.from("tournaments").select("id").eq("client_sample_id", r.id).maybeSingle();
+    if (demo) { await openDashboard(r); return; }
     setEditTarget(r);
     setEditForm({
       tournament_name: r.tournament_name || "",
@@ -291,7 +322,12 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
   }
 
   async function openConvert(r: SampleRow) {
+    setClientOrgId(""); setConvertConfirmed(false); setHasEditableDemo(false);
     setConvTarget(r);
+    if (r.conversion_status !== "converted") {
+      try { await provisionDemo({ data: { sampleId: r.id } }); }
+      catch (error) { setConvTarget(null); toast({ title: "Could not prepare conversion", description: error instanceof Error ? error.message : "Please try again", variant: "destructive" }); return; }
+    }
     setConvForm({
       conversion_status: r.conversion_status === "converted" ? "converted" : "converted",
       converted_tournament_id: r.converted_tournament_id || "",
@@ -303,10 +339,28 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
       .order("created_at", { ascending: false })
       .limit(100);
     setLiveTournaments(((data as unknown) as { id: string; title: string }[]) || []);
+    const [demo, orgs] = await Promise.all([
+      supabase.from("tournaments").select("id").eq("client_sample_id", r.id).eq("is_converted_from_sample", false).maybeSingle(),
+      supabase.from("organizations").select("id, name").is("client_demo_sample_id", null).order("name"),
+    ]);
+    setHasEditableDemo(Boolean(demo.data));
+    setClientOrgs(orgs.data || []);
   }
 
   async function saveConversion() {
     if (!convTarget) return;
+    if (hasEditableDemo && convForm.conversion_status === "converted") {
+      if (!clientOrgId || !convertConfirmed) return;
+      setSaving(true);
+      try {
+        await convertDemo({ data: { sampleId: convTarget.id, organizationId: clientOrgId, notes: convForm.conversion_notes } });
+        toast({ title: "Sample converted", description: "Saved edits were preserved. The client event remains unpublished with registration closed. No email was sent." });
+        setConvTarget(null); await load();
+      } catch (error) {
+        toast({ title: "Conversion failed", description: error instanceof Error ? error.message : "Please try again", variant: "destructive" });
+      } finally { setSaving(false); }
+      return;
+    }
     setSaving(true);
     const converted = convForm.conversion_status === "converted";
     const { error } = await supabase
@@ -329,6 +383,10 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
   }
 
   async function remove(r: SampleRow) {
+    if (r.conversion_status === "converted" && r.converted_tournament_id) {
+      toast({ title: "Client event retained", description: "Converted samples remain linked to their client event. Manage the client event separately." });
+      return;
+    }
     if (!confirm(`Delete the sample "${r.tournament_name}"? The customer's link will stop working.`)) return;
     const { error } = await supabase.from("sample_tournaments").delete().eq("id", r.id);
     if (error) {
@@ -436,6 +494,7 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex flex-wrap justify-end gap-1">
+                            <Button size="sm" variant="outline" disabled={dashboardBusy === r.id} onClick={() => openDashboard(r)}><LayoutDashboard className="h-3 w-3 mr-1" />{dashboardBusy === r.id ? "Opening…" : "Open Dashboard"}</Button>
                             <Button
                               size="sm"
                               variant="outline"
@@ -719,7 +778,7 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
           <DialogHeader>
             <DialogTitle>Convert Sample</DialogTitle>
             <DialogDescription>
-              {convTarget?.tournament_name} — record where this sample landed so you can track your conversions.
+              {convTarget?.tournament_name} — confirm the client handoff while preserving your saved event edits.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
@@ -741,7 +800,12 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
                 </SelectContent>
               </Select>
             </div>
-            <div>
+            {hasEditableDemo ? <div className="space-y-3">
+              <Label>Client organization</Label>
+              <Select value={clientOrgId} onValueChange={setClientOrgId}><SelectTrigger aria-label="Client organization"><SelectValue placeholder="Choose the client's organization" /></SelectTrigger><SelectContent>{clientOrgs.map(org => <SelectItem key={org.id} value={org.id}>{org.name}</SelectItem>)}</SelectContent></Select>
+              <p className="text-sm text-muted-foreground">The client must create their organizer account first. Conversion moves this edited event to their organization without publishing, opening registration or sending email.</p>
+              <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={convertConfirmed} onChange={e => setConvertConfirmed(e.target.checked)} /><span>I confirm this client handoff and want to convert the sample.</span></label>
+            </div> : <div>
               <Label>Live event they became (optional)</Label>
               <Select
                 value={convForm.converted_tournament_id || "none"}
@@ -759,7 +823,7 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
                   ))}
                 </SelectContent>
               </Select>
-            </div>
+            </div>}
             <div>
               <Label>Notes</Label>
               <textarea
@@ -789,7 +853,7 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
             </Button>
             <Button
               onClick={saveConversion}
-              disabled={saving}
+              disabled={saving || (hasEditableDemo && convForm.conversion_status === "converted" && (!clientOrgId || !convertConfirmed))}
               className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90 font-semibold"
             >
               <Save className="h-4 w-4 mr-1" /> {saving ? "Saving…" : "Save"}

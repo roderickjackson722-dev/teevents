@@ -2,7 +2,9 @@
 // undo/reset snapshots. Pure helpers shared by SiteBuilder (editor) and
 // PublicTournament (renderer). An empty value means "use the theme color".
 
-export type StyleOverrides = Partial<Record<StyleAreaKey, string>>;
+import { cleanElementEdits, elementEditsToCss, type ElementEdits } from "./liveEdits";
+
+export type StyleOverrides = Partial<Record<StyleAreaKey, string>> & { elements?: ElementEdits };
 
 export type StyleAreaKey =
   | "nav_bg" | "nav_text"
@@ -75,6 +77,8 @@ export function cleanOverrides(raw: unknown): StyleOverrides {
   for (const [k, v] of Object.entries(raw as Record<string, unknown>)) {
     if (ALL_KEYS.has(k) && typeof v === "string" && HEX.test(v.trim())) out[k as StyleAreaKey] = v.trim();
   }
+  const elements = cleanElementEdits((raw as Record<string, unknown>).elements);
+  if (Object.keys(elements).length) out.elements = elements;
   return out;
 }
 
@@ -114,9 +118,10 @@ const RULES: Record<StyleAreaKey, (c: string) => string> = {
 /** CSS rules applied on top of the theme. Order matters: specific areas last. */
 export function overridesToCss(raw: unknown): string {
   const o = cleanOverrides(raw);
-  return (Object.keys(RULES) as StyleAreaKey[])
+  return [...(Object.keys(RULES) as StyleAreaKey[])
     .filter((k) => o[k])
-    .map((k) => RULES[k](o[k]!))
+    .map((k) => RULES[k](o[k]!)), elementEditsToCss(o.elements)]
+    .filter(Boolean)
     .join("\n");
 }
 

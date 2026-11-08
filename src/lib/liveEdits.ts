@@ -123,11 +123,11 @@ export function elementEditsToCss(raw: unknown): string {
   for (const [sel, e] of Object.entries(edits)) {
     if (e.style) {
       const css = styleToCss(e.style);
-      if (css) rules.push(`.tv-public ${sel}{${css}}`);
+      if (css) rules.push(`.tv-public ${cssSelector(sel)}{${css}}`);
     }
     if (e.hidden) {
-      rules.push(`.tv-public:not([data-tv-editing]) ${sel}{display:none!important}`);
-      rules.push(`.tv-public[data-tv-editing] ${sel}{opacity:.35!important;outline:2px dashed #999!important}`);
+      rules.push(`.tv-public:not([data-tv-editing]) ${cssSelector(sel)}{display:none!important}`);
+      rules.push(`.tv-public[data-tv-editing] ${cssSelector(sel)}{opacity:.35!important;outline:2px dashed #999!important}`);
     }
   }
   return rules.join("\n");

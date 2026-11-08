@@ -1151,26 +1151,6 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                       </div>
                     );
                   })}
-                          </div>
-                        </div>
-                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 flex gap-0">
-                          {Array.from({ length: tpl.preview.ctaCount }).map((_, i) => (
-                            <div key={i} className="w-10 h-3" style={{ backgroundColor: i === 0 ? tpl.colors.secondary : tpl.colors.primary, opacity: i === 0 ? 1 : 0.8 }} />
-                          ))}
-                        </div>
-                      </div>
-                      <div className="p-2 flex items-center gap-2">
-                        <div className="flex gap-1 shrink-0">
-                          <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: tpl.colors.primary }} />
-                          <div className="w-4 h-4 rounded-full border border-border" style={{ backgroundColor: tpl.colors.secondary }} />
-                        </div>
-                        <div>
-                          <p className="text-xs font-semibold text-foreground">{tpl.name}</p>
-                          <p className="text-[10px] text-muted-foreground leading-tight">{tpl.description}</p>
-                        </div>
-                      </div>
-                    </button>
-                  ))}
                 </div>
               </div>
 

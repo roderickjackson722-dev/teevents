@@ -127,3 +127,36 @@ export const AUCTION_ITEM_TEMPLATES: TextTemplate[] = [
     text: "Item: [Item name]. Description: [What it is, and what makes it special]. Value: $[value]. Starting bid: $[amount]. Donated by: [Donor name].",
   },
 ];
+
+export interface TemplateEventInfo {
+  title?: string | null;
+  course_name?: string | null;
+  location?: string | null;
+  date?: string | null;
+  contact_email?: string | null;
+}
+
+function formatTemplateDate(date: string): string {
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(date);
+  if (!m) return date;
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  return d.toLocaleDateString("en-US", { weekday: "long", month: "long", day: "numeric", year: "numeric" });
+}
+
+/**
+ * Replace [Event Name], [Course Name], [Date] and [email] with the event's saved
+ * details. A placeholder stays in brackets when the event has no value for it.
+ */
+export function fillTemplatePlaceholders(text: string, info: TemplateEventInfo | null | undefined): string {
+  if (!info) return text;
+  const values: Record<string, string | null | undefined> = {
+    "event name": info.title,
+    "course name": info.course_name || info.location,
+    date: info.date ? formatTemplateDate(info.date) : null,
+    email: info.contact_email,
+  };
+  return text.replace(/\[([^\]]+)\]/g, (whole, key: string) => {
+    const v = values[key.trim().toLowerCase()];
+    return v && v.trim() ? v.trim() : whole;
+  });
+}

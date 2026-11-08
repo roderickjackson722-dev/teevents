@@ -1773,9 +1773,9 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           {tournament.site_hero_subtitle && (
             <p
               data-tv="hero-subtitle"
-              className="mt-4 max-w-full sm:max-w-2xl whitespace-pre-line break-words"
-              style-align={layout.align}
+              className={`mt-4 max-w-full sm:max-w-2xl whitespace-pre-line break-words ${layout.align === "center" ? "mx-auto" : ""}`}
               style={{
+                textAlign: layout.align,
                 color: "rgba(255,255,255,0.85)",
                 fontSize: "clamp(0.875rem, 2vw, 1.25rem)",
                 lineHeight: 1.45,
@@ -1909,28 +1909,29 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                 }}
                 target={tournament.registration_url ? "_blank" : undefined}
                 rel={tournament.registration_url ? "noopener noreferrer" : undefined}
-                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
+                className={`tv-design-btn flex-1 text-center font-bold tracking-wider uppercase ${layout.buttons === 1 ? "min-w-[220px] max-w-[360px] py-5" : "min-w-[160px] max-w-[260px] py-4"}`}
                 style={{
-                  backgroundColor: tpl === "modern" ? "#1565c0" : secondary,
-                  color: tpl === "modern" ? "#ffffff" : primary,
-                  borderRadius: `${buttonRadius}px`,
-                  fontSize: `${buttonSize}px`,
+                  backgroundColor: secondary,
+                  color: primary,
+                  borderRadius: `${ctaRadius}px`,
+                  fontSize: `${layout.buttons === 1 ? buttonSize + 4 : buttonSize}px`,
                 }}
               >
-                {showClosedNotice && !inviteOk && !clientSampleSlug ? regCopy.closed : regCopy.custom ? regCopy.label : tpl === "charity" ? "Golf & Sponsor Registration" : "Registration"}
+                {showClosedNotice && !inviteOk && !clientSampleSlug ? regCopy.closed : regCopy.custom ? regCopy.label : "Register"}
               </a>
             )}
 
             {/* Sponsors button */}
-            {style.ctaLayout === "three" && isTabVisible("sponsors") && (
+            {layout.buttons >= 2 && isTabVisible("sponsors") && (
               <button
                 data-sample-nav
                 onClick={() => scrollTo("#become-a-sponsor")}
-                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
+                className="tv-design-btn flex-1 min-w-[160px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
                 style={{
-                  backgroundColor: tpl === "modern" ? "#b71c1c" : primary,
+                  backgroundColor: layout.hero === "photo" || layout.hero === "framed" ? primary : "transparent",
                   color: "#ffffff",
-                  borderRadius: `${buttonRadius}px`,
+                  border: layout.hero === "photo" || layout.hero === "framed" ? undefined : "2px solid rgba(255,255,255,0.85)",
+                  borderRadius: `${ctaRadius}px`,
                   fontSize: `${buttonSize}px`,
                 }}
               >
@@ -1938,23 +1939,30 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
               </button>
             )}
 
-            {/* Auction button */}
-            {auctionItems.length > 0 && (
-              <button
-                onClick={() => scrollTo("#auction")}
-                className="tv-design-btn flex-1 min-w-[180px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
-                style={{
-                  backgroundColor: tpl === "modern" ? "#424242" : tpl === "charity" ? "#1a1a1a" : "#333333",
-                  color: "#ffffff",
-                  borderRadius: `${buttonRadius}px`,
-                  fontSize: `${buttonSize}px`,
-                }}
-              >
-                View Auction Items
-              </button>
-            )}
+            {/* Third button: auction when there are items, otherwise event details */}
+            {layout.buttons >= 3 && (() => {
+              const fallback = navLinks.find((l) => !["#top", "#register", "#sponsors", "#become-a-sponsor", "#contact"].includes(l.href));
+              const href = auctionItems.length > 0 ? "#auction" : fallback?.href;
+              if (!href) return null;
+              return (
+                <button
+                  data-sample-nav
+                  onClick={() => scrollTo(href)}
+                  className="tv-design-btn flex-1 min-w-[160px] max-w-[260px] py-4 text-center font-bold tracking-wider uppercase"
+                  style={{
+                    backgroundColor: layout.dark ? "#c0c0c8" : "#333333",
+                    color: layout.dark ? "#111118" : "#ffffff",
+                    borderRadius: `${ctaRadius}px`,
+                    fontSize: `${buttonSize}px`,
+                  }}
+                >
+                  {auctionItems.length > 0 ? "View Auction Items" : fallback?.label}
+                </button>
+              );
+            })()}
           </div>
         </motion.div>
+        </div>
       </section>
 
       {galleryPosition === "top" && galleryNode}

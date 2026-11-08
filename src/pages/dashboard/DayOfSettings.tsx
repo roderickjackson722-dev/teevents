@@ -551,7 +551,7 @@ export default function DayOfSettings() {
               <Button type="button" disabled={sendingReminder} onClick={() => sendDayBeforeReminder("all")}>
                 Send to all paid players
               </Button>
-              <a href="/dashboard/email-templates?template=day_before" className="text-sm text-primary underline self-center">
+              <a href="/dashboard/email-send?template=day_before" className="text-sm text-primary underline self-center">
                 Edit template
               </a>
             </div>

@@ -209,7 +209,7 @@ export default function Surveys() {
           <p className="text-muted-foreground">Gather feedback and analyze results.</p>
         </div>
         <Button variant="outline" asChild>
-          <a href="/dashboard/email-templates"><ClipboardList className="mr-2 h-4 w-4" /> Edit Email Templates</a>
+          <a href="/dashboard/email-send"><ClipboardList className="mr-2 h-4 w-4" /> Edit Email Templates</a>
         </Button>
       </div>
 
@@ -257,7 +257,7 @@ export default function Surveys() {
                 <CardDescription>
                   The survey is no longer shown on your public page. Players receive a unique survey link by email after the event ends.{" "}
                   Want to design the invitation, pick recipients, or schedule it yourself? Use the{" "}
-                  <a href="/dashboard/email-templates?template=survey" className="underline font-medium">
+                  <a href="/dashboard/email-send?template=survey" className="underline font-medium">
                     Post-Event Survey Invitation email template
                   </a>.
                 </CardDescription>

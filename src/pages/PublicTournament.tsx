@@ -828,7 +828,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
   const tabHasData: Record<PublicTabKey, boolean> = {
     about_event: !!(tournament as any).description_html?.replace(/<[^>]*>/g, "").trim() || !!tournament.description,
-    registration: !!tournament.registration_open || inviteOk,
+    registration: !!tournament.registration_open || inviteOk || !!clientSampleSlug,
     leaderboard: tournament.live_leaderboard_enabled !== false && leaderboard.length > 0,
     sponsors: ((tournament as any).show_sponsorships ?? true) && (sponsors.length > 0 || sponsorshipTiers.length > 0),
     gallery: photos.length > 0,

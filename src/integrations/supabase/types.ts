@@ -9442,6 +9442,38 @@ export type Database = {
         }
         Relationships: []
       }
+      sample_build_notes: {
+        Row: {
+          admin_notes: string | null
+          organizer_email: string | null
+          organizer_mode: string
+          organizer_organization: string | null
+          sample_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          organizer_email?: string | null
+          organizer_mode?: string
+          organizer_organization?: string | null
+          sample_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          organizer_email?: string | null
+          organizer_mode?: string
+          organizer_organization?: string | null
+          sample_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_build_notes_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: true
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sample_leaderboard: {
         Row: {
           created_at: string

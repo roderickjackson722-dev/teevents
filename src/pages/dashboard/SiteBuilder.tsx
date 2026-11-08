@@ -45,6 +45,7 @@ import {
 } from "@/lib/siteDesign";
 import { DesignPreview } from "@/components/site-builder/DesignPreview";
 import { PageColorControls } from "@/components/site-builder/PageColorControls";
+import { Pencil } from "lucide-react";
 import { designSnapshot, pushDesignHistory, snapshotPatch, type DesignSnapshot } from "@/lib/siteStyleOverrides";
 import { Wand2, EyeOff } from "lucide-react";
 import { US_STATES } from "@/lib/usStates";
@@ -716,6 +717,14 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                 <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
                 {settings.site_published ? "View Site" : "View Live Preview"}
               </Link>
+            </Button>
+          )}
+          {publicUrl && (
+            <Button size="sm" asChild className="shrink-0">
+              <a href={`${publicUrl}?edit=1`} target="_blank" rel="noopener noreferrer">
+                <Pencil className="h-3.5 w-3.5 mr-1.5" />
+                Edit Live Page
+              </a>
             </Button>
           )}
           {!settings.site_published && (

@@ -1,4 +1,6 @@
-import { overridesToCss } from "@/lib/siteStyleOverrides";
+import { overridesToCss, cleanOverrides } from "@/lib/siteStyleOverrides";
+import { applyContentEdits, googleFontsHref } from "@/lib/liveEdits";
+import { LiveEditor } from "@/components/site-builder/LiveEditor";
 import { useEffect, useState, useCallback, type CSSProperties } from "react";
 import { useParams, useSearchParams, useNavigate } from "@/lib/router-compat";
 import { motion } from "framer-motion";
@@ -210,6 +212,10 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
     window.location.replace(`/t/${slug}/add-ons?addon=${encodeURIComponent(addonParam)}`);
   }, [addonParam, slug]);
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
+  const [liveRoot, setLiveRoot] = useState<HTMLDivElement | null>(null);
+  const liveEditing = searchParams.get("edit") === "1";
+  const liveElementEdits = cleanOverrides((tournament as any)?.site_style_overrides).elements;
+  useEffect(() => { if (liveRoot) applyContentEdits(liveRoot, liveElementEdits); });
    const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);
    const [products, setProducts] = useState<PublicProduct[]>([]);
   const [leaderboard, setLeaderboard] = useState<LeaderboardRow[]>([]);
@@ -786,6 +792,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   const showLogo = tournament.site_show_logo !== false;
   const textColor = tournament.site_text_color || "#1F2937";
   const styleOverrideCss = overridesToCss((tournament as any).site_style_overrides);
+  const liveFontsHref = googleFontsHref(liveElementEdits);
   const pageBg = tournament.site_background_color || "#ffffff";
   const fontFamilyId = tournament.site_font_family || "Inter";
   const fontStackCss = (() => {
@@ -1545,7 +1552,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
 
   return (
 
-    <div className="min-h-screen tv-public" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top" onSubmitCapture={clientSampleSlug ? e => { e.preventDefault(); e.stopPropagation(); } : undefined} onClickCapture={clientSampleSlug ? e => {
+    <div ref={setLiveRoot} className="min-h-screen tv-public" style={{ backgroundColor: pageBg, color: textColor, fontFamily: fontStackCss, fontSize: `${bodySize}px` }} id="top" onSubmitCapture={clientSampleSlug ? e => { e.preventDefault(); e.stopPropagation(); } : undefined} onClickCapture={clientSampleSlug ? e => {
       const target = e.target instanceof Element ? e.target.closest("button,a") : null;
       if (!target) return;
       if (target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("#")) return;
@@ -1586,6 +1593,15 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
         </div>
       )}
       {styleOverrideCss && <style dangerouslySetInnerHTML={{ __html: styleOverrideCss }} />}
+      {liveFontsHref && <link rel="stylesheet" href={liveFontsHref} />}
+      {liveEditing && (tournament as any).id && (
+        <LiveEditor
+          tournamentId={(tournament as any).id}
+          root={liveRoot}
+          overrides={(tournament as any).site_style_overrides}
+          onOverridesChange={(next) => setTournament((prev) => (prev ? ({ ...(prev as any), site_style_overrides: next } as TournamentSite) : prev))}
+        />
+      )}
       {/* ===== TOP NAVIGATION BAR ===== */}
       <nav
         data-tv="nav"

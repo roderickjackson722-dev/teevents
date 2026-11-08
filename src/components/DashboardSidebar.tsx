@@ -232,11 +232,17 @@ export function DashboardSidebar() {
       setTournamentId(null);
       return;
     }
-    const apply = (data: any) => {
-      setTournamentSlug(data?.slug ?? null);
+    const apply = async (data: any) => {
       setTournamentId(data?.id ?? null);
+      // Unconverted client demos open their sample page, which shows working
+      // registration and sponsor previews without real sign-ups or payments.
+      if (data?.client_sample_id && !data?.is_converted_from_sample) {
+        const { data: sample } = await supabase.from("sample_tournaments").select("unique_slug").eq("id", data.client_sample_id).maybeSingle();
+        if (sample?.unique_slug) { setTournamentSlug(`sample:${sample.unique_slug}`); return; }
+      }
+      setTournamentSlug(data?.slug ?? null);
     };
-    const cols = "id, slug";
+    const cols = "id, slug, client_sample_id, is_converted_from_sample";
     // When a specific tournament is selected, its slug drives the public page
     // link — never the org's latest tournament.
     if (selectedTournamentId) {
@@ -389,7 +395,7 @@ export function DashboardSidebar() {
             }
             if (cat.label === "Setup" && tournamentSlug) {
               items = [
-                { title: "View Live Tournament Page", url: `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
+                { title: "View Live Tournament Page", url: tournamentSlug.startsWith("sample:") ? `/sample/${tournamentSlug.slice(7)}` : `/t/${tournamentSlug}`, icon: Eye, feature: null, description: "View your live tournament webpage" },
                 ...cat.items,
               ];
             }

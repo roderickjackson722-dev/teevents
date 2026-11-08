@@ -118,7 +118,7 @@ export default function SampleTournament() {
   const heroBg =
     sample.hero_image_url ||
     "https://images.unsplash.com/photo-1592919505780-303950717480?w=1600";
-  if (linkedDemo && slug) return <><PublicTournament slugOverride={slug} clientSampleSlug={slug} />{sample.guided_tour && <SampleGuidedTour slug={slug} customerName={sample.prospect_name} eventName={sample.tournament_name} />}</>;
+  if (linkedDemo && slug) return <><div data-tour="event-page"><PublicTournament slugOverride={slug} clientSampleSlug={slug} /></div><section className="max-w-6xl mx-auto px-4 py-8 space-y-8 pb-20"><div data-tour="registration"><SampleRegistrationPreview eventName={sample.tournament_name} feeCents={sample.registration_fee_cents} /></div><div data-tour="leaderboard"><SampleLeaderboard players={leaderboard} primaryColor={sample.primary_color || undefined} secondaryColor={sample.secondary_color || undefined} /></div><div data-tour="mobile-scoring" className="space-y-2"><h2 className="text-xl font-semibold">Sample scoring</h2><Button variant="outline" asChild><Link to={`/sample/${slug}/live`}>Preview scoring</Link></Button></div><div data-tour="organizer-dashboard" className="space-y-2"><h2 className="text-xl font-semibold">Sample organizer dashboard</h2><Button variant="outline" asChild><Link to={`/sample/${slug}/dashboard`}>Preview dashboard</Link></Button></div></section>{sample.guided_tour && <SampleGuidedTour slug={slug} customerName={sample.prospect_name} eventName={sample.tournament_name} />}</>;
   const primary = sample.primary_color || "#1a5c38";
   const secondary = sample.secondary_color || "#F5A623";
 

@@ -635,7 +635,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   }, [loading, slug, tournament]);
 
   const handlePlaceBid = async () => {
-    if (!bidForm) return;
+    if (clientSampleSlug || !bidForm) return;
     const amount = parseFloat(bidForm.amount);
     if (!amount || !bidForm.name || !bidForm.email) return;
     const { error } = await supabase.from("tournament_auction_bids").insert({
@@ -650,7 +650,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   };
 
   const handleVolunteerSignup = async () => {
-    if (!volForm || !tournament) return;
+    if (clientSampleSlug || !volForm || !tournament) return;
     const { error } = await supabase.from("tournament_volunteers").insert({
       role_id: volForm.roleId, tournament_id: tournament.id, name: volForm.name, email: volForm.email, phone: volForm.phone || null,
     });
@@ -660,7 +660,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   };
 
   const handleSurveySubmit = async () => {
-    if (!surveyEmail || surveyQuestions.length === 0) return;
+    if (clientSampleSlug || !surveyEmail || surveyQuestions.length === 0) return;
     const inserts = surveyQuestions.map((q) => ({
       survey_id: q.survey_id, question_id: q.id, respondent_email: surveyEmail, answer: surveyAnswers[q.id] || "",
     })).filter((r) => r.answer);
@@ -671,7 +671,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   };
 
   const handleStoreBuy = async (productId: string) => {
-    if (!tournament) return;
+    if (clientSampleSlug || !tournament) return;
     setStoreBuyLoading(productId);
     try {
       const { data, error } = await supabase.functions.invoke("create-store-checkout", {
@@ -697,7 +697,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   };
 
   const handleAuctionBuyNow = async (itemId: string) => {
-    if (!tournament) return;
+    if (clientSampleSlug || !tournament) return;
     setAuctionBuyLoading(itemId);
     try {
       const { data, error } = await supabase.functions.invoke("create-auction-checkout", {
@@ -1544,7 +1544,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
       e.preventDefault(); e.stopPropagation();
       toast({ title: "Sample preview", description: "No payments, sign-ups or messages are accepted on this sample." });
     } : undefined}>
-      {clientSampleSlug && <div className="bg-secondary text-secondary-foreground text-center px-3 py-2 text-sm font-semibold">Sample • No payments or public registration</div>}
+      {clientSampleSlug && <div className="fixed bottom-0 inset-x-0 z-50 bg-secondary text-secondary-foreground text-center px-3 py-2 text-sm font-semibold">Sample • No payments or public registration</div>}
       {/* Design-system button hover effect (organizer-controlled) */}
       <style>{`.tv-design-btn{transition:filter .2s ease, transform .2s ease;} .tv-design-btn:hover{filter:${hoverFilter};}`}</style>
       {isPreview && !clientSampleSlug && (
@@ -2075,7 +2075,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
             <Button
               disabled={seSubmitting}
               onClick={async () => {
-                if (!sideEventDialog) return;
+                if (clientSampleSlug || !sideEventDialog) return;
                 if (!seForm.name.trim() || !seForm.email.trim()) {
                   toast({ title: "Name and email required", variant: "destructive" });
                   return;
@@ -2677,6 +2677,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                 <button
                   disabled={donationLoading || (!donationAmount && !customDonation)}
                   onClick={async () => {
+                    if (clientSampleSlug) return;
                     const cents = donationAmount
                       ? donationAmount * 100
                       : Math.round(parseFloat(customDonation) * 100);

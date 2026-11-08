@@ -29,6 +29,7 @@ type Row = {
   location: string | null;
   organization_id: string | null;
   is_demo: boolean | null;
+  client_sample_id?: string | null;
   is_pro: boolean | null;
   site_published: boolean | null;
   registration_open: boolean | null;
@@ -97,7 +98,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
     setLoading(true);
     const { data: ts } = await supabase
       .from("tournaments")
-      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants, show_in_public_search, payment_method_override, max_players, live_leaderboard_enabled, paid_features")
+      .select("id, title, date, slug, custom_slug, course_name, location, organization_id, is_demo, is_pro, site_published, registration_open, managed_by_teevents, created_at, registration_fee_cents, created_by_admin_id, admin_invitation_sent_at, is_sample, pass_fees_to_registrants, show_in_public_search, payment_method_override, max_players, live_leaderboard_enabled, paid_features, client_sample_id")
       .order("created_at", { ascending: false })
       .limit(1000);
     const list = (ts as Row[]) || [];
@@ -376,6 +377,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
     const from = dateFrom || null;
     const to = dateTo || null;
     return rows.filter((r) => {
+      if (r.client_sample_id && r.is_sample && filter !== "demo") return false;
       // Status pill filters
       if (filter === "live" && !(r.site_published && (r.date ? r.date >= today : true))) return false;
       if (filter === "draft" && r.site_published) return false;

@@ -21,6 +21,15 @@ import { Badge } from "@/components/ui/badge";
 import GroupRegistrationSettings from "@/components/dashboard/GroupRegistrationSettings";
 import AddonDisplaySettings from "@/components/dashboard/AddonDisplaySettings";
 import PrivateRegistrationLink from "@/components/dashboard/PrivateRegistrationLink";
+import { TemplatePicker } from "@/components/dashboard/TemplatePicker";
+import {
+  REGISTRATION_INTRO_TEMPLATES,
+  PROMO_TEMPLATES,
+  DONATION_INTRO_TEMPLATE,
+  DONATION_SUGGESTED_AMOUNTS,
+  templateTextToHtml,
+  htmlHasContent,
+} from "@/lib/contentTemplates";
 
 import {
   ClipboardList,
@@ -1269,7 +1278,18 @@ const Registration = () => {
               {/* Public Registration Page Content */}
               <div className="p-4 rounded-lg border border-border bg-muted/20 space-y-4">
                 <div>
-                  <Label className="text-sm font-semibold">Registration Intro Text</Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-sm font-semibold">Registration Intro Text</Label>
+                    <TemplatePicker
+                      hasContent={htmlHasContent(registrationIntroHtml)}
+                      onBlank={() => setRegistrationIntroHtml("")}
+                      options={REGISTRATION_INTRO_TEMPLATES.map((t) => ({
+                        id: t.id,
+                        label: t.label,
+                        apply: () => setRegistrationIntroHtml(templateTextToHtml(t.text)),
+                      }))}
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground mt-0.5 mb-2">
                     Shown directly below the "REGISTRATION" heading on your public tournament page. Leave blank to use the default ("Register your foursome below to secure your spots." / "Fill out the form below to secure your spot.").
                   </p>
@@ -1280,7 +1300,18 @@ const Registration = () => {
                   />
                 </div>
                 <div>
-                  <Label className="text-sm font-semibold">Promotional Info (shown below the registration form)</Label>
+                  <div className="flex items-center justify-between gap-2">
+                    <Label className="text-sm font-semibold">Promotional Info (shown below the registration form)</Label>
+                    <TemplatePicker
+                      hasContent={htmlHasContent(registrationPromoHtml)}
+                      onBlank={() => setRegistrationPromoHtml("")}
+                      options={PROMO_TEMPLATES.map((t) => ({
+                        id: t.id,
+                        label: t.label,
+                        apply: () => setRegistrationPromoHtml(templateTextToHtml(t.text)),
+                      }))}
+                    />
+                  </div>
                   <p className="text-xs text-muted-foreground mt-0.5 mb-2">
                     Optional rich-text block displayed under the registration form. Use it to highlight promo codes, special pricing, what's included, or anything else you want viewers to see.
                   </p>
@@ -1319,7 +1350,25 @@ const Registration = () => {
                       />
                     </div>
                     <div>
-                      <Label className="text-xs">Prompt Description</Label>
+                      <div className="flex items-center justify-between gap-2">
+                        <Label className="text-xs">Prompt Description</Label>
+                        <TemplatePicker
+                          hasContent={!!donationDescription.trim()}
+                          onBlank={() => {
+                            setDonationDescription("");
+                            setDonationPresetsDisplay("");
+                          }}
+                          options={[{
+                            id: DONATION_INTRO_TEMPLATE.id,
+                            label: DONATION_INTRO_TEMPLATE.label,
+                            detail: "fills intro + suggested amounts",
+                            apply: () => {
+                              setDonationDescription(DONATION_INTRO_TEMPLATE.text);
+                              setDonationPresetsDisplay(DONATION_SUGGESTED_AMOUNTS);
+                            },
+                          }]}
+                        />
+                      </div>
                       <Textarea
                         value={donationDescription}
                         onChange={(e) => setDonationDescription(e.target.value)}

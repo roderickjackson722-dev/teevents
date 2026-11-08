@@ -1,4 +1,6 @@
 # Roadmap (Nov 6 2026 request)
+- [ ] Consolidate client sample builder, flyer extraction/review, tracking and welcome settings; blocked on permission for necessary supporting changes under the no API/data-model/other-screen constraint.
+- [ ] Remove Demo Converter navigation/page only after consolidation and preservation are verified; blocked on completed client sample flow.
 - [x] Combined-division payouts: split the full purse equally per outright winning hole, remove carryover weighting/Skins column, test $880 across eight wins; preserve live data.
 - [x] Fix combined-division skins false teammate ties and show team/player winner labels; 16 tests and build pass, real ATL scores confirm outright team winners; no saved scores/payouts changed.
 - [ ] Signed-in ATL Calculate screen check: blocked by preview selecting a different tournament despite explicit event context; browser payout writes intercepted, no existing event writes occurred.

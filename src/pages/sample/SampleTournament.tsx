@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -52,6 +52,9 @@ interface Sample {
 }
 
 export default function SampleTournament() {
+  const [pageParams] = useSearchParams();
+  // Hide the guided tour while editing or previewing a template so its window never covers the editor.
+  const isEditingPage = pageParams.get("edit") === "1" || !!pageParams.get("preview_template");
   const { slug } = useParams<{ slug: string }>();
   const [sample, setSample] = useState<Sample | null>(null);
   const [participants, setParticipants] = useState<any[]>([]);

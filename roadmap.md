@@ -1,4 +1,6 @@
 # Roadmap (Nov 6 2026 request)
+- [ ] Verify and fix organizer double-digit score entry without changing saved event scores.
+- [ ] Verify and fix template-edit destinations without changing email content or sending messages.
 - [x] Add Platform Tournaments → Demos with normal editable dashboard, saved sample preview and explicit client conversion; signed-in save/readback and temporary conversion verified, demo publication/registration blocked, existing two samples preserved, no sends or live publishing.
 - [x] Consolidate client sample builder, JPG/PNG/PDF flyer extraction, editable field/color review, tracking and welcome settings; real AI extraction and temporary sample build/readback verified, test sample removed, no sends or existing tournament changes.
 - [x] Remove Demo Converter navigation/page after signed-in preservation check; original sample and 1/1/0/0% statistics, legacy empty states and welcome preview retained; old URL forwards to Platform Tournaments.

@@ -1,0 +1,12 @@
+import { describe, expect, it } from "vitest";
+import { reviewedFlyer, type FlyerResult } from "./flyerSample";
+const missing = { value: null, evidence: null, certain: false };
+const fixture = (): FlyerResult => ({ readable: true, tournament_name: { value: "Spring Charity Classic", evidence: "Spring Charity Classic", certain: true }, event_date: { value: "2027-02-02", evidence: "February 2, 2027", certain: true }, course_name: missing, location: { value: "Atlanta, GA", evidence: "Atlanta, GA", certain: true }, registration_fee: { value: 150, evidence: "$150 per golfer", certain: true }, scoring_format: { value: "Scramble", evidence: "Scramble", certain: true }, primary_color: "#1a5c38", accent_color: "#F5A623", background_color: "#ffffff" });
+describe("admin flyer certainty", () => {
+  it("keeps explicitly stated event values", () => { expect(reviewedFlyer(fixture()).fields).toEqual({ tournament_name: "Spring Charity Classic", event_date: "2027-02-02", course_name: "", location: "Atlanta, GA", registration_fee: "150.00", scoring_format: "Scramble" }); });
+  it("leaves uncertain values blank", () => { const f = fixture(); f.registration_fee.certain = false; f.location.certain = false; expect(reviewedFlyer(f).fields.registration_fee).toBe(""); expect(reviewedFlyer(f).fields.location).toBe(""); });
+  it("never supplies a missing year or first of month", () => { const f = fixture(); f.event_date.evidence = "February 2027"; f.event_date.certain = false; expect(reviewedFlyer(f).fields.event_date).toBe(""); f.event_date.certain = true; f.event_date.evidence = "February 2"; expect(reviewedFlyer(f).fields.event_date).toBe(""); });
+  it("clears every event field on unreadable flyers", () => { const f = fixture(); f.readable = false; expect(Object.values(reviewedFlyer(f).fields)).toEqual(["", "", "", "", "", ""]); expect(reviewedFlyer(f).colors).toEqual({ primary: null, accent: null, background: null }); });
+  it("returns the three extracted colors", () => { expect(reviewedFlyer(fixture()).colors).toEqual({ primary: "#1a5c38", accent: "#F5A623", background: "#ffffff" }); });
+  it("requires evidence and rejects impossible dates", () => { const f = fixture(); f.course_name = { value: "Invented course", evidence: null, certain: true }; f.event_date.value = "2027-02-30"; expect(reviewedFlyer(f).fields.course_name).toBe(""); expect(reviewedFlyer(f).fields.event_date).toBe(""); });
+});

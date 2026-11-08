@@ -589,7 +589,15 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
     toast({ title: `${preset.name} preset applied`, description: "Tweak any setting then click Save." });
   };
 
-  const publicUrl = settings?.slug ? `/t/${settings.slug}` : null;
+  const [demoSampleSlug, setDemoSampleSlug] = useState<string | null>(null);
+  const demoSampleId = (settings as any)?.client_sample_id as string | undefined;
+  const demoConverted = !!(settings as any)?.is_converted_from_sample;
+  useEffect(() => {
+    if (!demoSampleId || demoConverted) { setDemoSampleSlug(null); return; }
+    supabase.from("sample_tournaments").select("unique_slug").eq("id", demoSampleId).maybeSingle()
+      .then(({ data }) => setDemoSampleSlug(data?.unique_slug ?? null));
+  }, [demoSampleId, demoConverted]);
+  const publicUrl = demoSampleSlug ? `/sample/${demoSampleSlug}` : settings?.slug ? `/t/${settings.slug}` : null;
 
   const tabs = [
     { key: "branding" as const, label: "Branding", icon: Palette },

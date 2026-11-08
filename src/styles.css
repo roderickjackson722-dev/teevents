@@ -4,6 +4,18 @@
 @plugin "@tailwindcss/typography";
 @custom-variant dark (&:is(.dark *));
 
+.client-sample-preview { background: var(--sample-background); color: hsl(var(--foreground)); }
+.client-sample-banner { background: var(--sample-primary); color: hsl(var(--sample-banner-foreground)); }
+.client-sample-accent { background: var(--sample-accent); color: var(--sample-primary); }
+.client-sample-flow { --primary: 38 91% 55%; --primary-foreground: 150 56% 23%; --sample-banner-foreground: 0 0% 100%; }
+.client-sample-flow > *, .client-sample-flow .grid > *, .client-sample-flow .space-y-6 > * { min-width: 0; max-width: 100%; }
+.client-sample-flow input, .client-sample-flow textarea, .client-sample-flow [role="combobox"] { min-width: 0; max-width: 100%; }
+@media (max-width: 639px) {
+  .client-sample-flow table { display: table; min-width: 650px; }
+  .client-sample-flow .overflow-x-auto { max-width: 100%; overflow-x: auto; }
+  .client-sample-flow .flex.items-center.justify-between { flex-wrap: wrap; gap: .5rem; }
+}
+
 @theme inline {
   --font-display: "Playfair Display", Georgia, serif;
   --font-body: Raleway, system-ui, sans-serif;

@@ -14,7 +14,6 @@ import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, ExternalLink, Sparkles, Trash2, Upload, Image as ImageIcon, Send, Copy, RotateCw, Save, Eye, Ban } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ImageCropperDialog, fileToDataUrl } from "@/components/ui/image-cropper-dialog";
-import SampleWizard from "@/components/admin/SampleWizard";
 import SampleTournamentsList from "@/components/admin/SampleTournamentsList";
 
 interface DemoTournamentRow {
@@ -58,7 +57,7 @@ const SCORING_FORMATS = [
   { value: "chapman", label: "Chapman" },
 ];
 
-export default function DemoConverter() {
+export default function ClientSampleTracking({ embedded = false, reloadKey = 0 }: { embedded?: boolean; reloadKey?: number }) {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -655,21 +654,9 @@ export default function DemoConverter() {
   if (!isAdmin) return <div className="p-8">Admin access required.</div>;
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="border-b border-border bg-card">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="sm" onClick={() => navigate("/admin")}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> Admin
-          </Button>
-          <h1 className="text-xl font-semibold">Demo Converter</h1>
-          <Badge variant="secondary" className="ml-2">Real tournaments for screen-share demos</Badge>
-        </div>
-      </div>
-
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
-        <SampleWizard onCreated={() => setSampleReload((n) => n + 1)} />
-
-        <SampleTournamentsList reloadKey={sampleReload} />
+    <div className={embedded ? "" : "min-h-screen bg-background"}>
+      <div className="space-y-6">
+        <SampleTournamentsList reloadKey={sampleReload + reloadKey} />
 
         <Card>
           <CardHeader>

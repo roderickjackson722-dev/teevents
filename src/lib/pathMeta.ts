@@ -115,9 +115,9 @@ async function sampleMeta(slug: string, path: string, prefix = ""): Promise<Path
   const when = prettyDate(row.event_date);
   const where = plain(row.location);
   return make(
-    `${prefix}${name} | ${SITE_NAME}`,
+    `${prefix}${name} — Sample | ${SITE_NAME}`,
     plain(row.description) ||
-      `See ${name}${when ? ` on ${when}` : ""}${where ? ` at ${where}` : ""} — a live example of a TeeVents tournament page with registration, sponsors, pairings and live scoring.`,
+      `Preview ${name}${when ? ` on ${when}` : ""}${where ? ` at ${where}` : ""} — a TeeVents sample with a guided tour. No payments or public registration.`,
     path,
     row.hero_image_url || row.logo_url,
   );

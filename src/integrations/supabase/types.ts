@@ -9442,6 +9442,38 @@ export type Database = {
         }
         Relationships: []
       }
+      sample_build_notes: {
+        Row: {
+          admin_notes: string | null
+          organizer_email: string | null
+          organizer_mode: string
+          organizer_organization: string | null
+          sample_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          organizer_email?: string | null
+          organizer_mode?: string
+          organizer_organization?: string | null
+          sample_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          organizer_email?: string | null
+          organizer_mode?: string
+          organizer_organization?: string | null
+          sample_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sample_build_notes_sample_id_fkey"
+            columns: ["sample_id"]
+            isOneToOne: true
+            referencedRelation: "sample_tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       sample_leaderboard: {
         Row: {
           created_at: string
@@ -9660,10 +9692,12 @@ export type Database = {
       sample_tournaments: {
         Row: {
           admin_id: string | null
+          background_color: string | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
           converted_tournament_id: string | null
+          course_name: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null
@@ -9699,10 +9733,12 @@ export type Database = {
         }
         Insert: {
           admin_id?: string | null
+          background_color?: string | null
           conversion_notes?: string | null
           conversion_status?: string
           converted_at?: string | null
           converted_tournament_id?: string | null
+          course_name?: string | null
           created_at?: string
           crm_notes?: string | null
           crm_status?: string | null
@@ -9738,10 +9774,12 @@ export type Database = {
         }
         Update: {
           admin_id?: string | null
+          background_color?: string | null
           conversion_notes?: string | null
           conversion_status?: string
           converted_at?: string | null
           converted_tournament_id?: string | null
+          course_name?: string | null
           created_at?: string
           crm_notes?: string | null
           crm_status?: string | null
@@ -15225,10 +15263,12 @@ export type Database = {
         Args: { _id: string }
         Returns: {
           admin_id: string | null
+          background_color: string | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
           converted_tournament_id: string | null
+          course_name: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null
@@ -15277,10 +15317,12 @@ export type Database = {
         Args: never
         Returns: {
           admin_id: string | null
+          background_color: string | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
           converted_tournament_id: string | null
+          course_name: string | null
           created_at: string
           crm_notes: string | null
           crm_status: string | null

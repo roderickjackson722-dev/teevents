@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { readClientFlyer } from "@/lib/flyerSample.functions";
+import { openClientDemo } from "@/lib/clientDemo.functions";
+import { clientDemoDashboardLink } from "@/lib/clientDemo";
 import { flyerImages } from "@/lib/flyerImages";
 import { canBuildClientSample, sampleFormats } from "@/lib/flyerSample";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -32,6 +34,7 @@ function slugify(s: string) {
 }
 
 interface Built {
+  dashboardLink: string;
   slug: string;
   link: string;
   customerName: string;
@@ -40,6 +43,7 @@ interface Built {
 
 export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () => void; onCancel?: () => void } = {}) {
   const readFlyer = useServerFn(readClientFlyer);
+  const provisionDemo = useServerFn(openClientDemo);
   const flyerRef = useRef<HTMLInputElement>(null);
   const [flyer, setFlyer] = useState<File | null>(null);
   const [flyerPreview, setFlyerPreview] = useState("");
@@ -203,7 +207,8 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
       );
 
       if (leaderboardResult.error) throw leaderboardResult.error;
-      setBuilt({ slug, link, customerName: f.customer_name, eventName: f.event_name });
+      const demo = await provisionDemo({ data: { sampleId: sample.id } });
+      setBuilt({ slug, link, dashboardLink: clientDemoDashboardLink(demo), customerName: f.customer_name, eventName: f.event_name });
       setStep(4);
       onCreated?.();
       toast({ title: "Sample created", description: "Copy the link and send it to your customer." });
@@ -320,6 +325,7 @@ export default function SampleWizard({ onCreated, onCancel }: { onCreated?: () =
                 <a href={`/sample/${built.slug}`} target="_blank" rel="noreferrer">
                   <Button size="sm" variant="outline"><ExternalLink className="h-4 w-4 mr-1" /> Preview</Button>
                 </a>
+                <Button size="sm" variant="outline" asChild><a href={built.dashboardLink}><Wand2 className="h-4 w-4 mr-1" /> Open Dashboard</a></Button>
               </div>
               <div className="flex flex-wrap gap-2">
                 <a

@@ -17,6 +17,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { adminSetEventLeaderboard } from "@/lib/featureAddonRequests.functions";
 import FeatureAddonRequests from "@/components/admin/FeatureAddonRequests";
 import StripeConnectInvite from "@/components/admin/StripeConnectInvite";
+import ClientSampleTracking from "@/components/admin/ClientSampleTracking";
 
 type Row = {
   id: string;
@@ -67,6 +68,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [createOpen, setCreateOpen] = useState(false);
+  const [sampleReloadKey, setSampleReloadKey] = useState(0);
   const [sendingInvite, setSendingInvite] = useState<string | null>(null);
   const [attaching, setAttaching] = useState<string | null>(null);
   const [sampleFor, setSampleFor] = useState<Row | null>(null);
@@ -435,7 +437,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
       <AdminCreateTournamentDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
-        onCreated={() => load()}
+        onCreated={() => { load(); setSampleReloadKey(key => key + 1); }}
       />
 
       {sampleFor && (
@@ -475,7 +477,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                 <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} className="h-9 w-[150px]" />
               </div>
               {(["all", "live", "draft", "ended", "demo", "pro", "managed"] as const).map((f) => (
-                <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)} className="capitalize">{f}</Button>
+                <Button key={f} size="sm" variant={filter === f ? "default" : "outline"} onClick={() => setFilter(f)} className="capitalize">{f === "demo" ? "Demos" : f}</Button>
               ))}
               {(search || dateFrom || dateTo || filter !== "all") && (
                 <Button size="sm" variant="ghost" onClick={() => { setSearch(""); setDateFrom(""); setDateTo(""); setFilter("all"); }}>Reset</Button>
@@ -483,7 +485,8 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
               <Button size="sm" variant="outline" onClick={load} disabled={loading}>{loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Refresh"}</Button>
             </div>
 
-            {loading ? (
+            {filter === "demo" && <ClientSampleTracking embedded reloadKey={sampleReloadKey} />}
+            {filter === "demo" ? null : loading ? (
               <div className="py-10 text-center text-muted-foreground"><Loader2 className="h-5 w-5 animate-spin inline mr-2" /> Loading…</div>
             ) : (
               <div className="border rounded-md">

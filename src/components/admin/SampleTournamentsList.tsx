@@ -383,6 +383,10 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
   }
 
   async function remove(r: SampleRow) {
+    if (r.conversion_status === "converted" && r.converted_tournament_id) {
+      toast({ title: "Client event retained", description: "Converted samples remain linked to their client event. Manage the client event separately." });
+      return;
+    }
     if (!confirm(`Delete the sample "${r.tournament_name}"? The customer's link will stop working.`)) return;
     const { error } = await supabase.from("sample_tournaments").delete().eq("id", r.id);
     if (error) {
@@ -774,7 +778,7 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
           <DialogHeader>
             <DialogTitle>Convert Sample</DialogTitle>
             <DialogDescription>
-              {convTarget?.tournament_name} — record where this sample landed so you can track your conversions.
+              {convTarget?.tournament_name} — confirm the client handoff while preserving your saved event edits.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4">

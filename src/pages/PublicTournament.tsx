@@ -613,6 +613,12 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   useEffect(() => {
     if (!tournament || loading) return;
 
+    if (clientSampleSlug) {
+      document.title = `${tournament.title} — Sample | TeeVents`;
+      upsertSingleMeta("property", "og:title", `${tournament.title} — Sample`);
+      upsertSingleMeta("name", "robots", "noindex, nofollow");
+      return;
+    }
     const meta = tournamentShareMeta(tournament, slug);
     document.title = meta.pageTitle;
     upsertSingleMeta("name", "description", meta.description);
@@ -632,7 +638,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
     upsertSingleMeta("name", "twitter:image", meta.imageUrl);
     upsertSingleMeta("name", "twitter:image:alt", meta.shareTitle);
     upsertSingleCanonical(meta.pageUrl);
-  }, [loading, slug, tournament]);
+  }, [loading, slug, tournament, clientSampleSlug]);
 
   const handlePlaceBid = async () => {
     if (clientSampleSlug || !bidForm) return;

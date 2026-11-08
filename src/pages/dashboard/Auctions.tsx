@@ -16,6 +16,8 @@ import { Switch } from "@/components/ui/switch";
 import { Plus, Trash2, Eye, Gavel, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { TabTitleInput } from "@/components/dashboard/TabTitleInput";
+import { TemplatePicker } from "@/components/dashboard/TemplatePicker";
+import { AUCTION_ITEM_TEMPLATES } from "@/lib/contentTemplates";
 import { useTournamentIdParam } from "@/hooks/useTournamentIdParam";
 
 interface AuctionRow {

@@ -12,7 +12,7 @@ interface NonprofitSettingsProps {
 }
 
 /** Where organizers edit the tax-deductible donation receipt email. */
-const RECEIPT_TEMPLATE_URL = "/dashboard/email-templates?template=receipt&receipt_type=tax_deductible";
+const RECEIPT_TEMPLATE_URL = "/dashboard/email-send?template=receipt&receipt_type=tax_deductible";
 
 export const NonprofitSettings = ({ orgId }: NonprofitSettingsProps) => {
   const [loading, setLoading] = useState(true);

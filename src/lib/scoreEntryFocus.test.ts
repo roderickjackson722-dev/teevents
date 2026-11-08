@@ -6,8 +6,19 @@ describe("applyHoleInput", () => {
     expect(applyHoleInput("4", false)).toEqual({ kind: "set", value: 4, advance: true });
   });
 
-  it("a fast second digit in the same hole stays as a double-digit score and advances", () => {
+  it("a completed double-digit score advances", () => {
     expect(applyHoleInput("12", false)).toEqual({ kind: "set", value: 12, advance: true });
+  });
+
+  it("keeps a leading 1 focused so scores 10 and 11 stay in the same hole", () => {
+    expect(applyHoleInput("1", false)).toEqual({ kind: "set", value: 1, advance: false });
+    expect(applyHoleInput("10", false)).toEqual({ kind: "set", value: 10, advance: true });
+    expect(applyHoleInput("11", false)).toEqual({ kind: "set", value: 11, advance: true });
+  });
+
+  it("keeps a leading 2 focused so the maximum score 20 can be entered", () => {
+    expect(applyHoleInput("2", false)).toEqual({ kind: "set", value: 2, advance: false });
+    expect(applyHoleInput("20", false)).toEqual({ kind: "set", value: 20, advance: true });
   });
 
   it("returning to a hole that already has a score never auto-advances", () => {

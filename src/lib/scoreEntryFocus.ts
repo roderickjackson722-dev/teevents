@@ -4,10 +4,9 @@
  *
  * Rules (from the organizer scoring spec):
  * - Number keys 0–9 only; anything else is rejected.
- * - A single digit typed into an empty hole saves that hole and advances.
- * - A second digit typed quickly in the same hole stays in that hole as a
- *   double-digit score (the caller defers the focus move one tick, so a fast
- *   second keystroke still lands here before focus leaves).
+ * - An unambiguous score typed into an empty hole saves and advances.
+ * - A leading 1 or 2 stays focused for scores 10–20, regardless of typing
+ *   speed. For a score of 1 or 2, Tab/click moves to the next hole.
  * - When returning to a hole that already has a score, there is NO
  *   auto-advance — the user presses Tab or clicks to move on.
  * - Backspace (empty string) clears the hole and never advances.
@@ -34,9 +33,9 @@ export function applyHoleInput(raw: string, hadValueOnFocus: boolean): HoleInput
   if (isNaN(num) || num < MIN_HOLE_SCORE || num > MAX_HOLE_SCORE) return { kind: "invalid" };
   // Returning to a filled hole: retype freely, but never auto-advance.
   if (hadValueOnFocus) return { kind: "set", value: num, advance: false };
-  // Empty hole: a completed entry (one digit, or a fast second digit making
-  // two) advances to the next hole.
-  return { kind: "set", value: num, advance: true };
+  // Do not move focus while another digit could make a valid score.
+  const canExtend = raw.length === 1 && num * 10 <= MAX_HOLE_SCORE;
+  return { kind: "set", value: num, advance: !canExtend };
 }
 
 /** True when a keydown should be allowed into a score cell (digits + editing keys). */

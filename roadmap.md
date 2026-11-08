@@ -1,4 +1,6 @@
 # Roadmap (Nov 6 2026 request)
+- [x] Fix organizer double-digit entry: leading 1/2 stays focused; 28 scoring tests pass including real paced keystrokes for 10/11/19/20. Signed-in live round is closed, so no live score writes were attempted.
+- [x] Fix reminder, survey and donation template-edit destinations; signed-in clicks and all three selected editors verified with writes/sends blocked, no email content changes.
 - [x] Add Platform Tournaments → Demos with normal editable dashboard, saved sample preview and explicit client conversion; signed-in save/readback and temporary conversion verified, demo publication/registration blocked, existing two samples preserved, no sends or live publishing.
 - [x] Consolidate client sample builder, JPG/PNG/PDF flyer extraction, editable field/color review, tracking and welcome settings; real AI extraction and temporary sample build/readback verified, test sample removed, no sends or existing tournament changes.
 - [x] Remove Demo Converter navigation/page after signed-in preservation check; original sample and 1/1/0/0% statistics, legacy empty states and welcome preview retained; old URL forwards to Platform Tournaments.

@@ -264,6 +264,7 @@ function SelectedEntryPanel({
   };
 
   const handleChange = (holeIdx: number, hole: number, raw: string) => {
+    window.clearTimeout(advanceTimers.current[holeIdx]);
     const result = applyHoleInput(raw, hadValueOnFocus.current[holeIdx] ?? false);
     if (result.kind === "invalid") return;
     if (result.kind === "clear") {
@@ -272,12 +273,10 @@ function SelectedEntryPanel({
     }
     onCellValue(entry, hole, result.value);
     if (result.advance && holeIdx < holes.length - 1) {
-      // Defer one tick: a fast second digit still lands in this hole (the
-      // pending move is cancelled by the next change), after which the
-      // double-digit score advances. If focus already moved, Shift+Tab or a
-      // click brings the user back, and a filled hole never auto-advances.
-      window.clearTimeout(advanceTimers.current[holeIdx]);
-      advanceTimers.current[holeIdx] = window.setTimeout(() => focusHole(holeIdx + 1), 0);
+      // Only completed scores advance; leading 1/2 never schedule a move.
+      advanceTimers.current[holeIdx] = window.setTimeout(() => {
+        if (document.activeElement === inputRefs.current[holeIdx]) focusHole(holeIdx + 1);
+      }, 0);
     }
   };
 
@@ -382,6 +381,7 @@ function SelectedEntryPanel({
                     hadValueOnFocus.current[idx] = typeof val === "number";
                     e.target.select();
                   }}
+                  onBlur={() => window.clearTimeout(advanceTimers.current[idx])}
                   onKeyDown={(e) => {
                     if (!isAllowedScoreKey(e.key)) {
                       e.preventDefault();

@@ -1,3 +1,4 @@
 - Foursomes with 2+ registered teams split via `splitFoursomeTeams` in live scoring and leaderboard; others stay one team.
 - Division skins resolves full pairing membership through `skinsCompetitionMembers` before eligibility filtering and counts shared team scores once; winner labels reuse those teams to avoid false teammate ties while individual formats remain per-player.
 - Combined-division Calculate applies the pure equal-winning-hole allocator after shared outright-winner detection; other pots retain carryover and display reads retain saved amounts until explicit Calculate to prevent silent payout changes.
+- Organizer score focus uses scoreEntryFocus's range-aware completion rule; a prefix that can form a valid multi-digit score never auto-advances, so entry does not depend on typing speed.

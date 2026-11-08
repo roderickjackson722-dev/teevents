@@ -49,6 +49,13 @@ import { US_STATES } from "@/lib/usStates";
 import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
 import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
 import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
+import { TemplatePicker } from "@/components/dashboard/TemplatePicker";
+import {
+  EVENT_DESCRIPTION_TEMPLATES,
+  SCHEDULE_TEMPLATES,
+  templateTextToHtml,
+  htmlHasContent,
+} from "@/lib/contentTemplates";
 import { autoFormatAgenda } from "@/lib/formatAgenda";
 import { sharePreviewUrl } from "@/lib/shareLinks";
 import { enterpriseLink } from "@/lib/enterpriseNavigation";
@@ -1401,7 +1408,18 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
               </div>
 
               <div>
-                <Label htmlFor="description">Event Description</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="description">Event Description</Label>
+                  <TemplatePicker
+                    hasContent={htmlHasContent((settings as any).description_html || "") || !!(settings.description || "").trim()}
+                    onBlank={() => updateField("description_html" as any, "")}
+                    options={EVENT_DESCRIPTION_TEMPLATES.map((t) => ({
+                      id: t.id,
+                      label: t.label,
+                      apply: () => updateField("description_html" as any, templateTextToHtml(t.text)),
+                    }))}
+                  />
+                </div>
                 <p className="text-xs text-muted-foreground mb-2">
                   Format text with bold, headings, fonts, colors, and links. Falls back to plain text if left empty.
                 </p>
@@ -1468,7 +1486,22 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
               </div>
 
               <div>
-                <Label htmlFor="schedule">Schedule / Timeline</Label>
+                <div className="flex items-center justify-between gap-2">
+                  <Label htmlFor="schedule">Schedule / Timeline</Label>
+                  <TemplatePicker
+                    hasContent={htmlHasContent((settings as any).schedule_info_html || "") || !!(settings.schedule_info || "").trim()}
+                    onBlank={() => updateFields({ schedule_info_html: "", schedule_info: "" })}
+                    options={SCHEDULE_TEMPLATES.map((t) => ({
+                      id: t.id,
+                      label: t.label,
+                      apply: () =>
+                        updateFields({
+                          schedule_info_html: templateTextToHtml(t.text),
+                          schedule_info: t.text,
+                        }),
+                    }))}
+                  />
+                </div>
                 <RichTextEditor
                   value={(settings as any).schedule_info_html || ""}
                   onChange={(html) => {

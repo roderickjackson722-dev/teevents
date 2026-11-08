@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.client_sample_site(text) TO anon, authenticated, service_role;

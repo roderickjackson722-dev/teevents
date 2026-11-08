@@ -29,9 +29,11 @@ export interface SiteTemplate {
   whatChanges: string;
   colors: { primary: string; secondary: string };
   layout: SiteTemplateLayout;
+  /** Legacy summary used by onboarding thumbnails. */
+  preview: { navStyle: "centered" | "left-logo"; heroAlign: Align; ctaCount: number };
 }
 
-export const SITE_TEMPLATES: SiteTemplate[] = [
+const TEMPLATE_DEFS: Omit<SiteTemplate, "preview">[] = [
   {
     id: "classic",
     name: "Centered Photo Hero",
@@ -81,6 +83,11 @@ export const SITE_TEMPLATES: SiteTemplate[] = [
     layout: { logo: "nav-left", nav: "bar", hero: "photo", align: "right", buttons: 2, pillButtons: false, pageBg: "#f7f3e8", sections: "cream", dark: false },
   },
 ];
+
+export const SITE_TEMPLATES: SiteTemplate[] = TEMPLATE_DEFS.map((t) => ({
+  ...t,
+  preview: { navStyle: t.layout.logo === "nav-left" ? "left-logo" : "centered", heroAlign: t.layout.align, ctaCount: t.layout.buttons },
+}));
 
 export function getTemplateById(id: string | null | undefined): SiteTemplate | undefined {
   return SITE_TEMPLATES.find((t) => t.id === id);

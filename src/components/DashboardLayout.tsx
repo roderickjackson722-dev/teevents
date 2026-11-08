@@ -16,6 +16,7 @@ import { DashboardChatAssistant } from "./DashboardChatAssistant";
 import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck, Sparkles, ExternalLink } from "lucide-react";
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useSampleMode, setSampleModeActive } from "@/hooks/useSampleMode";
+import { Button } from "@/components/ui/button";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -58,6 +59,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [loading, setLoading] = useState(true);
   const [orgContext, setOrgContext] = useState<OrgContext | null>(null);
   const [isAdminOverride, setIsAdminOverride] = useState(false);
+  const [clientDemoSlug, setClientDemoSlug] = useState<string | null>(null);
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { isDemoMode } = useDemoMode();
@@ -113,6 +115,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             .single();
 
           if (org) {
+            const eventId = searchParams.get("tournament_id");
+            setClientDemoSlug(null);
+            if (eventId) {
+              const { data: event } = await supabase.from("tournaments").select("client_sample_id, is_converted_from_sample").eq("id", eventId).eq("organization_id", org.id).maybeSingle();
+              if (event?.client_sample_id && !event.is_converted_from_sample) {
+                const { data: sample } = await supabase.from("sample_tournaments").select("unique_slug").eq("id", event.client_sample_id).maybeSingle();
+                setClientDemoSlug(sample?.unique_slug || null);
+              }
+            }
             setOrgContext({ orgId: org.id, orgName: (org as any).dashboard_name || org.name });
             setIsAdminOverride(true);
             setLoading(false);
@@ -235,6 +246,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
       <div className="min-h-screen flex flex-col w-full">
+        {clientDemoSlug && <div className="bg-secondary text-secondary-foreground px-3 py-2 flex flex-wrap justify-center items-center gap-3 text-sm font-semibold"><span>Sample • No payments or public registration</span><Button size="sm" variant="outline" asChild><a href={`/sample/${clientDemoSlug}`} target="_blank" rel="noreferrer"><Eye className="h-4 w-4 mr-1" /> Preview Sample</a></Button></div>}
         {isAdminOverride && (
           <div className="bg-destructive text-destructive-foreground px-3 sm:px-4 py-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 sm:flex sm:flex-wrap sm:justify-center sm:gap-3 text-xs sm:text-sm font-medium z-50">
             <span className="flex min-w-0 items-center gap-2">

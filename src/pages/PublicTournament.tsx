@@ -805,6 +805,8 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   void buttonRadius;
   const flexJustify: Record<string, string> = { left: "justify-start", center: "justify-center", right: "justify-end" };
   const textAlignClass: Record<string, "left" | "center" | "right"> = { left: "left", center: "center", right: "right" };
+  // Layout now comes from the selected template; older per-event position settings are kept but unused here.
+  void [logoPos, titlePos, buttonPos, flexJustify, textAlignClass];
 
   // Organizer-controlled public page tabs (visibility + order).
   // A tab is shown only if (a) the organizer enabled it AND (b) it has data to render.

@@ -44,6 +44,8 @@ import {
   type HoverEffect,
 } from "@/lib/siteDesign";
 import { DesignPreview } from "@/components/site-builder/DesignPreview";
+import { PageColorControls } from "@/components/site-builder/PageColorControls";
+import { designSnapshot, pushDesignHistory, snapshotPatch, type DesignSnapshot } from "@/lib/siteStyleOverrides";
 import { Wand2, EyeOff } from "lucide-react";
 import { US_STATES } from "@/lib/usStates";
 import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
@@ -369,11 +371,44 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
             seeded.schedule_info_html = autoFormatAgenda(seeded.schedule_info);
           }
           setSettings(seeded as SiteSettings);
+          setSavedDesign(designSnapshot(seeded));
           setOriginalDomain(seeded.custom_domain || null);
         }
         setLoading(false);
       });
   }, [id]);
+
+  const [savedDesign, setSavedDesign] = useState<DesignSnapshot | null>(null);
+
+  // Undo / reset write straight to the event so the public page changes at once.
+  const writeDesign = async (patch: Record<string, unknown>, history: DesignSnapshot[], message: string) => {
+    if (!settings || demoGuard()) return;
+    setSaving(true);
+    const original = (settings as any).site_design_original ?? savedDesign;
+    const { error } = await supabase
+      .from("tournaments")
+      .update({ ...patch, site_design_history: history, site_design_original: original } as any)
+      .eq("id", settings.id);
+    setSaving(false);
+    if (error) { toast({ title: "Could not change the design", description: error.message, variant: "destructive" }); return; }
+    const next = { ...(settings as any), ...patch, site_design_history: history, site_design_original: original };
+    setSettings(next as SiteSettings);
+    setSavedDesign(designSnapshot(next));
+    toast({ title: message });
+  };
+
+  const designHistory: DesignSnapshot[] = Array.isArray((settings as any)?.site_design_history) ? (settings as any).site_design_history : [];
+  const handleUndoDesign = () => {
+    const last = designHistory[designHistory.length - 1];
+    if (!last) return;
+    void writeDesign(snapshotPatch(last), designHistory.slice(0, -1), "Design change undone");
+  };
+  const handleResetDesign = () => {
+    const original = (settings as any)?.site_design_original as DesignSnapshot | null;
+    if (!original || !savedDesign) return;
+    if (!confirm("Go back to this event's original design? You can still use Undo Design afterward.")) return;
+    void writeDesign(snapshotPatch(original), pushDesignHistory(designHistory, savedDesign, snapshotPatch(original)), "Original design restored");
+  };
 
   const updateField = (field: keyof SiteSettings, value: string | boolean | number | number[] | null) => {
     setSettings((prev) => (prev ? { ...prev, [field]: value } : prev));
@@ -445,6 +480,11 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
         media_position: settings.media_position || "default",
         site_logo_color_mode: settings.site_logo_color_mode || "original",
         site_logo_color_value: settings.site_logo_color_value || null,
+        site_style_overrides: (settings as any).site_style_overrides ?? {},
+        ...(savedDesign ? {
+          site_design_history: pushDesignHistory((settings as any).site_design_history, savedDesign, settings as any),
+          site_design_original: (settings as any).site_design_original ?? savedDesign,
+        } : {}),
       } as any)
       .eq("id", settings.id);
 
@@ -452,6 +492,12 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
       toast({ title: "Error saving", description: error.message, variant: "destructive" });
       setSaving(false);
       return false;
+    }
+    if (savedDesign) {
+      const history = pushDesignHistory((settings as any).site_design_history, savedDesign, settings as any);
+      const original = (settings as any).site_design_original ?? savedDesign;
+      setSettings((prev) => (prev ? ({ ...(prev as any), site_design_history: history, site_design_original: original } as SiteSettings) : prev));
+      setSavedDesign(designSnapshot(settings as any));
     }
 
     try {
@@ -1203,6 +1249,18 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                       />
                     </div>
                   </div>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                  <PageColorControls
+                    overrides={(settings as any).site_style_overrides}
+                    onChange={(next) => updateFields({ site_style_overrides: next })}
+                    canUndo={designHistory.length > 0 && !saving}
+                    undoLabel={designHistory.length > 0 ? `${designHistory.length} saved design change${designHistory.length === 1 ? "" : "s"} can be undone.` : "Undo becomes available after you save a design change."}
+                    onUndo={handleUndoDesign}
+                    canReset={!!(settings as any).site_design_original && !saving}
+                    onReset={handleResetDesign}
+                  />
                 </div>
 
                 {/* Fonts */}

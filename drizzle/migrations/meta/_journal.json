@@ -351,6 +351,13 @@
       "when": 1794147523567,
       "tag": "0049_retain_converted_client_demo_events",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1794151826000,
+      "tag": "0050_client_sample_site_registration_text",
+      "breakpoints": true
     }
   ]
 }

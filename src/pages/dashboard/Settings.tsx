@@ -29,6 +29,7 @@ import { SCORING_FORMATS } from "@/lib/scoringFormats";
 
 import { NotificationSettings } from "@/components/settings/NotificationSettings";
 import { NonprofitSettings } from "@/components/settings/NonprofitSettings";
+import { EmbedSettings } from "@/components/settings/EmbedSettings";
 import { ChangePasswordCard } from "@/components/settings/ChangePasswordCard";
 import { AccountEmailCard } from "@/components/settings/AccountEmailCard";
 
@@ -649,6 +650,9 @@ const Settings = () => {
           </div>
         </motion.div>
       )}
+
+      {/* Embed the public registration page on an organizer's own website */}
+      {org && <EmbedSettings orgId={org.orgId} />}
 
       {/* Scoring formats, skins, flights, and payouts now live in the
           "Scoring & Payouts" tab under Tournament Setup. */}

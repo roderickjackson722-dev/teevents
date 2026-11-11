@@ -196,5 +196,4 @@ html,body,#root{overflow-y:auto!important;-webkit-overflow-scrolling:touch!impor
 .score-shape-bogey { border: 1.5px solid currentColor; }
 .score-shape-double { border: 1.5px solid currentColor; box-shadow: 0 0 0 2px hsl(var(--score-double)), 0 0 0 3.5px currentColor; }
 .score-shape-triple { padding-top: 0.25em; }
-.score-shape-triple::before { content: ""; position: absolute; inset: -0.2em -0.35em -0.1em; background: currentColor; clip-path: polygon(50% 0, 100% 100%, 0 100%, 50% 0, 50% 12%, 9% 93%, 91% 93%, 50% 12%); }
 .score-grid td, .score-grid th { border: 1px solid hsl(var(--border)); }

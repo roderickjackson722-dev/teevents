@@ -3,6 +3,16 @@ import { SCORE_LEGEND, scoreMarkKind, type ScoreMarkKind } from "@/lib/scoreMark
 
 /** Number with the printed-scorecard shape for its kind (display only). */
 export function ScoreShape({ kind, children }: { kind: ScoreMarkKind | null; children: ReactNode }) {
+  if (kind === "triple") {
+    return (
+      <span className="score-shape score-shape-triple">
+        <svg aria-hidden viewBox="0 0 24 22" className="absolute -inset-x-1.5 -top-1 -bottom-0.5 h-[calc(100%+0.4rem)] w-[calc(100%+0.75rem)]" preserveAspectRatio="none">
+          <polygon points="12,1 23,21 1,21" fill="none" stroke="currentColor" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
+        </svg>
+        <span className="relative">{children}</span>
+      </span>
+    );
+  }
   if (!kind || kind === "par") return <span className="score-shape">{children}</span>;
   return <span className={`score-shape score-shape-${kind}`}>{children}</span>;
 }

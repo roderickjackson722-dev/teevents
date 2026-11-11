@@ -28,6 +28,11 @@ serve(async (req) => {
       });
     }
 
+    // Only add-on purchase sessions may unlock add-ons.
+    if (session.metadata?.type !== "addon_purchase" || !(session.amount_total && session.amount_total > 0)) {
+      return new Response(JSON.stringify({ verified: false }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const tournamentId = session.metadata?.tournament_id;
     const addonsCsv = session.metadata?.addons || "";
     if (!tournamentId) throw new Error("Missing tournament_id in session metadata");
@@ -37,6 +42,14 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
+
+    // Apply each paid session exactly once (prevents repeated credit top-ups).
+    const { error: claimErr } = await supabaseAdmin
+      .from("stripe_session_fulfillments")
+      .insert({ session_id: session.id, kind: "addon_purchase", tournament_id: tournamentId });
+    if (claimErr) {
+      return new Response(JSON.stringify({ verified: true, tournament_id: tournamentId, addons }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const { data: existing } = await supabaseAdmin
       .from("tournaments")

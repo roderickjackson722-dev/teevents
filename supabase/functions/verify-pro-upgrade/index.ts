@@ -33,6 +33,12 @@ serve(async (req) => {
       });
     }
 
+    // Only Pro upgrade sessions may unlock Pro (other paid sessions also
+    // carry tournament_id, e.g. sponsor or add-on checkouts).
+    if (session.metadata?.type !== "pro_upgrade" || !(session.amount_total && session.amount_total > 0)) {
+      return new Response(JSON.stringify({ verified: false }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const tournamentId = session.metadata?.tournament_id;
     if (!tournamentId) throw new Error("Missing tournament_id in session metadata");
 
@@ -40,6 +46,14 @@ serve(async (req) => {
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
     );
+
+    // Apply each paid session exactly once.
+    const { error: claimErr } = await supabaseAdmin
+      .from("stripe_session_fulfillments")
+      .insert({ session_id: session.id, kind: "pro_upgrade", tournament_id: tournamentId });
+    if (claimErr) {
+      return new Response(JSON.stringify({ verified: true, tournament_id: tournamentId }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     await supabaseAdmin
       .from("tournaments")

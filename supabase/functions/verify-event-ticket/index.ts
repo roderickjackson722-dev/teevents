@@ -178,15 +178,26 @@ Deno.serve(async (req) => {
 
     if (!purchase) throw new Error("Purchase not found");
 
-    if (paid && purchase.payment_status !== "paid") {
-      await admin
+    const metaMatches =
+      session.metadata?.tier_id === purchase.tier_id &&
+      String(session.metadata?.quantity ?? "") === String(purchase.quantity);
+
+    if (paid && metaMatches && purchase.payment_status !== "paid") {
+      // Atomic transition: only the first call marks paid and counts tickets.
+      const { data: transitioned } = await admin
         .from("event_ticket_purchases")
         .update({
           payment_status: "paid",
           stripe_payment_intent_id:
             typeof session.payment_intent === "string" ? session.payment_intent : null,
         })
-        .eq("id", purchase.id);
+        .eq("id", purchase.id)
+        .eq("stripe_session_id", session.id)
+        .neq("payment_status", "paid")
+        .select("id");
+      if (!transitioned || transitioned.length === 0) {
+        return new Response(JSON.stringify({ paid, payment_status: session.payment_status }), { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
+      }
 
       await admin.rpc("increment_event_ticket_sold", {
         _tier_id: purchase.tier_id,

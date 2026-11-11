@@ -1,3 +1,4 @@
+import HoleSponsorBannersCard from "@/components/dashboard/HoleSponsorBannersCard";
 import { useEffect, useState, useCallback, useRef } from "react";
 import StickySaveBar from "@/components/dashboard/StickySaveBar";
 import { useDemoMode } from "@/hooks/useDemoMode";
@@ -811,6 +812,10 @@ const Sponsors = () => {
 
       {selectedTournament && (
         <SponsorLogoSizeCard tournamentId={selectedTournament} />
+      )}
+
+      {selectedTournament && (
+        <HoleSponsorBannersCard tournamentId={selectedTournament} orgId={org?.orgId || ""} />
       )}
 
       {/* Scoring-page + leaderboard sponsor selection now lives in Scoring → Sponsors tab. */}

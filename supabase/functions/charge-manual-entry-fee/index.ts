@@ -65,6 +65,33 @@ serve(async (req) => {
       .eq("id", fee.tournament_id)
       .maybeSingle();
 
+    // Caller must manage this tournament, and the transaction must belong to it.
+    const callerId = userRes.user.id;
+    const [{ data: isPlatformAdmin }, { data: isMember }, { data: hasRole }] = await Promise.all([
+      admin.rpc("has_role", { _user_id: callerId, _role: "admin" }),
+      tournament?.organization_id
+        ? admin.rpc("is_org_member", { _user_id: callerId, _org_id: tournament.organization_id })
+        : Promise.resolve({ data: false }),
+      admin.rpc("has_tournament_role", { _user_id: callerId, _tournament_id: fee.tournament_id }),
+    ]);
+    if (!tournament || (!isPlatformAdmin && !isMember && !hasRole)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const { data: txn } = await admin
+      .from("platform_transactions")
+      .select("id, tournament_id")
+      .eq("id", transaction_id)
+      .maybeSingle();
+    if (!txn || (txn as any).tournament_id !== fee.tournament_id) {
+      return new Response(JSON.stringify({ error: "Transaction does not match this fee" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const stripeAccountId = (tournament as any)?.organizations?.stripe_account_id;
     if (!stripeAccountId) {
       return new Response(JSON.stringify({

@@ -43,6 +43,34 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (typeof message !== "string" || message.length > 1600) {
+      return new Response(JSON.stringify({ error: "Message is too long" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (Array.isArray(to_phones) && to_phones.length > 25) {
+      return new Response(JSON.stringify({ error: "Too many manual numbers (max 25)" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Caller must manage this tournament (org member, event team, or platform admin).
+    const callerId = String((claimsData.claims as any).sub || "");
+    const { data: tOrg } = await supabase
+      .from("tournaments").select("organization_id").eq("id", tournament_id).maybeSingle();
+    const [{ data: isPlatformAdmin }, { data: isMember }, { data: hasRole }] = await Promise.all([
+      supabase.rpc("has_role", { _user_id: callerId, _role: "admin" }),
+      (tOrg as any)?.organization_id
+        ? supabase.rpc("is_org_member", { _user_id: callerId, _org_id: (tOrg as any).organization_id })
+        : Promise.resolve({ data: false }),
+      supabase.rpc("has_tournament_role", { _user_id: callerId, _tournament_id: tournament_id }),
+    ]);
+    if (!callerId || !tOrg || (!isPlatformAdmin && !isMember && !hasRole)) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // SMS is a paid add-on: verify it is enabled and that credits remain.
     const { data: smsSettings } = await supabase
       .from("tournaments")

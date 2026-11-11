@@ -14,7 +14,25 @@ Deno.serve(async (req) => {
     const resendApiKey = Deno.env.get("RESEND_API_KEY");
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
+    // Platform admins only (college invitations are admin-managed).
+    const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+    const { data: authData } = bearer ? await supabase.auth.getUser(bearer) : { data: { user: null } } as any;
+    const caller = authData?.user;
+    const { data: isAdmin } = caller
+      ? await supabase.rpc("has_role", { _user_id: caller.id, _role: "admin" })
+      : { data: false } as any;
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { invitation_ids, tournament_id } = await req.json();
+    if (!tournament_id || !Array.isArray(invitation_ids) || invitation_ids.length === 0 || invitation_ids.length > 500) {
+      return new Response(JSON.stringify({ error: "Invalid request" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Fetch tournament
     const { data: tournament } = await supabase
@@ -29,6 +47,7 @@ Deno.serve(async (req) => {
     const { data: invitations } = await supabase
       .from("college_tournament_invitations")
       .select("*")
+      .eq("tournament_id", tournament_id)
       .in("id", invitation_ids);
 
     if (!invitations || invitations.length === 0) throw new Error("No invitations found");

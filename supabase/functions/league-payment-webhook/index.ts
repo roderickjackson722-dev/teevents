@@ -403,7 +403,10 @@ Deno.serve(async (req) => {
         try {
           const res = await fetch("https://www.teevents.golf/api/public/league-event-confirmation", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? ""}`,
+            },
             body: JSON.stringify({ registration_id: regId, force: true }),
           });
           if (!res.ok) console.error("League event confirmation email failed:", res.status, await res.text());

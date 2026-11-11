@@ -36,6 +36,12 @@ export interface LeaderboardDesign {
   show_ticker: boolean;
   ticker_text: string;
   ticker_speed: "slow" | "normal" | "fast";
+  /** Background of the scrolling sponsor logo panel (separate from the leaderboard background). */
+  sponsor_panel_bg: string;
+  /** Sponsor panel title wording: "" (none) | "Leaderboard presented by" | "Sponsored by". */
+  sponsor_panel_title: string;
+  sponsor_panel_text: string;
+  sponsor_panel_logo_url: string;
   /** How multiple flights are displayed on the public leaderboard. */
   flight_display_mode: "tabs" | "grid" | "rotate";
   /** Columns used when several flight leaderboards share one screen. */
@@ -86,6 +92,10 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   show_ticker: false,
   ticker_text: "",
   ticker_speed: "normal",
+  sponsor_panel_bg: "#ffffff",
+  sponsor_panel_title: "",
+  sponsor_panel_text: "",
+  sponsor_panel_logo_url: "",
   flight_display_mode: "tabs",
   flight_columns: 2,
   flight_rotate_seconds: 15,
@@ -228,17 +238,30 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("leaderboard_design, site_logo_url")
+      .select("leaderboard_design, site_logo_url, organization_id")
       .eq("id", tournamentId)
       .maybeSingle()
       .then(({ data }) => {
         const d = (data as any)?.leaderboard_design;
         setDesign({ ...DEFAULT_DESIGN, ...(d || {}) });
         setOrgLogoUrl(((data as any)?.site_logo_url as string) || null);
+        setPanelOrgId(((data as any)?.organization_id as string) || "");
         setLoading(false);
       });
   }, [tournamentId]);
 
+
+  const [panelOrgId, setPanelOrgId] = useState("");
+  const [panelUploading, setPanelUploading] = useState(false);
+  const uploadPanelLogo = async (file: File) => {
+    setPanelUploading(true);
+    const ext = file.name.split(".").pop();
+    const path = `${panelOrgId}/${tournamentId}/sponsors/ticker-title-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from("tournament-assets").upload(path, file, { upsert: true });
+    setPanelUploading(false);
+    if (error) { toast({ title: "Upload failed", description: error.message, variant: "destructive" }); return; }
+    update("sponsor_panel_logo_url", supabase.storage.from("tournament-assets").getPublicUrl(path).data.publicUrl);
+  };
 
   const update = <K extends keyof LeaderboardDesign>(k: K, v: LeaderboardDesign[K]) =>
     setDesign((d) => ({ ...d, [k]: v }));
@@ -536,6 +559,36 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
                   <RadioOpt value="all" label="All sponsors" />
                   <RadioOpt value="selected" label="Selected only (use the ticker sponsor list below)" />
                 </RadioGroup>
+              </div>
+              <div className="space-y-3 rounded-md border p-3">
+                <Label className="text-xs font-semibold">Scrolling Sponsor Panel</Label>
+                <div className="flex items-center gap-3">
+                  <input type="color" aria-label="Sponsor panel background color" value={design.sponsor_panel_bg || "#ffffff"} onChange={(e) => update("sponsor_panel_bg", e.target.value)} className="h-9 w-12 rounded border cursor-pointer" />
+                  <span className="text-xs text-muted-foreground">Panel background (default white) so every logo reads clearly</span>
+                </div>
+                <div>
+                  <Label className="text-xs">Title</Label>
+                  <RadioGroup value={design.sponsor_panel_title || "none"} onValueChange={(v) => update("sponsor_panel_title", v === "none" ? "" : v)} className="flex flex-wrap gap-4 mt-1">
+                    <RadioOpt value="none" label="No title" />
+                    <RadioOpt value="Leaderboard presented by" label="Leaderboard presented by" />
+                    <RadioOpt value="Sponsored by" label="Sponsored by" />
+                  </RadioGroup>
+                </div>
+                <div>
+                  <Label className="text-xs">Sponsor text (optional)</Label>
+                  <Input value={design.sponsor_panel_text || ""} onChange={(e) => update("sponsor_panel_text", e.target.value)} placeholder="Acme Bank" />
+                </div>
+                <div className="flex items-center gap-2">
+                  {design.sponsor_panel_logo_url && <img src={design.sponsor_panel_logo_url} alt="" className="h-9 w-auto max-w-[120px] object-contain border rounded" />}
+                  <Button type="button" variant="outline" size="sm" asChild disabled={panelUploading || !panelOrgId}>
+                    <label className="cursor-pointer">
+                      {panelUploading ? "Uploading…" : "Upload Title Logo"}
+                      <input type="file" accept="image/*" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) uploadPanelLogo(f); e.target.value = ""; }} />
+                    </label>
+                  </Button>
+                  {design.sponsor_panel_logo_url && <Button type="button" variant="ghost" size="sm" onClick={() => update("sponsor_panel_logo_url", "")}>Remove</Button>}
+                </div>
+                <p className="text-xs text-muted-foreground">Top or bottom placement is set under Live Leaderboard settings → Banner position.</p>
               </div>
             </>
           )}

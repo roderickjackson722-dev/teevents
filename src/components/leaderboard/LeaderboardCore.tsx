@@ -211,39 +211,65 @@ export function LeaderboardRenderer({
   })();
   const loopSeconds = Math.max(5, Math.min(60, scrollingSponsorsSpeedSeconds || 20));
 
+  const panelBg = design.sponsor_panel_bg || "#ffffff";
+  const panelTitle = (design.sponsor_panel_title || "").trim();
+  const panelText = (design.sponsor_panel_text || "").trim();
+  const panelLogo = design.sponsor_panel_logo_url || "";
+  const hasPanelTitle = !!(panelTitle || panelText || panelLogo);
   const sponsorMarquee =
     marqueeBase.length > 0 ? (
       <div
         data-testid="lb-scrolling-sponsors"
-        className="overflow-hidden border-y w-full"
+        className={`w-full border-y ${compact ? "px-2 py-1.5" : "px-3 py-3"}`}
         style={{ backgroundColor: headerBg, borderColor: `${accent}44` }}
       >
         <div
-          className={`flex items-center w-max whitespace-nowrap transform-gpu ${compact ? "py-2" : "py-4"}`}
-          style={{
-            animation: `marquee ${loopSeconds}s linear infinite`,
-            animationPlayState: isPaused ? "paused" : "running",
-            willChange: "transform",
-            backfaceVisibility: "hidden",
-            WebkitFontSmoothing: "antialiased",
-          }}
+          data-testid="lb-sponsor-panel"
+          className={`flex items-center rounded-lg shadow-sm ${compact ? "gap-2 px-2" : "gap-4 px-4"}`}
+          style={{ backgroundColor: panelBg, color: "#1f2937" }}
         >
-          {[...marqueeBase, ...marqueeBase].map((s, i) => (
-            <div key={`scroll-${s.id}-${i}`} className={`flex items-center shrink-0 ${compact ? "px-4" : "px-8"}`}>
-              {s.logo_url ? (
-                <img
-                  src={s.logo_url}
-                  alt={s.name}
-                  loading="lazy"
-                  decoding="async"
-                  className={`${compact ? "h-6" : "h-10"} w-auto max-w-[200px] object-contain`}
-                  style={{ imageRendering: "auto" }}
-                />
-              ) : (
-                <span className={`${compact ? "text-xs" : "text-base"} font-semibold tracking-wide`}>{s.name}</span>
-              )}
+          {hasPanelTitle && (
+            <div data-testid="lb-sponsor-panel-title" className={`flex items-center shrink-0 gap-2 border-r pr-3 ${compact ? "py-1.5" : "py-3"}`} style={{ borderColor: "#00000022" }}>
+              {panelTitle && <span className={`${compact ? "text-[10px]" : "text-xs sm:text-sm"} uppercase tracking-wide font-semibold whitespace-nowrap`}>{panelTitle}</span>}
+              {panelLogo && <img src={panelLogo} alt={panelText || "Sponsor"} className={`${compact ? "h-6" : "h-10"} w-auto max-w-[160px] object-contain`} />}
+              {panelText && <span className={`${compact ? "text-xs" : "text-base"} font-bold whitespace-nowrap`}>{panelText}</span>}
             </div>
-          ))}
+          )}
+          <div
+            className="overflow-hidden flex-1 min-w-0"
+            style={{
+              maskImage: "linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%)",
+              WebkitMaskImage: "linear-gradient(to right, transparent 0, #000 48px, #000 calc(100% - 48px), transparent 100%)",
+            }}
+          >
+            <div
+              className={`flex items-center w-max whitespace-nowrap transform-gpu ${compact ? "py-2" : "py-4"}`}
+              style={{
+                animation: `marquee ${loopSeconds}s linear infinite`,
+                animationPlayState: isPaused ? "paused" : "running",
+                willChange: "transform",
+                backfaceVisibility: "hidden",
+                WebkitFontSmoothing: "antialiased",
+              }}
+            >
+              {[...marqueeBase, ...marqueeBase].map((s, i) => (
+                <div key={`scroll-${s.id}-${i}`} className={`flex items-center justify-center shrink-0 ${compact ? "px-4" : "px-8"}`}>
+                  {s.logo_url ? (
+                    <img
+                      src={s.logo_url}
+                      alt={s.name}
+                      loading="lazy"
+                      decoding="async"
+                      className={`${compact ? "h-6" : "h-10"} w-auto max-w-[200px] object-contain`}
+                      style={{ imageRendering: "auto" }}
+                    />
+                  ) : (
+                    <span className={`${compact ? "text-xs" : "text-base"} font-semibold tracking-wide`}>{s.name}</span>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     ) : null;

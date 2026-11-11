@@ -44,6 +44,24 @@ export const sendLeagueLeaderboardLink = createServerFn({ method: "POST" })
       .maybeSingle();
     if (!membership) throw new Error("Not authorized for this league");
 
+    // Recipients must be members of this league (or the sender themself);
+    // any other address is skipped so this can't email arbitrary people.
+    const { data: memberRows } = await supabaseAdmin
+      .from("league_members")
+      .select("email")
+      .eq("league_id", league.id);
+    const allowed = new Set<string>(
+      ((memberRows ?? []) as any[]).map((m) => String(m.email || "").trim().toLowerCase()).filter(Boolean),
+    );
+    const selfEmail = String(context?.claims?.email || "").trim().toLowerCase();
+    if (selfEmail) allowed.add(selfEmail);
+    const recipients = Array.from(new Set(data.emails.map((e: string) => e.toLowerCase()))).filter((e) => allowed.has(e));
+    const skipped = data.emails.filter((e: string) => !allowed.has(e.toLowerCase()));
+    if (recipients.length === 0) throw new Error("Only league members' email addresses can receive this link");
+    const esc = (v: unknown) =>
+      String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const safeMessage = data.message ? esc(data.message) : "";
+
     let courseName: string | null = ev.course_name ?? null;
     if (ev.league_course_id) {
       const { data: c } = await supabaseAdmin
@@ -63,13 +81,13 @@ export const sendLeagueLeaderboardLink = createServerFn({ method: "POST" })
     const holes = ev.holes === 9 ? 9 : 18;
 
     const results: { to: string; ok: boolean; error: string | null }[] = [];
-    for (const to of data.emails) {
+    for (const to of recipients) {
       const html = `
         <div style="font-family:Arial,sans-serif;max-width:560px;margin:auto;color:#222">
           ${league.logo_url ? `<img src="${league.logo_url}" alt="" style="height:56px;margin-bottom:12px" />` : ""}
           <h2 style="color:#1a5c38;margin-bottom:4px">${ev.event_name} — Live Leaderboard</h2>
           <p style="color:#555;margin-top:0">${league.league_name}${league.tagline ? ` · ${league.tagline}` : ""}</p>
-          ${data.message ? `<p>${data.message}</p>` : ""}
+          ${safeMessage ? `<p>${safeMessage}</p>` : ""}
           <p><strong>Event:</strong> ${ev.event_name}<br/>
           ${ev.event_date ? `<strong>Date:</strong> ${ev.event_date}<br/>` : ""}
           ${courseName ? `<strong>Course:</strong> ${courseName}<br/>` : ""}
@@ -95,5 +113,5 @@ export const sendLeagueLeaderboardLink = createServerFn({ method: "POST" })
       results.push({ to, ok: resp.ok, error: resp.ok ? null : await resp.text() });
     }
 
-    return { sent: results.filter((r) => r.ok).length, results, link: boardLink };
+    return { sent: results.filter((r) => r.ok).length, results, skipped, link: boardLink };
   });

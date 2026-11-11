@@ -310,7 +310,7 @@ const CustomerAuth = () => {
         },
       });
       supabase.functions.invoke("send-organizer-welcome", {
-        body: { email, full_name: fullName.trim(), plan: "Base" },
+        body: { email, full_name: fullName.trim(), plan: "Base", user_id: signUpData.user?.id ?? null },
       });
 
       recordSecurityEvent({

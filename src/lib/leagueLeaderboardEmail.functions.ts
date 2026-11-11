@@ -55,7 +55,7 @@ export const sendLeagueLeaderboardLink = createServerFn({ method: "POST" })
     );
     const selfEmail = String(context?.claims?.email || "").trim().toLowerCase();
     if (selfEmail) allowed.add(selfEmail);
-    const recipients = Array.from(new Set(data.emails.map((e: string) => e.toLowerCase()))).filter((e) => allowed.has(e));
+    const recipients: string[] = Array.from(new Set<string>(data.emails.map((e: string) => e.toLowerCase()))).filter((e) => allowed.has(e));
     const skipped = data.emails.filter((e: string) => !allowed.has(e.toLowerCase()));
     if (recipients.length === 0) throw new Error("Only league members' email addresses can receive this link");
     const esc = (v: unknown) =>

@@ -67,6 +67,15 @@ Deno.serve(async (req) => {
     }
     if (!allowed) return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
 
+    // The tournament must belong to the authorized organization.
+    if (!isAdmin) {
+      const { data: t } = await supabaseAdmin
+        .from("tournaments").select("organization_id").eq("id", tournament_id).maybeSingle();
+      if (!t || (t as any).organization_id !== organization_id) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
+      }
+    }
+
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
 

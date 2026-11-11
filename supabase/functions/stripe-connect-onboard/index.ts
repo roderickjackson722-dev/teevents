@@ -59,6 +59,18 @@ Deno.serve(async (req) => {
 
     const { organization_id } = membership;
 
+    // Only organization owners/admins (or platform admins) may set up payouts.
+    const [{ data: canManage }, { data: isPlatformAdmin }] = await Promise.all([
+      supabaseClient.rpc("is_org_admin_or_owner", { _user_id: userId, _org_id: organization_id }),
+      supabaseClient.rpc("has_role", { _user_id: userId, _role: "admin" }),
+    ]);
+    if (!canManage && !isPlatformAdmin) {
+      return new Response(JSON.stringify({ error: "Only the organization owner or an admin can set up payments." }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const stripeSecretKey = Deno.env.get("STRIPE_SECRET_KEY") || "";
 
     if (!stripeSecretKey) {

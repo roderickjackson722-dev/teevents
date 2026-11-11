@@ -148,7 +148,10 @@ async function sendConfirmations(admin: Admin, payment: any, league: any) {
     try {
       const resp = await fetch(`${SITE}/api/public/league-event-confirmation`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${process.env["SUPABASE_SERVICE_ROLE_KEY"] ?? ""}`,
+        },
         body: JSON.stringify({ registration_id: payment.registration_id, force: true }),
       });
       sent = resp.ok;

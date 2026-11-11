@@ -197,6 +197,18 @@ async function handle(request: Request) {
   if (!reg) return json({ error: "Registration not found" }, 404);
   if (reg.confirmation_email_sent_at && !force) return json({ ok: true, skipped: "already_sent" });
 
+  // Without credentials, only a brand-new registration (the public sign-up
+  // page) can trigger its one confirmation. Re-sends ("force") need the
+  // internal service credential or a signed-in manager of this league.
+  const bearer = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+  const isService = !!bearer && bearer === serviceKey;
+  if (!force && !isService) {
+    const createdMs = new Date(reg.created_at || 0).getTime();
+    if (!Number.isFinite(createdMs) || Date.now() - createdMs > 30 * 60 * 1000) {
+      return json({ error: "Unauthorized" }, 401);
+    }
+  }
+
   const [{ data: event }, { data: member }] = await Promise.all([
     admin.from("league_events").select("*").eq("id", reg.event_id).maybeSingle(),
     admin.from("league_members").select("*").eq("id", reg.member_id).maybeSingle(),
@@ -208,6 +220,19 @@ async function handle(request: Request) {
     .select("id, league_name, league_slug, organization_id, event_confirmation_email_config")
     .eq("id", (event as any).league_id)
     .maybeSingle();
+
+  if (force && !isService) {
+    if (!bearer) return json({ error: "Unauthorized" }, 401);
+    const { data: u } = await admin.auth.getUser(bearer);
+    const uid = u?.user?.id;
+    if (!uid) return json({ error: "Unauthorized" }, 401);
+    const orgId = (league as any)?.organization_id;
+    const [{ data: isAdmin }, { data: isMember }] = await Promise.all([
+      admin.rpc("has_role", { _user_id: uid, _role: "admin" }),
+      orgId ? admin.rpc("is_org_member", { _user_id: uid, _org_id: orgId }) : Promise.resolve({ data: false }),
+    ]);
+    if (!isAdmin && !isMember) return json({ error: "Forbidden" }, 403);
+  }
 
   const cfg: Required<EmailConfig> = {
     ...DEFAULT_LEAGUE_EVENT_EMAIL,

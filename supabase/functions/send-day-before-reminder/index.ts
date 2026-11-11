@@ -312,7 +312,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { tournament_id, test_email, service_run, registration_ids, email_overrides } = payload as any;
+    const { tournament_id, test_email, registration_ids } = payload as any;
+    // service_run (and send-time address overrides) are only honored for
+    // internal callers presenting the service credential.
+    const presented = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
+    const isServiceCaller = !!serviceKey && presented === serviceKey;
+    const service_run = (payload as any)?.service_run === true && isServiceCaller;
+    const email_overrides = isServiceCaller ? (payload as any)?.email_overrides : undefined;
     /** Send-time alternate addresses keyed by registration id; stored emails are untouched. */
     const overrideMap = new Map<string, string>();
     if (email_overrides && typeof email_overrides === "object") {

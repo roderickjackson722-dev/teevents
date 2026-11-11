@@ -2861,6 +2861,21 @@ export type Database = {
           },
         ]
       }
+      email_send_dedupe: {
+        Row: {
+          created_at: string
+          key: string
+        }
+        Insert: {
+          created_at?: string
+          key: string
+        }
+        Update: {
+          created_at?: string
+          key?: string
+        }
+        Relationships: []
+      }
       email_send_log: {
         Row: {
           created_at: string
@@ -11185,6 +11200,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      stripe_session_fulfillments: {
+        Row: {
+          created_at: string
+          kind: string
+          session_id: string
+          tournament_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          kind: string
+          session_id: string
+          tournament_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          kind?: string
+          session_id?: string
+          tournament_id?: string | null
+        }
+        Relationships: []
       }
       team_promoters: {
         Row: {

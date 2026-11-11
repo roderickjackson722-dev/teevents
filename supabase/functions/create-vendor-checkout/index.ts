@@ -13,6 +13,16 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Accept only real PNG / JPEG / WebP images up to 5 MB, detected from the
+// file bytes (not the filename). Anything else is skipped.
+const MAX_LOGO_BYTES = 5 * 1024 * 1024;
+function sniffLogo(b: Uint8Array): { ext: string; type: string } | null {
+  if (b.length >= 8 && b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47) return { ext: "png", type: "image/png" };
+  if (b.length >= 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return { ext: "jpg", type: "image/jpeg" };
+  if (b.length >= 12 && b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 && b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50) return { ext: "webp", type: "image/webp" };
+  return null;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -65,17 +75,15 @@ Deno.serve(async (req) => {
     let finalLogoUrl: string | null = logo_url || null;
     if (logo_base64 && logo_filename) {
       try {
-        const ext = (logo_filename.split(".").pop() || "png").toLowerCase();
-        const ctMap: Record<string, string> = {
-          png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg",
-          svg: "image/svg+xml", webp: "image/webp",
-        };
-        const path = `vendor-logos/${tournament_id}/${Date.now()}.${ext}`;
-        const base64Data = logo_base64.includes(",") ? logo_base64.split(",")[1] : logo_base64;
+        const base64Data = String(logo_base64).includes(",") ? String(logo_base64).split(",")[1] : String(logo_base64);
+        if (base64Data.length > Math.ceil(MAX_LOGO_BYTES / 3) * 4 + 4) throw new Error("Logo too large");
         const binary = Uint8Array.from(atob(base64Data), (c) => c.charCodeAt(0));
+        const kind = binary.length <= MAX_LOGO_BYTES ? sniffLogo(binary) : null;
+        if (!kind) throw new Error("Unsupported logo file");
+        const path = `vendor-logos/${tournament_id}/${Date.now()}.${kind.ext}`;
         const { error: upErr } = await supabaseAdmin.storage
           .from("tournament-assets")
-          .upload(path, binary, { contentType: ctMap[ext] || "image/png", upsert: true });
+          .upload(path, binary, { contentType: kind.type, upsert: false });
         if (!upErr) {
           finalLogoUrl = supabaseAdmin.storage.from("tournament-assets").getPublicUrl(path).data.publicUrl;
         }

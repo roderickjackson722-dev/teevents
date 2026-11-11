@@ -41,7 +41,8 @@ serve(async (req) => {
       });
     }
 
-    const { email, full_name, plan, tournament_name } = await req.json();
+    const reqBody = await req.json();
+    const { email, full_name, plan, tournament_name } = reqBody;
     if (!email || typeof email !== "string") {
       return new Response(JSON.stringify({ error: "email required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -49,6 +50,44 @@ serve(async (req) => {
     }
 
     const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+
+    // Who may trigger this: a platform admin (test sends to any address), or
+    // the signup flow for an account created in the last 15 minutes with this
+    // exact email — and then only once per address.
+    const normalizedEmail = email.trim().toLowerCase();
+    let isPlatformAdmin = false;
+    const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+    if (bearer) {
+      const { data: u } = await admin.auth.getUser(bearer);
+      if (u?.user) {
+        const { data: r } = await admin.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+        isPlatformAdmin = !!r;
+      }
+    }
+    if (!isPlatformAdmin) {
+      // The signup page passes the new account's id; the address must be that
+      // account's own email and the account must be under 15 minutes old.
+      let recent = false;
+      const newUserId = String((reqBody as any)?.user_id || "");
+      if (/^[0-9a-f-]{36}$/i.test(newUserId)) {
+        const { data: nu } = await admin.auth.admin.getUserById(newUserId);
+        const created = nu?.user?.created_at ? new Date(nu.user.created_at).getTime() : 0;
+        recent = !!nu?.user?.email
+          && nu.user.email.trim().toLowerCase() === normalizedEmail
+          && Date.now() - created < 15 * 60 * 1000;
+      }
+      if (!recent) {
+        return new Response(JSON.stringify({ error: "Forbidden" }), {
+          status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+      const { error: dupErr } = await admin.from("email_send_dedupe").insert({ key: `organizer_welcome:${normalizedEmail}` });
+      if (dupErr) {
+        return new Response(JSON.stringify({ success: true, already_sent: true }), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
 
     const { data: rows } = await admin
       .from("platform_settings")

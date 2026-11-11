@@ -31,6 +31,10 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (session.metadata?.type !== "director_shop_order" || !session.metadata?.order_id) {
+      return new Response(JSON.stringify({ verified: false }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     const orderId = session.metadata?.order_id;
     const contactName = session.metadata?.contact_name || "Customer";
     const contactEmail = session.metadata?.contact_email || session.customer_details?.email || "";
@@ -42,12 +46,17 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
 
-    // Update order status to paid
-    if (orderId) {
-      await supabaseAdmin
-        .from("director_shop_orders")
-        .update({ payment_status: "paid" })
-        .eq("id", orderId);
+    // Mark paid only when the order belongs to this session and isn't paid
+    // yet; repeat calls do nothing (no duplicate emails or notifications).
+    const { data: transitioned } = await supabaseAdmin
+      .from("director_shop_orders")
+      .update({ payment_status: "paid" })
+      .eq("id", orderId)
+      .eq("stripe_session_id", session.id)
+      .neq("payment_status", "paid")
+      .select("id");
+    if (!transitioned || transitioned.length === 0) {
+      return new Response(JSON.stringify({ verified: true, product_name: productName }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     // Get logo info

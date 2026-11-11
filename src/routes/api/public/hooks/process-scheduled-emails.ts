@@ -6,7 +6,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type, authorization, apikey",
+  "Access-Control-Allow-Headers": "content-type, authorization, apikey, x-cron-token",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
@@ -17,10 +17,21 @@ function json(payload: unknown, status = 200) {
   });
 }
 
-async function run() {
+async function run(request: Request) {
   const supabaseUrl = process.env["SUPABASE_URL"]!;
   const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+
+  // Only the scheduler (which presents the stored cron token) may run this.
+  const presented = (request.headers.get("x-cron-token") || "").trim();
+  const { data: tokenRow } = await admin
+    .from("internal_cron_tokens")
+    .select("token")
+    .eq("name", "scheduled_emails")
+    .maybeSingle();
+  if (!presented || !tokenRow?.token || presented !== tokenRow.token) {
+    return json({ error: "Unauthorized" }, 401);
+  }
 
   const { data: due, error } = await admin
     .from("scheduled_emails")
@@ -127,8 +138,8 @@ export const Route = createFileRoute("/api/public/hooks/process-scheduled-emails
   server: {
     handlers: {
       OPTIONS: () => new Response(null, { headers: cors }),
-      GET: () => run(),
-      POST: () => run(),
+      GET: ({ request }) => run(request),
+      POST: ({ request }) => run(request),
     },
   },
 });

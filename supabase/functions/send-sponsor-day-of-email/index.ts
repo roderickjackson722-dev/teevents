@@ -70,6 +70,13 @@ Deno.serve(async (req) => {
     }
     if (!allowed) return json({ error: "Forbidden" }, 403);
 
+    // The tournament must belong to the authorized organization.
+    if (!isAdmin) {
+      const { data: t } = await supabaseAdmin
+        .from("tournaments").select("organization_id").eq("id", tournament_id).maybeSingle();
+      if (!t || (t as any).organization_id !== organization_id) return json({ error: "Forbidden" }, 403);
+    }
+
     const { data: sponsors, error } = await supabaseAdmin
       .from("sponsor_registrations")
       .select("id, contact_email, company_name")

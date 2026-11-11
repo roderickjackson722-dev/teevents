@@ -17,7 +17,45 @@ Deno.serve(async (req) => {
       });
     }
 
-    const { tournament_title, school_name, coach_name, coach_email, player_count, contact_email } = await req.json();
+    // Only the caller's tournament + coach email are taken from the request;
+    // every value in the emails comes from a registration saved in the last
+    // 15 minutes, and each registration is emailed once.
+    const reqBody = await req.json().catch(() => ({}));
+    const tournamentId = String(reqBody?.tournament_id || "");
+    const reqCoachEmail = String(reqBody?.coach_email || "").trim().toLowerCase();
+    if (!/^[0-9a-f-]{36}$/i.test(tournamentId) || !reqCoachEmail || reqCoachEmail.length > 320) {
+      return new Response(JSON.stringify({ error: "Invalid request" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const admin = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+    const { data: t } = await admin
+      .from("college_tournaments").select("id, title, contact_email").eq("id", tournamentId).maybeSingle();
+    const since = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+    const { data: regRow } = await admin
+      .from("college_tournament_registrations")
+      .select("id, coach_name, coach_email, school_name")
+      .eq("tournament_id", tournamentId)
+      .ilike("coach_email", reqCoachEmail)
+      .gte("created_at", since)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (!t || !regRow) {
+      return new Response(JSON.stringify({ error: "Registration not found" }), { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { error: dupErr } = await admin
+      .from("email_send_dedupe").insert({ key: `college_registration:${regRow.id}` });
+    if (dupErr) {
+      return new Response(JSON.stringify({ success: true, already_sent: true }), { headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const { count: playerCount } = await admin
+      .from("college_tournament_players").select("id", { count: "exact", head: true }).eq("registration_id", regRow.id);
+    const esc = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const tournament_title = esc(t.title);
+    const school_name = esc(regRow.school_name);
+    const coach_name = esc(regRow.coach_name);
+    const coach_email = String(regRow.coach_email);
+    const player_count = playerCount ?? 0;
+    const contact_email = String(t.contact_email || "info@teevents.golf");
 
     // Send confirmation to coach
     const coachHtml = `

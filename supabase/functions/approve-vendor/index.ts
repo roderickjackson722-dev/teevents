@@ -107,6 +107,14 @@ Deno.serve(async (req) => {
       .single();
     if (!tournament) throw new Error("Tournament not found");
 
+    // The vendor's tournament must belong to the organization the caller was
+    // authorized for (platform admins excepted).
+    if (!isAdmin && (tournament as any).organization_id !== organization_id) {
+      return new Response(JSON.stringify({ error: "Forbidden" }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     // Build update
     const updates: Record<string, unknown> = { status: decision };
     if (booth_location) updates.booth_location = booth_location;

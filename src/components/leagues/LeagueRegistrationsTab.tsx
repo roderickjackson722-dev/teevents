@@ -12,6 +12,14 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+
+async function authJsonHeaders(): Promise<Record<string, string>> {
+  const { data } = await supabase.auth.getSession();
+  const token = data.session?.access_token;
+  return token
+    ? { "Content-Type": "application/json", Authorization: `Bearer ${token}` }
+    : { "Content-Type": "application/json" };
+}
 import { Loader2, Download, Mail, Save, RotateCcw, Users, DollarSign, Send, Plus } from "lucide-react";
 
 const ENTRY_TYPES = [
@@ -122,7 +130,7 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
     try {
       const res = await fetch("/api/public/league-event-confirmation", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: await authJsonHeaders(),
         body: JSON.stringify({ registration_id: regId, force: true }),
       });
       const body = await res.json().catch(() => ({}));
@@ -145,7 +153,7 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
       try {
         const res = await fetch("/api/public/league-event-confirmation", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: await authJsonHeaders(),
           body: JSON.stringify({ registration_id: t.id, force: true }),
         });
         if (res.ok) ok++;

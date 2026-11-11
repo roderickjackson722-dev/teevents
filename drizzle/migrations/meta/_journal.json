@@ -386,6 +386,13 @@
       "when": 1794161781080,
       "tag": "0054_site_design_overrides_history",
       "breakpoints": true
+    },
+    {
+      "idx": 55,
+      "version": "7",
+      "when": 1794397138536,
+      "tag": "0055_scorecard_submissions",
+      "breakpoints": true
     }
   ]
 }

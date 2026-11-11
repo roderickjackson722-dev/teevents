@@ -9951,6 +9951,44 @@ export type Database = {
           },
         ]
       }
+      scorecard_submissions: {
+        Row: {
+          admin_edited_at: string | null
+          created_at: string
+          id: string
+          registration_ids: string[]
+          round_number: number
+          submitted_at: string
+          tournament_id: string
+        }
+        Insert: {
+          admin_edited_at?: string | null
+          created_at?: string
+          id?: string
+          registration_ids: string[]
+          round_number?: number
+          submitted_at?: string
+          tournament_id: string
+        }
+        Update: {
+          admin_edited_at?: string | null
+          created_at?: string
+          id?: string
+          registration_ids?: string[]
+          round_number?: number
+          submitted_at?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scorecard_submissions_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       season_standings: {
         Row: {
           created_at: string
@@ -15413,6 +15451,10 @@ export type Database = {
         Args: { _tournament_id: string; _user_id: string }
         Returns: boolean
       }
+      can_staff_edit_scores: {
+        Args: { _tournament_id: string }
+        Returns: boolean
+      }
       check_auth_rate_limit: {
         Args: {
           _action: string
@@ -15573,6 +15615,18 @@ export type Database = {
           logo_url: string
           players: string[]
           primary_color: string
+        }[]
+      }
+      get_group_scorecard_submission: {
+        Args: {
+          _code: string
+          _group_number?: number
+          _round_number?: number
+          _tournament_id: string
+        }
+        Returns: {
+          admin_edited_at: string
+          submitted_at: string
         }[]
       }
       get_group_scoring_roster: {
@@ -16254,6 +16308,15 @@ export type Database = {
       submit_age_update: {
         Args: { _age: number; _token: string }
         Returns: boolean
+      }
+      submit_group_scorecard: {
+        Args: {
+          _code: string
+          _group_number?: number
+          _round_number?: number
+          _tournament_id: string
+        }
+        Returns: string
       }
       submit_survey_by_token: {
         Args: {

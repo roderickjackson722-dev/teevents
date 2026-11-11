@@ -18,6 +18,7 @@ import {
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
+import { ScoreMark, ScoreLegend, scoreFillClass } from "@/components/scoring/ScoreMark";
 
 interface Reg {
   id: string;
@@ -64,6 +65,10 @@ export default function GroupScoring() {
   // Multi-day events post scores to the round currently in play so an earlier
   // round's card is never overwritten.
   const [roundNumber, setRoundNumber] = useState(1);
+  // Player-submitted scorecard (locks player edits; staff can still fix scores).
+  const [submission, setSubmission] = useState<{ submitted_at: string; admin_edited_at: string | null } | null>(null);
+  const [reviewOpen, setReviewOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
 
   useEffect(() => {
@@ -199,6 +204,31 @@ export default function GroupScoring() {
     return () => { supabase.removeChannel(channel); };
   }, [tournament, players, code]);
 
+  const loadSubmission = async () => {
+    if (!tournament || !code) return;
+    const { data } = await (supabase as any).rpc("get_group_scorecard_submission", {
+      _tournament_id: tournament.id, _code: code, _round_number: roundNumber,
+    });
+    const row = Array.isArray(data) ? data[0] : data;
+    setSubmission(row?.submitted_at ? row : null);
+  };
+  useEffect(() => { loadSubmission(); /* eslint-disable-next-line react-hooks/exhaustive-deps */ }, [tournament?.id, code, roundNumber]);
+
+  const submitScorecard = async () => {
+    if (!tournament || !code) return;
+    setSubmitting(true);
+    const { error } = await (supabase as any).rpc("submit_group_scorecard", {
+      _tournament_id: tournament.id, _code: code, _round_number: roundNumber,
+    });
+    setSubmitting(false);
+    if (error) {
+      toast({ title: "Could not submit scorecard", description: error.message, variant: "destructive" });
+      return;
+    }
+    await loadSubmission();
+    toast({ title: "Scorecard submitted", description: "Your scores are verified and submitted. Thank you!" });
+  };
+
   const holePar = useMemo(() => {
     if (!tournament) return 4;
     if (tournament.hole_pars && tournament.hole_pars[currentHole - 1]) return tournament.hole_pars[currentHole - 1];
@@ -251,7 +281,8 @@ export default function GroupScoring() {
     return NUM_HOLES + 1;
   })();
 
-  const editLocked = isPastHole && tournament && !tournament.live_allow_edit_past_holes;
+  const editLocked = !!submission || (isPastHole && tournament && !tournament.live_allow_edit_past_holes);
+  const lockedMessage = submission ? "This scorecard was submitted. Scores can no longer be changed here." : "Editing past holes is locked by the organizer.";
 
   const performSave = async () => {
     if (!tournament || !code) return;
@@ -297,12 +328,20 @@ export default function GroupScoring() {
     if (tournament.hole_pars && tournament.hole_pars[h - 1]) return tournament.hole_pars[h - 1];
     return Math.round((tournament.course_par || 72) / 18);
   };
+  /** Real par only (never invented) for the color/shape marks. */
+  const markPar = (h: number) => {
+    const v = tournament?.hole_pars?.[h - 1];
+    return typeof v === "number" && v > 0 ? v : null;
+  };
+  const roundComplete = holesArr.every((h) => isScramble ? teamScoreForHole(h) != null : players.every((p) => scores[p.id]?.[h] != null));
+  const fmtTime = (iso: string) => new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
 
   const [editTarget, setEditTarget] = useState<{ pid: string; hole: number } | null>(null);
   const [editVal, setEditVal] = useState("");
   const [savingEdit, setSavingEdit] = useState(false);
 
   const openEdit = (pid: string, hole: number) => {
+    if (submission) return;
     const existing = isScramble ? teamScoreForHole(hole) : scores[pid]?.[hole];
     setEditVal(existing != null ? String(existing) : "");
     setEditTarget({ pid, hole });
@@ -561,7 +600,7 @@ export default function GroupScoring() {
               )}
               {editLocked && (
                 <p className="text-xs text-muted-foreground text-center pt-1">
-                  Editing past holes is locked by the organizer.
+                  {lockedMessage}
                 </p>
               )}
             </CardContent>
@@ -655,7 +694,7 @@ export default function GroupScoring() {
             </p>
             {editLocked && (
               <p className="text-xs text-muted-foreground text-center pt-1">
-                Editing past holes is locked by the organizer.
+                {lockedMessage}
               </p>
             )}
           </CardContent>
@@ -701,7 +740,7 @@ export default function GroupScoring() {
           </CardHeader>
           <CardContent className="p-0">
             <div className="scoring-table-wrap border-t border-border">
-              <table className="text-xs border-collapse w-full">
+              <table className="score-grid text-xs border-collapse w-full">
                 <thead>
                   <tr>
                     <th className="sticky-col left-0 p-2 text-left min-w-[110px] border-b border-border">Hole</th>
@@ -741,12 +780,10 @@ export default function GroupScoring() {
                               <button
                                 type="button"
                                 onClick={() => { setCurrentHole(h); openEdit(p.id, h); }}
-                                className={`w-full h-9 text-center ${h === currentHole ? "bg-primary/10" : ""} ${
-                                  v != null && v < par ? "text-primary font-bold" : v != null && v > par ? "text-destructive" : ""
-                                }`}
-                                aria-label={`Edit ${label} hole ${h}`}
+                                className={`w-full h-9 text-center ${scoreFillClass(v, markPar(h)) || (h === currentHole ? "bg-primary/10" : "")}`}
+                                aria-label={`${submission ? "View" : "Edit"} ${label} hole ${h}${par ? "" : ""}`}
                               >
-                                {v ?? "—"}
+                                <ScoreMark strokes={v} par={markPar(h)} />
                               </button>
                             </td>
                           );
@@ -758,9 +795,112 @@ export default function GroupScoring() {
                 </tbody>
               </table>
             </div>
+            <ScoreLegend className="p-3" />
           </CardContent>
         </Card>
+
+        {/* Review & submit */}
+        {submission ? (
+          <Card>
+            <CardContent className="p-4 space-y-2">
+              <p className="font-semibold text-foreground flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> Submitted {fmtTime(submission.submitted_at)}</p>
+              {submission.admin_edited_at && (
+                <p className="text-xs text-muted-foreground">Edited by admin {fmtTime(submission.admin_edited_at)}</p>
+              )}
+              <Button variant="outline" className="w-full" onClick={() => setReviewOpen(true)}>View Scorecard</Button>
+            </CardContent>
+          </Card>
+        ) : roundComplete ? (
+          <Card>
+            <CardContent className="p-4 space-y-2">
+              <p className="text-sm text-foreground">Every hole has a score. Review your scorecard, then verify and submit it.</p>
+              <Button variant="outline" className="w-full" onClick={() => setReviewOpen(true)}>Review Scores</Button>
+            </CardContent>
+          </Card>
+        ) : null}
       </main>
+
+      <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{submission ? "Submitted Scorecard" : "Review Scores"}</DialogTitle>
+          </DialogHeader>
+          {submission ? (
+            <div className="text-sm space-y-0.5">
+              <p className="font-semibold">Submitted {fmtTime(submission.submitted_at)}</p>
+              {submission.admin_edited_at && <p className="text-xs text-muted-foreground">Edited by admin {fmtTime(submission.admin_edited_at)}</p>}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">Tap any hole to change its score before you submit.</p>
+          )}
+          {(isScramble ? [players[0]] : players).filter(Boolean).map((p) => {
+            const label = isScramble ? `Team ${code}` : `${p.first_name} ${p.last_name}`;
+            const val = (h: number) => (isScramble ? teamScoreForHole(h) : scores[p.id]?.[h]);
+            const sum = (hs: number[]) => hs.reduce((n, h) => n + (val(h) ?? 0), 0);
+            const front = holesArr.slice(0, 9), back = holesArr.slice(9);
+            const nine = (hs: number[], totLabel: string) => (
+              <table className="score-grid text-xs border-collapse w-full table-fixed">
+                <thead>
+                  <tr className="bg-muted/60">
+                    <th className="p-1 text-left w-10">Hole</th>
+                    {hs.map((h) => <th key={h} className="p-1 text-center">{h}</th>)}
+                    <th className="p-1 text-center w-10">{totLabel}</th>
+                  </tr>
+                  <tr className="text-muted-foreground">
+                    <th className="p-1 text-left font-normal">Par</th>
+                    {hs.map((h) => <th key={h} className="p-1 text-center font-normal">{markPar(h) ?? "—"}</th>)}
+                    <th className="p-1 text-center font-normal">{hs.every((h) => markPar(h)) ? hs.reduce((n, h) => n + (markPar(h) || 0), 0) : "—"}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td className="p-1 font-medium">Score</td>
+                    {hs.map((h) => (
+                      <td key={h} className={`p-0 text-center ${scoreFillClass(val(h), markPar(h))}`}>
+                        <button
+                          type="button"
+                          disabled={!!submission}
+                          onClick={() => openEdit(p.id, h)}
+                          className="w-full h-10 flex items-center justify-center font-semibold disabled:cursor-default"
+                          aria-label={`Hole ${h} score`}
+                        >
+                          <ScoreMark strokes={val(h)} par={markPar(h)} />
+                        </button>
+                      </td>
+                    ))}
+                    <td className="p-1 text-center font-bold">{sum(hs) || "—"}</td>
+                  </tr>
+                </tbody>
+              </table>
+            );
+            return (
+              <div key={p.id} className="space-y-2">
+                <p className="font-semibold text-sm">{label}</p>
+                {nine(front, "OUT")}
+                {nine(back, "IN")}
+                <div className="flex justify-end gap-4 text-sm">
+                  <span>OUT <b>{sum(front) || "—"}</b></span>
+                  <span>IN <b>{sum(back) || "—"}</b></span>
+                  <span>TOT <b>{sum(holesArr) || "—"}</b></span>
+                </div>
+              </div>
+            );
+          })}
+          <ScoreLegend />
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setReviewOpen(false)}>{submission ? "Close" : "Keep Editing"}</Button>
+            {!submission && (
+              <Button
+                onClick={submitScorecard}
+                disabled={submitting || !roundComplete}
+                style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
+              >
+                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify and Submit Scorecard"}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Sticky Save bar */}
       <div className="fixed bottom-0 inset-x-0 bg-card border-t border-border p-3 z-20">

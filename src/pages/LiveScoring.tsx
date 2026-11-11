@@ -8,6 +8,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Loader2, Save, Trophy, ArrowLeft, Minus, Plus, Users, Eraser } from "lucide-react";
 import { toast } from "sonner";
 import { SponsorBanner } from "@/components/SponsorBanner";
+import { HoleSponsorBanner } from "@/components/scoring/HoleSponsorBanner";
+import type { HoleSponsor } from "@/lib/holeSponsors";
 import { activeRoundNumber, parsePairingsConfig, startingHoleForGroup, startingHoleLabelForGroup, teeTimeForGroup, roundLabel, type PairingsConfig } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, resolveStartingHole, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import { getFormatById } from "@/lib/scoringFormats";
@@ -49,6 +51,7 @@ export default function LiveScoring() {
   const { slug } = useParams<{ slug: string }>();
   const [searchParams] = useSearchParams();
   const [tournament, setTournament] = useState<TournamentData | null>(null);
+  const [holeSponsors, setHoleSponsors] = useState<HoleSponsor[]>([]);
   const [sponsors, setSponsors] = useState<{ id: string; name: string; logo_url: string | null; website_url: string | null; tier: string }[]>([]);
   const [courseStrokeIndexes, setCourseStrokeIndexes] = useState<number[] | null>(null);
   const [courseData, setCourseData] = useState<CourseData | null>(null);
@@ -131,6 +134,14 @@ export default function LiveScoring() {
 
       setLoading(false);
       if (data) {
+
+          // Hole sponsor banners (display only)
+          supabase
+            .from("tournament_sponsors")
+            .select("id, name, logo_url, hole_banner_enabled, hole_banner_display, hole_banner_name, hole_banner_logo_url, hole_banner_placement, hole_banner_scope, hole_banner_holes")
+            .eq("tournament_id", data.id)
+            .eq("hole_banner_enabled", true)
+            .then(({ data: hs }) => setHoleSponsors((hs as HoleSponsor[]) || []));
 
           // Load sponsors + uploaded rotating logos
           supabase
@@ -825,6 +836,7 @@ export default function LiveScoring() {
             />
           </div>
         )}
+        <HoleSponsorBanner sponsors={holeSponsors} hole={focusHole} placement="top" />
         <div className="flex items-start justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold">
@@ -1426,6 +1438,7 @@ export default function LiveScoring() {
         )}
 
 
+        <HoleSponsorBanner sponsors={holeSponsors} hole={focusHole} placement="bottom" />
       </div>
       {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
     </div>

@@ -1,3 +1,5 @@
+import { HoleSponsorBanner } from "@/components/scoring/HoleSponsorBanner";
+import type { HoleSponsor } from "@/lib/holeSponsors";
 import { useEffect, useMemo, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -54,6 +56,7 @@ export default function GroupScoring() {
   const [players, setPlayers] = useState<Reg[]>([]);
   const [scores, setScores] = useState<Record<string, Record<number, number>>>({});
   const [currentHole, setCurrentHole] = useState(1);
+  const [holeSponsors, setHoleSponsors] = useState<HoleSponsor[]>([]);
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -104,6 +107,13 @@ export default function GroupScoring() {
         .select("scoring_format, pairings_config, date, branding_removed, branding_removed_by_admin")
         .eq("id", t.id)
         .maybeSingle();
+      // Hole sponsor banners (display only)
+      supabase
+        .from("tournament_sponsors")
+        .select("id, name, logo_url, hole_banner_enabled, hole_banner_display, hole_banner_name, hole_banner_logo_url, hole_banner_placement, hole_banner_scope, hole_banner_holes")
+        .eq("tournament_id", t.id)
+        .eq("hole_banner_enabled", true)
+        .then(({ data: hs }) => setHoleSponsors((hs as HoleSponsor[]) || []));
       if (tRow?.scoring_format) t.scoring_format = tRow.scoring_format;
       t.branding_removed = (tRow as any)?.branding_removed ?? false;
       t.branding_removed_by_admin = (tRow as any)?.branding_removed_by_admin ?? false;
@@ -482,6 +492,7 @@ export default function GroupScoring() {
       </header>
 
       <main className="max-w-2xl mx-auto p-4 space-y-4">
+        <HoleSponsorBanner sponsors={holeSponsors} hole={currentHole} placement="top" />
         {/* Hole nav */}
         <Card>
           <CardContent className="p-4 space-y-3">
@@ -818,6 +829,7 @@ export default function GroupScoring() {
             </CardContent>
           </Card>
         ) : null}
+        <HoleSponsorBanner sponsors={holeSponsors} hole={currentHole} placement="bottom" />
       </main>
 
       <Dialog open={reviewOpen} onOpenChange={setReviewOpen}>

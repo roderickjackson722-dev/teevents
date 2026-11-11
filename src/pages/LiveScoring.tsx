@@ -1438,6 +1438,7 @@ export default function LiveScoring() {
         )}
 
 
+        <HoleSponsorBanner sponsors={holeSponsors} hole={focusHole} placement="bottom" />
       </div>
       {!isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
     </div>

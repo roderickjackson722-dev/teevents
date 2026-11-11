@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScoreMark, ScoreLegend, scoreFillClass } from "@/components/scoring/ScoreMark";
 
 export interface ScorecardCourseInfo {
   hole_pars?: number[] | null;
@@ -60,7 +61,7 @@ export function PlayerScorecardDialog({
 
   const renderNine = (label: string, holes: number[], scores: Record<number, number>) => (
     <div className="overflow-x-auto">
-      <table className="w-full text-xs border-collapse">
+      <table className="score-grid w-full text-xs border-collapse">
         <thead>
           <tr className="bg-muted/60">
             <th className="p-1.5 text-left font-semibold w-24">Hole</th>
@@ -102,18 +103,13 @@ export function PlayerScorecardDialog({
             <td className="p-1.5 font-semibold">Gross</td>
             {holes.map((h) => {
               const v = scores[h];
-              const diff = v ? v - parFor(h) : null;
+              const realPar = Number(course?.hole_pars?.[h - 1]) > 0 ? Number(course?.hole_pars?.[h - 1]) : null;
               return (
                 <td
                   key={h}
-                  className={`p-1.5 text-center font-mono font-semibold ${
-                    diff == null ? "text-muted-foreground"
-                    : diff < 0 ? "text-primary"
-                    : diff > 1 ? "text-destructive"
-                    : ""
-                  }`}
+                  className={`p-1.5 text-center font-mono font-semibold ${v == null ? "text-muted-foreground" : scoreFillClass(v, realPar)}`}
                 >
-                  {v ?? "—"}
+                  <ScoreMark strokes={v} par={realPar} />
                 </td>
               );
             })}
@@ -191,6 +187,7 @@ export function PlayerScorecardDialog({
             })()}
           </div>
         )}
+        {rounds.length > 0 && <ScoreLegend />}
         {(course?.name || course?.tee_name) && (
           <p className="text-xs text-muted-foreground">
             {[course?.name, course?.tee_name].filter(Boolean).join(" · ")}

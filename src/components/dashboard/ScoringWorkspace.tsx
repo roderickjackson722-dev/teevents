@@ -1,4 +1,6 @@
 import { useEffect, useRef } from "react";
+import { ScoreMark, ScoreLegend, scoreFillClass } from "@/components/scoring/ScoreMark";
+import { scoreMarkKind } from "@/lib/scoreMarks";
 import { applyHoleInput, isAllowedScoreKey } from "@/lib/scoreEntryFocus";
 import { stablefordPoints } from "@/lib/scoringFormats";
 import { Badge } from "@/components/ui/badge";
@@ -393,16 +395,13 @@ function SelectedEntryPanel({
                     }
                   }}
                   onChange={(e) => handleChange(idx, h, e.target.value)}
-                  className={`h-12 w-12 rounded-md border border-input bg-background text-center text-lg font-bold p-0 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-70 ${
-                    typeof val === "number"
-                      ? val < par
-                        ? "text-primary"
-                        : val > par
-                          ? "text-destructive"
-                          : ""
-                      : ""
-                  }`}
+                  className={`h-12 w-12 rounded-md border border-input bg-background text-center text-lg font-bold p-0 focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-70 ${scoreFillClass(typeof val === "number" ? val : null, par)}`}
                 />
+                {typeof val === "number" && scoreMarkKind(val, par) && scoreMarkKind(val, par) !== "par" && (
+                  <span className="text-[11px] font-bold leading-none" aria-hidden>
+                    <ScoreMark strokes={val} par={par} />
+                  </span>
+                )}
                 <span className="text-[10px] text-muted-foreground">Par {par}</span>
                 {onClearSaved && editable && typeof val === "number" && (
                   <button
@@ -428,6 +427,8 @@ function SelectedEntryPanel({
         </div>
         ))}
       </div>
+
+      <ScoreLegend />
 
       <div className="flex items-center gap-3 flex-wrap">
         <div className="rounded-md border border-border px-3 py-2 text-center">

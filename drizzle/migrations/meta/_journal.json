@@ -400,6 +400,13 @@
       "when": 1794422323474,
       "tag": "0056_hole_sponsor_banner_settings",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1794435391245,
+      "tag": "0057_security_hardening_payments_emails_policies",
+      "breakpoints": true
     }
   ]
 }

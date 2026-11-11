@@ -13116,6 +13116,13 @@ export type Database = {
           created_at: string
           description: string | null
           display_order: number
+          hole_banner_display: string
+          hole_banner_enabled: boolean
+          hole_banner_holes: number[]
+          hole_banner_logo_url: string | null
+          hole_banner_name: string | null
+          hole_banner_placement: string
+          hole_banner_scope: string
           id: string
           is_paid: boolean | null
           leaderboard_placement: string
@@ -13133,6 +13140,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           display_order?: number
+          hole_banner_display?: string
+          hole_banner_enabled?: boolean
+          hole_banner_holes?: number[]
+          hole_banner_logo_url?: string | null
+          hole_banner_name?: string | null
+          hole_banner_placement?: string
+          hole_banner_scope?: string
           id?: string
           is_paid?: boolean | null
           leaderboard_placement?: string
@@ -13150,6 +13164,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           display_order?: number
+          hole_banner_display?: string
+          hole_banner_enabled?: boolean
+          hole_banner_holes?: number[]
+          hole_banner_logo_url?: string | null
+          hole_banner_name?: string | null
+          hole_banner_placement?: string
+          hole_banner_scope?: string
           id?: string
           is_paid?: boolean | null
           leaderboard_placement?: string

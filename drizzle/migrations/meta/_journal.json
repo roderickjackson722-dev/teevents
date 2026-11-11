@@ -393,6 +393,13 @@
       "when": 1794397138536,
       "tag": "0055_scorecard_submissions",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1794422323474,
+      "tag": "0056_hole_sponsor_banner_settings",
+      "breakpoints": true
     }
   ]
 }

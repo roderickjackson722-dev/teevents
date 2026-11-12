@@ -224,6 +224,22 @@ async function handle(request: Request) {
     body = {};
   }
 
+  // Manual/test sends require a signed-in platform admin; the scheduled run
+  // requires the stored cron token. Anyone else is rejected.
+  if (body.tournament_id) {
+    const bearer = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (!bearer) return json({ error: "Unauthorized" }, 401);
+    const { data: u } = await admin.auth.getUser(bearer);
+    if (!u?.user) return json({ error: "Unauthorized" }, 401);
+    const { data: isAdmin } = await admin.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+    if (!isAdmin) return json({ error: "Forbidden" }, 403);
+  } else {
+    const presented = (request.headers.get("x-cron-token") || "").trim();
+    const { data: tokenRow } = await admin
+      .from("internal_cron_tokens").select("token").eq("name", "post_event_organizer_email").maybeSingle();
+    if (!presented || !tokenRow?.token || presented !== tokenRow.token) return json({ error: "Unauthorized" }, 401);
+  }
+
   const config = await loadConfig(admin);
   const manual = !!body.tournament_id;
   const testEmail = body.test_email ? String(body.test_email).trim() : null;

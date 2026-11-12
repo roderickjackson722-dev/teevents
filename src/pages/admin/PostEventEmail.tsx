@@ -100,9 +100,13 @@ export default function AdminPostEventEmail() {
   };
 
   const call = async (payload: Record<string, unknown>) => {
+    const { data: sess } = await supabase.auth.getSession();
     const res = await fetch(ENDPOINT, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        ...(sess.session?.access_token ? { Authorization: `Bearer ${sess.session.access_token}` } : {}),
+      },
       body: JSON.stringify(payload),
     });
     const data = await res.json().catch(() => ({}));

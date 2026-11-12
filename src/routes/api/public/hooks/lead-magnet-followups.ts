@@ -9,7 +9,7 @@ const TEAM_INBOX = "info@teevents.golf";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type, authorization",
+  "Access-Control-Allow-Headers": "x-cron-token, content-type, authorization",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
@@ -20,13 +20,19 @@ function json(payload: unknown, status = 200) {
   });
 }
 
-async function run() {
+async function run(request: Request) {
   const supabaseUrl = process.env["SUPABASE_URL"]!;
   const serviceKey = process.env["SUPABASE_SERVICE_ROLE_KEY"]!;
   const apiKey = process.env["RESEND_API_KEY"];
   if (!apiKey) return json({ error: "Email is not configured." }, 500);
 
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+
+  // Only the scheduler presenting the stored cron token may run this job.
+  const presented = (request.headers.get("x-cron-token") || "").trim();
+  const { data: tokenRow } = await admin
+    .from("internal_cron_tokens").select("token").eq("name", "lead_magnet_followups").maybeSingle();
+  if (!presented || !tokenRow?.token || presented !== tokenRow.token) return json({ error: "Unauthorized" }, 401);
 
   const { data: due, error } = await admin
     .from("lead_magnet_followups")
@@ -84,8 +90,8 @@ export const Route = createFileRoute("/api/public/hooks/lead-magnet-followups")(
   server: {
     handlers: {
       OPTIONS: () => new Response(null, { headers: cors }),
-      GET: () => run(),
-      POST: () => run(),
+      GET: ({ request }) => run(request),
+      POST: ({ request }) => run(request),
     },
   },
 });

@@ -178,7 +178,12 @@ const PostEventReport = () => {
   const downloadCsv = () => {
     if (!tournament) return;
     const lines: string[] = [];
-    const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const esc = (v: any) => {
+      // Neutralize spreadsheet formulas in text cells (numbers stay numeric).
+      let t = String(v ?? "");
+      if (typeof v !== "number" && /^[=+\-@\t\r]/.test(t)) t = `'${t}`;
+      return `"${t.replace(/"/g, '""')}"`;
+    };
     lines.push("Section,Metric,Value");
     lines.push(["Overview", "Tournament", tournament.title].map(esc).join(","));
     lines.push(["Overview", "Date", tournament.date || "—"].map(esc).join(","));

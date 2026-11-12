@@ -421,6 +421,13 @@
       "when": 1794503498773,
       "tag": "0059_security_hardening_cron_inserts_storage",
       "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1794505626218,
+      "tag": "0060_restrict_sales_flyers_listing",
+      "breakpoints": true
     }
   ]
 }

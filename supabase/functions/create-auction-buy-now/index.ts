@@ -70,7 +70,7 @@ Deno.serve(async (req) => {
       customer_email: buyer_email,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${slug}?auction_buy_now=success&auction_id=${auction_id}${acctQuerySuffix(connected)}`,
+      success_url: `${origin}/t/${slug}?auction_buy_now=success&auction_id=${auction_id}&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${slug}#auctions`,
       ...applicationFeeBlock(connected, platformFeeCents),
       metadata: {
@@ -111,17 +111,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Optimistically mark winner; verify-auction-buy-now will finalize on success
-    await supabaseAdmin
-      .from("auctions")
-      .update({
-        status: "ended",
-        winning_bidder_name: buyer_name || null,
-        winning_bidder_email: buyer_email,
-        winning_bid_amount_cents: priceCents,
-      })
-      .eq("id", auction_id);
-
+    // The auction is closed only by verify-auction-purchase after Stripe confirms payment.
     return new Response(JSON.stringify({ url: session.url }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,

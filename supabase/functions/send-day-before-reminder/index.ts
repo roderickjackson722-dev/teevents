@@ -279,6 +279,15 @@ Deno.serve(async (req) => {
     // Scheduled (pg_cron) mode: only sends reminders the organizer already
     // approved with a send time in the past. No user session required.
     if (payload?.cron === true) {
+      // Only the scheduler (presenting the stored cron token) may run this branch.
+      const presentedCron = (req.headers.get("x-cron-token") || "").trim();
+      const { data: cronRow } = await admin
+        .from("internal_cron_tokens").select("token").eq("name", "day_before_reminder").maybeSingle();
+      if (!presentedCron || !cronRow?.token || presentedCron !== cronRow.token) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
       const nowIso = new Date().toISOString();
       const { data: due } = await admin
         .from("tournaments")
@@ -333,7 +342,7 @@ Deno.serve(async (req) => {
       : null;
     if (!tournament_id || typeof tournament_id !== "string") throw new Error("Missing tournament_id");
 
-    let user: { id: string } | null = null;
+    let user: { id: string; email?: string } | null = null;
     if (!service_run) {
       const authHeader = req.headers.get("Authorization");
       if (!authHeader) throw new Error("Not authenticated");
@@ -363,6 +372,13 @@ Deno.serve(async (req) => {
       const { data: isAdmin } = await admin.rpc("has_role", { _user_id: user.id, _role: "admin" });
       const { data: isMember } = await admin.rpc("is_org_member", { _user_id: user.id, _org_id: tournament.organization_id });
       if (!isAdmin && !isMember) throw new Error("Not authorized");
+      // Test sends go only to the caller's own account email (platform admins excepted).
+      if (test_email && !isAdmin) {
+        const own = String((user as any).email || "").trim().toLowerCase();
+        if (!own || String(test_email).trim().toLowerCase() !== own) {
+          throw new Error("Test emails can only be sent to your own account email");
+        }
+      }
     }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");

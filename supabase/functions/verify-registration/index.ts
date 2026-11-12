@@ -103,6 +103,12 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Only genuine registration checkouts can be fulfilled here; any other paid
+    // session (donations, tickets, etc.) is rejected.
+    if (session.metadata?.type !== "registration" || !session.metadata?.tournament_id) {
+      throw new Error("Payment could not be verified");
+    }
+
     if (session.payment_status === "paid") {
       const supabaseAdmin = createClient(
         Deno.env.get("SUPABASE_URL")!,

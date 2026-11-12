@@ -184,6 +184,18 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
   const [tournament, setTournament] = useState<TournamentSite | null>(null);
   const [liveRoot, setLiveRoot] = useState<HTMLDivElement | null>(null);
   const liveEditing = searchParams.get("edit") === "1";
+
+  // Auction "Buy Now" returns from Stripe: the item closes only after the
+  // server confirms this checkout session was actually paid.
+  useEffect(() => {
+    const auctionId = searchParams.get("auction_buy_now") === "success" ? searchParams.get("auction_id") : null;
+    const itemId = searchParams.get("auction_purchased") === "true" ? searchParams.get("item_id") : null;
+    if (!sessionId || (!auctionId && !itemId)) return;
+    supabase.functions
+      .invoke("verify-auction-purchase", { body: { session_id: sessionId, auction_id: auctionId, item_id: itemId } })
+      .catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionId]);
   const liveElementEdits = cleanOverrides((tournament as any)?.site_style_overrides).elements;
   useEffect(() => { if (liveRoot) applyContentEdits(liveRoot, liveElementEdits); });
    const [sponsors, setSponsors] = useState<PublicSponsor[]>([]);

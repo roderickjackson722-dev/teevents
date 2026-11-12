@@ -69,7 +69,9 @@ export default function DirectorShopCheckoutModal({ open, onOpenChange, product 
       let logoUrl = "";
       if (logoFile) {
         const ext = logoFile.name.split(".").pop() || "png";
-        const path = `orders/${crypto.randomUUID()}/logo.${ext}`;
+        const { data: authData } = await supabase.auth.getUser();
+        if (!authData.user) throw new Error("Please sign in to upload a logo.");
+        const path = `${authData.user.id}/orders/${crypto.randomUUID()}/logo.${ext.toLowerCase().replace(/[^a-z0-9]/g, "")}`;
         const { error: uploadErr } = await supabase.storage
           .from("director-shop-logos")
           .upload(path, logoFile, { contentType: logoFile.type });

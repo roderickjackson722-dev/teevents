@@ -1,3 +1,4 @@
+import { safeReturnUrl } from "../_shared/safeOrigin.ts";
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -63,7 +64,7 @@ serve(async (req) => {
       type: "recovery",
       email,
       options: {
-        redirectTo: redirect_url || "https://teevents.lovable.app/reset-password",
+        redirectTo: await safeReturnUrl(redirect_url, "https://www.teevents.golf/reset-password"),
       },
     });
 

@@ -50,6 +50,15 @@ Deno.serve(async (req) => {
       );
     }
 
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(tournament_id))) {
+      return new Response(JSON.stringify({ error: "Invalid tournament" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()) || (company && company.length > 200) || (phone && phone.length > 40)) {
+      return new Response(JSON.stringify({ error: "Invalid fields" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
     // Fetch tournament + sponsorship page contact info via service role
     const tRes = await fetch(
       `${SUPABASE_URL}/rest/v1/tournaments?id=eq.${tournament_id}&select=title,slug,contact_email`,
@@ -60,11 +69,16 @@ Deno.serve(async (req) => {
     if (!tournament) throw new Error("Tournament not found");
 
     const pRes = await fetch(
-      `${SUPABASE_URL}/rest/v1/sponsorship_pages?tournament_id=eq.${tournament_id}&select=contact_email,contact_name`,
+      `${SUPABASE_URL}/rest/v1/sponsorship_pages?tournament_id=eq.${tournament_id}&select=contact_email,contact_name,published`,
       { headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` } }
     );
     const pages = await pRes.json();
     const page = pages?.[0];
+    // Inquiries are only accepted for events with a published sponsorship page.
+    if (!page || !page.published) {
+      return new Response(JSON.stringify({ error: "Sponsorship inquiries are not open for this event" }),
+        { status: 404, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
 
     const recipientEmail =
       (page?.contact_email as string | undefined) ||

@@ -102,7 +102,7 @@ Deno.serve(async (req) => {
       });
 
       await Promise.all([adminEmailPromise, welcomeEmailPromise]);
-      console.log(`[Purchase] Emails sent for ${plan} purchase by ${customerEmail}`);
+      console.log(`[Purchase] Emails sent for ${plan} purchase`);
     }
 
     return new Response(JSON.stringify({ verified: true, plan }), {

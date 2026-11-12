@@ -171,9 +171,8 @@ Deno.serve(async (req) => {
   const secret = Deno.env.get("STRIPE_LEAGUE_WEBHOOK_SECRET") || Deno.env.get("STRIPE_WEBHOOK_SECRET");
   let event: Stripe.Event;
   try {
-    event = secret
-      ? await stripe.webhooks.constructEventAsync(body, sig, secret)
-      : (JSON.parse(body) as Stripe.Event);
+    if (!secret) throw new Error("Webhook secret not configured");
+    event = await stripe.webhooks.constructEventAsync(body, sig, secret);
   } catch (e: any) {
     return new Response(`Signature error: ${e.message}`, { status: 400 });
   }

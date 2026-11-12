@@ -1,3 +1,4 @@
+import { trustedOrigin } from "@/lib/trustedOrigin";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -25,7 +26,7 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
     if (!Number.isFinite(amountCents) || amountCents < 50 || amountCents > 1_000_000) {
       throw new Error("Payment amount must be between $0.50 and $10,000");
     }
-    const origin = /^https?:\/\//.test(input.origin || "") ? input.origin.replace(/\/$/, "") : "https://www.teevents.golf";
+    const origin = trustedOrigin(input.origin);
     return { registrationId: input.registrationId, recipientEmail, amountCents, origin };
   })
   .handler(async ({ data, context }: any) => {

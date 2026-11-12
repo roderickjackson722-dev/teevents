@@ -299,6 +299,7 @@ export default function LiveScoring() {
         _tournament_id: tournament.id,
         _group_number: pinned,
         _round_number: round,
+        _code: codeForRound,
       });
       payload = data || null;
     }

@@ -89,6 +89,7 @@ Deno.serve(async (req) => {
       .from("org_members")
       .select("organization_id")
       .eq("user_id", userId)
+      .in("role", ["owner", "admin"])
       .limit(1)
       .single();
 

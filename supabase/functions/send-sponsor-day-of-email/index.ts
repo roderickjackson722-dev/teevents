@@ -74,9 +74,15 @@ Deno.serve(async (req) => {
       const { data: isMember } = await supabaseAdmin.rpc("is_org_member", {
         _user_id: user.id, _org_id: organization_id,
       });
-      allowed = !!isMember;
+      if (isMember) {
+        const { data: m } = await supabaseAdmin.from("org_members")
+          .select("role, permissions").eq("user_id", user.id).eq("organization_id", organization_id).maybeSingle();
+        const perms: string[] = (m as any)?.permissions || [];
+        allowed = !!m && (["owner", "admin"].includes((m as any).role) || perms.includes("manage_sponsors") || perms.includes("manage_messages"));
+      }
     }
     if (!allowed) return json({ error: "Forbidden" }, 403);
+    if (emails.some((e) => String(e?.html || "").length > 100000)) return json({ error: "Message too long" }, 400);
 
     // The tournament must belong to the authorized organization.
     if (!isAdmin) {

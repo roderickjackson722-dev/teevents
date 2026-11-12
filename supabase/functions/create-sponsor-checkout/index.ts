@@ -1,3 +1,4 @@
+import { safeOrigin } from "../_shared/safeOrigin.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, isFlatRateTournament, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
@@ -139,7 +140,7 @@ Deno.serve(async (req) => {
     const applicationFeeAmount = platformFeeCents;
     const chargeTotalCents = tier.price_cents + combinedFeesCents;
 
-    const origin = req.headers.get("origin") || "https://teevents.lovable.app";
+    const origin = await safeOrigin(req);
 
     const lineItems: any[] = [
       {

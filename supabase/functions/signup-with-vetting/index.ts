@@ -23,11 +23,18 @@ async function websiteReachable(url: string): Promise<boolean> {
   try {
     const u = new URL(url);
     if (!/^https?:$/.test(u.protocol)) return false;
+    // Only public hostnames on standard ports; no IP literals or internal names.
+    const h = u.hostname.toLowerCase();
+    if (u.port && u.port !== "80" && u.port !== "443") return false;
+    if (u.username || u.password) return false;
+    if (/^[\d.]+$/.test(h) || h.includes(":") || h.startsWith("[")) return false;
+    if (!h.includes(".") || /(^|\.)(localhost|local|internal|intranet|lan|home|corp|svc|cluster)$/.test(h)) return false;
+    if (/(^|\.)(supabase\.co|supabase\.in|metadata\.google\.internal)$/.test(h)) return false;
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), 6000);
-    let res = await fetch(u.toString(), { method: "HEAD", redirect: "follow", signal: ctrl.signal }).catch(() => null);
+    let res = await fetch(u.toString(), { method: "HEAD", redirect: "manual", signal: ctrl.signal }).catch(() => null);
     if (!res || res.status >= 400) {
-      res = await fetch(u.toString(), { method: "GET", redirect: "follow", signal: ctrl.signal }).catch(() => null);
+      res = await fetch(u.toString(), { method: "GET", redirect: "manual", signal: ctrl.signal }).catch(() => null);
     }
     clearTimeout(t);
     return !!res && res.status < 500 && res.status !== 404;

@@ -18,20 +18,22 @@ interface Row {
 export default function MemberSeasonStandingsCard({
   leagueSlug,
   highlightMemberId,
+  memberCode,
 }: {
   leagueSlug: string;
   highlightMemberId?: string | null;
+  memberCode?: string | null;
 }) {
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
-      const { data } = await (supabase as any).rpc("get_league_season_standings", { _league_slug: leagueSlug });
+      const { data } = await (supabase as any).rpc("get_league_season_standings", { _league_slug: leagueSlug, _member_code: memberCode || null });
       setRows((data as Row[]) || []);
       setLoading(false);
     })();
-  }, [leagueSlug]);
+  }, [leagueSlug, memberCode]);
 
   return (
     <Card>

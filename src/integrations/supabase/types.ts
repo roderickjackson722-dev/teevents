@@ -15720,7 +15720,7 @@ export type Database = {
         Returns: Json
       }
       get_league_season_standings: {
-        Args: { _league_slug: string }
+        Args: { _league_slug: string; _member_code?: string }
         Returns: {
           losses: number
           matches_played: number
@@ -15992,6 +15992,7 @@ export type Database = {
       }
       get_round_group_by_number: {
         Args: {
+          _code?: string
           _group_number: number
           _round_number?: number
           _tournament_id: string

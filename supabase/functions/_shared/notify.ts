@@ -149,7 +149,7 @@ export async function sendNotificationEmails(
 
     const recipients = Array.from(recipientsSet);
 
-    console.log(`[Notification] Sending ${eventType} to ${recipients.join(", ")} from ${SENDER_EMAIL}`);
+    console.log(`[Notification] Sending ${eventType} to ${recipients.length} recipient(s) from ${SENDER_EMAIL}`);
 
     const result = await sendAndLog(
       supabaseAdmin,
@@ -299,7 +299,7 @@ export async function sendRegistrantConfirmationEmail(
     const html = buildConfirmationHtml(customTitle ? `${escapedTitle} Confirmed!` : "Registration Confirmed!", lines as string[], tournamentPageUrl, refundUrl, hubUrl, qrImg, logoUrl);
 
 
-    console.log(`[Confirmation] Sending registration confirmation to ${recipientEmail} from ${SENDER_EMAIL}`);
+    console.log(`[Confirmation] Sending registration confirmation from ${SENDER_EMAIL}`);
 
     const client = getAdminClient();
     const wl = await loadWhiteLabel(client, tournamentId);
@@ -322,7 +322,7 @@ export async function sendRegistrantConfirmationEmail(
     if (!result.ok) {
       console.error(`[Confirmation] Failed:`, result.error);
     } else {
-      console.log(`[Confirmation] Sent to ${recipientEmail} (resend_id=${result.resendId})`);
+      console.log(`[Confirmation] Sent (resend_id=${result.resendId})`);
     }
   } catch (err) {
     console.error("Failed to send registrant confirmation email:", err);

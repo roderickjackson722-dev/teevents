@@ -129,7 +129,7 @@ Deno.serve(async (req) => {
       }
       memberId = existing.id;
       scoringCode = existing.scoring_code;
-      await supabaseAdmin.from("league_members").update(memberPatch).eq("id", memberId);
+      // Never let a public submission overwrite an existing member's profile.
     } else {
       const { data: created, error: cErr } = await supabaseAdmin
         .from("league_members")

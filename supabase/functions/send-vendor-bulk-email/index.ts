@@ -20,6 +20,15 @@ interface BulkBody {
   body_html: string;
 }
 
+// Strip active content from organizer-written HTML before emailing vendors.
+function sanitizeEmailHtml(input: string): string {
+  return input
+    .replace(/<\s*(script|style|iframe|object|embed|form|input|button|meta|link|base|svg|math)[^>]*>[\s\S]*?<\s*\/\s*\1\s*>/gi, "")
+    .replace(/<\s*\/?\s*(script|style|iframe|object|embed|form|input|button|meta|link|base|svg|math)[^>]*>/gi, "")
+    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/(href|src)\s*=\s*("|')\s*(javascript|data|vbscript):[^"']*\2/gi, '$1="#"');
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -50,6 +59,13 @@ Deno.serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    if (String(subject).length > 200 || String(body_html).length > 50000) {
+      return new Response(JSON.stringify({ error: "Message too long" }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    const safeBody = sanitizeEmailHtml(String(body_html));
+    const safeSubject = String(subject).replace(/[\r\n]+/g, " ");
     if (recipient_ids.length > 500) {
       return new Response(JSON.stringify({ error: "Too many recipients (max 500)" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -63,7 +79,12 @@ Deno.serve(async (req) => {
       const { data: isMember } = await supabaseAdmin.rpc("is_org_member", {
         _user_id: user.id, _org_id: organization_id,
       });
-      allowed = !!isMember;
+      if (isMember) {
+        const { data: m } = await supabaseAdmin.from("org_members")
+          .select("role, permissions").eq("user_id", user.id).eq("organization_id", organization_id).maybeSingle();
+        const perms: string[] = (m as any)?.permissions || [];
+        allowed = !!m && (["owner", "admin"].includes((m as any).role) || perms.includes("manage_messages"));
+      }
     }
     if (!allowed) return new Response(JSON.stringify({ error: "Forbidden" }), { status: 403, headers: corsHeaders });
 
@@ -98,7 +119,7 @@ Deno.serve(async (req) => {
 <!DOCTYPE html><html><body style="font-family:-apple-system,sans-serif;background:#f4f4f5;padding:24px;">
   <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:8px;margin:auto;">
     <tr><td style="padding:24px;color:#374151;line-height:1.6;">
-      ${body_html}
+      ${safeBody}
     </td></tr>
     <tr><td style="padding:16px 24px;background:#f9fafb;border-top:1px solid #e5e7eb;font-size:12px;color:#9ca3af;text-align:center;">
       Sent by TeeVents on behalf of the tournament organizer.
@@ -111,7 +132,7 @@ Deno.serve(async (req) => {
           body: JSON.stringify({
             from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
             to: [v.contact_email],
-            subject,
+            subject: safeSubject,
             html,
           }),
         });

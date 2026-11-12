@@ -2259,6 +2259,13 @@ function isHtmlContent(s?: string): boolean {
   return /<(p|br|div|ul|ol|li|strong|em|u|s|h[1-3]|a|span|img|blockquote)\b/i.test(s || "");
 }
 
+// Variable values (player names etc.) are escaped; only the organizer-built schedule is HTML.
+function varHtml(k: string, merged: Record<string, string>): string {
+  const v = merged[k] ?? "";
+  if (k === "event_schedule") return v;
+  return escapeHtml(String(v)).replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
 function replaceVariables(text: string, vars: Record<string, string>): string {
   const merged = { ...SAMPLE_VARS, ...vars };
   if (isHtmlContent(text)) {
@@ -2266,10 +2273,10 @@ function replaceVariables(text: string, vars: Record<string, string>): string {
     // commonly wrap the variable in <p>, so unwrap it before inserting headings/lists.
     return (text || "")
       .replace(/<p(?:\s[^>]*)?>\s*\{\{event_schedule\}\}\s*<\/p>/gi, merged.event_schedule || "")
-      .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "");
+      .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => varHtml(k, merged));
   }
   return escapeHtml(text || "")
-    .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => merged[k] ?? "")
+    .replace(/\{\{(\w+)\}\}/g, (_m, k: string) => varHtml(k, merged))
     .replace(/(https?:\/\/[^\s<]+)/g, (u) => `<a href="${u}" style="color:#1a5c38;font-weight:600;">${u}</a>`)
     .replace(/\n/g, "<br/>");
 }

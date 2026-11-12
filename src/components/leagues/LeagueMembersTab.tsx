@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { csvCell as safeCsvCell } from "@/lib/csvSafe";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -250,7 +251,7 @@ export default function LeagueMembersTab({ leagueId }: { leagueId: string }) {
       m.member_name, m.email, m.phone || "", String(m.handicap_index ?? ""),
       m.membership_status, m.membership_fee_paid ? "Yes" : "No", m.scoring_code || "",
     ]));
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = rows.map(r => r.map(c => safeCsvCell(c)).join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `league-members-${Date.now()}.csv`; a.click();

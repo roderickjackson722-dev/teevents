@@ -428,6 +428,13 @@
       "when": 1794505626218,
       "tag": "0060_restrict_sales_flyers_listing",
       "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1794506757409,
+      "tag": "0061_security_scoring_league_hardening",
+      "breakpoints": true
     }
   ]
 }

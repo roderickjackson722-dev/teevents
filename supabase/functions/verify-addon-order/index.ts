@@ -40,14 +40,12 @@ Deno.serve(async (req) => {
     const { session_id, acct } = await req.json();
     if (!session_id) throw new Error("session_id is required");
 
-    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
-      apiVersion: "2025-08-27.basil",
-    });
-    const session = await stripe.checkout.sessions.retrieve(
-      session_id,
-      acct ? { stripeAccount: String(acct) } : undefined,
-    );
-
+    if (typeof session_id !== "string" || !/^cs_(test|live)_[A-Za-z0-9]{10,200}$/.test(session_id)) {
+      throw new Error("Invalid session");
+    }
+    if (acct != null && (typeof acct !== "string" || !/^acct_[A-Za-z0-9]{6,64}$/.test(acct))) {
+      throw new Error("Invalid session");
+    }
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
@@ -60,6 +58,15 @@ Deno.serve(async (req) => {
       .maybeSingle();
     if (!order) throw new Error("Order not found");
     await assertSessionAccountForTournament(supabaseAdmin, acct ? String(acct) : null, order.tournament_id);
+
+    // Only contact Stripe after the order exists and the account matches the event.
+    const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
+      apiVersion: "2025-08-27.basil",
+    });
+    const session = await stripe.checkout.sessions.retrieve(
+      session_id,
+      acct ? { stripeAccount: String(acct) } : undefined,
+    );
 
     if (session.payment_status !== "paid") {
       return new Response(JSON.stringify({ verified: false }), {

@@ -33,7 +33,9 @@ Deno.serve(async (req) => {
     let saved: any[] = [];
     let sQ = admin.from("course_database").select("*").limit(15);
     if (query) {
-      sQ = sQ.or(`course_name.ilike.%${query}%,city.ilike.%${query}%`);
+      // Strip PostgREST filter syntax so search text can't alter the filter.
+      const safeQ = String(query).replace(/[^\p{L}\p{N}\s'.&-]/gu, " ").replace(/\s+/g, " ").trim().slice(0, 100);
+      if (safeQ) sQ = sQ.or(`course_name.ilike.%${safeQ}%,city.ilike.%${safeQ}%`);
     }
     if (state) sQ = sQ.ilike("state", state);
     const { data: savedData } = await sQ;

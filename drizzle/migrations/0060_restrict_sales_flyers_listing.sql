@@ -1,0 +1,2 @@
+DROP POLICY IF EXISTS "Admins can read sales flyers" ON storage.objects;
+CREATE POLICY "Admins can read sales flyers" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'sales-flyers' AND public.has_role(auth.uid(), 'admin'));

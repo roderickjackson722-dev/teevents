@@ -191,9 +191,11 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
     const auctionId = searchParams.get("auction_buy_now") === "success" ? searchParams.get("auction_id") : null;
     const itemId = searchParams.get("auction_purchased") === "true" ? searchParams.get("item_id") : null;
     if (!sessionId || (!auctionId && !itemId)) return;
-    supabase.functions
-      .invoke("verify-auction-purchase", { body: { session_id: sessionId, auction_id: auctionId, item_id: itemId } })
-      .catch(() => {});
+    fetch("/api/public/verify-auction-purchase", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ session_id: sessionId, auction_id: auctionId, item_id: itemId }),
+    }).catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
   const liveElementEdits = cleanOverrides((tournament as any)?.site_style_overrides).elements;

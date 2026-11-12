@@ -341,7 +341,7 @@ function json(payload: unknown, status = 200) {
     headers: {
       "Content-Type": "application/json",
       "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "content-type",
+      "Access-Control-Allow-Headers": "content-type, authorization, x-cron-token",
     },
   });
 }
@@ -353,7 +353,7 @@ export const Route = createFileRoute("/api/public/post-event-organizer-email")({
         new Response(null, {
           headers: {
             "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Headers": "content-type",
+            "Access-Control-Allow-Headers": "content-type, authorization, x-cron-token",
             "Access-Control-Allow-Methods": "POST, OPTIONS",
           },
         }),

@@ -5,6 +5,7 @@
 // a metric crosses its safe threshold, and emails the daily / final summary
 // while a stability monitoring run is active.
 import { createFileRoute } from "@tanstack/react-router";
+import { isCronRequest, unauthorized } from "@/lib/cronAuth.server";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
@@ -40,8 +41,8 @@ export const Route = createFileRoute("/api/public/hooks/platform-health-monitor"
   server: {
     handlers: {
       OPTIONS: () => new Response(null, { headers: cors }),
-      GET: () => handle(),
-      POST: () => handle(),
+      GET: async ({ request }) => ((await isCronRequest(request)) ? handle() : unauthorized()),
+      POST: async ({ request }) => ((await isCronRequest(request)) ? handle() : unauthorized()),
     },
   },
 });

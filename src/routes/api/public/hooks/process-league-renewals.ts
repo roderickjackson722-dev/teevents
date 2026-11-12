@@ -5,6 +5,7 @@
 // once a day (pg_cron) and emails the league organizer at 30 days, 7 days, and on
 // the renewal date itself, recording which reminder was sent so none repeat.
 import { createFileRoute } from "@tanstack/react-router";
+import { isCronRequest, unauthorized } from "@/lib/cronAuth.server";
 import { createClient } from "@supabase/supabase-js";
 
 const SENDER = "TeeVents Golf Management <info@notifications.teevents.golf>";
@@ -157,8 +158,8 @@ export const Route = createFileRoute("/api/public/hooks/process-league-renewals"
   server: {
     handlers: {
       OPTIONS: () => new Response(null, { headers: cors }),
-      GET: () => run(),
-      POST: () => run(),
+      GET: async ({ request }) => ((await isCronRequest(request)) ? run() : unauthorized()),
+      POST: async ({ request }) => ((await isCronRequest(request)) ? run() : unauthorized()),
     },
   },
 });

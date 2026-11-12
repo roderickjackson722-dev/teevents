@@ -12,6 +12,7 @@
 // Any failure emails info@teevents.golf with the details and records a row in
 // public.link_check_logs (run_id prefixed "canary").
 import { createFileRoute } from "@tanstack/react-router";
+import { isCronRequest, unauthorized } from "@/lib/cronAuth.server";
 import { createClient } from "@supabase/supabase-js";
 
 const SITE = "https://www.teevents.golf";
@@ -196,8 +197,8 @@ export const Route = createFileRoute("/api/public/hooks/tournament-page-canary")
   server: {
     handlers: {
       OPTIONS: () => new Response(null, { headers: cors }),
-      GET: () => handle(),
-      POST: () => handle(),
+      GET: async ({ request }) => ((await isCronRequest(request)) ? handle() : unauthorized()),
+      POST: async ({ request }) => ((await isCronRequest(request)) ? handle() : unauthorized()),
     },
   },
 });

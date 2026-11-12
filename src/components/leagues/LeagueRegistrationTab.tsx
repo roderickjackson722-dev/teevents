@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { csvCell as safeCsvCell } from "@/lib/csvSafe";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -249,7 +250,7 @@ export default function LeagueRegistrationTab({ league }: { league: any }) {
         ...keys.map(k => String(d[k] ?? "")),
       ]);
     });
-    const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = rows.map(r => r.map(c => safeCsvCell(c)).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url; a.download = `league-registrations-${Date.now()}.csv`; a.click();

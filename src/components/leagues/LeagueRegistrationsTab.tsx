@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { csvCell as safeCsvCell } from "@/lib/csvSafe";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -230,7 +231,7 @@ export default function LeagueRegistrationsTab({ leagueId }: { leagueId: string 
       r.tee_time || "", r.pairing_group ?? "", new Date(r.created_at).toLocaleString(),
       r.confirmation_email_sent_at ? new Date(r.confirmation_email_sent_at).toLocaleString() : "",
     ]);
-    const csv = [header, ...lines].map(a => a.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const csv = [header, ...lines].map(a => a.map(v => safeCsvCell(v)).join(",")).join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");
     a.href = url;

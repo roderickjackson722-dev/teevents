@@ -233,7 +233,7 @@ export default function LeagueMemberPortal() {
           </Card>
         )}
 
-        {slug && <MemberSeasonStandingsCard leagueSlug={slug} highlightMemberId={member?.id} />}
+        {slug && <MemberSeasonStandingsCard leagueSlug={slug} highlightMemberId={member?.id} memberCode={code} />}
 
         <Card>
           <CardContent className="pt-6 space-y-3">

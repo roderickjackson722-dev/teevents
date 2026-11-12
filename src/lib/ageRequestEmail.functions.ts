@@ -100,6 +100,12 @@ export const sendAgeRequestEmails = createServerFn({ method: "POST" })
     };
 
     if (data.testEmail) {
+      // Test sends only go to the caller's own sign-in email (platform admins excepted).
+      const { data: me } = await supabase.auth.getUser();
+      const own = String(me?.user?.email || "").toLowerCase();
+      if (!isAdmin && data.testEmail.toLowerCase() !== own) {
+        throw new Error("Test emails can only be sent to your own account email.");
+      }
       const link = `${SITE}/update-age/${(t as any).slug || data.tournamentId}/preview`;
       const vars = { ...baseVars, first_name: "Test", last_name: "Player", player_name: "Test Player", link_to_age_update_form: link };
       const res = await send(

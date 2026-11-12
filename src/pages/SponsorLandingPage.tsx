@@ -286,7 +286,7 @@ const SponsorLandingPage = () => {
           <div
             className="container mx-auto px-4 max-w-4xl prose prose-sm sm:prose"
             // Admin-controlled content only (RLS restricts writes to admins)
-            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(page.custom_html) }}
+            dangerouslySetInnerHTML={{ __html: typeof window === "undefined" || !DOMPurify.isSupported ? "" : DOMPurify.sanitize(page.custom_html) }}
           />
         </section>
       )}

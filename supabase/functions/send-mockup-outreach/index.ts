@@ -43,15 +43,23 @@ Deno.serve(async (req) => {
       return new Response(JSON.stringify({ error: "Email service not configured" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const html = body.replace(/\n/g, "<br />");
+    // Plain-text only: escape markup, one valid recipient, bounded subject/body.
+    const to = String(recipientEmail).trim();
+    if (!/^[^@\s,;]+@[^@\s,;]+\.[^@\s,;]+$/.test(to) || to.length > 320) {
+      return new Response(JSON.stringify({ error: "Invalid recipient" }), { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    const cleanSubject = String(subject).replace(/[\r\n]+/g, " ").slice(0, 200);
+    const html = String(body).slice(0, 20000)
+      .replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" } as Record<string, string>)[c])
+      .replace(/\n/g, "<br />");
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { "Authorization": `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({
         from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
-        to: [recipientEmail],
+        to: [to],
         bcc: [ADMIN_BCC],
-        subject,
+        subject: cleanSubject,
         html,
         reply_to: "info@teevents.golf",
       }),

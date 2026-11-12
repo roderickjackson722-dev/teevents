@@ -269,7 +269,7 @@ Deno.serve(async (req) => {
                 html: brandEmailHtml(sponsorConfirmHtml, sponsorWl),
               }),
             });
-            console.log(`[Confirmation] Sponsor confirmation sent to ${reg.contact_email}`);
+            console.log(`[Confirmation] Sponsor confirmation sent for registration ${reg.id}`);
           }
         } catch (e) {
           console.error("Admin/sponsor notification error:", e);

@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
       },
     });
 
-    console.log(`Admin ${user.email} reset Stripe for org ${organization_id} (was: ${previousStripeAccountId})`);
+    console.log(`Admin ${user.id} reset Stripe for org ${organization_id} (was: ${previousStripeAccountId})`);
 
     return new Response(JSON.stringify({ success: true, previous_account_id: previousStripeAccountId }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

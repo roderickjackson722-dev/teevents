@@ -34,14 +34,14 @@ async function handle(request: Request) {
     /* ignore */
   }
 
-  if (!token && !email) return json({ ok: true });
+  // Only the private per-subscriber token can unsubscribe; a bare email address cannot.
+  if (!token) return json({ ok: true });
   if (token === "preview") return json({ ok: true, preview: true });
 
   try {
     const admin = createClient(url, serviceKey, { auth: { persistSession: false } });
     const patch = { status: "unsubscribed", unsubscribed_at: new Date().toISOString() } as any;
-    if (token) await admin.from("newsletter_subscribers").update(patch).eq("unsubscribe_token", token);
-    else await admin.from("newsletter_subscribers").update(patch).ilike("email", email);
+    await admin.from("newsletter_subscribers").update(patch).eq("unsubscribe_token", token);
   } catch {
     /* swallow */
   }

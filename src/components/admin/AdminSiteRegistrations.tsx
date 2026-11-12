@@ -40,7 +40,11 @@ export default function AdminSiteRegistrations() {
   }, [rows, q]);
 
   const csv = () => {
-    const e = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const e = (raw: string) => {
+      // Neutralize spreadsheet formulas from user-supplied values.
+      const v = /^[=+\-@\t\r]/.test(raw) ? `'${raw}` : raw;
+      return `"${v.replace(/"/g, '""')}"`;
+    };
     const body = [COLS.map(([h]) => e(h)).join(","), ...filtered.map((r) => COLS.map(([, g]) => e(g(r))).join(","))].join("\n");
     const a = document.createElement("a");
     a.href = URL.createObjectURL(new Blob([body], { type: "text/csv" }));

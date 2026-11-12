@@ -2,6 +2,7 @@
 // member in a league. Called on-demand by the dashboard and by the scheduled
 // cron job that runs after new scores are posted.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { cronGuard } from "../_shared/cronAuth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -11,6 +12,7 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  { const denied = await cronGuard(req, corsHeaders); if (denied) return denied; }
 
   try {
     const admin = createClient(

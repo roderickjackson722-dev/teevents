@@ -6,12 +6,13 @@
 // only looks up payments that already exist in our own database and asks Stripe for
 // their real status, so there is nothing an outside caller can forge or read.
 import { createFileRoute } from "@tanstack/react-router";
+import { isCronRequest, unauthorized } from "@/lib/cronAuth.server";
 import { createClient } from "@supabase/supabase-js";
 import { reconcileLeaguePayments } from "@/lib/leagueReconcile.server";
 
 const cors = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Headers": "content-type",
+  "Access-Control-Allow-Headers": "content-type, x-cron-token",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
 };
 
@@ -22,7 +23,11 @@ function json(payload: unknown, status = 200) {
   });
 }
 
-async function run(input: { session_id?: string; league_id?: string; all?: boolean }) {
+async function run(input: { session_id?: string; league_id?: string; all?: boolean }, request: Request) {
+  // Payers may confirm only their own checkout session; full or league-wide
+  // reconciliation is reserved for the scheduler.
+  if (!input.session_id && !(await isCronRequest(request))) return json({ error: "Unauthorized" }, 401);
+  if (input.session_id && !(await isCronRequest(request))) input = { session_id: String(input.session_id) };
   const admin = createClient(
     process.env["SUPABASE_URL"]!,
     process.env["SUPABASE_SERVICE_ROLE_KEY"]!,
@@ -45,7 +50,7 @@ export const Route = createFileRoute("/api/public/league-payment-confirm")({
           session_id: url.searchParams.get("session_id") || undefined,
           league_id: url.searchParams.get("league_id") || undefined,
           all: url.searchParams.get("all") === "true" || url.searchParams.get("all") === "1",
-        });
+        }, request);
       },
       POST: async ({ request }) => {
         let body: any = {};
@@ -54,7 +59,7 @@ export const Route = createFileRoute("/api/public/league-payment-confirm")({
         } catch {
           body = {};
         }
-        return run(body || {});
+        return run(body || {}, request);
       },
     },
   },

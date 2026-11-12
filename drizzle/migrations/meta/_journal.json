@@ -414,6 +414,13 @@
       "when": 1794458247811,
       "tag": "0058_security_hardening_access_requests_cron_tokens",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1794503498773,
+      "tag": "0059_security_hardening_cron_inserts_storage",
+      "breakpoints": true
     }
   ]
 }

@@ -7,6 +7,7 @@ export default function Unsubscribe() {
   const [params] = useSearchParams();
   const initial = params.get("e") || "";
   const token = params.get("t") || params.get("token") || "";
+  const sig = params.get("s") || "";
   const [email, setEmail] = useState(initial);
   const [status, setStatus] = useState<"idle" | "loading" | "done">("idle");
 
@@ -20,17 +21,17 @@ export default function Unsubscribe() {
     setStatus("loading");
     // Newsletter list (token-based) and outreach list are separate — clear both.
     try {
-      if (token || e) {
+      if (token) {
         await fetch("/api/public/newsletter-unsubscribe", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ token: token || undefined, email: e || undefined }),
+          body: JSON.stringify({ token: token || undefined }),
         });
       }
     } catch (_) { /* ignore */ }
     try {
       if (e) {
-        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/outreach-unsubscribe?e=${encodeURIComponent(e)}`;
+        const url = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/outreach-unsubscribe?e=${encodeURIComponent(e)}&s=${encodeURIComponent(sig)}`;
         await fetch(url);
       }
     } catch (_) { /* ignore */ }

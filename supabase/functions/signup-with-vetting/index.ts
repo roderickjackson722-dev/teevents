@@ -3,6 +3,7 @@
 // for manual review. Clean signups get instant access via a set-password
 // (email verification) link. Flagged signups are held until an admin approves.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import {
   ADMIN_EMAIL, button, esc, firstName, isDisposable, sendVettingEmail, shell,
 } from "../_shared/vetting.ts";
@@ -148,7 +149,7 @@ Deno.serve(async (req) => {
     }).select("id, review_token").single();
     if (insErr) throw insErr;
 
-    const siteOrigin = origin || req.headers.get("origin") || "https://www.teevents.golf";
+    const siteOrigin = (await trustedOriginFor(origin)) || (await safeOrigin(req));
     const name = firstName(full_legal_name);
 
     if (!flagged) {

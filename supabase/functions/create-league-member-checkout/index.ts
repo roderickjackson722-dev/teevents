@@ -1,5 +1,6 @@
 // League membership fee checkout — direct charge to organizer's Connect account with 5% platform fee.
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   requireConnectedAccount,
@@ -54,7 +55,8 @@ Deno.serve(async (req) => {
     const { platformFeeCents: feeCents, combinedFeesCents } = computeFees(amountCents);
     const passFee = (league as any).pass_platform_fee_to_members !== false;
     const chargeCents = passFee ? amountCents + combinedFeesCents : amountCents;
-    const origin = req.headers.get("origin") || "https://teevents.golf";
+    const origin = (await safeOrigin(req));
+    const safeReturn = await safeReturnUrl(return_url, origin);
 
     const { data: payment } = await supabaseAdmin
       .from("league_payments")
@@ -93,8 +95,8 @@ Deno.serve(async (req) => {
           },
         ],
         ...applicationFeeBlock(account, feeCents),
-        success_url: `${return_url || origin}?pay=success&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(account)}`,
-        cancel_url: `${return_url || origin}?pay=cancelled`,
+        success_url: `${safeReturn}?pay=success&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(account)}`,
+        cancel_url: `${safeReturn}?pay=cancelled`,
         metadata: {
           kind: "league_membership",
           payment_id: payment!.id,

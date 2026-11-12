@@ -1,7 +1,9 @@
 // Cron: find auctions past end_time and finalize them.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { cronGuard } from "../_shared/cronAuth.ts";
 
-Deno.serve(async () => {
+Deno.serve(async (req) => {
+  { const denied = await cronGuard(req, {}); if (denied) return denied; }
   const supabaseAdmin = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,

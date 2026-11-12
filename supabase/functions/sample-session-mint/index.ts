@@ -42,13 +42,14 @@ Deno.serve(async (req) => {
 
     // 2. Ensure the shared sample-viewer auth user exists
     let viewerId: string | null = null;
-    const viewerPassword = Deno.env.get("SAMPLE_VIEWER_PASSWORD") ||
-      "sample-viewer-shared-password-not-a-secret-2026";
+    const viewerPassword = crypto.randomUUID() + crypto.randomUUID();
 
     const { data: existing } = await admin.auth.admin.listUsers({ page: 1, perPage: 200 });
     const found = existing?.users?.find((u: any) => u.email === SAMPLE_VIEWER_EMAIL);
     if (found) {
       viewerId = found.id;
+      // Rotate to an unguessable password; sessions are minted via one-time links.
+      await admin.auth.admin.updateUserById(found.id, { password: viewerPassword });
     } else {
       const { data: created, error: cErr } = await admin.auth.admin.createUser({
         email: SAMPLE_VIEWER_EMAIL,
@@ -74,10 +75,7 @@ Deno.serve(async (req) => {
     // 4. Sign in the viewer to mint access + refresh tokens
     const anonKey = Deno.env.get("SUPABASE_ANON_KEY")!;
     const clientForAuth = createClient(url, anonKey, { auth: { persistSession: false } });
-    const { data: signIn, error: sErr } = await clientForAuth.auth.signInWithPassword({
-      email: SAMPLE_VIEWER_EMAIL,
-      password: viewerPassword,
-    });
+    const { data: signIn, error: sErr } = await (async () => { const { data: link, error: lErr } = await admin.auth.admin.generateLink({ type: "magiclink", email: SAMPLE_VIEWER_EMAIL }); if (lErr || !link?.properties?.hashed_token) return { data: null, error: lErr || new Error("link failed") }; return await clientForAuth.auth.verifyOtp({ type: "magiclink", token_hash: link.properties.hashed_token }); })();
     if (sErr || !signIn?.session) {
       return json(500, { error: sErr?.message || "Failed to mint session" });
     }

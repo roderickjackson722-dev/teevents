@@ -1,6 +1,7 @@
 // Sends a welcome email to a newly-signed-up organizer (free OR paid),
 // with an optional white-glove setup-service offer driven by platform_settings.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+const __esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" } as Record<string, string>)[c]);
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -42,7 +43,10 @@ serve(async (req) => {
     }
 
     const reqBody = await req.json();
-    const { email, full_name, plan, tournament_name } = reqBody;
+    const { email: rawEmail, full_name: rawName, plan: rawPlan, tournament_name: rawTournament } = reqBody;
+    // HTML-escape caller-supplied values before they reach any email template.
+    const email = rawEmail; const full_name = rawName ? __esc(rawName) : rawName;
+    const plan = rawPlan ? __esc(rawPlan) : rawPlan; const tournament_name = rawTournament ? __esc(rawTournament) : rawTournament;
     if (!email || typeof email !== "string") {
       return new Response(JSON.stringify({ error: "email required" }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -169,7 +173,7 @@ serve(async (req) => {
   <p>A new organizer has signed up for TeeVents.</p>
   <table style="width:100%;border-collapse:collapse;margin:8px 0">
     <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold;width:35%">Organizer</td><td style="padding:6px;border:1px solid #e5e7eb">${name}</td></tr>
-    <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold">Email</td><td style="padding:6px;border:1px solid #e5e7eb">${email}</td></tr>
+    <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold">Email</td><td style="padding:6px;border:1px solid #e5e7eb">${__esc(email)}</td></tr>
     <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold">Plan</td><td style="padding:6px;border:1px solid #e5e7eb">${plan || "Base"}</td></tr>
     <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold">Tournament</td><td style="padding:6px;border:1px solid #e5e7eb">${tournament_name || "—"}</td></tr>
     <tr><td style="padding:6px;border:1px solid #e5e7eb;background:#f9fafb;font-weight:bold">Date</td><td style="padding:6px;border:1px solid #e5e7eb">${new Date().toLocaleString("en-US")}</td></tr>

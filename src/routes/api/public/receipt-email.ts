@@ -70,6 +70,25 @@ async function handle(request: Request) {
   }
   if (!allowed) return json({ error: "Forbidden" }, 403);
 
+  // The recipient must be someone already on file for this event (or the caller).
+  const to = body.to.trim().toLowerCase();
+  let onFile = to === String(caller.email || "").toLowerCase();
+  if (!onFile) {
+    const [{ data: regs }, { data: txs }, { data: sps }] = await Promise.all([
+      admin.from("tournament_registrations").select("id").eq("tournament_id", body.tournament_id).ilike("email", to).limit(1),
+      admin.from("platform_transactions").select("id").eq("tournament_id", body.tournament_id).ilike("golfer_email", to).limit(1),
+      admin.from("sponsor_registrations").select("id").eq("tournament_id", body.tournament_id).ilike("contact_email", to).limit(1),
+    ]);
+    onFile = !!(regs?.length || txs?.length || sps?.length);
+  }
+  if (!onFile) return json({ error: "Recipient must be a registrant, payer or sponsor of this event" }, 403);
+
+  const safeHtml = String(body.html)
+    .slice(0, 200_000)
+    .replace(/<\s*(script|iframe|object|embed|form|input|button|textarea|select|meta|link|base)\b[\s\S]*?(<\s*\/\s*\1\s*>|\/?>)/gi, "")
+    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/(href|src)\s*=\s*(["'])\s*(javascript|data|vbscript):[^"']*\2/gi, '$1="#"');
+
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
@@ -77,14 +96,15 @@ async function handle(request: Request) {
       from: SENDER,
       to: [body.to.trim()],
       reply_to: "info@teevents.golf",
-      subject: body.subject || "Your receipt",
-      html: body.html,
+      subject: String(body.subject || "Your receipt").replace(/[\r\n]+/g, " ").slice(0, 200),
+      html: safeHtml,
     }),
   });
 
   if (!res.ok) {
     const detail = await res.text();
-    return json({ error: "Send failed", detail }, 502);
+    console.error("receipt-email send failed", detail);
+    return json({ error: "Send failed" }, 502);
   }
 
   return json({ ok: true });

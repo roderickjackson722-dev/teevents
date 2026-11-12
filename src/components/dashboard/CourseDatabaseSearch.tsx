@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -115,10 +116,11 @@ export default function CourseDatabaseSearch({ onSelect, onSaveCurrent, onManual
         );
         url.searchParams.set("courseId", c.id);
         url.searchParams.set("source", "api");
+        const { data: sess } = await supabase.auth.getSession();
         const res = await fetch(url.toString(), {
           headers: {
             apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-            Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            Authorization: `Bearer ${sess.session?.access_token ?? import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
           },
         });
         const json = await res.json();

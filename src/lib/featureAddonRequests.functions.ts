@@ -1,3 +1,4 @@
+import { trustedOrigin } from "@/lib/trustedOrigin";
 import { createServerFn } from "@tanstack/react-start";
 import { getRequestHeaders } from "@tanstack/react-start/server";
 import { z } from "zod";
@@ -19,7 +20,7 @@ export const startFeatureAddonRequest = createServerFn({ method: "POST" })
   .inputValidator(input => requestSchema.parse(input))
   .handler(async ({ data }) => {
     const headers = getRequestHeaders();
-    const origin = new URL(headers.get("origin") || "https://www.teevents.golf").origin;
+    const origin = trustedOrigin(headers.get("origin"));
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const admin = supabaseAdmin as any;
     const ip = headers.get("cf-connecting-ip") || headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";

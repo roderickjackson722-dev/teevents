@@ -3,6 +3,14 @@
 // caller can only email sponsors that belong to the tournament they manage.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+// Strip active content from organizer-composed HTML before sending.
+function sanitizeEmailHtml(html: unknown): string {
+  return String(html ?? "")
+    .slice(0, 200_000)
+    .replace(/<\s*(script|iframe|object|embed|form|input|button|textarea|select|meta|link|base|style)\b[\s\S]*?(<\s*\/\s*\1\s*>|\/?>)/gi, "")
+    .replace(/\son[a-z]+\s*=\s*("[^"]*"|'[^']*'|[^\s>]+)/gi, "")
+    .replace(/(href|src)\s*=\s*(["'])\s*(javascript|data|vbscript):[^"']*\2/gi, '$1="#"');
+}
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -101,8 +109,8 @@ Deno.serve(async (req) => {
         const payload: Record<string, unknown> = {
           from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
           to: [sponsor.contact_email],
-          subject: e.subject || "Sponsor Event Day Details",
-          html: e.html,
+          subject: String(e.subject || "Sponsor Event Day Details").replace(/[\r\n]+/g, " ").slice(0, 200),
+          html: sanitizeEmailHtml(e.html),
         };
         if (e.attachment?.content) {
           payload.attachments = [{ filename: e.attachment.filename || "tax-receipt.pdf", content: e.attachment.content }];

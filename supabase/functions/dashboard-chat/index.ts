@@ -92,7 +92,10 @@ serve(async (req) => {
     const { data: prior } = await admin.from("help_chat_messages")
       .select("role, content").eq("user_id", user.id)
       .order("created_at", { ascending: false }).limit(20);
-    const history = (prior || []).reverse().map((m: any) => ({ role: m.role, content: m.content }));
+    // Only plain user/assistant turns are replayed; the system prompt is server-owned.
+    const history = (prior || []).reverse()
+      .filter((m: any) => m.role === "user" || m.role === "assistant")
+      .map((m: any) => ({ role: m.role === "assistant" ? "assistant" : "user", content: String(m.content || "").slice(0, 4000) }));
 
     await admin.from("help_chat_messages").insert({ user_id: user.id, organization_id: orgId, user_email: user.email, role: "user", content: text });
 

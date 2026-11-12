@@ -47,6 +47,12 @@ Deno.serve(async (req) => {
     }
 
     const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: user.id, _role: "admin" });
+    // Test previews only go to the caller's own address unless a platform admin sends them.
+    if (sendEmail && !isAdmin && recipientEmail.toLowerCase() !== String(user.email || "").toLowerCase()) {
+      return new Response(JSON.stringify({ error: "Test emails can only be sent to your own account email." }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     let html = "";
     let subject = "";

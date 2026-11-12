@@ -343,7 +343,7 @@ Deno.serve(async (req) => {
         console.error("[Resend Confirmation] Failed to update email:", updateErr);
         throw new Error("Failed to update registrant email");
       }
-      console.log(`[Resend Confirmation] Updated email for ${update_email.registration_id} to ${update_email.new_email}`);
+      console.log(`[Resend Confirmation] Updated email for ${update_email.registration_id}`);
     }
 
     if (!registration_ids || !Array.isArray(registration_ids) || registration_ids.length === 0) {
@@ -618,7 +618,7 @@ Deno.serve(async (req) => {
             results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "failed", error: err, tee_time: regTeeTime });
             await logEmail({ email: reg.email, subject, status: "failed", error: err, meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime } });
           } else {
-            console.log(`[Custom Confirmation] Sent to ${reg.email}`);
+            console.log(`[Custom Confirmation] Sent to registration ${reg.id}`);
             sent++;
             results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "sent", tee_time: regTeeTime });
             await logEmail({ email: reg.email, subject, status: "sent", meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime } });
@@ -641,7 +641,7 @@ Deno.serve(async (req) => {
           await logEmail({ email: reg.email, subject: regSubject, status: "sent", meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime, default_template: true } });
         }
       } catch (e) {
-        console.error(`Failed to send to ${reg.email}:`, e);
+        console.error(`Failed to send to registration ${reg.id}:`, e);
         failed++;
         results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "failed", error: (e as Error).message, tee_time: regTeeTime });
         await logEmail({ email: reg.email, subject: regSubject, status: "failed", error: (e as Error).message, meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime } });

@@ -39,6 +39,25 @@ Deno.serve(async (req) => {
       });
     }
 
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(courseId)) {
+      return new Response(JSON.stringify({ error: "Invalid courseId" }), {
+        status: 400,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Course lookups spend our paid API quota — signed-in organizers only.
+    {
+      const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      const authClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const { data: u } = bearer ? await authClient.auth.getUser(bearer) : { data: null as any };
+      if (!u?.user) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     if (source === "saved") {
       const admin = createClient(
         Deno.env.get("SUPABASE_URL")!,

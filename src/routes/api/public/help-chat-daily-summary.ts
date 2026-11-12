@@ -2,6 +2,7 @@
 // the last 24 hours. Always sends only to the fixed TeeVents inbox, so no caller
 // data is ever returned.
 import { createFileRoute } from "@tanstack/react-router";
+import { isCronRequest, unauthorized } from "@/lib/cronAuth.server";
 
 const esc = (s: string) =>
   String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c] || c);
@@ -9,7 +10,8 @@ const esc = (s: string) =>
 export const Route = createFileRoute("/api/public/help-chat-daily-summary")({
   server: {
     handlers: {
-      POST: async () => {
+      POST: async ({ request }) => {
+        if (!(await isCronRequest(request))) return unauthorized();
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
         const since = new Date(Date.now() - 24 * 3600 * 1000).toISOString();
         const { data: msgs } = await (supabaseAdmin as any)

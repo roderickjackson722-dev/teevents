@@ -2,8 +2,10 @@
 // where scheduled_for <= now() and sent_at is null. Personalises and sends via
 // Resend, logs to email_send_log, then schedules the next email in the sequence.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { cronGuard } from "../_shared/cronAuth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendAndLog } from "../_shared/emailLogger.ts";
+import { signLink } from "../_shared/linkSig.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -25,20 +27,23 @@ function personalize(body: string, lead: any) {
     .replace(/\{\{source\}\}/g, lead.source || "your current tool");
 }
 
-function wrapLinksForTracking(html: string, queueId: string, supabaseUrl: string) {
+async function wrapLinksForTracking(html: string, queueId: string, supabaseUrl: string) {
+  const urls = Array.from(new Set(Array.from(html.matchAll(/href="(https?:\/\/[^"]+)"/g)).map((m) => m[1])));
+  const sigs = new Map<string, string>();
+  for (const u of urls) sigs.set(u, await signLink(`${queueId}|${u}`));
   return html.replace(
     /href="(https?:\/\/[^"]+)"/g,
-    (_m, url) => `href="${supabaseUrl}/functions/v1/track-outreach-click?q=${queueId}&u=${encodeURIComponent(url)}"`
+    (_m, url) => `href="${supabaseUrl}/functions/v1/track-outreach-click?q=${queueId}&u=${encodeURIComponent(url)}&s=${sigs.get(url)}"`
   );
 }
 
-function buildHtml(bodyText: string, queueId: string, leadEmail: string, supabaseUrl: string) {
+async function buildHtml(bodyText: string, queueId: string, leadEmail: string, supabaseUrl: string) {
   const paragraphs = escapeHtml(bodyText)
     .split(/\n\n+/)
     .map((p) => `<p style="margin:0 0 14px 0;">${p.replace(/\n/g, "<br/>")}</p>`)
     .join("");
   const pixel = `<img src="${supabaseUrl}/functions/v1/track-outreach-open?q=${queueId}" width="1" height="1" alt="" style="display:none" />`;
-  const unsub = `${APP_URL}/unsubscribe?e=${encodeURIComponent(leadEmail)}`;
+  const unsub = `${APP_URL}/unsubscribe?e=${encodeURIComponent(leadEmail)}&s=${await signLink(leadEmail.toLowerCase())}`;
   const footer = `
     <hr style="border:none;border-top:1px solid #eee;margin:24px 0 12px;" />
     <p style="font-size:11px;color:#888;line-height:1.5;margin:0;">
@@ -47,12 +52,13 @@ function buildHtml(bodyText: string, queueId: string, leadEmail: string, supabas
       <a href="${unsub}" style="color:#888;">Unsubscribe</a>
     </p>`;
   let html = `<div style="font-family:Arial,sans-serif;font-size:14px;line-height:1.55;color:#1a1a1a;max-width:600px;">${paragraphs}${footer}${pixel}</div>`;
-  html = wrapLinksForTracking(html, queueId, supabaseUrl);
+  html = await wrapLinksForTracking(html, queueId, supabaseUrl);
   return html;
 }
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  { const denied = await cronGuard(req, corsHeaders, { allowAdmin: true }); if (denied) return denied; }
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
@@ -84,8 +90,8 @@ serve(async (req) => {
       const bodyText = personalize(campaign[`email${n}_body`] || "", lead);
       if (!subject || !bodyText) continue;
 
-      const html = buildHtml(bodyText, item.id, lead.email, SUPABASE_URL);
-      const unsubUrl = `${SUPABASE_URL}/functions/v1/outreach-unsubscribe?e=${encodeURIComponent(lead.email)}`;
+      const html = await buildHtml(bodyText, item.id, lead.email, SUPABASE_URL);
+      const unsubUrl = `${SUPABASE_URL}/functions/v1/outreach-unsubscribe?e=${encodeURIComponent(lead.email)}&s=${await signLink(String(lead.email).toLowerCase())}`;
       const result = await sendAndLog(
         sb,
         RESEND_API_KEY,

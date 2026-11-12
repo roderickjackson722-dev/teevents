@@ -48,6 +48,25 @@ Deno.serve(async (req) => {
       });
     }
 
+    // Caller must be a member of the organizer's team (or a platform admin / internal service).
+    {
+      const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+      let allowed = bearer === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+      if (!allowed && bearer) {
+        const { data: u } = await supabaseAdmin.auth.getUser(bearer);
+        if (u?.user) {
+          const { data: isMember } = await supabaseAdmin.rpc("is_org_member", { _user_id: u.user.id, _org_id: tournament.organization_id });
+          const { data: isAdmin } = await supabaseAdmin.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+          allowed = !!isMember || !!isAdmin;
+        }
+      }
+      if (!allowed) {
+        return new Response(JSON.stringify({ error: "Unauthorized" }), {
+          status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+    }
+
     const gross = Number(tournament.registration_fee_cents || 0);
     const isPaid = reg.payment_status === "paid";
     const method = String(reg.payment_method || "manual");

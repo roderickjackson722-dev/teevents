@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -398,7 +399,7 @@ export default function ReceiptEmailSender({
       <div className="bg-card rounded-lg border p-5">
         <div className="text-xs text-muted-foreground mb-2">Subject: <span className="font-medium text-foreground">{subject}</span></div>
         <div className="border rounded-lg overflow-hidden bg-white">
-          <div dangerouslySetInnerHTML={{ __html: html }} />
+          <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(html, { ADD_TAGS: ["style"], FORCE_BODY: true }) }} />
         </div>
       </div>
     </div>

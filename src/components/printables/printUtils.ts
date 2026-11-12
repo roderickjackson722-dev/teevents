@@ -1,3 +1,4 @@
+import DOMPurify from "dompurify";
 import { buildPageCss, cartSignTarget, cartSignPageCss, scorecardPageCss, type PrintFitOptions } from "./printLayout";
 
 export function openPrintWindow(title: string, bodyHtml: string, fontImport?: string, pageCss?: string) {
@@ -6,7 +7,7 @@ export function openPrintWindow(title: string, bodyHtml: string, fontImport?: st
   w.document.write(`
     <html>
       <head>
-        <title>${title}</title>
+        <title>${escTitle(title)}</title>
         ${fontImport ? `<link href="${fontImport}" rel="stylesheet" />` : ""}
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -17,7 +18,7 @@ export function openPrintWindow(title: string, bodyHtml: string, fontImport?: st
           }
         </style>
       </head>
-      <body>${bodyHtml}</body>
+      <body>${cleanBody(bodyHtml)}</body>
     </html>
   `);
   w.document.close();
@@ -31,7 +32,7 @@ export function downloadHtmlAsPdf(title: string, bodyHtml: string, fontImport?: 
   w.document.write(`
     <html>
       <head>
-        <title>${title}</title>
+        <title>${escTitle(title)}</title>
         ${fontImport ? `<link href="${fontImport}" rel="stylesheet" />` : ""}
         <style>
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,7 +56,7 @@ export function downloadHtmlAsPdf(title: string, bodyHtml: string, fontImport?: 
           <div class="pdf-hint">
             <strong>💡 Save as PDF:</strong> In the print dialog, change the destination to <strong>"Save as PDF"</strong>, set margins to <strong>None</strong> and scale to <strong>100%</strong>.
           </div>
-          ${bodyHtml}
+          ${cleanBody(bodyHtml)}
         </div>
       </body>
     </html>
@@ -100,4 +101,11 @@ export function getFontImport(fontId: string | null): string | undefined {
     roboto: "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap",
   };
   return imports[fontId || ""] || undefined;
+}
+
+function escTitle(t: string) {
+  return String(t ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
+}
+function cleanBody(html: string) {
+  return DOMPurify.sanitize(html, { ADD_TAGS: ["style"], FORCE_BODY: true });
 }

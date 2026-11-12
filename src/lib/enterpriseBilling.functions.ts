@@ -1,3 +1,4 @@
+import { trustedOrigin } from "@/lib/trustedOrigin";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -28,7 +29,7 @@ export const createEnterpriseCheckout = createServerFn({ method: "POST" })
     if (!key) throw new Error("Stripe is not configured");
     const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" as any });
-    const origin = data.origin || "https://teevents.golf";
+    const origin = trustedOrigin(data.origin);
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
       line_items: [{ price: ENTERPRISE_PRICE_ID, quantity: 1 }],

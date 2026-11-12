@@ -1,3 +1,4 @@
+import { trustedOrigin } from "@/lib/trustedOrigin";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
@@ -52,7 +53,7 @@ export const createFlatRateCheckout = createServerFn({ method: "POST" })
     const Stripe = (await import("stripe")).default;
     const stripe = new Stripe(key, { apiVersion: "2025-08-27.basil" as any });
 
-    const origin = data.origin || "https://teevents.golf";
+    const origin = trustedOrigin(data.origin);
     const isCurrentPricing = t.pricing_version === "2026-10";
     // Events created on/after the Oct 12, 2026 price change carry 39900; earlier
     // events (including the 2026-10 cohort) keep the $299 price they were quoted.

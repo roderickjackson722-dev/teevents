@@ -25,7 +25,16 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!
     );
 
-    const normalizedEmail = email.trim().toLowerCase();
+    const normalizedEmail = String(email).trim().toLowerCase();
+    // The caller must be signed in as the approved email address.
+    const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+    const { data: authData } = bearer ? await supabase.auth.getUser(bearer) : { data: null as any };
+    if (!authData?.user?.email || authData.user.email.toLowerCase() !== normalizedEmail) {
+      return new Response(JSON.stringify({ error: "Not approved" }), {
+        status: 403,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     // Single event mode: verify approval and return resources
     if (event_id) {

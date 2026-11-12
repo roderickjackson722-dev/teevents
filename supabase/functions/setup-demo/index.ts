@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { adminGuard } from "../_shared/auth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -7,12 +8,14 @@ const corsHeaders = {
 };
 
 const DEMO_EMAIL = "demo@teevents.com";
-const DEMO_PASSWORD = "demo2026";
+// Random per-run password; never returned to the caller.
+const DEMO_PASSWORD = crypto.randomUUID() + crypto.randomUUID();
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
   }
+  { const denied = await adminGuard(req, corsHeaders); if (denied) return denied; }
 
   try {
     const supabaseAdmin = createClient(
@@ -28,6 +31,7 @@ Deno.serve(async (req) => {
 
     if (existingUser) {
       userId = existingUser.id;
+      await supabaseAdmin.auth.admin.updateUserById(existingUser.id, { password: DEMO_PASSWORD });
     } else {
       const { data: newUser, error: userErr } = await supabaseAdmin.auth.admin.createUser({
         email: DEMO_EMAIL,
@@ -311,7 +315,7 @@ Deno.serve(async (req) => {
     // Checklist items are auto-created by the seed_tournament_checklist trigger
 
     return new Response(
-      JSON.stringify({ success: true, message: "Demo environment created successfully", tournamentId, orgId, credentials: { email: DEMO_EMAIL, password: DEMO_PASSWORD } }),
+      JSON.stringify({ success: true, message: "Demo environment created successfully", tournamentId, orgId, credentials: { email: DEMO_EMAIL } }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {

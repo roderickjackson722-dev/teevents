@@ -1,6 +1,7 @@
 // League Manager Access unlock — $199 one-time, paid to TeeVents platform.
 // Supports admin promo codes via public.validate_league_promo_code().
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -68,7 +69,7 @@ Deno.serve(async (req) => {
           access_amount_cents: LEAGUE_ACCESS_BASE_CENTS,
         })
         .eq("id", league.id);
-      const origin = req.headers.get("origin") || "https://teevents.golf";
+      const origin = (await safeOrigin(req));
       return new Response(
         JSON.stringify({ invoice: true, purchase_id: purchase.id, url: `${origin}/dashboard/leagues/${league.id}` }),
         { headers: { ...corsHeaders, "Content-Type": "application/json" } },
@@ -102,7 +103,7 @@ Deno.serve(async (req) => {
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, { apiVersion: "2025-08-27.basil" });
-    const origin = req.headers.get("origin") || "https://teevents.golf";
+    const origin = (await safeOrigin(req));
 
     // Insert pending purchase
     const { data: purchase, error: pErr } = await supabaseAdmin

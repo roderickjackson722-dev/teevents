@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
@@ -74,7 +75,7 @@ Deno.serve(async (req) => {
       }
     }
 
-    const origin = req.headers.get("origin") || "https://teevents.lovable.app";
+    const origin = (await safeOrigin(req));
 
     const sessionParams: any = {
       customer: customerId,

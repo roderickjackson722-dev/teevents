@@ -3,6 +3,7 @@
 // and email the vendor. On deny: email the vendor with a polite note.
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { resolveRouting, isFlatRateTournament } from "../_shared/connectRouting.ts";
 
@@ -143,7 +144,7 @@ Deno.serve(async (req) => {
       const combinedFeesCents = platformFeeCents + stripeFeeCents;
       const chargeTotalCents = grossCents + combinedFeesCents;
 
-      const origin = req.headers.get("origin") || "https://teevents.lovable.app";
+      const origin = (await safeOrigin(req));
       const lineItems: any[] = [
         {
           price_data: {

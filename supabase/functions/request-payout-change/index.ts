@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
       console.error(emailError);
     } else {
       try {
-        console.log(`Sending payout-change confirmation email to ${user.email}`);
+        console.log(`Sending payout-change confirmation email to user ${user.id}`);
         const resp = await fetch("https://api.resend.com/emails", {
           method: "POST",
           headers: {

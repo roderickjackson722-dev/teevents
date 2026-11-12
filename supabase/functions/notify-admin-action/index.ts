@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+const __esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" } as Record<string, string>)[c]);
 import { requireUser } from "../_shared/auth.ts";
 
 const corsHeaders = {
@@ -217,9 +218,9 @@ Deno.serve(async (req) => {
           [ADMIN_EMAIL],
           `📩 New Message from ${orgName}`,
           wrapHtml("New Organizer Message", `
-            <p style="margin:0 0 12px;color:#374151;font-size:15px;"><strong>From:</strong> ${orgName}</p>
-            <p style="margin:0 0 8px;color:#374151;font-size:15px;"><strong>Subject:</strong> ${subject}</p>
-            <p style="margin:0 0 12px;color:#374151;font-size:15px;">${details?.message || ""}</p>
+            <p style="margin:0 0 12px;color:#374151;font-size:15px;"><strong>From:</strong> ${__esc(orgName)}</p>
+            <p style="margin:0 0 8px;color:#374151;font-size:15px;"><strong>Subject:</strong> ${__esc(subject)}</p>
+            <p style="margin:0 0 12px;color:#374151;font-size:15px;">${__esc(details?.message || "").replace(/\n/g, "<br/>")}</p>
             <p style="margin:12px 0 0;color:#6b7280;font-size:13px;">Reply from the admin dashboard → Notifications & Requests.</p>
           `),
         );

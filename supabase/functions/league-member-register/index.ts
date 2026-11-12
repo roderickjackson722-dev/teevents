@@ -3,6 +3,7 @@
 // completes a free registration or returns a Stripe Checkout URL (direct charge
 // on the organizer's Connect account with the 5% platform fee).
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   requireConnectedAccount,
@@ -185,8 +186,8 @@ Deno.serve(async (req) => {
     const { platformFeeCents: feeCents, combinedFeesCents } = computeFees(amountCents);
     const passFee = !!form.pass_platform_fee_to_player || (league as any).pass_platform_fee_to_members !== false;
     const chargeCents = passFee ? amountCents + combinedFeesCents : amountCents;
-    const origin = req.headers.get("origin") || "https://teevents.golf";
-    const base = returnUrl || `${origin}/league/${league.league_slug}/register`;
+    const origin = (await safeOrigin(req));
+    const base = await safeReturnUrl(returnUrl, `${origin}/league/${league.league_slug}/register`);
 
     const { data: payment, error: pErr } = await supabaseAdmin
       .from("league_payments")

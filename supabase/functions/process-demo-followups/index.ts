@@ -1,5 +1,6 @@
 // Cron-triggered: scans demo_leads and sends 24h / 7d follow-ups.
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { cronGuard } from "../_shared/cronAuth.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendAndLog } from "../_shared/emailLogger.ts";
 import { demoEmailFrom, followup24hEmail, followup7dEmail } from "../_shared/demoEmails.ts";
@@ -11,6 +12,7 @@ const corsHeaders = {
 
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
+  { const denied = await cronGuard(req, corsHeaders, { allowAdmin: true }); if (denied) return denied; }
   try {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("Email not configured");

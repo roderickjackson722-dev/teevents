@@ -2,6 +2,7 @@
 // Anonymous attendees can buy tickets. TeeVents takes a 5% application fee.
 
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, isFlatRateTournament, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
@@ -86,7 +87,7 @@ Deno.serve(async (req) => {
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
     const applicationFeeAmount = platformFeeCents;
 
-    const origin = req.headers.get("origin") || "https://teevents.lovable.app";
+    const origin = (await safeOrigin(req));
     const lineItems: any[] = [
       {
         price_data: {

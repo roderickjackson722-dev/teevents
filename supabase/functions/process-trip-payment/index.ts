@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -36,7 +37,7 @@ serve(async (req) => {
     const { data: trip } = await supabase.from("golf_trips").select("id, title, organizer_id").eq("id", trip_id).maybeSingle();
     if (!trip || trip.organizer_id !== user.id) throw new Error("Trip not found or unauthorized");
 
-    const { data: participant } = await supabase.from("trip_participants").select("id, name, email").eq("id", participant_id).maybeSingle();
+    const { data: participant } = await supabase.from("trip_participants").select("id, name, email").eq("id", participant_id).eq("trip_id", trip_id).maybeSingle();
     if (!participant) throw new Error("Participant not found");
 
     // 5% platform fee added on top
@@ -52,8 +53,8 @@ serve(async (req) => {
         { price_data: { currency: "usd", product_data: { name: `${trip.title} — ${payment_type}` }, unit_amount: amount_cents }, quantity: 1 },
         { price_data: { currency: "usd", product_data: { name: "Platform fee (5%)" }, unit_amount: platformFee }, quantity: 1 },
       ],
-      success_url: `${req.headers.get("origin")}/trips/${trip_id}?paid=1`,
-      cancel_url: `${req.headers.get("origin")}/trips/${trip_id}?cancelled=1`,
+      success_url: `${await safeOrigin(req)}/trips/${trip_id}?paid=1`,
+      cancel_url: `${await safeOrigin(req)}/trips/${trip_id}?cancelled=1`,
       metadata: { trip_id, participant_id, payment_type, base_amount_cents: String(amount_cents) },
     });
 

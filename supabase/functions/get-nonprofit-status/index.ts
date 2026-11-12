@@ -23,11 +23,15 @@ Deno.serve(async (req) => {
     // Get tournament's org
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("organization_id")
+      .select("organization_id, site_published")
       .eq("id", tournament_id)
-      .single();
+      .maybeSingle();
 
-    if (!tournament) throw new Error("Tournament not found");
+    // Only published public sites expose donation-receipt details.
+    if (!tournament || !(tournament as any).site_published) {
+      return new Response(JSON.stringify({ is_nonprofit: false, nonprofit_name: null, ein: null, nonprofit_verified: false, platform_fee_rate: 0.05, has_stripe: false }),
+        { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 });
+    }
 
     const { data: org } = await supabaseAdmin
       .from("organizations")
@@ -42,8 +46,8 @@ Deno.serve(async (req) => {
     return new Response(
       JSON.stringify({
         is_nonprofit: org?.is_nonprofit || false,
-        nonprofit_name: org?.nonprofit_name || null,
-        ein: org?.ein || null,
+        nonprofit_name: org?.is_nonprofit ? (org?.nonprofit_name || null) : null,
+        ein: org?.is_nonprofit ? (org?.ein || null) : null,
         nonprofit_verified: org?.nonprofit_verified || false,
         platform_fee_rate: feeRate,
         has_stripe: hasStripe,
@@ -51,7 +55,7 @@ Deno.serve(async (req) => {
       { headers: { ...corsHeaders, "Content-Type": "application/json" }, status: 200 },
     );
   } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ error: "Unable to load status" }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

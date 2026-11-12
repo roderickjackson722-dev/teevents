@@ -281,6 +281,31 @@ Deno.serve(async (req) => {
 
     const CF_BASE = `https://api.cloudflare.com/client/v4/zones/${CF_ZONE_ID}/custom_hostnames`;
 
+    // Validate the hostname and make sure it belongs to this tournament.
+    {
+      const json400 = (msg: string, status = 400) => new Response(JSON.stringify({ error: msg }), {
+        status, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+      const requested = hostname ? normalizeHostname(String(hostname)) : "";
+      if (requested) {
+        if (requested.length > 253 || !/^(?=.{1,253}$)([a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,63}$/.test(requested)) {
+          return json400("Invalid hostname");
+        }
+        if (/(^|\.)teevents\.golf$|(^|\.)lovable\.app$|(^|\.)lovableproject\.com$/.test(requested)) {
+          return json400("This hostname cannot be used");
+        }
+      }
+      const owned = tournament.custom_domain ? normalizeHostname(String(tournament.custom_domain)) : "";
+      if (!isAdmin && (action === "delete" || action === "status") && requested && requested !== owned) {
+        return json400("Hostname does not belong to this tournament", 403);
+      }
+      if (action === "create" && requested) {
+        const { data: clash } = await supabaseAdmin.from("tournaments").select("id")
+          .ilike("custom_domain", requested).neq("id", tournament.id).limit(1);
+        if (clash && clash.length) return json400("Hostname is already used by another event", 409);
+      }
+    }
+
     if (action === "create") {
       if (!hostname) {
         return new Response(JSON.stringify({ error: "hostname is required for create" }), {

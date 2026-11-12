@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+const __esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" } as Record<string, string>)[c]);
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -106,11 +107,11 @@ Deno.serve(async (req) => {
       `${waitlisted ? "Waitlisted" : "Booking Confirmed"} — ${slot.title}`,
       html(waitlisted ? "You're on the waitlist" : "Your booking is confirmed", [
         waitlisted
-          ? `This session is currently full. You've been added to the waitlist for <strong>${slot.title}</strong>. We'll contact you if a spot opens up.`
+          ? `This session is currently full. You've been added to the waitlist for <strong>${__esc(slot.title)}</strong>. We'll contact you if a spot opens up.`
           : `Your booking has been confirmed.`,
-        `<strong>Session:</strong> ${slot.title}`,
+        `<strong>Session:</strong> ${__esc(slot.title)}`,
         `<strong>When:</strong> ${startStr} – ${endStr}`,
-        slot.location ? `<strong>Location:</strong> ${slot.location}` : "",
+        slot.location ? `<strong>Location:</strong> ${__esc(slot.location)}` : "",
         `<strong>Booking Reference:</strong> ${reservation.booking_reference}`,
         !waitlisted ? `Please arrive 5 minutes before your scheduled time.` : "",
         `Questions? Contact us at <a href="mailto:info@teevents.golf">info@teevents.golf</a>`,
@@ -125,13 +126,13 @@ Deno.serve(async (req) => {
         recipients,
         `New Booking — ${slot.title} — ${coach_name}`,
         html("New Booking Received", [
-          `<strong>Session:</strong> ${slot.title}`,
+          `<strong>Session:</strong> ${__esc(slot.title)}`,
           `<strong>When:</strong> ${startStr} – ${endStr}`,
-          `<strong>Coach:</strong> ${coach_name}`,
-          `<strong>Email:</strong> ${coach_email}`,
-          coach_phone ? `<strong>Phone:</strong> ${coach_phone}` : "",
-          team_name ? `<strong>Team:</strong> ${team_name}` : "",
-          notes ? `<strong>Notes:</strong> ${notes}` : "",
+          `<strong>Coach:</strong> ${__esc(coach_name)}`,
+          `<strong>Email:</strong> ${__esc(coach_email)}`,
+          coach_phone ? `<strong>Phone:</strong> ${__esc(coach_phone)}` : "",
+          team_name ? `<strong>Team:</strong> ${__esc(team_name)}` : "",
+          notes ? `<strong>Notes:</strong> ${__esc(notes)}` : "",
           `<strong>Status:</strong> ${reservation.status}`,
           `<strong>Reference:</strong> ${reservation.booking_reference}`,
         ].filter(Boolean)),

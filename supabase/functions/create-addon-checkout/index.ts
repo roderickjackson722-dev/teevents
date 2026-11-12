@@ -1,4 +1,5 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import {
   requireConnectedAccount,
@@ -98,7 +99,7 @@ Deno.serve(async (req) => {
     const totalCents = buyerPaysFees ? subtotalCents + combinedFeesCents : subtotalCents;
 
     const publicSlug = (tournament as any).custom_slug || tournament.slug || "";
-    const origin = req.headers.get("origin") || "https://teevents.golf";
+    const origin = (await safeOrigin(req));
 
     const lineItems: any[] = items.map((i) => ({
       price_data: {

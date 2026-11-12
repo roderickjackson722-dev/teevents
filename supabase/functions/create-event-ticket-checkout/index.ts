@@ -1,4 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 
 const corsHeaders = {
@@ -52,7 +53,7 @@ Deno.serve(async (req) => {
       apiVersion: "2025-08-27.basil",
     });
 
-    const origin = req.headers.get("origin") || "https://teevents.golf";
+    const origin = (await safeOrigin(req));
     const totalCents = tier.price_cents * qty;
 
     const session = await stripe.checkout.sessions.create({

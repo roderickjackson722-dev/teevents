@@ -2,6 +2,7 @@
 // subscription; new organizations pay the current one-time Per-League fee.
 // Billed on the TeeVents platform Stripe account (NOT Connect).
 import Stripe from "https://esm.sh/stripe@18.5.0";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -77,7 +78,7 @@ Deno.serve(async (req) => {
       .single();
     if (subErr) throw new Error(`DB insert failed: ${subErr.message}`);
 
-    const origin = req.headers.get("origin") || "https://teevents.golf";
+    const origin = (await safeOrigin(req));
 
     // Look up promotion code (if provided) so it's pre-applied at Stripe Checkout.
     let discounts: { promotion_code: string }[] | undefined;

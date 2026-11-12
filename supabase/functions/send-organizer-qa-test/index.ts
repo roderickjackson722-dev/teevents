@@ -63,9 +63,17 @@ Deno.serve(async (req) => {
         : `No registrations exist yet — this preview shows the placeholder message that would be replaced with the player's real Q&amp;A.`,
     ], answersHtml);
 
-    const to: string[] = Array.isArray(recipients) && recipients.length
-      ? recipients
-      : [t.contact_email, "info@teevents.golf"].filter(Boolean);
+    // Non-admins may only send the preview to their own account email.
+    const requested: string[] = Array.isArray(recipients) ? recipients.map((r: unknown) => String(r).trim()).filter(Boolean) : [];
+    const own = String(user.email || "").toLowerCase();
+    const to: string[] = isAdmin
+      ? (requested.length ? requested.slice(0, 10) : [t.contact_email, "info@teevents.golf"].filter(Boolean))
+      : [user.email as string].filter(Boolean);
+    if (!isAdmin && requested.some((r) => r.toLowerCase() !== own)) {
+      return new Response(JSON.stringify({ error: "Test emails can only be sent to your own account email." }), {
+        status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("Email service not configured");

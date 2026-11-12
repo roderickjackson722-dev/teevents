@@ -250,7 +250,7 @@ async function sendInvitationEmail(
 ) {
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   if (!RESEND_API_KEY) {
-    console.warn("RESEND_API_KEY not set — skipping invitation email to", recipientEmail);
+    console.warn("RESEND_API_KEY not set — skipping invitation email");
     return;
   }
 
@@ -335,7 +335,7 @@ async function sendInvitationEmail(
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      console.error(`Failed to send invitation email to ${recipientEmail}:`, data);
+      console.error("Failed to send invitation email:", data);
       await logEmailSend(supabaseLog, {
         messageId, templateName: "team-invitation", recipientEmail, subject,
         status: "failed", source: "invite-member",
@@ -352,7 +352,7 @@ async function sendInvitationEmail(
       messageId, templateName: "team-invitation", recipientEmail, subject,
       status: "failed", source: "invite-member", errorMessage: err.message,
     });
-    console.error(`Error sending invitation email to ${recipientEmail}:`, err);
+    console.error("Error sending invitation email:", err);
   }
 }
 
@@ -378,7 +378,7 @@ async function sendTempPasswordEmail(
 ) {
   const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
   if (!RESEND_API_KEY) {
-    console.warn("RESEND_API_KEY not set — skipping temp password email to", recipientEmail);
+    console.warn("RESEND_API_KEY not set — skipping temp password email");
     return;
   }
   const greeting = recipientName ? `Hi ${recipientName},` : "Hi,";

@@ -118,15 +118,15 @@ Deno.serve(async (req) => {
             results.push({ id: inv.id, status: "sent", email: inv.coach_email });
           } else {
             const err = await emailRes.text();
-            console.error(`Failed to send to ${inv.coach_email}:`, err);
+            console.error(`Failed to send invitation ${inv.id}:`, err);
             results.push({ id: inv.id, status: "failed", email: inv.coach_email, error: err });
           }
         } catch (sendErr) {
-          console.error(`Error sending to ${inv.coach_email}:`, sendErr);
+          console.error(`Error sending invitation ${inv.id}:`, sendErr);
           results.push({ id: inv.id, status: "failed", email: inv.coach_email });
         }
       } else {
-        console.log(`No RESEND_API_KEY - skipping email to ${inv.coach_email}`);
+        console.log(`No RESEND_API_KEY - skipping invitation ${inv.id}`);
         results.push({ id: inv.id, status: "skipped", email: inv.coach_email });
       }
     }

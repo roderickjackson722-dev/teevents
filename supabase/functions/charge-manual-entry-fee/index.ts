@@ -2,6 +2,7 @@
 // Stripe account (Standard). Called after record_manual_entry with
 // payment_method='instant' returns a fee_id + transaction_id.
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 
@@ -107,7 +108,8 @@ serve(async (req) => {
     });
 
     // Create a Stripe Checkout session on the connected account for the fee.
-    const origin = req.headers.get("origin") || "https://teevents.golf";
+    const origin = (await safeOrigin(req));
+    const safeReturn = await safeReturnUrl(return_url, origin);
     const session = await stripe.checkout.sessions.create(
       {
         mode: "payment",
@@ -132,8 +134,8 @@ serve(async (req) => {
             tournament_id: fee.tournament_id,
           },
         },
-        success_url: `${return_url || origin}?manual_fee=paid&fee_id=${fee.id}`,
-        cancel_url: `${return_url || origin}?manual_fee=cancelled&fee_id=${fee.id}`,
+        success_url: `${safeReturn}?manual_fee=paid&fee_id=${fee.id}`,
+        cancel_url: `${safeReturn}?manual_fee=cancelled&fee_id=${fee.id}`,
         metadata: {
           manual_entry_fee_id: fee.id,
           platform_transaction_id: transaction_id,

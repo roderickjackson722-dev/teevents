@@ -128,6 +128,11 @@ Deno.serve(async (req) => {
     const subject = `${t.title} – Your Day-of Event Page`;
 
     // Test mode
+    if (test_email && String(test_email).trim().toLowerCase() !== String(user.email || "").toLowerCase()) {
+      return new Response(JSON.stringify({ error: "Test emails can only be sent to your own signed-in email address." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     if (test_email) {
       const link = `${BASE_URL}/day-of/${t.slug}/DEMO`;
       const r = await fetch("https://api.resend.com/emails", {

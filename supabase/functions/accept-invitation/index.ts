@@ -51,6 +51,11 @@ serve(async (req) => {
       throw new Error("This invitation has expired");
     }
 
+    // Require a confirmed email so an unverified sign-up cannot claim an invite
+    if (!user.email_confirmed_at) {
+      throw new Error("Please confirm your email address before accepting this invitation.");
+    }
+
     // Verify the user's email matches the invitation
     if (user.email?.toLowerCase() !== invitation.email.toLowerCase()) {
       throw new Error(`This invitation was sent to ${invitation.email}. Please sign in with that email address.`);

@@ -76,8 +76,20 @@ serve(async (req) => {
     // Organization, event, plan and Organizer Toolbox summary (when available)
     let orgName = "Not created yet", eventName = "Not created yet", planLabel = "$0 to Start", toolboxLink = "https://www.teevents.golf/admin/organizer-toolboxes";
     let tb: any = null;
+    // Only enrich with account details when the caller is signed in as that same email.
+    let callerEmail = "";
     try {
-      const { data: vet } = await supabaseAdmin.from("signup_vetting").select("user_id, organization_name").ilike("email", String(email || "")).order("created_at", { ascending: false }).limit(1).maybeSingle();
+      const authH = req.headers.get("Authorization") || "";
+      const jwt = authH.replace(/^Bearer\s+/i, "");
+      if (jwt) {
+        const { data: u } = await supabaseAdmin.auth.getUser(jwt);
+        callerEmail = String(u?.user?.email || "").toLowerCase();
+      }
+    } catch (_) { /* anonymous */ }
+    const ownEmail = !!callerEmail && callerEmail === String(email || "").trim().toLowerCase();
+    try {
+      if (!ownEmail) throw new Error("skip");
+      const { data: vet } = await supabaseAdmin.from("signup_vetting").select("user_id, organization_name").eq("email", callerEmail).order("created_at", { ascending: false }).limit(1).maybeSingle();
       if (vet?.organization_name) orgName = vet.organization_name;
       if (vet?.user_id) {
         const { data: mem } = await supabaseAdmin.from("org_members").select("organization_id").eq("user_id", vet.user_id).order("created_at", { ascending: true }).limit(1).maybeSingle();

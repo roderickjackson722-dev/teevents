@@ -138,6 +138,22 @@ Deno.serve(async (req) => {
     // Send immediately
     let recipients: any[] = [];
     if (manualPhones.length > 0) {
+      // Manual numbers must already be on file for this event (players or event contacts).
+      const digits = (p: string) => String(p || "").replace(/\D/g, "").slice(-10);
+      const [{ data: regPhones }, { data: tPhones }] = await Promise.all([
+        supabase.from("tournament_registrations").select("phone").eq("tournament_id", tournament_id).not("phone", "is", null),
+        supabase.from("tournaments").select("contact_phone, day_of_director_phone, org_contact_phone, registration_closed_contact_phone").eq("id", tournament_id).maybeSingle(),
+      ]);
+      const onFile = new Set<string>();
+      for (const r of (regPhones as any[]) || []) if (r.phone) onFile.add(digits(r.phone));
+      for (const v of Object.values((tPhones as any) || {})) if (v) onFile.add(digits(String(v)));
+      const unknown = manualPhones.filter((p) => !onFile.has(digits(p)));
+      if (unknown.length > 0 || manualPhones.length > 50) {
+        return new Response(
+          JSON.stringify({ error: "Text messages can only go to phone numbers on file for this event (players or event contact numbers)." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
       recipients = manualPhones.map((phone) => ({
         first_name: isTest ? "Test" : "Manual",
         last_name: phone,

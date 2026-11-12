@@ -407,6 +407,13 @@
       "when": 1794435391245,
       "tag": "0057_security_hardening_payments_emails_policies",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1794458247811,
+      "tag": "0058_security_hardening_access_requests_cron_tokens",
+      "breakpoints": true
     }
   ]
 }

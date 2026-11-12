@@ -78,7 +78,21 @@ Deno.serve(async (req) => {
       const { data: isMember } = await supabaseAdmin.rpc("is_org_member", {
         _user_id: user.id, _org_id: t.organization_id,
       });
-      allowed = !!isMember;
+      // Messaging players requires an org owner/admin, or a member granted
+      // the manage_messages permission.
+      if (isMember) {
+        const { data: isOrgAdmin } = await supabaseAdmin.rpc("is_org_admin_or_owner", {
+          _user_id: user.id, _org_id: t.organization_id,
+        });
+        if (isOrgAdmin) {
+          allowed = true;
+        } else {
+          const { data: m } = await supabaseAdmin
+            .from("org_members").select("permissions")
+            .eq("organization_id", t.organization_id).eq("user_id", user.id).maybeSingle();
+          allowed = Array.isArray((m as any)?.permissions) && (m as any).permissions.includes("manage_messages");
+        }
+      }
     }
     if (!allowed) {
       return new Response(JSON.stringify({ error: "Forbidden" }), {
@@ -121,8 +135,8 @@ Deno.serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("RESEND_API_KEY not configured");
 
-    const subject = (rawSubject && rawSubject.trim()) || `${t.title} – Important Update`;
-    const customMsg = (rawMessage && rawMessage.trim()) || "";
+    const subject = ((rawSubject && rawSubject.trim()) || `${t.title} – Important Update`).replace(/[\r\n]+/g, " ").slice(0, 200);
+    const customMsg = ((rawMessage && rawMessage.trim()) || "").slice(0, 5000);
     const directorName = t.day_of_director_name || `The ${t.title} Team`;
 
     const buildHtml = (firstName: string) => `

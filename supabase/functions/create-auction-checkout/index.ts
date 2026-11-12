@@ -84,7 +84,7 @@ Deno.serve(async (req) => {
       customer_email: buyer_email || undefined,
       line_items: lineItems,
       mode: "payment",
-      success_url: `${origin}/t/${slug}?auction_purchased=true&item_id=${item_id}${acctQuerySuffix(connected)}`,
+      success_url: `${origin}/t/${slug}?auction_purchased=true&item_id=${item_id}&session_id={CHECKOUT_SESSION_ID}${acctQuerySuffix(connected)}`,
       cancel_url: `${origin}/t/${slug}#auction`,
       ...applicationFeeBlock(connected, applicationFeeAmount),
       metadata: {
@@ -132,11 +132,7 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Mark item as sold
-    await supabaseAdmin
-      .from("tournament_auction_items")
-      .update({ is_active: false, winner_name: buyer_name || null, winner_email: buyer_email || null })
-      .eq("id", item_id);
+    // The item is closed only by verify-auction-purchase after Stripe confirms payment.
 
     try {
       if (tournament) {

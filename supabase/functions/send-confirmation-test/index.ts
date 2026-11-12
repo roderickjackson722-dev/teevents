@@ -117,6 +117,19 @@ Deno.serve(async (req) => {
 
     const { recipient_email, config, tournament_id, template_kind } = await req.json();
     if (!recipient_email || !config) throw new Error("Missing recipient_email or config");
+    // Test sends go only to the signed-in organizer's own address (platform admins excepted),
+    // so this cannot be used to email arbitrary people.
+    {
+      const adminCheck = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
+      const { data: isPlatformAdmin } = await adminCheck.rpc("has_role", { _user_id: user.id, _role: "admin" });
+      const own = String(user.email || "").trim().toLowerCase();
+      if (!isPlatformAdmin) {
+        if (!tournament_id) throw new Error("Not authorized");
+        if (!own || String(recipient_email).trim().toLowerCase() !== own) {
+          throw new Error("Test emails can only be sent to your own account email");
+        }
+      }
+    }
 
     const supabaseAdmin = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -136,6 +149,7 @@ Deno.serve(async (req) => {
         .select("title, date, location, organization_id, slug, pairings_config")
         .eq("id", tournament_id)
         .maybeSingle();
+      if (!t) throw new Error("Tournament not found");
       if (t) {
         tournamentTitle = (t as any).title || tournamentTitle;
         tournamentDate = (t as any).date || null;

@@ -424,7 +424,8 @@ Deno.serve(async (req) => {
       const { error } = await supabaseAdmin
         .from("sponsorship_tiers")
         .update(payload)
-        .eq("id", tierId);
+        .eq("id", tierId)
+        .eq("tournament_id", tournamentId);
 
       if (error) throw error;
       return json({ success: true });
@@ -435,7 +436,8 @@ Deno.serve(async (req) => {
       const { error } = await supabaseAdmin
         .from("sponsorship_tiers")
         .delete()
-        .eq("id", tierId);
+        .eq("id", tierId)
+        .eq("tournament_id", tournamentId);
 
       if (error) throw error;
       return json({ success: true });

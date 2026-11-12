@@ -286,13 +286,8 @@ Deno.serve(async (req) => {
     const isServiceCredential = async (t: string): Promise<boolean> => {
       if (!t) return false;
       if (t === Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")) return true;
-      try {
-        const part = t.split(".")[1];
-        if (part) {
-          const claims = JSON.parse(atob(part.replace(/-/g, "+").replace(/_/g, "/")));
-          if (claims?.role === "service_role") return true;
-        }
-      } catch (_) { /* not a JWT — fall through to the admin probe */ }
+      // Unsigned JWT claims are never trusted; only the key itself or a
+      // credential the admin API actually accepts proves service access.
       try {
         const probe = createClient(Deno.env.get("SUPABASE_URL")!, t, { auth: { persistSession: false } });
         const { data, error } = await probe.auth.admin.listUsers({ page: 1, perPage: 1 });
@@ -326,9 +321,23 @@ Deno.serve(async (req) => {
 
     // Optional: update a registrant's email before resending
     if (update_email && update_email.registration_id && update_email.new_email) {
+      // Only an organizer of the registration's tournament (or a platform admin) may change it.
+      const newEmail = String(update_email.new_email).trim();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail) || newEmail.length > 254) throw new Error("Invalid email");
+      const { data: regRow } = await supabaseAdmin
+        .from("tournament_registrations").select("tournament_id").eq("id", update_email.registration_id).maybeSingle();
+      if (!regRow) throw new Error("Registration not found");
+      if (!isServiceRun) {
+        const { data: tRow } = await supabaseAdmin.from("tournaments").select("organization_id").eq("id", regRow.tournament_id).maybeSingle();
+        const { data: isAdminU } = await supabaseAdmin.rpc("has_role", { _user_id: user!.id, _role: "admin" });
+        const { data: isMemberU } = tRow
+          ? await supabaseAdmin.rpc("is_org_member", { _user_id: user!.id, _org_id: tRow.organization_id })
+          : { data: false } as any;
+        if (!isAdminU && !isMemberU) throw new Error("Not authorized");
+      }
       const { error: updateErr } = await supabaseAdmin
         .from("tournament_registrations")
-        .update({ email: update_email.new_email.trim() })
+        .update({ email: newEmail })
         .eq("id", update_email.registration_id);
       if (updateErr) {
         console.error("[Resend Confirmation] Failed to update email:", updateErr);

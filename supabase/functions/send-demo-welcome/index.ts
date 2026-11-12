@@ -14,8 +14,8 @@ serve(async (req) => {
     const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY");
     if (!RESEND_API_KEY) throw new Error("Email not configured");
 
-    const { lead_id, email } = await req.json();
-    if (!lead_id || !email) throw new Error("lead_id and email required");
+    const { lead_id } = await req.json();
+    if (!lead_id || typeof lead_id !== "string") throw new Error("lead_id required");
 
     const admin = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -25,9 +25,18 @@ serve(async (req) => {
     // Idempotent: skip if already sent
     const { data: lead } = await admin
       .from("demo_leads")
-      .select("welcome_email_sent_at")
+      .select("email, created_at, welcome_email_sent_at")
       .eq("id", lead_id)
       .maybeSingle();
+    // Only send to the address stored on a lead captured in the last 30 minutes;
+    // the caller can never choose the recipient.
+    const email = String(lead?.email || "").trim();
+    const fresh = lead?.created_at && Date.now() - new Date(lead.created_at).getTime() < 30 * 60 * 1000;
+    if (!lead || !email || !fresh) {
+      return new Response(JSON.stringify({ skipped: true }), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
     if (lead?.welcome_email_sent_at) {
       return new Response(JSON.stringify({ skipped: true }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },

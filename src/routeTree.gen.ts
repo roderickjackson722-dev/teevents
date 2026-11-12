@@ -62,6 +62,7 @@ import { Route as ApiPublicPostEventOrganizerEmailRouteImport } from './routes/a
 import { Route as ApiPublicReceiptEmailRouteImport } from './routes/api/public/receipt-email'
 import { Route as ApiPublicSampleRequestRouteImport } from './routes/api/public/sample-request'
 import { Route as ApiPublicSampleShareEmailRouteImport } from './routes/api/public/sample-share-email'
+import { Route as ApiPublicVerifyAuctionPurchaseRouteImport } from './routes/api/public/verify-auction-purchase'
 import { Route as EnterpriseCommunicationsEmailTemplatesRouteImport } from './routes/enterprise.communications.email-templates'
 import { Route as EnterpriseSettingsOrganizationRouteImport } from './routes/enterprise.settings.organization'
 import { Route as EnterpriseSettingsWebAddressRouteImport } from './routes/enterprise.settings.web-address'
@@ -354,6 +355,12 @@ const ApiPublicSampleShareEmailRoute =
     path: '/api/public/sample-share-email',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicVerifyAuctionPurchaseRoute =
+  ApiPublicVerifyAuctionPurchaseRouteImport.update({
+    id: '/api/public/verify-auction-purchase',
+    path: '/api/public/verify-auction-purchase',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const EnterpriseCommunicationsEmailTemplatesRoute =
   EnterpriseCommunicationsEmailTemplatesRouteImport.update({
     id: '/enterprise/communications/email-templates',
@@ -502,6 +509,7 @@ export interface FileRoutesByFullPath {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/api/public/verify-auction-purchase': typeof ApiPublicVerifyAuctionPurchaseRoute
   '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
@@ -573,6 +581,7 @@ export interface FileRoutesByTo {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/api/public/verify-auction-purchase': typeof ApiPublicVerifyAuctionPurchaseRoute
   '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
@@ -645,6 +654,7 @@ export interface FileRoutesById {
   '/api/public/receipt-email': typeof ApiPublicReceiptEmailRoute
   '/api/public/sample-request': typeof ApiPublicSampleRequestRoute
   '/api/public/sample-share-email': typeof ApiPublicSampleShareEmailRoute
+  '/api/public/verify-auction-purchase': typeof ApiPublicVerifyAuctionPurchaseRoute
   '/enterprise/communications/email-templates': typeof EnterpriseCommunicationsEmailTemplatesRoute
   '/enterprise/settings/organization': typeof EnterpriseSettingsOrganizationRoute
   '/enterprise/settings/web-address': typeof EnterpriseSettingsWebAddressRoute
@@ -718,6 +728,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/api/public/verify-auction-purchase'
     | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
@@ -789,6 +800,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/api/public/verify-auction-purchase'
     | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
@@ -860,6 +872,7 @@ export interface FileRouteTypes {
     | '/api/public/receipt-email'
     | '/api/public/sample-request'
     | '/api/public/sample-share-email'
+    | '/api/public/verify-auction-purchase'
     | '/enterprise/communications/email-templates'
     | '/enterprise/settings/organization'
     | '/enterprise/settings/web-address'
@@ -932,6 +945,7 @@ export interface RootRouteChildren {
   ApiPublicReceiptEmailRoute: typeof ApiPublicReceiptEmailRoute
   ApiPublicSampleRequestRoute: typeof ApiPublicSampleRequestRoute
   ApiPublicSampleShareEmailRoute: typeof ApiPublicSampleShareEmailRoute
+  ApiPublicVerifyAuctionPurchaseRoute: typeof ApiPublicVerifyAuctionPurchaseRoute
   EnterpriseCommunicationsEmailTemplatesRoute: typeof EnterpriseCommunicationsEmailTemplatesRoute
   EnterpriseSettingsOrganizationRoute: typeof EnterpriseSettingsOrganizationRoute
   EnterpriseSettingsWebAddressRoute: typeof EnterpriseSettingsWebAddressRoute
@@ -1322,6 +1336,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSampleShareEmailRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/verify-auction-purchase': {
+      id: '/api/public/verify-auction-purchase'
+      path: '/api/public/verify-auction-purchase'
+      fullPath: '/api/public/verify-auction-purchase'
+      preLoaderRoute: typeof ApiPublicVerifyAuctionPurchaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/enterprise/communications/email-templates': {
       id: '/enterprise/communications/email-templates'
       path: '/enterprise/communications/email-templates'
@@ -1505,6 +1526,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicReceiptEmailRoute: ApiPublicReceiptEmailRoute,
   ApiPublicSampleRequestRoute: ApiPublicSampleRequestRoute,
   ApiPublicSampleShareEmailRoute: ApiPublicSampleShareEmailRoute,
+  ApiPublicVerifyAuctionPurchaseRoute: ApiPublicVerifyAuctionPurchaseRoute,
   EnterpriseCommunicationsEmailTemplatesRoute:
     EnterpriseCommunicationsEmailTemplatesRoute,
   EnterpriseSettingsOrganizationRoute: EnterpriseSettingsOrganizationRoute,

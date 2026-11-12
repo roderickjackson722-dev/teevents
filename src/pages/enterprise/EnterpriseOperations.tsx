@@ -97,7 +97,8 @@ export default function EnterpriseOperations() {
 
   const printInvoice = (invoice: Invoice) => {
     const popup = window.open("", "_blank"); if (!popup) return;
-    popup.document.write(`<html><body style="font-family:Arial;padding:40px"><h1>Invoice ${invoice.invoice_number}</h1><p>${org?.orgName || ""}</p><hr><p><strong>Bill to:</strong> ${invoice.billing_name}<br>${invoice.billing_address.replace(/\n/g, "<br>")}<br>${invoice.billing_email}</p><h2>$${(invoice.amount_cents / 100).toFixed(2)}</h2><p>Due ${invoice.due_date} · ${invoice.status.toUpperCase()}</p><script>window.onload=()=>window.print()<\/script></body></html>`); popup.document.close();
+    const esc = (v: unknown) => String(v ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c] as string));
+    popup.document.write(`<html><body style="font-family:Arial;padding:40px"><h1>Invoice ${esc(invoice.invoice_number)}</h1><p>${esc(org?.orgName)}</p><hr><p><strong>Bill to:</strong> ${esc(invoice.billing_name)}<br>${esc(invoice.billing_address).replace(/\n/g, "<br>")}<br>${esc(invoice.billing_email)}</p><h2>$${(invoice.amount_cents / 100).toFixed(2)}</h2><p>Due ${esc(invoice.due_date)} · ${esc(String(invoice.status).toUpperCase())}</p><script>window.onload=()=>window.print()<\/script></body></html>`); popup.document.close();
   };
 
   if (loading) return <EnterpriseLayout title="Operations"><Loader2 className="h-5 w-5 animate-spin" /></EnterpriseLayout>;

@@ -52,6 +52,11 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
       .eq("user_id", context.userId)
       .maybeSingle();
     if (!membership) throw new Error("Not authorized for this tournament");
+    // Payment links go only to the address stored on the registration.
+    const storedEmail = String(registration.email || "").trim().toLowerCase();
+    if (!storedEmail || storedEmail !== String(data.recipientEmail).trim().toLowerCase()) {
+      throw new Error("Payment links can only be sent to the player's email on file");
+    }
 
     const rawTitle = (tournament.public_section_titles as Record<string, unknown> | null)?.registration;
     const registrationTitle = typeof rawTitle === "string" && rawTitle.trim() ? rawTitle.trim().slice(0, 80) : "Registration";

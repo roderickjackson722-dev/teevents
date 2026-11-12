@@ -435,6 +435,13 @@
       "when": 1794506757409,
       "tag": "0061_security_scoring_league_hardening",
       "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1794507790538,
+      "tag": "0062_harden_bids_and_public_registrations",
+      "breakpoints": true
     }
   ]
 }

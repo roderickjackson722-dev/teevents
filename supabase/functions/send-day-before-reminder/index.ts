@@ -328,7 +328,8 @@ Deno.serve(async (req) => {
     const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
     const isServiceCaller = !!serviceKey && presented === serviceKey;
     const service_run = (payload as any)?.service_run === true && isServiceCaller;
-    const email_overrides = isServiceCaller ? (payload as any)?.email_overrides : undefined;
+    // Organizer callers are verified as org members/admins below before any send.
+    const email_overrides = (payload as any)?.email_overrides;
     /** Send-time alternate addresses keyed by registration id; stored emails are untouched. */
     const overrideMap = new Map<string, string>();
     if (email_overrides && typeof email_overrides === "object") {

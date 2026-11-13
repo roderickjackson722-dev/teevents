@@ -32,7 +32,19 @@ async function run(request: Request) {
   const presented = (request.headers.get("x-cron-token") || "").trim();
   const { data: tokenRow } = await admin
     .from("internal_cron_tokens").select("token").eq("name", "lead_magnet_followups").maybeSingle();
-  if (!presented || !tokenRow?.token || presented !== tokenRow.token) return json({ error: "Unauthorized" }, 401);
+  let authorized = !!presented && !!tokenRow?.token && presented === tokenRow.token;
+  if (!authorized) {
+    // Platform admins may trigger the job from Admin Dashboard → Lead Magnets.
+    const bearer = (request.headers.get("authorization") || "").replace(/^Bearer\s+/i, "").trim();
+    if (bearer) {
+      const { data: u } = await admin.auth.getUser(bearer);
+      if (u?.user) {
+        const { data: isAdmin } = await admin.rpc("has_role", { _user_id: u.user.id, _role: "admin" });
+        authorized = isAdmin === true;
+      }
+    }
+  }
+  if (!authorized) return json({ error: "Unauthorized" }, 401);
 
   const { data: due, error } = await admin
     .from("lead_magnet_followups")

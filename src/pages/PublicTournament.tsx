@@ -1563,6 +1563,8 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
       if (!target) return;
       if (target instanceof HTMLAnchorElement && target.getAttribute("href")?.startsWith("#")) return;
       if (target.hasAttribute("data-sample-nav")) return;
+      // Menu, mobile toggle and registration-form choices stay usable; form submits are blocked by onSubmitCapture.
+      if (target instanceof HTMLButtonElement && target.closest("nav, header, form")) return;
       e.preventDefault(); e.stopPropagation();
       toast({ title: "Sample preview", description: "No payments, sign-ups or messages are accepted on this sample." });
     } : undefined}>

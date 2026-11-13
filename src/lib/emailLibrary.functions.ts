@@ -24,13 +24,15 @@ export const saveLibraryTemplate=createServerFn({method:'POST'}).middleware([req
 export const deleteLibraryTemplate=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({organizationId:z.string().uuid(),id:z.string().uuid()}).parse(i)).handler(async({data,context})=>{
  const h=await import('./emailLibrary.server');const {admin}=await h.access(context,data.organizationId);const {error}=await admin.from('organizer_email_templates').delete().eq('organization_id',data.organizationId).eq('id',data.id);if(error)throw new Error('Template could not be deleted.');return {deleted:true};
 });
-export const sendSavedTemplateEmail=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>scope.extend({templateId:z.string().uuid(),expectedUpdatedAt:z.string(),registrationIds:z.array(z.string().uuid()).min(1).max(100),requestId:z.string().uuid()}).parse(i)).handler(async({data,context})=>{
+export const sendSavedTemplateEmail=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>scope.extend({templateId:z.string().uuid(),expectedUpdatedAt:z.string(),registrationIds:z.array(z.string().uuid()).min(1).max(100),requestId:z.string().uuid(),audience:z.enum(['players','sponsors','vendors']).default('players')}).parse(i)).handler(async({data,context})=>{
  const h=await import('./emailLibrary.server');const {admin,organization}=await h.access(context,data.organizationId);
  const event=await h.ownedEvent(admin,data.organizationId,data.eventId);
  const template=await h.resolveTemplate(admin,data.organizationId,event,data.templateId);
  if(template.updated_at!==data.expectedUpdatedAt)throw new Error('This template has changed. Reload it and review again.');
  const ids=[...new Set(data.registrationIds)];
- const {data:rows,error}=await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).in('id',ids);
+ let rows:any[]|null=null,error:any=null;
+ if(data.audience!=='sponsors'&&data.audience!=='vendors'){const r=await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).in('id',ids);rows=r.data;error=r.error;}
+ else{const table=data.audience==='sponsors'?'sponsor_registrations':'vendor_registrations';const r=await admin.from(table).select('*').eq('tournament_id',event.id).in('id',ids);error=r.error;rows=(r.data||[]).map((x:any)=>{const [first,...rest]=String(x.contact_name||'').trim().split(/\s+/);return {id:x.id,email:x.contact_email,first_name:first||x.company_name||x.vendor_name||'',last_name:rest.join(' '),sponsor_name:x.company_name||x.vendor_name||x.contact_name||''};});}
  if(error||rows?.length!==ids.length)throw new Error('Choose recipients belonging to this event.');
  const key=process.env['RESEND_API_KEY'];if(!key)throw new Error('Email sending is not configured.');
  let sent=0,failed=0,suppressed=0;

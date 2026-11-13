@@ -9,6 +9,10 @@ import { Eye, Loader2, Send } from "lucide-react";
 import { toast } from "sonner";
 import { previewLibraryEmail, testLibraryEmail, sendSavedTemplateEmail } from "@/lib/emailLibrary.functions";
 import { EmailPreview } from "./TemplateLibrary";
+import { supabase } from "@/integrations/supabase/client";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+type Audience = "players" | "sponsors" | "vendors";
 
 export default function SavedTemplateSender({ organizationId, eventId, template, registrations }: {
   organizationId: string; eventId: string; template: any; registrations: any[];
@@ -22,17 +26,31 @@ export default function SavedTemplateSender({ organizationId, eventId, template,
   const [busy, setBusy] = useState(false);
   const [review, setReview] = useState(false);
   const [result, setResult] = useState("");
+  const [audience, setAudience] = useState<Audience>("players");
+  const [others, setOthers] = useState<any[]>([]);
+  useEffect(() => {
+    setSelected([]); setOthers([]);
+    if (audience === "players") return;
+    let live = true;
+    const table = audience === "sponsors" ? "sponsor_registrations" : "vendor_registrations";
+    (supabase.from(table as any).select("*").eq("tournament_id", eventId) as any).then(({ data, error }: any) => {
+      if (!live) return;
+      if (error) { toast.error("Could not load this list."); return; }
+      setOthers((data || []).map((x: any) => ({ id: x.id, email: x.contact_email, first_name: x.company_name || x.vendor_name || x.contact_name || "", last_name: x.contact_name && (x.company_name || x.vendor_name) ? `(${x.contact_name})` : "" })));
+    });
+    return () => { live = false; };
+  }, [audience, eventId]);
   useEffect(() => { setOut(null); setSelected([]); setReview(false); setResult(""); }, [template.id, template.updated_at, eventId]);
   const run = async (action: () => Promise<void>) => {
     setBusy(true);
     try { await action(); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not complete this action."); }
     finally { setBusy(false); }
   };
-  const eligible = registrations.filter(r => r.email);
+  const eligible = (audience === "players" ? registrations : others).filter(r => r.email);
   const chosen = eligible.filter(r => selected.includes(r.id));
   const templateData = { name: template.name, subject: template.subject, config: template.config, source_kind: template.source_kind };
   const showPreview = (forSend = false) => run(async () => {
-    const output = await preview({ data: { organizationId, eventId, template: templateData, sampleRegistrationId: chosen[0]?.id } });
+    const output = await preview({ data: { organizationId, eventId, template: templateData, sampleRegistrationId: audience === "players" ? chosen[0]?.id : undefined } });
     setOut(output); setReview(forSend);
   });
   return <section className="space-y-5 min-w-0">
@@ -47,9 +65,10 @@ export default function SavedTemplateSender({ organizationId, eventId, template,
         toast.success("One test email accepted for delivery.");
       })}><Send className="mr-2 h-4 w-4"/>Send Test Email</Button>
     </div>
+    <div className="space-y-2"><Label>Send to</Label><Select value={audience} onValueChange={v => setAudience(v as Audience)} disabled={busy}><SelectTrigger className="w-full sm:w-64"><SelectValue/></SelectTrigger><SelectContent><SelectItem value="players">Players</SelectItem><SelectItem value="sponsors">Sponsors</SelectItem><SelectItem value="vendors">Vendors</SelectItem></SelectContent></Select></div>
     <div className="flex items-center justify-between gap-2"><h3 className="font-semibold">Recipients</h3><Button variant="outline" size="sm" disabled={busy || !eligible.length} onClick={() => setSelected(selected.length === eligible.length ? [] : eligible.map(r => r.id))}>{selected.length === eligible.length && eligible.length ? "Deselect All" : "Select All"}</Button></div>
     <div className="max-h-80 overflow-y-auto divide-y border-y">
-      {!eligible.length && <p className="py-4 text-sm text-muted-foreground">No registrants with an email address.</p>}
+      {!eligible.length && <p className="py-4 text-sm text-muted-foreground">{audience === "players" ? "No registrants with an email address." : `No ${audience} with an email address.`}</p>}
       {eligible.map(r => <label key={r.id} className="flex items-center gap-3 py-3 cursor-pointer"><Checkbox disabled={busy} checked={selected.includes(r.id)} onCheckedChange={checked => setSelected(p => checked ? [...p, r.id] : p.filter(id => id !== r.id))}/><span className="min-w-0"><span className="block text-sm break-words">{r.first_name} {r.last_name}</span><span className="block text-xs text-muted-foreground break-all">{r.email}</span></span></label>)}
     </div>
     <Button disabled={busy || !chosen.length} onClick={() => showPreview(true)}>{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Eye className="mr-2 h-4 w-4"/>}Review Send ({chosen.length})</Button>
@@ -57,7 +76,7 @@ export default function SavedTemplateSender({ organizationId, eventId, template,
     <Dialog open={!!out} onOpenChange={open => { if (!open && !busy) { setOut(null); setReview(false); } }}><DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto"><DialogHeader><DialogTitle>{review ? "Review Email Send" : "Template Preview"}</DialogTitle></DialogHeader>
       {out && <EmailPreview out={out}/>}
       {review && <><h3 className="font-semibold">{chosen.length} recipient(s)</h3><ul className="space-y-1 text-sm">{chosen.map(r => <li key={r.id} className="break-all">{r.first_name} {r.last_name} — {r.email}</li>)}</ul><Button disabled={busy} onClick={() => run(async () => {
-        const sent = await send({ data: { organizationId, eventId, templateId: template.id, expectedUpdatedAt: template.updated_at, registrationIds: selected, requestId: crypto.randomUUID() } });
+        const sent = await send({ data: { organizationId, eventId, templateId: template.id, expectedUpdatedAt: template.updated_at, registrationIds: selected, audience, requestId: crypto.randomUUID() } });
         setResult(`Sent ${sent.sent} email(s)${sent.failed ? `; ${sent.failed} failed` : ""}${sent.suppressed ? `; ${sent.suppressed} excluded by email preferences` : ""}.`);
         setOut(null); setReview(false); setSelected([]);
       })}>{busy ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Send className="mr-2 h-4 w-4"/>}Confirm Send</Button></>}

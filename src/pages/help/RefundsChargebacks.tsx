@@ -12,6 +12,7 @@ const RefundsChargebacks = () => (
       </Link>
 
       <h1 className="text-3xl font-display font-bold text-foreground mb-2">Refunds & Chargebacks</h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-muted-foreground mb-8">How refund requests and chargeback disputes are handled on TeeVents.</p>
 
       <div className="space-y-8">

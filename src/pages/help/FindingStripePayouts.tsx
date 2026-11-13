@@ -31,9 +31,10 @@ const FindingStripePayouts = () => (
       <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
         Where to Find Your Payouts in Stripe
       </h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-lg text-muted-foreground mb-10">
         TeeVents uses <strong>Stripe Direct Charges</strong>. Every registration is paid
-        straight into your own Stripe account — TeeVents never holds the money. Only the 5%
+        straight into your own Stripe account — TeeVents never holds the money. Only the 8%
         platform fee is taken off the top as an application fee. Here's exactly where to
         look, and what to do if your balance looks like $0.
       </p>
@@ -98,7 +99,7 @@ const FindingStripePayouts = () => (
 
         <Step n={5} title="Click any payout to see what's inside it">
           <p>
-            Open a payout and you'll see every individual charge that made it up, the 5%
+            Open a payout and you'll see every individual charge that made it up, the 8%
             TeeVents application fee, and Stripe's processing fee, so you can reconcile
             against your TeeVents Finances page down to the dollar.
           </p>

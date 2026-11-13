@@ -22,6 +22,7 @@ const UploadingImages = () => (
           Troubleshooting Image Uploads
         </h1>
       </div>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-lg text-muted-foreground mb-10">
         Having trouble uploading a logo, sponsor image, or photo? Most upload issues come from your
         browser or operating system — not TeeVents. Here's how to fix the most common ones.

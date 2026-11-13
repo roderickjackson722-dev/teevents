@@ -41,6 +41,7 @@ const StepByStep = () => {
         <h1 className="text-4xl font-display font-bold text-foreground mb-2">
           Step-by-Step Instructions
         </h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
         <p className="text-lg text-muted-foreground mb-10">
           Detailed walkthroughs for every menu item in your organizer dashboard. Click any item to open instructions.
         </p>

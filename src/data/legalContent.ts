@@ -1,6 +1,6 @@
 export type LegalSection = { title: string; body: string };
 export const PRIVACY_SECTIONS: LegalSection[] = [
- {"title": "1. Introduction", "body": "TeeVents Golf Management (\"TeeVents,\" \"we,\" \"us,\" or \"our\") operates the website at www.teevents.golf and provides golf tournament and league management software and services. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use our platform."},
+ {"title": "1. Introduction", "body": "TeeVents Golf Management (\"TeeVents,\" \"we,\" \"us,\" or \"our\") operates the website at www.teevents.golf and provides golf tournament and league management, with a dedicated rep who builds each event for you, and the software to run it. This Privacy Policy explains how we collect, use, disclose, and safeguard information when you use our platform."},
  {
   "title": "2. Information We Collect",
   "body": "We collect information you provide directly, such as your name, email address, phone number, organization name, and payment information. We also collect information automatically when you use our platform, such as IP address, browser type, device information, and pages visited."
@@ -54,7 +54,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
  {"title": "1. Acceptance of Terms", "body": "By accessing or using TeeVents, you agree to be bound by these Terms of Service. If you do not agree, do not use the platform."},
  {
   "title": "2. Description of Service",
-  "body": "TeeVents provides cloud-based software and services for managing golf tournaments, leagues, and events. Services include registration, payment processing, live scoring, leaderboards, pairings, and event management tools."
+  "body": "TeeVents provides golf tournament and league management, with a dedicated rep who builds each event for you, and cloud-based software to run it. Services include registration, payment processing, live scoring, leaderboards, pairings, and event management tools."
  },
  {
   "title": "3. Account Registration",
@@ -66,7 +66,7 @@ export const TERMS_SECTIONS: LegalSection[] = [
  },
  {
   "title": "5. Payment Terms",
-  "body": "Payments are processed through Stripe. On the No Cost to Start plan, a 5% platform fee is included in each player's registration total. On Per-Event, Per-League, and Enterprise plans, pricing is outlined on the pricing page."
+  "body": "Payments are processed through Stripe. On the No Cost to Start plan, an 8% platform fee is included in each player's registration total. On Per-Event, Per-League, and Enterprise plans, pricing is outlined on the pricing page."
  },
  {
   "title": "6. Refunds",

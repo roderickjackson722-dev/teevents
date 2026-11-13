@@ -12,6 +12,7 @@ const ConnectStripe = () => (
       </Link>
 
       <h1 className="text-3xl font-display font-bold text-foreground mb-2">Connect Your Bank Account</h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-muted-foreground mb-8">Set up Stripe Connect so payments split automatically at checkout and funds go directly to your bank account.</p>
 
       <div className="space-y-8">

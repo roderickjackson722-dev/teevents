@@ -32,6 +32,8 @@ export default function GolfFundraiserManagement() {
             Maximize every dollar raised at your golf fundraiser. Registration, sponsorships, donations,
             and auctions in one dashboard built for charity golf events.
           </p>
+          <p className="mt-4 text-base md:text-lg text-primary-foreground">Your virtual Tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
+          <p className="mt-2 text-base md:text-lg text-primary-foreground">Your director sets up your sponsor tiers, your registration, and your live leaderboard for you, so sponsors are visible on every phone all day.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
               <Link to="/get-started">Start Your Fundraiser</Link>

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { CheckCircle2, CreditCard, BarChart3, Users, Award, Globe, ClipboardCheck, Trophy } from "lucide-react";
 
 const features = [
-  { icon: Globe, title: "Branded Tournament Website", text: "Launch a custom event site in minutes with your colors, logo, and sponsors." },
+  { icon: Globe, title: "Branded Tournament Website", text: "We build your event page for you, live in 7 days or less, with your colors, logo, and sponsors." },
   { icon: CreditCard, title: "Online Registration & Payments", text: "Accept credit cards, Apple Pay, and Google Pay. Automated confirmations included." },
   { icon: Users, title: "Player Pairings & Check-In", text: "Drag-and-drop pairings, tee assignments, and QR-code check-in on event day." },
   { icon: Award, title: "Sponsor & Auction Tools", text: "Showcase sponsors with logo placement and run silent auctions or raffles online." },
@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     q: "How much does TeeVents cost?",
-    a: "TeeVents starts at $0 with a player-funded 5% service fee. Per-Event is $399 with no TeeVents transaction fee, live scoring, and a dedicated representative. Enterprise is $2,999 per year for unlimited events. Dedicated rep included on every plan — even free.",
+    a: "TeeVents starts at $0 with a player-funded 8% service fee. Per-Event is $399 with no TeeVents transaction fee, live scoring, and a dedicated representative. Per-League is $599 per league, perfect for season-long leagues with multiple events and standings. Enterprise is $2,999 per year for unlimited events. Dedicated rep included on every plan — even free.",
   },
   {
     q: "Is TeeVents good for charity and nonprofit golf tournaments?",
@@ -66,6 +66,8 @@ export default function GolfTournamentSoftware() {
             Plan, register, sponsor, score, and report — all in one platform built for charity, corporate,
             and nonprofit golf tournaments.
           </p>
+          <p className="mt-4 text-base md:text-lg text-primary-foreground">Your virtual Tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
+          <p className="mt-2 text-base md:text-lg text-primary-foreground">Build it yourself with the same tools, or let your director build it for you. You stay in control either way.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">
               <Link to="/get-started">Start Your Tournament</Link>

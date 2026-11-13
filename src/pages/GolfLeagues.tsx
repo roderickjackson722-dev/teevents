@@ -101,6 +101,8 @@ export default function GolfLeagues() {
               <p className="text-lg md:text-xl text-white/90 mb-8">
                 Real-time scoring, live leaderboards, skins, and season-long standings — the same tools TeeVents customers use, purpose-built for leagues.
               </p>
+              <p className="text-base md:text-lg text-white mb-2">Your virtual Tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
+              <p className="text-base md:text-lg text-white mb-8">Your director sets up season long standings, weekly results, and your league leaderboard for you.</p>
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" onClick={subscribe} disabled={loading}>
                   {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
@@ -190,7 +192,7 @@ export default function GolfLeagues() {
                 </div>
               </CardHeader>
               <CardContent className="space-y-3">
-                {["Covers the entire league season", "Unlimited golfers", "No 5% platform fee", "Live leaderboard & mobile scoring included", "Dedicated TeeVents representative", "Skins, standings & season stats"].map((f) => (
+                {["Covers the entire league season", "Unlimited golfers", "No platform fee on the $599 Per-League price. Paid plans have 0% TeeVents platform fees.", "Live leaderboard & mobile scoring included", "Dedicated TeeVents representative", "Skins, standings & season stats"].map((f) => (
                   <div key={f} className="flex items-start gap-2">
                     <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <span className="text-sm">{f}</span>

@@ -475,7 +475,7 @@ export const websiteBuilderPage: GuideContent = {
   faqs: [
     {
       q: "Do I need technical skills to build a golf tournament website?",
-      a: "No. You choose a template, upload a logo and photo, edit text, and toggle sections. Most organizers publish in under an hour.",
+      a: "No. You choose a template, upload a logo and photo, edit text, and toggle sections. We build your event page for you, live in 7 days or less.",
     },
     {
       q: "Can I use my own domain name?",
@@ -487,7 +487,7 @@ export const websiteBuilderPage: GuideContent = {
     },
     {
       q: "What does the website cost?",
-      a: "The site is part of the platform. Start at $0 with a 5% player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee.",
+      a: "The site is part of the platform. Start at $0 with a 8% player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee.",
     },
   ],
   related: [
@@ -656,7 +656,7 @@ export const brandedEventPage: GuideContent = {
       mockup: "leaderboard",
     },
     {
-      heading: "A ninety-minute branding pass",
+      heading: "Your director does the branding pass for you.",
       bullets: [
         "Upload a high-resolution logo with a transparent background.",
         "Set your primary and accent colors.",
@@ -788,7 +788,7 @@ export const pageCustomization: GuideContent = {
       a: "Yes. Your logo and colors flow into confirmation and reminder emails, the scoring page, the leaderboard, cart signs, and scorecards.",
     },
     {
-      q: "Do I need Pro for customization?",
+      q: "Do I need Per-Event for customization?",
       a: "Core page customization is available at $0. Per-Event is $399 and includes the full feature set plus a dedicated representative. Dedicated rep included on every plan — even free.",
     },
   ],

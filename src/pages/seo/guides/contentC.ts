@@ -155,7 +155,7 @@ export const registrationPlatform: GuideContent = {
       heading: "Requirement 5: money that lands in your account",
       paragraphs: [
         "Ask exactly one question of every vendor: who is the merchant of record? If the platform holds funds and pays you out weeks later, your cash flow depends on their schedule and their reserve policy.",
-        "TeeVents uses Stripe Connect direct charges, so the organizer is the merchant of record and settlements arrive on the standard Stripe payout schedule. The 5% platform fee is taken as an application fee on each transaction, and processing fees are shown as separate line items at checkout so registrants can see exactly what they are paying. You choose whether to absorb those fees or pass them along.",
+        "TeeVents uses Stripe Connect direct charges, so the organizer is the merchant of record and settlements arrive on the standard Stripe payout schedule. The 8% platform fee is taken as an application fee on each transaction, and processing fees are shown as separate line items at checkout so registrants can see exactly what they are paying. You choose whether to absorb those fees or pass them along.",
       ],
       mockup: "pricing",
     },
@@ -314,7 +314,7 @@ export const onlineRegistration: GuideContent = {
   metaDescription:
     "How to set up online golf tournament registration: ticket types, foursomes, custom questions, add-ons, fees, and the emails that follow. A practical walkthrough.",
   heroSubtitle:
-    "From blank page to a registration link you can text — the exact setup order that avoids rework.",
+    "From your event details to a registration link you can text, built for you by your director.",
   intro:
     "Opening registration online is the moment your tournament becomes real. Do it in the wrong order and you will be editing ticket types after people have already paid, which is where refund headaches begin. This walkthrough covers the sequence experienced organizers use: pricing first, then ticket structure, then data capture, then add-ons, then fees, then the confirmation email — and finally the public page and the link you share everywhere.",
   sections: [
@@ -358,7 +358,7 @@ export const onlineRegistration: GuideContent = {
     {
       heading: "Step 5: choose how fees are handled",
       paragraphs: [
-        "There are two honest ways to handle the 5% platform fee and Stripe processing: absorb them into your ticket price, or show them as separate line items and pass them to the registrant. Golf audiences are generally fine with pass-through when it is labeled clearly, especially at charity events where every dollar absorbed is a dollar off the mission.",
+        "There are two honest ways to handle the 8% platform fee and Stripe processing: absorb them into your ticket price, or show them as separate line items and pass them to the registrant. Golf audiences are generally fine with pass-through when it is labeled clearly, especially at charity events where every dollar absorbed is a dollar off the mission.",
         "Whichever you choose, show the total before the payment step. Surprise fees at the final click are the single biggest cause of abandoned golf registrations.",
       ],
       mockup: "pricing",

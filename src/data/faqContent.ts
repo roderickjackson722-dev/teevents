@@ -17,7 +17,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "Do I need to be technical to use TeeVents?",
-    "a": "No. You do not learn software, watch tutorials, or build anything. You tell us what you want and your rep builds it for you."
+    "a": "No. You do not learn software, watch tutorials, or build anything. You tell us what you want and your rep builds it for you. Your virtual Tournament director builds it, and you can open your event any time and change anything."
    },
    {
     "q": "How long does setup take?",
@@ -34,15 +34,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   "items": [
    {
     "q": "How much does TeeVents cost?",
-    "a": "There are four options: No Cost to Start ($0 upfront, with a 5% platform fee paid by players at checkout), Per-Event ($399 per tournament), Per-League ($599 per league), and Enterprise ($2,999 per year for unlimited events)."
+    "a": "There are four options: No Cost to Start ($0 upfront, with an 8% platform fee paid by players at checkout), Per-Event ($399 per tournament), Per-League ($599 per league), and Enterprise ($2,999 per year for unlimited events)."
    },
    {
-    "q": "What is the 5% platform fee?",
-    "a": "On the No Cost to Start plan, a 5% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."
+    "q": "What is the 8% platform fee?",
+    "a": "On the No Cost to Start plan, an 8% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."
    },
    {
     "q": "Can I pass the fee to my players?",
-    "a": "Yes. On the No Cost to Start plan, the 5% fee is automatically added to each registration at checkout. Players see it as a service fee, similar to other ticketing platforms."
+    "a": "Yes. On the No Cost to Start plan, the 8% fee is automatically added to each registration at checkout. Players see it as a service fee, similar to other ticketing platforms."
    },
    {
     "q": "What is Per-Event pricing?",
@@ -124,7 +124,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "Can I customize my registration form?",
-    "a": "Yes. Your rep configures registration form fields including roster details, apparel sizing, and custom questions."
+    "a": "Yes. Your rep configures registration form fields including roster details, apparel sizing, and custom questions. You can open it any time and change anything."
    },
    {
     "q": "Can I collect waivers and consents?",
@@ -161,7 +161,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "How do players access scoring?",
-    "a": "Your rep sends them a scoring link via text or email, or they use a QR code on their scorecard."
+    "a": "Your rep sends them a scoring link via text or email, or they use a QR code on their scorecard. Your director sets up mobile scoring and sends scoring codes to your players."
    },
    {
     "q": "Do players need an account to score?",
@@ -202,7 +202,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   "items": [
    {
     "q": "Can I create pairings manually?",
-    "a": "Yes. TeeVents includes drag-and-drop pairings so you can assign players to groups, times, and locations."
+    "a": "Yes. Your director builds your pairings for you, and you can open them any time and change anything. You can also build them yourself with the same tools."
    },
    {
     "q": "Can pairings be auto-generated?",
@@ -218,7 +218,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "Can I make last-minute changes on event day?",
-    "a": "Yes. Drag-and-drop pairings update instantly, and you can move players between groups at any time."
+    "a": "Yes. Drag-and-drop pairings update instantly, and you can move players between groups at any time. Your rep is on call on event day if anything comes up."
    },
    {
     "q": "Can I create pairings that mix teams?",

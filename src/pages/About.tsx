@@ -4,7 +4,6 @@ import { ArrowRight, Check, Target, Heart, Flame, X } from "lucide-react";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
-import portrait from "@/assets/trust/roderick-jackson.jpg.asset.json";
 import { founderPartnerLogos } from "@/components/FounderPartners";
 
 const fade = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "-60px" }, transition: { duration: 0.5 } };
@@ -63,35 +62,27 @@ export default function About() {
       </section>
 
       <section className="bg-background py-20 md:py-28">
-        <div className="container mx-auto grid max-w-6xl items-center gap-12 px-4 md:grid-cols-[2fr_3fr]">
-          <motion.div {...fade}>
-            <img src={portrait.url} alt="Roderick Jackson, founder of TeeVents" className="mx-auto aspect-[4/5] w-full max-w-sm rounded-2xl object-cover shadow-xl" />
-          </motion.div>
-          <motion.div {...fade} className="space-y-5 text-base leading-relaxed text-muted-foreground md:text-lg">
-            <div>
-              <h2 className={h2}>Meet Roderick Jackson</h2>
-              <p className="mt-2 font-semibold text-secondary">Founder, Golfer, Tournament Director</p>
-            </div>
-            <p>Roderick Jackson has been a golfer since the late 1990s, playing collegiate golf at Alabama A&amp;M University before building a career in the golf industry that spans over two decades.</p>
-            <p>He has worked for the top golf management company in the world with Troon Golf, and with one of the top golf equipment companies in the industry with Cleveland Golf. Over the past decade, he has served as a tournament director for some of the largest events in collegiate golf.</p>
-            <p>Today, Roderick organizes and manages the largest HBCU Golf Tournament in the world, working alongside organizations including the Golf Channel, PGA, Bridgestone Golf, Arcis Golf, SAS Data and AI Solutions, Farmers Insurance, Octagon Management, Octagon (Global Leadership in Sports, Entertainment, and Culture), the National Black College Alumni Hall of Fame, the Black College Golf Coaches Association, and the 100 Black Men Organization.</p>
-            <p>He has managed HBCU collegiate golf tournaments for over a decade, working with celebrities, corporate sponsors, and some of the most respected names in the sport.</p>
-          </motion.div>
-        </div>
+        <motion.div {...fade} className="container mx-auto max-w-3xl space-y-5 px-4 text-base leading-relaxed text-muted-foreground md:text-lg">
+          <h2 className={h2}>We Know The Work Of Running A Tournament</h2>
+          <p>We know the labor of being a tournament director, because that is where TeeVents started. Months of preparation go into one day on the course: the format, the pairings, the sponsors, the registration, the scores, the leaderboard, and every change that comes in at the last minute.</p>
+          <p>We built TeeVents to carry that work, not just to sell software for it. Whether this is your first tournament or your twentieth year running one, you get the same tools, the same setup, and the same team on call. If you are new, your director builds everything for you and walks you through it. If you have run events for years, you can build it yourself with the same tools, change anything any time, and call us when you need us.</p>
+          <p>That is the point. Less time setting up, more time running a good event.</p>
+        </motion.div>
       </section>
 
       <section className="bg-muted/40 py-20 md:py-28">
         <motion.div {...fade} className="container mx-auto max-w-3xl space-y-6 px-4 text-center text-lg leading-relaxed text-muted-foreground">
           <h2 className={h2}>Why TeeVents Exists</h2>
-          <p>Roderick built TeeVents because he saw a gap in the market. Most platforms hand you software and wish you luck. He knew from his years as a tournament director that what organizers actually need is a partner. Someone who understands the pressure, the details, and the stakes.</p>
+          <p>TeeVents was built because we saw a gap in the market. Most platforms hand you software and wish you luck. We knew from our years as tournament directors that what organizers actually need is a partner. Someone who understands the pressure, the details, and the stakes.</p>
           <p className="font-semibold text-primary">That is why every TeeVents event, free or paid, comes with a dedicated rep who does the work for you.</p>
+          <p>That rep is your virtual Tournament director. We build everything for you, and you can open your event any time and change anything.</p>
         </motion.div>
       </section>
 
       <section className="bg-primary py-20 text-primary-foreground md:py-28">
         <motion.figure {...fade} className="container mx-auto max-w-4xl px-4 text-center">
           <blockquote className="font-display text-2xl leading-snug md:text-4xl">“TeeVents was built from the experience of knowing what is needed from both sides of the game, as a tournament director and as a golf course coordinator.”</blockquote>
-          <figcaption className="mt-8 font-semibold text-secondary">Roderick Jackson, Founder</figcaption>
+          <figcaption className="mt-8 font-semibold text-secondary">The TeeVents Team</figcaption>
         </motion.figure>
       </section>
 
@@ -148,7 +139,7 @@ export default function About() {
           <div className="mt-12 grid gap-6 md:grid-cols-2">
             {[
               { quote: "We have trusted the TeeVents team to organize and manage our NCAA-sanctioned golf tournaments for the past 10 years. That trust has only grown stronger, to the point where we would not choose any other organization to work with. Their hard work, preparation, attention to detail, and professionalism are unmatched when it comes to running our multiple college golf tournaments.", name: "Leonard Smoot", title: "President", org: "Black College Golf Coaches Association" },
-              { quote: "We turned over the golf tournament management duties to Roderick and the TeeVents team, and we have been beyond pleased with the service. From the initial setup to the conclusion of the event, everything was handled with the highest level of professionalism. We look forward to a lasting partnership with TeeVents.", name: "Merral Jackson", title: "Tournament Director", org: "National Black College Alumni Hall of Fame" },
+              { quote: "We turned over the golf tournament management duties to the TeeVents team, and we have been beyond pleased with the service. From the initial setup to the conclusion of the event, everything was handled with the highest level of professionalism. We look forward to a lasting partnership with TeeVents.", name: "Merral Jackson", title: "Tournament Director", org: "National Black College Alumni Hall of Fame" },
             ].map(t => (
               <figure key={t.name} className="rounded-lg border border-border bg-card p-7 shadow-sm">
                 <blockquote className="leading-relaxed text-foreground/90">"{t.quote}"</blockquote>

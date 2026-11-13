@@ -41,7 +41,7 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
 
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, flat_rate_enabled, pass_fees_to_participants")
+      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, flat_rate_enabled, pass_fees_to_participants, platform_fee_percent")
       .eq("id", registration.tournament_id)
       .maybeSingle();
     if (!tournament) throw new Error("Tournament not found");
@@ -86,7 +86,7 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
     const isCurrentPaid = tournament.pricing_version === "2026-10" && ["per_event", "enterprise"].includes(tournament.pricing_model || "");
     const platformFeeCents = tournament.flat_rate_enabled || isCurrentPaid
       ? 0
-      : Math.round(data.amountCents * PLATFORM_FEE_RATE);
+      : Math.round(data.amountCents * (Number.isFinite(Number((tournament as any).platform_fee_percent)) ? Number((tournament as any).platform_fee_percent) / 100 : PLATFORM_FEE_RATE));
     const golferPaysFees = isCurrentFree || tournament.pass_fees_to_participants !== false;
     const stripeFeeCents = golferPaysFees ? grossUpProcessingFee(data.amountCents + platformFeeCents) : 0;
     const chargeTotalCents = data.amountCents + (golferPaysFees ? platformFeeCents + stripeFeeCents : 0);

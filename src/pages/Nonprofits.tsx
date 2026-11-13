@@ -31,7 +31,7 @@ const benefits = [
     icon: Shield,
     title: "Zero Platform Transaction Fees",
     description:
-      "No platform transaction fees on any plan. Only standard Stripe processing fees apply. Transparent pricing you can budget around.",
+      "No Cost to Start has an 8% platform fee paid by players. Per-Event, Per-League, and Enterprise have 0% TeeVents platform fees. Only standard Stripe processing fees apply. Transparent pricing you can budget around.",
   },
   {
     icon: BadgeCheck,
@@ -55,7 +55,7 @@ const benefits = [
     icon: Globe,
     title: "Professional Tournament Website",
     description:
-      "Launch a branded event site in minutes with custom domain support, event agenda, photo gallery, and sponsor showcases — no developer required.",
+      "We build your event page for you, live in 7 days or less, with custom domain support, event agenda, photo gallery, and sponsor showcases — no developer required.",
   },
   {
     icon: Users,
@@ -72,9 +72,9 @@ const benefits = [
 ];
 
 const steps = [
-  { step: "1", label: "Create Your Account", detail: "Create your account in under 2 minutes." },
+  { step: "1", label: "Create Your Account", detail: "We build your event page for you, live in 7 days or less." },
   { step: "2", label: "Verify Your EIN", detail: "Enter your 501(c)(3) EIN for instant verification." },
-  { step: "3", label: "Build Your Tournament", detail: "Add details, set pricing, and customize your site." },
+  { step: "3", label: "Build Your Tournament", detail: "Your director builds your tournament for you. You tell us about your event, we set it up, and you can open it any time and change anything." },
   { step: "4", label: "Go Live & Fundraise", detail: "Publish your site and start collecting registrations." },
 ];
 
@@ -102,6 +102,8 @@ const Nonprofits = () => {
         title="Your Mission Deserves Every Dollar"
         subtitle="TeeVents gives nonprofit organizations a game-changing advantage — transparent pricing, donor-covered costs, and automated tax receipts so 100% of your fundraising goes where it matters."
       >
+        <p className="mx-auto mb-2 max-w-3xl text-base md:text-lg">Your virtual Tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
+        <p className="mx-auto mb-6 max-w-3xl text-base md:text-lg">Your director sets up donation widgets, silent auctions, and sponsor packages for you.</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" asChild className="text-base px-8">
             <Link to="/get-started">
@@ -210,7 +212,7 @@ const Nonprofits = () => {
                   <p className="text-4xl font-display font-bold text-foreground">$150</p>
                   <p className="text-muted-foreground text-sm mt-1">Registration collected</p>
                   <div className="my-6 space-y-2 text-sm text-left">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Platform fee (5%)</span><span className="text-primary font-medium">Donor pays</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Platform fee (8%)</span><span className="text-primary font-medium">Donor pays</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Processing fee</span><span className="text-primary font-medium">Donor pays</span></div>
                     <div className="border-t border-border pt-2 flex justify-between font-semibold"><span>You keep</span><span className="text-primary text-lg">$150.00</span></div>
                   </div>

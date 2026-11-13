@@ -24,13 +24,13 @@ type Category = { id: string; nav: string; title: string; subtitle: string; item
 const categories: Category[] = [
   { id: "website", nav: "Website and Event Pages", title: "Custom Website and Event Pages", subtitle: "Your event deserves a site that looks like you hired a designer. We build it for you.", items: [
     [Globe, "Hosted Event Websites", "Fully hosted event pages with multiple layout templates."],
-    [LayoutIcon, "Visual Site Builder", "Logo, hero imagery, brand colors, section content, and page ordering."],
+    [LayoutIcon, "Visual Site Builder", "Logo, hero imagery, brand colors, section content, and page ordering. Your director walks through it with you and sets it up for you."],
     [Link2, "Custom Domain Support", "Brand your URL with your own domain (example: golfyourclub.com)."],
     [FileText, "Program-Specific Pages", "Schedule, information, sponsors, results, documents, and contact."],
     [Eye, "Publish and Preview", "Preview your site privately before making it live."],
     [Unlock, "Public Resource Access", "Schedules, documents, and results available without a login."],
     [Smartphone, "Mobile Responsive", "Every page looks great on phones and tablets."],
-  ], callout: "Your dedicated rep designs a fully branded event page with your logo, colors, hero image, and sponsor logos. It looks like you hired a web designer because we did the work for you." },
+  ], callout: "Your dedicated rep designs a fully branded event page with your logo, colors, hero image, and sponsor logos. It looks like you hired a web designer because we did the work for you. Your virtual Tournament director builds it for you. You can open your event any time and change anything." },
   { id: "registration", nav: "Registration and Payments", title: "Registration and Payments", subtitle: "Online registration, secure payments, and instant payouts to your account.", items: [
     [Users, "Individual and Team Registration", "Configurable capacity limits for individuals, teams, and foursomes."],
     [ClipboardList, "Configurable Registration Forms", "Custom fields including roster details and apparel sizing."],
@@ -42,15 +42,15 @@ const categories: Category[] = [
     [Mail, "Automated Confirmation Emails", "Confirmation emails sent to the registrant and all listed group members."],
     [RotateCcw, "Refund Handling", "Full and partial refunds issued from the administrative dashboard."],
     [ShieldCheck, "PCI-Compliant Checkout", "Card, Apple Pay, and Google Pay accepted. No card data touches TeeVents."],
-    [Landmark, "Direct-to-Organizer Settlement", "Funds land in your Stripe account. TeeVents never holds your money."],
+    [Landmark, "Direct-to-Organizer Settlement", "Funds land in your Stripe account. TeeVents never holds your money. Your director connects your Stripe and sets up registration for you."],
     [Receipt, "Tax-Exempt Receipting", "501(c)(3) receipting support for qualifying organizations."],
-  ], callout: "On the No Cost to Start plan, a 5% platform fee is included in each player's registration total. You keep 100% of your event revenue. Your players cover the fee." },
+  ], callout: "On the No Cost to Start plan, an 8% platform fee is included in each player's registration total. You keep 100% of your event revenue. Your players cover the fee." },
   { id: "scoring", nav: "Live Scoring and Leaderboards", title: "Live Scoring and Leaderboards", subtitle: "Real-time scores, custom leaderboards, and mobile scoring from any phone. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.", items: [
     [Smartphone, "Mobile Live Scoring", "Players score from any phone browser. No app download required."],
     [Hash, "Hole-by-Hole and Per-Round Entry", "Score entry with validation and correction."],
     [Zap, "Fast Bulk Score Entry", "Designed for large fields of 100 or more participants."],
     [Monitor, "Real-Time Public Leaderboards", "Auto-updating leaderboards with a large-format display mode for on-site monitors. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
-    [Palette, "Custom Leaderboard Colors", "Your rep matches every leaderboard to your event colors and logo. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
+    [Palette, "Custom Leaderboard Colors", "Your rep matches every leaderboard to your event colors and logo. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up. Your director sets up mobile scoring, sends scoring codes to your players, and runs your live leaderboard in your event colors. Your rep is on call on event day for live scoring and leaderboard challenges."],
     [Layers, "Multi-Division and Multi-Round", "Support for 9, 18, 27, 36, and 54-hole competitions."],
     [UsersRound, "Team Scoring", "Configurable team size with best-of-N counting scores."],
     [Trophy, "Multiple Scoring Formats", "Scramble, Stroke Play, Stableford, Best Ball, Alternate Shot, and more."],
@@ -61,7 +61,7 @@ const categories: Category[] = [
   ], callout: "Display your live leaderboard on a TV monitor at the clubhouse. It updates in real time as scores are entered. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up." },
   { id: "pairings", nav: "Pairings and Scheduling", title: "Pairings and Scheduling", subtitle: "Drag-and-drop pairings, tee times, and facility management.", items: [
     [Clock, "Start-Time and Mass-Start Scheduling", "Group and heat assignment for shotgun starts and tee times."],
-    [Move, "Drag-and-Drop Pairings", "Assign participants to groups, times, and locations in seconds."],
+    [Move, "Drag-and-Drop Pairings", "Your director builds your pairings for you, and you can open them any time and change anything."],
     [Grid3x3, "Group Sizes of 2, 3, or 4", "Pairing templates for repeatable setups."],
     [Shuffle, "Auto-Assign Pairings", "Auto-generate groups by handicap or random."],
     [Building2, "Facility and Venue Records", "Booking records with double-booking conflict detection."],
@@ -107,7 +107,7 @@ const categories: Category[] = [
     [Network, "Multi-Organization Support", "Separate data for each organization or tenant."],
     [Database, "Row-Level Database Security", "Participant and financial data secured at the database layer."],
     [Bell, "Administrator Activity Notifications", "Alerts for new programs, registrations, and transactions."],
-    [Compass, "Guided Setup Walkthrough", "Step-by-step setup for new programs."],
+    [Compass, "Guided Setup Walkthrough", "Step-by-step setup for new programs. Your director walks through it with you and sets it up for you."],
     [ListChecks, "Interactive Operational Checklist", "Ensures nothing is missed before event day."],
     [Activity, "Automated Daily Health Monitoring", "Public pages checked daily with email alerts on failure."],
     [Archive, "Program Archival", "Historical record retention with double-confirmation deletion."],
@@ -133,6 +133,15 @@ const multiSport: Item[] = [
   [Map, "Facility Records Across Sports", "Shared facility records for fields, courts, and courses."],
   [Dumbbell, "Sport-Agnostic Registration and Payments", "The same core platform supports any sport."],
   [Settings2, "Per-Sport Form Configuration", "Custom registration forms per sport."],
+];
+
+const enhancements: [string, string, string][] = [
+  ["Live Leaderboard and Mobile Scoring", "$99 on the free plan, included with Per-Event and up", "Your director sets up mobile scoring and your live leaderboard in your event colors."],
+  ["Auction Dashboard", "$99", "Your director sets up your silent auction items and bidding for you."],
+  ["Branding Removal and Digital Sponsor", "$99", "Your director removes TeeVents branding and places your digital sponsors for you."],
+  ["Custom Domain", "$99", "Your director connects your own web address to your event page for you."],
+  ["Unlimited Manual Entries", "$99", "Your director turns on unlimited manual entries so your team can add every walk-up and phone signup."],
+  ["Full Service Management on site", "Contact us for a quote", "Your director plans your on-site support with you and builds your quote."],
 ];
 
 const fade = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "-60px" }, transition: { duration: 0.5 } };
@@ -200,6 +209,21 @@ export default function Features() {
       {categories.map((c, i) => <Section key={c.id} {...c} muted={i % 2 === 1} />)}
 
       <Section id="multi-sport" title="Built for Golf. Ready for Multi-Sport." subtitle="TeeVents was built for golf and is architected to handle any sport your organization runs." items={multiSport} muted />
+
+      <section id="enhancements" aria-labelledby="enhancements-title" className="bg-background py-16 md:py-20">
+        <div className="container mx-auto max-w-4xl px-4">
+          <h2 id="enhancements-title" className="text-center font-display text-3xl font-bold text-primary md:text-4xl">Ways To Make Your Event Bigger</h2>
+          <ul className="mt-8 grid gap-4 sm:grid-cols-2">
+            {enhancements.map(([name, price, line]) => (
+              <li key={name} className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                <div className="flex flex-wrap items-baseline justify-between gap-2"><h3 className="font-body text-base font-semibold text-foreground">{name}</h3><span className="text-sm font-semibold text-primary">{price}</span></div>
+                <p className="mt-1 text-sm text-muted-foreground">{line}</p>
+              </li>
+            ))}
+          </ul>
+          <p className="mx-auto mt-10 max-w-2xl text-center text-lg font-medium text-foreground">Build it yourself with the same tools, or let your director build it for you. You stay in control either way.</p>
+        </div>
+      </section>
 
       <section className="bg-primary py-20 text-center text-primary-foreground">
         <motion.div {...fade} className="container mx-auto max-w-3xl px-4">

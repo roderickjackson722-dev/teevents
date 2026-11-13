@@ -7,12 +7,13 @@ import { Button } from "@/components/ui/button";
 export const fade = { initial: { opacity: 0, y: 24 }, whileInView: { opacity: 1, y: 0 }, viewport: { once: true, margin: "-60px" }, transition: { duration: 0.5 } };
 export const h2 = "font-display text-3xl font-bold text-primary md:text-4xl";
 
-export function Hero({ eyebrow, title, subtitle, children }: { eyebrow: string; title: string; subtitle: string; children?: ReactNode }) {
+export function Hero({ eyebrow, title, subtitle, label, children }: { eyebrow: string; title: string; subtitle: string; label?: string; children?: ReactNode }) {
   return (
     <section className="bg-primary py-20 text-center text-primary-foreground md:py-28">
       <motion.div {...fade} className="container mx-auto max-w-4xl px-4">
         <p className="text-sm font-semibold tracking-widest text-secondary">{eyebrow}</p>
         <h1 className="mt-4 font-display text-4xl font-bold leading-tight md:text-6xl">{title}</h1>
+        {label && <p className="mt-4 text-sm font-semibold tracking-widest text-secondary">{label}</p>}
         <p className="mx-auto mt-6 max-w-2xl text-lg text-primary-foreground/85">{subtitle}</p>
         {children}
       </motion.div>

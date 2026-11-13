@@ -2,7 +2,7 @@ import Stripe from "https://esm.sh/stripe@18.5.0";
 import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { sendNotificationEmails, buildNotificationHtml, sendRegistrantConfirmationEmail, buildRegistrationAnswersHtml } from "../_shared/notify.ts";
-import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, isFlatRateTournament, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, isFlatRateTournament, tournamentFeeRate, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 import { allowedRegistrationGroupSizes, isAllowedRegistrationGroupSize } from "../_shared/groupSize.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
@@ -432,7 +432,8 @@ Deno.serve(async (req) => {
     const lineItems: any[] = [];
     // Fees are computed on the COMBINED total (registration + add-ons)
     const flatRate = await isFlatRateTournament(supabaseAdmin, tournament.id);
-    const platformFeeCents = flatRate || currentPaidPlan ? 0 : Math.round(baseTotalCents * PLATFORM_FEE_RATE);
+    const feeRate = await tournamentFeeRate(supabaseAdmin, tournament.id);
+    const platformFeeCents = flatRate || currentPaidPlan ? 0 : Math.round(baseTotalCents * feeRate);
     const stripeFeeCents = golferPaysFees
       ? calculateGrossedUpStripeFee(baseTotalCents + platformFeeCents)
       : calculateProcessingFee(baseTotalCents);
@@ -533,7 +534,7 @@ Deno.serve(async (req) => {
       lineItems.push({
         price_data: {
           currency: "usd",
-          product_data: { name: "TeeVents service fee (5%)" },
+          product_data: { name: `TeeVents service fee (${Math.round(feeRate * 100)}%)` },
           unit_amount: platformFeeCents,
         },
         quantity: 1,

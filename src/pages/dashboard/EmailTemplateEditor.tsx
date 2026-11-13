@@ -33,6 +33,9 @@ import SponsorDayOfSender from "@/components/dashboard/SponsorDayOfSender";
 import ReceiptEmailSender, { RECEIPT_TYPE_LABELS, type ReceiptType } from "@/components/dashboard/ReceiptEmailSender";
 import ScheduledEmailCard from "@/components/dashboard/ScheduledEmailCard";
 import DOMPurify from "dompurify";
+import { useServerFn } from "@tanstack/react-start";
+import { loadEmailLibrary } from "@/lib/emailLibrary.functions";
+import SavedTemplateSender from "@/components/email-library/SavedTemplateSender";
 
 // Email previews keep inline styles/layout but strip scripts and event handlers.
 const DOMPURIFY_EMAIL_OPTS = { ADD_ATTR: ["target"] };
@@ -430,6 +433,11 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
       : "confirmation";
   })();
   const [templateKind, setTemplateKind] = useState<TemplateKind>(initialTemplate);
+  const loadLibrary = useServerFn(loadEmailLibrary);
+  const [libraryTemplates, setLibraryTemplates] = useState<any[]>([]);
+  const [savedTemplateId, setSavedTemplateId] = useState("");
+  const [libraryError, setLibraryError] = useState("");
+  const savedTemplate = libraryTemplates.find(t => t.id === savedTemplateId);
   /** Which receipt the organizer is editing — each type keeps its own wording. */
   const [receiptType, setReceiptType] = useState<ReceiptType>(() => {
     if (typeof window === "undefined") return "registration";
@@ -467,6 +475,17 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   const [tournaments, setTournaments] = useState<any[]>([]);
   // Follow the event chosen in the dashboard header (shared ?tournament_id=).
   const [selectedTournament, setSelectedTournament] = useTournamentIdParam();
+  useEffect(() => {
+    setLibraryTemplates([]); setSavedTemplateId(""); setLibraryError("");
+    if (!org?.orgId || !selectedTournament) return;
+    let live = true;
+    const refresh = () => loadLibrary({ data: { organizationId: org.orgId, eventId: selectedTournament } })
+      .then(data => { if (live) { setLibraryTemplates(data.templates); setLibraryError(""); } })
+      .catch(() => { if (live) setLibraryError("My Templates could not be loaded. Please try again."); });
+    void refresh();
+    window.addEventListener("focus", refresh);
+    return () => { live = false; window.removeEventListener("focus", refresh); };
+  }, [org?.orgId, selectedTournament]);
   /** Which round's tee times / hole assignments this send uses (0-based day index). */
   const [emailRound, setEmailRound] = useState<number>(0);
   const [registrations, setRegistrations] = useState<any[]>([]);
@@ -850,6 +869,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   };
 
   const handleTemplateKindChange = (kind: TemplateKind) => {
+    setSavedTemplateId("");
     setTemplateKind(kind);
     const t = tournaments.find((x: any) => x.id === selectedTournament);
     loadConfigFor(t, kind);
@@ -1123,8 +1143,11 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
           </p>
         </div>
         <div className="flex items-center gap-2 flex-wrap">
-          <Select value={templateKind} onValueChange={(v) => handleTemplateKindChange(v as TemplateKind)}>
-            <SelectTrigger className="w-[260px]">
+          <Select value={savedTemplateId ? `saved:${savedTemplateId}` : templateKind} onValueChange={(v) => {
+            if (v.startsWith("saved:")) setSavedTemplateId(v.slice(6));
+            else handleTemplateKindChange(v as TemplateKind);
+          }}>
+            <SelectTrigger aria-label="Choose email template" className="w-full sm:w-[260px] h-auto min-h-10 [&>span]:whitespace-normal [&>span]:text-left">
               <SelectValue placeholder="Choose template" />
             </SelectTrigger>
             <SelectContent>
@@ -1139,9 +1162,10 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               <SelectItem value="tee_times">{TEMPLATE_LABELS.tee_times}</SelectItem>
               <SelectItem value="survey">{TEMPLATE_LABELS.survey}</SelectItem>
               <SelectItem value="receipt">{TEMPLATE_LABELS.receipt}</SelectItem>
+              {libraryTemplates.map(t => <SelectItem key={t.id} value={`saved:${t.id}`}>{t.name}</SelectItem>)}
             </SelectContent>
           </Select>
-          <Button
+          {!savedTemplate && <Button
             variant="outline"
             size="sm"
             onClick={async () => {
@@ -1174,7 +1198,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
             }}
           >
             <Copy className="h-4 w-4 mr-1" /> Apply design to all
-          </Button>
+          </Button>}
           <Select value={selectedTournament} onValueChange={handleTournamentChange}>
             <SelectTrigger className="w-[220px]">
               <SelectValue placeholder="Select tournament" />
@@ -1200,6 +1224,8 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
         </div>
       </div>
 
+      {libraryError && <p role="alert" className="text-sm text-destructive">{libraryError}</p>}
+      {savedTemplate && org ? <SavedTemplateSender key={`${org.orgId}:${selectedTournament}:${savedTemplate.id}`} organizationId={org.orgId} eventId={selectedTournament} template={savedTemplate} registrations={registrations}/> : <>
       {/* Banner explaining current template */}
       <div className={`rounded-lg border-l-4 p-3 text-sm ${
         templateKind === "post_event"
@@ -2114,7 +2140,8 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
         </Button>
       </div>
 
-      {requirePreview && emailPreview && (() => {
+      </>}
+      {requirePreview && !savedTemplate && emailPreview && (() => {
         const unsaved = !!savedSnapshot && savedSnapshot !== JSON.stringify(config);
         const recips = emailPreview.kind === "registrants"
           ? templateEmailRecipients(registrations, emailPreview.ids, altEmails, altMode)

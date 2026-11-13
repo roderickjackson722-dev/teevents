@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ALTER COLUMN platform_fee_percent SET DEFAULT 8;

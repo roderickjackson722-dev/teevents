@@ -334,6 +334,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                 )}
               </div>
 
+              {orgContext && !isAdminOverride && (
+                <div className="ml-2 hidden min-w-0 sm:block">
+                  <DashboardEventSwitcher orgId={orgContext.orgId} />
+                </div>
+              )}
               {isAdminOverride && (
                 <Link
                   to="/admin"

@@ -52,6 +52,7 @@ import EnterpriseSettings from "./pages/enterprise/EnterpriseSettings";
 import EnterpriseLeagueManage from "./pages/enterprise/EnterpriseLeagueManage";
 import TeeSheet from "./pages/dashboard/TeeSheet";
 import Tournaments from "./pages/dashboard/Tournaments";
+import MyEvents from "./pages/dashboard/MyEvents";
 import QuickActionsPage from "./pages/dashboard/QuickActions";
 import Leagues from "./pages/dashboard/Leagues";
 import LeagueManage from "./pages/dashboard/LeagueManage";
@@ -312,6 +313,7 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
           <Route path="/select-workspace" element={<SelectWorkspace />} />
           <Route path="/dashboard/tournaments" element={<DashboardLayout><Tournaments /></DashboardLayout>} />
+          <Route path="/dashboard/my-events" element={<DashboardLayout><MyEvents /></DashboardLayout>} />
           <Route path="/dashboard/public-page-editor" element={<DashboardLayout><PublicPageEditor /></DashboardLayout>} />
           <Route path="/dashboard/tournaments/:id/site-builder" element={<DashboardLayout><SiteBuilder /></DashboardLayout>} />
           <Route path="/dashboard/webpage-layout" element={<DashboardLayout><WebpageLayout /></DashboardLayout>} />

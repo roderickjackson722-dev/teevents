@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useEffect, useMemo, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
@@ -21,7 +22,7 @@ type Invoice = { id: string; invoice_number: string; billing_name: string; billi
 type EventRow = { id: string; title: string; date: string | null };
 type Transaction = { golfer_name: string | null; golfer_email: string | null; amount_cents: number; created_at: string; stripe_payment_intent_id: string | null; payout_method: string | null; tournament_id: string | null; status: string | null };
 
-const csvCell = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+
 const downloadCsv = (name: string, rows: unknown[][]) => {
   const blob = new Blob(["\uFEFF" + rows.map((row) => row.map(csvCell).join(",")).join("\n")], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob); const a = document.createElement("a"); a.href = url; a.download = name; a.click(); URL.revokeObjectURL(url);

@@ -31,7 +31,7 @@ export const sendSavedTemplateEmail=createServerFn({method:'POST'}).middleware([
  if(template.updated_at!==data.expectedUpdatedAt)throw new Error('This template has changed. Reload it and review again.');
  const ids=[...new Set(data.registrationIds)];
  let rows:any[]|null=null,error:any=null;
- if(data.audience==='players'){const r=await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).in('id',ids);rows=r.data;error=r.error;}
+ if(data.audience!=='sponsors'&&data.audience!=='vendors'){const r=await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).in('id',ids);rows=r.data;error=r.error;}
  else{const table=data.audience==='sponsors'?'sponsor_registrations':'vendor_registrations';const r=await admin.from(table).select('*').eq('tournament_id',event.id).in('id',ids);error=r.error;rows=(r.data||[]).map((x:any)=>{const [first,...rest]=String(x.contact_name||'').trim().split(/\s+/);return {id:x.id,email:x.contact_email,first_name:first||x.company_name||x.vendor_name||'',last_name:rest.join(' '),sponsor_name:x.company_name||x.vendor_name||x.contact_name||''};});}
  if(error||rows?.length!==ids.length)throw new Error('Choose recipients belonging to this event.');
  const key=process.env['RESEND_API_KEY'];if(!key)throw new Error('Email sending is not configured.');

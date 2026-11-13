@@ -87,7 +87,7 @@ var search_public_tournaments_default = defineTool3({
   },
   annotations: { readOnlyHint: true, idempotentHint: true, openWorldHint: true },
   handler: async ({ query, limit }) => {
-    const like = `%${query}%`;
+    const like = `%${query.replace(/[^\p{L}\p{N}\s'.&-]/gu, " ").slice(0, 100)}%`;
     const { data, error } = await anonClient().from("tournaments").select("id, title, date, course_name, custom_slug").eq("show_in_public_search", true).eq("site_published", true).or(`title.ilike.${like},course_name.ilike.${like}`).limit(limit);
     if (error) return { content: [{ type: "text", text: error.message }], isError: true };
     return {

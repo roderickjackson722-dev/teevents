@@ -46,10 +46,12 @@ Deno.serve(async (req) => {
       });
     }
     // Course lookups spend our paid API quota — signed-in organizers only.
+    let callerId = "";
     {
       const bearer = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
       const authClient = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
       const { data: u } = bearer ? await authClient.auth.getUser(bearer) : { data: null as any };
+      callerId = u?.user?.id ?? "";
       if (!u?.user) {
         return new Response(JSON.stringify({ error: "Unauthorized" }), {
           status: 401,
@@ -70,7 +72,8 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (error) throw error;
       // Best-effort bump use_count
-      if (data) {
+      // use_count is only bumped by the course's creator (or nobody), so callers can't alter other records.
+      if (data && (data as any).created_by && (data as any).created_by === callerId) {
         await admin
           .from("course_database")
           .update({ use_count: (data.use_count ?? 0) + 1 })

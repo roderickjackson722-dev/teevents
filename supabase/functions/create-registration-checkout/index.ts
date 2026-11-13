@@ -367,7 +367,8 @@ Deno.serve(async (req) => {
     // confirmed immediately in the !hasAnyCharge branch below.)
     if (!hasAnyCharge) {
       try {
-        const playerNames = players.map((p: any) => `${p.first_name} ${p.last_name}`).join(", ");
+        const h = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+        const playerNames = players.map((p: any) => h(`${p.first_name} ${p.last_name}`)).join(", ");
         const answersHtml = await buildRegistrationAnswersHtml(supabaseAdmin, registrationIds);
         await sendNotificationEmails(
           supabaseAdmin,
@@ -375,8 +376,8 @@ Deno.serve(async (req) => {
           "notify_registration",
           `✅ New Registration Confirmed — ${tournament.title}`,
           buildNotificationHtml("New Registration Confirmed 🎉", [
-            `<strong>${playerNames}</strong> registered for <strong>${tournament.title}</strong>.`,
-            `📧 ${email}${players[0].phone ? ` • 📱 ${players[0].phone}` : ""}`,
+            `<strong>${playerNames}</strong> registered for <strong>${h(tournament.title)}</strong>.`,
+            `📧 ${h(email)}${players[0].phone ? ` • 📱 ${h(players[0].phone)}` : ""}`,
             isFoursome ? `👥 Foursome registration (${players.length} players)` : "",
             `✅ No fee — confirmed.`,
           ].filter(Boolean), answersHtml),

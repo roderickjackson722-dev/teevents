@@ -185,7 +185,7 @@ export const registrationPlatform: GuideContent = {
     },
     {
       q: "How quickly can I open registration?",
-      a: "On TeeVents most organizers publish a working event site with open registration in under an hour, and often in a few minutes using a template.",
+      a: "On TeeVents, we build your event page for you, live in 7 days or less.",
     },
     {
       q: "Do I need my own Stripe account?",

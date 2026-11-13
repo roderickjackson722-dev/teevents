@@ -360,7 +360,7 @@ export const websiteBuilder: GuideContent = {
       heading: "Branding controls that actually matter",
       mockup: "site",
       paragraphs: [
-        "Real customization goes deeper than uploading a logo. In TeeVents you control your primary and accent colors, typography scale, hero image, logo placement, and section order. You can choose from six professionally designed layout themes and then override the details, so two tournaments on the same platform look nothing alike.",
+        "Real customization goes deeper than uploading a logo. Your director builds your event page for you, with your logo, colors, hero image, and sponsor logos. You can open it any time and change anything. You can choose from six professionally designed layout themes and then override the details, so two tournaments on the same platform look nothing alike.",
         "You decide which sections appear at all. Sponsorship opportunities can be toggled off entirely if your packages are sold out. Public tabs let you add pages for the schedule, course information, auction, photo gallery, lodging, or anything else your event needs. Each section can be reordered so the content your audience cares about most sits above the fold.",
       ],
     },

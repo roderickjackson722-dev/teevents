@@ -4,6 +4,8 @@ import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
 import type { GuideContent, GuideLink, MockupKind } from "./types";
 
+const DIRECTOR_LINE_SLUGS = new Set(["golf-tournament-website-builder","branded-golf-event-page","golf-tournament-page-customization","custom-golf-tournament-website","golf-tournament-registration-platform","online-golf-tournament-registration","golf-tournament-pairings-management","golf-tournament-handicap-system","golf-tournament-sponsor-packages","golf-tournament-sponsor-management","golf-tournament-live-scoring","live-scoring-golf-tournaments","what-is-a-shotgun-start","golf-tournament-formats","what-is-a-scramble","charity-golf-tournament-guide","golf-tournament-website-design","golf-tournament-software-pricing"]);
+
 // Full topic index shown at the bottom of every guide so visitors (and crawlers)
 // can reach any article from any article.
 const ALL_TOPICS: GuideLink[] = [
@@ -104,6 +106,12 @@ const SeoArticle = ({ content }: { content: GuideContent }) => (
       <div className="mx-auto max-w-3xl px-4 py-14 sm:py-20">
         <h1 className="text-3xl font-bold leading-tight sm:text-5xl">{content.title}</h1>
         <p className="mt-4 text-base opacity-90 sm:text-lg">{content.heroSubtitle}</p>
+        {DIRECTOR_LINE_SLUGS.has(content.slug) && (
+          <p className="mt-3 text-base sm:text-lg">Your virtual Tournament director builds it for you, and you can open your event any time and change anything. Your rep is on call on event day for live scoring and leaderboard challenges.</p>
+        )}
+        {content.slug === "golf-tournament-page-customization" && (
+          <p className="mt-3 text-base sm:text-lg">Your director sets all six layers for you. You can open your event any time and change anything.</p>
+        )}
         <Button asChild size="lg" className="mt-8">
           <Link to="/get-started">Start Your Tournament</Link>
         </Button>

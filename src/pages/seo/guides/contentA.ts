@@ -68,7 +68,7 @@ export const scramble: GuideContent = {
       heading: "Running a scramble on TeeVents",
       mockup: "leaderboard",
       paragraphs: [
-        "TeeVents was built for exactly this kind of event. When you create a tournament you select Scramble as the format, choose your team size, and the platform handles the rest: registration collects teams or individual players, pairings assign each team to a starting hole or tee time, and scoring generates one shared scoring code per group so a single person enters the team score hole by hole from their phone.",
+        "TeeVents was built for exactly this kind of event. Your director sets the format for you, and you can open it any time and change anything. Choose your team size, and the platform handles the rest: registration collects teams or individual players, pairings assign each team to a starting hole or tee time, and scoring generates one shared scoring code per group so a single person enters the team score hole by hole from their phone.",
         "The live leaderboard updates in real time in any web browser, so players, spectators, and sponsors can follow along without downloading an app. You can display it on a screen in the clubhouse during the awards reception, and rotate sponsor logos across the top of the board while people watch. Cart signs, printed scorecards with a scan-to-score QR code, and pairing sheets all generate automatically from the same pairings you already set up.",
         "Payments run through Stripe, so registrations and sponsorships are collected online before event day, and funds settle directly to the organizer's account. There is no monthly software subscription to sign up for: the Base plan is free, and you can unlock advanced features for a single tournament when you need them.",
       ],
@@ -300,7 +300,7 @@ export const formats: GuideContent = {
       heading: "Formats TeeVents supports",
       mockup: "scoring",
       paragraphs: [
-        "TeeVents supports eight scoring formats out of the box, including four-person scramble, three-man scramble, shootout, two-person scramble, best ball, individual stroke play, Stableford, and skins. You choose the format when you create the tournament, and the platform adapts everything downstream: scoring codes are issued per team for team formats and per player for individual formats, the score entry screen shows only the fields that make sense, and the live leaderboard sorts correctly for points-based or stroke-based scoring.",
+        "TeeVents supports eight scoring formats out of the box, including four-person scramble, three-man scramble, shootout, two-person scramble, best ball, individual stroke play, Stableford, and skins. Your director sets the format for you, and you can open it any time and change anything. The platform adapts everything downstream: scoring codes are issued per team for team formats and per player for individual formats, the score entry screen shows only the fields that make sense, and the live leaderboard sorts correctly for points-based or stroke-based scoring.",
         "Multi-round and multi-day events can use a different format per round, which is common for league seasons and championship weekends. Flighting and payout planning let you split a field into divisions and calculate prize distribution automatically, so the awards ceremony does not require a calculator and a volunteer with a clipboard.",
       ],
     },
@@ -360,7 +360,7 @@ export const websiteBuilder: GuideContent = {
       heading: "Branding controls that actually matter",
       mockup: "site",
       paragraphs: [
-        "Real customization goes deeper than uploading a logo. In TeeVents you control your primary and accent colors, typography scale, hero image, logo placement, and section order. You can choose from six professionally designed layout themes and then override the details, so two tournaments on the same platform look nothing alike.",
+        "Real customization goes deeper than uploading a logo. Your director builds your event page for you, with your logo, colors, hero image, and sponsor logos. You can open it any time and change anything. You can choose from six professionally designed layout themes and then override the details, so two tournaments on the same platform look nothing alike.",
         "You decide which sections appear at all. Sponsorship opportunities can be toggled off entirely if your packages are sold out. Public tabs let you add pages for the schedule, course information, auction, photo gallery, lodging, or anything else your event needs. Each section can be reordered so the content your audience cares about most sits above the fold.",
       ],
     },
@@ -421,7 +421,7 @@ export const websiteBuilder: GuideContent = {
     },
     {
       q: "Do I need a developer to build the site?",
-      a: "No. The builder is visual, and most organizers publish a complete event site in under an hour.",
+      a: "No. Your director builds your event page for you, with your logo, colors, hero image, and sponsor logos. You can open it any time and change anything.",
     },
     {
       q: "Will sponsor logos appear on the site?",

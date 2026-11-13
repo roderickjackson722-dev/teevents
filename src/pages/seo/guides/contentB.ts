@@ -51,7 +51,7 @@ export const liveScoring: GuideContent = {
     {
       heading: "Organizer controls",
       paragraphs: [
-        "Organizers can edit any score from the dashboard, view an edit history, recompute standings, reset a leaderboard if a practice round polluted the data, and lock scoring before the awards ceremony so nothing changes after winners are announced.",
+        "Your director can fix a score for you, and your rep is on call on event day. Organizers can also view an edit history, recompute standings, reset a leaderboard if a practice round polluted the data, and lock scoring before the awards ceremony so nothing changes after winners are announced.",
         "Because scoring, pairings, and the roster all share the same data, the leaderboard only ever shows players who are actually in your Players and Pairings section. Deleted or duplicate entries do not linger on the board.",
       ],
     },
@@ -374,7 +374,7 @@ export const shotgun: GuideContent = {
       heading: "Setting up either format in TeeVents",
       mockup: "scoring",
       paragraphs: [
-        "In the Players and Pairings section you select the start format for each round: shotgun or tee time. For shotgun events you assign a starting hole to each group and can send everyone off hole 1 or hole 10, or use a custom arrangement. For tee time events you set the interval in minutes and the platform builds the schedule.",
+        "Your director sets the start format for you, shotgun or tee time, and you can open it any time and change anything. For shotgun events you assign a starting hole to each group and can send everyone off hole 1 or hole 10, or use a custom arrangement. For tee time events you set the interval in minutes and the platform builds the schedule.",
         "The system allows the same tee time on different starting holes — an 8:00 group on hole 1 and an 8:00 group on hole 10 is a normal split-tee setup, not an error. Conflict validation still warns you if the same tee time and same starting hole are assigned twice. Multi-day and multi-round events can use a different start format per round.",
         "Once pairings are set, everything downstream generates automatically: cart signs with the starting hole, printed scorecards with scoring codes and a scan-to-score QR code, pairing sheets, and confirmation and reminder emails that include each player's own starting hole and tee time. You can also lock and publish pairings so nothing is edited by accident after you finalize them.",
       ],
@@ -415,7 +415,7 @@ export const shotgun: GuideContent = {
     { to: "/charity-golf-tournament-guide", label: "How to run a charity golf tournament" },
     { to: "/live-scoring-golf-tournaments", label: "Live scoring for golf tournaments" },
   ],
-  ctaHeading: "Set your shotgun in minutes",
+  ctaHeading: "We build your event page for you, live in 7 days or less.",
   ctaText: "Assign holes, print cart signs, and email every player their starting hole automatically.",
 };
 
@@ -424,7 +424,7 @@ export const pricing: GuideContent = {
   title: "Golf Tournament Software Pricing",
   metaTitle: "Golf Tournament Software Pricing: What It Really Costs",
   metaDescription:
-    "Compare golf tournament software pricing models — subscriptions, per-player fees, and transaction fees — and see how the TeeVents 5% platform fee works.",
+    "Compare golf tournament software pricing models — subscriptions, per-player fees, and transaction fees — and see how the TeeVents 8% platform fee works.",
   heroSubtitle:
     "Subscriptions, per-player fees, and transaction fees compared — plus exactly how TeeVents charges.",
   intro:
@@ -445,7 +445,7 @@ export const pricing: GuideContent = {
       heading: "How TeeVents pricing works",
       mockup: "pricing",
       bullets: [
-        "No Cost to Start: $0 with a 5% player-funded service fee.",
+        "No Cost to Start: $0 with a 8% player-funded service fee.",
         "Per-Event: a one-time $399 for one tournament, with no TeeVents transaction fee and a dedicated representative. Dedicated rep included on every plan — even free.",
         "Per-League: $599 for the complete league season.",
         "Enterprise: $2,999 per year for unlimited events and zero TeeVents transaction fees.",
@@ -462,14 +462,14 @@ export const pricing: GuideContent = {
     {
       heading: "Who holds your money",
       paragraphs: [
-        "This is the question most organizers forget to ask. On TeeVents, payments settle directly into your own connected Stripe account and you are the merchant of record. TeeVents never takes custody of organizer funds — only the 5% platform fee is collected from each transaction.",
+        "This is the question most organizers forget to ask. On TeeVents, payments settle directly into your own connected Stripe account and you are the merchant of record. TeeVents never takes custody of organizer funds — only the 8% platform fee is collected from each transaction.",
         "Practically, that means you access your revenue on Stripe's normal payout schedule rather than waiting for a platform to reconcile and cut a check after the event. Payout options include automatic Stripe deposits or a check on request.",
       ],
     },
     {
       heading: "A realistic cost example",
       paragraphs: [
-        "Take a 144-player charity scramble at $200 per player with $30,000 in sponsorships. Registration revenue is $28,800, sponsorships $30,000, and add-ons and raffle another $6,000 — roughly $64,800 collected. The 5% platform fee is about $3,240, plus standard card processing on the portion paid by card.",
+        "Take a 144-player charity scramble at $200 per player with $30,000 in sponsorships. Registration revenue is $28,800, sponsorships $30,000, and add-ons and raffle another $6,000 — roughly $64,800 collected. The 8% platform fee is about $3,240, plus standard card processing on the portion paid by card.",
         "If you pass fees to buyers, your net is essentially the full $64,800. Compare that to a seasonal subscription you pay whether or not the event sells, plus the 20 to 40 volunteer hours a spreadsheet workflow consumes, and the transaction model is usually the better economics for an annual event.",
       ],
     },
@@ -499,7 +499,7 @@ export const pricing: GuideContent = {
   faqs: [
     {
       q: "How much does TeeVents cost?",
-      a: "Start at $0 with a 5% player-funded service fee. Per-Event is $399, Per-League is $599, and Enterprise is $2,999 per year.",
+      a: "Start at $0 with a 8% player-funded service fee. Per-Event is $399, Per-League is $599, and Enterprise is $2,999 per year.",
     },
     {
       q: "Is there a monthly subscription?",

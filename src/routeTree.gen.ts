@@ -35,6 +35,7 @@ import { Route as SalesSheetRouteImport } from './routes/sales-sheet'
 import { Route as SampleEventRouteImport } from './routes/sample-event'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as TipsRouteImport } from './routes/tips'
 import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
 import { Route as DashboardEmailSendRouteImport } from './routes/dashboard.email-send'
@@ -209,6 +210,11 @@ const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TipsRoute = TipsRouteImport.update({
+  id: '/tips',
+  path: '/tips',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CollegeIndexRoute = CollegeIndexRouteImport.update({
@@ -488,6 +494,7 @@ export interface FileRoutesByFullPath {
   '/sample-event': typeof SampleEventRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/tips': typeof TipsRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
@@ -561,6 +568,7 @@ export interface FileRoutesByTo {
   '/sample-event': typeof SampleEventRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/tips': typeof TipsRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
@@ -635,6 +643,7 @@ export interface FileRoutesById {
   '/sample-event': typeof SampleEventRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
+  '/tips': typeof TipsRoute
   '/college/$slug': typeof CollegeSlugRoute
   '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
@@ -710,6 +719,7 @@ export interface FileRouteTypes {
     | '/sample-event'
     | '/sitemap.xml'
     | '/terms'
+    | '/tips'
     | '/college/$slug'
     | '/dashboard/email-send'
     | '/dashboard/email-templates'
@@ -783,6 +793,7 @@ export interface FileRouteTypes {
     | '/sample-event'
     | '/sitemap.xml'
     | '/terms'
+    | '/tips'
     | '/college/$slug'
     | '/dashboard/email-send'
     | '/dashboard/email-templates'
@@ -856,6 +867,7 @@ export interface FileRouteTypes {
     | '/sample-event'
     | '/sitemap.xml'
     | '/terms'
+    | '/tips'
     | '/college/$slug'
     | '/dashboard/email-send'
     | '/dashboard/email-templates'
@@ -930,6 +942,7 @@ export interface RootRouteChildren {
   SampleEventRoute: typeof SampleEventRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  TipsRoute: typeof TipsRoute
   CollegeSlugRoute: typeof CollegeSlugRoute
   DashboardEmailSendRoute: typeof DashboardEmailSendRoute
   DashboardEmailTemplatesRoute: typeof DashboardEmailTemplatesRoute
@@ -1158,6 +1171,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tips': {
+      id: '/tips'
+      path: '/tips'
+      fullPath: '/tips'
+      preLoaderRoute: typeof TipsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/college/': {
@@ -1517,6 +1537,7 @@ const rootRouteChildren: RootRouteChildren = {
   SampleEventRoute: SampleEventRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  TipsRoute: TipsRoute,
   CollegeSlugRoute: CollegeSlugRoute,
   DashboardEmailSendRoute: DashboardEmailSendRoute,
   DashboardEmailTemplatesRoute: DashboardEmailTemplatesRoute,

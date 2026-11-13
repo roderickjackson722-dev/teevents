@@ -54,3 +54,4 @@ Proposals and proposal-web have local AGENTS.md isolation rules.
 - Stripe webhooks must verify signatures with a configured signing secret and reject requests otherwise; never fall back to parsing unsigned JSON.
 - Send Email reads organization-owned My Templates through the existing email library; saved-template sends resolve the reviewed version and event-owned recipients server-side without writing automatic event email settings.
 - All My Events and the header event switcher only read existing organization tournaments and set the remembered dashboard tournament_id; they appear only for workspaces with 2+ events so single-event dashboards stay unchanged.
+- Admin fee split (fee_split: player/split/organizer) is the only per-event fee choice for No Cost events; admin-data set-fee-split writes it, a trigger blocks non-admin changes, and src/lib/feeSplit.ts (copied to supabase/functions/_shared/feeSplit.ts) is the single math so admin preview and checkout agree.

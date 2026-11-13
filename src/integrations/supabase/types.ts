@@ -13784,6 +13784,7 @@ export type Database = {
           event_fee_paid: boolean
           event_title: string | null
           external_link: string | null
+          fee_split: string
           flat_rate_admin_override: boolean
           flat_rate_amount_cents: number
           flat_rate_enabled: boolean
@@ -14159,6 +14160,7 @@ export type Database = {
           event_fee_paid?: boolean
           event_title?: string | null
           external_link?: string | null
+          fee_split?: string
           flat_rate_admin_override?: boolean
           flat_rate_amount_cents?: number
           flat_rate_enabled?: boolean
@@ -14534,6 +14536,7 @@ export type Database = {
           event_fee_paid?: boolean
           event_title?: string | null
           external_link?: string | null
+          fee_split?: string
           flat_rate_admin_override?: boolean
           flat_rate_amount_cents?: number
           flat_rate_enabled?: boolean

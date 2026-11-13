@@ -1,3 +1,4 @@
+import { computeFeeSplit } from "../_shared/feeSplit.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
@@ -68,7 +69,7 @@ Deno.serve(async (req) => {
 
     const { data: tournament, error: tErr } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, event_fee_paid, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, max_group_size, foursome_registration, allowed_group_sizes")
+      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, event_fee_paid, registration_open, site_published, registration_fee_cents, date, end_date, location, pass_fees_to_participants, fee_split, allow_cover_fees, early_registration_enabled, early_registration_price_cents, early_registration_price_2_cents, early_registration_price_4_cents, early_registration_expires_at, max_group_size, foursome_registration, allowed_group_sizes")
       .eq("id", tournament_id)
       .single();
 
@@ -434,17 +435,28 @@ Deno.serve(async (req) => {
     const flatRate = await isFlatRateTournament(supabaseAdmin, tournament.id);
     const feeRate = await tournamentFeeRate(supabaseAdmin, tournament.id);
     const platformFeeCents = flatRate || currentPaidPlan ? 0 : Math.round(baseTotalCents * feeRate);
-    const stripeFeeCents = golferPaysFees
+    // No Cost to Start events use the admin-chosen fee split (player / split / organizer).
+    const feeSplitChoice = ["player", "split", "organizer"].includes((tournament as any).fee_split)
+      ? (tournament as any).fee_split
+      : "player";
+    const splitCalc = platformFeeCents > 0 ? computeFeeSplit(baseTotalCents, feeRate, feeSplitChoice) : null;
+    const stripeFeeCents = splitCalc
+      ? splitCalc.processing
+      : golferPaysFees
       ? calculateGrossedUpStripeFee(baseTotalCents + platformFeeCents)
       : calculateProcessingFee(baseTotalCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
-    // Application fee = our 5% only. Stripe takes its processing fee from the
+    // Application fee = our full platform fee. Stripe takes its processing fee from the
     // gross charge automatically — we don't add it to the application fee.
     const applicationFeeAmount = platformFeeCents;
-    const organizerNetCents = golferPaysFees
+    const organizerNetCents = splitCalc
+      ? splitCalc.organizerReceives
+      : golferPaysFees
       ? baseTotalCents
       : Math.max(baseTotalCents - combinedFeesCents, 0);
-    const chargeTotalCents = golferPaysFees
+    const chargeTotalCents = splitCalc
+      ? splitCalc.charge
+      : golferPaysFees
       ? baseTotalCents + combinedFeesCents
       : baseTotalCents;
 
@@ -530,27 +542,21 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (currentFreePlan && platformFeeCents > 0) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: { name: `TeeVents service fee (${Math.round(feeRate * 100)}%)` },
-          unit_amount: platformFeeCents,
-        },
-        quantity: 1,
-      });
-    }
-
-    const visibleProcessingFeeCents = currentFreePlan ? stripeFeeCents : combinedFeesCents;
-    if (golferPaysFees && visibleProcessingFeeCents > 0) {
-      lineItems.push({
-        price_data: {
-          currency: "usd",
-          product_data: { name: currentFreePlan ? "Card processing fee" : "Fees" },
-          unit_amount: visibleProcessingFeeCents,
-        },
-        quantity: 1,
-      });
+    if (splitCalc) {
+      if (splitCalc.playerShare > 0) {
+        lineItems.push({ price_data: { currency: "usd", product_data: { name: "Service fee" }, unit_amount: splitCalc.playerShare }, quantity: 1 });
+      }
+      if (splitCalc.processing > 0) {
+        lineItems.push({ price_data: { currency: "usd", product_data: { name: "Processing" }, unit_amount: splitCalc.processing }, quantity: 1 });
+      }
+    } else {
+      const visibleProcessingFeeCents = combinedFeesCents;
+      if (golferPaysFees && visibleProcessingFeeCents > 0) {
+        lineItems.push({
+          price_data: { currency: "usd", product_data: { name: "Fees" }, unit_amount: visibleProcessingFeeCents },
+          quantity: 1,
+        });
+      }
     }
 
     // Compact add-on selections for metadata (Stripe metadata values must be < 500 chars)
@@ -576,7 +582,8 @@ Deno.serve(async (req) => {
         tournament_id,
         organization_id: tournament.organization_id,
         checkout_hold_id: holdId || "",
-        pass_fees_to_golfer: String(golferPaysFees),
+        pass_fees_to_golfer: String(splitCalc ? feeSplitChoice !== "organizer" : golferPaysFees),
+        fee_split: splitCalc ? feeSplitChoice : "",
         cover_fees: String(coverFees),
         tier_id: tierId || "",
         gross_registration_cents: String(registrationFeeCents),

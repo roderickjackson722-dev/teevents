@@ -663,7 +663,7 @@ const THANK_YOU_TEMPLATES = [
  {id:'builtin:vendor_thank_you',name:'Vendor Thank You',source_kind:'vendor',config:{...DEFAULT_VENDOR_CONFIG,header_title:'Thank You for Joining Us!',subject:'Thank you for being a vendor at {{event_name}}!',greeting:'Hello {{sponsor_name}},',body_text:'Thank you for being part of {{event_name}} as a vendor. Your presence added so much to the day for our players and guests.\n\nWe would love to have you back at our next event.',closing_text:'With appreciation,\n{{contact_name}}\n{{organization_name}}',footer_text:'Thank you for being part of the event! ⛳'}},
 ];
 export function catalogForEvent(event: any) {
- return [...THANK_YOU_TEMPLATES.map(t=>({...t,config:structuredClone(t.config),updated_at:null})), ...Object.entries(TEMPLATE_LABELS).flatMap(([kind, name]) => kind === 'receipt'
+ return [...Object.entries(TEMPLATE_LABELS).flatMap(([kind, name]) => kind === 'receipt'
  ? Object.entries(RECEIPT_TYPE_DEFAULTS).map(([type, overrides]) => ({id: `builtin:receipt:${type}`, name: `${name} — ${type.replaceAll('_',' ')}`, source_kind: kind, config: {...defaultsForTemplate(kind), ...overrides, ...(event?.receipt_email_config?.[type] || {})}, updated_at: null}))
- : [{id: `builtin:${kind}`, name, source_kind: kind, config: {...defaultsForTemplate(kind), ...(event?.[CONFIG_KEY[kind as TemplateKind]] || {})}, updated_at: null}])];
+ : [{id: `builtin:${kind}`, name, source_kind: kind, config: {...defaultsForTemplate(kind), ...(event?.[CONFIG_KEY[kind as TemplateKind]] || {})}, updated_at: null}]), ...THANK_YOU_TEMPLATES.map(t=>({...t,config:structuredClone(t.config),updated_at:null}))];
 }

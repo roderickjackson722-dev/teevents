@@ -37,10 +37,10 @@ export function RepMeaningSection() {
   return <section className="rep-service bg-background py-16 border-y border-border"><div className="container mx-auto max-w-5xl px-4"><h2 className="font-display text-3xl md:text-4xl font-bold">What 'Dedicated Rep' Actually Means</h2><p className="mt-5 text-lg text-primary">Whether you start on the free plan or go Enterprise, you get the same level of hands-on support. A dedicated rep builds your event, sets up your leaderboard, and configures your scoring — no matter which tier you choose.</p><p className="mt-5 text-muted-foreground">You're not left to figure it out. You're assigned a named TeeVents rep who:</p><ul className="mt-6 grid gap-4 sm:grid-cols-2">{["Builds your branded event page", "Configures your registration and payment flow", "Sets up your live leaderboard with your colors", "Activates mobile scoring for your players", "Creates your sponsor page", "Builds your pairings and tee times", "Is available before, during, and after your event"].map(item => <li key={item} className="flex gap-3"><Check className="h-5 w-5 shrink-0 text-primary" />{item}</li>)}</ul><p className="mt-8 border-l-4 border-secondary pl-5 text-muted-foreground leading-relaxed">That's why our pricing is what it is. You're paying for expertise, attention to detail, and a partner who cares about your event as much as you do. That hands-on care is included on every plan.</p></div></section>;
 }
 
-export function EnterpriseRepSection() {
+export function EnterpriseRepSection({ setupWhy }: { setupWhy?: string } = {}) {
   const rows = [
     ["Builds your branded club page", "Your club looks professional online"],
-    ["Sets up every tournament and league", "You don't touch the software"],
+    ["Sets up every tournament and league", setupWhy ?? "You don't touch the software"],
     ["Configures pairings, handicaps, and tee sets", "Accurate Course Handicaps using the USGA formula"],
     ["Activates live scoring and mobile scoring", "Players score from their phones"],
     ["Sets up your sponsor page and leaderboard", "Sponsors get maximum visibility"],

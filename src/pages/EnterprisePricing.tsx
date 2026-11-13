@@ -79,15 +79,36 @@ const EnterprisePricing = () => {
             </div>
             <p className="text-xs font-bold uppercase tracking-widest text-secondary">{SOFTWARE_TAG}</p>
             <p className="mt-3 text-xl font-semibold text-secondary">$2,999 per year</p>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/60">{SOFTWARE_DEFINITION}</p>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/60">{SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "Your director builds every event for you, and your rep is on call on event day. You can open any event any time and change anything.")}</p>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
               Running 10 or more events a year?
             </h1>
+            <p className="mb-4 text-sm font-bold uppercase tracking-widest text-secondary">Your Virtual Tournament Director</p>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
               Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. And a dedicated rep who builds every event for you.
             </p>
             <p className="mt-4 text-secondary font-semibold">Run 10 events, and it pays for itself. Run more? You save more.</p>
           </motion.div>
+        </div>
+      </section>
+
+      <section className="bg-muted/40 py-14">
+        <div className="container mx-auto px-4 max-w-3xl">
+          <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground mb-6">How A Course Runs 10 Events Without Rebuilding Each One</h2>
+          <ul className="space-y-3">
+            {[
+              "Your director builds every event, every league, and every leaderboard for you, in your club colors.",
+              "Clone a past event instead of starting from a blank page, then change the date, the format, and the sponsors.",
+              "Keep one club page with all upcoming events, so players find the next one without a new link each time.",
+              "Your rep is on call on event day for live scoring and leaderboard challenges, and priority support is included.",
+            ].map((tip) => (
+              <li key={tip} className="flex items-start gap-3">
+                <Check className="h-5 w-5 mt-0.5 flex-shrink-0 text-primary" />
+                <span className="text-foreground/80">{tip}</span>
+              </li>
+            ))}
+          </ul>
+          <p className="mt-6 font-semibold text-primary">Build it yourself with the same tools, or let your director build it for you. You stay in control either way.</p>
         </div>
       </section>
 
@@ -197,7 +218,7 @@ const EnterprisePricing = () => {
           </div>
         </div>
       </section>
-      <EnterpriseRepSection />
+      <EnterpriseRepSection setupWhy="Your director sets it up for you, and you can open it any time and change anything." />
     </Layout>
   );
 };

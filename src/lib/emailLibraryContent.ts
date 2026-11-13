@@ -658,8 +658,12 @@ export function defaultsForTemplate(kind: string): EmailConfig {
  const configs: Record<string, EmailConfig> = {confirmation: DEFAULT_CONFIG, sponsor: DEFAULT_SPONSOR_CONFIG, vendor: DEFAULT_VENDOR_CONFIG, post_event: DEFAULT_POST_EVENT_CONFIG, day_before: DEFAULT_DAY_BEFORE_CONFIG, sponsor_day_of: DEFAULT_SPONSOR_DAY_OF_CONFIG, sponsorship_day_of: DEFAULT_SPONSORSHIP_DAY_OF_CONFIG, pairings_update: DEFAULT_PAIRINGS_UPDATE_CONFIG, tee_times: DEFAULT_TEE_TIMES_CONFIG, survey: DEFAULT_SURVEY_CONFIG, receipt: DEFAULT_RECEIPT_CONFIG};
  return structuredClone(configs[kind] || DEFAULT_CONFIG);
 }
+const THANK_YOU_TEMPLATES = [
+ {id:'builtin:sponsor_thank_you',name:'Sponsor Thank You',source_kind:'sponsor',config:{...DEFAULT_SPONSOR_CONFIG,header_title:'Thank You for Your Sponsorship!',subject:'Thank you for supporting {{event_name}}!',greeting:'Dear {{sponsor_name}},',body_text:'Thank you for sponsoring {{event_name}}! Your generosity helped make the day a success, and we are grateful for your partnership.\n\nWe hope you will join us again next year.',closing_text:'With appreciation,\n{{contact_name}}\n{{organization_name}}',footer_text:'Thank you for your support! ⛳'}},
+ {id:'builtin:vendor_thank_you',name:'Vendor Thank You',source_kind:'vendor',config:{...DEFAULT_VENDOR_CONFIG,header_title:'Thank You for Joining Us!',subject:'Thank you for being a vendor at {{event_name}}!',greeting:'Hello {{sponsor_name}},',body_text:'Thank you for being part of {{event_name}} as a vendor. Your presence added so much to the day for our players and guests.\n\nWe would love to have you back at our next event.',closing_text:'With appreciation,\n{{contact_name}}\n{{organization_name}}',footer_text:'Thank you for being part of the event! ⛳'}},
+];
 export function catalogForEvent(event: any) {
- return Object.entries(TEMPLATE_LABELS).flatMap(([kind, name]) => kind === 'receipt'
+ return [...THANK_YOU_TEMPLATES.map(t=>({...t,config:structuredClone(t.config),updated_at:null})), ...Object.entries(TEMPLATE_LABELS).flatMap(([kind, name]) => kind === 'receipt'
  ? Object.entries(RECEIPT_TYPE_DEFAULTS).map(([type, overrides]) => ({id: `builtin:receipt:${type}`, name: `${name} — ${type.replaceAll('_',' ')}`, source_kind: kind, config: {...defaultsForTemplate(kind), ...overrides, ...(event?.receipt_email_config?.[type] || {})}, updated_at: null}))
- : [{id: `builtin:${kind}`, name, source_kind: kind, config: {...defaultsForTemplate(kind), ...(event?.[CONFIG_KEY[kind as TemplateKind]] || {})}, updated_at: null}]);
+ : [{id: `builtin:${kind}`, name, source_kind: kind, config: {...defaultsForTemplate(kind), ...(event?.[CONFIG_KEY[kind as TemplateKind]] || {})}, updated_at: null}])];
 }

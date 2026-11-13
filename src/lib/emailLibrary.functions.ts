@@ -29,7 +29,7 @@ export const previewLibraryEmail=createServerFn({method:'POST'}).middleware([req
  let reg:any;
  if(data.enterprise&&data.filters){const audience=await h.pastAudience(admin,data.organizationId,data.filters);reg=audience.rows.find(r=>r.id===data.sampleRegistrationId)||audience.rows[0];}
  else {const {data:row}=await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).order('created_at').limit(1).maybeSingle();reg=row;}
- if(!reg) throw new Error('This event or audience has no sample participant to preview.');
+ if(!reg) reg={id:null,first_name:'Sample',last_name:'Player',email:'player@example.com',tournament_id:event.id};
  return {...await h.rendered(admin,event,organization,data.template,reg,data.enterprise?'https://www.teevents.golf/api/public/enterprise-email-unsubscribe?sample=1':undefined),sample:true};
 });
 export const buildPastAudience=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({organizationId:z.string().uuid(),filters:filtersSchema}).parse(i)).handler(async({data,context})=>{
@@ -42,7 +42,7 @@ export const testLibraryEmail=createServerFn({method:'POST'}).middleware([requir
  let reg:any;
  if(data.enterprise&&data.filters)reg=(await h.pastAudience(admin,data.organizationId,data.filters)).rows[0];
  else reg=(await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).order('created_at').limit(1).maybeSingle()).data;
- if(!reg)throw new Error('No sample participant is available.');
+ if(!reg)reg={id:null,first_name:'Sample',last_name:'Player',email:'player@example.com',tournament_id:event.id};
  let unsubscribeUrl:string|undefined;
  if(data.enterprise){const pref=await h.preference(admin,data.organizationId,data.recipient);if(pref.unsubscribed_at)throw new Error('This address has unsubscribed from this account.');unsubscribeUrl=`https://www.teevents.golf/api/public/enterprise-email-unsubscribe?token=${pref.token}`;}
  const out=await h.rendered(admin,event,organization,data.template,reg,unsubscribeUrl);

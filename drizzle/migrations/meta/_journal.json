@@ -456,6 +456,13 @@
       "when": 1794609138238,
       "tag": "0064_new_events_default_8_percent_fee",
       "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1794611067499,
+      "tag": "0065_admin_fee_split_choice",
+      "breakpoints": true
     }
   ]
 }

@@ -51,7 +51,7 @@ export const liveScoring: GuideContent = {
     {
       heading: "Organizer controls",
       paragraphs: [
-        "Your director can fix a score for you, and your rep is on call on event day.",
+        "Your director can fix a score for you, and your rep is on call on event day. Organizers can also view an edit history, recompute standings, reset a leaderboard if a practice round polluted the data, and lock scoring before the awards ceremony so nothing changes after winners are announced.",
         "Because scoring, pairings, and the roster all share the same data, the leaderboard only ever shows players who are actually in your Players and Pairings section. Deleted or duplicate entries do not linger on the board.",
       ],
     },

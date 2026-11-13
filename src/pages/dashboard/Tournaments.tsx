@@ -127,7 +127,7 @@ const Tournaments = () => {
       scoring_format: form.scoring_format,
       pricing_version: "2026-10",
       pricing_model: "free",
-      platform_fee_percent: 5,
+      platform_fee_percent: 8,
       flat_rate_amount_cents: 39900,
     } as any).select("id").maybeSingle();
 

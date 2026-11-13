@@ -5,7 +5,7 @@
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { resolveRouting, isFlatRateTournament } from "../_shared/connectRouting.ts";
+import { resolveRouting, isFlatRateTournament , tournamentFeeRate } from "../_shared/connectRouting.ts";
 
 const PLATFORM_FEE_RATE = 0.05;
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
@@ -139,7 +139,8 @@ Deno.serve(async (req) => {
 
       const grossCents = (reg as any).booth_fee_cents as number;
       const flatRate = await isFlatRateTournament(supabaseAdmin, (tournament as any).id);
-      const platformFeeCents = flatRate ? 0 : Math.round(grossCents * PLATFORM_FEE_RATE);
+      const feeRate = await tournamentFeeRate(supabaseAdmin, (tournament as any).id);
+      const platformFeeCents = flatRate ? 0 : Math.round(grossCents * feeRate);
       const stripeFeeCents = calculateGrossedUpStripeFee(grossCents + platformFeeCents);
       const combinedFeesCents = platformFeeCents + stripeFeeCents;
       const chargeTotalCents = grossCents + combinedFeesCents;

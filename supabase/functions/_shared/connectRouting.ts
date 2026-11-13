@@ -226,6 +226,31 @@ export async function isFlatRateTournament(
   }
 }
 
+/**
+ * Per-event platform fee rate. Each event stores its own platform_fee_percent
+ * (5 for events created before Nov 13, 2026; 8 from then on), so existing
+ * events keep the fee they were quoted. Flat-rate events pay 0.
+ */
+export async function tournamentFeeRate(
+  supabaseAdmin: any,
+  tournamentId: string | null | undefined,
+): Promise<number> {
+  if (!tournamentId) return PLATFORM_FEE_RATE;
+  try {
+    const { data } = await supabaseAdmin
+      .from("tournaments")
+      .select("flat_rate_enabled, platform_fee_percent")
+      .eq("id", tournamentId)
+      .maybeSingle();
+    if (data?.flat_rate_enabled) return 0;
+    const pct = Number(data?.platform_fee_percent);
+    return Number.isFinite(pct) && pct >= 0 && pct <= 20 ? pct / 100 : PLATFORM_FEE_RATE;
+  } catch (e) {
+    console.error("[tournamentFeeRate] lookup failed:", e);
+    return PLATFORM_FEE_RATE;
+  }
+}
+
 // Compute platform fee + grossed-up Stripe processing fee for application_fee_amount.
 // When `flatRate` is true the 5% platform fee is waived (Flat-Rate Pro event).
 export function computeFees(grossCents: number, flatRate = false) {

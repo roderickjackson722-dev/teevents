@@ -1,7 +1,7 @@
 import { safeOrigin } from "../_shared/safeOrigin.ts";
 import Stripe from "https://esm.sh/stripe@18.5.0";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, isFlatRateTournament, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
+import { requireConnectedAccount, logDirectCharge, PLATFORM_FEE_RATE, isFlatRateTournament, tournamentFeeRate, stripeAccountOpts, acctQuerySuffix, applicationFeeBlock, notifyPlatformFallback } from "../_shared/connectRouting.ts";
 
 const calculateGrossedUpStripeFee = (subtotalCents: number) =>
   Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
@@ -134,7 +134,8 @@ Deno.serve(async (req) => {
     if (regErr || !registration) throw new Error(regErr?.message || "Failed to create sponsor registration");
 
     const flatRate = await isFlatRateTournament(supabaseAdmin, tournament_id);
-    const platformFeeCents = flatRate ? 0 : Math.round(tier.price_cents * PLATFORM_FEE_RATE);
+    const feeRate = await tournamentFeeRate(supabaseAdmin, tournament_id);
+    const platformFeeCents = flatRate ? 0 : Math.round(tier.price_cents * feeRate);
     const stripeFeeCents = calculateGrossedUpStripeFee(tier.price_cents + platformFeeCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
     const applicationFeeAmount = platformFeeCents;

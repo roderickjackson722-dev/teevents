@@ -24,11 +24,30 @@ export const saveLibraryTemplate=createServerFn({method:'POST'}).middleware([req
 export const deleteLibraryTemplate=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>z.object({organizationId:z.string().uuid(),id:z.string().uuid()}).parse(i)).handler(async({data,context})=>{
  const h=await import('./emailLibrary.server');const {admin}=await h.access(context,data.organizationId);const {error}=await admin.from('organizer_email_templates').delete().eq('organization_id',data.organizationId).eq('id',data.id);if(error)throw new Error('Template could not be deleted.');return {deleted:true};
 });
+export const sendSavedTemplateEmail=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>scope.extend({templateId:z.string().uuid(),expectedUpdatedAt:z.string(),registrationIds:z.array(z.string().uuid()).min(1).max(100),requestId:z.string().uuid()}).parse(i)).handler(async({data,context})=>{
+ const h=await import('./emailLibrary.server');const {admin,organization}=await h.access(context,data.organizationId);
+ const event=await h.ownedEvent(admin,data.organizationId,data.eventId);
+ const template=await h.resolveTemplate(admin,data.organizationId,event,data.templateId);
+ if(template.updated_at!==data.expectedUpdatedAt)throw new Error('This template has changed. Reload it and review again.');
+ const ids=[...new Set(data.registrationIds)];
+ const {data:rows,error}=await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).in('id',ids);
+ if(error||rows?.length!==ids.length)throw new Error('Choose recipients belonging to this event.');
+ const key=process.env['RESEND_API_KEY'];if(!key)throw new Error('Email sending is not configured.');
+ let sent=0,failed=0,suppressed=0;
+ for(const reg of rows){
+  if(!reg.email){suppressed++;continue;}
+  const pref=await admin.from('enterprise_email_preferences').select('unsubscribed_at').eq('organization_id',data.organizationId).eq('email',reg.email.trim().toLowerCase()).maybeSingle();
+  if(pref.error)throw new Error('Could not verify email preferences.');
+  if(reg.enterprise_email_opt_out||pref.data?.unsubscribed_at||(template.source_kind==='post_event'&&event.post_event_email_opt_out)){suppressed++;continue;}
+  try{const out=await h.rendered(admin,event,organization,template,reg);await h.deliver(key,reg.email,out,`saved-template-${context.userId}-${data.requestId}-${reg.id}`);sent++;}catch{failed++;}
+ }
+ return {sent,failed,suppressed};
+});
 export const previewLibraryEmail=createServerFn({method:'POST'}).middleware([requireSupabaseAuth]).inputValidator((i:unknown)=>scope.extend({template:templateSchema,sampleRegistrationId:z.string().uuid().optional(),filters:filtersSchema.optional()}).parse(i)).handler(async({data,context})=>{
  const h=await import('./emailLibrary.server');const {admin,organization}=await h.access(context,data.organizationId,data.enterprise);const event=await h.ownedEvent(admin,data.organizationId,data.eventId,data.enterprise);
  let reg:any;
  if(data.enterprise&&data.filters){const audience=await h.pastAudience(admin,data.organizationId,data.filters);reg=audience.rows.find(r=>r.id===data.sampleRegistrationId)||audience.rows[0];}
- else {const {data:row}=await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).order('created_at').limit(1).maybeSingle();reg=row;}
+ else {let query=admin.from('tournament_registrations').select('*').eq('tournament_id',event.id);if(data.sampleRegistrationId)query=query.eq('id',data.sampleRegistrationId);const {data:row}=await query.order('created_at').limit(1).maybeSingle();reg=row;}
  if(!reg) reg={id:null,first_name:'Sample',last_name:'Player',email:'player@example.com',tournament_id:event.id};
  return {...await h.rendered(admin,event,organization,data.template,reg,data.enterprise?'https://www.teevents.golf/api/public/enterprise-email-unsubscribe?sample=1':undefined),sample:true};
 });

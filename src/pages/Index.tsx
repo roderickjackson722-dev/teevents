@@ -127,12 +127,12 @@ export default function Index() {
           <figure className="mx-auto my-10 max-w-3xl md:my-14">
             <Quote className="mx-auto mb-5 h-8 w-8 text-secondary" aria-hidden="true" />
             <blockquote className="text-base leading-relaxed text-foreground md:text-center md:text-xl">“{testimonial.quote.replace(" — ", ", ").replace("NCAA-sanctioned", "NCAA sanctioned")}”</blockquote>
-            <figcaption className="mt-6 text-center text-sm leading-relaxed"><span className="font-semibold text-primary">{testimonial.name}</span><br /><span className="text-muted-foreground">{testimonial.title}, {testimonial.organization}</span></figcaption>
+            <figcaption className="mt-6 text-center text-sm leading-relaxed"><span className="font-semibold text-primary">L. Smoot</span><br /><span className="text-muted-foreground">{testimonial.title}, {testimonial.organization}</span></figcaption>
           </figure>
           <figure className="mx-auto my-10 max-w-3xl md:my-14">
             <Quote className="mx-auto mb-5 h-8 w-8 text-secondary" aria-hidden="true" />
             <blockquote className="text-base leading-relaxed text-foreground md:text-center md:text-xl">“We turned over the golf tournament management duties to Roderick and the TeeVents team, and we have been beyond pleased with the service. From the initial setup to the conclusion of the event, everything was handled with the highest level of professionalism. We look forward to a lasting partnership with TeeVents.”</blockquote>
-            <figcaption className="mt-6 text-center text-sm leading-relaxed"><span className="font-semibold text-primary">Merral Jackson</span><br /><span className="text-muted-foreground">Tournament Director, National Black College Alumni Hall of Fame</span></figcaption>
+            <figcaption className="mt-6 text-center text-sm leading-relaxed"><span className="font-semibold text-primary">M. Jackson</span><br /><span className="text-muted-foreground">Executive Directo, National Black College Alumni Hall of Fame</span></figcaption>
           </figure>
           <p className="mb-10 text-center text-base font-medium text-primary">On November 7, 2026, the ATL 2-Person Team Shamble ran 48 players on TeeVents live scoring.</p>
           <div className="logo-marquee border-t border-border pt-8 pb-2" aria-label="Golf organizations and events">

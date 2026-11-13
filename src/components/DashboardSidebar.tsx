@@ -190,7 +190,6 @@ export function DashboardSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const isLeagueWorkspace = location.pathname.startsWith("/dashboard/leagues");
-  const activeCategories = isLeagueWorkspace ? leagueCategories : categories;
   const { hasFeature, requiredPlan } = usePlanFeatures();
   const { org } = useOrgContext();
   const { data: enterpriseApproval } = useQuery({
@@ -203,6 +202,20 @@ export function DashboardSidebar() {
       return data;
     },
   });
+  // "All My Events" only appears for workspaces running two or more events.
+  const { data: eventCount = 0 } = useQuery({
+    queryKey: ["dashboard-event-count", org?.orgId],
+    enabled: !!org?.orgId,
+    queryFn: async () => {
+      const { count } = await supabase.from("tournaments").select("id", { count: "exact", head: true }).eq("organization_id", org!.orgId);
+      return count ?? 0;
+    },
+  });
+  const activeCategories = isLeagueWorkspace
+    ? leagueCategories
+    : eventCount >= 2
+      ? categories.map((c) => c.label === "Home" ? { ...c, items: [...c.items, { title: "All My Events", url: "/dashboard/my-events", icon: ClipboardList, feature: null, description: "Every tournament in this account, with quick access to each" }] } : c)
+      : categories;
   const [searchParams] = useSearchParams();
   const [tournamentSlug, setTournamentSlug] = useState<string | null>(null);
   const [tournamentId, setTournamentId] = useState<string | null>(null);

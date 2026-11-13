@@ -4,7 +4,7 @@ export const eventSetupSteps = [
   { number: "03", title: "Run Your Tournament", text: "Everything is ready to go, with your dedicated partner before, during, and after the event." },
 ];
 
-export default function HomeHowItWorks({ showTurnaroundPromise = false }: { showTurnaroundPromise?: boolean }) {
+export default function HomeHowItWorks({ showTurnaroundPromise = false, showEventDaySupport = false }: { showTurnaroundPromise?: boolean; showEventDaySupport?: boolean }) {
   return (
     <section id="how-it-works" aria-labelledby="how-it-works-title" className="scroll-mt-20 bg-background py-14 md:py-24">
       <div className="mx-auto max-w-6xl px-6">
@@ -19,6 +19,7 @@ export default function HomeHowItWorks({ showTurnaroundPromise = false }: { show
               <div>
                 <h3 className="mb-3 font-display text-xl font-semibold text-primary">{step.title}</h3>
                 <p className="text-sm leading-relaxed text-muted-foreground md:text-base">{step.text}</p>
+                {showEventDaySupport && step.number === "03" && <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">Your rep is on call on event day for live scoring and leaderboard challenges.</p>}
                 {showTurnaroundPromise && step.number === "02" && <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">We build your event page for you. Send us your logo and tournament details, and your page is live in 7 days or less.</p>}
               </div>
             </li>

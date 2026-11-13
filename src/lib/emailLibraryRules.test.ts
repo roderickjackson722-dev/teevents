@@ -23,3 +23,11 @@ describe('Template isolation',()=>{
  it('editing a copy cannot mutate the original',()=>{const original=defaultsForTemplate('confirmation');const copy=structuredClone(original);copy.subject='Changed';expect(original.subject).toBe("You're Registered — {{event_name}}");});
  it('merge fields insert at the chosen cursor instead of the end',()=>expect(insertAtCursor('Hi there','{{first_name}}',3,8)).toEqual({text:'Hi {{first_name}}',cursor:17}));
 });
+import { catalogForEvent as catalogWithThanks } from "./emailLibraryContent";
+describe("Sponsor and vendor thank-you templates", () => {
+  it("offers both thank-you templates in the TeeVents catalog", () => {
+    const names = catalogWithThanks({}).map((t: any) => t.name);
+    expect(names).toContain("Sponsor Thank You");
+    expect(names).toContain("Vendor Thank You");
+  });
+});

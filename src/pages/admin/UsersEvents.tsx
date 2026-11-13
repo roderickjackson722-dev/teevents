@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -122,7 +123,7 @@ export default function AdminUsersEvents() {
   }, [rows]);
 
   const exportCsv = () => {
-    const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const esc = (v: unknown) => csvCell(v);
     const header = [
       "Email", "Full Name", "Phone", "Organization", "Event Name", "Event Type",
       "Event Date", "Status", "Platform Fees Collected", "Vetting Answers", "Admin Notes",

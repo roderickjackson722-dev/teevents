@@ -1,3 +1,4 @@
+import { csvCell } from "@/lib/csvSafe";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -263,7 +264,7 @@ export default function AdminLeadMagnets() {
       (l.challenge ?? "").replace(/\s+/g, " "), l.downloaded_at, l.sample_created ? "Yes" : "No",
     ]);
     const csv = [headers, ...rows]
-      .map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","))
+      .map((r) => r.map((c) => csvCell(c)).join(","))
       .join("\n");
     const url = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
     const a = document.createElement("a");

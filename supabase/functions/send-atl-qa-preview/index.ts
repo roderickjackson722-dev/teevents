@@ -51,6 +51,13 @@ Deno.serve(async (req) => {
       Deno.env.get("SUPABASE_URL")!,
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
     );
+    const jwt = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+    const { data: u } = jwt ? await supabaseAdmin.auth.getUser(jwt) : { data: { user: null } } as any;
+    const uid = u?.user?.id;
+    const { data: isAdmin } = uid ? await supabaseAdmin.rpc("has_role", { _user_id: uid, _role: "admin" }) : { data: false } as any;
+    if (!isAdmin) {
+      return new Response(JSON.stringify({ error: "Unauthorized" }), { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
     const { data: t } = await supabaseAdmin
       .from("tournaments")
       .select("id, title, contact_email")

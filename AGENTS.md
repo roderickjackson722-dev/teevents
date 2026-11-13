@@ -52,3 +52,4 @@ Proposals and proposal-web have local AGENTS.md isolation rules.
 - Scheduled/background functions and hooks accept only the service key or an internal_cron_tokens x-cron-token (cronAuth helpers); outreach click/unsubscribe links are HMAC-signed (linkSig) and checkout redirects use trusted-origin allowlists, so public callers cannot trigger jobs or steer redirects.
 - Stripe webhooks must verify signatures with a configured signing secret and reject requests otherwise; never fall back to parsing unsigned JSON.
 - Send Email reads organization-owned My Templates through the existing email library; saved-template sends resolve the reviewed version and event-owned recipients server-side without writing automatic event email settings.
+- All My Events and the header event switcher only read existing organization tournaments and set the remembered dashboard tournament_id; they appear only for workspaces with 2+ events so single-event dashboards stay unchanged.

@@ -25,7 +25,7 @@ const solutions = [
   [Landmark, "Payments You Never Chase", "Funds go straight to your Stripe account. We never hold your money."],
   [Globe, "A Website Built For You", "Your rep designs your event page with your logo, colors, and sponsors."],
   [Trophy, "Live Scoring and Leaderboards", "Players score from their phones. Leaderboards update in real time."],
-  [Move, "Changes in Seconds", "Drag-and-drop pairings. Instant updates. No reprinting."],
+  [Move, "Changes in Seconds", "Your director builds your pairings for you. Instant updates when you change anything. No reprinting."],
   [UserRound, "A Named Rep Who Answers", "A dedicated TeeVents rep who knows your event before, during, and after."],
 ] as const;
 const audiences = [
@@ -37,8 +37,9 @@ const audiences = [
   [CalendarRange, "Leagues and Associations", "Season-long leagues with standings, weekly play, and recurring events."],
 ] as const;
 const plans = [
-  ["No Cost to Start", "$0", "A 5% service fee is included in each player's registration total. You keep 100% of your event revenue."],
+  ["No Cost to Start", "$0", "An 8% service fee is included in each player's registration total. You keep 100% of your event revenue."],
   ["Per-Event", "$399", "Per tournament. No platform transaction fees. Keep every dollar of registration revenue."],
+  ["Per-League", "$599", "Per league. Perfect for season-long leagues with multiple events and standings. Everything in Per-Event, plus league standings and leaderboards, and season long reporting. Dedicated TeeVents rep who manages your league."],
   ["Enterprise", "$2,999", "Per year. For courses and clubs running 10 or more events a year."],
 ];
 const quotes = [
@@ -52,6 +53,15 @@ const faqs = [
   ["Can I use my own payment system?", "TeeVents uses Stripe for payments. Setup takes 5 to 10 minutes and your rep will help you connect it."],
   ["How long does setup take?", "Most events are live within a few days of signup. Complex events may take longer, and your rep will give you a timeline during your first call."],
   ["Can I run multiple events per year?", "Yes. Per-Event pricing is $399 per tournament. Enterprise is unlimited for $2,999 per year."],
+];
+
+const comebackTips = [
+  "Start sponsorships early, three to six months out, and sell the audience first: your field size and who those players are.",
+  "Book the course early, four to nine months out for a charity event.",
+  "Open registration eight to twelve weeks before the event, and remind players at 30 days and at 10 days.",
+  "Lock pairings before you print, and tell every player their group, starting hole, and tee time the day before.",
+  "On event day, brief one scorekeeper per group at check in, display the leaderboard in the clubhouse, and verify scores before announcing winners.",
+  "Within one week after the event, send sponsors a short report with photos, field size, and amount raised, and invite them to renew.",
 ];
 
 function Steps({ items }: { items: [string, string][] }) {
@@ -75,7 +85,7 @@ export default function ForOrganizers() {
     <Layout>
       <SEO title="For Tournament Organizers" description="You run the tournament. Your dedicated TeeVents rep builds your event page, registration, pairings, and live leaderboard, free or paid." path="/for-organizers" />
 
-      <Hero eyebrow="FOR TOURNAMENT ORGANIZERS" title="You Run the Tournament. We Build Everything Else." subtitle="From your branded event page to your live leaderboard, your TeeVents rep handles the setup so you can focus on the day that matters.">
+      <Hero eyebrow="FOR TOURNAMENT ORGANIZERS" title="You Run the Tournament. We Build Everything Else." label="Your Virtual Tournament Director" subtitle="From your branded event page to your live leaderboard, your TeeVents rep handles the setup so you can focus on the day that matters. Your virtual Tournament director builds everything for you, and stays on call on event day for live scoring and leaderboard challenges. You can open your event any time and change anything.">
         <p className="mt-6 font-semibold text-secondary">Free for organizers. A dedicated rep on every event, free or paid.</p>
         <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row"><GetStarted /><OutlineLight to="/request-sample">REQUEST A SAMPLE</OutlineLight></div>
       </Hero>
@@ -94,7 +104,7 @@ export default function ForOrganizers() {
 
       <section className="bg-background py-20 md:py-28"><div className={wrap}>
         <SectionHead eyebrow="HOW IT WORKS" title="Three Simple Steps" />
-        <Steps items={[["Tell Us About Your Event", "Share your event details, logo, colors, and goals with your named TeeVents rep. This takes about 15 minutes."], ["We Build It For You", "Your rep sets up your branded site, registration, sponsor page, pairings, and scoring. You review and approve."], ["Run Your Tournament", "Everything is ready to go, with your dedicated partner before, during, and after the event."]]} />
+        <Steps items={[["Tell Us About Your Event", "Share your event details, logo, colors, and goals with your named TeeVents rep. This takes about 15 minutes."], ["We Build It For You", "Your rep sets up your branded site, registration, sponsor page, pairings, and scoring. You review and approve."], ["Run Your Tournament", "Everything is ready to go, with your dedicated partner before, during, and after the event. Your rep is on call on event day for live scoring and leaderboard challenges."]]} />
         <div className="mt-10 text-center"><GetStarted /></div>
       </div></section>
 
@@ -115,7 +125,7 @@ export default function ForOrganizers() {
 
       <section className="bg-muted/40 py-20 md:py-28"><div className={wrap}>
         <SectionHead title="Simple Pricing for Every Organizer" subtitle="Start free. Pay per event. Or run unlimited events with Enterprise." />
-        <div className="grid gap-6 md:grid-cols-3">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {plans.map(([n, p, d]) => (
             <motion.div {...fade} key={n} className="rounded-xl border border-border bg-card p-7 text-center shadow-sm">
               <h3 className="font-body text-lg font-semibold text-foreground">{n}</h3>
@@ -147,7 +157,7 @@ export default function ForOrganizers() {
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {toolbox.map(([I, t]) => <motion.li {...fade} key={t} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"><I className="h-5 w-5 shrink-0 text-secondary" aria-hidden="true" /><span className="font-medium text-foreground">{t}</span></motion.li>)}
         </ul>
-        <Callout>You are never on your own. Your rep contacts you within 1 business day of signup.</Callout>
+        <Callout>You are never on your own. Your director builds your event from what you upload. You can open it any time and change anything. Your rep contacts you within 1 business day of signup.</Callout>
       </div></section>
 
       <section className="bg-background py-20 md:py-28"><div className={wrap}>
@@ -157,6 +167,14 @@ export default function ForOrganizers() {
       </div></section>
 
       <section className="bg-muted/40 py-20 md:py-28"><div className="container mx-auto max-w-3xl px-4">
+        <SectionHead title="What Makes An Event Come Back Next Year" />
+        <ul className="space-y-3">
+          {comebackTips.map((t) => <li key={t} className="flex gap-3 rounded-lg border border-border bg-card p-4 text-foreground"><Check className="mt-1 h-4 w-4 shrink-0 text-secondary" aria-hidden="true" /><span>{t}</span></li>)}
+        </ul>
+        <p className="mt-6 text-center text-lg font-medium text-foreground">Your director does the setup for you, so the months of preparation do not fall on you alone.</p>
+      </div></section>
+
+      <section className="bg-background py-20 md:py-28"><div className="container mx-auto max-w-3xl px-4">
         <SectionHead title="Common Questions From Organizers" />
         <Accordion type="single" collapsible className="rounded-xl border border-border bg-card px-6">
           {faqs.map(([q, a]) => <AccordionItem key={q} value={q}><AccordionTrigger className="text-left font-semibold">{q}</AccordionTrigger><AccordionContent className="text-base text-muted-foreground"><span className="flex gap-2"><Check className="mt-1 h-4 w-4 shrink-0 text-secondary" aria-hidden="true" />{a}</span></AccordionContent></AccordionItem>)}

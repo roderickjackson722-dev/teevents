@@ -39,6 +39,7 @@ import { Route as CollegeIndexRouteImport } from './routes/college/index'
 import { Route as CollegeSlugRouteImport } from './routes/college/$slug'
 import { Route as DashboardEmailSendRouteImport } from './routes/dashboard.email-send'
 import { Route as DashboardEmailTemplatesRouteImport } from './routes/dashboard.email-templates'
+import { Route as DashboardMyEventsRouteImport } from './routes/dashboard.my-events'
 import { Route as EnterpriseSkinsPayoutsRouteImport } from './routes/enterprise.skins-payouts'
 import { Route as LeagueSlugRouteImport } from './routes/league/$slug'
 import { Route as PairingsSlugRouteImport } from './routes/pairings/$slug'
@@ -228,6 +229,11 @@ const DashboardEmailSendRoute = DashboardEmailSendRouteImport.update({
 const DashboardEmailTemplatesRoute = DashboardEmailTemplatesRouteImport.update({
   id: '/dashboard/email-templates',
   path: '/dashboard/email-templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardMyEventsRoute = DashboardMyEventsRouteImport.update({
+  id: '/dashboard/my-events',
+  path: '/dashboard/my-events',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EnterpriseSkinsPayoutsRoute = EnterpriseSkinsPayoutsRouteImport.update({
@@ -485,6 +491,7 @@ export interface FileRoutesByFullPath {
   '/college/$slug': typeof CollegeSlugRoute
   '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
+  '/dashboard/my-events': typeof DashboardMyEventsRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -557,6 +564,7 @@ export interface FileRoutesByTo {
   '/college/$slug': typeof CollegeSlugRoute
   '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
+  '/dashboard/my-events': typeof DashboardMyEventsRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -630,6 +638,7 @@ export interface FileRoutesById {
   '/college/$slug': typeof CollegeSlugRoute
   '/dashboard/email-send': typeof DashboardEmailSendRoute
   '/dashboard/email-templates': typeof DashboardEmailTemplatesRoute
+  '/dashboard/my-events': typeof DashboardMyEventsRoute
   '/enterprise/skins-payouts': typeof EnterpriseSkinsPayoutsRoute
   '/league/$slug': typeof LeagueSlugRoute
   '/pairings/$slug': typeof PairingsSlugRoute
@@ -704,6 +713,7 @@ export interface FileRouteTypes {
     | '/college/$slug'
     | '/dashboard/email-send'
     | '/dashboard/email-templates'
+    | '/dashboard/my-events'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -776,6 +786,7 @@ export interface FileRouteTypes {
     | '/college/$slug'
     | '/dashboard/email-send'
     | '/dashboard/email-templates'
+    | '/dashboard/my-events'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -848,6 +859,7 @@ export interface FileRouteTypes {
     | '/college/$slug'
     | '/dashboard/email-send'
     | '/dashboard/email-templates'
+    | '/dashboard/my-events'
     | '/enterprise/skins-payouts'
     | '/league/$slug'
     | '/pairings/$slug'
@@ -921,6 +933,7 @@ export interface RootRouteChildren {
   CollegeSlugRoute: typeof CollegeSlugRoute
   DashboardEmailSendRoute: typeof DashboardEmailSendRoute
   DashboardEmailTemplatesRoute: typeof DashboardEmailTemplatesRoute
+  DashboardMyEventsRoute: typeof DashboardMyEventsRoute
   EnterpriseSkinsPayoutsRoute: typeof EnterpriseSkinsPayoutsRoute
   LeagueSlugRoute: typeof LeagueSlugRoute
   PairingsSlugRoute: typeof PairingsSlugRoute
@@ -1173,6 +1186,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard/email-templates'
       fullPath: '/dashboard/email-templates'
       preLoaderRoute: typeof DashboardEmailTemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard/my-events': {
+      id: '/dashboard/my-events'
+      path: '/dashboard/my-events'
+      fullPath: '/dashboard/my-events'
+      preLoaderRoute: typeof DashboardMyEventsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/enterprise/skins-payouts': {
@@ -1500,6 +1520,7 @@ const rootRouteChildren: RootRouteChildren = {
   CollegeSlugRoute: CollegeSlugRoute,
   DashboardEmailSendRoute: DashboardEmailSendRoute,
   DashboardEmailTemplatesRoute: DashboardEmailTemplatesRoute,
+  DashboardMyEventsRoute: DashboardMyEventsRoute,
   EnterpriseSkinsPayoutsRoute: EnterpriseSkinsPayoutsRoute,
   LeagueSlugRoute: LeagueSlugRoute,
   PairingsSlugRoute: PairingsSlugRoute,

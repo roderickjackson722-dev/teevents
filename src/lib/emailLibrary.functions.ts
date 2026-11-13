@@ -47,7 +47,7 @@ export const previewLibraryEmail=createServerFn({method:'POST'}).middleware([req
  const h=await import('./emailLibrary.server');const {admin,organization}=await h.access(context,data.organizationId,data.enterprise);const event=await h.ownedEvent(admin,data.organizationId,data.eventId,data.enterprise);
  let reg:any;
  if(data.enterprise&&data.filters){const audience=await h.pastAudience(admin,data.organizationId,data.filters);reg=audience.rows.find(r=>r.id===data.sampleRegistrationId)||audience.rows[0];}
- else {const {data:row}=await admin.from('tournament_registrations').select('*').eq('tournament_id',event.id).order('created_at').limit(1).maybeSingle();reg=row;}
+ else {let query=admin.from('tournament_registrations').select('*').eq('tournament_id',event.id);if(data.sampleRegistrationId)query=query.eq('id',data.sampleRegistrationId);const {data:row}=await query.order('created_at').limit(1).maybeSingle();reg=row;}
  if(!reg) reg={id:null,first_name:'Sample',last_name:'Player',email:'player@example.com',tournament_id:event.id};
  return {...await h.rendered(admin,event,organization,data.template,reg,data.enterprise?'https://www.teevents.golf/api/public/enterprise-email-unsubscribe?sample=1':undefined),sample:true};
 });

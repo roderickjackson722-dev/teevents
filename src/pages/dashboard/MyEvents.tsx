@@ -60,7 +60,7 @@ export default function MyEvents() {
     const next = new URLSearchParams();
     for (const k of ["admin_org", "sample_org", "sample"]) { const v = searchParams.get(k); if (v) next.set(k, v); }
     next.set("tournament_id", id);
-    navigate(`/dashboard?${next.toString()}`);
+    navigate(`/dashboard/tournaments?${next.toString()}`);
   };
 
   return (

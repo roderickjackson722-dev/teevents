@@ -275,7 +275,10 @@ export default function AdminLeadMagnets() {
 
   const sendFollowups = async () => {
     try {
-      const res = await fetch("/api/public/hooks/lead-magnet-followups", { method: "POST" });
+      const res = await fetch("/api/public/hooks/lead-magnet-followups", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${(await supabase.auth.getSession()).data.session?.access_token ?? ""}` },
+      });
       const body = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(body?.error || "Failed");
       toast.success(`Sent ${body.sent ?? 0} follow-up email(s)`);

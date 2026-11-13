@@ -32,6 +32,7 @@ const CustomDomain = () => {
             <p className="text-muted-foreground mt-1">Give your tournament a professional web address</p>
           </div>
         </div>
+        <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
 
         <div className="prose prose-sm max-w-none space-y-8 text-muted-foreground">
           {/* Introduction */}

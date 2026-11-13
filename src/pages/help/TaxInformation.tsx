@@ -12,6 +12,7 @@ const TaxInformation = () => (
       </Link>
 
       <h1 className="text-3xl font-display font-bold text-foreground mb-2">Tax Information</h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-muted-foreground mb-8">Understanding tax reporting for tournament revenue processed through TeeVents.</p>
 
       <div className="space-y-8">
@@ -21,7 +22,7 @@ const TaxInformation = () => (
             Under IRS rules, payment platforms like TeeVents (via Stripe) are required to issue a 1099-K form if your organization processes more than <strong>$600</strong> in gross payments in a calendar year.
           </p>
           <div className="bg-muted/50 rounded-lg p-4 text-sm space-y-2">
-            <p><strong>Threshold:</strong> $600 in gross payments per calendar year (2024 IRS requirement)</p>
+            <p><strong>Threshold:</strong> $600 in gross payments per calendar year (IRS requirement)</p>
             <p><strong>Issued by:</strong> Stripe (as the payment processor)</p>
             <p><strong>Delivery:</strong> Mailed and available digitally via your Stripe Express dashboard by January 31</p>
             <p><strong>What it reports:</strong> Gross payment volume — not net income after fees</p>
@@ -33,7 +34,7 @@ const TaxInformation = () => (
           <p className="text-muted-foreground mb-4">TeeVents provides a downloadable Annual Tax Summary from your Finances dashboard that includes:</p>
           <ul className="space-y-2 ml-6 list-disc text-muted-foreground">
             <li>Total gross revenue collected</li>
-            <li>Total platform fees paid (5%)</li>
+            <li>Total platform fees paid (8%)</li>
             <li>Total net amount received</li>
             <li>Breakdown by tournament</li>
           </ul>

@@ -5,13 +5,14 @@ import { ArrowLeft, RotateCcw, Shield, AlertTriangle, CheckCircle } from "lucide
 
 const RefundsChargebacks = () => (
   <Layout>
-    <SEO title="Refunds & Chargebacks | TeeVents Help" description="How refund requests, chargebacks, and the 15% protective hold work together to protect tournament organizers." />
+    <SEO title="Refunds & Chargebacks | TeeVents Help" description="How refund requests, chargebacks, and the 18% protective hold work together to protect tournament organizers." />
     <div className="max-w-3xl mx-auto px-4 py-16">
       <Link to="/help" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-6">
         <ArrowLeft className="h-4 w-4 mr-1" /> Back to Help Center
       </Link>
 
       <h1 className="text-3xl font-display font-bold text-foreground mb-2">Refunds & Chargebacks</h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-muted-foreground mb-8">How refund requests and chargeback disputes are handled on TeeVents.</p>
 
       <div className="space-y-8">
@@ -47,7 +48,7 @@ const RefundsChargebacks = () => (
         <section>
           <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2"><Shield className="h-5 w-5 text-primary" /> How the Hold Protects You</h2>
           <p className="text-muted-foreground mb-4">
-            The 15% protective hold exists specifically to cover potential chargebacks and refunds. Here's how it works:
+            The 18% protective hold exists specifically to cover potential chargebacks and refunds. Here's how it works:
           </p>
           <div className="bg-primary/5 border border-primary/20 rounded-lg p-5 space-y-2 text-sm text-muted-foreground">
             <p><CheckCircle className="h-4 w-4 text-primary inline mr-1" /> If a chargeback occurs, it's covered by the held reserve — not your bank account</p>

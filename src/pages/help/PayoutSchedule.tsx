@@ -12,6 +12,7 @@ const PayoutSchedule = () => (
       </Link>
 
       <h1 className="text-3xl font-display font-bold text-foreground mb-2">Payout Schedule</h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-muted-foreground mb-8">How and when you receive your tournament funds.</p>
 
       <div className="space-y-8">
@@ -22,7 +23,7 @@ const PayoutSchedule = () => (
           </p>
           <ol className="space-y-2 ml-6 list-decimal text-muted-foreground">
             <li>Stripe charges the golfer the full amount</li>
-            <li>TeeVents' 5% platform fee is automatically deducted</li>
+            <li>TeeVents' 8% platform fee is automatically deducted</li>
             <li>Stripe's processing fee (2.9% + $0.30) is deducted</li>
             <li>Net proceeds are deposited directly into <strong>your connected Stripe account</strong></li>
           </ol>

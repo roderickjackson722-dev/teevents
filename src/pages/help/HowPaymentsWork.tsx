@@ -7,7 +7,7 @@ const HowPaymentsWork = () => (
   <Layout>
     <SEO
       title="How Payments Work | TeeVents"
-      description="Learn how TeeVents processes payments using Stripe Connect. Automatic 5% platform fee, instant splits, and direct deposits to your Stripe account."
+      description="Learn how TeeVents processes payments using Stripe Connect. Automatic 8% platform fee, instant splits, and direct deposits to your Stripe account."
       path="/help/how-payments-work"
     />
     <div className="max-w-4xl mx-auto px-4 py-16">
@@ -16,6 +16,7 @@ const HowPaymentsWork = () => (
       </Link>
 
       <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">How Payments Work</h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-lg text-muted-foreground mb-10">
         TeeVents uses Stripe Connect to split every payment automatically at checkout. You never have to chase funds or wait for payouts from us — <strong>we never hold your money</strong>.
       </p>
@@ -28,7 +29,7 @@ const HowPaymentsWork = () => (
         <div className="grid sm:grid-cols-4 gap-4">
           {[
             { step: "1", icon: CreditCard, title: "Golfer Pays", desc: "Golfer registers and pays the full amount at checkout (credit card, Apple Pay, Google Pay, Cash App)." },
-            { step: "2", icon: DollarSign, title: "Stripe Splits", desc: "Stripe automatically deducts the 5% TeeVents platform fee and the ~2.9% + $0.30 Stripe processing fee." },
+            { step: "2", icon: DollarSign, title: "Stripe Splits", desc: "Stripe automatically deducts the 8% TeeVents platform fee and the ~2.9% + $0.30 Stripe processing fee." },
             { step: "3", icon: Building, title: "Organizer Receives", desc: "Net proceeds are routed to your connected Stripe account immediately. Funds become available to withdraw on your standard schedule (typically T+2 business days; new accounts may have a 2–7 day Stripe review)." },
             { step: "4", icon: Wallet, title: "You Withdraw", desc: "Transfer funds from your Stripe account to your bank whenever you want. Set up automatic daily or weekly transfers." },
           ].map((s) => (
@@ -44,19 +45,19 @@ const HowPaymentsWork = () => (
         </div>
       </section>
 
-      {/* The 5% Platform Fee */}
+      {/* The 8% Platform Fee */}
       <section className="mb-12">
         <h2 className="text-xl font-semibold text-foreground mb-4 flex items-center gap-2">
-          <DollarSign className="h-5 w-5 text-primary" /> The 5% Platform Fee
+          <DollarSign className="h-5 w-5 text-primary" /> The 8% Platform Fee
         </h2>
         <p className="text-muted-foreground mb-6">
-          TeeVents charges a <strong>5% platform fee</strong> on every transaction. This covers the full tournament management platform — your custom website, live scoring, leaderboards, pairings, budget tools, sponsor management, and white-glove support. There are no monthly subscription fees beyond your chosen plan.
+          On the No Cost to Start plan, TeeVents charges an <strong>8% platform fee</strong>. Paid plans, Per-Event, Per-League, and Enterprise, have 0% TeeVents platform fees. This covers the full tournament management platform — your custom website, live scoring, leaderboards, pairings, budget tools, sponsor management, and white-glove support. There are no monthly subscription fees beyond your chosen plan.
         </p>
 
         <div className="grid sm:grid-cols-2 gap-5">
           <div className="bg-card border-2 border-primary/30 rounded-xl p-5">
             <h3 className="font-semibold text-foreground mb-2">Option A: Pass Fees to Golfers (Default)</h3>
-            <p className="text-sm text-muted-foreground mb-3">The 5% fee and Stripe processing fee are added at checkout. Your organization receives 100% of the registration price.</p>
+            <p className="text-sm text-muted-foreground mb-3">The 8% fee and Stripe processing fee are added at checkout. Your organization receives 100% of the registration price.</p>
             <div className="text-sm bg-muted/50 rounded p-3 space-y-1">
               <div className="flex justify-between"><span>Registration</span><span>$150.00</span></div>
               <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>$7.50</span></div>
@@ -108,7 +109,7 @@ const HowPaymentsWork = () => (
 
       {/* What TeeVents Charges Apply To */}
       <section className="mb-12">
-        <h2 className="text-xl font-semibold text-foreground mb-4">What Transactions Include the 5% Fee?</h2>
+        <h2 className="text-xl font-semibold text-foreground mb-4">What Transactions Include the 8% Fee?</h2>
         <div className="grid sm:grid-cols-2 gap-3">
           {[
             { label: "Player Registrations", included: true },
@@ -165,9 +166,9 @@ const HowPaymentsWork = () => (
           {[
             { q: "Do I need a Stripe account?", a: "Yes — during onboarding, TeeVents walks you through connecting (or creating) a free Stripe account. This is where your funds are deposited." },
             { q: "Can I use PayPal instead?", a: "No. Payouts run through Stripe Connect only, which deposits your net proceeds directly to your connected bank account. A mailed check is available on request." },
-            { q: "Is there a monthly fee?", a: "No monthly fees for the platform fee itself. You only pay the 5% when transactions occur. Your chosen plan (Starter or Premium) is a one-time per-tournament fee." },
+            { q: "Is there a monthly fee?", a: "No monthly fees for the platform fee itself. You only pay the 8% when transactions occur. Your chosen plan (Starter or Premium) is a one-time per-tournament fee." },
             { q: "What if a golfer requests a refund?", a: "You set your own refund policy. Approved refunds are processed through Stripe and deducted from your connected account balance." },
-            { q: "Are there any hidden fees?", a: "No. The only fees are the transparent 5% platform fee and Stripe's standard processing fee (~2.9% + $0.30). Both are visible at checkout and in your dashboard." },
+            { q: "Are there any hidden fees?", a: "No. The only fees are the transparent 8% platform fee and Stripe's standard processing fee (~2.9% + $0.30). Both are visible at checkout and in your dashboard." },
           ].map((item, i) => (
             <div key={i} className="bg-card border border-border rounded-lg p-4">
               <h4 className="font-semibold text-foreground text-sm mb-1">{item.q}</h4>

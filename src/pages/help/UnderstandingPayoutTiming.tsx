@@ -18,6 +18,7 @@ const UnderstandingPayoutTiming = () => (
       <h1 className="text-3xl md:text-4xl font-display font-bold text-foreground mb-2">
         Understanding Payout Timing
       </h1>
+      <p className="text-muted-foreground mb-4">Your director sets this up for you. If anything here is unclear, your rep can walk through it with you.</p>
       <p className="text-lg text-muted-foreground mb-10">
         Every payment is recorded in your TeeVents dashboard the moment a golfer
         registers. For brand-new Stripe Connect accounts, Stripe holds the funds
@@ -36,7 +37,7 @@ const UnderstandingPayoutTiming = () => (
         </p>
         <ul className="space-y-2 ml-6 list-disc text-sm text-muted-foreground">
           <li>Gross amount the golfer paid</li>
-          <li>5% TeeVents platform fee</li>
+          <li>8% TeeVents platform fee</li>
           <li>Stripe processing fee (~2.9% + $0.30)</li>
           <li>Net amount routed to your Stripe account</li>
           <li>Golfer name, email, payment method, and Stripe IDs</li>
@@ -76,7 +77,7 @@ const UnderstandingPayoutTiming = () => (
         </h2>
         <p className="text-muted-foreground mb-4">
           TeeVents uses <strong>Stripe Direct Charges</strong>: every registration is
-          charged directly on your connected Stripe account, and the 5% TeeVents fee is
+          charged directly on your connected Stripe account, and the 8% TeeVents fee is
           taken as an application fee at the time of the charge. Look here:
         </p>
         <ol className="space-y-3 ml-6 list-decimal text-sm text-muted-foreground">

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, ExternalLink, Loader2, Search, Trophy, Users, DollarSign, Calendar, Building2, Edit3, Plus, Send, MailCheck, UserPlus, Eye, ChevronDown, ChevronUp, Pencil, KeyRound, Trash2, X, Globe } from "lucide-react";
+import AdminFeeSplitSetting from "@/components/admin/AdminFeeSplitSetting";
 import AdminFeatureToggles from "@/components/admin/AdminFeatureToggles";
 import AdminCreateTournamentDialog from "@/components/admin/AdminCreateTournamentDialog";
 import SampleModePanel from "@/components/admin/SampleModePanel";
@@ -661,25 +662,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
                                 {r.org_stripe_account_id && <Badge variant="secondary">Stripe connected</Badge>}
                               </div>
                             )}
-                            <div className="flex flex-wrap items-center gap-3">
-                              <button
-                                onClick={() => togglePassFees(r)}
-                                disabled={togglingFees === r.id}
-                                className={`inline-flex items-center gap-2 text-sm px-3 py-1.5 rounded-md font-medium transition-colors ${
-                                  r.pass_fees_to_registrants
-                                    ? "bg-primary/15 text-primary hover:bg-primary/25"
-                                    : "bg-muted text-muted-foreground hover:bg-muted/80"
-                                }`}
-                              >
-                                <DollarSign className="h-4 w-4" />
-                                {r.pass_fees_to_registrants ? "Fees Passed to Registrants ✓" : "Pass Fees to Registrants"}
-                              </button>
-                              <span className="text-xs text-muted-foreground">
-                                {r.pass_fees_to_registrants
-                                  ? "Platform + Stripe fees are added to the registration total."
-                                  : "Organizer absorbs the platform + Stripe fees."}
-                              </span>
-                            </div>
+                            <AdminFeeSplitSetting tournamentId={r.id} callAdminApi={callAdminApi} />
                             {r.organization_id ? (
                               <AdminFeatureToggles
                                 organizationId={r.organization_id}

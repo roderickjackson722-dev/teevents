@@ -49,7 +49,7 @@ const Services = () => {
       />
 
       <DedicatedRepBadge />
-      <DedicatedRepSection />
+      <DedicatedRepSection extraLine="Your virtual Tournament director builds it, sets it up, and stays on call on event day for live scoring and leaderboard challenges." />
       <section className="bg-golf-cream py-20">
         <div className="container mx-auto px-4 max-w-5xl">
           <motion.p
@@ -86,6 +86,21 @@ const Services = () => {
           <p className="text-center text-sm text-muted-foreground italic mb-16">
             *Effective tournament planning starts 1 year prior to event date.
           </p>
+
+          <h2 className="text-3xl font-display font-bold text-primary text-center mb-10">
+            Two Ways To Work With Us
+          </h2>
+
+          <div className="grid gap-6 md:grid-cols-2 mb-16">
+            <div className="bg-card p-6 rounded-lg border border-border">
+              <h3 className="font-display text-xl font-bold text-primary">Software With Your Director</h3>
+              <p className="mt-3 text-foreground/80 leading-relaxed">Your director builds your branded event page, registration, pairings, format, mobile scoring, and live leaderboard for you. You run your tournament, and your rep is on call on event day. Start at no cost with the 8% service fee paid by players, or pay $399 per event with no platform fee.</p>
+            </div>
+            <div className="bg-card p-6 rounded-lg border border-border">
+              <h3 className="font-display text-xl font-bold text-primary">Full Service Management, On Site</h3>
+              <p className="mt-3 text-foreground/80 leading-relaxed">A dedicated tournament manager works with you from agreement through event day and closeout, on site from check in through awards. Contact us for a quote. The price is shown in your proposal after a meeting, starting at $5,000 per event.</p>
+            </div>
+          </div>
 
           <h2 className="text-3xl font-display font-bold text-primary text-center mb-10">
             Who We Serve

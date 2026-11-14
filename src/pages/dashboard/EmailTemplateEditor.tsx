@@ -1989,7 +1989,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
           )}
           {(templateKind === "sponsor" || templateKind === "vendor") && (
             <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-4 text-sm">
-              <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and will apply automatically to future {templateKind} confirmations. Bulk resend from this screen currently supports registrants only — use the {templateKind === "sponsor" ? "Sponsors" : "Vendors"} page to manage individual {templateKind} records.
+              <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and applies automatically to future {templateKind} confirmations. You can also send it now to the {templateKind === "sponsor" ? "sponsors" : "vendors"} listed below.
             </div>
           )}
           {templateKind === "receipt" && selectedTournament && (
@@ -2008,8 +2008,31 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               }
             />
           )}
-          {templateKind !== "receipt" && templateKind !== "sponsor" && templateKind !== "vendor" && templateKind !== "sponsor_day_of" && templateKind !== "sponsorship_day_of" && (
+          {templateKind !== "receipt" && templateKind !== "sponsor_day_of" && templateKind !== "sponsorship_day_of" && (
           <>
+          {templateKind !== "day_before" && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Label className="text-sm font-medium">Send to</Label>
+              <Select value={audience} onValueChange={(v) => setAudience(v as "players" | "sponsors" | "vendors")}>
+                <SelectTrigger className="w-[200px]" aria-label="Send to">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="players">Players</SelectItem>
+                  <SelectItem value="sponsors">Sponsors</SelectItem>
+                  <SelectItem value="vendors">Vendors</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {audience === "players"
+                  ? "The player roster from registrations."
+                  : audience === "sponsors"
+                    ? "Companies that signed up as sponsors for this event."
+                    : "Companies that signed up as vendors for this event."}
+              </p>
+            </div>
+          )}
+          {audience === "players" && (
           <div className="bg-card rounded-lg border p-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -2143,6 +2166,71 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               </div>
             )}
           </div>
+          )}
+
+          {audience !== "players" && (
+            <div className="bg-card rounded-lg border p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  {audience === "sponsors" ? "Sponsors" : "Vendors"} ({filteredOthers.length})
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={selectAll} disabled={otherLoading || filteredOthers.length === 0}>
+                    {selectedRecipients.length === filteredOthers.length && filteredOthers.length > 0 ? "Deselect All" : "Select All"}
+                  </Button>
+                  <Badge variant="secondary">{selectedRecipients.length} selected</Badge>
+                </div>
+              </div>
+              <div className="mb-3"><PaymentFilterToggle /></div>
+              <Input
+                placeholder="Search by company or email…"
+                value={recipientSearch}
+                onChange={(e) => setRecipientSearch(e.target.value)}
+                className="mb-3"
+              />
+              {otherLoading ? (
+                <p className="text-muted-foreground text-sm text-center py-6">Loading {audience}…</p>
+              ) : visibleOthers.length === 0 ? (
+                <p className="text-muted-foreground text-sm text-center py-6">
+                  {otherRows.length === 0
+                    ? `No ${audience} have signed up for this event yet.`
+                    : `No ${paymentFilter === "all" ? "" : paymentFilter + " "}${audience} match this filter.`}
+                </p>
+              ) : (
+                <div className="max-h-[400px] overflow-y-auto divide-y">
+                  {visibleOthers.map(r => (
+                    <div key={r.id} className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">
+                      <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                        <input type="checkbox" checked={selectedRecipients.includes(r.id)} onChange={() => toggleRecipient(r.id)} className="rounded" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{r.company}</p>
+                          <p className="text-xs text-muted-foreground truncate">{r.email || "No email on file"}</p>
+                          {r.contact_name && (
+                            <p className="text-xs text-muted-foreground truncate">Contact: {r.contact_name}</p>
+                          )}
+                        </div>
+                      </label>
+                      <DeliveryStatus id={r.id} />
+                      <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
+                        {r.payment_status || "—"}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1 h-8"
+                        disabled={sending || !r.email}
+                        title={`Send ${TEMPLATE_LABELS[templateKind]} to ${r.email || r.company}`}
+                        onClick={() => requestSend([r.id])}
+                      >
+                        <Send className="h-3.5 w-3.5" /> {requirePreview ? "Preview" : "Send"}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end gap-2">
             <Button onClick={() => (requirePreview ? requestSend() : setConfirmSendOpen(true))} disabled={sending || selectedRecipients.length === 0} className="gap-2 bg-secondary text-primary hover:bg-secondary/80">

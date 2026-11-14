@@ -21,6 +21,7 @@ import {
   RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil, CalendarClock, ShoppingBag,
   ArrowUp,
   ArrowDown,
+  Building2,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -500,6 +501,47 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState("");
+  /**
+   * Which list the Send tab targets: the player roster, sponsor sign-ups or
+   * vendor sign-ups. Sponsors and vendors live in their own tables, so the list
+   * is loaded only while one of those is chosen.
+   */
+  const [audience, setAudience] = useState<"players" | "sponsors" | "vendors">("players");
+  const [otherRows, setOtherRows] = useState<any[]>([]);
+  const [otherLoading, setOtherLoading] = useState(false);
+
+  useEffect(() => {
+    setSelectedRecipients([]);
+    setRecipientSearch("");
+    if (audience === "players" || !selectedTournament) { setOtherRows([]); return; }
+    let live = true;
+    setOtherLoading(true);
+    const table = audience === "sponsors" ? "sponsor_registrations" : "vendor_registrations";
+    (supabase.from(table as any).select("*").eq("tournament_id", selectedTournament) as any)
+      .then(({ data, error }: any) => {
+        if (!live) return;
+        if (error) { toast.error(`Could not load ${audience}.`); setOtherRows([]); return; }
+        setOtherRows((data || []).map((x: any) => {
+          const contact = String(x.contact_name || "").trim();
+          const [first, ...rest] = contact.split(/\s+/);
+          const company = String(x.company_name || x.vendor_name || contact || "Unnamed").trim();
+          return {
+            id: x.id,
+            email: x.contact_email || "",
+            company,
+            contact_name: contact,
+            payment_status: x.payment_status || "",
+            first_name: first || company,
+            last_name: rest.join(" "),
+            sponsor_name: company,
+            booth_location: x.booth_location || "",
+            check_in_code: x.check_in_code || "",
+          };
+        }));
+      })
+      .finally(() => { if (live) setOtherLoading(false); });
+    return () => { live = false; };
+  }, [audience, selectedTournament]);
   // Day-before reminder scheduling + add-ons
   const [addons, setAddons] = useState<any[]>([]);
   const [sendAt, setSendAt] = useState<string>("");
@@ -871,6 +913,8 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   const handleTemplateKindChange = (kind: TemplateKind) => {
     setSavedTemplateId("");
     setTemplateKind(kind);
+    // Sponsor / vendor templates open the Send tab on that list.
+    setAudience(kind === "vendor" ? "vendors" : kind === "sponsor" ? "sponsors" : "players");
     const t = tournaments.find((x: any) => x.id === selectedTournament);
     loadConfigFor(t, kind);
   };

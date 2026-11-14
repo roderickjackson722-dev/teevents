@@ -2317,15 +2317,18 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
       </>}
       {requirePreview && !savedTemplate && emailPreview && (() => {
         const unsaved = !!savedSnapshot && savedSnapshot !== JSON.stringify(config);
+        const sponsorPreview = emailPreview.kind === "registrants" && audience !== "players";
         const recips = emailPreview.kind === "registrants"
-          ? templateEmailRecipients(registrations, emailPreview.ids, altEmails, altMode)
+          ? templateEmailRecipients(sponsorPreview ? otherRows : registrations, emailPreview.ids, altEmails, altMode)
           : dayBeforeAllRecipients(registrations);
         const sampleIds = emailPreview.kind === "registrants"
           ? emailPreview.ids
           : registrations.filter((r: any) => (r.payment_status || "").toLowerCase() === "paid").map((r: any) => r.id);
         const sampleOptions = sampleIds.map((id) => {
-          const r: any = registrations.find((x: any) => x.id === id);
-          return { id, label: `${r?.first_name || ""} ${r?.last_name || ""}`.trim() || "Player" };
+          const r: any = (sponsorPreview ? otherRows : registrations).find((x: any) => x.id === id);
+          return sponsorPreview
+            ? { id, label: r?.company || "Recipient" }
+            : { id, label: `${r?.first_name || ""} ${r?.last_name || ""}`.trim() || "Player" };
         });
         const scheduledFor = emailPreview.kind === "day_before_schedule" && sendAt ? new Date(sendAt).toLocaleString() : undefined;
         return (
@@ -2347,7 +2350,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               else await saveSchedule();
             }}
             renderContent={(id) => {
-              const out = renderPreviewFor(id);
+              const out = renderPreviewForAudience(id);
               return (
                 <div className="space-y-2">
                   <p><span className="font-medium text-foreground">Subject:</span> {out.subject}</p>

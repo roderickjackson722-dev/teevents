@@ -15,6 +15,33 @@ function replaceVars(text: string, vars: Record<string, string>): string {
   return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => vars[k] ?? "");
 }
 
+/**
+ * Sponsor / vendor sign-up rows are normalized into the same recipient shape the
+ * email loop expects: the contact person's first name fills {{first_name}} and
+ * the company (or vendor) name fills {{sponsor_name}} / {{company_name}}.
+ */
+function sponsorRecipient(row: any) {
+  const contact = String(row.contact_name || "").trim();
+  const [first, ...rest] = contact.split(/\s+/);
+  const org = String(row.company_name || row.vendor_name || contact || "").trim();
+  return {
+    id: row.id,
+    tournament_id: row.tournament_id,
+    email: row.contact_email || "",
+    first_name: first || org,
+    last_name: rest.join(" "),
+    sponsor_name: org,
+    company_name: org,
+    contact_name: contact || org,
+    contact_phone: row.contact_phone || "",
+    payment_status: row.payment_status || "",
+    booth_location: row.booth_location || "",
+    check_in_code: row.check_in_code || "",
+    business_type: row.business_type || "",
+    is_sponsor_recipient: true,
+  };
+}
+
 function formatTeeTime(value: unknown): string {
   const raw = String(value || "").trim();
   const match = /^(\d{1,2}):(\d{2})/.exec(raw);
@@ -269,6 +296,13 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { registration_ids, use_custom_template, update_email, template_kind, email_overrides, service_run } = body;
+    /**
+     * Which list the send delivers to. Sponsors and vendors live in their own
+     * sign-up tables, so the organizer's Send tab can target players, sponsors
+     * or vendors with the same template. Anything else stays players.
+     */
+    const audience: "players" | "sponsors" | "vendors" =
+      body.audience === "sponsors" || body.audience === "vendors" ? body.audience : "players";
 
     // Authenticate the calling user. Internal scheduled sends pass service_run
     // with the service-role key as the bearer token instead of a user session.
@@ -350,24 +384,41 @@ Deno.serve(async (req) => {
       throw new Error("Missing registration_ids array");
     }
 
-    // Get registrations with tournament info
-    const { data: registrations, error: regErr } = await supabaseAdmin
-      .from("tournament_registrations")
-      .select("id, first_name, last_name, email, tournament_id, qr_token, survey_response_token, scoring_code, group_scoring_code, group_number, group_id, tee_time")
-      .in("id", registration_ids);
-
-    if (regErr || !registrations || registrations.length === 0) {
-      throw new Error("Registrations not found");
+    // Get recipients with tournament info: players from the registration roster,
+    // sponsors / vendors from their own sign-up tables.
+    let registrations: any[] = [];
+    if (audience === "players") {
+      const { data, error } = await supabaseAdmin
+        .from("tournament_registrations")
+        .select("id, first_name, last_name, email, tournament_id, qr_token, survey_response_token, scoring_code, group_scoring_code, group_number, group_id, tee_time")
+        .in("id", registration_ids);
+      if (error || !data || data.length === 0) throw new Error("Registrations not found");
+      registrations = data as any[];
+    } else {
+      const table = audience === "sponsors" ? "sponsor_registrations" : "vendor_registrations";
+      const { data, error } = await supabaseAdmin
+        .from(table)
+        .select("id, tournament_id, company_name, vendor_name, contact_name, contact_email, contact_phone, payment_status, booth_location, check_in_code, business_type")
+        .in("id", registration_ids);
+      if (error || !data || data.length === 0) {
+        throw new Error(audience === "sponsors" ? "Sponsor records not found" : "Vendor records not found");
+      }
+      // One send always belongs to one event.
+      const events = new Set(data.map((r: any) => String(r.tournament_id)));
+      if (events.size !== 1) throw new Error("Choose sponsors or vendors from a single event.");
+      registrations = data.map(sponsorRecipient);
     }
 
     // Scoring codes live at the GROUP level. Build a map of group_number -> code from
     // every registration in the tournament so the emailed code always matches the code
     // shown next to the player in Players & Pairings.
     const tId = registrations[0].tournament_id;
-    const { data: allRegs } = await supabaseAdmin
-      .from("tournament_registrations")
-      .select("group_number, group_id, first_name, last_name, scoring_code, group_scoring_code")
-      .eq("tournament_id", tId);
+    const { data: allRegs } = audience === "players"
+      ? await supabaseAdmin
+        .from("tournament_registrations")
+        .select("group_number, group_id, first_name, last_name, scoring_code, group_scoring_code")
+        .eq("tournament_id", tId)
+      : { data: [] as any[] };
     const groupCodes = new Map<number, string>();
     for (const r of (allRegs || []) as any[]) {
       const code = r.group_scoring_code || r.scoring_code;
@@ -376,10 +427,12 @@ Deno.serve(async (req) => {
       }
     }
     // Tee times are finalized in Players & Pairings at the GROUP level; prefer those.
-    const { data: pairGroups } = await supabaseAdmin
-      .from("registration_groups")
-      .select("id, group_number, tee_time, team_name, group_name")
-      .eq("tournament_id", tId);
+    const { data: pairGroups } = audience === "players"
+      ? await supabaseAdmin
+        .from("registration_groups")
+        .select("id, group_number, tee_time, team_name, group_name")
+        .eq("tournament_id", tId)
+      : { data: [] as any[] };
     const groupTeeTimes = new Map<number, string>();
     const groupNames = new Map<number, string>();
     for (const g of (pairGroups || []) as any[]) {
@@ -579,7 +632,26 @@ Deno.serve(async (req) => {
             event_homepage: homepage,
             pairings_link: pairingsLink(recipientCode),
             survey_link: surveyLinkFor(reg as any),
+            sponsor_name: reg.sponsor_name || "",
+            company_name: reg.company_name || "",
+            contact_name: reg.contact_name || "",
+            contact_phone: reg.contact_phone || "",
+            booth_location: reg.booth_location || "",
+            check_in_code: reg.check_in_code || "",
           };
+
+          if (reg.is_sponsor_recipient) {
+            // Sponsors and vendors have no tee time, starting hole or scoring code,
+            // so those blanks never render as "TBD" in their email.
+            vars.tee_time = "";
+            vars.hole_number = "";
+            vars.team_name = reg.sponsor_name || "";
+            vars.scoring_code = "";
+            vars.group_number = "";
+            vars.survey_link = homepage;
+            vars.pairings_link = homepage;
+            vars.scoring_link = homepage;
+          }
 
           // The survey email's action button always resolves to this player's
           // own survey link unless the organizer typed a custom URL.
@@ -623,7 +695,7 @@ Deno.serve(async (req) => {
             results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "sent", tee_time: regTeeTime });
             await logEmail({ email: reg.email, subject, status: "sent", meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime } });
           }
-        } else {
+        } else if (!reg.is_sponsor_recipient) {
           // Use default template
           await sendRegistrantConfirmationEmail(
             reg.first_name,
@@ -639,6 +711,10 @@ Deno.serve(async (req) => {
           sent++;
           results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "sent", tee_time: regTeeTime });
           await logEmail({ email: reg.email, subject: regSubject, status: "sent", meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime, default_template: true } });
+        } else {
+          // Sponsors and vendors have no built-in confirmation template to fall
+          // back to, so the send must carry the organizer's saved design.
+          throw new Error("Sponsor and vendor emails use your saved template.");
         }
       } catch (e) {
         console.error(`Failed to send to registration ${reg.id}:`, e);

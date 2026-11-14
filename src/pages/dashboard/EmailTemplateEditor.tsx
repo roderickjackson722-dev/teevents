@@ -21,6 +21,7 @@ import {
   RotateCcw, Copy, CheckCircle, Users, RefreshCw, Pencil, CalendarClock, ShoppingBag,
   ArrowUp,
   ArrowDown,
+  Building2,
 } from "lucide-react";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
@@ -500,6 +501,47 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   const [testEmail, setTestEmail] = useState("");
   const [sendingTest, setSendingTest] = useState(false);
   const [recipientSearch, setRecipientSearch] = useState("");
+  /**
+   * Which list the Send tab targets: the player roster, sponsor sign-ups or
+   * vendor sign-ups. Sponsors and vendors live in their own tables, so the list
+   * is loaded only while one of those is chosen.
+   */
+  const [audience, setAudience] = useState<"players" | "sponsors" | "vendors">("players");
+  const [otherRows, setOtherRows] = useState<any[]>([]);
+  const [otherLoading, setOtherLoading] = useState(false);
+
+  useEffect(() => {
+    setSelectedRecipients([]);
+    setRecipientSearch("");
+    if (audience === "players" || !selectedTournament) { setOtherRows([]); return; }
+    let live = true;
+    setOtherLoading(true);
+    const table = audience === "sponsors" ? "sponsor_registrations" : "vendor_registrations";
+    (supabase.from(table as any).select("*").eq("tournament_id", selectedTournament) as any)
+      .then(({ data, error }: any) => {
+        if (!live) return;
+        if (error) { toast.error(`Could not load ${audience}.`); setOtherRows([]); return; }
+        setOtherRows((data || []).map((x: any) => {
+          const contact = String(x.contact_name || "").trim();
+          const [first, ...rest] = contact.split(/\s+/);
+          const company = String(x.company_name || x.vendor_name || contact || "Unnamed").trim();
+          return {
+            id: x.id,
+            email: x.contact_email || "",
+            company,
+            contact_name: contact,
+            payment_status: x.payment_status || "",
+            first_name: first || company,
+            last_name: rest.join(" "),
+            sponsor_name: company,
+            booth_location: x.booth_location || "",
+            check_in_code: x.check_in_code || "",
+          };
+        }));
+      })
+      .finally(() => { if (live) setOtherLoading(false); });
+    return () => { live = false; };
+  }, [audience, selectedTournament]);
   // Day-before reminder scheduling + add-ons
   const [addons, setAddons] = useState<any[]>([]);
   const [sendAt, setSendAt] = useState<string>("");
@@ -857,6 +899,33 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
     };
   };
 
+  /**
+   * Preview for the sponsor / vendor list: the contact person's name and the
+   * company name fill the merge fields, and no player hub link is offered.
+   */
+  const renderPreviewForAudience = (id: string | null) => {
+    if (audience === "players") return renderPreviewFor(id);
+    const row = otherRows.find((r: any) => r.id === id) || otherRows[0] || null;
+    const vars: Record<string, string> = {
+      ...varsFor(row),
+      sponsor_name: row?.sponsor_name || "Your Sponsor",
+      company_name: row?.company || "",
+      contact_name: row?.contact_name || "",
+      booth_location: row?.booth_location || "",
+      check_in_code: row?.check_in_code || "",
+    };
+    return {
+      subject: replaceVariablesPlain(previewConfig.subject || "", vars),
+      html: brandHtml(renderEmailHtml(previewConfig, vars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+        includePlayerHub: false,
+        addons: templateKind === "day_before" ? addons : [],
+        addonBaseUrl: vars.event_homepage,
+        showActionButtons: templateKind === "day_before",
+        sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
+      })),
+    };
+  };
+
 
 
 
@@ -871,6 +940,8 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   const handleTemplateKindChange = (kind: TemplateKind) => {
     setSavedTemplateId("");
     setTemplateKind(kind);
+    // Sponsor / vendor templates open the Send tab on that list.
+    setAudience(kind === "vendor" ? "vendors" : kind === "sponsor" ? "sponsors" : "players");
     const t = tournaments.find((x: any) => x.id === selectedTournament);
     loadConfigFor(t, kind);
   };
@@ -972,6 +1043,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
         body: {
           ...baseBody,
           registration_ids: targets,
+          ...(audience !== "players" ? { audience } : {}),
           ...(Object.keys(overrides).length ? { email_overrides: overrides } : {}),
         },
       });
@@ -1040,26 +1112,40 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
     return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
   });
 
+  // Sponsor / vendor sign-ups get the same filter + search treatment.
+  const filteredOthers = otherRows.filter(paymentMatches);
+  const visibleOthers = filteredOthers.filter((r) => {
+    const q = recipientSearch.trim().toLowerCase();
+    if (!q) return true;
+    return `${r.company || ""} ${r.contact_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
+  });
+
+  /** The list the Send tab currently targets. */
+  const activeFiltered = audience === "players" ? filteredRegistrations : filteredOthers;
+  const activeRows = audience === "players" ? registrations : otherRows;
+  const activeLabel = audience === "players" ? "player" : audience === "sponsors" ? "sponsor" : "vendor";
+  const activeCountOf = (n: number) => `${n} ${activeLabel}${n === 1 ? "" : "s"}`;
+
   // Never keep someone selected who is filtered out of view (e.g. pending players).
   useEffect(() => {
     setSelectedRecipients((prev) => {
-      const allowed = new Set(filteredRegistrations.map((r) => r.id));
+      const allowed = new Set(activeFiltered.map((r) => r.id));
       const next = prev.filter((id) => allowed.has(id));
       return next.length === prev.length ? prev : next;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentFilter, registrations]);
+  }, [paymentFilter, registrations, otherRows, audience]);
 
   const selectAll = () => {
-    if (selectedRecipients.length === filteredRegistrations.length && filteredRegistrations.length > 0) {
+    if (selectedRecipients.length === activeFiltered.length && activeFiltered.length > 0) {
       setSelectedRecipients([]);
     } else {
-      setSelectedRecipients(filteredRegistrations.map(r => r.id));
+      setSelectedRecipients(activeFiltered.map(r => r.id));
     }
   };
 
-  const paidCount = registrations.filter(isPaidReg).length;
-  const pendingCount = registrations.length - paidCount;
+  const paidCount = activeRows.filter(isPaidReg).length;
+  const pendingCount = activeRows.length - paidCount;
 
   const PaymentFilterToggle = () => (
     <div className="flex flex-wrap items-center gap-2">
@@ -1067,7 +1153,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
       {([
         { key: "paid" as const, label: `Paid (${paidCount})` },
         { key: "pending" as const, label: `Pending (${pendingCount})` },
-        { key: "all" as const, label: `All (${registrations.length})` },
+        { key: "all" as const, label: `All (${activeRows.length})` },
       ]).map((opt) => (
         <Button
           key={opt.key}
@@ -1903,7 +1989,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
           )}
           {(templateKind === "sponsor" || templateKind === "vendor") && (
             <div className="bg-amber-50 border border-amber-200 text-amber-900 rounded-lg p-4 text-sm">
-              <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and will apply automatically to future {templateKind} confirmations. Bulk resend from this screen currently supports registrants only — use the {templateKind === "sponsor" ? "Sponsors" : "Vendors"} page to manage individual {templateKind} records.
+              <strong>Heads up:</strong> The {TEMPLATE_LABELS[templateKind]} template is saved and applies automatically to future {templateKind} confirmations. You can also send it now to the {templateKind === "sponsor" ? "sponsors" : "vendors"} listed below.
             </div>
           )}
           {templateKind === "receipt" && selectedTournament && (
@@ -1922,8 +2008,31 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               }
             />
           )}
-          {templateKind !== "receipt" && templateKind !== "sponsor" && templateKind !== "vendor" && templateKind !== "sponsor_day_of" && templateKind !== "sponsorship_day_of" && (
+          {templateKind !== "receipt" && templateKind !== "sponsor_day_of" && templateKind !== "sponsorship_day_of" && (
           <>
+          {templateKind !== "day_before" && (
+            <div className="flex flex-wrap items-center gap-2">
+              <Label className="text-sm font-medium">Send to</Label>
+              <Select value={audience} onValueChange={(v) => setAudience(v as "players" | "sponsors" | "vendors")}>
+                <SelectTrigger className="w-[200px]" aria-label="Send to">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="players">Players</SelectItem>
+                  <SelectItem value="sponsors">Sponsors</SelectItem>
+                  <SelectItem value="vendors">Vendors</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-muted-foreground">
+                {audience === "players"
+                  ? "The player roster from registrations."
+                  : audience === "sponsors"
+                    ? "Companies that signed up as sponsors for this event."
+                    : "Companies that signed up as vendors for this event."}
+              </p>
+            </div>
+          )}
+          {audience === "players" && (
           <div className="bg-card rounded-lg border p-5">
             <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
               <h3 className="font-semibold text-foreground flex items-center gap-2">
@@ -2057,15 +2166,80 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               </div>
             )}
           </div>
+          )}
+
+          {audience !== "players" && (
+            <div className="bg-card rounded-lg border p-5">
+              <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+                <h3 className="font-semibold text-foreground flex items-center gap-2">
+                  <Building2 className="h-4 w-4 text-primary" />
+                  {audience === "sponsors" ? "Sponsors" : "Vendors"} ({filteredOthers.length})
+                </h3>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={selectAll} disabled={otherLoading || filteredOthers.length === 0}>
+                    {selectedRecipients.length === filteredOthers.length && filteredOthers.length > 0 ? "Deselect All" : "Select All"}
+                  </Button>
+                  <Badge variant="secondary">{selectedRecipients.length} selected</Badge>
+                </div>
+              </div>
+              <div className="mb-3"><PaymentFilterToggle /></div>
+              <Input
+                placeholder="Search by company or email…"
+                value={recipientSearch}
+                onChange={(e) => setRecipientSearch(e.target.value)}
+                className="mb-3"
+              />
+              {otherLoading ? (
+                <p className="text-muted-foreground text-sm text-center py-6">Loading {audience}…</p>
+              ) : visibleOthers.length === 0 ? (
+                <p className="text-muted-foreground text-sm text-center py-6">
+                  {otherRows.length === 0
+                    ? `No ${audience} have signed up for this event yet.`
+                    : `No ${paymentFilter === "all" ? "" : paymentFilter + " "}${audience} match this filter.`}
+                </p>
+              ) : (
+                <div className="max-h-[400px] overflow-y-auto divide-y">
+                  {visibleOthers.map(r => (
+                    <div key={r.id} className="flex items-center gap-3 py-2.5 px-2 hover:bg-muted/50 rounded">
+                      <label className="flex items-center gap-3 flex-1 min-w-0 cursor-pointer">
+                        <input type="checkbox" checked={selectedRecipients.includes(r.id)} onChange={() => toggleRecipient(r.id)} className="rounded" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{r.company}</p>
+                          <p className="text-xs text-muted-foreground truncate">{r.email || "No email on file"}</p>
+                          {r.contact_name && (
+                            <p className="text-xs text-muted-foreground truncate">Contact: {r.contact_name}</p>
+                          )}
+                        </div>
+                      </label>
+                      <DeliveryStatus id={r.id} />
+                      <Badge variant={r.payment_status === "paid" ? "default" : "secondary"} className="text-xs">
+                        {r.payment_status || "—"}
+                      </Badge>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="gap-1 h-8"
+                        disabled={sending || !r.email}
+                        title={`Send ${TEMPLATE_LABELS[templateKind]} to ${r.email || r.company}`}
+                        onClick={() => requestSend([r.id])}
+                      >
+                        <Send className="h-3.5 w-3.5" /> {requirePreview ? "Preview" : "Send"}
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end gap-2">
             <Button onClick={() => (requirePreview ? requestSend() : setConfirmSendOpen(true))} disabled={sending || selectedRecipients.length === 0} className="gap-2 bg-secondary text-primary hover:bg-secondary/80">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {requirePreview ? "Preview" : "Send"} {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
+              {requirePreview ? "Preview" : "Send"} {TEMPLATE_LABELS[templateKind]} to {activeCountOf(selectedRecipients.length)}
             </Button>
           </div>
 
-          {selectedTournament && (
+          {selectedTournament && audience === "players" && (
             <ScheduledEmailCard
               tournamentId={selectedTournament}
               templateKind={templateKind}
@@ -2143,15 +2317,18 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
       </>}
       {requirePreview && !savedTemplate && emailPreview && (() => {
         const unsaved = !!savedSnapshot && savedSnapshot !== JSON.stringify(config);
+        const sponsorPreview = emailPreview.kind === "registrants" && audience !== "players";
         const recips = emailPreview.kind === "registrants"
-          ? templateEmailRecipients(registrations, emailPreview.ids, altEmails, altMode)
+          ? templateEmailRecipients(sponsorPreview ? otherRows : registrations, emailPreview.ids, altEmails, altMode)
           : dayBeforeAllRecipients(registrations);
         const sampleIds = emailPreview.kind === "registrants"
           ? emailPreview.ids
           : registrations.filter((r: any) => (r.payment_status || "").toLowerCase() === "paid").map((r: any) => r.id);
         const sampleOptions = sampleIds.map((id) => {
-          const r: any = registrations.find((x: any) => x.id === id);
-          return { id, label: `${r?.first_name || ""} ${r?.last_name || ""}`.trim() || "Player" };
+          const r: any = (sponsorPreview ? otherRows : registrations).find((x: any) => x.id === id);
+          return sponsorPreview
+            ? { id, label: r?.company || "Recipient" }
+            : { id, label: `${r?.first_name || ""} ${r?.last_name || ""}`.trim() || "Player" };
         });
         const scheduledFor = emailPreview.kind === "day_before_schedule" && sendAt ? new Date(sendAt).toLocaleString() : undefined;
         return (
@@ -2173,7 +2350,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
               else await saveSchedule();
             }}
             renderContent={(id) => {
-              const out = renderPreviewFor(id);
+              const out = renderPreviewForAudience(id);
               return (
                 <div className="space-y-2">
                   <p><span className="font-medium text-foreground">Subject:</span> {out.subject}</p>
@@ -2198,7 +2375,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
             <div className="rounded-lg border bg-muted/40 p-3 space-y-1">
               <p><strong>Template:</strong> {TEMPLATE_LABELS[templateKind]}</p>
               <p><strong>Subject:</strong> {replaceVariablesPlain(config.subject, previewVars)}</p>
-              <p><strong>Recipients:</strong> {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}</p>
+              <p><strong>Recipients:</strong> {activeCountOf(selectedRecipients.length)}</p>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setConfirmSendOpen(false)}>Cancel</Button>

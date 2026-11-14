@@ -906,7 +906,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
   const renderPreviewForAudience = (id: string | null) => {
     if (audience === "players") return renderPreviewFor(id);
     const row = otherRows.find((r: any) => r.id === id) || otherRows[0] || null;
-    const vars = {
+    const vars: Record<string, string> = {
       ...varsFor(row),
       sponsor_name: row?.sponsor_name || "Your Sponsor",
       company_name: row?.company || "",

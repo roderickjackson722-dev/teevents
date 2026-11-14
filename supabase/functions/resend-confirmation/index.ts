@@ -711,6 +711,10 @@ Deno.serve(async (req) => {
           sent++;
           results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "sent", tee_time: regTeeTime });
           await logEmail({ email: reg.email, subject: regSubject, status: "sent", meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime, default_template: true } });
+        } else {
+          // Sponsors and vendors have no built-in confirmation template to fall
+          // back to, so the send must carry the organizer's saved design.
+          throw new Error("Sponsor and vendor emails use your saved template.");
         }
       } catch (e) {
         console.error(`Failed to send to registration ${reg.id}:`, e);

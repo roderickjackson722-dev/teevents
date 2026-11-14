@@ -384,24 +384,41 @@ Deno.serve(async (req) => {
       throw new Error("Missing registration_ids array");
     }
 
-    // Get registrations with tournament info
-    const { data: registrations, error: regErr } = await supabaseAdmin
-      .from("tournament_registrations")
-      .select("id, first_name, last_name, email, tournament_id, qr_token, survey_response_token, scoring_code, group_scoring_code, group_number, group_id, tee_time")
-      .in("id", registration_ids);
-
-    if (regErr || !registrations || registrations.length === 0) {
-      throw new Error("Registrations not found");
+    // Get recipients with tournament info: players from the registration roster,
+    // sponsors / vendors from their own sign-up tables.
+    let registrations: any[] = [];
+    if (audience === "players") {
+      const { data, error } = await supabaseAdmin
+        .from("tournament_registrations")
+        .select("id, first_name, last_name, email, tournament_id, qr_token, survey_response_token, scoring_code, group_scoring_code, group_number, group_id, tee_time")
+        .in("id", registration_ids);
+      if (error || !data || data.length === 0) throw new Error("Registrations not found");
+      registrations = data as any[];
+    } else {
+      const table = audience === "sponsors" ? "sponsor_registrations" : "vendor_registrations";
+      const { data, error } = await supabaseAdmin
+        .from(table)
+        .select("id, tournament_id, company_name, vendor_name, contact_name, contact_email, contact_phone, payment_status, booth_location, check_in_code, business_type")
+        .in("id", registration_ids);
+      if (error || !data || data.length === 0) {
+        throw new Error(audience === "sponsors" ? "Sponsor records not found" : "Vendor records not found");
+      }
+      // One send always belongs to one event.
+      const events = new Set(data.map((r: any) => String(r.tournament_id)));
+      if (events.size !== 1) throw new Error("Choose sponsors or vendors from a single event.");
+      registrations = data.map(sponsorRecipient);
     }
 
     // Scoring codes live at the GROUP level. Build a map of group_number -> code from
     // every registration in the tournament so the emailed code always matches the code
     // shown next to the player in Players & Pairings.
     const tId = registrations[0].tournament_id;
-    const { data: allRegs } = await supabaseAdmin
-      .from("tournament_registrations")
-      .select("group_number, group_id, first_name, last_name, scoring_code, group_scoring_code")
-      .eq("tournament_id", tId);
+    const { data: allRegs } = audience === "players"
+      ? await supabaseAdmin
+        .from("tournament_registrations")
+        .select("group_number, group_id, first_name, last_name, scoring_code, group_scoring_code")
+        .eq("tournament_id", tId)
+      : { data: [] as any[] };
     const groupCodes = new Map<number, string>();
     for (const r of (allRegs || []) as any[]) {
       const code = r.group_scoring_code || r.scoring_code;

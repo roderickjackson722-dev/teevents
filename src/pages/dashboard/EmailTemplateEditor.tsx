@@ -2235,11 +2235,11 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
           <div className="flex justify-end gap-2">
             <Button onClick={() => (requirePreview ? requestSend() : setConfirmSendOpen(true))} disabled={sending || selectedRecipients.length === 0} className="gap-2 bg-secondary text-primary hover:bg-secondary/80">
               {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              {requirePreview ? "Preview" : "Send"} {TEMPLATE_LABELS[templateKind]} to {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}
+              {requirePreview ? "Preview" : "Send"} {TEMPLATE_LABELS[templateKind]} to {activeCountOf(selectedRecipients.length)}
             </Button>
           </div>
 
-          {selectedTournament && (
+          {selectedTournament && audience === "players" && (
             <ScheduledEmailCard
               tournamentId={selectedTournament}
               templateKind={templateKind}
@@ -2372,7 +2372,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
             <div className="rounded-lg border bg-muted/40 p-3 space-y-1">
               <p><strong>Template:</strong> {TEMPLATE_LABELS[templateKind]}</p>
               <p><strong>Subject:</strong> {replaceVariablesPlain(config.subject, previewVars)}</p>
-              <p><strong>Recipients:</strong> {selectedRecipients.length} player{selectedRecipients.length === 1 ? "" : "s"}</p>
+              <p><strong>Recipients:</strong> {activeCountOf(selectedRecipients.length)}</p>
             </div>
             <div className="flex justify-end gap-2 pt-2">
               <Button variant="outline" onClick={() => setConfirmSendOpen(false)}>Cancel</Button>

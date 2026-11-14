@@ -899,6 +899,33 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
     };
   };
 
+  /**
+   * Preview for the sponsor / vendor list: the contact person's name and the
+   * company name fill the merge fields, and no player hub link is offered.
+   */
+  const renderPreviewForAudience = (id: string | null) => {
+    if (audience === "players") return renderPreviewFor(id);
+    const row = otherRows.find((r: any) => r.id === id) || otherRows[0] || null;
+    const vars = {
+      ...varsFor(row),
+      sponsor_name: row?.sponsor_name || "Your Sponsor",
+      company_name: row?.company || "",
+      contact_name: row?.contact_name || "",
+      booth_location: row?.booth_location || "",
+      check_in_code: row?.check_in_code || "",
+    };
+    return {
+      subject: replaceVariablesPlain(previewConfig.subject || "", vars),
+      html: brandHtml(renderEmailHtml(previewConfig, vars, config.header_title || TEMPLATE_HEADERS[templateKind], {
+        includePlayerHub: false,
+        addons: templateKind === "day_before" ? addons : [],
+        addonBaseUrl: vars.event_homepage,
+        showActionButtons: templateKind === "day_before",
+        sectionOrder: templateKind === "day_before" ? (previewConfig.section_order || DEFAULT_SECTION_ORDER) : undefined,
+      })),
+    };
+  };
+
 
 
 

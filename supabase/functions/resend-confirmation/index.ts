@@ -427,10 +427,12 @@ Deno.serve(async (req) => {
       }
     }
     // Tee times are finalized in Players & Pairings at the GROUP level; prefer those.
-    const { data: pairGroups } = await supabaseAdmin
-      .from("registration_groups")
-      .select("id, group_number, tee_time, team_name, group_name")
-      .eq("tournament_id", tId);
+    const { data: pairGroups } = audience === "players"
+      ? await supabaseAdmin
+        .from("registration_groups")
+        .select("id, group_number, tee_time, team_name, group_name")
+        .eq("tournament_id", tId)
+      : { data: [] as any[] };
     const groupTeeTimes = new Map<number, string>();
     const groupNames = new Map<number, string>();
     for (const g of (pairGroups || []) as any[]) {
@@ -630,7 +632,26 @@ Deno.serve(async (req) => {
             event_homepage: homepage,
             pairings_link: pairingsLink(recipientCode),
             survey_link: surveyLinkFor(reg as any),
+            sponsor_name: reg.sponsor_name || "",
+            company_name: reg.company_name || "",
+            contact_name: reg.contact_name || "",
+            contact_phone: reg.contact_phone || "",
+            booth_location: reg.booth_location || "",
+            check_in_code: reg.check_in_code || "",
           };
+
+          if (reg.is_sponsor_recipient) {
+            // Sponsors and vendors have no tee time, starting hole or scoring code,
+            // so those blanks never render as "TBD" in their email.
+            vars.tee_time = "";
+            vars.hole_number = "";
+            vars.team_name = reg.sponsor_name || "";
+            vars.scoring_code = "";
+            vars.group_number = "";
+            vars.survey_link = homepage;
+            vars.pairings_link = homepage;
+            vars.scoring_link = homepage;
+          }
 
           // The survey email's action button always resolves to this player's
           // own survey link unless the organizer typed a custom URL.
@@ -674,7 +695,7 @@ Deno.serve(async (req) => {
             results.push({ registration_id: reg.id, name: regName, email: reg.email, status: "sent", tee_time: regTeeTime });
             await logEmail({ email: reg.email, subject, status: "sent", meta: { registration_id: reg.id, name: regName, tee_time: regTeeTime } });
           }
-        } else {
+        } else if (!reg.is_sponsor_recipient) {
           // Use default template
           await sendRegistrantConfirmationEmail(
             reg.first_name,

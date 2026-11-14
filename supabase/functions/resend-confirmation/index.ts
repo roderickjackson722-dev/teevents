@@ -15,6 +15,33 @@ function replaceVars(text: string, vars: Record<string, string>): string {
   return (text || "").replace(/\{\{(\w+)\}\}/g, (_m, k: string) => vars[k] ?? "");
 }
 
+/**
+ * Sponsor / vendor sign-up rows are normalized into the same recipient shape the
+ * email loop expects: the contact person's first name fills {{first_name}} and
+ * the company (or vendor) name fills {{sponsor_name}} / {{company_name}}.
+ */
+function sponsorRecipient(row: any) {
+  const contact = String(row.contact_name || "").trim();
+  const [first, ...rest] = contact.split(/\s+/);
+  const org = String(row.company_name || row.vendor_name || contact || "").trim();
+  return {
+    id: row.id,
+    tournament_id: row.tournament_id,
+    email: row.contact_email || "",
+    first_name: first || org,
+    last_name: rest.join(" "),
+    sponsor_name: org,
+    company_name: org,
+    contact_name: contact || org,
+    contact_phone: row.contact_phone || "",
+    payment_status: row.payment_status || "",
+    booth_location: row.booth_location || "",
+    check_in_code: row.check_in_code || "",
+    business_type: row.business_type || "",
+    is_sponsor_recipient: true,
+  };
+}
+
 function formatTeeTime(value: unknown): string {
   const raw = String(value || "").trim();
   const match = /^(\d{1,2}):(\d{2})/.exec(raw);
@@ -269,6 +296,13 @@ Deno.serve(async (req) => {
 
     const body = await req.json();
     const { registration_ids, use_custom_template, update_email, template_kind, email_overrides, service_run } = body;
+    /**
+     * Which list the send delivers to. Sponsors and vendors live in their own
+     * sign-up tables, so the organizer's Send tab can target players, sponsors
+     * or vendors with the same template. Anything else stays players.
+     */
+    const audience: "players" | "sponsors" | "vendors" =
+      body.audience === "sponsors" || body.audience === "vendors" ? body.audience : "players";
 
     // Authenticate the calling user. Internal scheduled sends pass service_run
     // with the service-role key as the bearer token instead of a user session.

@@ -1016,6 +1016,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
         body: {
           ...baseBody,
           registration_ids: targets,
+          ...(audience !== "players" ? { audience } : {}),
           ...(Object.keys(overrides).length ? { email_overrides: overrides } : {}),
         },
       });
@@ -1084,26 +1085,40 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
     return `${r.first_name || ""} ${r.last_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
   });
 
+  // Sponsor / vendor sign-ups get the same filter + search treatment.
+  const filteredOthers = otherRows.filter(paymentMatches);
+  const visibleOthers = filteredOthers.filter((r) => {
+    const q = recipientSearch.trim().toLowerCase();
+    if (!q) return true;
+    return `${r.company || ""} ${r.contact_name || ""} ${r.email || ""}`.toLowerCase().includes(q);
+  });
+
+  /** The list the Send tab currently targets. */
+  const activeFiltered = audience === "players" ? filteredRegistrations : filteredOthers;
+  const activeRows = audience === "players" ? registrations : otherRows;
+  const activeLabel = audience === "players" ? "player" : audience === "sponsors" ? "sponsor" : "vendor";
+  const activeCountOf = (n: number) => `${n} ${activeLabel}${n === 1 ? "" : "s"}`;
+
   // Never keep someone selected who is filtered out of view (e.g. pending players).
   useEffect(() => {
     setSelectedRecipients((prev) => {
-      const allowed = new Set(filteredRegistrations.map((r) => r.id));
+      const allowed = new Set(activeFiltered.map((r) => r.id));
       const next = prev.filter((id) => allowed.has(id));
       return next.length === prev.length ? prev : next;
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentFilter, registrations]);
+  }, [paymentFilter, registrations, otherRows, audience]);
 
   const selectAll = () => {
-    if (selectedRecipients.length === filteredRegistrations.length && filteredRegistrations.length > 0) {
+    if (selectedRecipients.length === activeFiltered.length && activeFiltered.length > 0) {
       setSelectedRecipients([]);
     } else {
-      setSelectedRecipients(filteredRegistrations.map(r => r.id));
+      setSelectedRecipients(activeFiltered.map(r => r.id));
     }
   };
 
-  const paidCount = registrations.filter(isPaidReg).length;
-  const pendingCount = registrations.length - paidCount;
+  const paidCount = activeRows.filter(isPaidReg).length;
+  const pendingCount = activeRows.length - paidCount;
 
   const PaymentFilterToggle = () => (
     <div className="flex flex-wrap items-center gap-2">
@@ -1111,7 +1126,7 @@ export default function EmailTemplateEditor({ requirePreview = false }: { requir
       {([
         { key: "paid" as const, label: `Paid (${paidCount})` },
         { key: "pending" as const, label: `Pending (${pendingCount})` },
-        { key: "all" as const, label: `All (${registrations.length})` },
+        { key: "all" as const, label: `All (${activeRows.length})` },
       ]).map((opt) => (
         <Button
           key={opt.key}

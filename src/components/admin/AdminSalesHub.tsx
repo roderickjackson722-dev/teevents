@@ -409,7 +409,6 @@ CLOSING (30 seconds)
           <div className="flex gap-2 flex-wrap">
             <Button onClick={handleCopy} className="gap-2">{copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}{copied ? "Copied!" : "Copy Script"}</Button>
             <Button variant="outline" onClick={() => window.open("/admin/sales-hub/demo-agenda", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> Demo Agenda Editor</Button>
-            <Button variant="outline" onClick={() => window.open("/compare/eventbrite-vs-teevents", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> vs Eventbrite Page</Button>
             <Button variant="outline" onClick={() => window.open("/admin/sales-hub/compare-golf-genius", "_blank")} className="gap-2"><ExternalLink className="h-4 w-4" /> vs Golf Genius Page</Button>
           </div>
         </CardContent>
@@ -439,7 +438,6 @@ CLOSING (30 seconds)
 
 // ── PDF Library Tab ──
 const PDF_ASSETS = [
-  { id: "comparison", name: "Eventbrite vs. TeeVents Comparison", description: "One-page side-by-side comparison chart", route: "/compare/eventbrite-vs-teevents/pdf" },
   { id: "study-sheet", name: "TeeVents Platform Study Sheet", description: "Complete platform documentation for internal training", route: null },
   { id: "pricing-guide", name: "TeeVents Pricing Guide", description: "Pricing tiers, fee breakdown, and fee model explanation", route: null },
   { id: "demo-agenda", name: "TeeVents Demo Agenda", description: "Sales call agenda with screenshots and talking points", route: "/sales/demo-agenda" },
@@ -583,7 +581,6 @@ function EmailTemplatesTab() {
 // ── Links & QR Codes Tab ──
 const SALES_LINKS = [
   { name: "Request a Sample", url: "/request-sample", useCase: "Primary demo booking landing page" },
-  { name: "Comparison Page", url: "/compare/eventbrite-vs-teevents", useCase: "Share in emails & social" },
   { name: "Get Started", url: "/get-started", useCase: "Direct signups" },
   { name: "Demo Calendly", url: "https://calendly.com/teevents/teevents-demo", useCase: "Booking link", external: true },
   { name: "Sample Organizer", url: "/sample-organizer", useCase: "Share with prospects (noindex)" },

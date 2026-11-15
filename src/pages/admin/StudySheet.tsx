@@ -371,7 +371,7 @@ const StudySheet = () => {
               ["How It Works", "/plans"],
               ["Pricing", "/plans"],
               ["FAQ", "/faq"],
-              ["Comparison", "/compare/eventbrite-vs-teevents"],
+              ["Comparison", "/compare"],
               ["Email Support", "info@teevents.golf"],
               ["Demo Request", "Calendly link (in sales hub)"],
             ]} />
@@ -790,7 +790,7 @@ function buildPdfHtml(): string {
         ["How It Works", "/plans"],
         ["Pricing", "/plans"],
         ["FAQ", "/faq"],
-        ["Comparison", "/compare/eventbrite-vs-teevents"],
+        ["Comparison", "/compare"],
         ["Email Support", "info@teevents.golf"],
         ["Demo Request", "Calendly link (in sales hub)"],
       ])}

@@ -30,7 +30,7 @@ const rows: [string, Mark, string, string][] = [
 ];
 const pricing: { title: string; hl: boolean; tag?: string; def?: string; items: string[] }[] = [
   { title: "Most Platforms", hl: false, items: ["Charge $199 to $4,200 per year", "Fees due before your event", "You lose money if turnout is low", "Organizer pays upfront"] },
-  { title: "TeeVents No Cost to Start", hl: true, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$0 upfront", "5% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
+  { title: "TeeVents No Cost to Start", hl: true, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$0 upfront", "8% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
   { title: "TeeVents Enterprise", hl: false, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included"] },
 ];
 const audiences = [

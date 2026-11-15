@@ -1166,7 +1166,7 @@ function FinancesPanel() {
         </div>
         <div className="border rounded-md p-3">
           <div className="text-xs text-muted-foreground">
-            Platform Fees (5%)
+            Platform Fees (8%)
           </div>
           <div className="text-xl font-bold text-orange-600">$405.00</div>
         </div>

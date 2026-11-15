@@ -160,7 +160,7 @@ const SalesFlyer = () => {
               marginRight: "auto",
               lineHeight: 1.4,
             }}>
-              The all‑in‑one platform for golf tournaments. No upfront cost. No monthly fees. Just 5% per registration.
+              The all‑in‑one platform for golf tournaments. No upfront cost. No monthly fees. Just 8% per registration.
             </div>
 
             {/* Two-column checkbox grid */}
@@ -223,7 +223,7 @@ const SalesFlyer = () => {
               color: "#1a5c38",
             }}>
               <div style={{ marginBottom: 3, fontWeight: 600 }}>
-                No monthly fees. 5% platform fee per transaction. Free Base plan available.
+                No monthly fees. 8% platform fee per transaction. Free Base plan available.
               </div>
               <div style={{ color: "#6B7280" }}>teevents.golf/demo</div>
             </div>

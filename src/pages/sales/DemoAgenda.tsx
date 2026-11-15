@@ -402,7 +402,7 @@ export default function DemoAgenda() {
             <CardContent className="space-y-6">
               <div className="space-y-4">
                 {[
-                  { q: "How do I know I'll get paid?", a: "Stripe handles all payments via Stripe Connect Direct Charges. The charge is created on YOUR Stripe account — TeeVents only takes a 5% application fee. Funds settle in your Stripe balance instantly." },
+                  { q: "How do I know I'll get paid?", a: "Stripe handles all payments via Stripe Connect Direct Charges. The charge is created on YOUR Stripe account — TeeVents only takes an 8% application fee. Funds settle in your Stripe balance instantly." },
                   { q: "What if a golfer asks for a refund?", a: "One-click refund from your dashboard, pulled from your own Stripe balance. You're the merchant of record." },
                   { q: "What about chargebacks?", a: "Chargebacks are handled directly between your Stripe account and the cardholder's bank — the same as any direct Stripe merchant. TeeVents never holds funds." },
                   { q: "Can I try it before committing?", a: "Yes! Start a tournament for free, set up a $1 test registration, and process a real payment. Refund immediately to see the full flow." },
@@ -445,7 +445,7 @@ export default function DemoAgenda() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2"><Star className="h-5 w-5" /> Pricing</CardTitle>
-              <CardDescription>Simple, transparent pricing. 5% platform fee per transaction.</CardDescription>
+              <CardDescription>Simple, transparent pricing. 8% platform fee per transaction.</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>

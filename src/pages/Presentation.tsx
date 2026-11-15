@@ -164,7 +164,7 @@ export default function Presentation() {
             <Block heading="Price" bullets={["$0 to start"]} />
             <p className={definitionLine}>{SOFTWARE_DEFINITION}</p>
             <Block heading="Includes" bullets={[
-              "5% platform fee, paid by players at checkout",
+              "8% platform fee, paid by players at checkout",
               "10 manual entries",
               "Dedicated rep",
               "Event page built for you, live in 7 days or less",

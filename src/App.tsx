@@ -150,6 +150,7 @@ import LiveScoring from "./pages/LiveScoring";
 import ScanCheckIn from "./pages/ScanCheckIn";
 import SalesDeck from "./pages/SalesDeck";
 import Flyer from "./pages/Flyer";
+import RetiredPage from "./components/marketing/RetiredPage";
 import AcceptInvitation from "./pages/AcceptInvitation";
 import AcceptTeamInvitation from "./pages/AcceptTeamInvitation";
 import ForcePasswordChange from "./pages/ForcePasswordChange";
@@ -457,7 +458,7 @@ const App = () => (
            <Route path="/checkin/:tournamentId" element={<ScanCheckIn />} />
           <Route path="/deck" element={<SalesDeck />} />
           <Route path="/sales-deck" element={<SalesDeck />} />
-          <Route path="/flyer" element={<Flyer />} />
+          <Route path="/flyer" element={<RetiredPage note="Archived flyer with old Starter/Premium plans and fees. Do not share."><Flyer /></RetiredPage>} />
           <Route path="/accept-invitation" element={<AcceptInvitation />} />
           <Route path="/accept-team-invitation" element={<AcceptTeamInvitation />} />
           <Route path="/force-password-change" element={<ForcePasswordChange />} />

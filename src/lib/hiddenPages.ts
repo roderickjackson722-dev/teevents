@@ -8,6 +8,8 @@ export const HIDDEN_PAGE_PATHS = new Set<string>([
   "/compare/eventbrite-vs-teevents",
   "/compare/teevents-vs-eventbrite",
   "/compare/eventbrite-vs-teevents/pdf",
+  // Retired Starter/Premium flyer (archived, unchanged)
+  "/flyer",
   // Competitor guides on hold
   "/eventbrite-vs-golf-tournament-software",
   "/golfstatus-vs-golf-genius",

@@ -398,7 +398,9 @@ Deno.serve(async (req) => {
       const table = audience === "sponsors" ? "sponsor_registrations" : "vendor_registrations";
       const { data, error } = await supabaseAdmin
         .from(table)
-        .select("id, tournament_id, company_name, vendor_name, contact_name, contact_email, contact_phone, payment_status, booth_location, check_in_code, business_type")
+        .select(audience === "sponsors"
+          ? "*"
+          : "id, tournament_id, company_name, vendor_name, contact_name, contact_email, contact_phone, payment_status, booth_location, check_in_code, business_type")
         .in("id", registration_ids);
       if (error || !data || data.length === 0) {
         throw new Error(audience === "sponsors" ? "Sponsor records not found" : "Vendor records not found");

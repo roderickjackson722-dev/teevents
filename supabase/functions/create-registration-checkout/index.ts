@@ -439,7 +439,9 @@ Deno.serve(async (req) => {
     const feeSplitChoice = ["player", "split", "organizer"].includes((tournament as any).fee_split)
       ? (tournament as any).fee_split
       : "player";
-    const splitCalc = platformFeeCents > 0 ? computeFeeSplit(baseTotalCents, feeRate, feeSplitChoice) : null;
+    // Default "player" only applies when the golfer actually pays fees, so events whose
+    // organizer absorbs fees keep charging the posted price.
+    const splitCalc = platformFeeCents > 0 && (golferPaysFees || feeSplitChoice !== "player") ? computeFeeSplit(baseTotalCents, feeRate, feeSplitChoice) : null;
     const stripeFeeCents = splitCalc
       ? splitCalc.processing
       : golferPaysFees

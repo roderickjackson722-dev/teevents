@@ -27,7 +27,7 @@ export const TALKING_POINTS: Record<PlatformKey, TalkingPoint[]> = {
     { pain: "No volunteer check-in", solution: "QR code check-in for volunteers and players" },
     { pain: "No pairings or tee sheets", solution: "Drag-and-drop pairings with hole assignments" },
     { pain: "Funds held until after event", solution: "Stripe Connect – automatic payouts (no holding)" },
-    { pain: "High fees", solution: "5% platform fee vs. Eventbrite's 8.5%+" },
+    { pain: "High fees", solution: "Clear 8% service fee, paid by golfers" },
   ],
   zeffy_givebutter: [
     { pain: "General fundraising platform", solution: "Built specifically for golf tournaments" },
@@ -57,7 +57,7 @@ export const AGENDA_FLOW: { title: string; minutes: number; bullets: string[] }[
   { title: "Tournament Setup", minutes: 3, bullets: ["Create tournament in 60 seconds", "Branded site live in 10 minutes", "Custom domain support"] },
   { title: "Event Day", minutes: 3, bullets: ["QR check-in", "Live scoring", "Real-time leaderboard"] },
   { title: "Operations", minutes: 2, bullets: ["Pairings & tee sheets", "Volunteer coordination", "Printables (scorecards, cart signs)"] },
-  { title: "Finance", minutes: 2, bullets: ["Stripe Connect direct payouts", "5% platform fee — no holds", "Transparent transaction history"] },
+  { title: "Finance", minutes: 2, bullets: ["Stripe Connect direct payouts", "8% platform fee — no holds", "Transparent transaction history"] },
   { title: "Promotion & Post-Event", minutes: 1, bullets: ["Sponsor portal & ROI", "Surveys & follow-up", "Photo gallery"] },
   { title: "Closing", minutes: 2, bullets: ["Next steps", "Convert to live tournament", "Q&A"] },
 ];

@@ -40,7 +40,7 @@ const steps: Step[] = [
     target: '[data-tour="nav-finances"]',
     title: "Track Every Transaction",
     content:
-      "Real-time view of gross revenue, the 5% TeeVents platform fee, Stripe processing fees (2.9% + $0.30), and your net proceeds. Stripe Connect deposits net funds straight to your bank — TeeVents never holds your money.",
+      "Real-time view of gross revenue, the 8% TeeVents platform fee, Stripe processing fees (2.9% + $0.30), and your net proceeds. Stripe Connect deposits net funds straight to your bank — TeeVents never holds your money.",
     placement: "auto",
   },
   {

@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import { Button } from "@/components/ui/button";
+import { isHiddenPage } from "@/lib/hiddenPages";
 import type { GuideContent, GuideLink, MockupKind } from "./types";
 
 const DIRECTOR_LINE_SLUGS = new Set(["golf-tournament-website-builder","branded-golf-event-page","golf-tournament-page-customization","custom-golf-tournament-website","golf-tournament-registration-platform","online-golf-tournament-registration","golf-tournament-pairings-management","golf-tournament-handicap-system","golf-tournament-sponsor-packages","golf-tournament-sponsor-management","golf-tournament-live-scoring","live-scoring-golf-tournaments","what-is-a-shotgun-start","golf-tournament-formats","what-is-a-scramble","charity-golf-tournament-guide","golf-tournament-website-design","golf-tournament-software-pricing"]);
@@ -86,6 +87,7 @@ const SeoArticle = ({ content }: { content: GuideContent }) => (
       title={content.metaTitle}
       description={content.metaDescription}
       path={`/${content.slug}`}
+      noIndex={isHiddenPage(`/${content.slug}`)}
     />
     <script
       type="application/ld+json"
@@ -171,7 +173,7 @@ const SeoArticle = ({ content }: { content: GuideContent }) => (
       <nav className="mt-14" aria-label="Related guides">
         <h2 className="text-xl font-bold text-foreground">Keep reading</h2>
         <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {content.related.map((link) => (
+          {content.related.filter((link) => !isHiddenPage(link.to)).map((link) => (
             <li key={link.to}>
               <Link
                 to={link.to}
@@ -190,7 +192,7 @@ const SeoArticle = ({ content }: { content: GuideContent }) => (
           Every guide in the TeeVents library, in case you didn&apos;t find what you were looking for.
         </p>
         <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-          {ALL_TOPICS.map((topic) => {
+          {ALL_TOPICS.filter((topic) => !isHiddenPage(topic.to)).map((topic) => {
             const isCurrent = topic.to === `/${content.slug}`;
             return (
               <li key={topic.to}>

@@ -170,15 +170,15 @@ const StudySheet = () => {
           </Section>
 
           <Section id="payments" num={4} title="Payment & Money Flow">
-            <p>Standard flow uses Stripe Connect destination charges. The 5% platform fee is split automatically at checkout — TeeVents never holds organizer funds.</p>
+            <p>Standard flow uses Stripe Connect destination charges. The 8% platform fee is split automatically at checkout — TeeVents never holds organizer funds.</p>
             <SimpleTable headers={["Step", "What Happens"]} rows={[
               ["1. Golfer registers", "Pays via Stripe Checkout (card, Apple Pay, Google Pay, Cash App Pay)"],
               ["2. Stripe processes", "Charges golfer's card; deducts 2.9% + $0.30 processing fee"],
-              ["3. Funds split", "5% application fee → TeeVents; remainder → organizer's connected Stripe account"],
+              ["3. Funds split", "8% application fee → TeeVents; remainder → organizer's connected Stripe account"],
               ["4. Organizer payout", "Stripe pays organizer per their Stripe payout schedule (3-7 business days)"],
             ]} />
-            <p className="mt-3"><strong>Pass to Golfer (default):</strong> Golfer sees registration + 5% + Stripe fees as a single line item; organizer keeps 100% of advertised price.</p>
-            <p><strong>Absorb Fees:</strong> Golfer pays only the registration fee; organizer receives the registration minus 5% and Stripe processing fees.</p>
+            <p className="mt-3"><strong>Pass to Golfer (default):</strong> Golfer sees registration + 8% + Stripe fees as a single line item; organizer keeps 100% of advertised price.</p>
+            <p><strong>Absorb Fees:</strong> Golfer pays only the registration fee; organizer receives the registration minus 8% and Stripe processing fees.</p>
           </Section>
 
           <Section id="payouts" num={5} title="Payout Methods">
@@ -189,7 +189,7 @@ const StudySheet = () => {
               ["Additional Fee", "None", "None"],
               ["TeeVents hold", "None — Direct Charges", "Funds settle to TeeVents until check requested"],
             ]} />
-            <p className="mt-3">TeeVents uses Stripe Connect <strong>Direct Charges</strong>: every paid checkout is created on the organizer's connected Stripe account, with TeeVents taking only a 5% application fee. There is no platform reserve. Check payouts are the only flow where funds temporarily route through TeeVents pending a manual check request.</p>
+            <p className="mt-3">TeeVents uses Stripe Connect <strong>Direct Charges</strong>: every paid checkout is created on the organizer's connected Stripe account, with TeeVents taking only an 8% application fee. There is no platform reserve. Check payouts are the only flow where funds temporarily route through TeeVents pending a manual check request.</p>
           </Section>
 
           <Section id="handicap" num={6} title="Handicap System">
@@ -278,7 +278,7 @@ const StudySheet = () => {
               <li>Selects tier, fills out company info</li>
               <li>Uploads logo (PNG, JPG, SVG, max 5MB)</li>
               <li>Proceeds to Stripe Checkout</li>
-              <li>Pays full tier amount (5% platform fee + Stripe fee deducted)</li>
+              <li>Pays full tier amount (8% platform fee + Stripe fee deducted)</li>
               <li>Net proceeds go to organizer's Stripe account</li>
               <li>Sponsor appears in organizer's Sponsor Management dashboard</li>
             </ol>
@@ -336,7 +336,7 @@ const StudySheet = () => {
             <SimpleTable headers={["Layer", "Technology"]} rows={[
               ["Frontend", "React, TypeScript, Tailwind CSS, shadcn/ui"],
               ["Backend", "Supabase (PostgreSQL, Auth, Storage, Realtime)"],
-              ["Payments", "Stripe Connect (destination charges, 5% application fee)"],
+              ["Payments", "Stripe Connect (destination charges, 8% application fee)"],
               ["Emails", "Resend (transactional, magic links, notifications)"],
               ["SMS", "Twilio (optional)"],
               ["Hosting", "Lovable Cloud / Vercel"],
@@ -371,7 +371,7 @@ const StudySheet = () => {
               ["How It Works", "/plans"],
               ["Pricing", "/plans"],
               ["FAQ", "/faq"],
-              ["Comparison", "/compare/eventbrite-vs-teevents"],
+              ["Comparison", "/compare"],
               ["Email Support", "info@teevents.golf"],
               ["Demo Request", "Calendly link (in sales hub)"],
             ]} />
@@ -394,7 +394,7 @@ const StudySheet = () => {
 
           <Section id="metrics" num={15} title="Key Metrics & Limits">
             <SimpleTable headers={["Metric", "Value"]} rows={[
-              ["Platform Fee", "5% per transaction"],
+              ["Platform Fee", "8% per transaction"],
               ["Stripe Processing Fee", "2.9% + $0.30"],
               ["Hold Percentage", "0% (no hold – direct payout via Stripe Connect)"],
               ["Minimum Payout", "$25"],
@@ -434,7 +434,7 @@ const StudySheet = () => {
               ["Hold", "(Legacy – no longer used) Previously 15% held for 15 days"],
               ["Magic Link", "Passwordless authentication link sent via email"],
               ["Net Score", "Gross score minus Playing Handicap"],
-              ["Platform Fee", "5% fee on all transactions (TeeVents revenue)"],
+              ["Platform Fee", "8% fee on all transactions (TeeVents revenue)"],
               ["Playing Handicap", "Course Handicap × Allowance (used for competition)"],
               ["RLS", "Row Level Security (Supabase)"],
               ["Slope Rating", "USGA measure of difficulty for a bogey golfer (113 = average)"],
@@ -593,11 +593,11 @@ function buildPdfHtml(): string {
       ${t(["Step", "What Happens"], [
         ["1. Golfer registers", "Pays via Stripe Checkout (card, Apple Pay, Google Pay, Cash App Pay)"],
         ["2. Stripe processes", "Charges golfer's card; deducts 2.9% + $0.30 processing fee"],
-        ["3. Funds split", "5% application fee → TeeVents; remainder → organizer's connected Stripe account"],
+        ["3. Funds split", "8% application fee → TeeVents; remainder → organizer's connected Stripe account"],
         ["4. Organizer payout", "Stripe pays organizer per their Stripe payout schedule (3-7 business days)"],
       ])}
-      <p><strong>Pass to Golfer (default):</strong> Golfer sees registration + 5% + Stripe fees as a single line item; organizer keeps 100% of advertised price.</p>
-      <p><strong>Absorb Fees:</strong> Golfer pays only the registration fee; organizer receives the registration minus 5% and Stripe processing fees.</p>
+      <p><strong>Pass to Golfer (default):</strong> Golfer sees registration + 8% + Stripe fees as a single line item; organizer keeps 100% of advertised price.</p>
+      <p><strong>Absorb Fees:</strong> Golfer pays only the registration fee; organizer receives the registration minus 8% and Stripe processing fees.</p>
     </section>
 
     <section><h2>5. Payout Methods</h2>
@@ -608,7 +608,7 @@ function buildPdfHtml(): string {
         ["Additional Fee", "None", "None"],
         ["TeeVents hold", "None — Direct Charges", "Funds settle to TeeVents until check requested"],
       ])}
-      <p>TeeVents uses Stripe Connect <strong>Direct Charges</strong>: every paid checkout is created on the organizer's connected Stripe account, with TeeVents taking only a 5% application fee. Check payouts are the only flow where funds temporarily route through TeeVents pending a manual check request.</p>
+      <p>TeeVents uses Stripe Connect <strong>Direct Charges</strong>: every paid checkout is created on the organizer's connected Stripe account, with TeeVents taking only an 8% application fee. Check payouts are the only flow where funds temporarily route through TeeVents pending a manual check request.</p>
     </section>
 
     <section><h2>6. Handicap System</h2>
@@ -697,7 +697,7 @@ function buildPdfHtml(): string {
         <li>Selects tier, fills out company info</li>
         <li>Uploads logo (PNG, JPG, SVG, max 5MB)</li>
         <li>Proceeds to Stripe Checkout</li>
-        <li>Pays full tier amount (5% platform fee + Stripe fee deducted)</li>
+        <li>Pays full tier amount (8% platform fee + Stripe fee deducted)</li>
         <li>Net proceeds go to organizer's Stripe account</li>
         <li>Sponsor appears in organizer's Sponsor Management dashboard</li>
       </ol>
@@ -755,7 +755,7 @@ function buildPdfHtml(): string {
       ${t(["Layer", "Technology"], [
         ["Frontend", "React, TypeScript, Tailwind CSS, shadcn/ui"],
         ["Backend", "Supabase (PostgreSQL, Auth, Storage, Realtime)"],
-        ["Payments", "Stripe Connect (destination charges, 5% application fee)"],
+        ["Payments", "Stripe Connect (destination charges, 8% application fee)"],
         ["Emails", "Resend (transactional, magic links, notifications)"],
         ["SMS", "Twilio (optional)"],
         ["Hosting", "Lovable Cloud / Vercel"],
@@ -790,7 +790,7 @@ function buildPdfHtml(): string {
         ["How It Works", "/plans"],
         ["Pricing", "/plans"],
         ["FAQ", "/faq"],
-        ["Comparison", "/compare/eventbrite-vs-teevents"],
+        ["Comparison", "/compare"],
         ["Email Support", "info@teevents.golf"],
         ["Demo Request", "Calendly link (in sales hub)"],
       ])}
@@ -798,7 +798,7 @@ function buildPdfHtml(): string {
 
     <section><h2>15. Key Metrics & Limits</h2>
       ${t(["Metric", "Value"], [
-        ["Platform Fee", "5% per transaction"],
+        ["Platform Fee", "8% per transaction"],
         ["Stripe Processing Fee", "2.9% + $0.30"],
         ["Hold Percentage", "0% (no hold – direct payout via Stripe Connect)"],
         ["Minimum Payout", "$25"],
@@ -837,7 +837,7 @@ function buildPdfHtml(): string {
         ["Hold", "(Legacy – no longer used) Previously 15% held for 15 days"],
         ["Magic Link", "Passwordless authentication link sent via email"],
         ["Net Score", "Gross score minus Playing Handicap"],
-        ["Platform Fee", "5% fee on all transactions (TeeVents revenue)"],
+        ["Platform Fee", "8% fee on all transactions (TeeVents revenue)"],
         ["Playing Handicap", "Course Handicap × Allowance (used for competition)"],
         ["RLS", "Row Level Security (Supabase)"],
         ["Slope Rating", "USGA measure of difficulty for a bogey golfer (113 = average)"],

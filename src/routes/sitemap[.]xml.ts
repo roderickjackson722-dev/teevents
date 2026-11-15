@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import type {} from "@tanstack/react-start";
 import { guides, extraGuides } from "@/pages/seo/guides";
+import { isHiddenPage } from "@/lib/hiddenPages";
 
 const BASE_URL = "https://www.teevents.golf";
 
@@ -33,7 +34,6 @@ const STATIC_ENTRIES: SitemapEntry[] = [
   { path: "/book", changefreq: "monthly", priority: "0.7" },
   { path: "/help", changefreq: "monthly", priority: "0.5" },
   { path: "/compare", changefreq: "monthly", priority: "0.7" },
-  { path: "/compare/eventbrite-vs-teevents", changefreq: "monthly", priority: "0.7" },
   { path: "/compare/golf-genius-vs-teevents", changefreq: "monthly", priority: "0.7" },
   { path: "/platform", changefreq: "monthly", priority: "0.6" },
   { path: "/privacy", changefreq: "yearly", priority: "0.3" },
@@ -103,7 +103,7 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const guideEntries: SitemapEntry[] = [...guides, ...extraGuides].map((guide) => ({
+        const guideEntries: SitemapEntry[] = [...guides, ...extraGuides].filter((guide) => !isHiddenPage(`/${guide.slug}`)).map((guide) => ({
           path: `/${guide.slug}`,
           changefreq: "monthly",
           priority: "0.8",
@@ -115,7 +115,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           priority: "0.4",
         }));
 
-        const all = [...STATIC_ENTRIES, ...guideEntries, ...helpEntries, ...(await dynamicEntries())];
+        const all = [...STATIC_ENTRIES.filter((e) => !isHiddenPage(e.path)), ...guideEntries, ...helpEntries, ...(await dynamicEntries())];
         const seen = new Set<string>();
         const unique = all.filter((entry) => (seen.has(entry.path) ? false : (seen.add(entry.path), true)));
 

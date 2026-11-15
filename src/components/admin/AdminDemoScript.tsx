@@ -58,14 +58,14 @@ const sections: Section[] = [
     intro: "\"Collect registrations, fees, and sponsor commitments — all in one place.\"",
     points: [
       "Online registration form (individual or team) with Stripe checkout — Apple Pay, Google Pay, all cards.",
-      "Pass Fees toggle: golfer pays the 5% platform fee, or you absorb it. Funds go straight to your Stripe account — TeeVents never holds your money.",
+      "Pass Fees toggle: golfer pays the 8% platform fee, or you absorb it. Funds go straight to your Stripe account — TeeVents never holds your money.",
       "Sponsor portal: tiered packages, sponsors upload logos, get tax receipts, and ROI tracking.",
       "Waitlist auto-fills sold-out events with one-click 'Offer Spot' emails.",
     ],
     table: {
       headers: ["Model", "Golfer Pays", "You Receive"],
       rows: [
-        ["Pass to Golfer", "Reg + 5% + Stripe fees", "100% of registration"],
+        ["Pass to Golfer", "Reg + 8% + Stripe fees", "100% of registration"],
         ["Absorb Fees", "Registration only", "~$138.15 on $150 registration"],
       ],
     },
@@ -192,7 +192,7 @@ const sections: Section[] = [
       "Base (Free): registration, payments, dashboard, printables, planning guide, course/handicap.",
       "Starter ($299/event): live leaderboard, sponsors, waitlist, messages, tee sheet, custom URL.",
       "Premium ($999/event): auction, donations, store, flyer studio, public search listing — full all-inclusive.",
-      "Always 5% platform fee per transaction. Funds go directly to you — no holding.",
+      "Always 8% platform fee per transaction. Funds go directly to you — no holding.",
       "Close: \"Want me to set this up for your tournament right now? Takes about 5 minutes.\"",
       "Send recap email within 24 hours with a sign-up link: teevents.golf/get-started",
     ],

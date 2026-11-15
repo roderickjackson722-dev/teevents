@@ -23,6 +23,7 @@ import { toast } from "@/hooks/use-toast";
 import { SponsorBanner } from "@/components/SponsorBanner";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { buildLeaderboard, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
+import { applySampleTournament, applySampleLeaderboard, isSampleEventSlug } from "@/lib/sampleEventDisplay";
 import { LiveLeaderboardEmbed } from "@/pages/LiveLeaderboard";
 import { normalizeOrder, normalizeVisibility, normalizeSectionTitles, publicSectionTitle, registrationCopy, PublicTabKey } from "@/lib/publicTabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -337,7 +338,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           if (own) { setIsPreview(true); return handleSite({ data: own, error: null }); }
           setNotFound(true); setLoading(false); return;
         }
-        const t = data as unknown as TournamentSite;
+        const t = applySampleTournament(data as unknown as TournamentSite);
         setTournament(t);
 
         // Fetch nonprofit status for the org
@@ -391,7 +392,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           .then(({ data }: any) => setMediaClips((data as any[]) || []));
 
         if (scoresRes.data && scoresRes.data.length > 0) {
-          setLeaderboard(buildLeaderboard(scoresRes.data as any[], t));
+          setLeaderboard(applySampleLeaderboard(t.slug, buildLeaderboard(scoresRes.data as any[], t)));
         }
 
         if (roleRes.data) {
@@ -431,7 +432,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
     const refresh = () => {
       fetchAllPublicLeaderboardScores(tournament.id).then((data) => ({ data })).then(({ data }: { data: any }) => {
         if (cancelled || !data) return;
-        setLeaderboard(buildLeaderboard(data as any[], tournament));
+        setLeaderboard(applySampleLeaderboard(tournament.slug, buildLeaderboard(data as any[], tournament)));
       });
     };
     const channel = supabase
@@ -1786,6 +1787,9 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           >
             {heroTitle}
           </h1>
+          {isSampleEventSlug(tournament.slug) && (
+            <span className="mt-3 inline-block rounded-sm bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">Sample event page</span>
+          )}
 
           {/* Subtitle */}
           {tournament.site_hero_subtitle && (

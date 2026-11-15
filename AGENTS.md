@@ -54,5 +54,5 @@ Proposals and proposal-web have local AGENTS.md isolation rules.
 - All My Events and the header event switcher only read existing organization tournaments and set the remembered dashboard tournament_id; they appear only for workspaces with 2+ events so single-event dashboards stay unchanged.
 - The organizer Send step's audience choice (players/sponsors/vendors) reads sponsor/vendor sign-up tables and resend-confirmation's audience param, defaulting to players.
 - Admin fee_split (player/split/organizer) is the only per-event fee choice for No Cost events; admin-data set-fee-split writes it, a trigger blocks non-admin changes, and src/lib/feeSplit.ts (+ _shared copy) is the single math so admin preview and checkout agree.
-- The /t/teevents-annual sample event uses presentation-only display overrides in src/lib/sampleEventDisplay.ts (course name, badge, team labels) applied in PublicTournament and LiveLeaderboard, so the demo never needs database edits that would go live immediately.
+- /t/teevents-annual display overrides live in src/lib/sampleEventDisplay.ts (PublicTournament, LiveLeaderboard) so the demo needs no live database edits.
 - Draft public pages are listed once in src/lib/hiddenPages.ts; sitemap, pathMeta noindex and guide link lists filter through it, so hiding a page never requires deleting it.

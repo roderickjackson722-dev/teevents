@@ -179,7 +179,7 @@ export const eventbrite: GuideContent = {
       heading: "Fees and how money moves",
       mockup: "pricing",
       paragraphs: [
-        "TeeVents starts at $0 with a 5% player-funded service fee, so organizers keep their event revenue. Per-Event is a one-time $399 with no TeeVents transaction fee and includes live scoring plus a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
+        "TeeVents starts at $0 with an 8% player-funded service fee, so organizers keep their event revenue. Per-Event is a one-time $399 with no TeeVents transaction fee and includes live scoring plus a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
         "Funds settle directly to your own connected Stripe account as the merchant of record, so you are not waiting on a platform payout cycle to access your event revenue.",
       ],
     },
@@ -197,7 +197,7 @@ export const eventbrite: GuideContent = {
     },
     {
       q: "What does TeeVents cost compared to Eventbrite?",
-      a: "TeeVents charges a 5% platform fee plus card processing, with no required subscription. Fees can be passed to registrants at checkout.",
+      a: "TeeVents charges an 8% platform fee plus card processing, with no required subscription. Fees can be passed to registrants at checkout.",
     },
     {
       q: "Can I move an event that already started selling on Eventbrite?",
@@ -305,7 +305,7 @@ export const competitors: GuideContent = {
     },
     {
       q: "How do payouts work on TeeVents?",
-      a: "Payments settle directly to your connected Stripe account as merchant of record, with a 5% platform fee on paid transactions.",
+      a: "Payments settle directly to your connected Stripe account as merchant of record, with an 8% platform fee on paid transactions.",
     },
   ],
   related: [

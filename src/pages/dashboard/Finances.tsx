@@ -581,7 +581,7 @@ const Finances = () => {
           type="button"
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
           onClick={() => setBreakdown({
-            title: "Platform Fees (5%)",
+            title: "Platform Fees (8%)",
             description: "8% platform fee deducted from each transaction at checkout.",
             column: "platform_fee_cents",
             items: selectedTransactions.filter((t) => !isManualOffline(t) && t.platform_fee_cents > 0),

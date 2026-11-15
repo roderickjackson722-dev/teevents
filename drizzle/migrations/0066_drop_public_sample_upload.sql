@@ -1,0 +1,1 @@
+DROP POLICY IF EXISTS "Anyone can upload sample request files" ON storage.objects;

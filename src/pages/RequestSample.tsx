@@ -62,15 +62,12 @@ export default function RequestSample() {
 
   const set = (k: keyof typeof form, v: string) => setForm((f) => ({ ...f, [k]: v }));
 
-  const uploadFile = async (file: File, kind: "flyer" | "logo") => {
-    const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "png";
-    const path = `${kind}s/${crypto.randomUUID()}.${ext}`;
-    const { error } = await supabase.storage.from("sample-requests").upload(path, file, {
-      cacheControl: "3600",
-      upsert: false,
-    });
-    if (error) throw new Error(`Could not upload your ${kind}: ${error.message}`);
-    return path;
+  const encodeFile = async (file: File) => {
+    const ext = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8) || "png";
+    const buf = new Uint8Array(await file.arrayBuffer());
+    let bin = "";
+    for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+    return { ext, type: file.type || "application/octet-stream", data: btoa(bin) };
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -89,8 +86,8 @@ export default function RequestSample() {
 
     setSubmitting(true);
     try {
-      const flyer_url = flyer ? await uploadFile(flyer, "flyer") : "";
-      const logo_url = logo ? await uploadFile(logo, "logo") : "";
+      const flyer_file = flyer ? await encodeFile(flyer) : null;
+      const logo_file = logo ? await encodeFile(logo) : null;
       const players = parseInt(form.expected_players, 10);
 
       const res = await fetch("/api/public/sample-request", {
@@ -99,8 +96,8 @@ export default function RequestSample() {
         body: JSON.stringify({
           ...parsed.data,
           expected_players: Number.isFinite(players) ? players : null,
-          flyer_url,
-          logo_url,
+          flyer_file,
+          logo_file,
         }),
       });
       if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error || "Submission failed");

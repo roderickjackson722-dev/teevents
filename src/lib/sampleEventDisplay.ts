@@ -11,8 +11,8 @@ export function isSampleEventSlug(slug: string | null | undefined): boolean {
   return (slug || "").toLowerCase() === SAMPLE_EVENT_SLUG;
 }
 
-export function applySampleTournament<T extends { slug?: string | null; course_name?: string | null; location?: string | null }>(t: T): T {
-  if (!isSampleEventSlug(t?.slug)) return t;
+export function applySampleTournament<T extends { slug?: string | null; course_name?: string | null; location?: string | null }>(t: T, routeSlug?: string | null): T {
+  if (!isSampleEventSlug(routeSlug) && !isSampleEventSlug(t?.slug)) return t;
   return { ...t, course_name: "Sample Course", location: "Demo event, no real address" };
 }
 

@@ -338,7 +338,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           if (own) { setIsPreview(true); return handleSite({ data: own, error: null }); }
           setNotFound(true); setLoading(false); return;
         }
-        const t = applySampleTournament(data as unknown as TournamentSite);
+        const t = applySampleTournament(data as unknown as TournamentSite, slug);
         setTournament(t);
 
         // Fetch nonprofit status for the org
@@ -392,7 +392,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           .then(({ data }: any) => setMediaClips((data as any[]) || []));
 
         if (scoresRes.data && scoresRes.data.length > 0) {
-          setLeaderboard(applySampleLeaderboard(t.slug, buildLeaderboard(scoresRes.data as any[], t)));
+          setLeaderboard(applySampleLeaderboard(slug, buildLeaderboard(scoresRes.data as any[], t)));
         }
 
         if (roleRes.data) {
@@ -432,7 +432,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
     const refresh = () => {
       fetchAllPublicLeaderboardScores(tournament.id).then((data) => ({ data })).then(({ data }: { data: any }) => {
         if (cancelled || !data) return;
-        setLeaderboard(applySampleLeaderboard(tournament.slug, buildLeaderboard(data as any[], tournament)));
+        setLeaderboard(applySampleLeaderboard(slug, buildLeaderboard(data as any[], tournament)));
       });
     };
     const channel = supabase
@@ -1787,7 +1787,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           >
             {heroTitle}
           </h1>
-          {isSampleEventSlug(tournament.slug) && (
+          {isSampleEventSlug(slug) && (
             <span className="mt-3 inline-block rounded-sm bg-secondary px-3 py-1 text-xs font-bold uppercase tracking-wide text-secondary-foreground">Sample event page</span>
           )}
 

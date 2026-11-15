@@ -1,3 +1,4 @@
+import { isHiddenPage } from "@/lib/hiddenPages";
 /**
  * Universal server-rendered share metadata.
  *
@@ -181,6 +182,7 @@ export async function resolvePathMeta(pathname: string): Promise<PathMeta> {
     const priv = seg[0] === "dashboard" || seg[0] === "admin" || seg[0] === "sales-hub" || seg[0] === "sales";
 
     const staticHit = STATIC[path];
+    if (isHiddenPage(path)) return { ...(staticHit ? make(staticHit.title, staticHit.description, path) : fallback), noIndex: true };
     if (staticHit) return make(staticHit.title, staticHit.description, path);
 
     if (seg[0] === "help" && seg[1] && HELP_TITLES[seg[1]]) {

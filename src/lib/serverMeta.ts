@@ -104,6 +104,7 @@ export async function getTournamentMeta(slug: string, route: "t" | "tournament" 
       url: `${SITE}/pairings/${slug}`,
     };
   }
+  if (slug.toLowerCase() === "teevents-annual") return { title: "SAMPLE: The Annual Golf Tournament | TeeVents", description: `Sample event page: a demo TeeVents golf tournament${date ? ` on ${date}` : ""} at Sample Course, with registration, sponsors and a live leaderboard.`, image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url), url: `${SITE}/${route}/${slug}` };
   return { title: `${title} | ${siteName || "TeeVents Golf Tournaments"}`, description: tournamentSearchDescription(row), image: absolute(row?.site_hero_image_url || row?.image_url || row?.site_logo_url), url: `${SITE}/${route}/${slug}` };
 }
 

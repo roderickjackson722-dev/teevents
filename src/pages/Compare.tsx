@@ -3,7 +3,8 @@ import { AlertTriangle, Check, Globe, Paintbrush, Rocket, Shield, Trophy, User, 
 import Layout from "@/components/Layout";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Callout, FinalCta, Hero, IconCard, SectionHead, fade } from "@/components/marketing/PageBits";
-import { SOFTWARE_TAG, SOFTWARE_DEFINITION } from "@/lib/programTypes";
+import { SOFTWARE_TAG, SOFTWARE_DEFINITION as RAW_SOFTWARE_DEFINITION } from "@/lib/programTypes";
+const SOFTWARE_DEFINITION = RAW_SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
 
 const never = [
   ["\"I was left to figure it all out alone.\"", "Your rep is on call, whether they build it or you do."],

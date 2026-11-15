@@ -36,7 +36,7 @@ const directorTasks = [
 ];
 const pathCards = [
   { title: "Running Your First Tournament?", text: "You have never run a golf tournament before, and you do not have to figure it out alone. Your virtual Tournament director builds everything for you, your branded event page, registration, pairings, your format, and your live leaderboard. You tell us about your event, we set it up, and your rep is on call on event day if anything comes up.", items: ["We build your event page for you", "We set up registration, pairings, and scoring", "Your rep is on call on event day", "You can open your event any time and change anything"] },
-  { title: "Running Your Annual Event Again?", text: "You know your event. You have run it before, and you do not need someone to hold your hand. You get the same platform, and you build it yourself with the same tools. Registration, pairings, live scoring, leaderboard, sponsors, and payments, all on one branded page. Your rep is still there when you need them, and you can change anything any time.", items: ["Build it yourself with the same tools", "Registration, pairings, live scoring, and sponsors on one page", "Change anything, any time", "Your rep is there when you need them"] },
+  { title: "Running Your Annual Event Again?", text: "You know your event. You have run it before, and you do not need someone to hold your hand. You get the same platform. We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use. Registration, pairings, live scoring, leaderboard, sponsors, and payments, all on one branded page. Your rep is still there when you need them, and you can change anything any time.", items: ["We set up your page, you edit anytime", "Registration, pairings, live scoring, and sponsors on one page", "Change anything, any time", "Your rep is there when you need them"] },
 ];
 const standards = [
   "Your page is live in 7 days or less",
@@ -56,7 +56,7 @@ function DirectorSections() {
         <h2 id="director-title" className="text-center font-display text-3xl font-bold leading-tight text-primary md:text-4xl">What Your Virtual Tournament Director Does For You</h2>
         <p className="mx-auto mt-5 max-w-3xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">Setting up a tournament takes months of preparation, and that is why good events do not come back for year two. Your virtual Tournament director does the setup for you, so your event comes back.</p>
         <div className="mx-auto mt-10 max-w-2xl text-foreground"><CheckList items={directorTasks} /></div>
-        <p className="mx-auto mt-10 max-w-3xl text-center font-display text-lg leading-relaxed text-primary md:text-xl">Build it yourself with the same tools, or let your director build it for you. You stay in control either way.</p>
+        <p className="mx-auto mt-10 max-w-3xl text-center font-display text-lg leading-relaxed text-primary md:text-xl">We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use.</p>
       </div>
     </section>
     <section aria-labelledby="paths-title" className="bg-background py-14 md:py-24">
@@ -86,7 +86,7 @@ function DirectorSections() {
 export default function Index() {
   const testimonial = ORGANIZER_TESTIMONIALS[0];
   return <Layout>
-    <SEO title="Golf Tournament Management Software for Organizers & Courses | TeeVents" description="Golf tournament management software for charities, organizers, and golf courses. Build your event page yourself or with an included dedicated TeeVents rep." path="/" />
+    <SEO title="Golf Tournament Management for Charities & Corporate Outings | TeeVents" description="A dedicated TeeVents rep sets up your event page, registration, and live leaderboard. Edit anytime. On call for your event. $0 to start." path="/" />
     <div className="homepage">
       <section aria-labelledby="homepage-title" className="relative overflow-hidden bg-primary text-primary-foreground">
         <img src={heroGolf} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />

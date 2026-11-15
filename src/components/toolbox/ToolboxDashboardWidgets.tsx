@@ -46,7 +46,7 @@ export default function ToolboxDashboardWidgets({ orgId, hasTournament, redirect
   return <>
     {isNewOrg && tb && (tb as any).onboarding_completed_at && <OnboardingChecklist orgId={orgId} tb={tb} ctx={ctx} />}
     {isNewOrg && empty && <div className="mb-6 flex flex-col gap-4 rounded-lg border-2 border-secondary bg-secondary/10 p-5 sm:flex-row sm:items-center sm:justify-between">
-      <p className="text-sm leading-relaxed text-foreground md:text-base">Your rep will contact you within 1 business day. In the meantime, upload your event assets to the Organizer Toolbox so your rep can start building right away.</p>
+      <p className="text-sm leading-relaxed text-foreground md:text-base">Your rep will contact you within 48 hours. In the meantime, upload your event assets to the Organizer Toolbox so your rep can start building right away.</p>
       <Button asChild variant="secondary" className="shrink-0 font-semibold"><Link to={`/dashboard/toolbox${ctx}`}>Go to Organizer Toolbox <ArrowRight className="h-4 w-4" /></Link></Button>
     </div>}
     <div className="mb-8 grid gap-4 sm:grid-cols-2">

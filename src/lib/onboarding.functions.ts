@@ -49,7 +49,7 @@ export const sendOnboardingSummary = createServerFn({ method: "POST" })
         `Hi ${name},`, "", "Thank you for finishing your TeeVents setup. Here is what you shared with us:", "", ...eventLines, "",
         "Organizer Toolbox:", ...assetLines, "",
         needed.length ? `Still needed from you: ${needed.join(", ")}.` : "We have everything we need to get started.", "",
-        "Your dedicated TeeVents rep will contact you within 1 business day.", "",
+        "Your dedicated TeeVents rep will contact you within 48 hours.", "",
         `Your dashboard: ${SITE}/dashboard`, `Your Organizer Toolbox: ${SITE}/dashboard/toolbox`, "", "TeeVents Golf Management",
       ].join("\n")) : Promise.resolve(null),
       send(["info@teevents.golf"], `Onboarding completed: ${org.name}`, [

@@ -12,7 +12,7 @@ import { listFlatRateTournaments, setFlatRateOverride } from "@/lib/flatRate.fun
 type Row = Awaited<ReturnType<typeof listFlatRateTournaments>>[number];
 
 /**
- * Admin-only Flat-Rate Override: grants Flat-Rate Pro (no 5% platform fee) to a
+ * Admin-only Flat-Rate Override: grants Flat-Rate Pro (no 8% platform fee) to a
  * tournament at no charge. Every change is written to tournament_flat_rate_log.
  */
 const FlatRateOverride = () => {
@@ -62,7 +62,7 @@ const FlatRateOverride = () => {
 
         <h1 className="text-3xl font-display font-bold text-foreground mb-1">Flat-Rate Override</h1>
         <p className="text-muted-foreground mb-6">
-          Grant Flat-Rate Pro (no 5% platform fee) to a tournament at no charge. Organizers never see this screen.
+          Grant Flat-Rate Pro (no 8% platform fee) to a tournament at no charge. Organizers never see this screen.
         </p>
 
         <form

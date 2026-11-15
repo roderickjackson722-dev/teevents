@@ -70,7 +70,7 @@ export default function TripPayments({ tripId }: { tripId: string }) {
           </Button>
         </CardContent>
       </Card>
-      <p className="text-xs text-muted-foreground">A 5% platform fee is added to the participant's total at checkout.</p>
+      <p className="text-xs text-muted-foreground">A 8% platform fee is added to the participant's total at checkout.</p>
 
       {list.length === 0 ? (
         <p className="text-sm text-muted-foreground">No payments yet.</p>

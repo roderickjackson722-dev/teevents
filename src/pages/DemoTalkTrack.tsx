@@ -25,9 +25,9 @@ const FLOW_STEPS = [
 /* ────── $100 breakdown ────── */
 const SAMPLE_BREAKDOWN = [
   { label: "Registration Price (fees absorbed)", amount: "$100.00" },
-  { label: "TeeVents Platform Fee (8%)", amount: "−$5.00" },
+  { label: "TeeVents Platform Fee (8%)", amount: "−$8.00" },
   { label: "Stripe Processing (~2.9% + $0.30)", amount: "−$3.20" },
-  { label: "Net in Your Stripe Account", amount: "$91.80", bold: true },
+  { label: "Net in Your Stripe Account", amount: "$88.80", bold: true },
 ];
 
 /* ────── objections ────── */
@@ -84,9 +84,9 @@ HOW FUNDS FLOW
 
 SAMPLE $100 REGISTRATION (FEES ABSORBED)
 • Registration Price: $100.00
-• TeeVents Platform Fee (8%): −$5.00
+• TeeVents Platform Fee (8%): −$8.00
 • Stripe Processing (~2.9% + $0.30): −$3.20
-• Net in Your Stripe Account: $91.80
+• Net in Your Stripe Account: $88.80
 
 KEY MESSAGE
 "TeeVents is just the software. Your money is yours, in your Stripe account, from the moment a golfer pays. We never hold, escrow, or release funds — there's no payout schedule on our end to wait on."

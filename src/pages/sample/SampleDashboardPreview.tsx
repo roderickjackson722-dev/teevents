@@ -1168,7 +1168,7 @@ function FinancesPanel() {
           <div className="text-xs text-muted-foreground">
             Platform Fees (8%)
           </div>
-          <div className="text-xl font-bold text-orange-600">$405.00</div>
+          <div className="text-xl font-bold text-orange-600">$648.00</div>
         </div>
         <div className="border rounded-md p-3">
           <div className="text-xs text-muted-foreground">Stripe Fees</div>
@@ -1176,7 +1176,7 @@ function FinancesPanel() {
         </div>
         <div className="border rounded-md p-3 bg-green-50">
           <div className="text-xs text-muted-foreground">Net to You</div>
-          <div className="text-xl font-bold text-green-700">$7,452.00</div>
+          <div className="text-xl font-bold text-green-700">$7,209.00</div>
         </div>
       </div>
       <div className="border rounded-md p-3 mb-4 bg-green-50 flex items-center justify-between flex-wrap gap-2">
@@ -1205,10 +1205,10 @@ function FinancesPanel() {
                 <td className="py-2">{t.date}</td>
                 <td>{t.golfer}</td>
                 <td className="text-right">$150.00</td>
-                <td className="text-right text-orange-600">$7.50</td>
+                <td className="text-right text-orange-600">$12.00</td>
                 <td className="text-right text-orange-600">$4.65</td>
                 <td className="text-right text-green-700 font-semibold">
-                  $137.85
+                  $133.35
                 </td>
               </tr>
             ))}

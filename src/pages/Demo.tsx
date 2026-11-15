@@ -367,11 +367,11 @@ const Demo = () => {
                   </div>
                   <div className="flex justify-between items-center pb-3 border-b border-border">
                     <span className="text-muted-foreground">TeeVents platform fee (8%)</span>
-                    <span className="font-display font-bold text-destructive">−$7.50</span>
+                    <span className="font-display font-bold text-destructive">−$12.00</span>
                   </div>
                   <div className="flex justify-between items-center pt-1">
                     <span className="font-semibold text-foreground">Organizer receives</span>
-                    <span className="font-display font-bold text-primary text-2xl">$137.85</span>
+                    <span className="font-display font-bold text-primary text-2xl">$133.35</span>
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-4">

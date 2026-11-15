@@ -508,7 +508,7 @@ const EMAIL_TEMPLATES = [
     id: "fee-breakdown",
     name: "Fee Breakdown Follow-up",
     subject: "Where your registration fees are actually going",
-    body: `Hi [Name],\n\nI wanted to follow up with a quick breakdown of what happens to your registration fees:\n\nOn a $100 registration:\n• TeeVents platform fee: 8% = $5.00\n• Stripe processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.20\n• You keep: $91.80 (with option to pass fees to golfers)\n\nCompare that to Eventbrite:\n• Platform fee: 3.7% + $1.79 = $5.49\n• Processing: 2.9% + $0.30 = $3.20\n• Total fees: $8.69\n\nPlus, TeeVents includes live leaderboards, sponsor management, and QR check-in — features you'd need separate tools for with Eventbrite.\n\nWant to see it in action? Book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
+    body: `Hi [Name],\n\nI wanted to follow up with a quick breakdown of what happens to your registration fees:\n\nOn a $100 registration:\n• TeeVents platform fee: 8% = $8.00\n• Stripe processing: 2.9% + $0.30 = $3.20\n• Total fees: $11.20\n• You keep: $88.80 (with option to pass fees to golfers)\n\nTeeVents also includes live leaderboards, sponsor management, and QR check-in — features you'd need separate tools for with Eventbrite.\n\nWant to see it in action? Book a demo: https://calendly.com/teevents-golf/demo\n\nBest,\nRod Jackson\nTeeVents Golf`,
   },
   {
     id: "feature-gap",

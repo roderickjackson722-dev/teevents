@@ -60,7 +60,7 @@ const HowPaymentsWork = () => (
             <p className="text-sm text-muted-foreground mb-3">The 8% fee and Stripe processing fee are added at checkout. Your organization receives 100% of the registration price.</p>
             <div className="text-sm bg-muted/50 rounded p-3 space-y-1">
               <div className="flex justify-between"><span>Registration</span><span>$150.00</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>$7.50</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Platform Fee (8%)</span><span>$7.50</span></div>
               <div className="flex justify-between text-muted-foreground"><span>Stripe Processing</span><span>~$4.88</span></div>
               <hr className="my-1 border-border" />
               <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>~$162.38</span></div>
@@ -74,7 +74,7 @@ const HowPaymentsWork = () => (
               <div className="flex justify-between"><span>Registration</span><span>$150.00</span></div>
               <hr className="my-1 border-border" />
               <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$150.00</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Platform Fee (5%)</span><span>−$7.50</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Platform Fee (8%)</span><span>−$7.50</span></div>
               <div className="flex justify-between text-muted-foreground"><span>Stripe Processing</span><span>~−$4.49</span></div>
               <div className="flex justify-between text-primary font-medium"><span>You Receive</span><span>~$138.01</span></div>
             </div>

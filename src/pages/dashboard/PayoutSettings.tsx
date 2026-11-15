@@ -293,7 +293,7 @@ export default function PayoutSettings() {
       return;
     }
     if (!ackFee) {
-      toast.error("Please acknowledge the 5% platform fee before continuing.");
+      toast.error("Please acknowledge the 8% platform fee before continuing.");
       return;
     }
     setConnectingStripe(true);
@@ -405,7 +405,7 @@ export default function PayoutSettings() {
 
   const handleSelectStripe = async () => {
     if (!ackFee) {
-      toast.error("Please acknowledge the 5% platform fee before continuing.");
+      toast.error("Please acknowledge the 8% platform fee before continuing.");
       return;
     }
     // Open confirmation modal first
@@ -414,7 +414,7 @@ export default function PayoutSettings() {
 
   const confirmActivateStripe = async () => {
     if (!ackFee) {
-      toast.error("Please acknowledge the 5% platform fee before continuing.");
+      toast.error("Please acknowledge the 8% platform fee before continuing.");
       return;
     }
     if (!org?.orgId) return;
@@ -492,7 +492,7 @@ export default function PayoutSettings() {
         <ul className="text-xs text-muted-foreground space-y-1 ml-6 list-disc">
           <li><strong>Stripe Connect (Recommended):</strong> Payments split automatically at checkout — net proceeds go directly to your Stripe account</li>
           <li><strong>Check:</strong> TeeVents holds funds and mails a check upon your request</li>
-          <li>All methods: 5% platform fee + Stripe processing fee per transaction</li>
+          <li>All methods: 8% platform fee + Stripe processing fee per transaction</li>
         </ul>
       </div>
 
@@ -588,7 +588,7 @@ export default function PayoutSettings() {
                         onCheckedChange={(checked) => setAckFee(checked === true)}
                       />
                       <label htmlFor="ack-fee-stripe-connected" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                        I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
+                        I acknowledge and agree that TeeVents charges a <strong className="text-foreground">8% platform fee</strong> on every transaction processed through the platform.
                       </label>
                     </div>
                   </div>
@@ -636,7 +636,7 @@ export default function PayoutSettings() {
                         onCheckedChange={(checked) => setAckFee(checked === true)}
                       />
                       <label htmlFor="ack-fee-stripe" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                        I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
+                        I acknowledge and agree that TeeVents charges a <strong className="text-foreground">8% platform fee</strong> on every transaction processed through the platform.
                       </label>
                     </div>
                     <div className="space-y-2">
@@ -695,7 +695,7 @@ export default function PayoutSettings() {
             <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-4">
               <li>TeeVents holds your funds until you request a check</li>
               <li>Checks mailed within 5–7 business days of request</li>
-              <li>No additional fee beyond the standard 5% platform fee</li>
+              <li>No additional fee beyond the standard 8% platform fee</li>
             </ul>
             <div className="space-y-2">
               <Label htmlFor="mailing-address" className="text-sm">Mailing Address</Label>
@@ -716,7 +716,7 @@ export default function PayoutSettings() {
                     onCheckedChange={(checked) => setAckFee(checked === true)}
                   />
                   <label htmlFor="ack-fee-check" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                    I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction processed through the platform.
+                    I acknowledge and agree that TeeVents charges a <strong className="text-foreground">8% platform fee</strong> on every transaction processed through the platform.
                   </label>
                 </div>
                 <div className="flex items-start gap-3">
@@ -854,7 +854,7 @@ export default function PayoutSettings() {
             <div className="rounded-lg border border-border bg-muted/30 p-4 space-y-2">
               <p className="text-sm font-semibold text-foreground">Platform Fee Details</p>
               <ul className="text-sm text-muted-foreground space-y-1 list-disc ml-5">
-                <li><strong className="text-foreground">5% platform fee</strong> applied to every transaction processed through TeeVents.</li>
+                <li><strong className="text-foreground">8% platform fee</strong> applied to every transaction processed through TeeVents.</li>
                 <li>Standard <strong className="text-foreground">Stripe processing fees</strong> also apply (typically 2.9% + $0.30 per transaction).</li>
                 <li>Net proceeds are automatically transferred to your connected Stripe account at checkout.</li>
                 <li>You can withdraw funds from Stripe to your bank on your own schedule.</li>
@@ -867,7 +867,7 @@ export default function PayoutSettings() {
                 onCheckedChange={(checked) => setAckFee(checked === true)}
               />
               <label htmlFor="ack-fee-modal" className="text-sm text-muted-foreground leading-relaxed cursor-pointer">
-                I acknowledge and agree that TeeVents charges a <strong className="text-foreground">5% platform fee</strong> on every transaction, in addition to Stripe processing fees.
+                I acknowledge and agree that TeeVents charges a <strong className="text-foreground">8% platform fee</strong> on every transaction, in addition to Stripe processing fees.
               </label>
             </div>
           </div>

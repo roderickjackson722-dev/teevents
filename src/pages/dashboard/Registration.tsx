@@ -1172,7 +1172,7 @@ const Registration = () => {
                 <div>
                   <Label className="text-sm font-semibold">"Cover the Fees" Option</Label>
                   <p className="text-xs text-muted-foreground mt-0.5">
-                    Allow golfers to optionally cover the 5% platform fee and Stripe processing fee.
+                    Allow golfers to optionally cover the 8% platform fee and Stripe processing fee.
                     When enabled, a checkbox appears on the registration form.
                   </p>
                 </div>

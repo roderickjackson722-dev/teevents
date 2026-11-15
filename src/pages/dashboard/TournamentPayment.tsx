@@ -59,7 +59,7 @@ const TournamentPayment = () => {
             <Receipt className="h-6 w-6 text-primary" /> Tournament Payments
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Pay the one-time $399 Flat-Rate Pro fee for an event and skip the 5% platform fee on
+            Pay the one-time $399 Flat-Rate Pro fee for an event and skip the 8% platform fee on
             every transaction for that tournament.
           </p>
         </div>

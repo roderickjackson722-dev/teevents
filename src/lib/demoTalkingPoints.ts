@@ -27,7 +27,7 @@ export const TALKING_POINTS: Record<PlatformKey, TalkingPoint[]> = {
     { pain: "No volunteer check-in", solution: "QR code check-in for volunteers and players" },
     { pain: "No pairings or tee sheets", solution: "Drag-and-drop pairings with hole assignments" },
     { pain: "Funds held until after event", solution: "Stripe Connect – automatic payouts (no holding)" },
-    { pain: "High fees", solution: "8% platform fee vs. Eventbrite's 8.5%+" },
+    { pain: "High fees", solution: "Clear 8% service fee, paid by golfers" },
   ],
   zeffy_givebutter: [
     { pain: "General fundraising platform", solution: "Built specifically for golf tournaments" },

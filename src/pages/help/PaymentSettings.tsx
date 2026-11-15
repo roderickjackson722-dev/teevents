@@ -33,9 +33,9 @@ const PaymentSettings = () => (
             <div className="text-sm bg-muted/50 rounded p-3 space-y-1">
               <div className="flex justify-between"><span>Registration</span><span>$150.00</span></div>
               <div className="flex justify-between text-muted-foreground"><span>Platform Fee (8%)</span><span>$12.00</span></div>
-              <div className="flex justify-between text-muted-foreground"><span>Processing Fee</span><span>$4.88</span></div>
+              <div className="flex justify-between text-muted-foreground"><span>Processing Fee</span><span>$5.15</span></div>
               <hr className="my-1 border-border" />
-              <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$162.38</span></div>
+              <div className="flex justify-between font-semibold"><span>Golfer Pays</span><span>$167.15</span></div>
               <div className="flex justify-between text-primary"><span>You Receive</span><span>$150.00</span></div>
             </div>
             <p className="text-xs text-muted-foreground mt-3">✅ Best for: Maximizing your revenue per registration</p>

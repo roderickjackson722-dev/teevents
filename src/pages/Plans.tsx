@@ -7,17 +7,20 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
 import { SOFTWARE_TAG, SOFTWARE_DEFINITION } from "@/lib/programTypes";
 import FullServiceManagement from "@/components/marketing/FullServiceManagement";
+import TrustAndProof from "@/components/marketing/TrustAndProof";
+
+const PLAN_DEFINITION = SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "You run event day with the software, and your TeeVents rep is on call for support.");
 
 const plans = [
-  { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "Free for you. A 5% service fee is included in each player's registration total, so you keep 100% of your event revenue.", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
-  { name: "Per-Event", price: "$399", unit: "per tournament", badge: "", description: "Pay once per tournament. No platform transaction fees. Keep 100% of your registration revenue.", features: ['Everything in "No Cost to Start"', "Live Leaderboard and Mobile Scoring included on every event Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.", "Custom Leaderboard Colors matched to your event branding Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.", "0% TeeVents platform transaction fees", "Unlimited manual entries", "Unlimited transactions", "Dedicated TeeVents rep who builds your event", "One-time, per event"], cta: "SELECT PER-EVENT", to: "/signup?plan=per-event", note: "Standard card processing fees still apply." },
-  { name: "Per-League", price: "$599", unit: "per league", badge: "", description: "Perfect for season-long leagues with multiple events and standings.", features: ['Everything in "Per-Event"', "Covers the entire league season", "League standings and leaderboards Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.", "Season-long reporting", "Dedicated TeeVents rep who manages your league"], cta: "SELECT PER-LEAGUE", to: "/signup?plan=per-league", note: "One league, one season-long price." },
-  { name: "Enterprise", price: "$2,999", unit: "per year", badge: "BEST FOR 10 OR MORE EVENTS A YEAR", description: "For golf courses, clubs, and organizations running 10 or more events a year.", features: ["Unlimited tournaments and leagues", "0% TeeVents transaction fees", "Live leaderboard and mobile scoring included on every event Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.", "Dedicated TeeVents rep who builds every event", "Custom branding", "Staff accounts with role-based permissions", "Priority support", "Club page with all upcoming events"], cta: "REQUEST ENTERPRISE", to: "", note: "Billed annually. No per-event fees." },
+  { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "No cost to start. Golfers cover an 8% service fee that includes your dedicated TeeVents rep, plus standard card processing (Stripe 2.9% + $0.30).", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
+  { name: "Per-Event", price: "$399", unit: "per tournament", badge: "", description: "Pay once per tournament. No platform transaction fees. Keep 100% of your registration revenue.", features: ['Everything in "No Cost to Start"', "Live Leaderboard and Mobile Scoring included on every event", "Custom Leaderboard Colors matched to your event branding", "0% TeeVents platform transaction fees", "Unlimited manual entries", "Unlimited transactions", "Dedicated TeeVents rep who builds your event", "One-time, per event"], cta: "SELECT PER-EVENT", to: "/signup?plan=per-event", note: "Standard card processing fees still apply." },
+  { name: "Per-League", price: "$599", unit: "per league", badge: "", description: "Perfect for season-long leagues with multiple events and standings.", features: ['Everything in "Per-Event"', "Covers the entire league season", "League standings and leaderboards", "Season-long reporting", "Dedicated TeeVents rep who manages your league"], cta: "SELECT PER-LEAGUE", to: "/signup?plan=per-league", note: "One league, one season-long price." },
+  { name: "Enterprise", price: "$2,999", unit: "per year", badge: "", description: "For golf courses and organizations running 10+ events a year.", features: ["Unlimited tournaments and leagues", "0% TeeVents transaction fees", "Live leaderboard and mobile scoring included on every event", "Dedicated TeeVents rep who builds every event", "Custom branding", "Staff accounts with role-based permissions", "Priority support", "Club page with all upcoming events"], cta: "REQUEST ENTERPRISE", to: "", note: "Billed annually. No per-event fees." },
 ];
 const included = [
   { icon: UserRound, title: "A Named TeeVents Rep", description: "Your event built by a real person, free or paid." },
   { icon: Globe, title: "Custom Website Page", description: "Branded event page with your logo, colors, and sponsors." },
-  { icon: Trophy, title: "Custom Leaderboard", description: "Your rep matches every leaderboard to your event colors. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up." },
+  { icon: Trophy, title: "Custom Leaderboard", description: "Your rep matches every leaderboard to your event colors." },
   { icon: ShieldCheck, title: "Secure Payments", description: "Payments go straight to your Stripe account. We never hold your money." },
 ];
 const addons = [
@@ -29,27 +32,27 @@ const addons = [
 ];
 const payments = [
   ["Golfer Pays", "Full registration amount charged at checkout via Stripe."],
-  ["Your Plan Applies", "No Cost to Start: a 5% platform fee covered by players. Paid plans: 0% platform transaction fees."],
+  ["Your Plan Applies", "No Cost to Start: an 8% platform fee covered by players. Paid plans: 0% platform transaction fees."],
   ["Stripe Fee Applied", "Standard 2.9% + $0.30 processing fee deducted by Stripe."],
   ["You Get Paid", "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2 to 7 business days."],
 ];
 const comparison = [
   ["Type", "SOFTWARE", "SOFTWARE", "SOFTWARE", "SOFTWARE"],
   ["Upfront cost", "$0", "$399 per tournament", "$599 per league", "$2,999 per year"],
-  ["Transaction fee", "5% (covered by players)", "0%", "0%", "0%"],
+  ["Transaction fee", "8% (covered by players)", "0%", "0%", "0%"],
   ["Events included", "Pay as you go", "Pay as you go", "One league season", "Unlimited"],
   ["Dedicated rep", "Included", "Included", "Included", "Included"],
   ["Live Leaderboard and Mobile Scoring", "Add-on: $99", "Included", "Included", "Included"],
   ["Custom leaderboard colors", "Add-on: $99", "Included", "Included", "Included"],
   ["Custom branding", "TeeVents branding", "TeeVents branding", "TeeVents branding", "Custom branding"],
-  ["Best for", "Nonprofits and first-time organizers", "Mid-size tournaments", "Season-long leagues", "Courses and clubs running 10 or more events a year"],
+  ["Best for", "Nonprofits and first-time organizers", "Mid-size tournaments", "Season-long leagues", "Golf courses and organizations running 10+ events a year"],
 ];
 const faqs = [
-  ["Do I really get a dedicated rep on the free plan?", "Yes. Every event on TeeVents, free or paid, includes a dedicated TeeVents rep who builds your event page, sets up your registration, and configures your leaderboard. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
-  ["What is the 5% platform fee?", "On the No Cost to Start plan, a 5% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."],
-  ["Can I pass the fee to my players?", "Yes. On the No Cost to Start plan, the 5% fee is automatically added to each registration at checkout. Players see it as a service fee, similar to Eventbrite."],
+  ["Do I really get a dedicated rep on the free plan?", "Yes. Every event on TeeVents, free or paid, includes a dedicated TeeVents rep who builds your event page, sets up your registration, and configures your leaderboard."],
+  ["What is the 8% platform fee?","On the No Cost to Start plan, an 8% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."],
+  ["Can I pass the fee to my players?", "Yes. On the No Cost to Start plan, the 8% fee is automatically added to each registration at checkout. Players see it as a service fee."],
   ["When do I get paid?", "Funds land directly in your connected Stripe account. New Stripe accounts typically see funds available within 2 to 7 business days. TeeVents never holds your money."],
-  ["What if I run more than 10 events a year?", "Enterprise is built for you. $2,999 per year for unlimited tournaments and leagues, with 0% transaction fees and live leaderboard and mobile scoring included on every event. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
+  ["What if I run more than 10 events a year?", "Enterprise is built for you. $2,999 per year for unlimited tournaments and leagues, with 0% transaction fees and live leaderboard and mobile scoring included on every event."],
   ["Can I switch plans later?", "Yes. You can upgrade from No Cost to Start to Per-Event, Per-League, or Enterprise at any time."],
   ["Do I need a Stripe account?", "Yes, but setup takes 5 to 10 minutes. TeeVents helps you connect your Stripe account during onboarding."],
 ];
@@ -65,31 +68,39 @@ export default function Plans() {
           <p className="mb-5 text-sm font-semibold text-secondary">PRICING</p>
           <h1 id="pricing-title" className="text-4xl font-display font-bold md:text-6xl">Simple, Transparent Pricing</h1>
           <p className="mt-6 text-lg leading-relaxed text-primary-foreground/85">Choose the plan that fits your event. Start free, pay per event, or run unlimited events with Enterprise.</p>
-          <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-primary-foreground/85">Every plan includes a dedicated TeeVents rep who builds your event page, sets up your leaderboard, and configures everything for you. <strong className="text-secondary">Free or paid.</strong> Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.</p>
+          <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-primary-foreground/85">Every plan includes a dedicated TeeVents rep who builds your event page, sets up your leaderboard, and configures everything for you. <strong className="text-secondary">Free or paid.</strong></p>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-primary-foreground/85">TeeVents is software plus a real tournament director. We set up your event page and registration, you can edit anytime, and we're on call for your event. In-person management is available.</p>
         </div>
       </section>
 
       <section aria-label="The four plans" className={`${section} bg-muted/40`}>
         <div className="mx-auto grid max-w-[1440px] items-stretch gap-5 lg:grid-cols-4">
-          {plans.map((plan, index) => <article key={plan.name} className={`relative flex min-w-0 flex-col rounded-lg border p-6 ${index === 1 ? "border-2 border-secondary bg-card lg:-my-3 lg:py-9" : index === 3 ? "border-primary bg-primary text-primary-foreground" : "border-border bg-card"}`}>
+          {plans.map((plan, index) => <article key={plan.name} className={`relative flex min-w-0 flex-col rounded-lg border p-6 ${index === 1 ? "border-2 border-secondary bg-card lg:-my-3 lg:py-9" : "border-border bg-card"}`}>
             <div className="mb-5 flex min-h-10 items-center">{plan.badge && <span className="rounded-sm bg-secondary px-3 py-2 text-center text-xs font-bold leading-relaxed text-secondary-foreground">{plan.badge}</span>}</div>
             <h2 className="text-2xl font-display font-bold">{plan.name}</h2>
-            <p className={`mt-2 text-xs font-bold uppercase tracking-widest ${index === 3 ? "text-secondary" : "text-primary"}`}>{SOFTWARE_TAG}</p>
-            <div className="my-5"><span className="text-4xl font-display font-bold">{plan.price}</span>{plan.unit && <p className={`mt-1 text-sm ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{plan.unit}</p>}</div>
-            <p className={`mb-4 text-xs leading-relaxed ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{SOFTWARE_DEFINITION}</p>
-            <p className={`mb-6 text-sm leading-relaxed ${index === 3 ? "text-primary-foreground/85" : "text-muted-foreground"}`}>{plan.description}</p>
-            <ul className="mb-8 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2 text-sm leading-relaxed"><Check aria-hidden="true" className={`mt-1 h-4 w-4 shrink-0 ${index === 3 ? "text-secondary" : "text-primary"}`} /><span className={feature.startsWith("Live Leaderboard") ? "font-semibold" : undefined}>{feature}</span></li>)}</ul>
+            <p className={`mt-2 text-xs font-bold uppercase tracking-widest ${"text-primary"}`}>{SOFTWARE_TAG}</p>
+            <div className="my-5"><span className="text-4xl font-display font-bold">{plan.price}</span>{plan.unit && <p className={`mt-1 text-sm ${"text-muted-foreground"}`}>{plan.unit}</p>}</div>
+            <p className={`mb-4 text-xs leading-relaxed ${"text-muted-foreground"}`}>{PLAN_DEFINITION}</p>
+            <p className={`mb-6 text-sm leading-relaxed ${"text-muted-foreground"}`}>{plan.description}</p>
+            <ul className="mb-8 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2 text-sm leading-relaxed"><Check aria-hidden="true" className={`mt-1 h-4 w-4 shrink-0 ${"text-primary"}`} /><span className={feature.startsWith("Live Leaderboard") ? "font-semibold" : undefined}>{feature}</span></li>)}</ul>
             <div className="mt-auto">
               {index === 3 ? <EnterpriseInquiryDialog><Button variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold">{plan.cta}<ArrowRight /></Button></EnterpriseInquiryDialog> : <Button asChild variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold"><Link to={plan.to}>{plan.cta}<ArrowRight /></Link></Button>}
-              <p className={`mt-4 min-h-9 text-center text-xs leading-relaxed ${index === 3 ? "text-primary-foreground/75" : "text-muted-foreground"}`}>{plan.note}</p>
+              <p className={`mt-4 min-h-9 text-center text-xs leading-relaxed ${"text-muted-foreground"}`}>{plan.note}</p>
               {index < 2 && <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">We build your event page for you — live in 7 days or less.</p>}
             </div>
           </article>)}
         </div>
       </section>
 
+      <section aria-label="Pricing example" className="px-5 pb-4 pt-10 md:px-8">
+        <div className="mx-auto max-w-3xl rounded-lg border border-secondary bg-card p-6 text-sm leading-relaxed">
+          <p><strong>Example:</strong> 72 golfers at $150 = $10,800 in registrations. No Cost to Start plan service fee: $864 (8%), paid by golfers. Per-Event plan: $399 once, 0% platform fee. Standard card processing applies on both plans.</p>
+          <p className="mt-3 font-semibold text-primary">Per-Event saves money once registrations pass about $5,000.</p>
+        </div>
+      </section>
+
       <section id="full-service-management" aria-label="Full Service Management" className={section}>
-        <div className="mx-auto max-w-4xl"><FullServiceManagement /></div>
+        <div className="mx-auto max-w-4xl"><FullServiceManagement priceLine="Starting at $3,500 (typically $5,000). Contact us for a quote." /></div>
       </section>
 
       <section aria-labelledby="included-title" className={section}>
@@ -118,18 +129,7 @@ export default function Plans() {
         <div className="mx-auto max-w-6xl"><h2 id="compare-title" className={`${heading} mb-10 text-center`}>Compare Your Options</h2><p className="mb-6 text-center text-sm text-muted-foreground">Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.</p><div className="overflow-x-auto rounded-lg border border-border"><table className="pricing-comparison w-full min-w-[900px] text-left text-sm"><caption className="sr-only">TeeVents pricing plans and included features</caption><thead className="bg-muted"><tr><th scope="col" className="p-5">Feature</th>{plans.map(plan => <th scope="col" key={plan.name} className={`p-5 ${plan.name === "Per-Event" ? "bg-secondary/15" : ""}`}>{plan.name}</th>)}</tr></thead><tbody>{comparison.map(([label, ...cells]) => <tr key={label} className="border-t border-border"><th scope="row" className="p-5 font-semibold">{label}</th>{cells.map((cell, index) => <td key={index} className={`p-5 leading-relaxed ${index === 1 ? "bg-secondary/10" : ""}`}>{cell}</td>)}</tr>)}</tbody></table></div></div>
       </section>
 
-      <section aria-labelledby="real-cost-title" className={`${section} bg-muted/40`}>
-        <div className="mx-auto max-w-6xl"><h2 id="real-cost-title" className={`${heading} text-center`}>What a Real Event Costs</h2><p className="mt-4 mb-10 text-center text-muted-foreground">An example event: 100 golfers at $150 each, $15,000 in registrations. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.</p>
-          <div className="overflow-x-auto rounded-lg border border-border bg-card"><table className="pricing-comparison w-full min-w-[720px] text-left text-sm"><caption className="sr-only">Example event cost comparison</caption><thead className="bg-muted"><tr><th scope="col" className="p-5"><span className="sr-only">Cost</span></th><th scope="col" className="p-5">Eventbrite</th><th scope="col" className="p-5">TeeVents No Cost to Start</th><th scope="col" className="p-5 bg-secondary/15">TeeVents Per-Event</th></tr></thead><tbody>{[
-            ["Type", "—", "SOFTWARE", "SOFTWARE"],
-            ["What your organization pays for the platform", "$0, when fees are passed to golfers", "$0", "$399, one time"],
-            ["What your golfers pay in platform fees", "About $11.90 per golfer, $1,190 total", "$7.50 per golfer, $750 total", "$0"],
-            ["Live leaderboard and mobile scoring", "Not offered", "$99 add-on", "Included"],
-          ].map(([label, ...cells]) => <tr key={label} className="border-t border-border"><th scope="row" className="p-5 font-semibold">{label}</th>{cells.map((cell, i) => <td key={i} className={`p-5 leading-relaxed ${i === 2 ? "bg-secondary/10" : ""}`}>{cell}</td>)}</tr>)}</tbody></table></div>
-          <p className="mt-8 text-center font-semibold">Eventbrite's meter runs on every ticket. On TeeVents, the most an event ever pays for the platform is $399.</p>
-          <p className="mt-4 text-center text-xs text-muted-foreground">Example uses Eventbrite's published fees (3.7% plus $1.79 per ticket, plus 2.9% payment processing), checked October 2026. Stripe processing (2.9% plus $0.30 per transaction) applies separately on TeeVents plans.</p>
-        </div>
-      </section>
+      <TrustAndProof />
 
       <section aria-labelledby="faq-title" className={`${section} bg-muted/40`}>
         <div className="mx-auto max-w-3xl"><h2 id="faq-title" className={`${heading} mb-10 text-center`}>Frequently Asked Questions</h2><Accordion type="single" collapsible>{faqs.map(([question, answer], index) => <AccordionItem key={question} value={`faq-${index}`}><AccordionTrigger className="gap-5 py-6 text-left text-base font-semibold">{question}</AccordionTrigger><AccordionContent className="pr-6 text-base leading-relaxed text-muted-foreground">{answer}</AccordionContent></AccordionItem>)}</Accordion></div>

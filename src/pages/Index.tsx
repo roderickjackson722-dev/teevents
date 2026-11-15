@@ -3,6 +3,7 @@ import { ArrowRight, CheckCircle2, UserRoundCheck, Paintbrush, CircleDollarSign,
 import Layout from "@/components/Layout";
 import SEO from "@/components/SEO";
 import HomeHowItWorks from "@/components/HomeHowItWorks";
+import TrustAndProof from "@/components/marketing/TrustAndProof";
 import { founderPartnerLogos } from "@/components/FounderPartners";
 import { ORGANIZER_TESTIMONIALS } from "@/components/OrganizerTestimonials";
 import { Button } from "@/components/ui/button";
@@ -11,8 +12,8 @@ import { SOFTWARE_TAG } from "@/lib/programTypes";
 
 const differentiators = [
   { icon: UserRoundCheck, title: "A Named Rep on Every Plan", text: "Your event built by a real person, free or paid." },
-  { icon: Paintbrush, title: "Custom Leaderboard & Event Pages", text: "Your rep matches every leaderboard to your event colors. Event pages that look like real websites. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up." },
-  { icon: CircleDollarSign, title: "Free for Organizers", text: "Start at $0, with the 5% platform fee covered by players." },
+  { icon: Paintbrush, title: "Custom Leaderboard & Event Pages", text: "Your rep matches every leaderboard to your event colors. Event pages that look like real websites." },
+  { icon: CircleDollarSign, title: "Free for Organizers", text: "Start at $0, with the 8% platform fee covered by players." },
 ];
 
 function HomeActions({ hero = false }: { hero?: boolean }) {
@@ -144,6 +145,8 @@ export default function Index() {
           </div>
         </div>
       </section>
+
+      <TrustAndProof showTestimonial={false} />
 
       <section aria-labelledby="final-cta-title" className="bg-primary px-6 py-16 text-center text-primary-foreground md:py-24">
         <div className="mx-auto max-w-3xl">

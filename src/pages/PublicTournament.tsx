@@ -611,7 +611,8 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
       upsertSingleMeta("name", "robots", "noindex, nofollow");
       return;
     }
-    const meta = tournamentShareMeta(tournament, slug);
+    const baseMeta = tournamentShareMeta(tournament, slug);
+    const meta = isSampleEventSlug(slug) ? { ...baseMeta, pageTitle: "SAMPLE: The Annual Golf Tournament | TeeVents", shareTitle: "SAMPLE: The Annual Golf Tournament", description: "Sample event page: a demo TeeVents golf tournament at Sample Course, with registration, sponsors and a live leaderboard." } : baseMeta;
     document.title = meta.pageTitle;
     upsertSingleMeta("name", "description", meta.description);
     upsertSingleMeta("property", "og:title", meta.shareTitle);

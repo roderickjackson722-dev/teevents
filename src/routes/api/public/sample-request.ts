@@ -33,9 +33,18 @@ const schema = z.object({
   expected_players: z.number().int().min(0).max(100000).nullable().optional(),
   current_tools: z.string().trim().max(200).optional().or(z.literal("")),
   challenge: z.string().trim().max(2000).optional().or(z.literal("")),
-  flyer_url: z.string().trim().max(500).optional().or(z.literal("")),
-  logo_url: z.string().trim().max(500).optional().or(z.literal("")),
+  flyer_file: z.object({ ext: z.string().regex(/^[a-z0-9]{1,8}$/), type: z.string().max(100), data: z.string().max(12_000_000) }).nullable().optional(),
+  logo_file: z.object({ ext: z.string().regex(/^[a-z0-9]{1,8}$/), type: z.string().max(100), data: z.string().max(12_000_000) }).nullable().optional(),
 });
+
+const ALLOWED_TYPES = /^(image\/(png|jpe?g|gif|webp|svg\+xml)|application\/pdf)$/;
+
+function decodeBase64(b64: string) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
 
 async function handle(request: Request) {
   const supabaseUrl = process.env["SUPABASE_URL"]!;
@@ -49,6 +58,27 @@ async function handle(request: Request) {
   const d = parsed.data;
 
   const admin = createClient(supabaseUrl, serviceKey, { auth: { persistSession: false } });
+
+  // Uploads happen server-side so the storage bucket needs no public write rule.
+  const uploadFile = async (f: { ext: string; type: string; data: string } | null | undefined, kind: string) => {
+    if (!f) return "";
+    if (!ALLOWED_TYPES.test(f.type)) throw new Error("type");
+    const bytes = decodeBase64(f.data);
+    if (bytes.length > 8 * 1024 * 1024) throw new Error("size");
+    const path = `${kind}s/${crypto.randomUUID()}.${f.ext}`;
+    const { error: upErr } = await admin.storage.from("sample-requests").upload(path, bytes, { contentType: f.type, upsert: false });
+    if (upErr) throw new Error("upload");
+    return path;
+  };
+  let flyerPath = "";
+  let logoPath = "";
+  try {
+    flyerPath = await uploadFile(d.flyer_file, "flyer");
+    logoPath = await uploadFile(d.logo_file, "logo");
+  } catch {
+    return json({ error: "Could not upload your file. Use an image or PDF under 8MB." }, 400);
+  }
+  const fileUrls = { flyer_url: flyerPath, logo_url: logoPath };
   const { data: row, error } = await admin
     .from("sample_requests")
     .insert({
@@ -61,8 +91,8 @@ async function handle(request: Request) {
       expected_players: d.expected_players ?? null,
       current_tools: d.current_tools || null,
       challenge: d.challenge || null,
-      flyer_url: d.flyer_url || null,
-      logo_url: d.logo_url || null,
+      flyer_url: fileUrls.flyer_url || null,
+      logo_url: fileUrls.logo_url || null,
     })
     .select("id")
     .maybeSingle();
@@ -80,8 +110,8 @@ async function handle(request: Request) {
       ["Expected players", d.expected_players ?? ""],
       ["Currently using", d.current_tools],
       ["Biggest challenge", d.challenge],
-      ["Flyer uploaded", d.flyer_url ? "Yes" : "No"],
-      ["Logo uploaded", d.logo_url ? "Yes" : "No"],
+      ["Flyer uploaded", fileUrls.flyer_url ? "Yes" : "No"],
+      ["Logo uploaded", fileUrls.logo_url ? "Yes" : "No"],
     ]
       .filter(([, v]) => v !== undefined && v !== null && String(v) !== "")
       .map(

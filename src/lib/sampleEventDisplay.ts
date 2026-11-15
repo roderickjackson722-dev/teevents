@@ -13,7 +13,7 @@ export function isSampleEventSlug(slug: string | null | undefined): boolean {
 
 export function applySampleTournament<T extends { slug?: string | null; course_name?: string | null; location?: string | null }>(t: T, routeSlug?: string | null): T {
   if (!isSampleEventSlug(routeSlug) && !isSampleEventSlug(t?.slug)) return t;
-  return { ...t, course_name: "Sample Course", location: "Demo event, no real address" };
+  return { ...t, course_name: "Sample Course", location: null };
 }
 
 export function applySampleLeaderboard<R extends { name: string; isTeam?: boolean }>(slug: string | null | undefined, rows: R[]): R[] {

@@ -25,7 +25,7 @@ const SELECTS: [keyof EventInfo, string, string[]][] = [
 ];
 const CHOICES = [
   { key: "Build it yourself", icon: Hammer, title: "Build It Yourself", text: "Use the TeeVents site builder to set up your event page on your own.", button: "START BUILDING" },
-  { key: "Wait for my rep", icon: UserRoundCheck, title: "Wait For Your Rep", text: "Your rep will contact you within 1 business day and build everything for you.", button: "WAIT FOR MY REP" },
+  { key: "Wait for my rep", icon: UserRoundCheck, title: "Wait For Your Rep", text: "Your rep will contact you within 48 hours and build everything for you.", button: "WAIT FOR MY REP" },
   { key: "Schedule a call", icon: CalendarClock, title: "Schedule a Call", text: "Schedule a call with your rep to walk through it together.", button: "SCHEDULE A CALL" },
 ];
 const pretty = (s: string | null) => s ? s.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()) : "";
@@ -136,7 +136,7 @@ export default function GettingStarted() {
         <div className="flex gap-4 rounded-lg border-l-4 border-secondary bg-secondary/10 p-5">
           <UserRoundCheck className="mt-0.5 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
           <div className="space-y-3 leading-relaxed text-foreground">
-            <p>A dedicated TeeVents rep will contact you within 1 business day to help build your event page, set up registration, and configure your leaderboard.</p>
+            <p>A dedicated TeeVents rep will contact you within 48 hours to help build your event page, set up registration, and configure your leaderboard.</p>
             <p>In the meantime, you can start setting things up yourself. Anything you build will be reviewed and refined by your rep before your event goes live.</p>
           </div>
         </div>
@@ -195,7 +195,7 @@ export default function GettingStarted() {
       <div className="mx-auto mb-4 flex h-16 w-16 animate-scale-in items-center justify-center rounded-full bg-secondary text-primary"><CheckCircle2 className="h-9 w-9" /></div>
       <Head title="You Are All Set" sub="Here is a summary of what happens next." />
       <dl className="mx-auto max-w-xl divide-y divide-border rounded-xl border-l-4 border-secondary bg-muted/40">
-        {[["Your event", ev.name || "Not entered yet"], ["Your plan", ev.plan || "Not selected yet"], ["Your rep", "Assigned within 1 business day"], ["Your event page", "Ready for review within a few days of your first call with your rep"], ["Your Organizer Toolbox", `${items} item${items === 1 ? "" : "s"} uploaded`]].map(([k, v]) =>
+        {[["Your event", ev.name || "Not entered yet"], ["Your plan", ev.plan || "Not selected yet"], ["Your rep", "Assigned within 48 hours"], ["Your event page", "Ready for review within a few days of your first call with your rep"], ["Your Organizer Toolbox", `${items} item${items === 1 ? "" : "s"} uploaded`]].map(([k, v]) =>
           <div key={k} className="flex flex-col gap-1 p-4 sm:flex-row sm:justify-between"><dt className="font-semibold text-foreground">{k}</dt><dd className="text-muted-foreground sm:text-right">{v}</dd></div>)}
       </dl>
       <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">

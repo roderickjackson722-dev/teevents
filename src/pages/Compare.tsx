@@ -30,8 +30,8 @@ const rows: [string, Mark, string, string][] = [
 ];
 const pricing: { title: string; hl: boolean; tag?: string; def?: string; items: string[] }[] = [
   { title: "Most Platforms", hl: false, items: ["Charge $199 to $4,200 per year", "Fees due before your event", "You lose money if turnout is low", "Organizer pays upfront"] },
-  { title: "TeeVents No Cost to Start", hl: true, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$0 upfront", "5% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
-  { title: "TeeVents Enterprise", hl: false, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."] },
+  { title: "TeeVents No Cost to Start", hl: true, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$0 upfront", "8% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
+  { title: "TeeVents Enterprise", hl: false, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included"] },
 ];
 const audiences = [
   ["First-Time Organizers", "Free to start. Your rep builds it for you, or you build it yourself. You choose. No risk."],
@@ -41,13 +41,13 @@ const audiences = [
 ];
 const reasons = [
   [User, "A Named Rep on Every Plan", "Free or paid, you get a real person who knows your event."],
-  [Paintbrush, "Custom Leaderboard Colors", "Your rep matches every leaderboard to your event branding. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
+  [Paintbrush, "Custom Leaderboard Colors", "Your rep matches every leaderboard to your event branding."],
   [Globe, "Event Pages That Look Like Real Websites", "Fully branded microsites. Not a form. Not a template."],
   [Shield, "Payments You Can Trust", "Funds go directly to your Stripe account. We never hold your money."],
-  [Trophy, "Built for Golf, Not Generic Events", "Pairings, handicaps, scoring, and leaderboards built in. Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up."],
+  [Trophy, "Built for Golf, Not Generic Events", "Pairings, handicaps, scoring, and leaderboards built in."],
   [Rocket, "Zero Risk to Get Started", "Free to start. Pay only when your players register."],
 ] as const;
-const worries = ["Being left to figure out your event page alone", "Tracking down payments and chasing checks", "Printing and collecting paper scorecards", "Manually updating leaderboards Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.", "Searching for someone to answer a question", "Paying for a platform that did not help you grow", "Rebuilding your event from scratch every year", "Wondering if your sponsors got enough visibility"];
+const worries = ["Being left to figure out your event page alone", "Tracking down payments and chasing checks", "Printing and collecting paper scorecards", "Manually updating leaderboards", "Searching for someone to answer a question", "Paying for a platform that did not help you grow", "Rebuilding your event from scratch every year", "Wondering if your sponsors got enough visibility"];
 const quotes = [
   ["We have trusted the TeeVents team to organize and manage our NCAA-sanctioned golf tournaments for the past 10 years. That trust has only grown stronger, to the point where we would not choose any other organization to work with.", "Leonard Smoot", "President", "Black College Golf Coaches Association"],
   ["We turned over the golf tournament management duties to Roderick and the TeeVents team, and we have been beyond pleased with the service. From the initial setup to the conclusion of the event, everything was handled with the highest level of professionalism.", "Merral Jackson", "Tournament Director", "National Black College Alumni Hall of Fame"],

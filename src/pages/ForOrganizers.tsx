@@ -157,7 +157,7 @@ export default function ForOrganizers() {
         <ul className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {toolbox.map(([I, t]) => <motion.li {...fade} key={t} className="flex items-center gap-3 rounded-lg border border-border bg-card p-4"><I className="h-5 w-5 shrink-0 text-secondary" aria-hidden="true" /><span className="font-medium text-foreground">{t}</span></motion.li>)}
         </ul>
-        <Callout>You are never on your own. Your director builds your event from what you upload. You can open it any time and change anything. Your rep contacts you within 1 business day of signup.</Callout>
+        <Callout>You are never on your own. Your director builds your event from what you upload. You can open it any time and change anything. Your rep contacts you within 48 hours of signup.</Callout>
       </div></section>
 
       <section className="bg-background py-20 md:py-28"><div className={wrap}>

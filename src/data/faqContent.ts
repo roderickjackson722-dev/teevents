@@ -13,7 +13,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "How do I get started?",
-    "a": "Sign up for free, tell us about your event, and upload your assets to the Organizer Toolbox. Your dedicated rep contacts you within 1 business day to start building your event."
+    "a": "Sign up for free, tell us about your event, and upload your assets to the Organizer Toolbox. Your dedicated rep contacts you within 48 hours to start building your event."
    },
    {
     "q": "Do I need to be technical to use TeeVents?",

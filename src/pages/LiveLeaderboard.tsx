@@ -3,6 +3,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPublicLeaderboardScores, fetchAllRegistrations } from "@/lib/fetchLeaderboardScores";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
+import { applySampleLeaderboard, applySampleTournament } from "@/lib/sampleEventDisplay";
 import { buildLeaderboard, compareByTotal, parForHole, summarize, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
 import { Trophy, Loader2 } from "lucide-react";
 import { type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
@@ -185,7 +186,7 @@ function LiveLeaderboardBoard({
         setLoading(false);
         return;
       }
-      setTournament(data as unknown as Tournament);
+      setTournament(applySampleTournament(data as unknown as Tournament, slug));
       setDesign(mergeDesign((data as any).leaderboard_design));
       setLoading(false);
     })();
@@ -460,7 +461,7 @@ function LiveLeaderboardBoard({
 
   const leaderboard = useMemo(() => {
     if (!tournament) return [];
-    return buildLeaderboard(filteredScores, tournament, holePars);
+    return applySampleLeaderboard(slug, buildLeaderboard(filteredScores, tournament, holePars));
   }, [filteredScores, tournament, holePars]);
 
   /** Rounds that have posted scores, and the round currently in play. */

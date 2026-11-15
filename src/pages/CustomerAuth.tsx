@@ -18,7 +18,7 @@ const BASE_AGREEMENT_ITEMS = [
     id: "platform_fee_5",
     label: (
       <>
-        I understand that TeeVents charges a 5% platform fee per transaction.{" "}
+        I understand that TeeVents charges an 8% platform fee per transaction.{" "}
         <strong className="text-foreground">I can choose to pass this fee to my registrants (golfers — recommended) or absorb it myself.</strong>{" "}
         This fee is automatically deducted at checkout.{" "}
         <a href="/help/fees-and-hold" target="_blank" className="text-primary underline">See how it works</a>.
@@ -50,7 +50,7 @@ const FREE_PLAN_AGREEMENT_ITEM = {
   id: "platform_fee",
   label: (
     <>
-      I understand that TeeVents charges a 5% platform fee per transaction.{" "}
+      I understand that TeeVents charges an 8% platform fee per transaction.{" "}
       <strong className="text-foreground">I can choose to pass this fee to my registrants (golfers — recommended) or absorb it myself.</strong>{" "}
       Standard Stripe processing fees (2.9% + $0.30) also apply and can be passed to registrants or absorbed.
     </>

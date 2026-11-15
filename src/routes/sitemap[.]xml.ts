@@ -115,7 +115,7 @@ export const Route = createFileRoute("/sitemap.xml")({
           priority: "0.4",
         }));
 
-        const all = [...STATIC_ENTRIES, ...guideEntries, ...helpEntries, ...(await dynamicEntries())];
+        const all = [...STATIC_ENTRIES.filter((e) => !isHiddenPage(e.path)), ...guideEntries, ...helpEntries, ...(await dynamicEntries())];
         const seen = new Set<string>();
         const unique = all.filter((entry) => (seen.has(entry.path) ? false : (seen.add(entry.path), true)));
 

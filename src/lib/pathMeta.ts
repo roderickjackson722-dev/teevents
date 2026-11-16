@@ -37,7 +37,7 @@ const prettyDate = (value: unknown) =>
 
 /** Static copy for marketing / help / legal pages. */
 const STATIC: Record<string, { title: string; description: string }> = {
-  "/": { title: "Golf Tournament Management for Charities & Corporate Outings | TeeVents", description: "Golf tournament software with a dedicated TeeVents rep who sets up your page, registration, and live leaderboard. Edit anytime. On-call support. $0 to start." },
+  "/": { title: "Golf Tournament Management for Charities & Corporate Outings | TeeVents", description: "Golf tournament software with a dedicated TeeVents rep who sets up your page, registration, and live leaderboard. Edit anytime. On call. $0 to start." },
   "/sales-sheet": { title: "Why TeeVents? | We Build Your Event For You", description: "Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." },
   "/why-teevents": { title: "Why TeeVents? A Dedicated Rep on Every Plan", description: "Software plus a real tournament director: your TeeVents rep sets up your event, you edit anytime, and we're on call for your event." },
   "/enterprise-overview": { title: "TeeVents Enterprise — Every Event Built For You", description: "Unlimited tournaments and leagues, live scoring, 0% platform fees, and your own dedicated rep for $2,999/year." },

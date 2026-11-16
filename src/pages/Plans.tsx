@@ -100,7 +100,7 @@ export default function Plans() {
       </section>
 
       <section id="full-service-management" aria-label="Full Service Management" className={section}>
-        <div className="mx-auto max-w-4xl"><FullServiceManagement priceLine="Starting at $3,500 (typically $5,000). Contact us for a quote." /></div>
+        <div className="mx-auto max-w-4xl"><FullServiceManagement priceLine="Contact us for a quote." /></div>
       </section>
 
       <section aria-labelledby="included-title" className={section}>

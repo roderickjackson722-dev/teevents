@@ -30,7 +30,7 @@ const categories: Category[] = [
     [Eye, "Publish and Preview", "Preview your site privately before making it live."],
     [Unlock, "Public Resource Access", "Schedules, documents, and results available without a login."],
     [Smartphone, "Mobile Responsive", "Every page looks great on phones and tablets."],
-  ], callout: "Your dedicated rep designs a fully branded event page with your logo, colors, hero image, and sponsor logos. It looks like you hired a web designer because we did the work for you. Your virtual Tournament director builds it for you. You can open your event any time and change anything." },
+  ], callout: "Your dedicated rep designs a fully branded event page with your logo, colors, hero image, and sponsor logos. It looks like you hired a web designer because we did the work for you. Your dedicated tournament director builds it for you. You can open your event any time and change anything." },
   { id: "registration", nav: "Registration and Payments", title: "Registration and Payments", subtitle: "Online registration, secure payments, and instant payouts to your account.", items: [
     [Users, "Individual and Team Registration", "Configurable capacity limits for individuals, teams, and foursomes."],
     [ClipboardList, "Configurable Registration Forms", "Custom fields including roster details and apparel sizing."],

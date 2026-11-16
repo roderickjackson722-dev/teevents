@@ -102,7 +102,7 @@ const Nonprofits = () => {
         title="Your Mission Deserves Every Dollar"
         subtitle="TeeVents gives nonprofit organizations a game-changing advantage — transparent pricing, donor-covered costs, and automated tax receipts so 100% of your fundraising goes where it matters."
       >
-        <p className="mx-auto mb-2 max-w-3xl text-base md:text-lg">Your virtual Tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
+        <p className="mx-auto mb-2 max-w-3xl text-base md:text-lg">Your dedicated tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
         <p className="mx-auto mb-6 max-w-3xl text-base md:text-lg">Your director sets up donation widgets, silent auctions, and sponsor packages for you.</p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Button size="lg" asChild className="text-base px-8">

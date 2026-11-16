@@ -49,7 +49,7 @@ const Services = () => {
       />
 
       <DedicatedRepBadge />
-      <DedicatedRepSection extraLine="Your virtual Tournament director builds it, sets it up, and stays on call on event day for live scoring and leaderboard challenges." />
+      <DedicatedRepSection extraLine="Your dedicated tournament director builds it, sets it up, and stays on call on event day for live scoring and leaderboard challenges." />
       <section className="bg-golf-cream py-20">
         <div className="container mx-auto px-4 max-w-5xl">
           <motion.p

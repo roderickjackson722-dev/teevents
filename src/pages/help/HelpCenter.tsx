@@ -24,7 +24,7 @@ const HelpCenter = () => (
     <div className="max-w-4xl mx-auto px-4 py-16">
       <h1 className="text-4xl font-display font-bold text-foreground mb-2">Help Center</h1>
       <p className="text-lg text-muted-foreground mb-6">Everything you need to know about managing payments and finances on TeeVents.</p>
-      <p className="text-muted-foreground mb-6">Your virtual Tournament director builds your event for you, and your rep is on call on event day. These articles explain payments and payouts. Your rep can walk through any of them with you.</p>
+      <p className="text-muted-foreground mb-6">Your dedicated tournament director builds your event for you, and your rep is on call on event day. These articles explain payments and payouts. Your rep can walk through any of them with you.</p>
 
       <div className="mb-8 p-5 rounded-xl border-2 border-primary/30 bg-primary/5 flex items-center gap-4">
         <div className="p-3 rounded-full bg-primary text-primary-foreground">

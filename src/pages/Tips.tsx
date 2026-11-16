@@ -55,8 +55,8 @@ const enhancements: [string, string][] = [
 export default function Tips() {
   return (
     <Layout>
-      <Hero eyebrow="TIPS" title="Tips for a Successful Golf Tournament" subtitle="What your virtual Tournament director does for you, and what to plan early so your event comes back next year.">
-        <p className="mx-auto mt-5 max-w-2xl text-base text-primary-foreground/85 md:text-lg">Setting up a tournament takes months of preparation, and that is why good events do not come back for year two. Your virtual Tournament director does the setup for you, so your event comes back. These tips are the same playbook our directors use with organizers.</p>
+      <Hero eyebrow="TIPS" title="Tips for a Successful Golf Tournament" subtitle="What your dedicated tournament director does for you, and what to plan early so your event comes back next year.">
+        <p className="mx-auto mt-5 max-w-2xl text-base text-primary-foreground/85 md:text-lg">Setting up a tournament takes months of preparation, and that is why good events do not come back for year two. Your dedicated tournament director does the setup for you, so your event comes back. These tips are the same playbook our directors use with organizers.</p>
       </Hero>
 
       {tipSections.map((s, i) => (

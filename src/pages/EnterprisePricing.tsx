@@ -83,7 +83,7 @@ const EnterprisePricing = () => {
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
               Running 10 or more events a year?
             </h1>
-            <p className="mb-4 text-sm font-bold uppercase tracking-widest text-secondary">Your Virtual Tournament Director</p>
+            <p className="mb-4 text-sm font-bold uppercase tracking-widest text-secondary">Your Dedicated Tournament Director</p>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
               Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.
             </p>

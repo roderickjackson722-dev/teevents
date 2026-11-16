@@ -35,7 +35,7 @@ const directorTasks = [
   "Stays on call on event day for live scoring and leaderboard challenges",
 ];
 const pathCards = [
-  { title: "Running Your First Tournament?", text: "You have never run a golf tournament before, and you do not have to figure it out alone. Your virtual Tournament director builds everything for you, your branded event page, registration, pairings, your format, and your live leaderboard. You tell us about your event, we set it up, and your rep is on call on event day if anything comes up.", items: ["We build your event page for you", "We set up registration, pairings, and scoring", "Your rep is on call on event day", "You can open your event any time and change anything"] },
+  { title: "Running Your First Tournament?", text: "You have never run a golf tournament before, and you do not have to figure it out alone. Your dedicated tournament director builds everything for you, your branded event page, registration, pairings, your format, and your live leaderboard. You tell us about your event, we set it up, and your rep is on call on event day if anything comes up.", items: ["We build your event page for you", "We set up registration, pairings, and scoring", "Your rep is on call on event day", "You can open your event any time and change anything"] },
   { title: "Running Your Annual Event Again?", text: "You know your event. You have run it before, and you do not need someone to hold your hand. You get the same platform. We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use. Registration, pairings, live scoring, leaderboard, sponsors, and payments, all on one branded page. Your rep is still there when you need them, and you can change anything any time.", items: ["We set up your page, you edit anytime", "Registration, pairings, live scoring, and sponsors on one page", "Change anything, any time", "Your rep is there when you need them"] },
 ];
 const standards = [
@@ -53,8 +53,8 @@ function DirectorSections() {
   return <>
     <section aria-labelledby="director-title" className="bg-muted/40 py-14 md:py-24">
       <div className="mx-auto max-w-4xl px-6">
-        <h2 id="director-title" className="text-center font-display text-3xl font-bold leading-tight text-primary md:text-4xl">What Your Virtual Tournament Director Does For You</h2>
-        <p className="mx-auto mt-5 max-w-3xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">Setting up a tournament takes months of preparation, and that is why good events do not come back for year two. Your virtual Tournament director does the setup for you, so your event comes back.</p>
+        <h2 id="director-title" className="text-center font-display text-3xl font-bold leading-tight text-primary md:text-4xl">What Your Dedicated Tournament Director Does For You</h2>
+        <p className="mx-auto mt-5 max-w-3xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">Setting up a tournament takes months of preparation, and that is why good events do not come back for year two. Your dedicated tournament director does the setup for you, so your event comes back.</p>
         <div className="mx-auto mt-10 max-w-2xl text-foreground"><CheckList items={directorTasks} /></div>
         <p className="mx-auto mt-10 max-w-3xl text-center font-display text-lg leading-relaxed text-primary md:text-xl">We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use.</p>
       </div>
@@ -92,9 +92,9 @@ export default function Index() {
         <img src={heroGolf} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
         <div className="homepage-hero-overlay absolute inset-0" />
         <div className="relative mx-auto flex min-h-[680px] max-w-5xl flex-col justify-center px-6 py-14 text-center md:py-20">
-          <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-secondary">Your Virtual Tournament Director</p>
+          <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-secondary">Your Dedicated Tournament Director</p>
           <h1 id="homepage-title" className="font-display text-3xl font-bold leading-tight md:text-5xl lg:text-6xl">The Golf Tournament Platform That <span className="text-secondary">Builds Your Event For You</span></h1>
-          <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Every event includes a dedicated TeeVents rep, free or paid, who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard. Your virtual Tournament director builds it and stays on call on event day for live scoring and leaderboard challenges. You can open your event any time and change anything. You focus on running your tournament while we handle the software.&nbsp;</p>
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Every event includes a dedicated TeeVents rep, free or paid, who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard. Your dedicated tournament director builds it and stays on call on event day for live scoring and leaderboard challenges. You can open your event any time and change anything. You focus on running your tournament while we handle the software.&nbsp;</p>
           <p className="mt-2 text-xs font-bold text-secondary">{SOFTWARE_TAG}</p>
           <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Golf tournament management software for charity fundraisers, corporate golf outings, golf courses, and golf leagues.</p>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 md:text-base">No spreadsheets. No manual setup. No stress.</p>

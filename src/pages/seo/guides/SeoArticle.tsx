@@ -109,7 +109,7 @@ const SeoArticle = ({ content }: { content: GuideContent }) => (
         <h1 className="text-3xl font-bold leading-tight sm:text-5xl">{content.title}</h1>
         <p className="mt-4 text-base opacity-90 sm:text-lg">{content.heroSubtitle}</p>
         {DIRECTOR_LINE_SLUGS.has(content.slug) && (
-          <p className="mt-3 text-base sm:text-lg">Your virtual Tournament director builds it for you, and you can open your event any time and change anything. Your rep is on call on event day for live scoring and leaderboard challenges.</p>
+          <p className="mt-3 text-base sm:text-lg">Your dedicated tournament director builds it for you, and you can open your event any time and change anything. Your rep is on call on event day for live scoring and leaderboard challenges.</p>
         )}
         {content.slug === "golf-tournament-page-customization" && (
           <p className="mt-3 text-base sm:text-lg">Your director sets all six layers for you. You can open your event any time and change anything.</p>

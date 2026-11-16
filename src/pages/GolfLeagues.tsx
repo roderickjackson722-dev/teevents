@@ -101,7 +101,7 @@ export default function GolfLeagues() {
               <p className="text-lg md:text-xl text-white/90 mb-8">
                 Real-time scoring, live leaderboards, skins, and season-long standings — the same tools TeeVents customers use, purpose-built for leagues.
               </p>
-              <p className="text-base md:text-lg text-white mb-2">Your virtual Tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
+              <p className="text-base md:text-lg text-white mb-2">Your dedicated tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
               <p className="text-base md:text-lg text-white mb-8">Your director sets up season long standings, weekly results, and your league leaderboard for you.</p>
               <div className="flex flex-wrap gap-3">
                 <Button size="lg" onClick={subscribe} disabled={loading}>

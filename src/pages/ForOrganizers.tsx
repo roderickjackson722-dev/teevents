@@ -85,7 +85,7 @@ export default function ForOrganizers() {
     <Layout>
       <SEO title="For Tournament Organizers" description="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." path="/for-organizers" />
 
-      <Hero eyebrow="FOR TOURNAMENT ORGANIZERS" title="You Run the Tournament. We Build Everything Else." label="Your Virtual Tournament Director" subtitle="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use. We set up registration and your live leaderboard, stay on call for your event, and offer in-person management.">
+      <Hero eyebrow="FOR TOURNAMENT ORGANIZERS" title="You Run the Tournament. We Build Everything Else." label="Your Dedicated Tournament Director" subtitle="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use. We set up registration and your live leaderboard, stay on call for your event, and offer in-person management.">
         <p className="mt-6 font-semibold text-secondary">Free for organizers. A dedicated rep on every event, free or paid.</p>
         <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row"><GetStarted /><OutlineLight to="/request-sample">REQUEST A SAMPLE</OutlineLight></div>
       </Hero>

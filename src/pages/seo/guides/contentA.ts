@@ -70,7 +70,7 @@ export const scramble: GuideContent = {
       paragraphs: [
         "TeeVents was built for exactly this kind of event. Your director sets the format for you, and you can open it any time and change anything. Choose your team size, and the platform handles the rest: registration collects teams or individual players, pairings assign each team to a starting hole or tee time, and scoring generates one shared scoring code per group so a single person enters the team score hole by hole from their phone.",
         "The live leaderboard updates in real time in any web browser, so players, spectators, and sponsors can follow along without downloading an app. You can display it on a screen in the clubhouse during the awards reception, and rotate sponsor logos across the top of the board while people watch. Cart signs, printed scorecards with a scan-to-score QR code, and pairing sheets all generate automatically from the same pairings you already set up.",
-        "Payments run through Stripe, so registrations and sponsorships are collected online before event day, and funds settle directly to the organizer's account. There is no monthly software subscription to sign up for: the Base plan is free, and you can unlock advanced features for a single tournament when you need them.",
+        "Payments run through Stripe, so registrations and sponsorships are collected online before event day, and funds settle directly to the organizer's account. There is no monthly online platform subscription to sign up for: the Base plan is free, and you can unlock advanced features for a single tournament when you need them.",
       ],
     },
     {
@@ -123,7 +123,7 @@ export const charityGuide: GuideContent = {
   heroSubtitle:
     "Everything from the first course call to the thank-you email — a practical playbook used by nonprofit and corporate organizers.",
   intro:
-    "A charity golf tournament can be one of the most profitable events on a nonprofit calendar, but only if it is planned like a business rather than a golf outing. The organizations that clear five and six figures treat sponsorship as the primary revenue line, keep costs predictable, and use software to eliminate the manual work that eats volunteer hours. This guide walks through the entire lifecycle of a charity golf tournament, in order, with the specific decisions you need to make at each stage.",
+    "A charity golf tournament can be one of the most profitable events on a nonprofit calendar, but only if it is planned like a business rather than a golf outing. The organizations that clear five and six figures treat sponsorship as the primary revenue line, keep costs predictable, and use an online platform to eliminate the manual work that eats volunteer hours. This guide walks through the entire lifecycle of a charity golf tournament, in order, with the specific decisions you need to make at each stage.",
   sections: [
     {
       heading: "Step 1: Set the goal and build the budget backwards",
@@ -218,7 +218,7 @@ export const charityGuide: GuideContent = {
       a: "Sponsorship. At well-run events, sponsorships produce the majority of net revenue, with registrations, raffles, auctions, and donations filling out the rest.",
     },
     {
-      q: "Do I need golf tournament software for a charity event?",
+      q: "Do I need golf tournament online platform for a charity event?",
       a: "You can run a small outing on spreadsheets, but online registration, automated confirmations, sponsor management, and live scoring save dozens of volunteer hours and typically increase revenue by making it easier to say yes.",
     },
   ],
@@ -226,7 +226,7 @@ export const charityGuide: GuideContent = {
     { to: "/golf-tournament-sponsor-management", label: "Golf tournament sponsor management" },
     { to: "/what-is-a-scramble", label: "What is a scramble in golf?" },
     { to: "/custom-golf-tournament-website", label: "Custom golf tournament website builder" },
-    { to: "/golf-tournament-software-pricing", label: "Golf tournament software pricing" },
+    { to: "/golf-tournament-software-pricing", label: "Golf tournament online platform pricing" },
   ],
   ctaHeading: "Start your charity tournament today",
   ctaText: "Branded event site, online registration, sponsor packages, and receipting in one place.",
@@ -431,8 +431,8 @@ export const websiteBuilder: GuideContent = {
   related: [
     { to: "/golf-tournament-sponsor-management", label: "Golf tournament sponsor management" },
     { to: "/charity-golf-tournament-guide", label: "How to run a charity golf tournament" },
-    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs golf tournament software" },
-    { to: "/golf-tournament-software-pricing", label: "Golf tournament software pricing" },
+    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs golf tournament online platform" },
+    { to: "/golf-tournament-software-pricing", label: "Golf tournament online platform pricing" },
   ],
   ctaHeading: "Get your branded event page set up",
   ctaText: "We set up your event page and registration. You can edit anything anytime with the same dashboard tools we use.",
@@ -441,7 +441,7 @@ export const websiteBuilder: GuideContent = {
 export const sponsorManagement: GuideContent = {
   slug: "golf-tournament-sponsor-management",
   title: "Golf Tournament Sponsor Management",
-  metaTitle: "Golf Tournament Sponsor Management Software & Best Practices",
+  metaTitle: "Golf Tournament Sponsor Management Online Platform & Best Practices",
   metaDescription:
     "How to build sponsorship tiers, collect logos and assets, deliver visibility, and manage golf tournament sponsors online with TeeVents' sponsor portal.",
   heroSubtitle:
@@ -539,7 +539,7 @@ export const sponsorManagement: GuideContent = {
     { to: "/charity-golf-tournament-guide", label: "How to run a charity golf tournament" },
     { to: "/custom-golf-tournament-website", label: "Custom golf tournament website builder" },
     { to: "/live-scoring-golf-tournaments", label: "Live scoring for golf tournaments" },
-    { to: "/golf-tournament-software-pricing", label: "Golf tournament software pricing" },
+    { to: "/golf-tournament-software-pricing", label: "Golf tournament online platform pricing" },
   ],
   ctaHeading: "Manage sponsors in one place",
   ctaText: "Sell packages online, collect assets automatically, and prove the value after the event.",

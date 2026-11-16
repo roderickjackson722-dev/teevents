@@ -34,7 +34,7 @@ export default function CancellationPolicy() {
         <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">Full Service Management</h2>
         <p className="text-xs font-bold text-primary">{MANAGED_TAG}</p>
         <p className="text-lg font-semibold">Contact us for a quote</p>
-        <p className="text-lg leading-relaxed text-foreground/85">Everything in the software, plus a dedicated tournament manager who works with you from agreement through event day, on site.</p>
+        <p className="text-lg leading-relaxed text-foreground/85">Everything in the online platform, plus a dedicated tournament manager who works with you from agreement through event day, on site.</p>
         <p className="text-lg leading-relaxed text-foreground/85">Management terms are quoted individually after the meeting, in a written proposal.</p>
       </section>
 

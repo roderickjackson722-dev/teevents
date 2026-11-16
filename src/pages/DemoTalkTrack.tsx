@@ -278,7 +278,7 @@ export default function DemoTalkTrack() {
                     <Shield className="h-4 w-4" /> Closer
                   </p>
                   <p className="italic text-foreground/90">
-                    "The bottom line: TeeVents is software you rent for 8% per transaction. Your money is yours. Want to start a tournament right now, or would a quick walkthrough be more useful?"
+                    "The bottom line: TeeVents is an online platform you rent for 8% per transaction. Your money is yours. Want to start a tournament right now, or would a quick walkthrough be more useful?"
                   </p>
                   <div className="mt-4 flex gap-2">
                     <a href="/get-started" className="inline-flex items-center gap-1 text-sm font-medium text-secondary hover:underline">

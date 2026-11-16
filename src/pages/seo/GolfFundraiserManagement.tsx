@@ -18,7 +18,7 @@ export default function GolfFundraiserManagement() {
   return (
     <Layout>
       <SEO
-        title="Golf Fundraiser Management Software"
+        title="Golf Fundraiser Management Online Platform"
         description="Manage every part of your golf fundraiser — registrations, sponsorships, donations, silent auctions, and reporting — from one easy-to-use platform."
         path="/golf-fundraiser-management"
       />
@@ -26,7 +26,7 @@ export default function GolfFundraiserManagement() {
       <section className="bg-gradient-to-b from-primary to-primary/90 text-primary-foreground">
         <div className="container mx-auto px-4 py-16 md:py-24 text-center max-w-4xl">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold leading-tight">
-            Golf Fundraiser Management Software
+            Golf Fundraiser Management Online Platform
           </h1>
           <p className="mt-5 text-base md:text-lg text-primary-foreground/85">
             Maximize every dollar raised at your golf fundraiser. Registration, sponsorships, donations,

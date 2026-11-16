@@ -65,7 +65,7 @@ export default function CompareGolfGenius() {
   return (
     <Layout>
       <SEO
-        title="TeeVents vs Golf Genius — Compare Tournament Software"
+        title="TeeVents vs Golf Genius — Compare Tournament Online Platform"
         description="Side-by-side comparison of TeeVents and Golf Genius. Simpler pricing, built-in pin sheets, no annual contract."
       />
       <div className="max-w-5xl mx-auto px-4 py-12 space-y-10">
@@ -89,7 +89,7 @@ export default function CompareGolfGenius() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow><TableCell className="font-medium">Type</TableCell><TableCell className="bg-primary/5">SOFTWARE</TableCell><TableCell>SOFTWARE</TableCell></TableRow>
+                  <TableRow><TableCell className="font-medium">Type</TableCell><TableCell className="bg-primary/5">ONLINE PLATFORM</TableCell><TableCell>ONLINE PLATFORM</TableCell></TableRow>
                   {section.rows.map((r) => (
                     <TableRow key={r.feature}>
                       <TableCell className="font-medium">{r.feature}</TableCell>

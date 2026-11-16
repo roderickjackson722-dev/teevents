@@ -13,7 +13,7 @@ const never = [
 ];
 type Mark = "x" | "warn";
 const rows: [string, Mark, string, string][] = [
-  ["Type", "x", "SOFTWARE", "SOFTWARE"],
+  ["Type", "x", "ONLINE PLATFORM", "ONLINE PLATFORM"],
   ["Dedicated rep", "x", "Self-service only", "Included on every plan, free or paid"],
   ["Event page build", "x", "Organizer-led setup", "Your rep sets up your page; you can edit anytime with the same dashboard tools we use"],
   ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding"],
@@ -68,7 +68,7 @@ const No = ({ m }: { m: Mark }) => m === "x" ? <X className="h-5 w-5 shrink-0 te
 export default function Compare() {
   return (
     <Layout>
-      <Hero eyebrow="COMPARE" title="Why Organizers Choose TeeVents" subtitle="TeeVents is software plus a real tournament director. Our team sets up your event page, registration, and live leaderboard. You can edit anytime, with your rep on call.">
+      <Hero eyebrow="COMPARE" title="Why Organizers Choose TeeVents" subtitle="TeeVents is an online platform plus a real tournament director. Our team sets up your event page, registration, and live leaderboard. You can edit anytime, with your rep on call.">
         <p className="mt-4 text-primary-foreground/70">See how TeeVents compares to other tournament and event management platforms.</p>
       </Hero>
 
@@ -85,10 +85,10 @@ export default function Compare() {
       </div></section>
 
       <section className="bg-muted/40 py-20"><div className="container mx-auto max-w-5xl px-4">
-        <SectionHead title="TeeVents vs Typical Tournament Software" subtitle="Here is the difference in one view." />
+        <SectionHead title="TeeVents vs Typical Tournament Online Platform" subtitle="Here is the difference in one view." />
         <motion.div {...fade} className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
           <div className="grid grid-cols-[1fr_1fr_1fr] text-sm font-semibold md:text-base">
-            <div className="p-3 md:p-4">Category</div><div className="p-3 md:p-4 text-muted-foreground">Typical Tournament Software</div><div className="bg-secondary p-3 text-secondary-foreground md:p-4">TeeVents</div>
+            <div className="p-3 md:p-4">Category</div><div className="p-3 md:p-4 text-muted-foreground">Typical Tournament Online Platform</div><div className="bg-secondary p-3 text-secondary-foreground md:p-4">TeeVents</div>
           </div>
           {rows.map(([c, m, t, us]) => (
             <div key={c} className="grid grid-cols-[1fr_1fr_1fr] border-t border-border text-sm md:text-base">

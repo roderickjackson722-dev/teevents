@@ -16,8 +16,8 @@ const features = [
 
 const faqs = [
   {
-    q: "What is golf tournament management software?",
-    a: "Golf tournament management software handles registration, payments, pairings, scoring, sponsorships, and reporting in one place — replacing spreadsheets, paper scorecards, and manual checkout.",
+    q: "What is golf tournament management online platform?",
+    a: "Golf tournament management online platform handles registration, payments, pairings, scoring, sponsorships, and reporting in one place — replacing spreadsheets, paper scorecards, and manual checkout.",
   },
   {
     q: "How much does TeeVents cost?",
@@ -37,8 +37,8 @@ export default function GolfTournamentSoftware() {
   return (
     <Layout>
       <SEO
-        title="Golf Tournament Management Software"
-        description="All-in-one golf tournament management software for charities and corporates — registration, live scoring, sponsorships, and payments."
+        title="Golf Tournament Management Online Platform"
+        description="All-in-one golf tournament management online platform for charities and corporates — registration, live scoring, sponsorships, and payments."
         path="/golf-tournament-software"
       />
       {/* JSON-LD FAQPage */}
@@ -60,7 +60,7 @@ export default function GolfTournamentSoftware() {
       <section className="bg-gradient-to-b from-primary to-primary/90 text-primary-foreground">
         <div className="container mx-auto px-4 py-16 md:py-24 text-center max-w-4xl">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-display font-bold leading-tight">
-            Golf Tournament Management Software
+            Golf Tournament Management Online Platform
           </h1>
           <p className="mt-5 text-base md:text-lg text-primary-foreground/85">
             Plan, register, sponsor, score, and report — all in one platform built for charity, corporate,
@@ -84,7 +84,7 @@ export default function GolfTournamentSoftware() {
           <h2 className="text-2xl md:text-4xl font-display font-bold">Built for every part of a golf tournament</h2>
           <p className="mt-3 text-muted-foreground">
             From the first planning call to the post-event thank-you email, TeeVents is the
-            golf tournament software organizers actually enjoy using.
+            golf tournament online platform organizers actually enjoy using.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">

@@ -75,7 +75,7 @@ export default function GolfLeagues() {
   return (
     <>
       <SEO
-        title="Golf League Management Software | TeeVents"
+        title="Golf League Management Online Platform | TeeVents"
         description="Run a complete golf league season for $599 with live scoring, standings, handicaps, and a dedicated TeeVents representative."
       />
       <Navbar />

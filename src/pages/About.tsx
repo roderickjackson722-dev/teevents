@@ -65,7 +65,7 @@ export default function About() {
         <motion.div {...fade} className="container mx-auto max-w-3xl space-y-5 px-4 text-base leading-relaxed text-muted-foreground md:text-lg">
           <h2 className={h2}>We Know The Work Of Running A Tournament</h2>
           <p>We know the labor of being a tournament director, because that is where TeeVents started. Months of preparation go into one day on the course: the format, the pairings, the sponsors, the registration, the scores, the leaderboard, and every change that comes in at the last minute.</p>
-          <p>We built TeeVents to carry that work, not just to sell software for it. Whether this is your first tournament or your twentieth year running one, you get the same tools, the same setup, and the same team on call. We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use. Your rep is on call for your event, and in-person management is available.</p>
+          <p>We built TeeVents to carry that work, not just to sell an online platform for it. Whether this is your first tournament or your twentieth year running one, you get the same tools, the same setup, and the same team on call. We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use. Your rep is on call for your event, and in-person management is available.</p>
           <p>That is the point. Less time setting up, more time running a good event.</p>
         </motion.div>
       </section>
@@ -73,7 +73,7 @@ export default function About() {
       <section className="bg-muted/40 py-20 md:py-28">
         <motion.div {...fade} className="container mx-auto max-w-3xl space-y-6 px-4 text-center text-lg leading-relaxed text-muted-foreground">
           <h2 className={h2}>Why TeeVents Exists</h2>
-          <p>TeeVents was built because we saw a gap in the market. Most platforms hand you software and wish you luck. We knew from our years as tournament directors that what organizers actually need is a partner. Someone who understands the pressure, the details, and the stakes.</p>
+          <p>TeeVents was built because we saw a gap in the market. Most platforms hand you an online platform and wish you luck. We knew from our years as tournament directors that what organizers actually need is a partner. Someone who understands the pressure, the details, and the stakes.</p>
           <p className="font-semibold text-primary">That is why every TeeVents event, free or paid, comes with a dedicated rep who does the work for you.</p>
           <p>That rep is your dedicated tournament director. We build everything for you, and you can open your event any time and change anything.</p>
         </motion.div>
@@ -155,7 +155,7 @@ export default function About() {
           <motion.div {...fade} className="mb-12 text-center"><h2 className={h2}>What Makes TeeVents Different</h2><p className="mt-3 text-lg text-muted-foreground">Most platforms sell you software. We deliver a finished event.</p></motion.div>
           <motion.div {...fade} className="grid overflow-hidden rounded-xl border border-border md:grid-cols-2">
             <div className="bg-card p-6 md:p-8">
-              <h3 className="mb-5 font-body text-lg font-semibold text-muted-foreground">Typical Tournament Software</h3>
+              <h3 className="mb-5 font-body text-lg font-semibold text-muted-foreground">Typical Tournament Online Platform</h3>
               <ul className="space-y-4">{compare.map(([a]) => <li key={a} className="flex gap-3 text-muted-foreground"><X className="mt-0.5 h-5 w-5 shrink-0" aria-hidden="true" />{a}</li>)}</ul>
             </div>
             <div className="bg-primary p-6 text-primary-foreground md:p-8">
@@ -163,7 +163,7 @@ export default function About() {
               <ul className="space-y-4">{compare.map(([a, b]) => <li key={a} className="flex gap-3"><Check className="mt-0.5 h-5 w-5 shrink-0 text-secondary" aria-hidden="true" />{b}</li>)}</ul>
             </div>
           </motion.div>
-          <motion.p {...fade} className="mx-auto mt-10 max-w-3xl rounded-xl border-l-4 border-secondary bg-muted/50 p-6 text-center text-lg font-medium text-primary">That is why organizers choose TeeVents. Not because the software is better, but because the service is.</motion.p>
+          <motion.p {...fade} className="mx-auto mt-10 max-w-3xl rounded-xl border-l-4 border-secondary bg-muted/50 p-6 text-center text-lg font-medium text-primary">That is why organizers choose TeeVents. Not because the online platform is better, but because the service is.</motion.p>
         </div>
       </section>
 

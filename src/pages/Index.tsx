@@ -96,7 +96,7 @@ export default function Index() {
           <h1 id="homepage-title" className="font-display text-3xl font-bold leading-tight md:text-5xl lg:text-6xl">The Golf Tournament Platform That <span className="text-secondary">Builds Your Event For You</span></h1>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Every event includes a dedicated TeeVents rep, free or paid, who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard. Your dedicated tournament director builds it and stays on call on event day for live scoring and leaderboard challenges. You can open your event any time and change anything. You focus on running your tournament while we handle the software.&nbsp;</p>
           <p className="mt-2 text-xs font-bold text-secondary">{SOFTWARE_TAG}</p>
-          <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Golf tournament management software for charity fundraisers, corporate golf outings, golf courses, and golf leagues.</p>
+          <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Golf tournament management online platform for charity fundraisers, corporate golf outings, golf courses, and golf leagues.</p>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 md:text-base">No spreadsheets. No manual setup. No stress.</p>
           <div className="mt-8"><HomeActions hero /></div>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-primary-foreground/85">We build your event page for you — live in 7 days or less.</p>
@@ -117,7 +117,7 @@ export default function Index() {
               <div><h3 className="mb-3 font-display text-xl font-semibold">{title}</h3><p className="text-sm leading-relaxed text-primary-foreground/80 md:text-base">{text}</p>{title === "A Named Rep on Every Plan" && <p className="mt-3 text-sm leading-relaxed text-primary-foreground/80 md:text-base">We build your event page for you. Send us your logo and tournament details, and your page is live in 7 days or less.</p>}</div>
             </div>)}
           </div>
-          <p className="mx-auto mt-10 max-w-3xl border-t border-primary-foreground/20 pt-8 text-center font-display text-lg leading-relaxed text-secondary md:mt-14 md:text-xl">That's why organizers choose TeeVents. Not because the software is better, but because the service behind it is.</p>
+          <p className="mx-auto mt-10 max-w-3xl border-t border-primary-foreground/20 pt-8 text-center font-display text-lg leading-relaxed text-secondary md:mt-14 md:text-xl">That's why organizers choose TeeVents. Not because the online platform is better, but because the service behind it is.</p>
         </div>
       </section>
 

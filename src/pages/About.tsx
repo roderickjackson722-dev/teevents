@@ -51,7 +51,7 @@ const stats = [
 export default function About() {
   return (
     <Layout>
-      <SEO title="About TeeVents" description="TeeVents was built by tournament director Roderick Jackson. Every event, free or paid, includes a dedicated rep who builds it for you." path="/about" />
+      <SEO title="About TeeVents" description="Meet founder Roderick Jackson. TeeVents sets up your event page and registration, lets you edit anytime, and provides on-call event support." path="/about" />
 
       <section className="bg-primary py-20 text-center text-primary-foreground md:py-28">
         <motion.div {...fade} className="container mx-auto max-w-4xl px-4">

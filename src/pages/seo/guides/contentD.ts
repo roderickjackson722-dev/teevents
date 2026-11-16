@@ -2,7 +2,7 @@ import type { GuideContent } from "./types";
 
 const CTA_HEADING = "Start your tournament on TeeVents";
 const CTA_TEXT =
-  "Build a branded event site and collect payments directly. Start at $0, or choose Per-Event for $399 with a dedicated representative who builds it for you. Dedicated rep included on every plan — even free.";
+  "We set up your branded event page and registration. You can edit anything anytime with the same dashboard tools we use. Start at $0, or choose Per-Event for $399. A dedicated rep is included on every plan.";
 
 export const pairingsManagement: GuideContent = {
   slug: "golf-tournament-pairings-management",
@@ -475,7 +475,7 @@ export const websiteBuilderPage: GuideContent = {
   faqs: [
     {
       q: "Do I need technical skills to build a golf tournament website?",
-      a: "No. You choose a template, upload a logo and photo, edit text, and toggle sections. We build your event page for you, live in 7 days or less.",
+      a: "No. We set up your event page and registration. You can edit anything anytime with the same dashboard tools we use.",
     },
     {
       q: "Can I use my own domain name?",

@@ -434,8 +434,8 @@ export const websiteBuilder: GuideContent = {
     { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs golf tournament software" },
     { to: "/golf-tournament-software-pricing", label: "Golf tournament software pricing" },
   ],
-  ctaHeading: "Build your branded event site",
-  ctaText: "Your logo, your colors, your domain — published today, free to start.",
+  ctaHeading: "Get your branded event page set up",
+  ctaText: "We set up your event page and registration. You can edit anything anytime with the same dashboard tools we use.",
 };
 
 export const sponsorManagement: GuideContent = {

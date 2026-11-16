@@ -89,7 +89,7 @@ SAMPLE $100 REGISTRATION (FEES ABSORBED)
 • Net in Your Stripe Account: $88.80
 
 KEY MESSAGE
-"TeeVents is just the software. Your money is yours, in your Stripe account, from the moment a golfer pays. We never hold, escrow, or release funds — there's no payout schedule on our end to wait on."
+"TeeVents is just the online platform. Your money is yours, in your Stripe account, from the moment a golfer pays. We never hold, escrow, or release funds — there's no payout schedule on our end to wait on."
 
 REFUNDS & CHARGEBACKS
 "Because the charge lives on your Stripe account, you are the merchant of record. That means:
@@ -278,7 +278,7 @@ export default function DemoTalkTrack() {
                     <Shield className="h-4 w-4" /> Closer
                   </p>
                   <p className="italic text-foreground/90">
-                    "The bottom line: TeeVents is software you rent for 8% per transaction. Your money is yours. Want to start a tournament right now, or would a quick walkthrough be more useful?"
+                    "The bottom line: TeeVents is an online platform you rent for 8% per transaction. Your money is yours. Want to start a tournament right now, or would a quick walkthrough be more useful?"
                   </p>
                   <div className="mt-4 flex gap-2">
                     <a href="/get-started" className="inline-flex items-center gap-1 text-sm font-medium text-secondary hover:underline">

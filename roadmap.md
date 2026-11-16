@@ -1,4 +1,6 @@
 # Roadmap (Nov 6 2026 request)
+- [x] Nov 16: move pricing's gold plan highlight to No Cost to Start and replace visible TeeVents software wording with online platform; desktop/694px/390px, signup and signed-in new-proposal preview checked; saved proposals, URLs, prices, payments and records unchanged.
+- [x] Nov 16 clarification: retain software in search/share tags; home/pricing descriptions include golf tournament software once and match OG/Twitter; legal and competitor/generic references restored, preserved-use inventory delivered; 44 proposal tests pass.
 - [x] Nov 16: replace director-related virtual wording only; 22 replacements in 16 app files verified across 36 preview pages and 6 phone layouts, Get Started works and 43 proposal tests pass; saved records and billing untouched, inventory delivered.
 - [x] Nov 16: apply site-wide core message, service-only Compare copy, and new-proposal defaults without changing saved proposals.
 - [x] Nov 16: complete Settings Embed copy/link controls and verify with preview-only test data; preserve every other Settings field. Full-width sample iframe renders the complete form after scrolling; unchanged public page does not automatically jump to registration.

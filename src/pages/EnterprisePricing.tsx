@@ -79,7 +79,7 @@ const EnterprisePricing = () => {
             </div>
             <p className="text-xs font-bold uppercase tracking-widest text-secondary">{SOFTWARE_TAG}</p>
             <p className="mt-3 text-xl font-semibold text-secondary">$2,999 per year</p>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/60">{SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "Your director builds every event for you, and your rep is on call on event day. You can open any event any time and change anything.")}</p>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-primary-foreground/60">{SOFTWARE_DEFINITION.replace("You run event day yourself, using the online platform.", "Your director builds every event for you, and your rep is on call on event day. You can open any event any time and change anything.")}</p>
             <h1 className="text-4xl md:text-6xl font-display font-bold text-primary-foreground mb-4">
               Running 10 or more events a year?
             </h1>

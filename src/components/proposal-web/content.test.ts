@@ -9,6 +9,13 @@ describe("client proposal rules",()=>{
   expect(programDetails(documentSchema.parse(next),"Per Event").Definition).toBe(next.softwareDefinition);
   expect(historical.softwareDefinition).toBeUndefined();
  });
+ it("preserves all saved program terms when an existing definition snapshot is present",()=>{
+  const saved=documentSchema.parse({fields:emptyDocument().fields,recommended:"Per Event",intro:"Saved introduction",reason:"Saved reason",packages:["Per Event"],softwareDefinition:"TeeVents is software plus a real tournament director."});
+  const before=JSON.stringify(saved);
+  expect(programDetails(saved,"Per Event")).toEqual({...programs["Per Event"],Definition:saved.softwareDefinition});
+  expect(programDetails(saved,"Full Service Management")).toEqual(programs["Full Service Management"]);
+  expect(JSON.stringify(saved)).toBe(before);
+ });
  it("uses the exact $3,750 trigger and $1,875/$3,125 payments",()=>{expect(calculator(50,75)).toEqual({registrations:3750,trigger:true,first:1875,balance:3125});expect(calculator(49,75).trigger).toBe(false);});
  it("accepts only the six approved recommended programs",()=>{expect(documentSchema.safeParse({...emptyDocument(),recommended:"Discount package"}).success).toBe(false);expect(documentSchema.safeParse({...emptyDocument(),recommended:"Hybrid Managed"}).success).toBe(true);});
  it("does not invent a reason when it is deleted",()=>{expect(documentSchema.parse({...emptyDocument(),reason:""}).reason).toBe("");});

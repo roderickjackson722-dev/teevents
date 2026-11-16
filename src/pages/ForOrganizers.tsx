@@ -99,7 +99,7 @@ export default function ForOrganizers() {
       <section className="bg-muted/40 py-20 md:py-28"><div className={wrap}>
         <SectionHead title="Here Is What Changes With TeeVents" />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{solutions.map(([i, t, d]) => <IconCard key={t} icon={i} title={t} text={d} />)}</div>
-        <Callout>This is not software you have to figure out. This is a service you get to use.</Callout>
+        <Callout>This is not an online platform you have to figure out. This is a service you get to use.</Callout>
       </div></section>
 
       <section className="bg-background py-20 md:py-28"><div className={wrap}>

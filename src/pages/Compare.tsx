@@ -4,7 +4,7 @@ import Layout from "@/components/Layout";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Callout, FinalCta, Hero, IconCard, SectionHead, fade } from "@/components/marketing/PageBits";
 import { SOFTWARE_TAG, SOFTWARE_DEFINITION as RAW_SOFTWARE_DEFINITION } from "@/lib/programTypes";
-const SOFTWARE_DEFINITION = RAW_SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
+const SOFTWARE_DEFINITION = RAW_SOFTWARE_DEFINITION.replace("You run event day yourself, using the online platform.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
 
 const never = [
   ["\"I was left to figure it all out alone.\"", "Your rep handles setup, you can edit anytime, and support is on call."],
@@ -13,7 +13,7 @@ const never = [
 ];
 type Mark = "x" | "warn";
 const rows: [string, Mark, string, string][] = [
-  ["Type", "x", "SOFTWARE", "SOFTWARE"],
+  ["Type", "x", "SOFTWARE", "ONLINE PLATFORM"],
   ["Dedicated rep", "x", "Self-service only", "Included on every plan, free or paid"],
   ["Event page build", "x", "Organizer-led setup", "Your rep sets up your page; you can edit anytime with the same dashboard tools we use"],
   ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding"],
@@ -68,7 +68,7 @@ const No = ({ m }: { m: Mark }) => m === "x" ? <X className="h-5 w-5 shrink-0 te
 export default function Compare() {
   return (
     <Layout>
-      <Hero eyebrow="COMPARE" title="Why Organizers Choose TeeVents" subtitle="TeeVents is software plus a real tournament director. Our team sets up your event page, registration, and live leaderboard. You can edit anytime, with your rep on call.">
+      <Hero eyebrow="COMPARE" title="Why Organizers Choose TeeVents" subtitle="TeeVents is an online platform plus a real tournament director. Our team sets up your event page, registration, and live leaderboard. You can edit anytime, with your rep on call.">
         <p className="mt-4 text-primary-foreground/70">See how TeeVents compares to other tournament and event management platforms.</p>
       </Hero>
 

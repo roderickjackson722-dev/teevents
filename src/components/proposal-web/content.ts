@@ -2,18 +2,20 @@ import { z } from "zod";
 import { fullServiceSchema, defaultFullService, fullServiceTotals, money, managementLimits, managementPlatformFee } from "./pricing";
 import { SOFTWARE_TAG, MANAGED_TAG, SOFTWARE_DEFINITION, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS, FULL_SERVICE_PRICE, FULL_SERVICE_SCOPE, FULL_SERVICE_GROUP, FULL_SERVICE_LIMITS } from "@/lib/programTypes";
 const LEGACY_SOFTWARE_DEFINITION = "Use the TeeVents software. A dedicated rep builds your event page for you. You run event day yourself, using the software.";
+const LEGACY_SOFTWARE_TAG = "SOFTWARE";
+const LEGACY_MANAGED_DEFINITION = "Everything in the software, plus a dedicated tournament manager who works with you from agreement through event day, on site.";
 export const programs = {
   "Full Service Management": {
     "Type": MANAGED_TAG,
     "Price": FULL_SERVICE_PRICE,
-    "Definition": MANAGED_DEFINITION,
+    "Definition": LEGACY_MANAGED_DEFINITION,
     "What We Provide": FULL_SERVICE_SCOPE,
     [ON_SITE_HEADING]: ON_SITE_BULLETS.join(". ") + ".",
     "Your Group Handles": FULL_SERVICE_GROUP,
     "Limits": FULL_SERVICE_LIMITS,
   },
   "No Cost to Start": {
-    "Type": SOFTWARE_TAG,
+    "Type": LEGACY_SOFTWARE_TAG,
     "Price": "$0 to start",
     "Definition": LEGACY_SOFTWARE_DEFINITION,
     "Platform fee": "5%, paid by players at checkout",
@@ -23,7 +25,7 @@ export const programs = {
     "Cancellation": "Plan purchases are non refundable on cancellation. If a golfer registration is refunded, the 5% platform fee stays with TeeVents. TeeVents does not issue refunds directly to golfers. Refunds to golfers are at the organizer discretion, and are issued by the organizer."
   },
   "Per Event": {
-    "Type": SOFTWARE_TAG,
+    "Type": LEGACY_SOFTWARE_TAG,
     "Price": "$399 per event",
     "Definition": LEGACY_SOFTWARE_DEFINITION,
     "Platform fee": "0% TeeVents platform fee",
@@ -33,7 +35,7 @@ export const programs = {
     "Cancellation": "The $399 Per Event purchase is non refundable on cancellation. A postponed event $399 moves to the new date at no extra charge. If a golfer registration is refunded, the organizer absorbs Stripe processing. TeeVents does not issue refunds directly to golfers."
   },
   "Per League": {
-    "Type": SOFTWARE_TAG,
+    "Type": LEGACY_SOFTWARE_TAG,
     "Price": "$599 per league",
     "Definition": LEGACY_SOFTWARE_DEFINITION,
     "Includes": "Core platform tools for league play, dedicated rep",
@@ -42,7 +44,7 @@ export const programs = {
     "Cancellation": "Plan purchases are non refundable on cancellation. TeeVents does not issue refunds directly to golfers."
   },
   "Enterprise": {
-    "Type": SOFTWARE_TAG,
+    "Type": LEGACY_SOFTWARE_TAG,
     "Price": "$2,999 per year, for 10 or more events",
     "Definition": LEGACY_SOFTWARE_DEFINITION,
     "Platform fee": "0% TeeVents platform fee",
@@ -54,7 +56,7 @@ export const programs = {
   "Hybrid Managed": {
     "Type": MANAGED_TAG,
     "Price": "Starting at $5,000 per event, plus travel quoted separately",
-    "Definition": MANAGED_DEFINITION,
+    "Definition": LEGACY_MANAGED_DEFINITION,
     "Platform fee": "Platform stays No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate. The $5,000 management fee is separate from, and in addition to, the 5% platform fee. The platform fee is paid by players at checkout, not by the organizer, and it does not reduce the $5,000 management fee.",
     "Includes": "Dedicated manager from agreement through event day, minimum field of 50 players, events planned months in advance, signed agreement required before management work starts",
     "What We Provide": "Branded TeeVents event page, registration, sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers provided for the group to sell, pairings, check in setup, live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
@@ -67,7 +69,7 @@ export const programs = {
   "Full Service Planning": {
     "Type": MANAGED_TAG,
     "Price": "Starting at $5,000 per event, plus travel quoted separately",
-    "Definition": MANAGED_DEFINITION,
+    "Definition": LEGACY_MANAGED_DEFINITION,
     "Platform fee": "Platform stays No Cost to Start. Players pay the 5% platform fee at checkout. Stripe processing is separate.",
     "Includes": "Dedicated manager from agreement through event day",
     "What We Provide": "Branded TeeVents event page, registration, sponsor tiers, course negotiation and course communication, food, awards, and vendor recommendations and negotiations, sponsor packets and tiers, pairings, check in setup, live scoring, timeline and consulting throughout, on site event day coordination, post event closeout",
@@ -204,10 +206,16 @@ export function answerQuestion(q:string,d:WebDocument) {
 export function shownPrograms(d:WebDocument){const set=d.packages;return set?programNames.filter(p=>set.includes(p)):programNames.filter(p=>p!=="Full Service Management");}
 export function isCurrentDocument(d:WebDocument) { return !!d.packages && !d.packages.some(p=>p==="Hybrid Managed"||p==="Full Service Planning"); }
 
+function usesOnlinePlatformWording(d:WebDocument) { return /\bonline platform\b/i.test(d.softwareDefinition ?? ""); }
+
 export function programDetails(d:WebDocument,p:(typeof programNames)[number]):Record<string,string> {
  const historical=programs[p];
  const original:Record<string,string> = {...historical};
- if(historical.Type===SOFTWARE_TAG && d.softwareDefinition) original.Definition=d.softwareDefinition;
+ if(historical.Type===LEGACY_SOFTWARE_TAG && d.softwareDefinition) original.Definition=d.softwareDefinition;
+ if(usesOnlinePlatformWording(d)) {
+  if(historical.Type===LEGACY_SOFTWARE_TAG) original.Type=SOFTWARE_TAG;
+  if(historical.Type===MANAGED_TAG) original.Definition=MANAGED_DEFINITION;
+ }
  if(p!=="Full Service Management"||!d.fullService)return {...original};
  const t=fullServiceTotals(d.fullService);
  return {...original,Price:`${money(t.final)} per event`,"Platform fee":managementPlatformFee,Includes:"Dedicated manager from agreement through event day",Limits:managementLimits,"Payment Schedule":d.fullService.paymentTerms,Cancellation:d.fullService.cancellationTerms};

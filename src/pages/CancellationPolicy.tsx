@@ -1,5 +1,5 @@
 import Layout from "@/components/Layout";
-import { SOFTWARE_TAG, MANAGED_TAG } from "@/lib/programTypes";
+import { MANAGED_TAG } from "@/lib/programTypes";
 
 export default function CancellationPolicy() {
   return <Layout>
@@ -15,7 +15,7 @@ export default function CancellationPolicy() {
 
       <section className="space-y-4">
         <h2 className="font-display text-2xl font-bold text-foreground md:text-3xl">Platform plans</h2>
-        <p className="text-xs font-bold uppercase tracking-widest text-primary">{SOFTWARE_TAG} — No Cost to Start, Per Event, Per League, Enterprise</p>
+        <p className="text-xs font-bold uppercase tracking-widest text-primary">SOFTWARE — No Cost to Start, Per Event, Per League, Enterprise</p>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">
           TeeVents does not issue refunds directly to golfers. Refunds to golfers are at the organizer discretion, and are issued by the organizer.
         </p>

@@ -9,7 +9,7 @@ import { SOFTWARE_TAG, SOFTWARE_DEFINITION } from "@/lib/programTypes";
 import FullServiceManagement from "@/components/marketing/FullServiceManagement";
 import TrustAndProof from "@/components/marketing/TrustAndProof";
 
-const PLAN_DEFINITION = SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
+const PLAN_DEFINITION = SOFTWARE_DEFINITION.replace("You run event day yourself, using the online platform.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
 
 const plans = [
   { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "No cost to start. Golfers cover an 8% service fee that includes your dedicated TeeVents rep, plus standard card processing (Stripe 2.9% + $0.30).", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
@@ -37,7 +37,7 @@ const payments = [
   ["You Get Paid", "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2 to 7 business days."],
 ];
 const comparison = [
-  ["Type", "SOFTWARE", "SOFTWARE", "SOFTWARE", "SOFTWARE"],
+  ["Type", "ONLINE PLATFORM", "ONLINE PLATFORM", "ONLINE PLATFORM", "ONLINE PLATFORM"],
   ["Upfront cost", "$0", "$399 per tournament", "$599 per league", "$2,999 per year"],
   ["Transaction fee", "8% (covered by players)", "0%", "0%", "0%"],
   ["Events included", "Pay as you go", "Pay as you go", "One league season", "Unlimited"],
@@ -61,7 +61,7 @@ const heading = "text-3xl font-display font-bold md:text-4xl";
 
 export default function Plans() {
   return <Layout>
-    <SEO title="Simple, Transparent Pricing | TeeVents" description="$0 to start, $399 per tournament, $599 per league, $2,999/yr Enterprise. A dedicated rep sets up your page. Edit anytime. On call for your event." path="/pricing" />
+    <SEO title="Simple, Transparent Pricing | TeeVents" description="Golf tournament software: $0 to start, $399/event, $599/league, $2,999/yr Enterprise. Dedicated rep setup, editing anytime, and on-call event support." path="/pricing" />
     <div className="pricing-page">
       <section aria-labelledby="pricing-title" className={`${section} bg-primary text-primary-foreground text-center`}>
         <div className="mx-auto max-w-3xl">
@@ -69,13 +69,13 @@ export default function Plans() {
           <h1 id="pricing-title" className="text-4xl font-display font-bold md:text-6xl">Simple, Transparent Pricing</h1>
           <p className="mt-6 text-lg leading-relaxed text-primary-foreground/85">Choose the plan that fits your event. Start free, pay per event, or run unlimited events with Enterprise.</p>
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-primary-foreground/85">Every plan includes a dedicated TeeVents rep who sets up your event page. You can edit anything anytime using the same dashboard tools we use, and we're on call for your event.</p>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-primary-foreground/85">TeeVents is software plus a real tournament director. We set up your event page and registration, you can edit anytime, and we're on call for your event. In-person management is available.</p>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-primary-foreground/85">TeeVents is an online platform plus a real tournament director. We set up your event page and registration, you can edit anytime, and we're on call for your event. In-person management is available.</p>
         </div>
       </section>
 
       <section aria-label="The four plans" className={`${section} bg-muted/40`}>
         <div className="mx-auto grid max-w-[1440px] items-stretch gap-5 lg:grid-cols-4">
-          {plans.map((plan, index) => <article key={plan.name} className={`relative flex min-w-0 flex-col rounded-lg border p-6 ${index === 1 ? "border-2 border-secondary bg-card lg:-my-3 lg:py-9" : "border-border bg-card"}`}>
+          {plans.map((plan, index) => <article key={plan.name} className={`relative flex min-w-0 flex-col rounded-lg border p-6 ${plan.badge === "MOST POPULAR" ? "border-2 border-secondary bg-card lg:-my-3 lg:py-9" : "border-border bg-card"}`}>
             <div className="mb-5 flex min-h-10 items-center">{plan.badge && <span className="rounded-sm bg-secondary px-3 py-2 text-center text-xs font-bold leading-relaxed text-secondary-foreground">{plan.badge}</span>}</div>
             <h2 className="text-2xl font-display font-bold">{plan.name}</h2>
             <p className={`mt-2 text-xs font-bold uppercase tracking-widest ${"text-primary"}`}>{SOFTWARE_TAG}</p>

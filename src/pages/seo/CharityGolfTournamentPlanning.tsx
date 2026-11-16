@@ -37,7 +37,7 @@ export default function CharityGolfTournamentPlanning() {
             Charity Golf Tournament Planning Made Simple
           </h1>
           <p className="mt-5 text-base md:text-lg text-primary-foreground/85">
-            Raise more for your cause with software designed for nonprofit and charity golf tournaments.
+            Raise more for your cause with an online platform designed for nonprofit and charity golf tournaments.
             Sponsors, auctions, donations, and tax-exempt receipting — done.
           </p>
           <p className="mt-4 text-base md:text-lg text-primary-foreground">Your dedicated tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>

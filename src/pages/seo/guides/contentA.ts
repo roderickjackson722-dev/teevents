@@ -70,7 +70,7 @@ export const scramble: GuideContent = {
       paragraphs: [
         "TeeVents was built for exactly this kind of event. Your director sets the format for you, and you can open it any time and change anything. Choose your team size, and the platform handles the rest: registration collects teams or individual players, pairings assign each team to a starting hole or tee time, and scoring generates one shared scoring code per group so a single person enters the team score hole by hole from their phone.",
         "The live leaderboard updates in real time in any web browser, so players, spectators, and sponsors can follow along without downloading an app. You can display it on a screen in the clubhouse during the awards reception, and rotate sponsor logos across the top of the board while people watch. Cart signs, printed scorecards with a scan-to-score QR code, and pairing sheets all generate automatically from the same pairings you already set up.",
-        "Payments run through Stripe, so registrations and sponsorships are collected online before event day, and funds settle directly to the organizer's account. There is no monthly software subscription to sign up for: the Base plan is free, and you can unlock advanced features for a single tournament when you need them.",
+        "Payments run through Stripe, so registrations and sponsorships are collected online before event day, and funds settle directly to the organizer's account. There is no monthly online platform subscription to sign up for: the Base plan is free, and you can unlock advanced features for a single tournament when you need them.",
       ],
     },
     {

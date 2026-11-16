@@ -5,7 +5,7 @@ import { DedicatedRepBadge, EnterpriseRepSection } from "@/components/DedicatedR
 import SEO from "@/components/SEO";
 import EnterpriseInquiryDialog from "@/components/pricing/EnterpriseInquiryDialog";
 import { SOFTWARE_TAG, SOFTWARE_DEFINITION as RAW_SOFTWARE_DEFINITION } from "@/lib/programTypes";
-const SOFTWARE_DEFINITION = RAW_SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
+const SOFTWARE_DEFINITION = RAW_SOFTWARE_DEFINITION.replace("You run event day yourself, using the online platform.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
 import { Button } from "@/components/ui/button";
 
 const SECTIONS = [

@@ -89,7 +89,7 @@ export default function CompareGolfGenius() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow><TableCell className="font-medium">Type</TableCell><TableCell className="bg-primary/5">SOFTWARE</TableCell><TableCell>SOFTWARE</TableCell></TableRow>
+                  <TableRow><TableCell className="font-medium">Type</TableCell><TableCell className="bg-primary/5">ONLINE PLATFORM</TableCell><TableCell>SOFTWARE</TableCell></TableRow>
                   {section.rows.map((r) => (
                     <TableRow key={r.feature}>
                       <TableCell className="font-medium">{r.feature}</TableCell>

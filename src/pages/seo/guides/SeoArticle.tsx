@@ -20,7 +20,7 @@ const ALL_TOPICS: GuideLink[] = [
   { to: "/golf-tournament-software-pricing", label: "Golf Tournament Software Pricing" },
   { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs Golf Tournament Software" },
   { to: "/golfstatus-vs-golf-genius", label: "GolfStatus vs Golf Genius" },
-  { to: "/golf-tournament-software", label: "Golf Tournament Software Overview" },
+  { to: "/golf-tournament-software", label: "Golf Tournament Online Platform Overview" },
   { to: "/charity-golf-tournament-planning", label: "Charity Golf Tournament Planning" },
   { to: "/golf-fundraiser-management", label: "Golf Fundraiser Management" },
   { to: "/eventbrite-for-golf-tournaments", label: "Eventbrite for Golf Tournaments" },

@@ -121,7 +121,7 @@ export default function Presentation() {
       </section>
 
       <section className="space-y-5">
-        <h2 className={sectionTitle}>Managed Service, On Site, Not Included In Software Plans</h2>
+        <h2 className={sectionTitle}>Managed Service, On Site, Not Included In Online Platform Plans</h2>
         <p className="text-lg leading-relaxed text-foreground/85 [overflow-wrap:normal]">{MANAGED_DEFINITION}</p>
         <div className={card}>
           <div className="space-y-2">

@@ -48,7 +48,7 @@ const quotes = [
 ];
 const toolbox = [[Image, "Event logo"], [Palette, "Brand colors"], [ImagePlus, "Hero image"], [Award, "Sponsor logos"], [FileText, "Event documents and waivers"], [Camera, "Photo gallery and additional notes"]] as const;
 const faqs = [
-  ["Do I really get a dedicated rep on the free plan?", "Yes. Every event on TeeVents, free or paid, includes a dedicated rep who builds your event for you."],
+  ["Do I really get a dedicated rep on the free plan?", "Yes. Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use."],
   ["What if I have never run a tournament before?", "TeeVents is built for first-time organizers. Your rep walks you through every step."],
   ["Can I use my own payment system?", "TeeVents uses Stripe for payments. Setup takes 5 to 10 minutes and your rep will help you connect it."],
   ["How long does setup take?", "Most events are live within a few days of signup. Complex events may take longer, and your rep will give you a timeline during your first call."],
@@ -85,7 +85,7 @@ export default function ForOrganizers() {
     <Layout>
       <SEO title="For Tournament Organizers" description="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." path="/for-organizers" />
 
-      <Hero eyebrow="FOR TOURNAMENT ORGANIZERS" title="You Run the Tournament. We Build Everything Else." label="Your Virtual Tournament Director" subtitle="From your branded event page to your live leaderboard, your TeeVents rep handles the setup so you can focus on the day that matters. Your virtual Tournament director builds everything for you, and stays on call on event day for live scoring and leaderboard challenges. You can open your event any time and change anything.">
+      <Hero eyebrow="FOR TOURNAMENT ORGANIZERS" title="You Run the Tournament. We Build Everything Else." label="Your Virtual Tournament Director" subtitle="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use. We set up registration and your live leaderboard, stay on call for your event, and offer in-person management.">
         <p className="mt-6 font-semibold text-secondary">Free for organizers. A dedicated rep on every event, free or paid.</p>
         <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row"><GetStarted /><OutlineLight to="/request-sample">REQUEST A SAMPLE</OutlineLight></div>
       </Hero>

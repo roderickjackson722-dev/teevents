@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { fullServiceSchema, defaultFullService, fullServiceTotals, money, managementLimits, managementPlatformFee } from "./pricing";
 import { SOFTWARE_TAG, MANAGED_TAG, SOFTWARE_DEFINITION, MANAGED_DEFINITION, ON_SITE_HEADING, ON_SITE_BULLETS, FULL_SERVICE_PRICE, FULL_SERVICE_SCOPE, FULL_SERVICE_GROUP, FULL_SERVICE_LIMITS } from "@/lib/programTypes";
+const LEGACY_SOFTWARE_DEFINITION = "Use the TeeVents software. A dedicated rep builds your event page for you. You run event day yourself, using the software.";
 export const programs = {
   "Full Service Management": {
     "Type": MANAGED_TAG,
@@ -14,7 +15,7 @@ export const programs = {
   "No Cost to Start": {
     "Type": SOFTWARE_TAG,
     "Price": "$0 to start",
-    "Definition": SOFTWARE_DEFINITION,
+    "Definition": LEGACY_SOFTWARE_DEFINITION,
     "Platform fee": "5%, paid by players at checkout",
     "Includes": "10 manual entries, dedicated rep, event page built for you, live in 7 days or less",
     "What We Provide": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring only if the $99 Live Leaderboard and Mobile Scoring add on is added, sponsor and auction tools, live budget tracking",
@@ -24,7 +25,7 @@ export const programs = {
   "Per Event": {
     "Type": SOFTWARE_TAG,
     "Price": "$399 per event",
-    "Definition": SOFTWARE_DEFINITION,
+    "Definition": LEGACY_SOFTWARE_DEFINITION,
     "Platform fee": "0% TeeVents platform fee",
     "Includes": "Live Leaderboard and Mobile Scoring included, unlimited manual entries, dedicated rep, event page built for you, live in 7 days or less",
     "What We Provide": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking",
@@ -34,7 +35,7 @@ export const programs = {
   "Per League": {
     "Type": SOFTWARE_TAG,
     "Price": "$599 per league",
-    "Definition": SOFTWARE_DEFINITION,
+    "Definition": LEGACY_SOFTWARE_DEFINITION,
     "Includes": "Core platform tools for league play, dedicated rep",
     "What We Provide": "Branded event page, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking, for league play",
     "Payment Schedule": "$599 per league. Stripe processing is separate.",
@@ -43,7 +44,7 @@ export const programs = {
   "Enterprise": {
     "Type": SOFTWARE_TAG,
     "Price": "$2,999 per year, for 10 or more events",
-    "Definition": SOFTWARE_DEFINITION,
+    "Definition": LEGACY_SOFTWARE_DEFINITION,
     "Platform fee": "0% TeeVents platform fee",
     "Includes": "Annual plan for golf courses, whole calendar in one place, dedicated rep",
     "What We Provide": "Branded event pages, registration, sponsor tiers, pairings, check in, live scoring, sponsor and auction tools, live budget tracking, for the whole course calendar",
@@ -176,9 +177,9 @@ export function withReason(current: string, text: string) {
   return base ? `${base}\n\n${text}` : text;
 }
 const programEnum=z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Hybrid Managed","Full Service Planning","Full Service Management"]);
-export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional() });
+export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional() });
 export type WebDocument = z.infer<typeof documentSchema>;
-export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:["No Cost to Start","Per Event","Full Service Management"],intro:introExample,reason:reasonExample,fullService:defaultFullService(),closureEnabled:true});
+export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:["No Cost to Start","Per Event","Full Service Management"],intro:introExample,reason:reasonExample,softwareDefinition:SOFTWARE_DEFINITION,fullService:defaultFullService(),closureEnabled:true});
 export const fallbackAnswer = "That is not in this proposal, so I will pass that question to Rod, and he will follow up. Thank you for asking.";
 export function sensitiveQuestion(q:string) { return /(password|bank account|card number|routing number|cvv|social security)|(?:\d[ -]?){12,19}/i.test(q); }
 export function calculator(players:number,fee:number) { const registrations=Math.max(0,players)*Math.max(0,fee); return {registrations,trigger:registrations>=3750,first:1875,balance:3125}; }
@@ -204,7 +205,9 @@ export function shownPrograms(d:WebDocument){const set=d.packages;return set?pro
 export function isCurrentDocument(d:WebDocument) { return !!d.packages && !d.packages.some(p=>p==="Hybrid Managed"||p==="Full Service Planning"); }
 
 export function programDetails(d:WebDocument,p:(typeof programNames)[number]):Record<string,string> {
- const original=programs[p];
+ const historical=programs[p];
+ const original:Record<string,string> = {...historical};
+ if(historical.Type===SOFTWARE_TAG && d.softwareDefinition) original.Definition=d.softwareDefinition;
  if(p!=="Full Service Management"||!d.fullService)return {...original};
  const t=fullServiceTotals(d.fullService);
  return {...original,Price:`${money(t.final)} per event`,"Platform fee":managementPlatformFee,Includes:"Dedicated manager from agreement through event day",Limits:managementLimits,"Payment Schedule":d.fullService.paymentTerms,Cancellation:d.fullService.cancellationTerms};

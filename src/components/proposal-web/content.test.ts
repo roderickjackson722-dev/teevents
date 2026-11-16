@@ -1,6 +1,14 @@
 import { describe,it,expect } from "vitest";
-import { programs,shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason } from "./content";
+import { programs,programDetails,shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason } from "./content";
 describe("client proposal rules",()=>{
+ it("new proposal defaults do not change the definition displayed by saved historical payloads",()=>{
+  const historical=documentSchema.parse({fields:emptyDocument().fields,recommended:"",intro:"",reason:"",packages:["No Cost to Start","Per Event"]});
+  expect(programDetails(historical,"Per Event").Definition).toBe("Use the TeeVents software. A dedicated rep builds your event page for you. You run event day yourself, using the software.");
+  const next=emptyDocument();
+  expect(next.softwareDefinition).toBeDefined();
+  expect(programDetails(documentSchema.parse(next),"Per Event").Definition).toBe(next.softwareDefinition);
+  expect(historical.softwareDefinition).toBeUndefined();
+ });
  it("uses the exact $3,750 trigger and $1,875/$3,125 payments",()=>{expect(calculator(50,75)).toEqual({registrations:3750,trigger:true,first:1875,balance:3125});expect(calculator(49,75).trigger).toBe(false);});
  it("accepts only the six approved recommended programs",()=>{expect(documentSchema.safeParse({...emptyDocument(),recommended:"Discount package"}).success).toBe(false);expect(documentSchema.safeParse({...emptyDocument(),recommended:"Hybrid Managed"}).success).toBe(true);});
  it("does not invent a reason when it is deleted",()=>{expect(documentSchema.parse({...emptyDocument(),reason:""}).reason).toBe("");});

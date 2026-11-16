@@ -16,7 +16,7 @@ const values = [
 ];
 
 const compare = [
-  ["You build the event page yourself", "Your rep builds it for you"],
+  ["Page setup is left to the organizer", "Your rep sets up your page; you can edit anytime"],
   ["You configure registration and payments", "Your rep sets it all up"],
   ["You figure out the leaderboard settings", "Your rep configures everything"],
   ["You watch tutorials and read FAQs", "You tell us what you want and we do it"],
@@ -51,7 +51,7 @@ const stats = [
 export default function About() {
   return (
     <Layout>
-      <SEO title="About TeeVents" description="TeeVents was built by tournament director Roderick Jackson. Every event, free or paid, includes a dedicated rep who builds it for you." path="/about" />
+      <SEO title="About TeeVents" description="Meet founder Roderick Jackson. TeeVents sets up your event page and registration, lets you edit anytime, and provides on-call event support." path="/about" />
 
       <section className="bg-primary py-20 text-center text-primary-foreground md:py-28">
         <motion.div {...fade} className="container mx-auto max-w-4xl px-4">
@@ -65,7 +65,7 @@ export default function About() {
         <motion.div {...fade} className="container mx-auto max-w-3xl space-y-5 px-4 text-base leading-relaxed text-muted-foreground md:text-lg">
           <h2 className={h2}>We Know The Work Of Running A Tournament</h2>
           <p>We know the labor of being a tournament director, because that is where TeeVents started. Months of preparation go into one day on the course: the format, the pairings, the sponsors, the registration, the scores, the leaderboard, and every change that comes in at the last minute.</p>
-          <p>We built TeeVents to carry that work, not just to sell software for it. Whether this is your first tournament or your twentieth year running one, you get the same tools, the same setup, and the same team on call. If you are new, your director builds everything for you and walks you through it. If you have run events for years, you can build it yourself with the same tools, change anything any time, and call us when you need us.</p>
+          <p>We built TeeVents to carry that work, not just to sell software for it. Whether this is your first tournament or your twentieth year running one, you get the same tools, the same setup, and the same team on call. We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use. Your rep is on call for your event, and in-person management is available.</p>
           <p>That is the point. Less time setting up, more time running a good event.</p>
         </motion.div>
       </section>
@@ -178,7 +178,7 @@ export default function About() {
       <section className="bg-primary py-20 text-center text-primary-foreground">
         <motion.div {...fade} className="container mx-auto max-w-3xl px-4">
           <h2 className="font-display text-3xl font-bold md:text-5xl">Ready to Work with a Real Partner?</h2>
-          <p className="mt-5 text-lg text-primary-foreground/85">Free for organizers. A dedicated rep builds your event for you.</p>
+          <p className="mt-5 text-lg text-primary-foreground/85">Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.</p>
           <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
             <Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/get-started">GET STARTED<ArrowRight /></Link></Button>
             <Button asChild variant="outline" size="lg" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/request-sample">REQUEST A SAMPLE</Link></Button>

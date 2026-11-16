@@ -8,7 +8,7 @@ export const SOFTWARE_TAG = "SOFTWARE";
 export const MANAGED_TAG = "MANAGED SERVICE, ON SITE";
 
 export const SOFTWARE_DEFINITION =
-  "Use the TeeVents software. A dedicated rep builds your event page for you. You run event day yourself, using the software.";
+  "TeeVents is software plus a real tournament director. Your dedicated TeeVents rep sets up your event page, registration, and live leaderboard. You can edit anything anytime with the same dashboard tools we use. You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support. In-person management is available.";
 
 export const MANAGED_DEFINITION =
   "Everything in the software, plus a dedicated tournament manager who works with you from agreement through event day, on site.";

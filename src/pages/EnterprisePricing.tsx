@@ -15,7 +15,7 @@ import { toast } from "sonner";
 const enterpriseFeatures = [
   "Unlimited tournaments and leagues",
   "Live Leaderboard + Mobile Scoring included ($99 value per event)",
-  "Your own dedicated rep who builds every event, every league, and every leaderboard for you",
+  "Your dedicated rep sets up every event, league, and leaderboard; you can edit anytime",
   "0% transaction fees",
   "Custom branding",
   "Priority support",
@@ -61,7 +61,7 @@ const EnterprisePricing = () => {
     <Layout>
       <SEO
         title="Enterprise Pricing | TeeVents — White-Label & Volume Plans"
-        description="TeeVents Enterprise is $2,999 per year for unlimited events, custom branding, zero platform fees, and a dedicated representative."
+        description="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use."
         path="/enterprise-pricing"
       />
 
@@ -85,7 +85,7 @@ const EnterprisePricing = () => {
             </h1>
             <p className="mb-4 text-sm font-bold uppercase tracking-widest text-secondary">Your Virtual Tournament Director</p>
             <p className="text-lg md:text-xl text-primary-foreground/70 leading-relaxed">
-              Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. And a dedicated rep who builds every event for you.
+              Unlimited tournaments and leagues. Live scoring on every event. 0% transaction fees. Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.
             </p>
             <p className="mt-4 text-secondary font-semibold">Run 10 events, and it pays for itself. Run more? You save more.</p>
           </motion.div>
@@ -108,7 +108,7 @@ const EnterprisePricing = () => {
               </li>
             ))}
           </ul>
-          <p className="mt-6 font-semibold text-primary">Build it yourself with the same tools, or let your director build it for you. You stay in control either way.</p>
+          <p className="mt-6 font-semibold text-primary">Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.</p>
         </div>
       </section>
 

@@ -221,14 +221,14 @@ export default function Features() {
               </li>
             ))}
           </ul>
-          <p className="mx-auto mt-10 max-w-2xl text-center text-lg font-medium text-foreground">Build it yourself with the same tools, or let your director build it for you. You stay in control either way.</p>
+          <p className="mx-auto mt-10 max-w-2xl text-center text-lg font-medium text-foreground">We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use.</p>
         </div>
       </section>
 
       <section className="bg-primary py-20 text-center text-primary-foreground">
         <motion.div {...fade} className="container mx-auto max-w-3xl px-4">
           <h2 className="font-display text-3xl font-bold md:text-5xl">Ready to See Every Feature in Action?</h2>
-          <p className="mt-5 text-lg text-primary-foreground/85">Free for organizers. A dedicated rep builds it for you.</p>
+          <p className="mt-5 text-lg text-primary-foreground/85">Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.</p>
           <div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row">
             <Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/get-started">GET STARTED<ArrowRight /></Link></Button>
             <Button asChild variant="outline" size="lg" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/request-sample">REQUEST A SAMPLE</Link></Button>

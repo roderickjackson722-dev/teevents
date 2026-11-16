@@ -36,7 +36,7 @@ export const sendOnboardingSummary = createServerFn({ method: "POST" })
       `Event name: ${ev.name || "Not provided"}`, `Event date: ${ev.date || "Not provided"}`, `Location: ${ev.location || "Not provided"}`,
       `City and state: ${ev.cityState || "Not provided"}`, `Event type: ${ev.type || "Not provided"}`, `Format: ${ev.format || "Not provided"}`,
       `Number of holes: ${ev.holes || "Not provided"}`, `Expected players: ${ev.players || "Not provided"}`, `Plan selected: ${ev.plan || "Not provided"}`,
-      `Event page choice: ${tb.onboarding_choice || "Not selected"}`,
+      `Event page choice: ${tb.onboarding_choice === "Build it yourself" ? "Edit your event page with the same dashboard tools we use" : tb.onboarding_choice || "Not selected"}`,
     ];
     const needed = [...(ev.name ? [] : ["Event details"]), ...(tb.logo ? [] : ["Event logo"])];
     const send = (to: string[], subject: string, text: string) => fetch("https://api.resend.com/emails", {

@@ -32,7 +32,7 @@ export function welcomeEmail(): { subject: string; html: string } {
         <li><strong>One place</strong> for registrations, payments, scoring, and sponsors.</li>
         <li><strong>5% platform fee</strong> + standard Stripe processing — no monthly cost on the Base plan.</li>
         <li><strong>Stripe Connect</strong> sends net proceeds straight to your bank — TeeVents never holds your money.</li>
-        <li><strong>Per-Event</strong> ($299 per tournament) includes live scoring and a dedicated representative who builds the event page and leaderboard.</li>
+        <li><strong>Per-Event</strong> ($299 per tournament) includes live scoring. Every plan includes a dedicated TeeVents rep who sets up your event page, registration, and live leaderboard. You can edit anything anytime with the same dashboard tools we use, and your rep is on call for your event. In-person management is available.</li>
       </ul>
       <p>Click below to come back to the demo any time, or jump straight to creating your first tournament.</p>`,
       "https://teevents.golf/interactive-demo",

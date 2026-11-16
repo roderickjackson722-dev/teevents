@@ -256,7 +256,7 @@ export default function RequestSample() {
           })}
           <Card className="bg-muted/40">
             <CardContent className="pt-6 space-y-3 text-sm text-muted-foreground">
-              <p>Prefer to start right now? Tell us about your event and your director will build your sample for you, or you can build it yourself with the same tools.</p>
+              <p>Prefer to start right now? Tell us about your event. We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use.</p>
               <Button asChild variant="outline" className="w-full">
                 <Link to="/get-started">Start Your Tournament</Link>
               </Button>

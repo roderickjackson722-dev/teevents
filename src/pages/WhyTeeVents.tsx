@@ -95,7 +95,7 @@ export default function WhyTeeVents() {
 
       <section className="py-20 px-4 bg-primary text-primary-foreground text-center">
         <h2 className="font-display text-3xl md:text-4xl font-bold">Ready to see the difference?</h2>
-        <p className="mt-4 text-primary-foreground/90">Tell us about your first event — your rep builds it for you. No upfront cost on No Cost to Start.</p>
+        <p className="mt-4 text-primary-foreground/90">Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use. No upfront cost on No Cost to Start.</p>
         <div className="mt-8 flex flex-col sm:flex-row gap-4 justify-center">
           <Link to="/signup" className="bg-secondary text-primary px-8 py-3 rounded-md font-semibold hover:bg-secondary/90 transition-colors">Get Started — Free for Organizers</Link>
           <Link to="/enterprise-demo" className="border-2 border-secondary text-secondary px-8 py-3 rounded-md font-semibold hover:bg-secondary hover:text-primary transition-colors">See a Live Demo</Link>

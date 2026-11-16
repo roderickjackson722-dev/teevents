@@ -24,7 +24,7 @@ const SELECTS: [keyof EventInfo, string, string[]][] = [
   ["plan", "Plan Selected", ["No Cost to Start", "Per-Event", "Per-League", "Enterprise"]],
 ];
 const CHOICES = [
-  { key: "Build it yourself", icon: Hammer, title: "Build It Yourself", text: "Use the TeeVents site builder to set up your event page on your own.", button: "START BUILDING" },
+  { key: "Build it yourself", icon: Hammer, title: "Edit Your Event Page", text: "Your rep sets up your event page. You can edit anytime with the same dashboard tools we use.", button: "EDIT EVENT PAGE" },
   { key: "Wait for my rep", icon: UserRoundCheck, title: "Wait For Your Rep", text: "Your rep will contact you within 48 hours and build everything for you.", button: "WAIT FOR MY REP" },
   { key: "Schedule a call", icon: CalendarClock, title: "Schedule a Call", text: "Schedule a call with your rep to walk through it together.", button: "SCHEDULE A CALL" },
 ];
@@ -137,7 +137,7 @@ export default function GettingStarted() {
           <UserRoundCheck className="mt-0.5 h-6 w-6 shrink-0 text-primary" aria-hidden="true" />
           <div className="space-y-3 leading-relaxed text-foreground">
             <p>A dedicated TeeVents rep will contact you within 48 hours to help build your event page, set up registration, and configure your leaderboard.</p>
-            <p>In the meantime, you can start setting things up yourself. Anything you build will be reviewed and refined by your rep before your event goes live.</p>
+            <p>We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use.</p>
           </div>
         </div>
         <div className="flex flex-col items-center gap-4">

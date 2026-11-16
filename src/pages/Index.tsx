@@ -151,7 +151,7 @@ export default function Index() {
       <section aria-labelledby="final-cta-title" className="bg-primary px-6 py-16 text-center text-primary-foreground md:py-24">
         <div className="mx-auto max-w-3xl">
           <h2 id="final-cta-title" className="font-display text-3xl font-bold leading-tight md:text-4xl">Ready to See Your Event on TeeVents?</h2>
-          <p className="mt-5 text-base text-primary-foreground/85 md:text-lg">Free for organizers. A dedicated rep builds it for you.</p>
+          <p className="mt-5 text-base text-primary-foreground/85 md:text-lg">Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.</p>
           <div className="mt-8"><HomeActions /></div>
         </div>
       </section>

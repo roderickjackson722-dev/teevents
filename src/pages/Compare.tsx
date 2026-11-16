@@ -7,7 +7,7 @@ import { SOFTWARE_TAG, SOFTWARE_DEFINITION as RAW_SOFTWARE_DEFINITION } from "@/
 const SOFTWARE_DEFINITION = RAW_SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
 
 const never = [
-  ["\"I was left to figure it all out alone.\"", "Your rep is on call, whether they build it or you do."],
+  ["\"I was left to figure it all out alone.\"", "Your rep handles setup, you can edit anytime, and support is on call."],
   ["\"I could not get anyone on the phone.\"", "You have a named rep who knows your event."],
   ["\"I paid upfront and lost money.\"", "You only pay when your players pay."],
 ];
@@ -15,27 +15,27 @@ type Mark = "x" | "warn";
 const rows: [string, Mark, string, string][] = [
   ["Type", "x", "SOFTWARE", "SOFTWARE"],
   ["Dedicated rep", "x", "Self-service only", "Included on every plan, free or paid"],
-  ["Event page build", "x", "You build it yourself", "Your choice: your rep builds it for you, or build it yourself with the same tools"],
+  ["Event page build", "x", "Organizer-led setup", "Your rep sets up your page; you can edit anytime with the same dashboard tools we use"],
   ["Custom leaderboard colors", "x", "Generic template", "Matches your event branding"],
   ["Custom website", "x", "Basic form", "Fully branded event site"],
-  ["Pricing model", "x", "Upfront fee or subscription", "Free to start, player-funded"],
+  ["Editing access", "x", "Check available editing tools", "The same dashboard tools our team uses, anytime"],
   ["Payout timing", "warn", "Varies, sometimes delayed", "Direct to your Stripe account"],
   ["Live leaderboard", "warn", "Often an add-on", "Built-in, branded"],
   ["Mobile scoring", "warn", "Often requires an app", "Works in any browser"],
   ["Sponsor tools", "x", "Limited or none", "Clickable logos and sponsor packages"],
   ["White-label branding", "x", "Platform branding shows", "Remove our branding entirely"],
   ["Custom domain", "x", "Generic URL", "Your own domain"],
-  ["Auction dashboard", "warn", "Extra cost", "Built-in"],
+  ["Auction dashboard", "warn", "Check available tools", "Managed with your event tools"],
   ["League management", "warn", "Limited", "Full season-long tracking"],
   ["Support", "warn", "Email tickets only", "Named rep and priority support"],
 ];
 const pricing: { title: string; hl: boolean; tag?: string; def?: string; items: string[] }[] = [
-  { title: "Most Platforms", hl: false, items: ["Charge $199 to $4,200 per year", "Fees due before your event", "You lose money if turnout is low", "Organizer pays upfront"] },
+  { title: "Tournament Setup", hl: false, items: ["A named dedicated TeeVents rep", "Your event page, registration, and leaderboard set up by our team", "Review your page before sharing", "Edit anytime with the same dashboard tools we use"] },
   { title: "TeeVents No Cost to Start", hl: true, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$0 upfront", "8% fee covered by players at checkout", "Zero risk if turnout is low", "You keep 100% of your revenue"] },
   { title: "TeeVents Enterprise", hl: false, tag: SOFTWARE_TAG, def: SOFTWARE_DEFINITION, items: ["$2,999 per year", "For courses and clubs running 10 or more events", "0% transaction fees", "Live leaderboard and mobile scoring included"] },
 ];
 const audiences = [
-  ["First-Time Organizers", "Free to start. Your rep builds it for you, or you build it yourself. You choose. No risk."],
+  ["First-Time Organizers", "Your rep sets up your event page and registration. You can edit anytime, with support on call."],
   ["Nonprofits and Charities", "Player-funded fees. 501(c)(3) receipting. Auction tools."],
   ["Golf Courses and Clubs", "Enterprise plan with unlimited events. 0% transaction fees."],
   ["Repeat Tournament Directors", "Clone past events in one click. No double work."],
@@ -68,11 +68,11 @@ const No = ({ m }: { m: Mark }) => m === "x" ? <X className="h-5 w-5 shrink-0 te
 export default function Compare() {
   return (
     <Layout>
-      <Hero eyebrow="COMPARE" title="Why Organizers Choose TeeVents" subtitle="Most platforms sell you software and wish you luck. TeeVents delivers a finished event, with a dedicated rep who builds it for you.">
+      <Hero eyebrow="COMPARE" title="Why Organizers Choose TeeVents" subtitle="TeeVents is software plus a real tournament director. Our team sets up your event page, registration, and live leaderboard. You can edit anytime, with your rep on call.">
         <p className="mt-4 text-primary-foreground/70">See how TeeVents compares to other tournament and event management platforms.</p>
       </Hero>
 
-      <section className="py-10"><div className="container mx-auto max-w-4xl px-4"><SectionHead title="Your choice" /><p className="text-center leading-relaxed text-muted-foreground">Your rep builds your event page for you, live in 7 days or less. Or build it yourself with the same tools, with your rep on call if you want help. Either way, you keep full control and can edit anything, any time.</p></div></section>
+      <section className="py-10"><div className="container mx-auto max-w-4xl px-4"><SectionHead title="Your choice" /><p className="text-center leading-relaxed text-muted-foreground">We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use. Your rep is on call for your event, and in-person management is available.</p></div></section>
 
       <section className="py-20"><div className="container mx-auto max-w-6xl px-4">
         <SectionHead title="Three Things You Will Never Hear From a TeeVents Customer" subtitle="These are the problems other platforms leave you to solve." />
@@ -100,7 +100,7 @@ export default function Compare() {
       </div></section>
 
       <section className="py-20"><div className="container mx-auto max-w-6xl px-4">
-        <SectionHead title="Pricing That Works in Your Favor" subtitle="Other platforms charge you whether your event succeeds or not. TeeVents only succeeds when you do." />
+        <SectionHead title="Setup and Support on Every Plan" subtitle="Compare the service: team setup, editing anytime, and a dedicated rep on call." />
         <div className="grid gap-6 md:grid-cols-3">{pricing.map(p => (
           <motion.div {...fade} key={p.title} className={`rounded-xl border p-6 shadow-sm ${p.hl ? "border-2 border-secondary bg-card" : "border-border bg-card"}`}>
             <h3 className="font-display text-2xl font-bold text-primary">{p.title}</h3>
@@ -109,7 +109,7 @@ export default function Compare() {
             {p.def && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{p.def}</p>}
             <ul className="mt-5 space-y-3">{(p.tag ? p.items.slice(1) : p.items).map(i => <li key={i} className="flex gap-2">{p.title === "Most Platforms" ? <X className="h-5 w-5 shrink-0 text-muted-foreground" /> : <Yes />}{i}</li>)}</ul>
           </motion.div>))}</div>
-        <Callout>If you run fewer than 10 events a year, No Cost to Start or Per-Event is almost always cheaper than a subscription. If you run 10 or more, Enterprise pays for itself.</Callout>
+        <Callout>Every plan includes team setup and a dedicated rep. You can edit anytime, with support on call for your event.</Callout>
       </div></section>
 
       <section className="bg-muted/40 py-20"><div className="container mx-auto max-w-6xl px-4">
@@ -144,7 +144,7 @@ export default function Compare() {
           <AccordionItem key={q} value={q}><AccordionTrigger className="text-left">{q}</AccordionTrigger><AccordionContent className="text-muted-foreground">{a}</AccordionContent></AccordionItem>))}</Accordion>
       </div></section>
 
-      <FinalCta title="Ready to See the Difference?" subtitle="Free for organizers. Your rep builds it for you, or you build it yourself. You choose." />
+      <FinalCta title="Ready to See the Difference?" subtitle="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." />
     </Layout>
   );
 }

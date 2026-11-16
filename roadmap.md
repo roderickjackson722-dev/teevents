@@ -1,4 +1,5 @@
 # Roadmap (Nov 6 2026 request)
+- [ ] Nov 16: replace director-related virtual wording only, verify public copy and metadata, and report all replacements and remaining virtual references; preserve saved proposals and billing.
 - [x] Nov 16: apply site-wide core message, service-only Compare copy, and new-proposal defaults without changing saved proposals.
 - [x] Nov 16: complete Settings Embed copy/link controls and verify with preview-only test data; preserve every other Settings field. Full-width sample iframe renders the complete form after scrolling; unchanged public page does not automatically jump to registration.
 - [x] Nov 16: report league fee behavior and deliver complete change/testing inventory.

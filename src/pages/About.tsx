@@ -75,7 +75,7 @@ export default function About() {
           <h2 className={h2}>Why TeeVents Exists</h2>
           <p>TeeVents was built because we saw a gap in the market. Most platforms hand you software and wish you luck. We knew from our years as tournament directors that what organizers actually need is a partner. Someone who understands the pressure, the details, and the stakes.</p>
           <p className="font-semibold text-primary">That is why every TeeVents event, free or paid, comes with a dedicated rep who does the work for you.</p>
-          <p>That rep is your virtual Tournament director. We build everything for you, and you can open your event any time and change anything.</p>
+          <p>That rep is your dedicated tournament director. We build everything for you, and you can open your event any time and change anything.</p>
         </motion.div>
       </section>
 

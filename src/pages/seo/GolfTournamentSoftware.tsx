@@ -66,7 +66,7 @@ export default function GolfTournamentSoftware() {
             Plan, register, sponsor, score, and report — all in one platform built for charity, corporate,
             and nonprofit golf tournaments.
           </p>
-          <p className="mt-4 text-base md:text-lg text-primary-foreground">Your virtual Tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
+          <p className="mt-4 text-base md:text-lg text-primary-foreground">Your dedicated tournament director builds everything for you, registration, pairings, format, mobile scoring, and your live leaderboard in your event colors, and stays on call on event day. You can open your event any time and change anything.</p>
           <p className="mt-2 text-base md:text-lg text-primary-foreground">We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use.</p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Button asChild size="lg" className="bg-[#F5A623] text-[#1a5c38] hover:bg-[#F5A623]/90">

@@ -61,7 +61,7 @@ const EnterprisePricing = () => {
     <Layout>
       <SEO
         title="Enterprise Pricing | TeeVents — White-Label & Volume Plans"
-        description="TeeVents Enterprise is $2,999 per year for unlimited events, custom branding, zero platform fees, and a dedicated representative."
+        description="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use."
         path="/enterprise-pricing"
       />
 
@@ -108,7 +108,7 @@ const EnterprisePricing = () => {
               </li>
             ))}
           </ul>
-          <p className="mt-6 font-semibold text-primary">Build it yourself with the same tools, or let your director build it for you. You stay in control either way.</p>
+          <p className="mt-6 font-semibold text-primary">Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.</p>
         </div>
       </section>
 

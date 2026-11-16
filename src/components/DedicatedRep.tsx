@@ -18,12 +18,12 @@ export function DedicatedRepSection({ extraLine }: { extraLine?: string } = {}) 
     { icon: Smartphone, title: "We Set Up Registration, Payments & Mobile Scoring", text: "We configure your registration form, connect your Stripe account, set up payment tiers, and activate mobile scoring so players can enter scores from their phones." },
     { icon: Trophy, title: "We Set Up Pairings, Leaderboard & Sponsor Page", text: "We build your pairings, set up your live leaderboard with custom branding, and create a sponsor page that highlights your partners. Everything is ready before event day." },
   ];
-  return <section className="rep-service bg-background py-16 md:py-20 border-b border-border"><div className="container mx-auto max-w-6xl px-4"><div className="mx-auto max-w-4xl text-center"><p className="mb-3 text-sm font-semibold text-primary">A real person. A named partner. Your event.</p><h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">Your Own Dedicated TeeVents Rep — Included With Every Event</h2><p className="mt-5 text-lg text-muted-foreground">You don't learn software. You don't watch tutorials. You don't build anything. You just tell us about your event — and we handle the rest.</p>{extraLine && <p className="mt-3 text-lg text-muted-foreground">{extraLine}</p>}</div><div className="mt-12 grid gap-8 md:grid-cols-3">{columns.map(({icon: Icon, title, text}) => <div key={title} className="border-t-2 border-secondary pt-6"><Icon className="h-7 w-7 text-primary" /><h3 className="mt-4 font-display text-xl font-bold">{title}</h3><p className="mt-3 text-muted-foreground leading-relaxed">{text}</p></div>)}</div><p className="mt-12 border-l-4 border-secondary pl-6 text-xl font-display font-semibold text-primary">This isn't software you have to figure out. This is a service you get to use.</p></div></section>;
+  return <section className="rep-service bg-background py-16 md:py-20 border-b border-border"><div className="container mx-auto max-w-6xl px-4"><div className="mx-auto max-w-4xl text-center"><p className="mb-3 text-sm font-semibold text-primary">A real person. A named partner. Your event.</p><h2 className="font-display text-3xl md:text-4xl font-bold text-foreground">Your Own Dedicated TeeVents Rep — Included With Every Event</h2><p className="mt-5 text-lg text-muted-foreground">We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use. Your rep is on call for your event, and in-person management is available.</p>{extraLine && <p className="mt-3 text-lg text-muted-foreground">{extraLine}</p>}</div><div className="mt-12 grid gap-8 md:grid-cols-3">{columns.map(({icon: Icon, title, text}) => <div key={title} className="border-t-2 border-secondary pt-6"><Icon className="h-7 w-7 text-primary" /><h3 className="mt-4 font-display text-xl font-bold">{title}</h3><p className="mt-3 text-muted-foreground leading-relaxed">{text}</p></div>)}</div><p className="mt-12 border-l-4 border-secondary pl-6 text-xl font-display font-semibold text-primary">This isn't software you have to figure out. This is a service you get to use.</p></div></section>;
 }
 
 export function WhyServiceMatters() {
   const rows = [
-    ["You build the event page yourself", "Your rep builds it for you"],
+    ["Page setup is left to the organizer", "Your rep sets up your page; you can edit anytime"],
     ["You configure registration and payments", "Your rep sets it all up"],
     ["You figure out the leaderboard settings", "Your rep configures everything"],
     ["You watch tutorials and read FAQs", "You tell us what you want — we do it"],
@@ -40,7 +40,7 @@ export function RepMeaningSection() {
 export function EnterpriseRepSection({ setupWhy }: { setupWhy?: string } = {}) {
   const rows = [
     ["Builds your branded club page", "Your club looks professional online"],
-    ["Sets up every tournament and league", setupWhy ?? "You don't touch the software"],
+    ["Sets up every tournament and league", setupWhy ?? "You can edit anytime with the same dashboard tools we use"],
     ["Configures pairings, handicaps, and tee sets", "Accurate Course Handicaps using the USGA formula"],
     ["Activates live scoring and mobile scoring", "Players score from their phones"],
     ["Sets up your sponsor page and leaderboard", "Sponsors get maximum visibility"],

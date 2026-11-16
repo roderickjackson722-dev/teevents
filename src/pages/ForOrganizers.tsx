@@ -83,7 +83,7 @@ const wrap = "container mx-auto max-w-6xl px-4";
 export default function ForOrganizers() {
   return (
     <Layout>
-      <SEO title="For Tournament Organizers" description="You run the tournament. Your dedicated TeeVents rep builds your event page, registration, pairings, and live leaderboard, free or paid." path="/for-organizers" />
+      <SEO title="For Tournament Organizers" description="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." path="/for-organizers" />
 
       <Hero eyebrow="FOR TOURNAMENT ORGANIZERS" title="You Run the Tournament. We Build Everything Else." label="Your Virtual Tournament Director" subtitle="From your branded event page to your live leaderboard, your TeeVents rep handles the setup so you can focus on the day that matters. Your virtual Tournament director builds everything for you, and stays on call on event day for live scoring and leaderboard challenges. You can open your event any time and change anything.">
         <p className="mt-6 font-semibold text-secondary">Free for organizers. A dedicated rep on every event, free or paid.</p>
@@ -182,7 +182,7 @@ export default function ForOrganizers() {
         <div className="mt-10 text-center"><Button asChild variant="outline" size="lg" className="font-bold"><Link to="/faq">SEE ALL FAQS</Link></Button></div>
       </div></section>
 
-      <FinalCta title="Ready to Run a Better Tournament?" subtitle="Free for organizers. A dedicated rep builds it for you." />
+      <FinalCta title="Ready to Run a Better Tournament?" subtitle="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." />
     </Layout>
   );
 }

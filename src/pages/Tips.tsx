@@ -84,7 +84,7 @@ export default function Tips() {
         </div>
       </section>
 
-      <FinalCta title="Ready to See Your Event on TeeVents?" subtitle="Free for organizers. A dedicated rep builds it for you." />
+      <FinalCta title="Ready to See Your Event on TeeVents?" subtitle="Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." />
     </Layout>
   );
 }

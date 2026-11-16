@@ -17,7 +17,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "Do I need to be technical to use TeeVents?",
-    "a": "No. You do not learn software, watch tutorials, or build anything. You tell us what you want and your rep builds it for you. Your virtual Tournament director builds it, and you can open your event any time and change anything."
+    "a": "No. Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use. Your rep is on call for your event."
    },
    {
     "q": "How long does setup take?",
@@ -202,7 +202,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   "items": [
    {
     "q": "Can I create pairings manually?",
-    "a": "Yes. Your director builds your pairings for you, and you can open them any time and change anything. You can also build them yourself with the same tools."
+    "a": "Yes. Your director builds your pairings for you, and you can open them any time and change anything. You can edit pairings anytime with the same dashboard tools we use."
    },
    {
     "q": "Can pairings be auto-generated?",

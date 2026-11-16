@@ -136,7 +136,7 @@ export default function Plans() {
       </section>
 
       <section aria-labelledby="final-title" className={`${section} bg-primary text-primary-foreground text-center`}>
-        <div className="mx-auto max-w-3xl"><h2 id="final-title" className={heading}>Ready to See Your Event on TeeVents?</h2><p className="mt-5 text-lg text-primary-foreground/85">Free for organizers. A dedicated rep builds it for you.</p><div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row"><Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/get-started">GET STARTED<ArrowRight /></Link></Button><Button asChild variant="outline" size="lg" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/request-sample">REQUEST A SAMPLE</Link></Button></div></div>
+        <div className="mx-auto max-w-3xl"><h2 id="final-title" className={heading}>Ready to See Your Event on TeeVents?</h2><p className="mt-5 text-lg text-primary-foreground/85">Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.</p><div className="mt-9 flex flex-col justify-center gap-4 sm:flex-row"><Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/get-started">GET STARTED<ArrowRight /></Link></Button><Button asChild variant="outline" size="lg" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><Link to="/request-sample">REQUEST A SAMPLE</Link></Button></div></div>
       </section>
     </div>
   </Layout>;

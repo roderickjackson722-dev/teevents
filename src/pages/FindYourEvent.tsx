@@ -188,7 +188,7 @@ export default function FindYourEvent() {
       <section className="py-16"><motion.div {...fade} className="container mx-auto max-w-4xl rounded-2xl border-l-4 border-secondary bg-primary px-6 py-12 text-center text-primary-foreground md:px-12">
         <h2 className="font-display text-3xl font-bold md:text-4xl">Do Not See Your Event? Host Your Own.</h2>
         <p className="mt-3 text-lg text-secondary">TeeVents makes it easy to run a tournament or league. Free for organizers.</p>
-        <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/85">Whether you are running a charity tournament, a corporate outing, or a season-long league, TeeVents handles registration, payments, pairings, scoring, and everything in between. A dedicated rep builds your event for you.</p>
+        <p className="mx-auto mt-4 max-w-2xl text-primary-foreground/85">Whether you are running a charity tournament, a corporate outing, or a season-long league, TeeVents handles registration, payments, pairings, scoring, and everything in between. Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.</p>
         <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
           <Button asChild variant="secondary" size="lg" className="font-bold"><Link to="/get-started">GET STARTED FREE</Link></Button>
           <OutlineLight to="/how-it-works">LEARN HOW IT WORKS</OutlineLight>

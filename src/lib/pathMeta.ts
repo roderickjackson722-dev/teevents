@@ -38,7 +38,7 @@ const prettyDate = (value: unknown) =>
 /** Static copy for marketing / help / legal pages. */
 const STATIC: Record<string, { title: string; description: string }> = {
   "/": { title: "Golf Tournament Management for Charities & Corporate Outings | TeeVents", description: "A dedicated TeeVents rep sets up your event page, registration, and live leaderboard. Edit anytime. On call for your event. $0 to start." },
-  "/sales-sheet": { title: "Why TeeVents? | We Build Your Event For You", description: "A dedicated rep sets up your event page, registration, and live leaderboard. Edit anytime. On call for your event. Included on every plan." },
+  "/sales-sheet": { title: "Why TeeVents? | We Build Your Event For You", description: "Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." },
   "/why-teevents": { title: "Why TeeVents? A Dedicated Rep on Every Plan", description: "Software plus a real tournament director: your TeeVents rep sets up your event, you edit anytime, and we're on call for your event." },
   "/enterprise-overview": { title: "TeeVents Enterprise — Every Event Built For You", description: "Unlimited tournaments and leagues, live scoring, 0% platform fees, and your own dedicated rep for $2,999/year." },
   "/about": { title: "About Roderick Jackson & TeeVents | Golf Tournament Management", description: "Meet TeeVents founder Roderick Jackson, a tournament director with over 20 years in golf and over a decade managing HBCU golf tournaments." },
@@ -47,7 +47,7 @@ const STATIC: Record<string, { title: string; description: string }> = {
   "/reviews": { title: "Reviews | TeeVents", description: "See what tournament organizers say about TeeVents — real reviews from nonprofits and corporations running golf events." },
   "/contact": { title: "Contact Us | TeeVents", description: "Get in touch with TeeVents for golf tournament planning, platform questions, or consulting inquiries." },
   "/plans": { title: "Simple, Transparent Pricing | TeeVents", description: "$0 to start, $399 per tournament, $599 per league, $2,999/yr Enterprise. A dedicated rep sets up your page. Edit anytime. On call for your event." },
-  "/enterprise-pricing": { title: "Enterprise Pricing | TeeVents", description: "Unlimited tournaments and leagues, 0% platform fees, and a named rep who builds every event for you. $2,999/year." },
+  "/enterprise-pricing": { title: "Enterprise Pricing | TeeVents", description: "Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." },
   "/features": { title: "All Features | TeeVents Golf Tournament Software", description: "Your dedicated rep sets up your event page, registration, pairings, leaderboard, and scoring. Included on every plan — free or paid." },
   "/faq": { title: "FAQ | TeeVents", description: "Answers to common questions about TeeVents golf tournament management — payments, fees, payouts, and support." },
   "/golf-leagues": { title: "Golf League Management Software | TeeVents", description: "Run your golf league with real-time scoring, live leaderboards, skins, handicap tracking, and season stats." },
@@ -57,7 +57,7 @@ const STATIC: Record<string, { title: string; description: string }> = {
   "/interactive-demo": { title: "Interactive Demo | TeeVents", description: "Take a self-guided tour of the TeeVents tournament dashboard — no signup required." },
   "/sample-organizer": { title: "Sample Organizer Dashboard | TeeVents", description: "Experience a fully interactive sample tournament on TeeVents. Explore leaderboards, registration, sponsors, volunteers, and financials." },
   "/sample-dashboard": { title: "Sample Dashboard | TeeVents", description: "Interactive sample organizer dashboard showcasing all TeeVents features." },
-  "/compare": { title: "Compare Golf Tournament Software | TeeVents", description: "Compare TeeVents to Eventbrite, Givebutter, Venmo, and Google Forms. See why TeeVents is the smarter choice for golf tournaments." },
+  "/compare": { title: "Compare Golf Tournament Software | TeeVents", description: "Compare tournament service: TeeVents team setup, a dedicated rep, editing anytime, and event-day support." },
   "/compare/eventbrite-vs-teevents": { title: "TeeVents vs Eventbrite — Compare Tournament Software", description: "Side-by-side comparison of TeeVents and Eventbrite for golf tournaments: fees, payouts, pairings, and live scoring." },
   "/compare/golf-genius-vs-teevents": { title: "TeeVents vs Golf Genius — Compare Tournament Software", description: "Side-by-side comparison of TeeVents and Golf Genius. Simpler pricing, built-in pin sheets, no annual contract." },
   "/help": { title: "Help Center | TeeVents", description: "Get help with payments, payouts, fees, and managing your golf tournament on TeeVents." },

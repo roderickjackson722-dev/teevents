@@ -192,7 +192,7 @@ export function introText(d:WebDocument) { return d.intro.replaceAll("[Conversat
 export function answerQuestion(q:string,d:WebDocument) {
  const n=q.toLowerCase().trim().replace(/[?!.]+$/g,"");
  if (/discount|custom price|guarantee|change|different|reduce|waive|book|accept|pay now/.test(n)) return fallbackAnswer;
- const availableFaq = proposalFaq(d);
+ const availableFaq = isCurrentDocument(d) ? currentFaq : faq;
  const f=availableFaq.find(([question])=>question.toLowerCase().replace(/\?$/," ").trim()===n);
  if(f)return `${f[1]}\n\nFrom Common Questions in this proposal.`;
  if(n==="what program do you recommend" || n==="what is the recommended program") return `${introText(d)}\n${reasonText(d)}\n\nFrom A Quick Note From Rod in this proposal.`;
@@ -207,10 +207,6 @@ export function shownPrograms(d:WebDocument){const set=d.packages;return set?pro
 export function isCurrentDocument(d:WebDocument) { return !!d.packages && !d.packages.some(p=>p==="Hybrid Managed"||p==="Full Service Planning"); }
 
 function usesOnlinePlatformWording(d:WebDocument) { return /\bonline platform\b/i.test(d.softwareDefinition ?? ""); }
-export function proposalFaq(d:WebDocument) {
- const original=isCurrentDocument(d)?currentFaq:faq;
- return usesOnlinePlatformWording(d)?original.map(([question,answer])=>[question,answer.replace("Software cancellation terms","Online platform cancellation terms")]):original;
-}
 
 export function programDetails(d:WebDocument,p:(typeof programNames)[number]):Record<string,string> {
  const historical=programs[p];

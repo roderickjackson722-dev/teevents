@@ -4,4 +4,4 @@
 - Portal image slots map by label to approved screenshot asset pointers; unmatched labels stay named placeholders; reuse only the real founder portrait.
 - The admin dashboard Proposals tab hosts this workspace; private management pricing lives in the validated document payload and uses a shared cents-based calculator, while public offers and historical copies without pricing retain their original content.
 - Personalized Reason templates are editor-only starting points in `reasonTemplates`, inserted through the pure `withReason` helper; they never auto-fill, auto-send, or alter approved program terms.
-- New documents snapshot their definition in the existing JSON payload; programDetails and proposalFaq resolve terminology from that snapshot so overview, details and answers agree while historical catalogs and saved/sent wording remain unchanged.
+- New documents snapshot their definition in the existing JSON payload; programDetails resolves terminology from that snapshot so overview and details agree while historical catalogs, legal terms and saved/sent wording remain unchanged.

@@ -9,7 +9,7 @@ const PUBLIC_ORIGIN = "https://www.teevents.golf";
 
 /** Builds the iframe that shows an event's public registration page on another site. */
 export function buildEmbedCode(url: string, title: string) {
-  const safeTitle = title.replace(/"/g, "&quot;");
+  const safeTitle = title.replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
   return `<iframe src="${url}" title="${safeTitle} registration" style="width:100%;min-height:1600px;border:0;" loading="lazy" allow="payment"></iframe>`;
 }
 
@@ -38,10 +38,10 @@ export function EmbedSettings({ orgId }: { orgId: string }) {
   }, [event]);
   const code = event ? buildEmbedCode(url, event.title) : "";
 
-  const copy = async () => {
+  const copy = async (value: string, message: string) => {
     try {
-      await navigator.clipboard.writeText(code);
-      toast.success("Embed code copied");
+      await navigator.clipboard.writeText(value);
+      toast.success(message);
     } catch {
       toast.error("Couldn't copy. Select the code and copy it manually.");
     }
@@ -64,7 +64,7 @@ export function EmbedSettings({ orgId }: { orgId: string }) {
           <div className="space-y-1">
             <label className="text-xs font-semibold text-muted-foreground">Event</label>
             <Select value={selected} onValueChange={setSelected}>
-              <SelectTrigger className="w-full sm:max-w-md"><SelectValue placeholder="Pick an event" /></SelectTrigger>
+              <SelectTrigger aria-label="Embed event" className="w-full sm:max-w-md"><SelectValue placeholder="Pick an event" /></SelectTrigger>
               <SelectContent>
                 {events.map((e) => <SelectItem key={e.id} value={e.id}>{e.title}</SelectItem>)}
               </SelectContent>
@@ -74,7 +74,7 @@ export function EmbedSettings({ orgId }: { orgId: string }) {
           <div className="space-y-2">
             <pre className="whitespace-pre-wrap break-all rounded-md border border-border bg-muted/50 p-3 text-xs font-mono text-foreground">{code}</pre>
             <div className="flex flex-wrap items-center gap-2">
-              <Button onClick={copy} style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}>
+              <Button variant="secondary" onClick={() => void copy(code, "Embed code copied")}>
                 <Copy className="h-4 w-4 mr-1.5" /> Copy Embed Code
               </Button>
               <Button asChild variant="ghost">
@@ -83,6 +83,14 @@ export function EmbedSettings({ orgId }: { orgId: string }) {
                 </a>
               </Button>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Button variant="outline" onClick={() => void copy(url, "Registration link copied")}>
+              <Copy className="h-4 w-4 mr-1.5" /> Copy Registration Link
+            </Button>
+            <p className="break-all text-sm text-muted-foreground">{url}</p>
+            <p className="text-sm text-muted-foreground">Paste this link into a button or a menu item on your website if you would rather send visitors to your TeeVents page than embed it.</p>
           </div>
 
           <div className="space-y-2 text-sm">

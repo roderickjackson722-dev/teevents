@@ -37,7 +37,7 @@ const payments = [
   ["You Get Paid", "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2 to 7 business days."],
 ];
 const comparison = [
-  ["Type", "SOFTWARE", "SOFTWARE", "SOFTWARE", "SOFTWARE"],
+  ["Type", "ONLINE PLATFORM", "ONLINE PLATFORM", "ONLINE PLATFORM", "ONLINE PLATFORM"],
   ["Upfront cost", "$0", "$399 per tournament", "$599 per league", "$2,999 per year"],
   ["Transaction fee", "8% (covered by players)", "0%", "0%", "0%"],
   ["Events included", "Pay as you go", "Pay as you go", "One league season", "Unlimited"],
@@ -69,13 +69,13 @@ export default function Plans() {
           <h1 id="pricing-title" className="text-4xl font-display font-bold md:text-6xl">Simple, Transparent Pricing</h1>
           <p className="mt-6 text-lg leading-relaxed text-primary-foreground/85">Choose the plan that fits your event. Start free, pay per event, or run unlimited events with Enterprise.</p>
           <p className="mx-auto mt-7 max-w-2xl text-base leading-relaxed text-primary-foreground/85">Every plan includes a dedicated TeeVents rep who sets up your event page. You can edit anything anytime using the same dashboard tools we use, and we're on call for your event.</p>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-primary-foreground/85">TeeVents is software plus a real tournament director. We set up your event page and registration, you can edit anytime, and we're on call for your event. In-person management is available.</p>
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-relaxed text-primary-foreground/85">TeeVents is an online platform plus a real tournament director. We set up your event page and registration, you can edit anytime, and we're on call for your event. In-person management is available.</p>
         </div>
       </section>
 
       <section aria-label="The four plans" className={`${section} bg-muted/40`}>
         <div className="mx-auto grid max-w-[1440px] items-stretch gap-5 lg:grid-cols-4">
-          {plans.map((plan, index) => <article key={plan.name} className={`relative flex min-w-0 flex-col rounded-lg border p-6 ${index === 1 ? "border-2 border-secondary bg-card lg:-my-3 lg:py-9" : "border-border bg-card"}`}>
+          {plans.map((plan, index) => <article key={plan.name} className={`relative flex min-w-0 flex-col rounded-lg border p-6 ${plan.badge === "MOST POPULAR" ? "border-2 border-secondary bg-card lg:-my-3 lg:py-9" : "border-border bg-card"}`}>
             <div className="mb-5 flex min-h-10 items-center">{plan.badge && <span className="rounded-sm bg-secondary px-3 py-2 text-center text-xs font-bold leading-relaxed text-secondary-foreground">{plan.badge}</span>}</div>
             <h2 className="text-2xl font-display font-bold">{plan.name}</h2>
             <p className={`mt-2 text-xs font-bold uppercase tracking-widest ${"text-primary"}`}>{SOFTWARE_TAG}</p>
@@ -107,7 +107,7 @@ export default function Plans() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center"><h2 id="included-title" className={heading}>What Every Plan Includes</h2><p className="mt-4 text-muted-foreground">No matter which plan you choose, you get the same dedicated service.</p></div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{included.map(item => <article key={item.title} className="rounded-lg border border-border p-6"><item.icon aria-hidden="true" className="mb-6 h-8 w-8 text-primary" /><h3 className="mb-3 text-xl font-display font-bold">{item.title}</h3><p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p></article>)}</div>
-          <p className="mx-auto mt-12 max-w-3xl border-l-4 border-secondary pl-6 text-lg leading-relaxed text-primary">Most platforms sell you software and wish you luck. TeeVents delivers a finished event. You tell us what you want and we build it.</p>
+          <p className="mx-auto mt-12 max-w-3xl border-l-4 border-secondary pl-6 text-lg leading-relaxed text-primary">Most platforms sell you an online platform and wish you luck. TeeVents delivers a finished event. You tell us what you want and we build it.</p>
         </div>
       </section>
 

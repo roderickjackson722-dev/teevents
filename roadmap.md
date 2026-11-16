@@ -1,4 +1,5 @@
 # Roadmap (Nov 6 2026 request)
+- [ ] Nov 16: move pricing's gold plan highlight to No Cost to Start and replace visible website software wording with online platform; preserve saved proposals, URLs, prices, and payment behavior.
 - [x] Nov 16: replace director-related virtual wording only; 22 replacements in 16 app files verified across 36 preview pages and 6 phone layouts, Get Started works and 43 proposal tests pass; saved records and billing untouched, inventory delivered.
 - [x] Nov 16: apply site-wide core message, service-only Compare copy, and new-proposal defaults without changing saved proposals.
 - [x] Nov 16: complete Settings Embed copy/link controls and verify with preview-only test data; preserve every other Settings field. Full-width sample iframe renders the complete form after scrolling; unchanged public page does not automatically jump to registration.

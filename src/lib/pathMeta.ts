@@ -37,7 +37,7 @@ const prettyDate = (value: unknown) =>
 
 /** Static copy for marketing / help / legal pages. */
 const STATIC: Record<string, { title: string; description: string }> = {
-  "/": { title: "Golf Tournament Management for Charities & Corporate Outings | TeeVents", description: "A dedicated TeeVents rep sets up your event page, registration, and live leaderboard. Edit anytime. On call for your event. $0 to start." },
+  "/": { title: "Golf Tournament Management for Charities & Corporate Outings | TeeVents", description: "Golf tournament software with a dedicated TeeVents rep who sets up your page, registration, and live leaderboard. Edit anytime. On-call support. $0 to start." },
   "/sales-sheet": { title: "Why TeeVents? | We Build Your Event For You", description: "Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." },
   "/why-teevents": { title: "Why TeeVents? A Dedicated Rep on Every Plan", description: "Software plus a real tournament director: your TeeVents rep sets up your event, you edit anytime, and we're on call for your event." },
   "/enterprise-overview": { title: "TeeVents Enterprise — Every Event Built For You", description: "Unlimited tournaments and leagues, live scoring, 0% platform fees, and your own dedicated rep for $2,999/year." },
@@ -46,7 +46,7 @@ const STATIC: Record<string, { title: string; description: string }> = {
   "/events": { title: "Upcoming Events | TeeVents", description: "Discover and register for upcoming golf tournaments and charity events." },
   "/reviews": { title: "Reviews | TeeVents", description: "See what tournament organizers say about TeeVents — real reviews from nonprofits and corporations running golf events." },
   "/contact": { title: "Contact Us | TeeVents", description: "Get in touch with TeeVents for golf tournament planning, platform questions, or consulting inquiries." },
-  "/plans": { title: "Simple, Transparent Pricing | TeeVents", description: "$0 to start, $399 per tournament, $599 per league, $2,999/yr Enterprise. A dedicated rep sets up your page. Edit anytime. On call for your event." },
+  "/plans": { title: "Simple, Transparent Pricing | TeeVents", description: "Golf tournament software: $0 to start, $399/event, $599/league, $2,999/yr Enterprise. Dedicated rep setup, editing anytime, and on-call event support." },
   "/enterprise-pricing": { title: "Enterprise Pricing | TeeVents", description: "Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use." },
   "/features": { title: "All Features | TeeVents Golf Tournament Software", description: "Your dedicated rep sets up your event page, registration, pairings, leaderboard, and scoring. Included on every plan — free or paid." },
   "/faq": { title: "FAQ | TeeVents", description: "Answers to common questions about TeeVents golf tournament management — payments, fees, payouts, and support." },

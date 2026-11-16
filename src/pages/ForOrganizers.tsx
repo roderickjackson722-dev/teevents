@@ -91,7 +91,7 @@ export default function ForOrganizers() {
       </Hero>
 
       <section className="bg-background py-20 md:py-28"><div className={wrap}>
-        <SectionHead title="Running a Tournament Should Not Mean Drowning in Online Platform" subtitle="Here is what most organizers deal with before every event." />
+        <SectionHead title="Running a Tournament Should Not Mean Drowning in Software" subtitle="Here is what most organizers deal with before every event." />
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">{problems.map(([i, t, d]) => <IconCard key={t} icon={i} title={t} text={d} />)}</div>
         <Callout>TeeVents was built by a tournament director who lived every one of these problems. That is why the platform works the way it does.</Callout>
       </div></section>

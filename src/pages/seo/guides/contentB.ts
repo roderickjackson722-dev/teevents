@@ -114,10 +114,10 @@ export const liveScoring: GuideContent = {
 
 export const eventbrite: GuideContent = {
   slug: "eventbrite-vs-golf-tournament-software",
-  title: "Eventbrite vs Golf Tournament Online Platform",
-  metaTitle: "Eventbrite vs Golf Tournament Online Platform: Which Is Better?",
+  title: "Eventbrite vs Golf Tournament Software",
+  metaTitle: "Eventbrite vs Golf Tournament Software: Which Is Better?",
   metaDescription:
-    "Eventbrite sells tickets. Golf tournament online platform runs the event. Compare registration, pairings, scoring, sponsors, and fees before you choose.",
+    "Eventbrite sells tickets. Golf tournament software runs the event. Compare registration, pairings, scoring, sponsors, and fees before you choose.",
   heroSubtitle:
     "Eventbrite is excellent at selling tickets. A golf tournament needs pairings, scoring, sponsors, and cart signs too.",
   intro:
@@ -151,7 +151,7 @@ export const eventbrite: GuideContent = {
       heading: "The hidden cost: volunteer hours",
       paragraphs: [
         "The real expense of using a ticketing tool for a golf tournament is not the fee, it is the manual work. Organizers routinely spend 20 to 40 hours rebuilding rosters, chasing team assignments, formatting cart signs in a word processor, and tallying paper scorecards. That work happens in the two weeks before the event when you have the least time and the most at stake.",
-        "Purpose-built online platform collapses those hours because registration, pairings, printing, scoring, and email all read from the same data.",
+        "Purpose-built software collapses those hours because registration, pairings, printing, scoring, and email all read from the same data.",
       ],
     },
     {
@@ -210,7 +210,7 @@ export const eventbrite: GuideContent = {
   ],
   related: [
     { to: "/golfstatus-vs-golf-genius", label: "GolfStatus vs Golf Genius" },
-    { to: "/golf-tournament-software-pricing", label: "Golf tournament online platform pricing" },
+    { to: "/golf-tournament-software-pricing", label: "Golf tournament software pricing" },
     { to: "/custom-golf-tournament-website", label: "Custom golf tournament website builder" },
     { to: "/charity-golf-tournament-guide", label: "How to run a charity golf tournament" },
   ],
@@ -227,7 +227,7 @@ export const competitors: GuideContent = {
   heroSubtitle:
     "Two well-known platforms, two very different audiences — and where a simpler, fully customizable alternative fits.",
   intro:
-    "If you are shopping for golf tournament online platform, GolfStatus and Golf Genius are two names that come up in almost every search. They are both established products, but they were designed for different buyers, and the differences matter a lot depending on whether you run one charity tournament a year or a full club competition calendar. This comparison explains the positioning of each, the trade-offs organizers report, and what TeeVents does differently.",
+    "If you are shopping for golf tournament software, GolfStatus and Golf Genius are two names that come up in almost every search. They are both established products, but they were designed for different buyers, and the differences matter a lot depending on whether you run one charity tournament a year or a full club competition calendar. This comparison explains the positioning of each, the trade-offs organizers report, and what TeeVents does differently.",
   sections: [
     {
       heading: "Golf Genius: built for competition administration",
@@ -309,8 +309,8 @@ export const competitors: GuideContent = {
     },
   ],
   related: [
-    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs golf tournament online platform" },
-    { to: "/golf-tournament-software-pricing", label: "Golf tournament online platform pricing" },
+    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs golf tournament software" },
+    { to: "/golf-tournament-software-pricing", label: "Golf tournament software pricing" },
     { to: "/custom-golf-tournament-website", label: "Custom golf tournament website builder" },
     { to: "/live-scoring-golf-tournaments", label: "Live scoring for golf tournaments" },
   ],
@@ -421,14 +421,14 @@ export const shotgun: GuideContent = {
 
 export const pricing: GuideContent = {
   slug: "golf-tournament-software-pricing",
-  title: "Golf Tournament Online Platform Pricing",
-  metaTitle: "Golf Tournament Online Platform Pricing: What It Really Costs",
+  title: "Golf Tournament Software Pricing",
+  metaTitle: "Golf Tournament Software Pricing: What It Really Costs",
   metaDescription:
-    "Compare golf tournament online platform pricing models — subscriptions, per-player fees, and transaction fees — and see how the TeeVents 8% platform fee works.",
+    "Compare golf tournament software pricing models — subscriptions, per-player fees, and transaction fees — and see how the TeeVents 8% platform fee works.",
   heroSubtitle:
     "Subscriptions, per-player fees, and transaction fees compared — plus exactly how TeeVents charges.",
   intro:
-    "Golf tournament online platform is priced in three fundamentally different ways, and the cheapest headline number is often the most expensive outcome. Before you sign anything, you need to know what you pay if the event sells out, what you pay if it does not, who holds the money, and how fast you get it. This page breaks down the pricing models in the market and explains the TeeVents model in full.",
+    "Golf tournament software is priced in three fundamentally different ways, and the cheapest headline number is often the most expensive outcome. Before you sign anything, you need to know what you pay if the event sells out, what you pay if it does not, who holds the money, and how fast you get it. This page breaks down the pricing models in the market and explains the TeeVents model in full.",
   sections: [
     {
       heading: "The three pricing models",
@@ -438,7 +438,7 @@ export const pricing: GuideContent = {
         "Transaction fee: a percentage of money actually collected. Zero cost if nothing sells, and the cost scales with success — which also means it must be reasonable at scale.",
       ],
       paragraphs: [
-        "There is also a fourth, hidden model: free online platform funded by mandatory processing markups. Read the processing rate carefully, because a 'free' platform charging well above standard card rates can cost more than a transparent percentage.",
+        "There is also a fourth, hidden model: free software funded by mandatory processing markups. Read the processing rate carefully, because a 'free' platform charging well above standard card rates can cost more than a transparent percentage.",
       ],
     },
     {
@@ -515,7 +515,7 @@ export const pricing: GuideContent = {
     },
   ],
   related: [
-    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs golf tournament online platform" },
+    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs golf tournament software" },
     { to: "/golfstatus-vs-golf-genius", label: "GolfStatus vs Golf Genius" },
     { to: "/charity-golf-tournament-guide", label: "How to run a charity golf tournament" },
     { to: "/golf-tournament-sponsor-management", label: "Golf tournament sponsor management" },

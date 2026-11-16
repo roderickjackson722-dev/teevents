@@ -61,7 +61,7 @@ const heading = "text-3xl font-display font-bold md:text-4xl";
 
 export default function Plans() {
   return <Layout>
-    <SEO title="Simple, Transparent Pricing | TeeVents" description="$0 to start, $399 per tournament, $599 per league, $2,999/yr Enterprise. A dedicated rep sets up your page. Edit anytime. On call for your event." path="/pricing" />
+    <SEO title="Simple, Transparent Pricing | TeeVents" description="Golf tournament software: $0 to start, $399/event, $599/league, $2,999/yr Enterprise. Dedicated rep setup, editing anytime, and on-call event support." path="/pricing" />
     <div className="pricing-page">
       <section aria-labelledby="pricing-title" className={`${section} bg-primary text-primary-foreground text-center`}>
         <div className="mx-auto max-w-3xl">
@@ -107,7 +107,7 @@ export default function Plans() {
         <div className="mx-auto max-w-6xl">
           <div className="mb-12 text-center"><h2 id="included-title" className={heading}>What Every Plan Includes</h2><p className="mt-4 text-muted-foreground">No matter which plan you choose, you get the same dedicated service.</p></div>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">{included.map(item => <article key={item.title} className="rounded-lg border border-border p-6"><item.icon aria-hidden="true" className="mb-6 h-8 w-8 text-primary" /><h3 className="mb-3 text-xl font-display font-bold">{item.title}</h3><p className="text-sm leading-relaxed text-muted-foreground">{item.description}</p></article>)}</div>
-          <p className="mx-auto mt-12 max-w-3xl border-l-4 border-secondary pl-6 text-lg leading-relaxed text-primary">Most platforms sell you an online platform and wish you luck. TeeVents delivers a finished event. You tell us what you want and we build it.</p>
+          <p className="mx-auto mt-12 max-w-3xl border-l-4 border-secondary pl-6 text-lg leading-relaxed text-primary">Most platforms sell you software and wish you luck. TeeVents delivers a finished event. You tell us what you want and we build it.</p>
         </div>
       </section>
 

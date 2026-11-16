@@ -86,7 +86,7 @@ function DirectorSections() {
 export default function Index() {
   const testimonial = ORGANIZER_TESTIMONIALS[0];
   return <Layout>
-    <SEO title="Golf Tournament Management for Charities & Corporate Outings | TeeVents" description="A dedicated TeeVents rep sets up your event page, registration, and live leaderboard. Edit anytime. On call for your event. $0 to start." path="/" />
+    <SEO title="Golf Tournament Management for Charities & Corporate Outings | TeeVents" description="Golf tournament software with a dedicated TeeVents rep who sets up your page, registration, and live leaderboard. Edit anytime. On-call support. $0 to start." path="/" />
     <div className="homepage">
       <section aria-labelledby="homepage-title" className="relative overflow-hidden bg-primary text-primary-foreground">
         <img src={heroGolf} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />

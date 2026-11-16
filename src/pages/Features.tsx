@@ -185,7 +185,7 @@ export default function Features() {
   }, []);
   return (
     <Layout>
-      <SEO title="Golf Tournament Online Platform Features" description="Every TeeVents feature: event websites, registration and payments, live scoring, pairings, communication, sponsorship, reporting, security, and player tools." path="/features" />
+      <SEO title="Golf Tournament Software Features" description="Every TeeVents feature: event websites, registration and payments, live scoring, pairings, communication, sponsorship, reporting, security, and player tools." path="/features" />
 
       <section className="bg-primary py-20 text-center text-primary-foreground md:py-28">
         <motion.div {...fade} className="container mx-auto max-w-4xl px-4">

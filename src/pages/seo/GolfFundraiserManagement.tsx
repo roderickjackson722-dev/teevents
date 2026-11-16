@@ -18,7 +18,7 @@ export default function GolfFundraiserManagement() {
   return (
     <Layout>
       <SEO
-        title="Golf Fundraiser Management Online Platform"
+        title="Golf Fundraiser Management Software"
         description="Manage every part of your golf fundraiser — registrations, sponsorships, donations, silent auctions, and reporting — from one easy-to-use platform."
         path="/golf-fundraiser-management"
       />

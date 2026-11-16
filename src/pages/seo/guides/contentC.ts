@@ -98,7 +98,7 @@ export const eventbriteForGolf: GuideContent = {
     },
   ],
   related: [
-    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs Golf Tournament Online Platform" },
+    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs Golf Tournament Software" },
     { to: "/golf-tournament-registration-platform", label: "Golf Tournament Registration Platform" },
     { to: "/golf-tournament-website-builder", label: "Golf Tournament Website Builder" },
     { to: "/golf-tournament-live-scoring", label: "Golf Tournament Live Scoring" },
@@ -194,7 +194,7 @@ export const registrationPlatform: GuideContent = {
   ],
   related: [
     { to: "/online-golf-tournament-registration", label: "Online Golf Tournament Registration" },
-    { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Online Platform" },
+    { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Software" },
     { to: "/golf-tournament-sponsor-packages", label: "Golf Tournament Sponsor Packages" },
     { to: "/eventbrite-for-golf-tournaments", label: "Eventbrite for Golf Tournaments" },
   ],
@@ -204,14 +204,14 @@ export const registrationPlatform: GuideContent = {
 
 export const bestSoftware: GuideContent = {
   slug: "best-golf-tournament-management-software",
-  title: "Best Golf Tournament Management Online Platform (2026 Buyer's Guide)",
-  metaTitle: "Best Golf Tournament Management Online Platform in 2026",
+  title: "Best Golf Tournament Management Software (2026 Buyer's Guide)",
+  metaTitle: "Best Golf Tournament Management Software in 2026",
   metaDescription:
-    "An honest buyer's guide to golf tournament management online platform: what to compare, what pricing models hide, and which tool fits charity, corporate, and league events.",
+    "An honest buyer's guide to golf tournament management software: what to compare, what pricing models hide, and which tool fits charity, corporate, and league events.",
   heroSubtitle:
     "Twelve criteria that actually separate golf tournament platforms — and how to score any vendor in an afternoon.",
   intro:
-    "Search for golf tournament management online platform and every result claims to be all-in-one. They are not interchangeable. Some are built for golf course pro shops running member events, some for national charity fundraising programs, and some are general event tools with a golf skin. Picking the wrong category costs you either money or a weekend of manual work. This guide gives you a twelve-point scoring framework, explains what each pricing model really costs at 144 players, and shows which type of organizer each category serves best.",
+    "Search for golf tournament management software and every result claims to be all-in-one. They are not interchangeable. Some are built for golf course pro shops running member events, some for national charity fundraising programs, and some are general event tools with a golf skin. Picking the wrong category costs you either money or a weekend of manual work. This guide gives you a twelve-point scoring framework, explains what each pricing model really costs at 144 players, and shows which type of organizer each category serves best.",
   sections: [
     {
       heading: "First, identify which type of organizer you are",
@@ -222,7 +222,7 @@ export const bestSoftware: GuideContent = {
         "League or recurring series: season standings, weekly scoring, member logins, and dues collection.",
       ],
       paragraphs: [
-        "Most disappointment with tournament online platform comes from a category mismatch. A pro-shop tool feels heavy to a charity volunteer. A ticketing tool feels empty to a club professional. Name your category before you demo anything.",
+        "Most disappointment with tournament software comes from a category mismatch. A pro-shop tool feels heavy to a charity volunteer. A ticketing tool feels empty to a club professional. Name your category before you demo anything.",
       ],
     },
     {
@@ -281,11 +281,11 @@ export const bestSoftware: GuideContent = {
   ],
   faqs: [
     {
-      q: "What is the best golf tournament management online platform for a charity event?",
+      q: "What is the best golf tournament management software for a charity event?",
       a: "Prioritize sponsor tools, donation handling, a branded public page, and per-event pricing. TeeVents was designed around this profile; pro-shop tools tend to overshoot it.",
     },
     {
-      q: "Is a free golf tournament online platform actually free?",
+      q: "Is free golf tournament software actually free?",
       a: "Usually the cost moves to checkout as a higher processing markup or a default donation prompt shown to your registrants. Compare total cost at your real player count.",
     },
     {
@@ -301,7 +301,7 @@ export const bestSoftware: GuideContent = {
     { to: "/golf-tournament-registration-platform", label: "Golf Tournament Registration Platform" },
     { to: "/golfstatus-alternatives", label: "GolfStatus Alternatives" },
     { to: "/golf-genius-alternatives", label: "Golf Genius Alternatives" },
-    { to: "/golf-tournament-software-pricing", label: "Golf Tournament Online Platform Pricing" },
+    { to: "/golf-tournament-software-pricing", label: "Golf Tournament Software Pricing" },
   ],
   ctaHeading: CTA_HEADING,
   ctaText: CTA_TEXT,
@@ -504,7 +504,7 @@ export const golfstatusAlternatives: GuideContent = {
   related: [
     { to: "/golf-genius-alternatives", label: "Golf Genius Alternatives" },
     { to: "/golfstatus-vs-golf-genius", label: "GolfStatus vs Golf Genius" },
-    { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Online Platform" },
+    { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Software" },
     { to: "/golf-tournament-website-design", label: "Golf Tournament Website Design" },
   ],
   ctaHeading: CTA_HEADING,
@@ -514,13 +514,13 @@ export const golfstatusAlternatives: GuideContent = {
 export const golfGeniusAlternatives: GuideContent = {
   slug: "golf-genius-alternatives",
   title: "Golf Genius Alternatives for Tournament Organizers",
-  metaTitle: "Golf Genius Alternatives: Simpler Tournament Online Platform",
+  metaTitle: "Golf Genius Alternatives: Simpler Tournament Software",
   metaDescription:
     "Golf Genius alternatives compared: pricing, learning curve, website customization, and fundraising features. See where TeeVents fits for charity and corporate golf.",
   heroSubtitle:
     "Golf Genius is built for golf professionals. If you are a volunteer organizer, here is what else to look at.",
   intro:
-    "Golf Genius is a powerful online platform with deep tournament administration capability, and it earned its position in the pro shop. That heritage is also why volunteer organizers of charity outings sometimes look elsewhere: the tool assumes a golf professional is driving, pricing is generally an annual arrangement, and the fundraising side — sponsor packages, auctions, donations, a marketing-grade event website — is not the center of the product. This page covers the honest trade-offs and how to evaluate alternatives.",
+    "Golf Genius is powerful software with deep tournament administration capability, and it earned its position in the pro shop. That heritage is also why volunteer organizers of charity outings sometimes look elsewhere: the tool assumes a golf professional is driving, pricing is generally an annual arrangement, and the fundraising side — sponsor packages, auctions, donations, a marketing-grade event website — is not the center of the product. This page covers the honest trade-offs and how to evaluate alternatives.",
   sections: [
     {
       heading: "What Golf Genius does very well",
@@ -607,7 +607,7 @@ export const golfGeniusAlternatives: GuideContent = {
     { to: "/golfstatus-alternatives", label: "GolfStatus Alternatives" },
     { to: "/golfstatus-vs-golf-genius", label: "GolfStatus vs Golf Genius" },
     { to: "/golf-tournament-pairings-management", label: "Managing Golf Tournament Pairings" },
-    { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Online Platform" },
+    { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Software" },
   ],
   ctaHeading: CTA_HEADING,
   ctaText: CTA_TEXT,
@@ -620,12 +620,12 @@ export const perfectGolfEventReviews: GuideContent = {
   metaDescription:
     "Evaluating Perfect Golf Event? Here are the criteria organizers weigh — pricing, website customization, sponsors, scoring, printables — plus how TeeVents compares.",
   heroSubtitle:
-    "A neutral framework for reviewing golf event online platform, applied to the questions organizers ask most.",
+    "A neutral framework for reviewing golf event software, applied to the questions organizers ask most.",
   intro:
     "Perfect Golf Event is one of several tools organizers evaluate when they outgrow spreadsheets. Rather than repeat marketing claims, this page gives you a review framework you can apply to it, to TeeVents, and to anything else on your shortlist. The criteria come from what organizers actually complain about after their first event: teammate data they never collected, sponsor logos assembled by hand at midnight, a leaderboard nobody could load on the course, and cart signs that printed across three pages.",
   sections: [
     {
-      heading: "How to read golf online platform reviews critically",
+      heading: "How to read golf software reviews critically",
       bullets: [
         "Check the reviewer's event size — a 40-player member outing and a 288-player charity event stress completely different features.",
         "Check the year. Pricing models and feature sets in this category change often.",
@@ -684,11 +684,11 @@ export const perfectGolfEventReviews: GuideContent = {
   ],
   faqs: [
     {
-      q: "What should I look for in golf event online platform reviews?",
+      q: "What should I look for in golf event software reviews?",
       a: "Match the reviewer's event size to yours, check the date, and weight event-day outcomes over setup speed. Specific details about pairings, printing, and scoring are the reliable signals.",
     },
     {
-      q: "How much should golf tournament online platform cost?",
+      q: "How much should golf tournament software cost?",
       a: "For one annual charity event, a few hundred dollars per event plus transparent transaction fees is reasonable. Annual licenses make sense only if you run several events a year.",
     },
     {
@@ -701,10 +701,10 @@ export const perfectGolfEventReviews: GuideContent = {
     },
   ],
   related: [
-    { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Online Platform" },
+    { to: "/best-golf-tournament-management-software", label: "Best Golf Tournament Management Software" },
     { to: "/golfstatus-alternatives", label: "GolfStatus Alternatives" },
     { to: "/rsvpify-for-golf-tournaments", label: "RSVPify for Golf Tournaments" },
-    { to: "/golf-tournament-software-pricing", label: "Golf Tournament Online Platform Pricing" },
+    { to: "/golf-tournament-software-pricing", label: "Golf Tournament Software Pricing" },
   ],
   ctaHeading: CTA_HEADING,
   ctaText: CTA_TEXT,
@@ -800,7 +800,7 @@ export const rsvpifyForGolf: GuideContent = {
   ],
   related: [
     { to: "/eventbrite-for-golf-tournaments", label: "Eventbrite for Golf Tournaments" },
-    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs Golf Tournament Online Platform" },
+    { to: "/eventbrite-vs-golf-tournament-software", label: "Eventbrite vs Golf Tournament Software" },
     { to: "/golf-tournament-registration-platform", label: "Golf Tournament Registration Platform" },
     { to: "/online-golf-tournament-registration", label: "Online Golf Tournament Registration" },
   ],

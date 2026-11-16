@@ -4,14 +4,14 @@
  * definitions never diverge. Presentation-only; no prices, fees, schedules,
  * or scope live here.
  */
-export const SOFTWARE_TAG = "SOFTWARE";
+export const SOFTWARE_TAG = "ONLINE PLATFORM";
 export const MANAGED_TAG = "MANAGED SERVICE, ON SITE";
 
 export const SOFTWARE_DEFINITION =
-  "TeeVents is software plus a real tournament director. Your dedicated TeeVents rep sets up your event page, registration, and live leaderboard. You can edit anything anytime with the same dashboard tools we use. You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support. In-person management is available.";
+  "TeeVents is an online platform plus a real tournament director. Your dedicated TeeVents rep sets up your event page, registration, and live leaderboard. You can edit anything anytime with the same dashboard tools we use. You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support. In-person management is available.";
 
 export const MANAGED_DEFINITION =
-  "Everything in the software, plus a dedicated tournament manager who works with you from agreement through event day, on site.";
+  "Everything in the online platform, plus a dedicated tournament manager who works with you from agreement through event day, on site.";
 
 export const ON_SITE_HEADING = "On Site, What Your Manager Does On Event Day";
 

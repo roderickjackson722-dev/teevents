@@ -152,7 +152,7 @@ export default function About() {
 
       <section className="bg-muted/40 py-20 md:py-28">
         <div className="container mx-auto max-w-5xl px-4">
-          <motion.div {...fade} className="mb-12 text-center"><h2 className={h2}>What Makes TeeVents Different</h2><p className="mt-3 text-lg text-muted-foreground">Most platforms sell you software. We deliver a finished event.</p></motion.div>
+          <motion.div {...fade} className="mb-12 text-center"><h2 className={h2}>What Makes TeeVents Different</h2><p className="mt-3 text-lg text-muted-foreground">Most platforms sell you an online platform. We deliver a finished event.</p></motion.div>
           <motion.div {...fade} className="grid overflow-hidden rounded-xl border border-border md:grid-cols-2">
             <div className="bg-card p-6 md:p-8">
               <h3 className="mb-5 font-body text-lg font-semibold text-muted-foreground">Typical Tournament Online Platform</h3>

@@ -9,7 +9,7 @@ import { SOFTWARE_TAG, SOFTWARE_DEFINITION } from "@/lib/programTypes";
 import FullServiceManagement from "@/components/marketing/FullServiceManagement";
 import TrustAndProof from "@/components/marketing/TrustAndProof";
 
-const PLAN_DEFINITION = SOFTWARE_DEFINITION.replace("You run event day yourself, using the software.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
+const PLAN_DEFINITION = SOFTWARE_DEFINITION.replace("You run event day yourself, using the online platform.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
 
 const plans = [
   { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "No cost to start. Golfers cover an 8% service fee that includes your dedicated TeeVents rep, plus standard card processing (Stripe 2.9% + $0.30).", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },

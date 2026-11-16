@@ -1,4 +1,7 @@
 # Roadmap (Nov 6 2026 request)
+- [ ] Nov 16: apply site-wide core message, service-only Compare copy, and new-proposal defaults without changing saved proposals.
+- [ ] Nov 16: complete Settings Embed copy/link controls and verify with preview-only test data; preserve every other Settings field.
+- [ ] Nov 16: report league fee behavior and deliver complete change/testing inventory.
 - [x] Show organization-owned My Templates in Send Email; signed-in saved-template selection, real content preview and recipient review checked, 30 email tests pass; no live sends, event writes or publishing.
 - [x] Fix organizer double-digit entry: leading 1/2 stays focused; 28 scoring tests pass including real paced keystrokes for 10/11/19/20. Signed-in live round is closed, so no live score writes were attempted.
 - [x] Fix reminder, survey and donation template-edit destinations; signed-in clicks and all three selected editors verified with writes/sends blocked, no email content changes.

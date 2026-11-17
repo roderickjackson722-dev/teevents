@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { shownPrograms, type WebDocument } from "./content";
+import { proposalPageContent, shownPrograms, type WebDocument } from "./content";
 import { fullServiceTotals, money } from "./pricing";
 import { chooseWebProgram } from "./proposalWeb.functions";
 
@@ -23,6 +23,7 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
   const [agreed, setAgreed] = useState(false);
   const [depositState, setDepositState] = useState<"" | "paid" | "cancelled">("");
   const shown = shownPrograms(d);
+  const copy = proposalPageContent(d);
   const t = d.fullService ? fullServiceTotals(d.fullService) : null;
 
   useEffect(() => {
@@ -74,8 +75,8 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
 
   return (
     <section id="closure" data-track className="border-b border-border py-12">
-      <h2 className="font-display text-3xl font-bold text-primary">Ready to Get Started?</h2>
-      <p className="mt-6 text-lg leading-8">Choose how you would like to start. You'll review your choice before anything is submitted, and you can go back or contact us first.</p>
+      <h2 className="font-display text-3xl font-bold text-primary">{copy.closureHeading}</h2>
+      <p className="mt-6 text-lg leading-8">{copy.closureIntroduction}</p>
       {depositState === "cancelled" && <p role="status" className="web-controls mt-4">Checkout was cancelled and no payment was taken. You can try again below or contact us.</p>}
       {d.recommended && shown.includes(d.recommended) && <a className="mt-5 inline-block text-sm text-primary underline" href={`#program-${d.recommended.replaceAll(" ", "-")}`}>Your recommended program is {d.recommended}, see its details above</a>}
 

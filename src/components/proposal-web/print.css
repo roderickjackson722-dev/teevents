@@ -15,6 +15,8 @@
  .proposal-web .closure-option { margin-bottom:1rem; }
  .proposal-web section { padding-top:1.5rem; padding-bottom:1.5rem; }
  .proposal-web .web-cover { break-after:page; }
+ .proposal-web .proposal-extra-page { break-before:page; }
+ .proposal-web .reference-entry,.proposal-web .photo-link-entry { break-inside:avoid; }
  .proposal-web details > * { display:block !important; }
  .proposal-web figure,.proposal-web h2,.proposal-web h3 { break-inside:avoid; }
  .proposal-web { font-size:12pt; }

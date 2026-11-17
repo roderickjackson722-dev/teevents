@@ -1,4 +1,5 @@
 # Roadmap (Nov 6 2026 request)
+- [x] Nov 17 proposal flexibility: larger edit areas for general and per-program wording, optional References and Event Photo Links pages with image previews and clickable-link fallback, separate print pages; 54 tests pass, signed-in temporary draft save/reload/preview/delete verified, no sends, saved/sent copies, pricing, checkout and events unchanged.
 - [x] Nov 17 leaderboard names: Names Shown choice — both player and team names, player names only, or team names only; dashboard control, saved-field readback, phone check and 14 tests pass; existing events stay on both until saved, temporary test event removed.
 - [x] Nov 17 leaderboard setup: background-photo removal/show control, compact player/team rows, mobile portrait/landscape fit, and optional Today column; 11 tests pass, populated 390px/844px checks fit, temporary save/reload verified and test event removed.
 - [x] Nov 17 Sponsored by choice: one image, multiple rotating existing/uploaded images, or no sponsor section; upload/replace/remove controls retained, existing events stay legacy until saved, no-sponsor save/reload verified.

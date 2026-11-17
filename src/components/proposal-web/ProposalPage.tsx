@@ -6,12 +6,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { MessageCircle,Send,X,Download,Mail } from "lucide-react";
 import portrait from "@/assets/trust/roderick-jackson.jpg.asset.json";
 import logo from "@/assets/teevents-logo-final.png.asset.json";
-import { programDetails,programNames,currentProgramNames,currentFaq,isCurrentDocument,shownPrograms,fields,faq,about,calculator,introText,reasonText,founderExperience,answerQuestion,sensitiveQuestion,orderedReasonTemplates,withReason,reasonExample,programPanelClass,type WebDocument } from "./content";
+import { programDetails,programNames,currentProgramNames,isCurrentDocument,shownPrograms,fields,calculator,introText,reasonText,answerQuestion,sensitiveQuestion,orderedReasonTemplates,withReason,reasonExample,programPanelClass,proposalFaq,proposalPageContent,type WebDocument } from "./content";
 import { trackWebDocument,askWebQuestion } from "./proposalWeb.functions";
 import "./print.css";
 import FullServiceFields from "./FullServiceFields";
 import ProposalClosure from "./ProposalClosure";
-import { defaultFullService, fullServiceTotals, money } from "./pricing";
+import ProposalExtraPages from "./ProposalExtraPages";
+import ProposalWordingEditor from "./ProposalWordingEditor";
+import { fullServiceTotals, money } from "./pricing";
 
 import shotCheckIn from "@/assets/proposal-Check_in.png.asset.json";
 import shotCover from "@/assets/proposal-Cover_and_Branded_event_page.png.asset.json";
@@ -56,9 +58,10 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
   return ()=>{window.removeEventListener("beforeprint",before);window.removeEventListener("afterprint",after);};
  },[]);
  const shown=shownPrograms(d);
+ const copy=proposalPageContent(d);
  const isCurrent = isCurrentDocument(d);
  const choices = isCurrent ? currentProgramNames : programNames.filter(p=>p!=="Full Service Management");
- const displayedFaq = (isCurrent ? currentFaq : faq).filter(([q])=>!q.includes("Full Service Management")||shown.includes("Full Service Management"));
+ const displayedFaq = proposalFaq(d).filter(item=>!item.question.includes("Full Service Management")||shown.includes("Full Service Management"));
  const togglePackage=(p:(typeof programNames)[number])=>{const next=shown.includes(p)?shown.filter(x=>x!==p):programNames.filter(x=>x===p||shown.includes(x));onEdit?.({...d,packages:next,recommended:next.includes(d.recommended as never)?d.recommended:""});};
  const value=(key:keyof typeof fields)=>d.fields[key]||fields[key];
  const calc=calculator(players,fee);
@@ -67,22 +70,23 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
   if(!question.trim()||busy)return;if(sensitiveQuestion(question)){setChatError("Please do not include sensitive information in your question.");return;}
   setBusy(true);setChatError("");try{const answer=token?(await ask({data:{token,visit:visit.current,question}})).answer:answerQuestion(question,d);setMessages(m=>[...m,{question,answer,saved:!!token}]);setQuestion("");}catch(e){setChatError(e instanceof Error?e.message:"Your question could not be saved.");}finally{setBusy(false);}
  }
- return <main className="proposal-web bg-background text-foreground">
+  return <main className="proposal-web bg-background text-foreground">
+  {edit&&onEdit&&<div className="web-controls border-b border-border bg-muted/40 px-5 py-8 sm:px-8"><div className="mx-auto max-w-6xl"><ProposalWordingEditor document={d} onChange={onEdit}/></div></div>}
   <div className="mx-auto max-w-5xl px-5 sm:px-8">
    <section id="cover" data-track className="web-cover border-b border-border py-12 md:py-16">
     <img src={logo.url} alt="TeeVents logo" className="mb-8 h-16 max-w-full object-contain object-left"/>
     <h1 className="font-display text-5xl font-bold text-primary">TeeVents</h1>
-    <p className="mt-5 font-display text-2xl">Golf Tournament Management and Services</p>
-    <p className="mt-5 text-lg leading-relaxed">Every program includes a dedicated TeeVents rep who builds your event for you.</p>
+    <p className="mt-5 whitespace-pre-wrap font-display text-2xl">{copy.coverSubtitle}</p>
+    <p className="mt-5 whitespace-pre-wrap text-lg leading-relaxed">{copy.coverPromise}</p>
     <dl className="mt-8 grid gap-3 text-lg"><div>Prepared for: {value("preparedFor")}</div><div>Event: {value("event")}</div><div>Date: {value("date")}</div></dl>
     <p className="mt-6 text-sm leading-7 text-muted-foreground">www.teevents.golf · info@teevents.golf · (602) 413 1338</p>
     {edit&&<div className="web-controls grid gap-4 border-t border-border pt-6 sm:grid-cols-2">{Object.entries(fields).map(([key,placeholder])=><label key={key} className="space-y-2 text-sm"><span>{({preparedFor:"Prepared for",event:"Event",date:"Date",contact:"Contact",proposalDate:"Proposal Date",validUntil:"Valid Until",conversationDate:"Conversation Date"} as Record<string,string>)[key]}</span><Input value={d.fields[key as keyof typeof fields]} placeholder={placeholder} onChange={e=>editField(key as keyof typeof fields,e.target.value)}/></label>)}</div>}
     <div className="mt-6 grid gap-2 text-sm text-muted-foreground"><p>Contact: {value("contact")}</p><p>Proposal Date: {value("proposalDate")}</p><p>Valid Until: {value("validUntil")}</p></div>
    </section>
    <section id="about" data-track className="border-b border-border py-12">
-    <h2 className="font-display text-3xl font-bold text-primary">About TeeVents</h2>
-    <div className="mt-8 grid gap-8 md:grid-cols-[240px_minmax(0,1fr)]"><figure><img src={portrait.url} alt="Rod, founder of TeeVents" className="aspect-[3/4] w-full rounded-lg object-cover" loading="lazy"/><figcaption className="mt-3 text-sm text-muted-foreground">Rod, founder of TeeVents</figcaption></figure><div className="space-y-5 text-lg leading-8"><p>{about[0]}</p><p>{founderExperience}</p>{about.slice(1).map(p=><p key={p}>{p}</p>)}</div></div>
-    <p className="mt-8 text-lg leading-8">Every program includes: a dedicated TeeVents rep, a branded event page built for you, online registration and payments, sponsor tiers, pairings and check in, sponsor and auction tools, live budget tracking</p>
+    <h2 className="font-display text-3xl font-bold text-primary">{copy.aboutHeading}</h2>
+    <div className="mt-8 grid gap-8 md:grid-cols-[240px_minmax(0,1fr)]"><figure><img src={portrait.url} alt="Rod, founder of TeeVents" className="aspect-[3/4] w-full rounded-lg object-cover" loading="lazy"/><figcaption className="mt-3 text-sm text-muted-foreground">Rod, founder of TeeVents</figcaption></figure><div className="space-y-5 text-lg leading-8">{copy.aboutBody.split(/\n\s*\n/).map((paragraph,index)=><p key={index} className="whitespace-pre-wrap">{paragraph}</p>)}</div></div>
+    <p className="mt-8 whitespace-pre-wrap text-lg leading-8">{copy.aboutIncludes}</p>
    </section>
    <section id="intro" data-track className="border-b border-border py-12">
     <h2 className="font-display text-3xl font-bold text-primary">A Quick Note From Rod</h2>
@@ -92,7 +96,7 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
     {d.recommended&&<a href={`#program-${d.recommended.replaceAll(" ","-")}`} className="mt-5 inline-block text-primary underline">See the {d.recommended} details below</a>}
    </section>
    <section id="programs" data-track className="border-b border-border py-12">
-    <h2 className="font-display text-3xl font-bold text-primary">Programs at a Glance</h2>
+    <h2 className="font-display text-3xl font-bold text-primary">{copy.programsHeading}</h2>
     {edit&&<fieldset className="web-controls mt-6 rounded-lg border border-border p-4"><legend className="px-1 font-semibold">Program Selection</legend><div className="mt-2 flex flex-wrap gap-2"><Button type="button" variant="ghost" size="sm" onClick={()=>onEdit?.({...d,packages:[...choices]})}>Select all</Button><Button type="button" variant="ghost" size="sm" onClick={()=>onEdit?.({...d,packages:[],recommended:""})}>Clear</Button></div><div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">{choices.map(p=><label key={p} className="flex items-center gap-2 text-sm"><input type="checkbox" checked={shown.includes(p)} onChange={()=>togglePackage(p)}/>{p}</label>)}</div>{!shown.length&&<p role="alert" className="mt-3 text-sm text-destructive">Pick at least one package before saving.</p>}</fieldset>}
     <div className="program-jumps mt-8 grid gap-2 sm:grid-cols-2 lg:grid-cols-3" role="group" aria-label="Programs at a Glance">{shown.map(p=><Button asChild key={p} variant="outline" className={`h-auto min-h-28 flex-col items-start whitespace-normal p-4 text-left ${p===d.recommended?"border-2 border-primary bg-primary/10 ring-2 ring-primary/30":""}`}><a href={`#program-${p.replaceAll(" ","-")}`} aria-label={p===d.recommended?`${p}, Recommended for you`:undefined}>{p===d.recommended&&<span className="rounded-full bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground">Recommended for You</span>}<span className="font-semibold">{p}</span><span className="text-xs leading-5">{programDetails(d,p).Type}</span><span className="text-xs leading-5">{programDetails(d,p).Price}</span><span className="whitespace-normal text-xs leading-5">{programDetails(d,p).Definition}</span></a></Button>)}</div>
    </section>
@@ -103,16 +107,17 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
     {edit&&p==="Full Service Management"&&<FullServiceFields value={d.fullService} onChange={fullService=>onEdit?.({...d,fullService,closureEnabled:true})}/> }
     {(p==="Hybrid Managed"||p==="Full Service Planning")&&<ScreenshotSlot name="Event management dashboard — timeline, communications or event setup" caption="Test data only"/>}</article>)}
    </section>
-   <section id="addons" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">Add ons, $99 each, one time per event</h2><ul className="mt-6 list-disc space-y-3 pl-5 text-lg">{["Live Leaderboard and Mobile Scoring, included with Per Event and up","Unlimited Manual Entries","Auction Dashboard","Branding Removal and Digital Sponsor","Custom Domain"].map(t=><li key={t}>{t}</li>)}</ul><p className="mt-6 text-lg">Stripe processing is separate: 2.9% plus $0.30, and applies in all cases.</p></section>
-   <section id="screens" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">Sample Screens From the TeeVents Dashboard</h2>
+   <section id="addons" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">{copy.addonsHeading}</h2><ul className="mt-6 list-disc space-y-3 pl-5 text-lg">{copy.addonsItems.split("\n").filter(item=>item.trim()).map((t,index)=><li key={index} className="whitespace-pre-wrap">{t}</li>)}</ul><p className="mt-6 whitespace-pre-wrap text-lg">{copy.addonsNote}</p></section>
+   <section id="screens" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">{copy.screensHeading}</h2>
     <ScreenshotSlot name="Cover and Branded event page — sample event hero and registration area"/>
     <ScreenshotSlot name="Registration — sample registration form and entry tiers"/><ScreenshotSlot name="Sponsor tiers — sample event sponsor tiers"/><ScreenshotSlot name="Pairings — test pairings screen" caption="Test data only"/><ScreenshotSlot name="Check in — QR check in on computer or iPad" caption="Test data only"/><ScreenshotSlot name="Live scoring and leaderboard — sample event leaderboard" caption="Sample scores"/><ScreenshotSlot name="Sponsor and auction tools — test dashboard" caption="Test data only"/><ScreenshotSlot name="Live budget tracking — test budget dashboard" caption="Test data only"/>
    </section>
-   <section id="questions" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">Common Questions</h2><div className="mt-6">{displayedFaq.map(([q,a])=><details key={q} className="border-b border-border py-5"><summary className="cursor-pointer text-lg font-semibold">{q}</summary><p className="mt-4 text-base leading-8">{a}</p></details>)}</div></section>
-   <section id="sample-event" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">See a Live Sample Event</h2><p className="mt-6 text-lg leading-8">Explore a real TeeVents event page with registration, sponsor tiers, schedule, and live leaderboard, the same experience your players and sponsors will see.</p><div className="mt-6"><Button asChild><a href="https://www.teevents.golf/t/teevents-annual" target="_blank" rel="noopener noreferrer">View Sample Event Page</a></Button></div><p className="mt-4 break-all text-sm text-muted-foreground">www.teevents.golf/t/teevents-annual</p></section>
-   <section id="next" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">Next Steps</h2><ul className="mt-6 list-disc space-y-3 pl-5 text-lg">{["Choose the program that fits your event","Schedule a call with your dedicated rep","Send your logo and tournament details","We build your page and you are live in 7 days or less"].map(t=><li key={t}>{t}</li>)}</ul><div className="web-controls mt-8 flex flex-wrap items-center gap-3"><Button asChild variant="secondary"><a href="mailto:info@teevents.golf?subject=Proposal%20follow%20up" onClick={()=>void record("call").catch(()=>{})}><Mail/>Schedule a Call</a></Button><Button variant="ghost" onClick={()=>{void record("print").catch(()=>{});window.print();}}><Download/>Download PDF</Button><Button asChild variant="link"><a href="mailto:info@teevents.golf">Contact TeeVents</a></Button></div><p className="mt-8 leading-8">Contact: Website www.teevents.golf, Email info@teevents.golf, Phone (602) 413 1338</p><p className="mt-5 text-sm leading-7">This proposal is a draft until accepted in writing. Prices, travel, and third party costs are as stated in this proposal, and third party costs are paid directly by the organizer unless stated otherwise in a custom line item.</p></section>
+   <section id="questions" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">{copy.questionsHeading}</h2><div className="mt-6">{displayedFaq.map(item=><details key={item.id} className="border-b border-border py-5"><summary className="cursor-pointer text-lg font-semibold">{item.question}</summary><p className="mt-4 whitespace-pre-wrap text-base leading-8">{item.answer}</p></details>)}</div></section>
+   <section id="sample-event" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">{copy.sampleEventHeading}</h2><p className="mt-6 whitespace-pre-wrap text-lg leading-8">{copy.sampleEventBody}</p><div className="mt-6"><Button asChild><a href="https://www.teevents.golf/t/teevents-annual" target="_blank" rel="noopener noreferrer">{copy.sampleEventButton}</a></Button></div><p className="mt-4 break-all text-sm text-muted-foreground">www.teevents.golf/t/teevents-annual</p></section>
+   <ProposalExtraPages document={d}/>
+   <section id="next" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">{copy.nextStepsHeading}</h2><ul className="mt-6 list-disc space-y-3 pl-5 text-lg">{copy.nextStepsItems.split("\n").filter(item=>item.trim()).map((t,index)=><li key={index} className="whitespace-pre-wrap">{t}</li>)}</ul><div className="web-controls mt-8 flex flex-wrap items-center gap-3"><Button asChild variant="secondary"><a href="mailto:info@teevents.golf?subject=Proposal%20follow%20up" onClick={()=>void record("call").catch(()=>{})}><Mail/>Schedule a Call</a></Button><Button variant="ghost" onClick={()=>{void record("print").catch(()=>{});window.print();}}><Download/>Download PDF</Button><Button asChild variant="link"><a href="mailto:info@teevents.golf">Contact TeeVents</a></Button></div><p className="mt-8 whitespace-pre-wrap leading-8">{copy.nextStepsContact}</p><p className="mt-5 whitespace-pre-wrap text-sm leading-7">{copy.nextStepsFooter}</p></section>
    {d.closureEnabled&&<ProposalClosure document={d} token={token}/> }
-   <section id="notice" data-track className="pb-24 pt-8 text-sm leading-7 text-muted-foreground">This proposal link is made just for {value("preparedFor")}, so TeeVents can see when you have had a chance to look, and follow up at a good time.</section>
+   <section id="notice" data-track className="pb-24 pt-8 text-sm leading-7 text-muted-foreground">{copy.noticeText.replaceAll("[Client or Organization Name]",value("preparedFor"))}</section>
   </div>
   <div className="web-chat fixed bottom-4 right-4 z-40 max-w-[calc(100vw-2rem)]">{chatOpen?<div className="w-96 max-w-full rounded-lg border border-border bg-card p-4 shadow-sm"><div className="flex items-center justify-between gap-2"><h2 className="font-display text-lg font-semibold">Ask about this proposal</h2><Button size="icon" variant="ghost" aria-label="Close proposal chat" onClick={()=>setChatOpen(false)}><X/></Button></div><div className="max-h-[45vh] overflow-y-auto py-3" aria-live="polite">{messages.map((m,i)=><div className="mb-5 space-y-2" key={i}><p className="font-semibold">{m.question}</p><p className="whitespace-pre-wrap text-sm leading-6">{m.answer}</p>{m.saved&&<p className="text-xs text-muted-foreground">Your question has been saved for Rod to follow up.</p>}</div>)}</div><form onSubmit={e=>{e.preventDefault();void sendQuestion();}} className="flex gap-2"><Input aria-label="Question about this proposal" value={question} maxLength={2000} onChange={e=>setQuestion(e.target.value)}/><Button type="submit" variant="outline" size="icon" aria-label="Ask question" disabled={busy||!question.trim()}><Send/></Button></form>{chatError&&<p role="alert" className="mt-2 text-sm text-destructive">{chatError}</p>}</div>:<Button variant="outline" className="bg-card" onClick={()=>setChatOpen(true)}><MessageCircle/>Ask about this proposal</Button>}</div>
  </main>;

@@ -1,5 +1,5 @@
 import { describe,it,expect } from "vitest";
-import { programs,programDetails,shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason } from "./content";
+import { programs,programDetails,shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason,defaultPageContent,proposalPageContent,withProgramDetail,defaultReferencesPage,defaultPhotoLinksPage } from "./content";
 describe("client proposal rules",()=>{
  it("new proposal defaults do not change the definition displayed by saved historical payloads",()=>{
   const historical=documentSchema.parse({fields:emptyDocument().fields,recommended:"",intro:"",reason:"",packages:["No Cost to Start","Per Event"]});
@@ -76,4 +76,54 @@ test("program panels alternate shaded, plain, shaded so each reads as its own it
   expect(programPanelClass(1)).toBe("");
   expect(programPanelClass(2)).toBe("program-shaded");
   expect(programPanelClass(3)).toBe("");
+});
+
+describe("flexible proposal wording and optional pages",()=>{
+ it("leaves historical payloads unchanged when the new optional fields are absent",()=>{
+  const historical=documentSchema.parse({fields:emptyDocument().fields,recommended:"Per Event",intro:"Saved introduction",reason:"Saved reason",packages:["Per Event"],softwareDefinition:"Saved definition"});
+  const before=JSON.stringify(historical);
+  expect(proposalPageContent(historical)).toEqual(defaultPageContent());
+  expect(historical.referencesPage).toBeUndefined();
+  expect(historical.photoLinksPage).toBeUndefined();
+  expect(JSON.stringify(historical)).toBe(before);
+ });
+ it("customizes Full Service expectations while preserving its calculated price and payment terms",()=>{
+  const original=emptyDocument();
+  const before=programDetails(original,"Full Service Management");
+  let custom=withProgramDetail(original,"Full Service Management","What We Provide","Custom course, vendor and awards coordination for this organization.");
+  custom=withProgramDetail(custom,"Full Service Management","Your Group Handles","The committee approves vendors and recruits players.");
+  const details=programDetails(custom,"Full Service Management");
+  expect(details["What We Provide"]).toBe("Custom course, vendor and awards coordination for this organization.");
+  expect(details["Your Group Handles"]).toBe("The committee approves vendors and recruits players.");
+  expect(details.Price).toBe(before.Price);
+  expect(details["Payment Schedule"]).toBe(before["Payment Schedule"]);
+  expect(details.Cancellation).toBe(before.Cancellation);
+ });
+ it("does not let wording overrides replace checkout-connected prices or platform fees",()=>{
+  const d=emptyDocument();
+  expect(withProgramDetail(d,"Per Event","Price","$1 per event")).toBe(d);
+  expect(withProgramDetail(d,"Per Event","Platform fee","Custom fee")).toBe(d);
+  expect(programDetails(d,"Per Event").Price).toBe("$399 per event");
+ });
+ it("starts both additional pages disabled and saves populated optional pages",()=>{
+  const d=emptyDocument();
+  expect(d.referencesPage?.enabled).toBe(false);
+  expect(d.photoLinksPage?.enabled).toBe(false);
+  const referencesPage={...defaultReferencesPage(),enabled:true,entries:[{id:"ref-1",name:"Jordan Lee",organization:"Community Golf Foundation",description:"Annual charity tournament",contact:"jordan@example.test"}]};
+  const photoLinksPage={...defaultPhotoLinksPage(),enabled:true,links:[{id:"photo-1",title:"2026 Charity Classic",url:"https://images.example.test/classic.jpg",description:"Awards ceremony"}]};
+  const parsed=documentSchema.parse({...d,referencesPage,photoLinksPage});
+  expect(parsed.referencesPage?.entries[0]?.organization).toBe("Community Golf Foundation");
+  expect(parsed.photoLinksPage?.links[0]?.url).toBe("https://images.example.test/classic.jpg");
+ });
+ it("accepts blank or http(s) photo links but rejects unsafe URLs",()=>{
+  const d=emptyDocument();
+  const page={...defaultPhotoLinksPage(),enabled:true,links:[{id:"photo-1",title:"Event",url:"javascript:alert(1)",description:""}]};
+  expect(documentSchema.safeParse({...d,photoLinksPage:page}).success).toBe(false);
+  expect(documentSchema.safeParse({...d,photoLinksPage:{...page,links:[{...page.links[0],url:""}]}}).success).toBe(true);
+  expect(documentSchema.safeParse({...d,photoLinksPage:{...page,links:[{...page.links[0],url:"https://images.example.test/event.png"}]}}).success).toBe(true);
+ });
+ it("answers an edited common question from that proposal's approved content",()=>{
+  const d={...emptyDocument(),faqItems:[{id:"custom",question:"Who coordinates vendors?",answer:"Our dedicated manager coordinates the approved vendors."}]};
+  expect(answerQuestion("Who coordinates vendors?",d)).toBe("Our dedicated manager coordinates the approved vendors.\n\nFrom Common Questions in this proposal.");
+ });
 });

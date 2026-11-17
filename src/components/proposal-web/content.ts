@@ -82,13 +82,13 @@ export const programs = {
 } as const;
 export const programNames = ["No Cost to Start", "Per Event", "Per League", "Enterprise", "Hybrid Managed", "Full Service Planning", "Full Service Management"] as const;
 export const currentProgramNames = ["No Cost to Start", "Per Event", "Per League", "Enterprise", "Full Service Management"] as const;
-export const currentFaq = [
+export const currentFaq: Array<[string,string]> = [
  ["How do I request Full Service Management?", "Full Service Management is quoted in this proposal, after a meeting. The price, deposit, and terms are in the Full Service Management details above. No payment is taken on this page."],
  ["Who pays the golf course, food, awards, and vendors?", FULL_SERVICE_LIMITS],
  ["What if we cancel?", "Software cancellation terms remain in the selected program detail. Full Service Management terms are quoted individually after the meeting, in a written proposal."],
  ["Is travel included?", "Travel is quoted separately."],
 ];
-export const faq = [
+export const faq: Array<[string,string]> = [
   [
     "Do we need money up front to start?",
     "No money is due at signing on No Cost to Start and Hybrid Managed. Full Service Planning takes a 50% deposit of the management fee at initial sign up ($2,500 on a $5,000 fee), as stated in its program detail. The Hybrid Managed management fee is approved in the event budget at signing, and is paid from event proceeds."
@@ -179,20 +179,73 @@ export function withReason(current: string, text: string) {
   return base ? `${base}\n\n${text}` : text;
 }
 const programEnum=z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Hybrid Managed","Full Service Planning","Full Service Management"]);
-export const documentSchema = z.object({ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}), recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional() });
+export function validExternalLink(value:string) {
+ if(!value)return true;
+ try{const url=new URL(value);return (url.protocol==="https:"||url.protocol==="http:")&&!!url.hostname;}catch{return false;}
+}
+export function safeExternalUrl(value:string) { const url=value.trim();return url&&validExternalLink(url)?url:null; }
+const pageContentSchema=z.object({
+ coverSubtitle:z.string().max(2000),coverPromise:z.string().max(5000),
+ aboutHeading:z.string().max(500),aboutBody:z.string().max(50000),aboutIncludes:z.string().max(20000),programsHeading:z.string().max(500),
+ addonsHeading:z.string().max(1000),addonsItems:z.string().max(20000),addonsNote:z.string().max(5000),screensHeading:z.string().max(1000),questionsHeading:z.string().max(500),
+ sampleEventHeading:z.string().max(1000),sampleEventBody:z.string().max(20000),sampleEventButton:z.string().max(500),
+ nextStepsHeading:z.string().max(1000),nextStepsItems:z.string().max(20000),nextStepsContact:z.string().max(5000),nextStepsFooter:z.string().max(20000),
+ closureHeading:z.string().max(1000),closureIntroduction:z.string().max(10000),noticeText:z.string().max(10000),
+});
+const faqItemSchema=z.object({id:z.string().max(100),question:z.string().max(2000),answer:z.string().max(20000)});
+const referenceEntrySchema=z.object({id:z.string().max(100),name:z.string().max(1000),organization:z.string().max(1000),description:z.string().max(10000),contact:z.string().max(2000)});
+const referencesPageSchema=z.object({enabled:z.boolean(),title:z.string().max(1000),introduction:z.string().max(20000),entries:z.array(referenceEntrySchema).max(50)});
+const photoLinkSchema=z.object({id:z.string().max(100),title:z.string().max(1000),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// photo link."),description:z.string().max(10000)});
+const photoLinksPageSchema=z.object({enabled:z.boolean(),title:z.string().max(1000),introduction:z.string().max(20000),links:z.array(photoLinkSchema).max(50)});
+export const documentSchema = z.object({
+ fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}),
+ recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional(),
+ pageContent:pageContentSchema.optional(),faqItems:z.array(faqItemSchema).max(40).optional(),
+ programOverrides:z.record(programEnum,z.record(z.string().max(100),z.string().max(50000))).optional(),
+ referencesPage:referencesPageSchema.optional(),photoLinksPage:photoLinksPageSchema.optional(),
+});
 export type WebDocument = z.infer<typeof documentSchema>;
-export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:["No Cost to Start","Per Event","Full Service Management"],intro:introExample,reason:reasonExample,softwareDefinition:SOFTWARE_DEFINITION,fullService:defaultFullService(),closureEnabled:true});
+export type PageContent=z.infer<typeof pageContentSchema>;
+export type ProposalFaqItem=z.infer<typeof faqItemSchema>;
+export type ReferencesPage=z.infer<typeof referencesPageSchema>;
+export type PhotoLinksPage=z.infer<typeof photoLinksPageSchema>;
+export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:["No Cost to Start","Per Event","Full Service Management"],intro:introExample,reason:reasonExample,softwareDefinition:SOFTWARE_DEFINITION,fullService:defaultFullService(),closureEnabled:true,pageContent:defaultPageContent(),faqItems:defaultFaqItems(),programOverrides:{},referencesPage:defaultReferencesPage(),photoLinksPage:defaultPhotoLinksPage()});
 export const fallbackAnswer = "That is not in this proposal, so I will pass that question to Rod, and he will follow up. Thank you for asking.";
 export function sensitiveQuestion(q:string) { return /(password|bank account|card number|routing number|cvv|social security)|(?:\d[ -]?){12,19}/i.test(q); }
 export function calculator(players:number,fee:number) { const registrations=Math.max(0,players)*Math.max(0,fee); return {registrations,trigger:registrations>=3750,first:1875,balance:3125}; }
 export const founderExperience = "I have over a decade of experience as a tournament director and in organizing golf tournaments, after working in the golf industry for more than 20 years, including time with the largest golf management company in the world and one of the largest golf manufacturers in the world. That experience is built into every TeeVents event.";
+export function defaultPageContent():PageContent { return {
+ coverSubtitle:"Golf Tournament Management and Services",coverPromise:"Every program includes a dedicated TeeVents rep who builds your event for you.",
+ aboutHeading:"About TeeVents",aboutBody:[about[0],founderExperience,...about.slice(1)].join("\n\n"),aboutIncludes:"Every program includes: a dedicated TeeVents rep, a branded event page built for you, online registration and payments, sponsor tiers, pairings and check in, sponsor and auction tools, live budget tracking",programsHeading:"Programs at a Glance",
+ addonsHeading:"Add ons, $99 each, one time per event",addonsItems:["Live Leaderboard and Mobile Scoring, included with Per Event and up","Unlimited Manual Entries","Auction Dashboard","Branding Removal and Digital Sponsor","Custom Domain"].join("\n"),addonsNote:"Stripe processing is separate: 2.9% plus $0.30, and applies in all cases.",screensHeading:"Sample Screens From the TeeVents Dashboard",questionsHeading:"Common Questions",
+ sampleEventHeading:"See a Live Sample Event",sampleEventBody:"Explore a real TeeVents event page with registration, sponsor tiers, schedule, and live leaderboard, the same experience your players and sponsors will see.",sampleEventButton:"View Sample Event Page",
+ nextStepsHeading:"Next Steps",nextStepsItems:["Choose the program that fits your event","Schedule a call with your dedicated rep","Send your logo and tournament details","We build your page and you are live in 7 days or less"].join("\n"),nextStepsContact:"Contact: Website www.teevents.golf, Email info@teevents.golf, Phone (602) 413 1338",nextStepsFooter:"This proposal is a draft until accepted in writing. Prices, travel, and third party costs are as stated in this proposal, and third party costs are paid directly by the organizer unless stated otherwise in a custom line item.",
+ closureHeading:"Ready to Get Started?",closureIntroduction:"Choose how you would like to start. You'll review your choice before anything is submitted, and you can go back or contact us first.",noticeText:"This proposal link is made just for [Client or Organization Name], so TeeVents can see when you have had a chance to look, and follow up at a good time.",
+}; }
+export function proposalPageContent(d:WebDocument):PageContent { return {...defaultPageContent(),...d.pageContent}; }
+export function defaultFaqItems(items:readonly (readonly [string,string])[]=currentFaq):ProposalFaqItem[] { return items.map(([question,answer],index)=>({id:`faq-${index}`,question,answer})); }
+export function proposalFaq(d:WebDocument):ProposalFaqItem[] { return d.faqItems??defaultFaqItems(isCurrentDocument(d)?currentFaq:faq); }
+export function defaultReferencesPage():ReferencesPage { return {enabled:false,title:"References",introduction:"References from organizations TeeVents has supported.",entries:[]}; }
+export function defaultPhotoLinksPage():PhotoLinksPage { return {enabled:false,title:"Event Photo Links",introduction:"Explore photos from previous TeeVents events.",links:[]}; }
+export function proposalReferencesPage(d:WebDocument):ReferencesPage { return d.referencesPage??defaultReferencesPage(); }
+export function proposalPhotoLinksPage(d:WebDocument):PhotoLinksPage { return d.photoLinksPage??defaultPhotoLinksPage(); }
+/** Prices and fee terms stay connected to the existing program choice and checkout. */
+export function editableProgramDetail(p:(typeof programNames)[number],label:string) {
+ if(label==="Type"||label==="Price"||label==="Platform fee")return false;
+ if(p==="Full Service Management"&&(label==="Payment Schedule"||label==="Cancellation"))return false;
+ return true;
+}
+export function withProgramDetail(d:WebDocument,p:(typeof programNames)[number],label:string,value:string):WebDocument {
+ if(!editableProgramDetail(p,label))return d;
+ return {...d,programOverrides:{...d.programOverrides,[p]:{...d.programOverrides?.[p],[label]:value}}};
+}
 /** Fills [Organization] in the Personalized Reason with the Prepared for name. */
 export function reasonText(d:WebDocument) { return d.reason.replaceAll("[Organization]",d.fields.preparedFor||"[Organization]"); }
 export function introText(d:WebDocument) { return d.intro.replaceAll("[Conversation Date]",d.fields.conversationDate||"[Conversation Date]").replaceAll("[Recommended Program]",d.recommended||"[Recommended Program]"); }
 export function answerQuestion(q:string,d:WebDocument) {
  const n=q.toLowerCase().trim().replace(/[?!.]+$/g,"");
  if (/discount|custom price|guarantee|change|different|reduce|waive|book|accept|pay now/.test(n)) return fallbackAnswer;
- const availableFaq = isCurrentDocument(d) ? currentFaq : faq;
+ const availableFaq = proposalFaq(d).map(item=>[item.question,item.answer] as const);
  const f=availableFaq.find(([question])=>question.toLowerCase().replace(/\?$/," ").trim()===n);
  if(f)return `${f[1]}\n\nFrom Common Questions in this proposal.`;
  if(n==="what program do you recommend" || n==="what is the recommended program") return `${introText(d)}\n${reasonText(d)}\n\nFrom A Quick Note From Rod in this proposal.`;
@@ -216,9 +269,14 @@ export function programDetails(d:WebDocument,p:(typeof programNames)[number]):Re
   if(historical.Type===LEGACY_SOFTWARE_TAG) original.Type=SOFTWARE_TAG;
   if(historical.Type===MANAGED_TAG) original.Definition=MANAGED_DEFINITION;
  }
- if(p!=="Full Service Management"||!d.fullService)return {...original};
- const t=fullServiceTotals(d.fullService);
- return {...original,Price:`${money(t.final)} per event`,"Platform fee":managementPlatformFee,Includes:"Dedicated manager from agreement through event day",Limits:managementLimits,"Payment Schedule":d.fullService.paymentTerms,Cancellation:d.fullService.cancellationTerms};
+ let result={...original};
+ if(p==="Full Service Management"&&d.fullService){
+  const t=fullServiceTotals(d.fullService);
+  result={...original,Price:`${money(t.final)} per event`,"Platform fee":managementPlatformFee,Includes:"Dedicated manager from agreement through event day",Limits:managementLimits,"Payment Schedule":d.fullService.paymentTerms,Cancellation:d.fullService.cancellationTerms};
+ }
+ const overrides=d.programOverrides?.[p];
+ if(overrides)for(const [label,value] of Object.entries(overrides))if(editableProgramDetail(p,label))result[label]=value;
+ return result;
 }
 
 /** Alternating panel shading so each program reads as its own item: shaded, plain, shaded. */

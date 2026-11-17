@@ -28,9 +28,8 @@ export default function RemoveLogoBackgroundButton({
   const run = async () => {
     setBusy(true);
     try {
-      toast({ title: "Removing background…", description: "The first run can take about 10 seconds." });
-      const { removeBackground } = await import("@imgly/background-removal");
-      const blob = await removeBackground(imageUrl);
+      toast({ title: "Removing background…", description: "This takes a few seconds." });
+            const blob = await (await import("@/lib/removeLogoBackground")).removeLogoBackground(imageUrl);
       const path = `${folder}/logo-nobg-${Date.now()}.png`;
       const { error } = await supabase.storage.from(bucket).upload(path, blob, { upsert: true, contentType: "image/png" });
       if (error) throw error;

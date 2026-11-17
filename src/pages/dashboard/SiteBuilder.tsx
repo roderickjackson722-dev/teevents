@@ -602,10 +602,9 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
     try {
       toast({
         title: "Removing background…",
-        description: "First run downloads a small AI model — this may take ~10s.",
+        description: "This takes a few seconds.",
       });
-      const { removeBackground } = await import("@imgly/background-removal");
-      const blob = await removeBackground(settings.site_logo_url);
+            const blob = await (await import("@/lib/removeLogoBackground")).removeLogoBackground(settings.site_logo_url);
       const path = `${org.orgId}/${settings.id}/logo-nobg-${Date.now()}.png`;
       const { error: upErr } = await supabase.storage
         .from("tournament-assets")
@@ -827,7 +826,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                   </div>
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  Background removal runs in your browser — free, no upload to a third-party service. First run downloads a ~10 MB AI model.
+                  Background removal runs in your browser and works best on logos with a solid background.
                 </p>
 
                 {/* Logo Nudge sliders */}

@@ -19,6 +19,10 @@ export interface LeaderboardDesign {
   show_gross: boolean;
   show_net: boolean;
   show_thru: boolean;
+  /** Show the current round's Today column on the public leaderboard. */
+  show_today: boolean;
+  /** Show photos attached through Leaderboard Gallery without deleting them. */
+  show_gallery: boolean;
   default_view: "gross" | "net" | "both";
   auto_refresh_seconds: number;
   max_rows: number;
@@ -30,6 +34,8 @@ export interface LeaderboardDesign {
   font_size: "small" | "medium" | "large";
   font_family: string;
   show_sponsor_banner: boolean;
+  /** Optional explicit Sponsored by choice. Missing values preserve legacy event behavior. */
+  sponsor_display_mode?: "single" | "multiple" | "none";
   sponsor_banner_position: "top" | "bottom" | "sidebar";
   sponsor_rotation_seconds: number;
   sponsor_filter: "all" | "selected";
@@ -75,6 +81,8 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   show_gross: true,
   show_net: true,
   show_thru: true,
+  show_today: true,
+  show_gallery: true,
   default_view: "both",
   auto_refresh_seconds: 10,
   max_rows: 20,
@@ -279,7 +287,7 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
 
   const reset = () => {
     if (!confirm("Reset all leaderboard design settings to defaults?")) return;
-    setDesign(DEFAULT_DESIGN);
+    setDesign({ ...DEFAULT_DESIGN });
   };
 
   const baseUrl = typeof window !== "undefined" ? window.location.origin : "";
@@ -306,7 +314,7 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
   }
 
   return (
-    <Card>
+    <Card id="leaderboard-design-settings" className="scroll-mt-24">
       <CardHeader>
         <CardTitle className="flex items-center gap-2"><Tv2 className="w-5 h-5" /> Live Leaderboard Design</CardTitle>
       </CardHeader>
@@ -329,7 +337,12 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
               <Check label="Gross" checked={design.show_gross} onChange={(v) => update("show_gross", v)} />
               <Check label="Net" checked={design.show_net} onChange={(v) => update("show_net", v)} />
               <Check label="Thru" checked={design.show_thru} onChange={(v) => update("show_thru", v)} />
+              <Check label="Today" checked={design.show_today} onChange={(v) => update("show_today", v)} />
             </div>
+          </div>
+          <div className="rounded-md border border-border p-3 space-y-2">
+            <Check label="Show leaderboard photos" checked={design.show_gallery} onChange={(v) => update("show_gallery", v)} />
+            <p className="text-xs text-muted-foreground">Turn this off to hide all attached photos without deleting them. Remove individual photos under <a className="underline" href="#leaderboard-photo-settings">Photos</a>.</p>
           </div>
           <div>
             <Label className="text-xs">Default View</Label>
@@ -538,6 +551,7 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
 
         <section className="space-y-3 border-t pt-5">
           <Label className="text-base font-semibold">Sponsor Banner</Label>
+          <p className="text-xs text-muted-foreground">Choose one image, multiple rotating images, or no sponsor section under <a className="underline" href="#leaderboard-sponsor-settings">Sponsored by</a>.</p>
           <Check label="Show sponsor banner on leaderboard" checked={design.show_sponsor_banner} onChange={(v) => update("show_sponsor_banner", v)} />
           {design.show_sponsor_banner && (
             <>

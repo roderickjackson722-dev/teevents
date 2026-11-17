@@ -4,11 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
-import { Award, Upload, Loader2, X, DollarSign, Check, Users } from "lucide-react";
+import { Award, Upload, Loader2, X, DollarSign, Check, Users, Images } from "lucide-react";
+import { fallbackSponsorDisplayMode, parseSponsorDisplayMode, type SponsorDisplayMode } from "@/lib/leaderboardSponsorDisplay";
 import {
   createBrandingRemovalCheckout,
   getBrandingStatus,
@@ -41,6 +41,7 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [displayMode, setDisplayMode] = useState<SponsorDisplayMode>("none");
   const [brandingRemoved, setBrandingRemoved] = useState(false);
   const [brandingLoading, setBrandingLoading] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -112,21 +113,50 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title")
+      .select("leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title, leaderboard_design, leaderboard_sponsor_banner_enabled")
       .eq("id", tournamentId)
       .maybeSingle()
       .then(({ data }) => {
-        if (data) setRow(data as Row);
+        if (data) {
+          const d = data as any;
+          setRow({
+            leaderboard_show_sponsor: !!d.leaderboard_show_sponsor,
+            leaderboard_sponsor_name: d.leaderboard_sponsor_name || "",
+            leaderboard_sponsor_logo_url: d.leaderboard_sponsor_logo_url || "",
+            leaderboard_sponsor_label: d.leaderboard_sponsor_label || "Presented by",
+            leaderboard_title: d.leaderboard_title || "",
+          });
+          setDisplayMode(
+            parseSponsorDisplayMode(d.leaderboard_design?.sponsor_display_mode) ||
+              fallbackSponsorDisplayMode(!!d.leaderboard_show_sponsor, d.leaderboard_sponsor_banner_enabled !== false),
+          );
+        }
         setLoading(false);
       });
   }, [tournamentId]);
 
   const handleSave = async () => {
     setSaving(true);
+    const { data: current, error: readError } = await supabase
+      .from("tournaments")
+      .select("leaderboard_design")
+      .eq("id", tournamentId)
+      .maybeSingle();
+    if (readError) {
+      setSaving(false);
+      return toast({ title: "Failed to save", description: readError.message, variant: "destructive" });
+    }
+    const leaderboard_design = {
+      ...(((current as any)?.leaderboard_design || {}) as Record<string, unknown>),
+      sponsor_display_mode: displayMode,
+      show_sponsor_banner: displayMode === "multiple",
+    };
     const { error } = await supabase
       .from("tournaments")
       .update({
-        leaderboard_show_sponsor: row.leaderboard_show_sponsor,
+        leaderboard_design,
+        leaderboard_show_sponsor: displayMode === "single",
+        leaderboard_sponsor_banner_enabled: displayMode === "multiple",
         leaderboard_sponsor_name: row.leaderboard_sponsor_name || null,
         leaderboard_sponsor_logo_url: row.leaderboard_sponsor_logo_url || null,
         leaderboard_sponsor_label: row.leaderboard_sponsor_label || "Presented by",
@@ -138,7 +168,8 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
       .eq("id", tournamentId);
     setSaving(false);
     if (error) return toast({ title: "Failed to save", description: error.message, variant: "destructive" });
-    toast({ title: "Leaderboard sponsor saved" });
+    setRow((r) => ({ ...r, leaderboard_show_sponsor: displayMode === "single" }));
+    toast({ title: "Sponsored by settings saved" });
   };
 
 
@@ -151,7 +182,7 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
       if (upErr) throw upErr;
       const { data } = supabase.storage.from("tournament-assets").getPublicUrl(path);
       setRow((r) => ({ ...r, leaderboard_sponsor_logo_url: data.publicUrl }));
-      toast({ title: "Logo uploaded" });
+      toast({ title: "Logo ready", description: "Select Save Sponsor Settings to apply it." });
     } catch (e: any) {
       toast({ title: "Upload failed", description: e.message, variant: "destructive" });
     } finally {
@@ -162,9 +193,10 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
   if (loading) return <Card><CardContent className="py-8 flex justify-center"><Loader2 className="h-5 w-5 animate-spin" /></CardContent></Card>;
 
   return (
-    <Card>
+    <Card id="leaderboard-sponsor-settings" className="scroll-mt-24">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2"><Award className="h-5 w-5 text-primary" /> Leaderboard Branding</CardTitle>
+        <CardTitle className="flex items-center gap-2"><Award className="h-5 w-5 text-primary" /> Sponsored by Section</CardTitle>
+        <p className="text-sm text-muted-foreground">Choose whether this section appears, edit its wording and sponsor name, or upload, replace, and remove its image.</p>
       </CardHeader>
       <CardContent className="space-y-5">
         <div className="rounded-lg border border-primary/40 bg-primary/5 p-4">
@@ -187,17 +219,33 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
           </div>
         </div>
 
-        <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-          <div>
-            <p className="font-semibold text-sm">Show "Presented by" on leaderboard</p>
-            <p className="text-xs text-muted-foreground">Highlights a headline sponsor at the top of the live leaderboard.</p>
-          </div>
-
-          <Switch
-            checked={row.leaderboard_show_sponsor}
-            onCheckedChange={(v) => setRow((r) => ({ ...r, leaderboard_show_sponsor: v }))}
-          />
+        <div className="rounded-lg border border-border bg-muted/50 p-4 space-y-2">
+          <Label htmlFor="sponsored-by-display">Sponsored by display</Label>
+          <Select value={displayMode} onValueChange={(v) => setDisplayMode(v as SponsorDisplayMode)}>
+            <SelectTrigger id="sponsored-by-display" className="bg-background"><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="single">One image</SelectItem>
+              <SelectItem value="multiple">Multiple rotating images</SelectItem>
+              <SelectItem value="none">No sponsor section</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-xs text-muted-foreground">
+            {displayMode === "single" && "Show one dedicated sponsor name and image below the leaderboard title."}
+            {displayMode === "multiple" && "Rotate your uploaded logos and selected event sponsor images."}
+            {displayMode === "none" && "Hide the Sponsored by section and sponsor image areas on this leaderboard."}
+          </p>
         </div>
+
+        {displayMode === "multiple" && (
+          <div className="rounded-lg border border-border p-4 space-y-3">
+            <p className="font-semibold text-sm flex items-center gap-2"><Images className="h-4 w-4" /> Choose multiple images</p>
+            <p className="text-xs text-muted-foreground">Upload and reorder dedicated logos, then choose which existing event sponsors can appear. Save each section after editing.</p>
+            <div className="flex flex-wrap gap-2">
+              <Button asChild variant="outline" size="sm"><a href="#leaderboard-multiple-images">Upload &amp; reorder images</a></Button>
+              <Button asChild variant="outline" size="sm"><a href="#leaderboard-sponsor-selection">Select event sponsors</a></Button>
+            </div>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
@@ -208,22 +256,26 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
               placeholder="Defaults to tournament name"
             />
           </div>
-          <div>
-            <Label>Display As</Label>
-            <Select
-              value={row.leaderboard_sponsor_label || "Presented by"}
-              onValueChange={(v) => setRow((r) => ({ ...r, leaderboard_sponsor_label: v }))}
-            >
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Presented by">Presented by</SelectItem>
-                <SelectItem value="Sponsored by">Sponsored by</SelectItem>
-                <SelectItem value="In partnership with">In partnership with</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {displayMode === "single" && (
+            <div>
+              <Label>Display As</Label>
+              <Select
+                value={row.leaderboard_sponsor_label || "Presented by"}
+                onValueChange={(v) => setRow((r) => ({ ...r, leaderboard_sponsor_label: v }))}
+              >
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Presented by">Presented by</SelectItem>
+                  <SelectItem value="Sponsored by">Sponsored by</SelectItem>
+                  <SelectItem value="In partnership with">In partnership with</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
         </div>
 
+        {displayMode === "single" && (
+          <>
         <div>
           <Label>Sponsor Name</Label>
           <Input
@@ -242,7 +294,9 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
                 <button
                   type="button"
                   onClick={() => setRow((r) => ({ ...r, leaderboard_sponsor_logo_url: "" }))}
-                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-0.5"
+                  aria-label="Remove sponsor image"
+                  title="Remove sponsor image"
+                  className="absolute -top-2 -right-2 bg-destructive text-destructive-foreground rounded-full p-1"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -262,8 +316,10 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
               {row.leaderboard_sponsor_logo_url ? "Replace" : "Upload"}
             </Button>
           </div>
-          <p className="text-[11px] text-muted-foreground mt-1">Recommended: 400x160 PNG with transparent background.</p>
+          <p className="text-[11px] text-muted-foreground mt-1">Recommended: 400x160 PNG with transparent background. Upload, replace, or remove the image, then save.</p>
         </div>
+          </>
+        )}
 
         <div className="rounded-lg border border-border bg-background/40 p-4 space-y-3">
           <div className="flex items-start justify-between gap-4">

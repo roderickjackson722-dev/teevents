@@ -80,6 +80,49 @@ describe("LeaderboardRenderer parity (preview vs live)", () => {
   });
 
 
+  it("shows the Today column by default and removes its header and cells when disabled", () => {
+    const todayRows = [{ name: "Alpha", total: 65, thru: 9, today: 35, parToday: 36 }];
+    const { getByText, rerender, queryByText, getByTestId } = render(
+      <LeaderboardRenderer design={design} title="Test Cup" rows={todayRows} rounds={[1]} currentRound={1} />,
+    );
+    expect(getByText("Today")).toBeTruthy();
+    expect(getByTestId("lb-table").textContent).toContain("-1");
+
+    rerender(
+      <LeaderboardRenderer design={{ ...design, show_today: false }} title="Test Cup" rows={todayRows} rounds={[1]} currentRound={1} />,
+    );
+    expect(queryByText("Today")).toBeNull();
+    expect(getByTestId("lb-table").textContent).not.toContain("-1");
+  });
+
+  it("hides an attached leaderboard photo without removing its gallery data", () => {
+    const heroImage = { id: "photo-1", image_url: "https://example.com/photo.jpg", caption: "18th green" };
+    const sponsor = { id: "sponsor-1", name: "ACME", logo_url: null };
+    const { queryByAltText, rerender, getByAltText } = render(
+      <LeaderboardRenderer
+        design={design}
+        title="Test Cup"
+        rows={rows}
+        heroImage={heroImage}
+        scrollingSponsors={[sponsor]}
+        scrollingSponsorsPosition="sidebar"
+      />,
+    );
+    expect(getByAltText("18th green")).toBeTruthy();
+
+    rerender(
+      <LeaderboardRenderer
+        design={{ ...design, show_gallery: false }}
+        title="Test Cup"
+        rows={rows}
+        heroImage={heroImage}
+        scrollingSponsors={[sponsor]}
+        scrollingSponsorsPosition="sidebar"
+      />,
+    );
+    expect(queryByAltText("18th green")).toBeNull();
+  });
+
   it("falls back to defaults when design tokens are missing", () => {
     const partial = mergeDesign({ background_color: "#000000" } as any);
     expect(partial.header_background).toBeTruthy();

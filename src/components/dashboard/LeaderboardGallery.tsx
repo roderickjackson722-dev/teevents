@@ -81,6 +81,7 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
   );
 
   const handleDelete = async (id: string) => {
+    if (!window.confirm("Remove this photo from the leaderboard?")) return;
     const { error } = await supabase.from("leaderboard_gallery").delete().eq("id", id);
     if (error) {
       toast({ title: "Delete failed", description: error.message, variant: "destructive" });
@@ -107,7 +108,7 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
   };
 
   return (
-    <Card className="mt-6">
+    <Card id="leaderboard-photo-settings" className="mt-6 scroll-mt-24">
       <CardHeader>
         <CardTitle className="text-base flex items-center gap-2">
           <ImageIcon className="h-4 w-4" /> Leaderboard Gallery
@@ -155,28 +156,26 @@ export default function LeaderboardGallery({ tournamentId, orgId }: Props) {
             No images yet. Upload tournament photos to display on the live leaderboard.
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
             {items.map((item) => (
-              <div key={item.id} className="relative group rounded-md overflow-hidden border border-border">
-                <img src={item.image_url} alt={item.caption || "Gallery photo"} className="w-full h-32 object-cover" />
-                {item.is_hero && (
-                  <span className="absolute top-1 left-1 bg-secondary text-secondary-foreground text-[10px] uppercase tracking-wide font-bold px-1.5 py-0.5 rounded">
-                    Hero
-                  </span>
-                )}
-                <div className="absolute inset-0 bg-foreground/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                  <Button size="sm" variant="secondary" onClick={() => setHero(item.id)} className="h-7 text-xs">
+              <div key={item.id} className="rounded-md overflow-hidden border border-border bg-card">
+                <div className="relative">
+                  <img src={item.image_url} alt={item.caption || "Gallery photo"} className="w-full h-32 object-cover" />
+                  {item.is_hero && (
+                    <span className="absolute top-1 left-1 bg-secondary text-secondary-foreground text-[10px] uppercase tracking-wide font-bold px-1.5 py-0.5 rounded">
+                      Hero
+                    </span>
+                  )}
+                </div>
+                {item.caption && <p className="px-2 pt-2 text-[11px] text-muted-foreground truncate">{item.caption}</p>}
+                <div className="flex flex-wrap gap-2 p-2">
+                  <Button size="sm" variant="outline" onClick={() => setHero(item.id)} className="h-8 flex-1 text-xs">
                     <Star className="h-3 w-3 mr-1" /> Set as Hero
                   </Button>
-                  <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)} className="h-7 text-xs">
-                    <Trash2 className="h-3 w-3 mr-1" /> Delete
+                  <Button size="sm" variant="destructive" onClick={() => handleDelete(item.id)} className="h-8 flex-1 text-xs">
+                    <Trash2 className="h-3 w-3 mr-1" /> Remove
                   </Button>
                 </div>
-                {item.caption && (
-                  <div className="absolute bottom-0 inset-x-0 bg-background/90 px-2 py-1 text-[11px] text-foreground truncate">
-                    {item.caption}
-                  </div>
-                )}
               </div>
             ))}
           </div>

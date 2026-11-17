@@ -184,7 +184,7 @@ export function LeaderboardRenderer({
     return () => clearInterval(t);
   }, [pageMode, pageCount, design.row_page_seconds, isPaused]);
   const pageRows = (all: LbRow[]) =>
-    pageMode ? all.slice(pageIdx * perPage, pageIdx * perPage + perPage) : all;
+    compact ? all.slice(0, perPage) : pageMode ? all.slice(pageIdx * perPage, pageIdx * perPage + perPage) : all;
 
   const showGross = design.show_gross !== false && design.default_view !== "net";
   const showNet = design.show_net !== false && design.default_view !== "gross";
@@ -192,9 +192,9 @@ export function LeaderboardRenderer({
   const showPos = design.show_position !== false;
   const showPlayer = design.show_player !== false;
 
-  const padX = compact ? "px-3" : "px-4 sm:px-6";
-  const padY = compact ? "py-2" : "py-3";
-  const headerPadY = compact ? "py-2" : "py-4 sm:py-6";
+  const padX = compact ? "px-2" : "px-1.5 md:px-3 xl:px-6";
+  const padY = compact ? "py-1.5" : "py-1.5 md:py-3";
+  const headerPadY = compact ? "py-2" : "py-3 md:py-6";
 
   /**
    * Seamless sponsor marquee. The logo list is repeated until it is wide enough
@@ -276,7 +276,7 @@ export function LeaderboardRenderer({
 
   /** Rounds that are finished (shown as their own R1/R2 column). */
   const priorRounds = (rounds || []).filter((r) => !currentRound || r < currentRound);
-  const showToday = !isStableford && !!currentRound && (rounds || []).includes(currentRound);
+  const showToday = design.show_today !== false && !isStableford && !!currentRound && (rounds || []).includes(currentRound);
   /** A closed current round is no longer "Today" — label it by round number. */
   const todayLabel = currentRound && (closedRounds || []).includes(currentRound) ? `R${currentRound}` : "Today";
 
@@ -336,20 +336,20 @@ export function LeaderboardRenderer({
             <p className={compact ? "text-xs" : ""}>Scoring hasn't started yet.</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full" data-testid="lb-table">
+          <div className="overflow-x-hidden lg:overflow-x-auto">
+            <table className="w-full table-fixed lg:table-auto text-[0.72em] lg:text-[1em]" data-testid="lb-table">
               <thead style={{ backgroundColor: headerBg }}>
-                <tr className="text-xs uppercase tracking-wider">
-                  {showPos && <th className={`text-left ${padX} ${padY} w-14`}>Pos</th>}
+                <tr className="uppercase tracking-normal sm:tracking-wider">
+                  {showPos && <th className={`text-left ${padX} ${padY} xl:w-14`}>Pos</th>}
                   {showPlayer && <th className={`text-left ${padX} ${padY}`}>Player / Team</th>}
-                  {!isStableford && <th className={`text-center ${padX} ${padY} w-24 whitespace-nowrap`}>To Par</th>}
-                  {showThru && <th className={`text-right ${padX} ${padY} w-16`}>Thru</th>}
+                  {!isStableford && <th className={`text-center ${padX} ${padY} xl:w-24 whitespace-nowrap`}>To Par</th>}
+                  {showThru && <th className={`text-right ${padX} ${padY} xl:w-16`}>Thru</th>}
                   {priorRounds.map((r) => (
-                    <th key={`h-r${r}`} className={`text-right ${padX} ${padY} w-16`}>R{r}</th>
+                    <th key={`h-r${r}`} className={`text-right ${padX} ${padY} xl:w-16`}>R{r}</th>
                   ))}
-                  {showToday && <th className={`text-right ${padX} ${padY} w-20 whitespace-nowrap`}>{todayLabel}</th>}
+                  {showToday && <th className={`text-right ${padX} ${padY} xl:w-20 whitespace-nowrap`}>{todayLabel}</th>}
                   {(showGross || showNet) && (
-                    <th className={`text-right ${padX} ${padY} w-24`}>{isStableford ? "Pts" : "Total"}</th>
+                    <th className={`text-right ${padX} ${padY} xl:w-24`}>{isStableford ? "Pts" : "Total"}</th>
                   )}
                 </tr>
               </thead>
@@ -371,10 +371,10 @@ export function LeaderboardRenderer({
                     )}
                     {showPlayer && (
                       <td className={`${padX} ${padY}`}>
-                        <div className="font-semibold">{row.name}</div>
-                        {row.subtitle && <div className="text-xs opacity-70">{row.subtitle}</div>}
+                        <div className="font-semibold leading-tight break-words">{row.name}</div>
+                        {row.subtitle && <div className="text-[0.85em] leading-tight opacity-70 break-words">{row.subtitle}</div>}
                         {row.players && row.players.length > 0 && (
-                          <div className="text-xs opacity-70 truncate max-w-[300px]">{row.players.join(", ")}</div>
+                          <div className="text-[0.85em] leading-tight opacity-70 truncate max-w-full sm:max-w-[300px]">{row.players.join(", ")}</div>
                         )}
                       </td>
                     )}
@@ -382,7 +382,7 @@ export function LeaderboardRenderer({
                       <td className={`${padX} ${padY} text-center whitespace-nowrap`} data-testid="lb-topar">
                         {row.total ? (
                           <span
-                            className="inline-block min-w-[3rem] whitespace-nowrap rounded px-2 py-1 font-mono font-bold tabular-nums leading-none"
+                            className="inline-block min-w-0 sm:min-w-[3rem] whitespace-nowrap rounded px-1 sm:px-2 py-0.5 sm:py-1 font-mono font-bold tabular-nums leading-none"
                             style={{ backgroundColor: headerBg, color: accent }}
                           >
                             {formatToPar(row.total, row.parPlayed ?? coursePar)}
@@ -426,7 +426,7 @@ export function LeaderboardRenderer({
 
     <div
       data-testid="lb-root"
-      className={`relative flex flex-col ${compact ? "rounded-lg overflow-hidden border" : "min-h-screen"}`}
+      className={`relative flex w-full max-w-full flex-col overflow-x-hidden ${compact ? "rounded-lg border" : "min-h-screen"}`}
       style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
     >
       {topNotice}
@@ -453,7 +453,7 @@ export function LeaderboardRenderer({
       )}
 
       <header className={`${padX} ${headerPadY}`} style={{ backgroundColor: headerBg }} data-testid="lb-header">
-        <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center gap-4`}>
+        <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center gap-2 sm:gap-4`}>
           {/* Left logo — organizer upload, falling back to the site logo. */}
           {(design.left_logo_url || logoUrl) && (
             <div className="shrink-0 rounded bg-white/95 p-1 flex items-center justify-center">
@@ -495,12 +495,12 @@ export function LeaderboardRenderer({
               />
             </div>
           ) : (
-            <Trophy className={`shrink-0 ${compact ? "h-4 w-4" : "h-6 w-6 sm:h-10 sm:w-10 md:h-12 md:w-12"}`} style={{ color: accent }} />
+            <Trophy className={`shrink-0 ${compact ? "h-4 w-4" : "h-6 w-6 sm:h-10 xl:w-10 md:h-12 md:w-12"}`} style={{ color: accent }} />
           )}
         </div>
         {!compact && presentedBy && (
           <div
-            className="mt-4 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 rounded-md py-3 px-4 border"
+            className="mt-3 sm:mt-4 flex flex-wrap items-center justify-center gap-x-3 sm:gap-x-4 gap-y-2 rounded-md py-2 sm:py-3 px-2 sm:px-4 border"
             style={{ borderColor: `${accent}55`, backgroundColor: `${accent}12` }}
           >
             <span
@@ -528,7 +528,7 @@ export function LeaderboardRenderer({
         )}
       </header>
 
-      <main className={`flex-1 ${compact ? "p-2" : "px-4 sm:px-6 py-6"}`}>
+      <main className={`flex-1 ${compact ? "p-2" : "px-2 sm:px-6 py-3 sm:py-6"}`}>
         <div className={`${compact ? "" : "max-w-7xl mx-auto"} grid grid-cols-1 ${showSponsorBanner && sponsorPos === "sidebar" && !compact ? "lg:grid-cols-[1fr_280px]" : ""} gap-4`}>
           {boards && boards.length > 0 ? (
             <div className={`grid grid-cols-1 ${gridColsClass} gap-4`} data-testid="lb-flight-grid">
@@ -540,9 +540,9 @@ export function LeaderboardRenderer({
           )}
 
 
-          {((showSponsorBanner && sponsorPos === "sidebar") || (scrollPos === "sidebar" && marqueeBase.length > 0)) && !compact && (
+          {((showSponsorBanner && sponsorPos === "sidebar") || (scrollPos === "sidebar" && marqueeBase.length > 0) || (heroImage && design.show_gallery !== false)) && !compact && (
             <aside className="space-y-4" data-testid="lb-sidebar">
-              {heroImage && (
+              {heroImage && design.show_gallery !== false && (
                 <div className="rounded-lg overflow-hidden" style={{ backgroundColor: `${headerBg}55` }}>
                   <img src={heroImage.image_url} alt={heroImage.caption || "Tournament photo"} className="w-full h-48 object-cover" />
                   {heroImage.caption && <div className="px-3 py-2 text-xs opacity-80">{heroImage.caption}</div>}

@@ -130,7 +130,7 @@ export default function TickerSponsorsCard({ tournamentId }: { tournamentId: str
   };
 
   return (
-    <Card className="mb-6">
+    <Card id="leaderboard-sponsor-selection" className="mb-6 scroll-mt-24">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Megaphone className="h-5 w-5" /> Scrolling Ticker Sponsors

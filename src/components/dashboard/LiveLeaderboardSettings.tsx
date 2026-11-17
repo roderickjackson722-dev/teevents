@@ -241,9 +241,9 @@ export default function LiveLeaderboardSettings({ tournamentId }: Props) {
       </Card>
 
       {/* ===== Leaderboard Sponsor Display ===== */}
-      <Card>
+      <Card id="leaderboard-multiple-images" className="scroll-mt-24">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" /> Leaderboard Sponsor Display</CardTitle>
+          <CardTitle className="flex items-center gap-2"><Trophy className="h-5 w-5" /> Multiple Sponsor Images</CardTitle>
           <CardDescription>
             Upload sponsor logos that rotate on the live leaderboard banner. These appear alongside any tournament sponsors marked for leaderboard display.
           </CardDescription>

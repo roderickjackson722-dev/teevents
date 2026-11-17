@@ -1330,6 +1330,11 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
         <div className="pt-4 border-t border-border">
           <h2 className="text-lg font-display font-bold text-foreground">Look</h2>
           <p className="text-xs text-muted-foreground">Header, colors, logos, rotation and gallery.</p>
+          <nav aria-label="Leaderboard setup sections" className="flex flex-wrap gap-2 pt-2">
+            <Button asChild variant="outline" size="sm"><a href="#leaderboard-design-settings">Columns &amp; Design</a></Button>
+            <Button asChild variant="outline" size="sm"><a href="#leaderboard-sponsor-settings">Sponsored by</a></Button>
+            <Button asChild variant="outline" size="sm"><a href="#leaderboard-photo-settings">Photos</a></Button>
+          </nav>
         </div>
       )}
 

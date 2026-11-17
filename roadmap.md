@@ -1,4 +1,6 @@
 # Roadmap (Nov 6 2026 request)
+- [ ] Nov 17 leaderboard setup: background-photo removal/show control, compact player/team rows, mobile portrait/landscape fit, and optional Today column; preserve scoring, sample content, and payments.
+- [ ] Nov 17 Sponsored by choice: organizers select one image, multiple rotating existing/uploaded images, or no sponsor section; retain upload/replace/remove controls and existing sponsor records.
 - [x] Nov 16: move pricing's gold plan highlight to No Cost to Start and replace visible TeeVents software wording with online platform; desktop/694px/390px, signup and signed-in new-proposal preview checked; saved proposals, URLs, prices, payments and records unchanged.
 - [x] Nov 16 clarification: retain software in search/share tags; home/pricing descriptions include golf tournament software once and match OG/Twitter; legal and competitor/generic references restored, preserved-use inventory delivered; 44 proposal tests pass.
 - [x] Nov 16: replace director-related virtual wording only; 22 replacements in 16 app files verified across 36 preview pages and 6 phone layouts, Get Started works and 43 proposal tests pass; saved records and billing untouched, inventory delivered.

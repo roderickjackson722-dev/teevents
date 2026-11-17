@@ -13,6 +13,7 @@ import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { PlayerScorecardDialog, type ScorecardCourseInfo } from "@/components/leaderboard/PlayerScorecardDialog";
 import SkinsPayoutsCard from "@/components/leaderboard/SkinsPayoutsCard";
+import { fallbackSponsorDisplayMode, parseSponsorDisplayMode, sponsorPartsForMode } from "@/lib/leaderboardSponsorDisplay";
 
 
 
@@ -394,12 +395,16 @@ function LiveLeaderboardBoard({
       : list;
   }, [tournament, sponsors, sponsorRegs, design.sponsor_filter]);
 
-  // Rotate banner sponsor
+  // Rotate the Sponsored by image through uploaded logos and selected event sponsors.
+  const rotatingBannerSponsors = scrollingSponsors.length > 0 ? scrollingSponsors : bannerSponsors;
   useEffect(() => {
-    if (bannerSponsors.length <= 1 || isPaused) return;
-    const t = setInterval(() => setBannerIdx((i) => (i + 1) % bannerSponsors.length), 5000);
+    if (rotatingBannerSponsors.length <= 1 || isPaused) return;
+    const t = setInterval(
+      () => setBannerIdx((i) => (i + 1) % rotatingBannerSponsors.length),
+      Math.max(2, design.sponsor_rotation_seconds || 5) * 1000,
+    );
     return () => clearInterval(t);
-  }, [bannerSponsors.length, isPaused]);
+  }, [rotatingBannerSponsors.length, design.sponsor_rotation_seconds, isPaused]);
 
   // Rotate gallery
   useEffect(() => {
@@ -530,7 +535,15 @@ function LiveLeaderboardBoard({
 
 
   const heroImage = gallery.find((g) => g.is_hero) || gallery[galleryIdx];
-  const bannerSponsor = bannerSponsors[bannerIdx % Math.max(bannerSponsors.length, 1)] || null;
+  const explicitSponsorMode = parseSponsorDisplayMode(design.sponsor_display_mode);
+  const sponsorMode = explicitSponsorMode || fallbackSponsorDisplayMode(
+    !!tournament.leaderboard_show_sponsor,
+    tournament.leaderboard_sponsor_banner_enabled !== false,
+  );
+  const sponsorParts = sponsorPartsForMode(sponsorMode);
+  const bannerSponsor = explicitSponsorMode
+    ? (sponsorParts.rotating ? rotatingBannerSponsors[bannerIdx % Math.max(rotatingBannerSponsors.length, 1)] || null : null)
+    : bannerSponsors[bannerIdx % Math.max(bannerSponsors.length, 1)] || null;
   const isStableford = getFormatById(tournament.scoring_format)?.scoring === "stableford";
 
   const activeFlightName =
@@ -560,7 +573,8 @@ function LiveLeaderboardBoard({
   );
 
 
-  const presentedBy = tournament.leaderboard_show_sponsor && tournament.leaderboard_sponsor_name
+  const showPresentedBy = explicitSponsorMode ? sponsorParts.headline : !!tournament.leaderboard_show_sponsor;
+  const presentedBy = showPresentedBy && tournament.leaderboard_sponsor_name
     ? {
         label: tournament.leaderboard_sponsor_label || "Presented by",
         name: tournament.leaderboard_sponsor_name,
@@ -618,12 +632,12 @@ function LiveLeaderboardBoard({
         closedRounds={closedRounds}
         onRowClick={(row) => setScorecardRow(row as LeaderboardRow)}
         bannerSponsor={bannerSponsor}
-        sidebarSponsors={sidebarSponsors}
-        footerSponsors={footerSponsors}
-        scrollingSponsors={scrollingSponsors}
+        sidebarSponsors={explicitSponsorMode && !sponsorParts.otherPlacements ? [] : sidebarSponsors}
+        footerSponsors={explicitSponsorMode && !sponsorParts.otherPlacements ? [] : footerSponsors}
+        scrollingSponsors={explicitSponsorMode && !sponsorParts.rotating ? [] : scrollingSponsors}
         scrollingSponsorsPosition={tournament.leaderboard_sponsor_banner_position || "bottom"}
         scrollingSponsorsSpeedSeconds={tournament.leaderboard_sponsor_scroll_seconds || 20}
-        heroImage={heroImage || null}
+        heroImage={design.show_gallery === false ? null : heroImage || null}
         logoUrl={tournament.site_logo_url}
         subtitle={subtitle}
         boards={drillFlight ? undefined : flightBoards}

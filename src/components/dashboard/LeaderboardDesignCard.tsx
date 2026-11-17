@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/hooks/use-toast";
+import type { NameDisplayMode } from "@/lib/leaderboardNameDisplay";
 import { Copy, RotateCcw, Save, ExternalLink, Tv2, Upload, X, Loader2 } from "lucide-react";
 
 
@@ -23,6 +24,8 @@ export interface LeaderboardDesign {
   show_today: boolean;
   /** Show photos attached through Leaderboard Gallery without deleting them. */
   show_gallery: boolean;
+  /** Which names the public board shows. Missing values keep showing both. */
+  name_display_mode?: NameDisplayMode;
   default_view: "gross" | "net" | "both";
   auto_refresh_seconds: number;
   max_rows: number;
@@ -83,6 +86,7 @@ export const DEFAULT_DESIGN: LeaderboardDesign = {
   show_thru: true,
   show_today: true,
   show_gallery: true,
+  name_display_mode: "both",
   default_view: "both",
   auto_refresh_seconds: 10,
   max_rows: 20,
@@ -339,6 +343,21 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
               <Check label="Thru" checked={design.show_thru} onChange={(v) => update("show_thru", v)} />
               <Check label="Today" checked={design.show_today} onChange={(v) => update("show_today", v)} />
             </div>
+          </div>
+          <div>
+            <Label className="text-xs">Names Shown</Label>
+            <RadioGroup
+              value={design.name_display_mode || "both"}
+              onValueChange={(v) => update("name_display_mode", v as NameDisplayMode)}
+              className="flex flex-wrap gap-4 mt-1"
+            >
+              <RadioOpt value="both" label="Both player and team names" idPrefix="ndm" />
+              <RadioOpt value="player" label="Player names only" idPrefix="ndm" />
+              <RadioOpt value="team" label="Team names only" idPrefix="ndm" />
+            </RadioGroup>
+            <p className="text-xs text-muted-foreground mt-1">
+              Team names only keeps rows shortest for phones. Player names only lists the players and hides the team name.
+            </p>
           </div>
           <div className="rounded-md border border-border p-3 space-y-2">
             <Check label="Show leaderboard photos" checked={design.show_gallery} onChange={(v) => update("show_gallery", v)} />
@@ -751,11 +770,12 @@ function Check({ label, checked, onChange }: { label: string; checked: boolean; 
   );
 }
 
-function RadioOpt({ value, label }: { value: string; label: string }) {
+function RadioOpt({ value, label, idPrefix = "ropt" }: { value: string; label: string; idPrefix?: string }) {
+  const id = `${idPrefix}-${value}`;
   return (
     <div className="flex items-center gap-2">
-      <RadioGroupItem value={value} id={`ropt-${value}`} />
-      <Label htmlFor={`ropt-${value}`} className="font-normal cursor-pointer">{label}</Label>
+      <RadioGroupItem value={value} id={id} />
+      <Label htmlFor={id} className="font-normal cursor-pointer">{label}</Label>
     </div>
   );
 }

@@ -123,6 +123,43 @@ describe("LeaderboardRenderer parity (preview vs live)", () => {
     expect(queryByAltText("18th green")).toBeNull();
   });
 
+  it("shows player names, team names, or both in the name column", () => {
+    const teamRows = [
+      { name: "Eagle Eyes", total: 65, thru: 18, players: ["Bob Adams", "Aubrey Jackson"] },
+    ];
+    const headers = (table: HTMLElement) =>
+      Array.from(table.querySelectorAll("th")).map((th) => {
+        const spans = th.querySelectorAll("span");
+        // The name column carries a short phone label and a full desktop label.
+        const full = spans[spans.length - 1];
+        return (full ? full.textContent : th.textContent || "").trim();
+      });
+
+    const both = render(
+      <LeaderboardRenderer design={design} title="Test Cup" rows={teamRows} />,
+    );
+    expect(both.getByTestId("lb-table").textContent).toContain("Eagle Eyes");
+    expect(both.getByTestId("lb-table").textContent).toContain("Bob Adams, Aubrey Jackson");
+    expect(headers(both.getByTestId("lb-table"))).toContain("Player / Team");
+    both.unmount();
+
+    const teamOnly = render(
+      <LeaderboardRenderer design={{ ...design, name_display_mode: "team" }} title="Test Cup" rows={teamRows} />,
+    );
+    expect(teamOnly.getByTestId("lb-table").textContent).toContain("Eagle Eyes");
+    expect(teamOnly.getByTestId("lb-table").textContent).not.toContain("Bob Adams");
+    expect(headers(teamOnly.getByTestId("lb-table"))).toContain("Team");
+    teamOnly.unmount();
+
+    const playerOnly = render(
+      <LeaderboardRenderer design={{ ...design, name_display_mode: "player" }} title="Test Cup" rows={teamRows} />,
+    );
+    expect(playerOnly.getByTestId("lb-table").textContent).toContain("Bob Adams, Aubrey Jackson");
+    expect(playerOnly.getByTestId("lb-table").textContent).not.toContain("Eagle Eyes");
+    expect(headers(playerOnly.getByTestId("lb-table"))).toContain("Player");
+    playerOnly.unmount();
+  });
+
   it("falls back to defaults when design tokens are missing", () => {
     const partial = mergeDesign({ background_color: "#000000" } as any);
     expect(partial.header_background).toBeTruthy();

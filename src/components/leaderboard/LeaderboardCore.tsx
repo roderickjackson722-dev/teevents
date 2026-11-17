@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import { Trophy, Award } from "lucide-react";
 import { useLeaderboardPaused } from "@/lib/leaderboardPause";
 import { DEFAULT_DESIGN, type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
+import {
+  nameCellForMode,
+  nameColumnLabel,
+  nameColumnShortLabel,
+  parseNameDisplayMode,
+} from "@/lib/leaderboardNameDisplay";
 
 
 export interface LbRow {
@@ -191,6 +197,8 @@ export function LeaderboardRenderer({
   const showThru = design.show_thru !== false;
   const showPos = design.show_position !== false;
   const showPlayer = design.show_player !== false;
+  /** Which names each row shows: both, player names only, or team names only. */
+  const nameMode = parseNameDisplayMode(design.name_display_mode) ?? "both";
 
   const padX = compact ? "px-2" : "px-1.5 md:px-3 xl:px-6";
   const padY = compact ? "py-1.5" : "py-1.5 md:py-3";
@@ -341,7 +349,7 @@ export function LeaderboardRenderer({
               <thead style={{ backgroundColor: headerBg }}>
                 <tr className="uppercase tracking-normal sm:tracking-wider">
                   {showPos && <th className={`text-left ${padX} ${padY} xl:w-14`}>Pos</th>}
-                  {showPlayer && <th className={`text-left ${padX} ${padY}`}><span className="lg:hidden">Name</span><span className="hidden lg:inline">Player / Team</span></th>}
+                  {showPlayer && <th className={`text-left ${padX} ${padY}`}><span className="lg:hidden">{nameColumnShortLabel(nameMode)}</span><span className="hidden lg:inline">{nameColumnLabel(nameMode)}</span></th>}
                   {!isStableford && <th className={`text-center ${padX} ${padY} xl:w-24 whitespace-nowrap`}>To Par</th>}
                   {showThru && <th className={`text-right ${padX} ${padY} xl:w-16`}>Thru</th>}
                   {priorRounds.map((r) => (
@@ -356,6 +364,7 @@ export function LeaderboardRenderer({
               <tbody>
                 {shown.map((row, i) => {
                   const clickable = !!onRowClick && !!row.holesByRound;
+                  const nameCell = nameCellForMode(nameMode, row);
                   return (
                   <tr
                     key={`${row.name}-${i}`}
@@ -371,10 +380,10 @@ export function LeaderboardRenderer({
                     )}
                     {showPlayer && (
                       <td className={`${padX} ${padY}`}>
-                        <div className="font-semibold leading-tight break-words">{row.name}</div>
+                        <div className="font-semibold leading-tight break-words">{nameCell.primary}</div>
                         {row.subtitle && <div className="text-[0.85em] leading-tight opacity-70 break-words">{row.subtitle}</div>}
-                        {row.players && row.players.length > 0 && (
-                          <div className="text-[0.85em] leading-tight opacity-70 truncate max-w-full sm:max-w-[300px]">{row.players.join(", ")}</div>
+                        {nameCell.secondary && (
+                          <div className="text-[0.85em] leading-tight opacity-70 truncate max-w-full sm:max-w-[300px]">{nameCell.secondary}</div>
                         )}
                       </td>
                     )}

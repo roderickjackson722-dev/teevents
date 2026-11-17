@@ -1,4 +1,5 @@
 import { useState } from "react";
+import RemoveLogoBackgroundButton from "@/components/shared/RemoveLogoBackgroundButton";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -89,6 +90,7 @@ export default function LeagueCustomizeTab({ league, onSaved }: Props) {
                 {form.logo_url && <img src={form.logo_url} alt="" className="h-14 w-14 rounded object-cover border" />}
                 <Input type="file" accept="image/*" onChange={(e) => e.target.files?.[0] && uploadImage(e.target.files[0], "logo")} disabled={uploading === "logo"} />
               </div>
+              <RemoveLogoBackgroundButton className="mt-2" imageUrl={form.logo_url} folder={`leagues/${league.id}`} onDone={(u) => set("logo_url", u)} />
             </div>
             <div>
               <Label>Header Image (1920×400)</Label>

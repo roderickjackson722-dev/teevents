@@ -689,7 +689,7 @@ function LiveLeaderboardBoard({
 
       />
       {tournament.id && (design as any).show_skins_payouts !== false ? (
-        <div className="max-w-5xl mx-auto px-4 py-6">
+        <div className="max-w-5xl mx-auto px-4 py-6 empty:hidden">
           <SkinsPayoutsCard tournamentId={tournament.id} />
         </div>
       ) : null}

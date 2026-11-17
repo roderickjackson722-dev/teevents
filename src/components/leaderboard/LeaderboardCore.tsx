@@ -435,7 +435,7 @@ export function LeaderboardRenderer({
 
     <div
       data-testid="lb-root"
-      className={`relative flex w-full max-w-full flex-col overflow-x-hidden ${compact ? "rounded-lg border" : "min-h-screen"}`}
+      className={`relative flex w-full max-w-full flex-col overflow-x-hidden ${compact ? "rounded-lg border" : "sm:min-h-screen"}`}
       style={{ backgroundColor: bg, color: textColor, fontFamily: design.font_family, fontSize }}
     >
       {topNotice}
@@ -463,11 +463,11 @@ export function LeaderboardRenderer({
 
       <header className={`${padX} ${headerPadY}`} style={{ backgroundColor: headerBg }} data-testid="lb-header">
         <div className={`${compact ? "" : "max-w-7xl mx-auto"} flex items-center gap-2 sm:gap-4`}>
-          {/* Left logo — organizer upload, falling back to the site logo. */}
-          {(design.left_logo_url || logoUrl) && (
+          {/* Left logo — only the logo the organizer picked; empty means no logo. */}
+          {design.left_logo_url && (
             <div className="shrink-0 rounded bg-white/95 p-1 flex items-center justify-center">
               <img
-                src={design.left_logo_url || logoUrl || ""}
+                src={design.left_logo_url}
                 alt=""
                 className={`${compact ? "h-6" : "h-8 sm:h-12 md:h-16"} w-auto max-w-[60px] sm:max-w-[100px] md:max-w-[160px] object-contain`}
               />

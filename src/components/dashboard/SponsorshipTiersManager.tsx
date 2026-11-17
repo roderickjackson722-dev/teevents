@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
+import RemoveLogoBackgroundButton from "@/components/shared/RemoveLogoBackgroundButton";
 import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useDemoMode } from "@/hooks/useDemoMode";
@@ -882,6 +883,7 @@ const SponsorshipTiersManager = ({ tournaments, selectedTournament }: Props) => 
                             Remove
                           </button>
                         )}
+                        <RemoveLogoBackgroundButton imageUrl={regForm.logo_url} folder={`${org?.orgId || "shared"}/${selectedTournament}/sponsors`} onDone={(u) => setRegForm(prev => ({ ...prev, logo_url: u }))} />
                       </div>
                     </div>
                     <div className="flex items-start gap-3 rounded-md border border-secondary/40 bg-secondary/5 p-3">

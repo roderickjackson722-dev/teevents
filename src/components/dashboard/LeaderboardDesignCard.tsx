@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import RemoveLogoBackgroundButton from "@/components/shared/RemoveLogoBackgroundButton";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -486,6 +487,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
               onClear={() => update("left_logo_url", "")}
               orgLogoUrl={orgLogoUrl}
               onUseOrgLogo={() => update("left_logo_url", orgLogoUrl || "")}
+              bgFolder={`${orgId || "shared"}/${tournamentId}`}
+              onBackgroundRemoved={(u) => update("left_logo_url", u)}
             />
             <LogoField
               label="Right Logo (replaces trophy icon)"
@@ -495,6 +498,8 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
               onClear={() => update("right_logo_url", "")}
               orgLogoUrl={orgLogoUrl}
               onUseOrgLogo={() => update("right_logo_url", orgLogoUrl || "")}
+              bgFolder={`${orgId || "shared"}/${tournamentId}`}
+              onBackgroundRemoved={(u) => update("right_logo_url", u)}
             />
 
           </div>
@@ -620,6 +625,7 @@ export default function LeaderboardDesignCard({ tournamentId, tournamentSlug, or
                     </label>
                   </Button>
                   {design.sponsor_panel_logo_url && <Button type="button" variant="ghost" size="sm" onClick={() => update("sponsor_panel_logo_url", "")}>Remove</Button>}
+                  <RemoveLogoBackgroundButton imageUrl={design.sponsor_panel_logo_url} folder={`${orgId || "shared"}/${tournamentId}`} onDone={(u) => update("sponsor_panel_logo_url", u)} />
                 </div>
                 <p className="text-xs text-muted-foreground">Top or bottom placement is set under Live Leaderboard settings → Banner position.</p>
               </div>
@@ -801,6 +807,8 @@ function LogoField({
   onClear,
   orgLogoUrl,
   onUseOrgLogo,
+  bgFolder,
+  onBackgroundRemoved,
 }: {
   label: string;
   value: string;
@@ -810,6 +818,8 @@ function LogoField({
   /** Organizer logo already shown on the public tournament page, if any. */
   orgLogoUrl?: string | null;
   onUseOrgLogo?: () => void;
+  bgFolder?: string;
+  onBackgroundRemoved?: (url: string) => void;
 }) {
 
   const ref = useRef<HTMLInputElement>(null);
@@ -845,6 +855,9 @@ function LogoField({
           {uploading ? <Loader2 className="h-4 w-4 mr-1 animate-spin" /> : <Upload className="h-4 w-4 mr-1" />}
           {value ? "Replace" : "Choose File"}
         </Button>
+        {bgFolder && onBackgroundRemoved && (
+          <RemoveLogoBackgroundButton imageUrl={value} folder={bgFolder} onDone={onBackgroundRemoved} />
+        )}
       </div>
       {orgLogoUrl && onUseOrgLogo && orgLogoUrl !== value && (
         <Button

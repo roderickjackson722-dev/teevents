@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import RemoveLogoBackgroundButton from "@/components/shared/RemoveLogoBackgroundButton";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -315,6 +316,7 @@ export default function LeaderboardSponsorCard({ tournamentId, orgId }: Props) {
               {uploading ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Upload className="h-4 w-4 mr-2" />}
               {row.leaderboard_sponsor_logo_url ? "Replace" : "Upload"}
             </Button>
+            <RemoveLogoBackgroundButton imageUrl={row.leaderboard_sponsor_logo_url} folder={`${orgId || "shared"}/${tournamentId}`} onDone={(u) => setRow((r) => ({ ...r, leaderboard_sponsor_logo_url: u }))} />
           </div>
           <p className="text-[11px] text-muted-foreground mt-1">Recommended: 400x160 PNG with transparent background. Upload, replace, or remove the image, then save.</p>
         </div>

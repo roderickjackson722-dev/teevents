@@ -341,7 +341,7 @@ export function LeaderboardRenderer({
               <thead style={{ backgroundColor: headerBg }}>
                 <tr className="uppercase tracking-normal sm:tracking-wider">
                   {showPos && <th className={`text-left ${padX} ${padY} xl:w-14`}>Pos</th>}
-                  {showPlayer && <th className={`text-left ${padX} ${padY}`}>Player / Team</th>}
+                  {showPlayer && <th className={`text-left ${padX} ${padY}`}><span className="lg:hidden">Name</span><span className="hidden lg:inline">Player / Team</span></th>}
                   {!isStableford && <th className={`text-center ${padX} ${padY} xl:w-24 whitespace-nowrap`}>To Par</th>}
                   {showThru && <th className={`text-right ${padX} ${padY} xl:w-16`}>Thru</th>}
                   {priorRounds.map((r) => (

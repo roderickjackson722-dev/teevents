@@ -345,7 +345,7 @@ export function LeaderboardRenderer({
           </div>
         ) : (
           <div className="overflow-x-hidden lg:overflow-x-auto">
-            <table className="w-full table-fixed lg:table-auto text-[0.72em] lg:text-[1em]" data-testid="lb-table">
+            <table className="w-full table-auto text-[0.72em] lg:text-[1em]" style={{ display: "table" }} data-testid="lb-table">
               <thead style={{ backgroundColor: headerBg }}>
                 <tr className="uppercase tracking-normal sm:tracking-wider">
                   {showPos && <th className={`text-left ${padX} ${padY} xl:w-14`}>Pos</th>}
@@ -379,7 +379,7 @@ export function LeaderboardRenderer({
                       </td>
                     )}
                     {showPlayer && (
-                      <td className={`${padX} ${padY}`}>
+                      <td className={`${padX} ${padY} whitespace-normal`}>
                         <div className="font-semibold leading-tight break-words">{nameCell.primary}</div>
                         {row.subtitle && <div className="text-[0.85em] leading-tight opacity-70 break-words">{row.subtitle}</div>}
                         {nameCell.secondary && (
@@ -537,7 +537,7 @@ export function LeaderboardRenderer({
         )}
       </header>
 
-      <main className={`flex-1 ${compact ? "p-2" : "px-2 sm:px-6 py-3 sm:py-6"}`}>
+      <main className={`${compact ? "p-2" : "px-2 sm:px-6 py-3 sm:py-6"}`}>
         <div className={`${compact ? "" : "max-w-7xl mx-auto"} grid grid-cols-1 ${showSponsorBanner && sponsorPos === "sidebar" && !compact ? "lg:grid-cols-[1fr_280px]" : ""} gap-4`}>
           {boards && boards.length > 0 ? (
             <div className={`grid grid-cols-1 ${gridColsClass} gap-4`} data-testid="lb-flight-grid">

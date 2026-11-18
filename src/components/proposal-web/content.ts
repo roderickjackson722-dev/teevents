@@ -206,6 +206,7 @@ export const documentSchema = z.object({
  recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional(),
  pageContent:pageContentSchema.optional(),faqItems:z.array(faqItemSchema).max(40).optional(),
  programOverrides:z.record(programEnum,z.record(z.string().max(100),z.string().max(50000))).optional(),
+ programLayout:z.record(programEnum,z.object({order:z.array(z.string().max(100)).max(40).optional(),hidden:z.array(z.string().max(100)).max(40).optional(),titles:z.record(z.string().max(100),z.string().max(200)).optional()})).optional(),
  referencesPage:referencesPageSchema.optional(),photoLinksPage:photoLinksPageSchema.optional(),
  screens:z.array(screenSchema).max(40).optional(),hiddenSections:z.array(z.enum(proposalSectionIds)).max(20).optional(),
 });
@@ -289,6 +290,17 @@ export function programDetails(d:WebDocument,p:(typeof programNames)[number]):Re
  if(overrides)for(const [label,value] of Object.entries(overrides))if(editableProgramDetail(p,label))result[label]=value;
  return result;
 }
+
+export type ProgramLayout={order?:string[];hidden?:string[];titles?:Record<string,string>};
+const defaultSubsectionTitles:Record<string,string>={"Platform fee":"Platform Fee"};
+/** All program subsections (except Type) in the admin's chosen order, with display title and shown flag. */
+export function programSubsections(d:WebDocument,p:(typeof programNames)[number]){
+ const details=programDetails(d,p);const layout:ProgramLayout=d.programLayout?.[p]||{};
+ const labels=Object.keys(details).filter(l=>l!=="Type");
+ const ordered=[...(layout.order||[]).filter(l=>labels.includes(l)),...labels.filter(l=>!(layout.order||[]).includes(l))];
+ return ordered.map(label=>({label,text:details[label],title:layout.titles?.[label]?.trim()||defaultSubsectionTitles[label]||label,shown:!layout.hidden?.includes(label)}));
+}
+export function withProgramLayout(d:WebDocument,p:(typeof programNames)[number],layout:ProgramLayout):WebDocument{return {...d,programLayout:{...d.programLayout,[p]:layout}};}
 
 /** Alternating panel shading so each program reads as its own item: shaded, plain, shaded. */
 export function programPanelClass(index:number){return index%2===0?"program-shaded":"";}

@@ -8,6 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   editableProgramDetail,
   programDetails,
+  programSubsections,
+  withProgramLayout,
   programNames,
   proposalFaq,
   proposalPageContent,
@@ -74,13 +76,22 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
         <Group title="3. Quick note (intro and reason)" show={shown("intro")} onShow={v => setShown("intro", v)}>{fields_([f("introHeading","Section title",1)])}<p className="text-sm text-muted-foreground">The recommended program, intro and reason boxes are in this section on the proposal below.</p></Group>
         <Group title="4. Programs at a Glance" show={shown("programs")} onShow={v => setShown("programs", v)}>{fields_([f("programsHeading","Section title",1)])}<p className="text-sm text-muted-foreground">Pick which programs to include in this section on the proposal below.</p></Group>
         <Group title="5. Program details and expectations" show={shown("details")} onShow={v => setShown("details", v)}>
-          <p className="mt-3 text-sm leading-6 text-muted-foreground">Edit the definition, inclusions, scope, group responsibilities, limits and other terms for each selected program. Price wording shown to this client is editable; platform-fee terms stay connected to the program. Full Service price, deposit, payment and cancellation remain editable in its pricing area below.</p>
+          <p className="mt-3 text-sm leading-6 text-muted-foreground">Edit the definition, inclusions, scope, group responsibilities, limits and other terms for each selected program. Price wording shown to this client is editable; platform-fee terms stay connected to the program. Show, hide, rename or reorder any part. Full Service price, deposit, payment and cancellation wording is edited in its pricing area below.</p>
           <div className="mt-5 space-y-4">{shownPrograms(d).map(program => (
             <details key={program} className="rounded-lg border border-border bg-background p-4">
               <summary className="cursor-pointer font-semibold text-primary">{program}</summary>
-              <div className="mt-5 grid gap-5">{Object.entries(programDetails(d, program)).filter(([label]) => editableProgramDetail(program, label)).map(([label, value]) => (
-                <EditArea key={label} label={label} value={value} rows={label === "What We Provide" || label === "Your Group Handles" || label === "Limits" ? 9 : 6} onChange={next => onChange(withProgramDetail(d, program, label, next))} />
-              ))}</div>
+              <p className="mt-4 text-sm text-muted-foreground">Uncheck a part to remove it from the proposal, rename its title, or use the arrows to move it up or down.</p>
+              <div className="mt-4 grid gap-5">{(() => { const subs = programSubsections(d, program); const layout = d.programLayout?.[program] || {}; const save = (next: typeof layout) => onChange(withProgramLayout(d, program, { order: subs.map(x => x.label), ...layout, ...next })); const move = (i: number, dir: number) => { const order = subs.map(x => x.label); const j = i + dir; if (j < 0 || j >= order.length) return; [order[i], order[j]] = [order[j], order[i]]; save({ order }); }; return subs.map((x, i) => (
+                <div key={x.label} className="space-y-3 rounded-lg border border-border p-4">
+                  <div className="flex flex-wrap items-center gap-3">
+                    <label className="flex items-center gap-2 font-semibold"><input type="checkbox" checked={x.shown} onChange={e => save({ hidden: e.target.checked ? (layout.hidden || []).filter(h => h !== x.label) : [...(layout.hidden || []), x.label] })} />Show</label>
+                    <div className="min-w-[12rem] flex-1"><InputLine label="Title" value={x.title} onChange={title => save({ titles: { ...layout.titles, [x.label]: title } })} /></div>
+                    <Button type="button" variant="outline" size="sm" aria-label={`Move ${x.title} up`} disabled={i === 0} onClick={() => move(i, -1)}>↑</Button>
+                    <Button type="button" variant="outline" size="sm" aria-label={`Move ${x.title} down`} disabled={i === subs.length - 1} onClick={() => move(i, 1)}>↓</Button>
+                  </div>
+                  {editableProgramDetail(program, x.label) ? <EditArea label="Wording" value={x.text} rows={x.label === "What We Provide" || x.label === "Your Group Handles" || x.label === "Limits" ? 9 : 6} onChange={next => onChange(withProgramDetail(d, program, x.label, next))} /> : <p className="text-sm text-muted-foreground">{x.label === "Platform fee" ? "Platform fee wording is locked, but you can hide or move it." : "Edit this wording in the Full Service pricing area below."}</p>}
+                </div>
+              )); })()}</div>
             </details>
           ))}</div>
         </Group>

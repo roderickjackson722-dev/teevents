@@ -6,3 +6,4 @@
 - Personalized Reason templates are editor-only starting points in `reasonTemplates`, inserted through the pure `withReason` helper; they never auto-fill, auto-send, or alter approved program terms.
 - New documents snapshot their definition in the existing JSON payload; programDetails resolves terminology from that snapshot so overview and details agree while historical catalogs, legal terms and saved/sent wording remain unchanged.
 - Proposal sections show unless listed in the payload's hiddenSections; sample-screen photos live in payload screens (defaults until saved) and admin uploads go to the existing admin-only event-images bucket under proposals/, so no schema change is needed.
+- Program subsections in proposals can be hidden, renamed and reordered per program via the payload's programLayout; programSubsections is the single resolver for page and editor.

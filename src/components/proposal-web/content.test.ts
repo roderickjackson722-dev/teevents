@@ -99,11 +99,11 @@ describe("flexible proposal wording and optional pages",()=>{
   expect(details["Payment Schedule"]).toBe(before["Payment Schedule"]);
   expect(details.Cancellation).toBe(before.Cancellation);
  });
- it("does not let wording overrides replace checkout-connected prices or platform fees",()=>{
+ it("lets proposal price wording change but keeps platform fees locked",()=>{
   const d=emptyDocument();
-  expect(withProgramDetail(d,"Per Event","Price","$1 per event")).toBe(d);
   expect(withProgramDetail(d,"Per Event","Platform fee","Custom fee")).toBe(d);
   expect(programDetails(d,"Per Event").Price).toBe("$399 per event");
+  expect(programDetails(withProgramDetail(d,"Per Event","Price","$350 per event for this group"),"Per Event").Price).toBe("$350 per event for this group");
  });
  it("starts both additional pages disabled and saves populated optional pages",()=>{
   const d=emptyDocument();

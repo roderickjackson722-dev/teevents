@@ -242,7 +242,7 @@ export function proposalReferencesPage(d:WebDocument):ReferencesPage { return d.
 export function proposalPhotoLinksPage(d:WebDocument):PhotoLinksPage { return d.photoLinksPage??defaultPhotoLinksPage(); }
 /** Prices and fee terms stay connected to the existing program choice and checkout. */
 export function editableProgramDetail(p:(typeof programNames)[number],label:string) {
- if(label==="Type"||label==="Price"||label==="Platform fee")return false;
+ if(label==="Type"||label==="Platform fee")return false;
  if(p==="Full Service Management"&&(label==="Payment Schedule"||label==="Cancellation"))return false;
  return true;
 }

@@ -307,3 +307,6 @@ export function programPanelClass(index:number){return index%2===0?"program-shad
 
 /** Starting text in the proposal email's Optional note box; the admin edits or deletes it before sending. */
 export const defaultEmailNote = "Please don’t hesitate to reach out if you have any questions after reviewing the attached proposal.";
+
+export const defaultEmailSubject = "Your TeeVents Proposal{event}";
+export const defaultEmailBody = "Hello {name},\n\nThank you for considering TeeVents. Your golf tournament proposal{event} is ready to review.";

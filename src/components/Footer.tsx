@@ -46,7 +46,7 @@ const Footer = (_props: { includeLeagueSearch?: boolean }) => {
             {[
               ["Platform", [["Features", "/features"], ["Pricing", "/pricing"], ["How It Works", "/#how-it-works"], ["Compare", "/compare"], ["Sample", "/sample-event"]]],
               ["Who It's For", [["For Organizers", "/for-organizers"], ["For Golfers", "/for-golfers"], ["Services", "/services"]]],
-              ["Resources", [["Organizer Login", "/get-started?mode=signin"], ["Previous Events", "/find-your-event?when=past&sort=latest"], ["Contact", "/contact"]]],
+              ["Resources", [["Organizer Login", "/get-started?mode=signin"], ["Previous Events", "/about#past-event-photos"], ["Contact", "/contact"]]],
               ["Company", [["About", "/about"], ["Privacy Policy", "/privacy"], ["Terms of Service", "/terms"], ["Refund Policy", "/refund-policy"]]],
             ].map(([heading, links]) => (
               <div key={heading as string}>

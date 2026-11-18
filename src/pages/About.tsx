@@ -117,7 +117,7 @@ export default function About() {
         </div>
       </section>
 
-      <section className="bg-background py-14 md:py-16">
+      <section id="past-event-photos" className="scroll-mt-24 bg-background py-14 md:py-16">
         <motion.div {...fade} className="container mx-auto max-w-2xl px-4">
           <h2 className="font-display text-xl font-bold text-primary md:text-2xl">Photos from Past Events</h2>
           <ul className="mt-5 divide-y divide-border">

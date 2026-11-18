@@ -72,7 +72,7 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
  }
   return <main className="proposal-web bg-background text-foreground">
   {edit&&onEdit&&<div className="web-controls border-b border-border bg-muted/40 px-5 py-8 sm:px-8"><div className="mx-auto max-w-6xl"><ProposalWordingEditor document={d} onChange={onEdit}/></div></div>}
-  <div className="mx-auto max-w-5xl px-5 sm:px-8">
+  <div className="proposal-doc mx-auto max-w-5xl px-5 sm:px-8">
    <section id="cover" data-track className="web-cover border-b border-border py-12 md:py-16">
     <img src={logo.url} alt="TeeVents logo" className="mb-8 h-16 max-w-full object-contain object-left"/>
     <h1 className="font-display text-5xl font-bold text-primary">TeeVents</h1>

@@ -4,7 +4,7 @@ import ImageUploadButton from "./ImageUploadButton";
 import { defaultScreens, proposalScreens } from "./screens";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextarea as Textarea } from "./RichText";
 import {
   editableProgramDetail,
   programDetails,

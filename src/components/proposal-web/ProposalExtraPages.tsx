@@ -1,3 +1,4 @@
+import { Fmt } from "./RichText";
 import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
 import { safeExternalUrl, type PhotoLinksPage, type WebDocument } from "./content";
@@ -25,7 +26,7 @@ function EventPhotoLink({ link }: { link: PhotoLinksPage["links"][number] }) {
       )}
       <div className="space-y-3 p-5">
         <h3 className="font-display text-xl font-semibold">{title}</h3>
-        {link.description && <p className="whitespace-pre-wrap leading-7">{link.description}</p>}
+        {link.description && <p className="whitespace-pre-wrap leading-7"><Fmt text={link.description}/></p>}
         <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full items-start gap-2 break-all text-primary underline">
           <ExternalLink className="mt-1 size-4 shrink-0" aria-hidden="true" />
           <span>{url}</span>
@@ -44,13 +45,13 @@ export default function ProposalExtraPages({ document: d }: { document: WebDocum
       {references?.enabled && (
         <section id="references" data-track className="proposal-extra-page border-b border-border py-12">
           <h2 className="font-display text-3xl font-bold text-primary">{references.title || "References"}</h2>
-          {references.introduction && <p className="mt-6 whitespace-pre-wrap text-lg leading-8">{references.introduction}</p>}
+          {references.introduction && <p className="mt-6 whitespace-pre-wrap text-lg leading-8"><Fmt text={references.introduction}/></p>}
           <div className="mt-8 grid gap-5 md:grid-cols-2">
             {references.entries.filter(entry => entry.name || entry.organization || entry.description || entry.contact).map(entry => (
               <article key={entry.id} className="reference-entry rounded-lg border border-border bg-background p-5">
                 {entry.name && <h3 className="font-display text-xl font-semibold">{entry.name}</h3>}
                 {entry.organization && <p className="mt-1 font-semibold text-primary">{entry.organization}</p>}
-                {entry.description && <p className="mt-4 whitespace-pre-wrap leading-7">{entry.description}</p>}
+                {entry.description && <p className="mt-4 whitespace-pre-wrap leading-7"><Fmt text={entry.description}/></p>}
                 {entry.contact && <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground"><strong>Contact:</strong> {entry.contact}</p>}
               </article>
             ))}
@@ -60,7 +61,7 @@ export default function ProposalExtraPages({ document: d }: { document: WebDocum
       {photos?.enabled && (
         <section id="event-photos" data-track className="proposal-extra-page border-b border-border py-12">
           <h2 className="font-display text-3xl font-bold text-primary">{photos.title || "Event Photo Links"}</h2>
-          {photos.introduction && <p className="mt-6 whitespace-pre-wrap text-lg leading-8">{photos.introduction}</p>}
+          {photos.introduction && <p className="mt-6 whitespace-pre-wrap text-lg leading-8"><Fmt text={photos.introduction}/></p>}
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             {photos.links.map(link => <EventPhotoLink key={link.id} link={link} />)}
           </div>

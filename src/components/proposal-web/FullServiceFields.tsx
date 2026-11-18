@@ -1,5 +1,5 @@
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { RichTextarea as Textarea } from "./RichText";
 import { defaultFullService, fullServiceTotals, money, travelNote, platformNote, type FullServicePricing } from "./pricing";
 export default function FullServiceFields({value=defaultFullService(),onChange}:{value?:FullServicePricing;onChange:(p:FullServicePricing)=>void}) {
  const p=value,t=fullServiceTotals(p);

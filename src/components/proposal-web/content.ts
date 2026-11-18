@@ -191,11 +191,15 @@ const pageContentSchema=z.object({
  sampleEventHeading:z.string().max(1000),sampleEventBody:z.string().max(20000),sampleEventButton:z.string().max(500),
  nextStepsHeading:z.string().max(1000),nextStepsItems:z.string().max(20000),nextStepsContact:z.string().max(5000),nextStepsFooter:z.string().max(20000),
  closureHeading:z.string().max(1000),closureIntroduction:z.string().max(10000),noticeText:z.string().max(10000),
+ introHeading:z.string().max(500).optional(),contactWebsite:z.string().max(500).optional(),contactEmail:z.string().max(320).optional(),contactPhone:z.string().max(100).optional(),
+ sampleEventUrl:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// link.").optional(),
 });
 const faqItemSchema=z.object({id:z.string().max(100),question:z.string().max(2000),answer:z.string().max(20000)});
 const referenceEntrySchema=z.object({id:z.string().max(100),name:z.string().max(1000),organization:z.string().max(1000),description:z.string().max(10000),contact:z.string().max(2000)});
 const referencesPageSchema=z.object({enabled:z.boolean(),title:z.string().max(1000),introduction:z.string().max(20000),entries:z.array(referenceEntrySchema).max(50)});
-const photoLinkSchema=z.object({id:z.string().max(100),title:z.string().max(1000),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// photo link."),description:z.string().max(10000)});
+const photoLinkSchema=z.object({id:z.string().max(100),title:z.string().max(1000),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// photo link."),description:z.string().max(10000),previewUrl:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// image link.").optional()});
+const screenSchema=z.object({id:z.string().max(100),title:z.string().max(1000),caption:z.string().max(500),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// image link.")});
+export const proposalSectionIds=["about","intro","programs","details","addons","screens","questions","sample-event","next","notice"] as const;
 const photoLinksPageSchema=z.object({enabled:z.boolean(),title:z.string().max(1000),introduction:z.string().max(20000),links:z.array(photoLinkSchema).max(50)});
 export const documentSchema = z.object({
  fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}),
@@ -203,7 +207,11 @@ export const documentSchema = z.object({
  pageContent:pageContentSchema.optional(),faqItems:z.array(faqItemSchema).max(40).optional(),
  programOverrides:z.record(programEnum,z.record(z.string().max(100),z.string().max(50000))).optional(),
  referencesPage:referencesPageSchema.optional(),photoLinksPage:photoLinksPageSchema.optional(),
+ screens:z.array(screenSchema).max(40).optional(),hiddenSections:z.array(z.enum(proposalSectionIds)).max(20).optional(),
 });
+export type ProposalScreen=z.infer<typeof screenSchema>;
+export type ProposalSectionId=(typeof proposalSectionIds)[number];
+export function sectionShown(d:{hiddenSections?:readonly string[]},id:ProposalSectionId){return !d.hiddenSections?.includes(id);}
 export type WebDocument = z.infer<typeof documentSchema>;
 export type PageContent=z.infer<typeof pageContentSchema>;
 export type ProposalFaqItem=z.infer<typeof faqItemSchema>;
@@ -222,7 +230,10 @@ export function defaultPageContent():PageContent { return {
  nextStepsHeading:"Next Steps",nextStepsItems:["Choose the program that fits your event","Schedule a call with your dedicated rep","Send your logo and tournament details","We build your page and you are live in 7 days or less"].join("\n"),nextStepsContact:"Contact: Website www.teevents.golf, Email info@teevents.golf, Phone (602) 413 1338",nextStepsFooter:"This proposal is a draft until accepted in writing. Prices, travel, and third party costs are as stated in this proposal, and third party costs are paid directly by the organizer unless stated otherwise in a custom line item.",
  closureHeading:"Ready to Get Started?",closureIntroduction:"Choose how you would like to start. You'll review your choice before anything is submitted, and you can go back or contact us first.",noticeText:"This proposal link is made just for [Client or Organization Name], so TeeVents can see when you have had a chance to look, and follow up at a good time.",
 }; }
-export function proposalPageContent(d:WebDocument):PageContent { return {...defaultPageContent(),...d.pageContent}; }
+export const pageContentExtras={introHeading:"A Quick Note From Rod",contactWebsite:"www.teevents.golf",contactEmail:"info@teevents.golf",contactPhone:"(602) 413 1338",sampleEventUrl:"https://www.teevents.golf/t/teevents-annual"};
+export function proposalPageContent(d:WebDocument):Required<PageContent> { const c={...defaultPageContent(),...d.pageContent};return {...c,introHeading:c.introHeading||pageContentExtras.introHeading,contactWebsite:c.contactWebsite??pageContentExtras.contactWebsite,contactEmail:c.contactEmail??pageContentExtras.contactEmail,contactPhone:c.contactPhone??pageContentExtras.contactPhone,sampleEventUrl:c.sampleEventUrl||pageContentExtras.sampleEventUrl}; }
+/** Turns a typed web address into a clickable https link. */
+export function websiteHref(value:string){const v=value.trim();if(!v)return null;return safeExternalUrl(/^https?:\/\//i.test(v)?v:`https://${v}`);}
 export function defaultFaqItems(items:readonly (readonly [string,string])[]=currentFaq):ProposalFaqItem[] { return items.map(([question,answer],index)=>({id:`faq-${index}`,question,answer})); }
 export function proposalFaq(d:WebDocument):ProposalFaqItem[] { return d.faqItems??defaultFaqItems(isCurrentDocument(d)?currentFaq:faq); }
 export function defaultReferencesPage():ReferencesPage { return {enabled:false,title:"References",introduction:"References from organizations TeeVents has supported.",entries:[]}; }

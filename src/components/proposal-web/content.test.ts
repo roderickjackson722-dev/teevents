@@ -1,5 +1,5 @@
 import { describe,it,expect } from "vitest";
-import { programs,programDetails,shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason,defaultPageContent,proposalPageContent,withProgramDetail,defaultReferencesPage,defaultPhotoLinksPage } from "./content";
+import { programs,programDetails,shownPrograms,programNames,calculator,answerQuestion,emptyDocument,fallbackAnswer,documentSchema,sensitiveQuestion,reasonTemplates,reasonExample,orderedReasonTemplates,withReason,defaultPageContent, pageContentExtras, sectionShown, websiteHref,proposalPageContent,withProgramDetail,defaultReferencesPage,defaultPhotoLinksPage } from "./content";
 describe("client proposal rules",()=>{
  it("new proposal defaults do not change the definition displayed by saved historical payloads",()=>{
   const historical=documentSchema.parse({fields:emptyDocument().fields,recommended:"",intro:"",reason:"",packages:["No Cost to Start","Per Event"]});
@@ -82,7 +82,7 @@ describe("flexible proposal wording and optional pages",()=>{
  it("leaves historical payloads unchanged when the new optional fields are absent",()=>{
   const historical=documentSchema.parse({fields:emptyDocument().fields,recommended:"Per Event",intro:"Saved introduction",reason:"Saved reason",packages:["Per Event"],softwareDefinition:"Saved definition"});
   const before=JSON.stringify(historical);
-  expect(proposalPageContent(historical)).toEqual(defaultPageContent());
+  expect(proposalPageContent(historical)).toEqual({ ...defaultPageContent(), ...pageContentExtras });
   expect(historical.referencesPage).toBeUndefined();
   expect(historical.photoLinksPage).toBeUndefined();
   expect(JSON.stringify(historical)).toBe(before);
@@ -126,4 +126,15 @@ describe("flexible proposal wording and optional pages",()=>{
   const d={...emptyDocument(),faqItems:[{id:"custom",question:"Who coordinates vendors?",answer:"Our dedicated manager coordinates the approved vendors."}]};
   expect(answerQuestion("Who coordinates vendors?",d)).toBe("Our dedicated manager coordinates the approved vendors.\n\nFrom Common Questions in this proposal.");
  });
+});
+
+describe("proposal section controls", () => {
+  it("shows every section unless hidden", () => {
+    expect(sectionShown({}, "screens")).toBe(true);
+    expect(sectionShown({ hiddenSections: ["screens"] }, "screens")).toBe(false);
+  });
+  it("makes the cover website a clickable https link", () => {
+    expect(websiteHref("www.teevents.golf")).toBe("https://www.teevents.golf");
+    expect(websiteHref("")).toBeNull();
+  });
 });

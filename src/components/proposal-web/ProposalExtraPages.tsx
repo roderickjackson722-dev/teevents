@@ -4,21 +4,22 @@ import { safeExternalUrl, type PhotoLinksPage, type WebDocument } from "./conten
 
 function EventPhotoLink({ link }: { link: PhotoLinksPage["links"][number] }) {
   const url = safeExternalUrl(link.url);
+  const preview = safeExternalUrl(link.previewUrl ?? "") ?? url;
   const [previewFailed, setPreviewFailed] = useState(false);
-  useEffect(() => setPreviewFailed(false), [url]);
+  useEffect(() => setPreviewFailed(false), [preview]);
   if (!url) return null;
   const title = link.title.trim() || "Event photo link";
   return (
     <article className="photo-link-entry overflow-hidden rounded-lg border border-border bg-background">
       {!previewFailed ? (
-        <img
-          src={url}
+        <a href={url ?? undefined} target="_blank" rel="noopener noreferrer"><img
+          src={preview ?? undefined}
           alt={title}
           loading="lazy"
           referrerPolicy="no-referrer"
           className="max-h-96 w-full bg-muted object-contain"
           onError={() => setPreviewFailed(true)}
-        />
+        /></a>
       ) : (
         <p className="border-b border-border bg-muted px-5 py-4 text-sm text-muted-foreground">Image preview unavailable. Use the clickable link below.</p>
       )}

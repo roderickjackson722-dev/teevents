@@ -5,3 +5,4 @@
 - The admin dashboard Proposals tab hosts this workspace; private management pricing lives in the validated document payload and uses a shared cents-based calculator, while public offers and historical copies without pricing retain their original content.
 - Personalized Reason templates are editor-only starting points in `reasonTemplates`, inserted through the pure `withReason` helper; they never auto-fill, auto-send, or alter approved program terms.
 - New documents snapshot their definition in the existing JSON payload; programDetails resolves terminology from that snapshot so overview and details agree while historical catalogs, legal terms and saved/sent wording remain unchanged.
+- Proposal sections show unless listed in the payload's hiddenSections; sample-screen photos live in payload screens (defaults until saved) and admin uploads go to the existing admin-only event-images bucket under proposals/, so no schema change is needed.

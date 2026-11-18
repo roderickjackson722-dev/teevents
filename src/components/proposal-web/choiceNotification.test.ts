@@ -10,4 +10,8 @@ it("notifies only Rod with the chosen management final price and deposit",()=>{
 });
 it("does not add management totals for a software choice",()=>{
  expect(choiceNotification(emptyDocument(),"Per Event","2026-11-05T14:13:00Z").text).not.toContain("Full Service Final Price");
+});it("includes the signature and qualifying answers, replying to the signer",()=>{
+ const msg=choiceNotification(emptyDocument(),"Per Event","2026-11-05T14:13:00Z",{signature:"Jane Doe",title:"Chair",email:"jane@example.com",phone:"555-123-4567",golfers:"120",eventDate:"May 1, 2027",notes:"",agreed:true});
+ expect(msg.to).toEqual(["info@teevents.golf"]);expect(msg.reply_to).toBe("jane@example.com");
+ expect(msg.text).toContain("Electronic signature: Jane Doe");expect(msg.text).toContain("Expected number of golfers: 120");
 });

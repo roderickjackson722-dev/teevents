@@ -470,6 +470,13 @@
       "when": 1794773394649,
       "tag": "0066_drop_public_sample_upload",
       "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1795039655230,
+      "tag": "0067_migration",
+      "breakpoints": true
     }
   ]
 }

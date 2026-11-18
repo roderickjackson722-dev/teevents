@@ -5,6 +5,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { proposalPageContent, shownPrograms, type WebDocument } from "./content";
 import { fullServiceTotals, money } from "./pricing";
 import { chooseWebProgram } from "./proposalWeb.functions";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { acceptanceSchema } from "./choiceNotification";
 
 type Program = "No Cost to Start" | "Per Event" | "Per League" | "Enterprise" | "Full Service Management";
 /** Software programs continue through the regular website sign-up and checkout for that plan. */
@@ -21,6 +24,10 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<Program | null>(null);
   const [agreed, setAgreed] = useState(false);
+  const blank = { signature: "", title: "", email: "", phone: "", golfers: "", eventDate: "", notes: "" };
+  const [form, setForm] = useState(blank);
+  const set = (k: keyof typeof blank) => (e: { target: { value: string } }) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const parsed = acceptanceSchema.safeParse({ ...form, agreed });
   const [depositState, setDepositState] = useState<"" | "paid" | "cancelled">("");
   const shown = shownPrograms(d);
   const copy = proposalPageContent(d);
@@ -39,14 +46,15 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
     "Full Service Management": { text: `${money(t?.final || 0)} per event, 50% deposit due at agreement (${money(t?.deposit || 0)})`, button: "Start With Full Service Management", next: `You'll pay your 50% deposit of ${money(t?.deposit || 0)} by card on a secure checkout page. The balance of ${money(t?.balance || 0)} is due ${d.fullService?.balanceDueDate || "before event day"}. After payment, you'll set up your TeeVents account and Rod will reach out to get started.` },
   };
 
-  function pick(p: Program) { setSelected(p); setAgreed(false); setMessage(""); }
+  function pick(p: Program) { setSelected(p); setAgreed(false); setForm(blank); setMessage(""); }
 
   async function confirm() {
     if (!selected) return;
+    if (!parsed.success) { setMessage("Please answer every question, type your full name to sign, and check the approval box."); return; }
     if (!token) { setMessage("Preview only. No choice recorded, no email sent, and no checkout opened."); return; }
     setBusy(true); setMessage("");
     try {
-      const res = await choose({ data: { token, program: selected, origin: window.location.origin } });
+      const res = await choose({ data: { token, program: selected, origin: window.location.origin, acceptance: parsed.data } });
       if (res.checkoutUrl) { window.location.href = res.checkoutUrl; return; }
       const signup = SIGNUP[selected];
       if (signup) { window.location.href = signup; return; }
@@ -87,15 +95,30 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
           <p className="mt-3 leading-7">{offers[selected].text}</p>
           <p className="mt-4 font-semibold">What happens next</p>
           <p className="mt-1 leading-7">{offers[selected].next}</p>
+          <p className="mt-6 font-semibold">A few quick questions</p>
+          <div className="mt-3 grid gap-4 sm:grid-cols-2">
+            <label className="text-sm">Your title or role<Input className="mt-1" value={form.title} onChange={set("title")} maxLength={120} /></label>
+            <label className="text-sm">Email<Input className="mt-1" type="email" value={form.email} onChange={set("email")} maxLength={320} /></label>
+            <label className="text-sm">Phone<Input className="mt-1" type="tel" value={form.phone} onChange={set("phone")} maxLength={40} /></label>
+            <label className="text-sm">Expected number of golfers<Input className="mt-1" value={form.golfers} onChange={set("golfers")} maxLength={40} /></label>
+            <label className="text-sm sm:col-span-2">Planned event date<Input className="mt-1" value={form.eventDate} onChange={set("eventDate")} maxLength={60} placeholder="e.g. May 15, 2027" /></label>
+            <label className="text-sm sm:col-span-2">Anything else we should know? (optional)<Textarea className="mt-1" value={form.notes} onChange={set("notes")} maxLength={1000} /></label>
+          </div>
+          <p className="mt-6 font-semibold">Sign below</p>
+          <label className="mt-2 block text-sm">Type your full name as your electronic signature
+            <Input className="mt-1" value={form.signature} onChange={set("signature")} maxLength={120} aria-label="Electronic signature" />
+          </label>
+          {form.signature.trim() && <p className="mt-3 border-b border-foreground pb-1 text-3xl" style={{ fontFamily: "'Brush Script MT', 'Segoe Script', cursive" }}>{form.signature}</p>}
+          <p className="mt-1 text-xs">Signed {new Date().toLocaleDateString()}</p>
           <label className="mt-5 flex items-start gap-3 text-sm leading-6">
-            <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-1" aria-label="Confirm program choice" />
-            <span>Yes, I want to start with {selected}{d.fields.preparedFor ? ` for ${d.fields.preparedFor}` : ""}.</span>
+            <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-1" aria-label="Approve proposal" />
+            <span>I approve this proposal and want to start with {selected}{d.fields.preparedFor ? ` for ${d.fields.preparedFor}` : ""}. Typing my name above is my electronic signature.</span>
           </label>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button variant="outline" disabled={busy} onClick={() => setSelected(null)}>Back</Button>
             <Button asChild variant="outline"><a href={CONTACT}>Contact Us First</a></Button>
-            <Button disabled={!agreed || busy} onClick={() => void confirm()}>
-              {busy ? "Please wait…" : SIGNUP[selected] ? "Confirm and Continue" : "Confirm and Pay by Card"}
+            <Button disabled={!parsed.success || busy} onClick={() => void confirm()}>
+              {busy ? "Please wait…" : SIGNUP[selected] ? "Sign and Submit" : "Sign, Submit and Pay by Card"}
             </Button>
           </div>
         </div>

@@ -1,0 +1,2 @@
+ALTER TABLE public.proposal_web_activity DROP CONSTRAINT proposal_web_activity_kind_check;
+ALTER TABLE public.proposal_web_activity ADD CONSTRAINT proposal_web_activity_kind_check CHECK (kind = ANY (ARRAY['open','section','time','call','print','question','signature']));

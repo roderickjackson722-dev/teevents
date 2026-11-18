@@ -5,7 +5,7 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import type { Database, Json } from "@/integrations/supabase/types";
 import { documentSchema, sensitiveQuestion, answerQuestion, shownPrograms } from "./content";
 import { canChooseProgram, fullServiceTotals, money } from "./pricing";
-import { choiceNotification } from "./choiceNotification";
+import { choiceNotification, acceptanceSchema, type Acceptance } from "./choiceNotification";
 
 const COLS="id,access_token,payload,updated_at,recipient_email,status,sent_at,sent_to,send_count,program_chosen,program_chosen_at";
 const tokenSchema=z.string().regex(/^[a-f0-9]{64}$/);
@@ -61,7 +61,7 @@ export const askWebQuestion=createServerFn({method:"POST"}).inputValidator((v:un
  if(saveError||!ok)throw new Error("Your question could not be saved. Please try again.");
  return {answer:answerQuestion(data.question,documentSchema.parse(payload))};
 });
-export const chooseWebProgram=createServerFn({method:"POST"}).inputValidator((v:unknown)=>z.object({token:tokenSchema,program:z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Full Service Management"]),origin:z.string().url().optional()}).parse(v)).handler(async({data}):Promise<{ok:true;checkoutUrl?:string}>=>{
+export const chooseWebProgram=createServerFn({method:"POST"}).inputValidator((v:unknown)=>z.object({token:tokenSchema,program:z.enum(["No Cost to Start","Per Event","Per League","Enterprise","Full Service Management"]),origin:z.string().url().optional(),acceptance:acceptanceSchema.optional()}).parse(v)).handler(async({data}):Promise<{ok:true;checkoutUrl?:string}>=>{
  const result=await recordChoice(data);
  if(data.program!=="Enterprise"&&data.program!=="Full Service Management")return result;
  return {ok:true,checkoutUrl:await depositCheckout(data.token,data.program,data.origin)};
@@ -87,7 +87,7 @@ async function depositCheckout(token:string,program:string,rawOrigin?:string){
  return json.url;
 }
 type Program="No Cost to Start"|"Per Event"|"Per League"|"Enterprise"|"Full Service Management";
-async function recordChoice(data:{token:string;program:Program}):Promise<{ok:true}>{
+async function recordChoice(data:{token:string;program:Program;acceptance?:Acceptance}):Promise<{ok:true}>{
  const {supabaseAdmin}=await import("@/integrations/supabase/client.server");
  const {data:row,error}=await supabaseAdmin.from("proposal_web_documents").select("id,payload,status,updated_at,program_chosen,acceptance_email_sent_at").eq("access_token",data.token).single();
  if(error||!row)throw new Error("This proposal is unavailable.");
@@ -101,7 +101,9 @@ async function recordChoice(data:{token:string;program:Program}):Promise<{ok:tru
  if(ce||!choice)throw new Error("The proposal changed or is not available. Refresh and try again.");
  const saved=z.object({id:z.string().uuid(),payload:documentSchema,chosen_at:z.string(),email_sent_at:z.string().nullable()}).parse(choice);
  if(saved.email_sent_at)return {ok:true};
- const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json","Idempotency-Key":`proposal-choice-${saved.id}`},body:JSON.stringify({from:"TeeVents Golf Management <info@notifications.teevents.golf>",...choiceNotification(saved.payload,data.program,saved.chosen_at)}),signal:AbortSignal.timeout(15000)});
+ if(data.acceptance){const {count}=await supabaseAdmin.from("proposal_web_activity").select("id",{count:"exact",head:true}).eq("proposal_id",saved.id).eq("kind","signature");
+  if(!count){const {error:se}=await supabaseAdmin.from("proposal_web_activity").insert({proposal_id:saved.id,visit_id:crypto.randomUUID(),kind:"signature",value:JSON.stringify({program:data.program,...data.acceptance}).slice(0,2000)});if(se)throw new Error("Your signature could not be saved. Please try again.");}}
+ const response=await fetch("https://api.resend.com/emails",{method:"POST",headers:{Authorization:`Bearer ${key}`,"Content-Type":"application/json","Idempotency-Key":`proposal-choice-${saved.id}`},body:JSON.stringify({from:"TeeVents Golf Management <info@notifications.teevents.golf>",...choiceNotification(saved.payload,data.program,saved.chosen_at,data.acceptance)}),signal:AbortSignal.timeout(15000)});
  if(!response.ok)throw new Error("Your choice was recorded, but Rod's email was not accepted. Please try the same button again.");
  const {error:ue}=await supabaseAdmin.from("proposal_web_documents").update({acceptance_email_sent_at:new Date().toISOString()}).eq("id",saved.id);
  if(ue)throw new Error("Your choice was recorded and Rod was emailed. Please refresh before retrying.");

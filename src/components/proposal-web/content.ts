@@ -209,7 +209,7 @@ export const documentSchema = z.object({
  pageContent:pageContentSchema.optional(),faqItems:z.array(faqItemSchema).max(40).optional(),
  programOverrides:z.record(programEnum,z.record(z.string().max(100),z.string().max(50000))).optional(),
  programLayout:z.record(programEnum,z.object({order:z.array(z.string().max(100)).max(40).optional(),hidden:z.array(z.string().max(100)).max(40).optional(),titles:z.record(z.string().max(100),z.string().max(200)).optional()})).optional(),
- referencesPage:referencesPageSchema.optional(),photoLinksPage:photoLinksPageSchema.optional(),
+ referencesPage:referencesPageSchema.optional(),photoLinksPage:photoLinksPageSchema.optional(),extraPagesOrder:z.array(z.enum(["references","photos"])).max(2).optional(),
  selectionBoxes:z.array(selectionBoxSchema).max(20).refine(boxes=>new Set(boxes.map(b=>b.id)).size===boxes.length,"Selection boxes must have unique IDs.").optional(),
  screens:z.array(screenSchema).max(40).optional(),hiddenSections:z.array(z.enum(proposalSectionIds)).max(20).optional(),
 });
@@ -244,6 +244,9 @@ export function defaultFaqItems(items:readonly (readonly [string,string])[]=curr
 export function proposalFaq(d:WebDocument):ProposalFaqItem[] { return d.faqItems??defaultFaqItems(isCurrentDocument(d)?currentFaq:faq); }
 export function defaultReferencesPage():ReferencesPage { return {enabled:false,title:"References",introduction:"References from organizations TeeVents has supported.",entries:[]}; }
 export function defaultPhotoLinksPage():PhotoLinksPage { return {enabled:false,title:"Event Photo Links",introduction:"Explore photos from previous TeeVents events.",links:[]}; }
+export type ExtraPageId="references"|"photos";
+export function extraPagesOrder(d:WebDocument):ExtraPageId[] { const o=(d.extraPagesOrder??[]).filter((x,i,a)=>a.indexOf(x)===i); return [...o,...(["references","photos"] as ExtraPageId[]).filter(x=>!o.includes(x))]; }
+export function moveItem<T>(list:T[],index:number,delta:number):T[] { const j=index+delta; if(j<0||j>=list.length) return list; const n=[...list]; [n[index],n[j]]=[n[j],n[index]]; return n; }
 export function proposalReferencesPage(d:WebDocument):ReferencesPage { return d.referencesPage??defaultReferencesPage(); }
 export function proposalPhotoLinksPage(d:WebDocument):PhotoLinksPage { return d.photoLinksPage??defaultPhotoLinksPage(); }
 /** Prices and fee terms stay connected to the existing program choice and checkout. */

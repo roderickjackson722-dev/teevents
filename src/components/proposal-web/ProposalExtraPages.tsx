@@ -1,7 +1,7 @@
 import { Fmt } from "./RichText";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { safeExternalUrl, type PhotoLinksPage, type WebDocument } from "./content";
+import { extraPagesOrder, safeExternalUrl, type PhotoLinksPage, type WebDocument } from "./content";
 
 function EventPhotoLink({ link }: { link: PhotoLinksPage["links"][number] }) {
   const url = safeExternalUrl(link.url);
@@ -42,6 +42,7 @@ export default function ProposalExtraPages({ document: d }: { document: WebDocum
   const photos = d.photoLinksPage;
   return (
     <>
+      {extraPagesOrder(d).map(id => id === "references" ? <Fragment key={id}>
       {references?.enabled && (
         <section id="references" data-track className="proposal-extra-page border-b border-border py-12">
           <h2 className="font-display text-3xl font-bold text-primary">{references.title || "References"}</h2>
@@ -58,6 +59,7 @@ export default function ProposalExtraPages({ document: d }: { document: WebDocum
           </div>
         </section>
       )}
+      </Fragment> : <Fragment key={id}>
       {photos?.enabled && (
         <section id="event-photos" data-track className="proposal-extra-page border-b border-border py-12">
           <h2 className="font-display text-3xl font-bold text-primary">{photos.title || "Event Photo Links"}</h2>
@@ -67,6 +69,7 @@ export default function ProposalExtraPages({ document: d }: { document: WebDocum
           </div>
         </section>
       )}
+      </Fragment>)}
     </>
   );
 }

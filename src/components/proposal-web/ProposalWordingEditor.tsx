@@ -1,5 +1,5 @@
 import { useId, type ReactNode } from "react";
-import { Plus, Trash2, RotateCcw } from "lucide-react";
+import { Plus, Trash2, RotateCcw, ArrowUp, ArrowDown } from "lucide-react";
 import ImageUploadButton from "./ImageUploadButton";
 import SelectionBoxesEditor from "./SelectionBoxesEditor";
 import { defaultScreens, proposalScreens } from "./screens";
@@ -15,6 +15,8 @@ import {
   proposalFaq,
   proposalPageContent,
   proposalPhotoLinksPage,
+  extraPagesOrder,
+  moveItem,
   proposalReferencesPage,
   sectionShown,
   showValidityLine,
@@ -37,6 +39,10 @@ function EditArea({ label, value, onChange, rows = 6 }: { label: string; value: 
 
 type FieldDef = { key: keyof PageContent; label: string; rows?: number; type?: string };
 const f = (key: keyof PageContent, label: string, rows?: number, type?: string): FieldDef => ({ key, label, rows, type });
+
+function MoveButtons({ label, index, count, onMove }: { label: string; index: number; count: number; onMove: (delta: number) => void }) {
+  return <span className="flex gap-1"><Button type="button" variant="ghost" size="sm" aria-label={`Move ${label} up`} disabled={index === 0} onClick={() => onMove(-1)}><ArrowUp />Up</Button><Button type="button" variant="ghost" size="sm" aria-label={`Move ${label} down`} disabled={index === count - 1} onClick={() => onMove(1)}><ArrowDown />Down</Button></span>;
+}
 
 function Group({ title, show, onShow, children, open }: { title: string; show?: boolean; onShow?: (v: boolean) => void; children: ReactNode; open?: boolean }) {
   return (
@@ -102,7 +108,7 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
           {fields_([f("screensHeading","Section title",2)])}
           {screens.map((x, index) => (
             <div key={x.id} className="space-y-3 rounded-lg border border-border bg-background p-4">
-              <div className="flex items-center justify-between gap-3"><span className="font-semibold">Photo {index + 1}</span><Button type="button" variant="ghost" size="sm" onClick={() => setScreens(screens.filter(s => s.id !== x.id))}><Trash2 />Remove</Button></div>
+              <div className="flex items-center justify-between gap-3"><span className="font-semibold">Photo {index + 1}</span><span className="flex flex-wrap gap-1"><MoveButtons label={`photo ${index + 1}`} index={index} count={screens.length} onMove={delta => setScreens(moveItem(screens, index, delta))} /><Button type="button" variant="ghost" size="sm" onClick={() => setScreens(screens.filter(s => s.id !== x.id))}><Trash2 />Remove</Button></span></div>
               <div className="flex flex-wrap items-center gap-3">{x.url && <img src={x.url} alt="" className="h-20 w-32 rounded border border-border object-cover" />}<ImageUploadButton label={x.url ? "Replace photo" : "Upload photo"} onUploaded={url => setScreens(screens.map(s => s.id === x.id ? { ...s, url } : s))} /></div>
               <div className="grid gap-4 md:grid-cols-2"><InputLine label="Title" value={x.title} onChange={title => setScreens(screens.map(s => s.id === x.id ? { ...s, title } : s))} /><InputLine label="Caption" value={x.caption} onChange={caption => setScreens(screens.map(s => s.id === x.id ? { ...s, caption } : s))} /></div>
             </div>
@@ -121,14 +127,16 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
           <Button type="button" variant="outline" className="mt-5" onClick={() => onChange({ ...d, faqItems: [...faqs, { id: crypto.randomUUID(), question: "", answer: "" }] })}><Plus />Add question</Button>
 </Group>
         <Group title="9. Sample event page" show={shown("sample-event")} onShow={v => setShown("sample-event", v)}>{fields_([f("sampleEventHeading","Section title",1),f("sampleEventBody","Sample event wording",5),f("sampleEventButton","Button text",1),f("sampleEventUrl","Button link",1,"url")])}</Group>
-        <Group title="10. References">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-background p-4 text-sm"><span className="font-semibold">Page order: {extraPagesOrder(d).map(x => x === "references" ? "References" : "Event Photo Links").join(" → ")}</span><Button type="button" variant="outline" size="sm" onClick={() => onChange({ ...d, extraPagesOrder: [...extraPagesOrder(d)].reverse() })}><ArrowUp />Swap References and Event Photo Links</Button></div>
+        {extraPagesOrder(d).map(id => id === "references" ? <div key={id}>
+        <Group title={`${10 + extraPagesOrder(d).indexOf("references")}. References`}>
           <label className="mt-5 flex items-center gap-3 font-semibold"><input type="checkbox" checked={references.enabled} onChange={event => updateReferences({ ...references, enabled: event.target.checked })} />Include a References page in this proposal</label>
           <div className="mt-5 grid gap-5">
             <InputLine label="References page title" value={references.title} onChange={title => updateReferences({ ...references, title })} />
             <EditArea label="References introduction" value={references.introduction} rows={4} onChange={introduction => updateReferences({ ...references, introduction })} />
             {references.entries.map((entry, index) => (
               <div key={entry.id} className="space-y-4 rounded-lg border border-border bg-background p-4">
-                <div className="flex items-center justify-between gap-3"><span className="font-semibold">Reference {index + 1}</span><Button type="button" variant="ghost" size="sm" onClick={() => updateReferences({ ...references, entries: references.entries.filter(item => item.id !== entry.id) })}><Trash2 />Remove</Button></div>
+                <div className="flex items-center justify-between gap-3"><span className="font-semibold">Reference {index + 1}</span><span className="flex flex-wrap gap-1"><MoveButtons label={`reference ${index + 1}`} index={index} count={references.entries.length} onMove={delta => updateReferences({ ...references, entries: moveItem(references.entries, index, delta) })} /><Button type="button" variant="ghost" size="sm" onClick={() => updateReferences({ ...references, entries: references.entries.filter(item => item.id !== entry.id) })}><Trash2 />Remove</Button></span></div>
                 <div className="grid gap-4 md:grid-cols-2"><InputLine label="Name" value={entry.name} onChange={name => updateReferences({ ...references, entries: references.entries.map(item => item.id === entry.id ? { ...item, name } : item) })} /><InputLine label="Organization" value={entry.organization} onChange={organization => updateReferences({ ...references, entries: references.entries.map(item => item.id === entry.id ? { ...item, organization } : item) })} /></div>
                 <EditArea label="Event or relationship details" value={entry.description} rows={5} onChange={description => updateReferences({ ...references, entries: references.entries.map(item => item.id === entry.id ? { ...item, description } : item) })} />
                 <InputLine label="Contact details (optional)" value={entry.contact} onChange={contact => updateReferences({ ...references, entries: references.entries.map(item => item.id === entry.id ? { ...item, contact } : item) })} />
@@ -137,7 +145,8 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
             <Button type="button" variant="outline" onClick={() => updateReferences({ ...references, enabled: true, entries: [...references.entries, { id: crypto.randomUUID(), name: "", organization: "", description: "", contact: "" }] })}><Plus />Add reference</Button>
           </div>
 </Group>
-        <Group title="11. Event Photo Links">
+        </div> : <div key={id}>
+        <Group title={`${10 + extraPagesOrder(d).indexOf("photos")}. Event Photo Links`}>
           <label className="mt-5 flex items-center gap-3 font-semibold"><input type="checkbox" checked={photos.enabled} onChange={event => updatePhotos({ ...photos, enabled: event.target.checked })} />Include an Event Photo Links page in this proposal</label>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">Upload a preview photo for each link so clients see a picture. Clicking the picture or link opens the gallery.</p>
           <div className="mt-5 grid gap-5">
@@ -145,7 +154,7 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
             <EditArea label="Photo page introduction" value={photos.introduction} rows={4} onChange={introduction => updatePhotos({ ...photos, introduction })} />
             {photos.links.map((link, index) => (
               <div key={link.id} className="space-y-4 rounded-lg border border-border bg-background p-4">
-                <div className="flex items-center justify-between gap-3"><span className="font-semibold">Photo link {index + 1}</span><Button type="button" variant="ghost" size="sm" onClick={() => updatePhotos({ ...photos, links: photos.links.filter(item => item.id !== link.id) })}><Trash2 />Remove</Button></div>
+                <div className="flex items-center justify-between gap-3"><span className="font-semibold">Photo link {index + 1}</span><span className="flex flex-wrap gap-1"><MoveButtons label={`photo link ${index + 1}`} index={index} count={photos.links.length} onMove={delta => updatePhotos({ ...photos, links: moveItem(photos.links, index, delta) })} /><Button type="button" variant="ghost" size="sm" onClick={() => updatePhotos({ ...photos, links: photos.links.filter(item => item.id !== link.id) })}><Trash2 />Remove</Button></span></div>
                 <InputLine label="Event or photo title" value={link.title} onChange={title => updatePhotos({ ...photos, links: photos.links.map(item => item.id === link.id ? { ...item, title } : item) })} />
                 <InputLine label="Photo-gallery or image web address" type="url" value={link.url} onChange={url => updatePhotos({ ...photos, links: photos.links.map(item => item.id === link.id ? { ...item, url } : item) })} />
                 <div className="flex flex-wrap items-center gap-3">{link.previewUrl && <img src={link.previewUrl} alt="" className="h-20 w-32 rounded border border-border object-cover" />}<ImageUploadButton label={link.previewUrl ? "Replace preview photo" : "Upload preview photo"} onUploaded={previewUrl => updatePhotos({ ...photos, links: photos.links.map(item => item.id === link.id ? { ...item, previewUrl } : item) })} />{link.previewUrl && <Button type="button" variant="ghost" size="sm" onClick={() => updatePhotos({ ...photos, links: photos.links.map(item => item.id === link.id ? { ...item, previewUrl: undefined } : item) })}>Remove preview</Button>}</div>
@@ -155,6 +164,7 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
             <Button type="button" variant="outline" onClick={() => updatePhotos({ ...photos, enabled: true, links: [...photos.links, { id: crypto.randomUUID(), title: "", url: "", description: "" }] })}><Plus />Add photo link</Button>
           </div>
 </Group>
+        </div>)}
         <Group title="12. Next Steps" show={shown("next")} onShow={v => setShown("next", v)}>{fields_([f("nextStepsHeading","Section title",1),f("nextStepsItems","Next steps, one per line",7),f("nextStepsContact","Contact line",3),f("nextStepsFooter","Proposal note",6)])}<p className="text-sm text-muted-foreground">The Contact TeeVents button emails the address in section 1.</p></Group>
         <Group title="13. Start choice and signature" show={d.closureEnabled !== false} onShow={v => onChange({ ...d, closureEnabled: v })}>{fields_([f("closureHeading","Section title",1),f("closureIntroduction","Start choice introduction",4)])}<SelectionBoxesEditor document={d} onChange={onChange}/><label className="flex items-center gap-3 font-semibold"><input type="checkbox" checked={showValidityLine(d)} onChange={e => onChange({ ...d, validityLineEnabled: e.target.checked })} />Show the validity line at the bottom ("This proposal ... is valid until ...")</label><p className="text-sm text-muted-foreground">Clients pick a program here, answer a few questions, and type their name to sign. You get an email when they submit.</p></Group>
         <Group title="14. Private-link notice" show={shown("notice")} onShow={v => setShown("notice", v)}>{fields_([f("noticeText","Private-link notice",4)])}</Group>

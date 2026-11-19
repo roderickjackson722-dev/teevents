@@ -9,3 +9,4 @@
 - Program subsections in proposals can be hidden, renamed and reordered per program via the payload's programLayout; programSubsections is the single resolver for page and editor.
 - Client acceptance requires a typed e-signature plus qualifying answers (shared acceptanceSchema); stored as a 'signature' activity row and included in the single fixed-recipient notification, so signing never creates events or charges.
 - Editable selectionBoxes live in the existing document JSON and resolve server-side by ID; custom package/payment choices are signature-and-notification only, never checkout amounts, while documents without boxes retain their existing flow.
+- References and Event Photo Links page order lives in the payload's extraPagesOrder, resolved by extraPagesOrder() for both page and editor; item lists reorder in place via moveItem.

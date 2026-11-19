@@ -343,7 +343,7 @@ Deno.serve(async (req) => {
 
       if (action === "set-fee-split") {
         if (!body.tournament_id) return jsonRes({ error: "Missing tournament_id" }, 400);
-        if (!["player", "split", "organizer"].includes(body.fee_split)) return jsonRes({ error: "Invalid fee split" }, 400);
+        if (!["player", "split", "organizer", "exact"].includes(body.fee_split)) return jsonRes({ error: "Invalid fee split" }, 400);
         const { data: t } = await adminClient.from("tournaments")
           .select("flat_rate_enabled, pricing_model").eq("id", body.tournament_id).maybeSingle();
         if (!t) return jsonRes({ error: "Event not found" }, 404);

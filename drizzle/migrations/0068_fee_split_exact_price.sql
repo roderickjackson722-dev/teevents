@@ -1,0 +1,2 @@
+ALTER TABLE public.tournaments DROP CONSTRAINT tournaments_fee_split_check;
+ALTER TABLE public.tournaments ADD CONSTRAINT tournaments_fee_split_check CHECK (fee_split = ANY (ARRAY['player','split','organizer','exact']));

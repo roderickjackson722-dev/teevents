@@ -63,6 +63,7 @@ interface TournamentSite {
   scoring_format: string; countdown_style: string | null;
   foursome_registration: boolean; max_group_size?: number;
   pass_fees_to_registrants?: boolean;
+  fee_split?: string | null;
   allow_cover_fees?: boolean;
   refund_policy_text?: string | null;
   // Public Page Design
@@ -1279,7 +1280,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}
                     platformFeeRate={nonprofitInfo.platformFeeRate}
-                    passFeesToRegistrants={tournament.pass_fees_to_registrants || false}
+                    passFeesToRegistrants={tournament.fee_split === "exact" ? false : (tournament.pass_fees_to_registrants || false)}
                     allowCoverFees={tournament.allow_cover_fees !== false}
                     tiers={regTiers}
                     fields={regFields}

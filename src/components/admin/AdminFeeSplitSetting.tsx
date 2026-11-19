@@ -5,7 +5,7 @@ import { Loader2, DollarSign } from "lucide-react";
 import { toast } from "sonner";
 import { computeFeeSplit, FEE_SPLIT_LABELS, type FeeSplit } from "@/lib/feeSplit";
 
-const CHOICES: FeeSplit[] = ["player", "split", "organizer"];
+const CHOICES: FeeSplit[] = ["player", "split", "organizer", "exact"];
 const money = (c: number) => `$${(c / 100).toFixed(2)}`;
 
 type Props = {
@@ -21,6 +21,7 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
   const [noFeePlan, setNoFeePlan] = useState(false);
   const [rate, setRate] = useState(0.08);
   const [priceCents, setPriceCents] = useState(0);
+  const [amount, setAmount] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -91,6 +92,26 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
           </label>
         ))}
       </div>
+      {choice === "exact" && (() => {
+        const cents = Math.round(Number(amount) * 100);
+        const r = cents > 0 ? computeFeeSplit(cents, rate, "exact") : null;
+        return (
+          <div className="space-y-1 rounded-md border border-border bg-muted/30 p-2 text-sm">
+            <label className="flex items-center gap-2 text-sm">Enter amount $
+              <input type="number" min="0" step="0.01" inputMode="decimal" value={amount} onChange={(e) => setAmount(e.target.value)} placeholder="175.00" className="w-28 rounded border border-input bg-background px-2 py-1" aria-label="Enter amount" />
+            </label>
+            {r && (
+              <div data-testid="exact-breakdown">
+                <div className="text-xs text-muted-foreground">Preview for the {money(cents)} amount entered, per registration</div>
+                <div>Customer pays at checkout: <strong>{money(r.charge)}</strong></div>
+                <div>TeeVents fee, {pct} percent: {money(r.teeFee)}</div>
+                <div>Stripe fee, 2.9 percent plus 0.30 dollars: {money(r.realStripe)}</div>
+                <div>Organizer receives: <strong>{money(r.organizerReceives)}</strong></div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
       {priceCents > 0 ? (
         <>
           <div className="text-xs text-muted-foreground">Preview for a {money(priceCents)} registration</div>

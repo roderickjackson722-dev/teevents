@@ -436,7 +436,7 @@ Deno.serve(async (req) => {
     const feeRate = await tournamentFeeRate(supabaseAdmin, tournament.id);
     const platformFeeCents = flatRate || currentPaidPlan ? 0 : Math.round(baseTotalCents * feeRate);
     // No Cost to Start events use the admin-chosen fee split (player / split / organizer).
-    const feeSplitChoice = ["player", "split", "organizer"].includes((tournament as any).fee_split)
+    const feeSplitChoice = ["player", "split", "organizer", "exact"].includes((tournament as any).fee_split)
       ? (tournament as any).fee_split
       : "player";
     // Default "player" only applies when the golfer actually pays fees, so events whose
@@ -584,7 +584,7 @@ Deno.serve(async (req) => {
         tournament_id,
         organization_id: tournament.organization_id,
         checkout_hold_id: holdId || "",
-        pass_fees_to_golfer: String(splitCalc ? feeSplitChoice !== "organizer" : golferPaysFees),
+        pass_fees_to_golfer: String(splitCalc ? !["organizer", "exact"].includes(feeSplitChoice) : golferPaysFees),
         fee_split: splitCalc ? feeSplitChoice : "",
         cover_fees: String(coverFees),
         tier_id: tierId || "",

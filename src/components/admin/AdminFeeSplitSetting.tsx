@@ -20,18 +20,15 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
   const [choice, setChoice] = useState<FeeSplit>("player");
   const [noFeePlan, setNoFeePlan] = useState(false);
   const [rate, setRate] = useState(0.08);
-  const [priceCents, setPriceCents] = useState(0);
   const [amount, setAmount] = useState("");
   const [savedPct, setSavedPct] = useState(8);
   const [pctInput, setPctInput] = useState("8");
+  const [previewAmt, setPreviewAmt] = useState("125");
 
   useEffect(() => {
     let active = true;
     (async () => {
-      const [{ data: t }, { data: tiers }] = await Promise.all([
-        supabase.from("tournaments").select("fee_split, pricing_model, flat_rate_enabled, platform_fee_percent, registration_fee_cents").eq("id", tournamentId).maybeSingle() as any,
-        supabase.from("tournament_registration_tiers").select("price_cents").eq("tournament_id", tournamentId).eq("is_active", true) as any,
-      ]);
+      const { data: t } = await supabase.from("tournaments").select("fee_split, pricing_model, flat_rate_enabled, platform_fee_percent").eq("id", tournamentId).maybeSingle() as any;
       if (!active) return;
       const split = (CHOICES.includes(t?.fee_split) ? t.fee_split : "player") as FeeSplit;
       setSaved(split); setChoice(split);
@@ -39,8 +36,6 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
       const pct = Number(t?.platform_fee_percent);
       const p0 = Number.isFinite(pct) && pct >= 0 && pct <= 20 ? pct : 8;
       setRate(p0 / 100); setSavedPct(p0); setPctInput(String(p0));
-      const prices = [Number(t?.registration_fee_cents || 0), ...((tiers as any[]) || []).map((x) => Number(x.price_cents || 0))].filter((p) => p > 0);
-      setPriceCents(prices.length ? Math.min(...prices) : 0);
       setLoading(false);
     })();
     return () => { active = false; };
@@ -76,8 +71,9 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
   const pctValid = pctInput.trim() !== "" && Number.isFinite(pctNum) && pctNum >= 0 && pctNum <= 20;
   const liveRate = pctValid ? pctNum / 100 : rate;
   const pct = Math.round(liveRate * 10000) / 100;
+  const previewCents = Math.round(Number(previewAmt) * 100);
   const Preview = ({ c, small }: { c: FeeSplit; small?: boolean }) => {
-    const r = computeFeeSplit(priceCents, liveRate, c);
+    const r = computeFeeSplit(previewCents, liveRate, c);
     return (
       <div className={small ? "text-xs text-muted-foreground" : "text-sm"}>
         {small && <div className="font-medium">{feeSplitLabel(c, pct)}</div>}
@@ -94,7 +90,7 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
       <div className="flex items-center gap-2 text-sm font-medium"><DollarSign className="h-4 w-4" /> Checkout fee (admin only)</div>
       <label className="flex flex-wrap items-center gap-2 text-sm">TeeVents platform fee for this event
         <input type="number" min="0" max="20" step="0.1" inputMode="decimal" value={pctInput} onChange={(e) => setPctInput(e.target.value)} className="w-20 rounded border border-input bg-background px-2 py-1" aria-label="TeeVents platform fee percent" />%
-        <span className="text-xs text-muted-foreground">Default 8%. Stripe fee (2.9% + $0.30) is added on top.{savedPct !== 8 && ` Saved: ${savedPct}%.`}</span>
+        <span className="text-xs text-muted-foreground">Default 8%. Stripe fee (2.9% + $0.30) is added on top. Saved: {savedPct}%.</span>
       </label>
       <div className="flex flex-col gap-1.5">
         {CHOICES.map((c) => (
@@ -124,16 +120,20 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
           </div>
         );
       })()}
-      {priceCents > 0 ? (
+      <label className="flex flex-wrap items-center gap-2 text-sm">Preview for a $
+        <input type="number" min="0" step="0.01" inputMode="decimal" value={previewAmt} onChange={(e) => setPreviewAmt(e.target.value)} className="w-24 rounded border border-input bg-background px-2 py-1" aria-label="Preview registration amount" />
+        registration
+        <span className="text-xs text-muted-foreground">Default $125, the average registration amount. Preview only — nothing is saved.</span>
+      </label>
+      {previewCents > 0 ? (
         <>
-          <div className="text-xs text-muted-foreground">Preview for a {money(priceCents)} registration</div>
           <Preview c={choice} />
           <div className="grid gap-3 sm:grid-cols-2">
             {CHOICES.filter((c) => c !== choice).map((c) => <Preview key={c} c={c} small />)}
           </div>
         </>
       ) : (
-        <div className="text-xs text-muted-foreground">This event has no registration price yet, so there is no preview.</div>
+        <div className="text-xs text-muted-foreground">Enter a registration amount above to see the preview.</div>
       )}
       <div className="flex items-center gap-3">
         <Button size="sm" onClick={save} disabled={saving || !pctValid || (choice === saved && pctNum === savedPct)}>

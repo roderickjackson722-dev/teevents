@@ -3,7 +3,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { RichTextarea as Textarea, Fmt } from "./RichText";
-import { MessageCircle,Send,X,Mail } from "lucide-react";
+import { MessageCircle,Send,X,Download,Mail } from "lucide-react";
 import portrait from "@/assets/trust/roderick-jackson.jpg.asset.json";
 import logo from "@/assets/teevents-logo-final.png.asset.json";
 import { programDetails,programSubsections,programNames,currentProgramNames,isCurrentDocument,shownPrograms,fields,calculator,introText,reasonText,answerQuestion,sensitiveQuestion,orderedReasonTemplates,withReason,reasonExample,programPanelClass,proposalFaq,proposalPageContent,proposalSectionOrder,sectionShown,websiteHref,safeExternalUrl,type SectionOrderId,type WebDocument } from "./content";
@@ -101,13 +101,14 @@ export default function ProposalPage({document:d,token,edit,onEdit}:{document:We
   references:<ReferencesSection document={d}/>,
   photos:<PhotosSection document={d}/>,
   next:sectionShown(d,"next")&&<section id="next" data-track className="border-b border-border py-12"><h2 className="font-display text-3xl font-bold text-primary">{copy.nextStepsHeading}</h2><ul className="mt-6 list-disc space-y-3 pl-5 text-lg">{copy.nextStepsItems.split("\n").filter(item=>item.trim()).map((t,index)=><li key={index} className="whitespace-pre-wrap"><Fmt text={t}/></li>)}</ul><div className="web-controls mt-8 flex flex-wrap items-center gap-3"><Button asChild variant="secondary"><a href={`mailto:${copy.contactEmail||"info@teevents.golf"}?subject=${encodeURIComponent("Proposal follow up")}`} onClick={()=>void record("call").catch(()=>{})}><Mail/>Contact TeeVents</a></Button></div><p className="mt-8 whitespace-pre-wrap leading-8"><Fmt text={copy.nextStepsContact}/></p><p className="mt-5 whitespace-pre-wrap text-sm leading-7"><Fmt text={copy.nextStepsFooter}/></p></section>,
-  closure:d.closureEnabled!==false&&<ProposalClosure document={d} token={token} onPrint={()=>{void record("print").catch(()=>{});window.print();}}/>,
+  closure:d.closureEnabled!==false&&<ProposalClosure document={d} token={token}/>,
   notice:sectionShown(d,"notice")&&<section id="notice" data-track className="pb-24 pt-8 text-sm leading-7 text-muted-foreground">{copy.noticeText.replaceAll("[Client or Organization Name]",d.fields.preparedFor?.trim()||(edit?fields.preparedFor:"your organization"))}</section>,
  };
  return <main className="proposal-web bg-background text-foreground">
   {edit&&onEdit&&<div className="web-controls border-b border-border bg-muted/40 px-5 py-8 sm:px-8"><div className="mx-auto max-w-6xl"><ProposalWordingEditor document={d} onChange={onEdit}/></div></div>}
   <div className="proposal-doc mx-auto max-w-5xl px-5 sm:px-8">
-   <section id="cover" data-track className="web-cover border-b border-border py-12 md:py-16">
+    <section id="cover" data-track className="web-cover relative border-b border-border py-12 md:py-16">
+    <div className="web-controls absolute right-0 top-4 md:top-6"><Button variant="ghost" onClick={()=>{void record("print").catch(()=>{});window.print();}}><Download/>Download PDF</Button></div>
     <img src={logo.url} alt="TeeVents logo" className="mb-8 h-16 max-w-full object-contain object-left"/>
     <h1 className="font-display text-5xl font-bold text-primary">TeeVents</h1>
     <p className="mt-5 whitespace-pre-wrap font-display text-2xl"><Fmt text={copy.coverSubtitle}/></p>

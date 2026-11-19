@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Download } from "lucide-react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -21,7 +20,7 @@ const SIGNUP: Partial<Record<Program, string>> = {
 };
 const CONTACT = "mailto:info@teevents.golf?subject=Question%20about%20my%20TeeVents%20proposal";
 
-export default function ProposalClosure({ document: d, token, onPrint }: { document: WebDocument; token?: string; onPrint?: () => void }) {
+export default function ProposalClosure({ document: d, token }: { document: WebDocument; token?: string }) {
   const choose = useServerFn(chooseWebProgram);
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
@@ -94,7 +93,6 @@ export default function ProposalClosure({ document: d, token, onPrint }: { docum
     <section id="closure" data-track className="border-b border-border py-12">
       <h2 className="font-display text-3xl font-bold text-primary">{copy.closureHeading}</h2>
       <p className="mt-6 text-lg leading-8">{copy.closureIntroduction}</p>
-      {onPrint && <div className="web-controls mt-6"><Button variant="ghost" onClick={onPrint}><Download />Download PDF</Button></div>}
       {depositState === "cancelled" && <p role="status" className="web-controls mt-4">Checkout was cancelled and no payment was taken. You can try again below or contact us.</p>}
       {d.recommended && shown.includes(d.recommended) && <a className="mt-5 inline-block text-sm text-primary underline" href={`#program-${d.recommended.replaceAll(" ", "-")}`}>Your recommended program is {d.recommended}, see its details above</a>}
 

@@ -350,8 +350,14 @@ Deno.serve(async (req) => {
         if (t.flat_rate_enabled || ["per_event", "per_league", "enterprise"].includes(String(t.pricing_model))) {
           return jsonRes({ error: "No platform fee on this plan, so there is nothing to split." }, 400);
         }
+        const update: Record<string, unknown> = { fee_split: body.fee_split };
+        if (body.platform_fee_percent !== undefined && body.platform_fee_percent !== null) {
+          const pct = Number(body.platform_fee_percent);
+          if (!Number.isFinite(pct) || pct < 0 || pct > 20) return jsonRes({ error: "Platform fee must be between 0 and 20 percent" }, 400);
+          update.platform_fee_percent = Math.round(pct * 100) / 100;
+        }
         const { error } = await adminClient.from("tournaments")
-          .update({ fee_split: body.fee_split }).eq("id", body.tournament_id);
+          .update(update).eq("id", body.tournament_id);
         if (error) return jsonRes({ error: error.message }, 400);
         return jsonRes({ success: true });
       }

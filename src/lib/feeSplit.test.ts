@@ -13,3 +13,12 @@ describe("Exact Price, organizer absorbs all fees", () => {
   it("$175", () => expect(row(17500)).toEqual([17500, 1400, 538, 15562]));
   it("$175 Per-Event plan, 0% fee", () => expect(row.length && computeFeeSplit(17500, 0, "exact").organizerReceives).toBe(16962));
 });
+
+import { feeSplitLabel } from "./feeSplit";
+describe("custom per-event platform fee", () => {
+  it("uses a custom 6% rate", () => {
+    const r = computeFeeSplit(10000, 0.06, "player");
+    expect(r.teeFee).toBe(600);
+    expect(feeSplitLabel("split", 6)).toContain("3% player");
+  });
+});

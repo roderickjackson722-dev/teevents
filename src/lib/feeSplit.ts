@@ -8,6 +8,14 @@ export const FEE_SPLIT_LABELS: Record<FeeSplit, string> = {
   exact: "Exact Price, organizer absorbs all fees",
 };
 
+const fmtPct = (n: number) => String(Math.round(n * 100) / 100);
+export function feeSplitLabel(split: FeeSplit, pct = 8): string {
+  if (split === "player") return `Player pays all, ${fmtPct(pct)}% TeeVents fee plus Stripe fee`;
+  if (split === "split") return `Split, ${fmtPct(pct / 2)}% player, ${fmtPct(pct / 2)}% organizer, plus Stripe fee`;
+  if (split === "organizer") return `Organizer pays all, ${fmtPct(pct)}% TeeVents fee plus Stripe fee`;
+  return "Exact Price, organizer absorbs all fees";
+}
+
 export const stripeFeeOn = (cents: number) => (cents > 0 ? Math.round(cents * 0.029 + 30) : 0);
 
 export function computeFeeSplit(baseCents: number, feeRate: number, split: FeeSplit) {

@@ -63,6 +63,16 @@ export function mergeDesign(partial: Partial<LeaderboardDesign> | null | undefin
   return { ...DEFAULT_DESIGN, ...(partial || {}) };
 }
 
+/**
+ * Text ticker loop length. The speed choice is a steady reading pace (characters
+ * per second), so Fast is always fast no matter how short or long the text is.
+ */
+export function tickerDurationSeconds(text: string, speed: LeaderboardDesign["ticker_speed"]): number {
+  const charsPerSecond = speed === "slow" ? 5 : speed === "fast" ? 16 : 9;
+  const length = Math.max(20, (text || "").length + 8);
+  return Math.max(3, Math.round((length / charsPerSecond) * 10) / 10);
+}
+
 export function tickerSpeedClass(speed: LeaderboardDesign["ticker_speed"]): string {
   if (speed === "slow") return "animate-[marquee_40s_linear_infinite]";
   if (speed === "fast") return "animate-[marquee_12s_linear_infinite]";
@@ -611,7 +621,16 @@ export function LeaderboardRenderer({
           className={`overflow-hidden whitespace-nowrap ${compact ? "py-1 text-xs" : "py-2"}`}
           style={{ backgroundColor: headerBg }}
         >
-          <span className={`inline-block ${tickerSpeedClass(design.ticker_speed)} px-4`} style={{ animationPlayState: isPaused ? "paused" : "running" }}>{design.ticker_text}</span>
+          <div
+            className="flex w-max"
+            style={{
+              animation: `marquee ${tickerDurationSeconds(design.ticker_text, design.ticker_speed)}s linear infinite`,
+              animationPlayState: isPaused ? "paused" : "running",
+            }}
+          >
+            <span className="px-8">{design.ticker_text}</span>
+            <span className="px-8" aria-hidden="true">{design.ticker_text}</span>
+          </div>
         </div>
       )}
 

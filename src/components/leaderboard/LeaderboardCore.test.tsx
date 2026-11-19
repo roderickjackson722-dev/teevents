@@ -168,3 +168,12 @@ describe("LeaderboardRenderer parity (preview vs live)", () => {
     expect(partial.max_rows).toBeGreaterThan(0);
   });
 });
+
+import { tickerDurationSeconds as _tds } from "./LeaderboardCore";
+describe("ticker speed", () => {
+  it("Fast is quicker than Normal and Slow for the same text", () => {
+    const t = "Thank you to our sponsors!";
+    expect(_tds(t, "fast")).toBeLessThan(_tds(t, "normal"));
+    expect(_tds(t, "normal")).toBeLessThan(_tds(t, "slow"));
+  });
+});

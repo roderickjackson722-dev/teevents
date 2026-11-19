@@ -634,7 +634,7 @@ function LiveLeaderboardBoard({
         bannerSponsor={bannerSponsor}
         sidebarSponsors={explicitSponsorMode && !sponsorParts.otherPlacements ? [] : sidebarSponsors}
         footerSponsors={explicitSponsorMode && !sponsorParts.otherPlacements ? [] : footerSponsors}
-        scrollingSponsors={explicitSponsorMode && !sponsorParts.rotating ? [] : scrollingSponsors}
+        scrollingSponsors={scrollingSponsors}
         scrollingSponsorsPosition={tournament.leaderboard_sponsor_banner_position || "bottom"}
         scrollingSponsorsSpeedSeconds={tournament.leaderboard_sponsor_scroll_seconds || 20}
         heroImage={design.show_gallery === false ? null : heroImage || null}

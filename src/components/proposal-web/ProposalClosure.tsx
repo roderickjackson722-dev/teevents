@@ -8,6 +8,8 @@ import { chooseWebProgram } from "./proposalWeb.functions";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { acceptanceSchema } from "./choiceNotification";
+import { Fmt } from "./RichText";
+import { selectionBoxes } from "./selectionBoxes";
 
 type Program = "No Cost to Start" | "Per Event" | "Per League" | "Enterprise" | "Full Service Management";
 /** Software programs continue through the regular website sign-up and checkout for that plan. */
@@ -23,6 +25,7 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   const [selected, setSelected] = useState<Program | null>(null);
+  const [boxId,setBoxId]=useState<string>();
   const [agreed, setAgreed] = useState(false);
   const blank = { signature: "", title: "", email: "", phone: "", golfers: "", eventDate: "", notes: "" };
   const [form, setForm] = useState(blank);
@@ -31,6 +34,10 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
   const [depositState, setDepositState] = useState<"" | "paid" | "cancelled">("");
   const shown = shownPrograms(d);
   const copy = proposalPageContent(d);
+  const boxes=selectionBoxes(d);
+  const custom=d.selectionBoxes!==undefined;
+  const selectedBox=boxes.find(b=>b.id===boxId);
+  const selectedTitle=selectedBox?.title||selected;
   const t = d.fullService ? fullServiceTotals(d.fullService) : null;
 
   useEffect(() => {
@@ -46,7 +53,7 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
     "Full Service Management": { text: `${money(t?.final || 0)} per event, 50% deposit due at agreement (${money(t?.deposit || 0)})`, button: "Start With Full Service Management", next: `You'll pay your 50% deposit of ${money(t?.deposit || 0)} by card on a secure checkout page. The balance of ${money(t?.balance || 0)} is due ${d.fullService?.balanceDueDate || "before event day"}. After payment, you'll set up your TeeVents account and Rod will reach out to get started.` },
   };
 
-  function pick(p: Program) { setSelected(p); setAgreed(false); setForm(blank); setMessage(""); }
+  function pick(p: Program,id?:string) { setSelected(p); setBoxId(id); setAgreed(false); setForm(blank); setMessage(""); }
 
   async function confirm() {
     if (!selected) return;
@@ -54,14 +61,15 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
     if (!token) { setMessage("Preview only. No choice recorded, no email sent, and no checkout opened."); return; }
     setBusy(true); setMessage("");
     try {
-      const res = await choose({ data: { token, program: selected, origin: window.location.origin, acceptance: parsed.data } });
+      const res = await choose({ data: { token, program: selected, selectionBoxId:boxId, origin: window.location.origin, acceptance: parsed.data } });
+      if(custom){setMessage("Your signed choice was submitted to TeeVents. Rod will follow up to confirm the package and payment arrangements.");setSelected(null);setBusy(false);return;}
       if (res.checkoutUrl) { window.location.href = res.checkoutUrl; return; }
-      const signup = SIGNUP[selected];
+      const signup = custom?undefined:SIGNUP[selected];
       if (signup) { window.location.href = signup; return; }
     } catch (e) {
       // Software plans always continue to the regular website sign-up, even if this
       // proposal already has a recorded choice or Rod's notification could not be sent.
-      const signup = SIGNUP[selected];
+      const signup = custom?undefined:SIGNUP[selected];
       if (signup) { window.location.href = signup; return; }
       setMessage(e instanceof Error ? e.message : "Could not record your choice. Please try again.");
     }
@@ -91,10 +99,10 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
       {selected ? (
         <div className="web-controls mt-8 rounded-md border border-primary bg-muted p-6">
           <p className="text-sm font-semibold text-primary">Step 2 of 2: Confirm your choice</p>
-          <h3 className="mt-2 font-display text-2xl font-semibold">{selected}</h3>
-          <p className="mt-3 leading-7">{offers[selected].text}</p>
+          <h3 className="mt-2 font-display text-2xl font-semibold"><Fmt text={selectedTitle||""}/></h3>
+          <p className="mt-3 whitespace-pre-wrap leading-7"><Fmt text={selectedBox?.text??offers[selected].text}/></p>
           <p className="mt-4 font-semibold">What happens next</p>
-          <p className="mt-1 leading-7">{offers[selected].next}</p>
+          <p className="mt-1 whitespace-pre-wrap leading-7"><Fmt text={selectedBox?.next??offers[selected].next}/></p>
           <p className="mt-6 font-semibold">A few quick questions</p>
           <div className="mt-3 grid gap-4 sm:grid-cols-2">
             <label className="text-sm">Your title or role<Input className="mt-1" value={form.title} onChange={set("title")} maxLength={120} /></label>
@@ -112,19 +120,24 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
           <p className="mt-1 text-xs">Signed {new Date().toLocaleDateString()}</p>
           <label className="mt-5 flex items-start gap-3 text-sm leading-6">
             <Checkbox checked={agreed} onCheckedChange={(v) => setAgreed(v === true)} className="mt-1" aria-label="Approve proposal" />
-            <span>I approve this proposal and want to start with {selected}{d.fields.preparedFor ? ` for ${d.fields.preparedFor}` : ""}. Typing my name above is my electronic signature.</span>
+            <span>I approve this proposal and want to start with {selectedTitle}{d.fields.preparedFor ? ` for ${d.fields.preparedFor}` : ""}. Typing my name above is my electronic signature.</span>
           </label>
           <div className="mt-6 flex flex-wrap gap-3">
             <Button variant="outline" disabled={busy} onClick={() => setSelected(null)}>Back</Button>
             <Button asChild variant="outline"><a href={CONTACT}>Contact Us First</a></Button>
             <Button disabled={!parsed.success || busy} onClick={() => void confirm()}>
-              {busy ? "Please wait…" : SIGNUP[selected] ? "Sign and Submit" : "Sign, Submit and Pay by Card"}
+              {busy ? "Please wait…" : custom||SIGNUP[selected] ? "Sign and Submit" : "Sign, Submit and Pay by Card"}
             </Button>
           </div>
         </div>
       ) : (
         <div className="mt-8 grid gap-5 sm:grid-cols-2">
-          {shown.filter((p): p is Program => p in offers).map((p) => (
+          {custom?boxes.map(box=><div key={box.id} className={`closure-option rounded-md border p-5 ${d.recommended===box.program?"border-primary bg-muted":"border-border"}`}>
+            <h3 className="font-display text-xl font-semibold whitespace-pre-wrap"><Fmt text={box.title}/></h3>
+            {box.text.trim()&&<p className="mt-3 whitespace-pre-wrap leading-7"><Fmt text={box.text}/></p>}
+            <Button className="web-controls mt-5 h-auto min-h-10 w-full whitespace-normal" onClick={()=>pick(box.program,box.id)}>{box.button.trim()||"Select this option"}</Button>
+            <a className="web-controls mt-3 block text-center text-sm text-primary underline" href={CONTACT}>Have a question? Contact us first</a>
+          </div>):shown.filter((p): p is Program => p in offers).map((p) => (
             <div key={p} className={`closure-option rounded-md border p-5 ${d.recommended === p ? "border-primary bg-muted" : "border-border"}`}>
               <h3 className="font-display text-xl font-semibold">Start with {p}</h3>
               {p === "Full Service Management" && t && t.discount > 0 && <p className="mt-3"><s>{money(t.base)} per event</s><br />Discount: -{money(t.discount)}{d.fullService?.discountReason ? `, ${d.fullService.discountReason}` : ""}</p>}

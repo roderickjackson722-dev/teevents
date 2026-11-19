@@ -1,6 +1,7 @@
 import { useId, type ReactNode } from "react";
 import { Plus, Trash2, RotateCcw } from "lucide-react";
 import ImageUploadButton from "./ImageUploadButton";
+import SelectionBoxesEditor from "./SelectionBoxesEditor";
 import { defaultScreens, proposalScreens } from "./screens";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -155,7 +156,7 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
           </div>
 </Group>
         <Group title="12. Next Steps" show={shown("next")} onShow={v => setShown("next", v)}>{fields_([f("nextStepsHeading","Section title",1),f("nextStepsItems","Next steps, one per line",7),f("nextStepsContact","Contact line",3),f("nextStepsFooter","Proposal note",6)])}<p className="text-sm text-muted-foreground">The Contact TeeVents button emails the address in section 1.</p></Group>
-        <Group title="13. Start choice and signature" show={d.closureEnabled !== false} onShow={v => onChange({ ...d, closureEnabled: v })}>{fields_([f("closureHeading","Section title",1),f("closureIntroduction","Start choice introduction",4)])}<label className="flex items-center gap-3 font-semibold"><input type="checkbox" checked={showValidityLine(d)} onChange={e => onChange({ ...d, validityLineEnabled: e.target.checked })} />Show the validity line at the bottom ("This proposal ... is valid until ...")</label><p className="text-sm text-muted-foreground">Clients pick a program here, answer a few questions, and type their name to sign. You get an email when they submit.</p></Group>
+        <Group title="13. Start choice and signature" show={d.closureEnabled !== false} onShow={v => onChange({ ...d, closureEnabled: v })}>{fields_([f("closureHeading","Section title",1),f("closureIntroduction","Start choice introduction",4)])}<SelectionBoxesEditor document={d} onChange={onChange}/><label className="flex items-center gap-3 font-semibold"><input type="checkbox" checked={showValidityLine(d)} onChange={e => onChange({ ...d, validityLineEnabled: e.target.checked })} />Show the validity line at the bottom ("This proposal ... is valid until ...")</label><p className="text-sm text-muted-foreground">Clients pick a program here, answer a few questions, and type their name to sign. You get an email when they submit.</p></Group>
         <Group title="14. Private-link notice" show={shown("notice")} onShow={v => setShown("notice", v)}>{fields_([f("noticeText","Private-link notice",4)])}</Group>
       </div>
     </section>

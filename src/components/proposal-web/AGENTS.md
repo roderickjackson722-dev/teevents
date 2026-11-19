@@ -8,3 +8,4 @@
 - Proposal sections show unless listed in the payload's hiddenSections; sample-screen photos live in payload screens (defaults until saved) and admin uploads go to the existing admin-only event-images bucket under proposals/, so no schema change is needed.
 - Program subsections in proposals can be hidden, renamed and reordered per program via the payload's programLayout; programSubsections is the single resolver for page and editor.
 - Client acceptance requires a typed e-signature plus qualifying answers (shared acceptanceSchema); stored as a 'signature' activity row and included in the single fixed-recipient notification, so signing never creates events or charges.
+- Editable selectionBoxes live in the existing document JSON and resolve server-side by ID; custom package/payment choices are signature-and-notification only, never checkout amounts, while documents without boxes retain their existing flow.

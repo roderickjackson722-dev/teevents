@@ -64,6 +64,7 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
   const [authChecked, setAuthChecked] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
   const [rows, setRows] = useState<Row[]>([]);
+  const [feeSetupId, setFeeSetupId] = useState("");
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<"all" | "live" | "draft" | "ended" | "demo" | "pro" | "managed">("all");
@@ -425,6 +426,29 @@ export default function PlatformTournaments({ embedded = false }: { embedded?: b
             </Button>
           </div>
         </div>
+      </div>
+
+      <div className={embedded ? "mb-4" : "max-w-7xl mx-auto px-4 pt-4"}>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2"><DollarSign className="h-4 w-4" /> Fee Setup</CardTitle>
+            <CardDescription>Choose a tournament to set its checkout fee. The choice applies to that tournament only, and only to new registrations.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <select
+              aria-label="Choose a tournament for fee setup"
+              className="w-full max-w-xl h-10 rounded-md border border-input bg-background px-3 text-sm"
+              value={feeSetupId}
+              onChange={(e) => setFeeSetupId(e.target.value)}
+            >
+              <option value="">Select a tournament...</option>
+              {[...rows].sort((a, b) => String(a.title || "").localeCompare(String(b.title || ""))).map((r) => (
+                <option key={r.id} value={r.id}>{r.title || "Untitled"}{r.date ? ` — ${r.date}` : ""}</option>
+              ))}
+            </select>
+            {feeSetupId && <AdminFeeSplitSetting key={feeSetupId} tournamentId={feeSetupId} callAdminApi={callAdminApi} />}
+          </CardContent>
+        </Card>
       </div>
 
       <AdminTournamentEditModal

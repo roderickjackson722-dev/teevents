@@ -11,3 +11,4 @@
 - Editable selectionBoxes live in the existing document JSON and resolve server-side by ID; custom package/payment choices are signature-and-notification only, never checkout amounts, while documents without boxes retain their existing flow.
 - References and Event Photo Links page order lives in the payload's extraPagesOrder, resolved by extraPagesOrder() for both page and editor; item lists reorder in place via moveItem.
 - The full client-section order (everything after the fixed cover) lives in the payload's sectionOrder, resolved by proposalSectionOrder() for both page and editor; extraPagesOrder only seeds the references/photos positions when no sectionOrder is saved, so historical copies keep their layout.
+- Photo-link public anchor text is per-link linkText with the fallback "Click to open gallery"; the "Recommended for You" label shows unless the payload's hideRecommendedBadge is set, so historical copies keep both defaults.

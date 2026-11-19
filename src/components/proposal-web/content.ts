@@ -197,7 +197,7 @@ const pageContentSchema=z.object({
 const faqItemSchema=z.object({id:z.string().max(100),question:z.string().max(2000),answer:z.string().max(20000)});
 const referenceEntrySchema=z.object({id:z.string().max(100),name:z.string().max(1000),organization:z.string().max(1000),description:z.string().max(10000),contact:z.string().max(2000)});
 const referencesPageSchema=z.object({enabled:z.boolean(),title:z.string().max(1000),introduction:z.string().max(20000),entries:z.array(referenceEntrySchema).max(50)});
-const photoLinkSchema=z.object({id:z.string().max(100),title:z.string().max(1000),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// photo link."),description:z.string().max(10000),previewUrl:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// image link.").optional()});
+const photoLinkSchema=z.object({id:z.string().max(100),title:z.string().max(1000),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// photo link."),description:z.string().max(10000),previewUrl:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// image link.").optional(),linkText:z.string().max(300).optional()});
 const screenSchema=z.object({id:z.string().max(100),title:z.string().max(1000),caption:z.string().max(500),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// image link.")});
 export const proposalSectionIds=["about","intro","programs","details","addons","screens","questions","sample-event","next","notice"] as const;
 /** Every client-visible section after the fixed cover, in the admin's chosen order. */
@@ -208,7 +208,7 @@ export const selectionBoxSchema=z.object({id:z.string().min(1).max(100),program:
 export type SelectionBox=z.infer<typeof selectionBoxSchema>;
 export const documentSchema = z.object({
  fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}),
- recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional(),validityLineEnabled:z.boolean().optional(),
+ recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional(),validityLineEnabled:z.boolean().optional(),hideRecommendedBadge:z.boolean().optional(),
  pageContent:pageContentSchema.optional(),faqItems:z.array(faqItemSchema).max(40).optional(),
  programOverrides:z.record(programEnum,z.record(z.string().max(100),z.string().max(50000))).optional(),
  programLayout:z.record(programEnum,z.object({order:z.array(z.string().max(100)).max(40).optional(),hidden:z.array(z.string().max(100)).max(40).optional(),titles:z.record(z.string().max(100),z.string().max(200)).optional()})).optional(),

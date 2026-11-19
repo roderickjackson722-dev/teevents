@@ -15,10 +15,18 @@ describe("optional proposal pages", () => {
     expect(screen.getByText("Community Golf Foundation")).toBeTruthy();
     const image = screen.getByRole("img", { name: "2026 Charity Classic" });
     expect(image.getAttribute("src")).toBe("https://images.example.test/classic.jpg");
-    expect(screen.getByRole("link", { name: /images\.example\.test\/classic\.jpg/ }).getAttribute("href")).toBe("https://images.example.test/classic.jpg");
+    expect(screen.getByRole("link", { name: /Click to open gallery/ }).getAttribute("href")).toBe("https://images.example.test/classic.jpg");
     fireEvent.error(image);
     expect(screen.getByText("Image preview unavailable. Use the clickable link below.")).toBeTruthy();
-    expect(screen.getByRole("link", { name: /images\.example\.test\/classic\.jpg/ })).toBeTruthy();
+    expect(screen.getByRole("link", { name: /Click to open gallery/ })).toBeTruthy();
+  });
+
+  it("shows the admin's custom link text instead of the default", () => {
+    const d = emptyDocument();
+    d.photoLinksPage = { ...defaultPhotoLinksPage(), enabled: true, links: [{ id: "photo-1", title: "2026 Classic", url: "https://photos.example.test/album", description: "", linkText: "View the championship album" }] };
+    render(<PhotosSection document={d} />);
+    expect(screen.getByRole("link", { name: /View the championship album/ }).getAttribute("href")).toBe("https://photos.example.test/album");
+    expect(screen.queryByText("Click to open gallery")).toBeNull();
   });
 
   it("renders nothing for disabled optional pages", () => {

@@ -29,7 +29,7 @@ function EventPhotoLink({ link }: { link: PhotoLinksPage["links"][number] }) {
         {link.description && <p className="whitespace-pre-wrap leading-7"><Fmt text={link.description}/></p>}
         <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex max-w-full items-start gap-2 break-all text-primary underline">
           <ExternalLink className="mt-1 size-4 shrink-0" aria-hidden="true" />
-          <span>{url}</span>
+          <span>{link.linkText?.trim() || "Click to open gallery"}</span>
         </a>
       </div>
     </article>

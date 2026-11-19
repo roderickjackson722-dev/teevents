@@ -203,7 +203,7 @@ export const proposalSectionIds=["about","intro","programs","details","addons","
 const photoLinksPageSchema=z.object({enabled:z.boolean(),title:z.string().max(1000),introduction:z.string().max(20000),links:z.array(photoLinkSchema).max(50)});
 export const documentSchema = z.object({
  fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}),
- recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional(),
+ recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional(),validityLineEnabled:z.boolean().optional(),
  pageContent:pageContentSchema.optional(),faqItems:z.array(faqItemSchema).max(40).optional(),
  programOverrides:z.record(programEnum,z.record(z.string().max(100),z.string().max(50000))).optional(),
  programLayout:z.record(programEnum,z.object({order:z.array(z.string().max(100)).max(40).optional(),hidden:z.array(z.string().max(100)).max(40).optional(),titles:z.record(z.string().max(100),z.string().max(200)).optional()})).optional(),
@@ -213,6 +213,8 @@ export const documentSchema = z.object({
 export type ProposalScreen=z.infer<typeof screenSchema>;
 export type ProposalSectionId=(typeof proposalSectionIds)[number];
 export function sectionShown(d:{hiddenSections?:readonly string[]},id:ProposalSectionId){return !d.hiddenSections?.includes(id);}
+/** The closing validity sentence is off unless this proposal explicitly turns it on. */
+export function showValidityLine(d:{validityLineEnabled?:boolean}){return d.validityLineEnabled===true;}
 export type WebDocument = z.infer<typeof documentSchema>;
 export type PageContent=z.infer<typeof pageContentSchema>;
 export type ProposalFaqItem=z.infer<typeof faqItemSchema>;

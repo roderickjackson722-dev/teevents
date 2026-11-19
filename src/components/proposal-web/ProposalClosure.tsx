@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { proposalPageContent, shownPrograms, type WebDocument } from "./content";
+import { proposalPageContent, shownPrograms, showValidityLine, type WebDocument } from "./content";
 import { fullServiceTotals, money } from "./pricing";
 import { chooseWebProgram } from "./proposalWeb.functions";
 import { Input } from "@/components/ui/input";
@@ -136,7 +136,7 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
         </div>
       )}
       {message && <p role="status" className="web-controls mt-6">{message}</p>}
-      <p className="mt-8 leading-7">This proposal{shown.includes("Full Service Management") ? ", including the Full Service Management price and any discount" : ""}, is valid until {d.fields.validUntil || "[Valid Until date]"}.</p>
+      {showValidityLine(d) && <p className="mt-8 leading-7">This proposal{shown.includes("Full Service Management") ? ", including the Full Service Management price and any discount" : ""}, is valid until {d.fields.validUntil || "[Valid Until date]"}.</p>}
     </section>
   );
 }

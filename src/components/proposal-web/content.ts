@@ -200,6 +200,9 @@ const referencesPageSchema=z.object({enabled:z.boolean(),title:z.string().max(10
 const photoLinkSchema=z.object({id:z.string().max(100),title:z.string().max(1000),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// photo link."),description:z.string().max(10000),previewUrl:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// image link.").optional()});
 const screenSchema=z.object({id:z.string().max(100),title:z.string().max(1000),caption:z.string().max(500),url:z.string().max(2000).refine(validExternalLink,"Use a complete http:// or https:// image link.")});
 export const proposalSectionIds=["about","intro","programs","details","addons","screens","questions","sample-event","next","notice"] as const;
+/** Every client-visible section after the fixed cover, in the admin's chosen order. */
+export const sectionOrderIds=["about","intro","programs","details","addons","screens","questions","sample-event","references","photos","next","closure","notice"] as const;
+export type SectionOrderId=(typeof sectionOrderIds)[number];
 const photoLinksPageSchema=z.object({enabled:z.boolean(),title:z.string().max(1000),introduction:z.string().max(20000),links:z.array(photoLinkSchema).max(50)});
 export const selectionBoxSchema=z.object({id:z.string().min(1).max(100),program:z.enum(currentProgramNames),enabled:z.boolean(),title:z.string().max(300),text:z.string().max(5000),button:z.string().max(300),next:z.string().max(5000)});
 export type SelectionBox=z.infer<typeof selectionBoxSchema>;
@@ -209,7 +212,7 @@ export const documentSchema = z.object({
  pageContent:pageContentSchema.optional(),faqItems:z.array(faqItemSchema).max(40).optional(),
  programOverrides:z.record(programEnum,z.record(z.string().max(100),z.string().max(50000))).optional(),
  programLayout:z.record(programEnum,z.object({order:z.array(z.string().max(100)).max(40).optional(),hidden:z.array(z.string().max(100)).max(40).optional(),titles:z.record(z.string().max(100),z.string().max(200)).optional()})).optional(),
- referencesPage:referencesPageSchema.optional(),photoLinksPage:photoLinksPageSchema.optional(),extraPagesOrder:z.array(z.enum(["references","photos"])).max(2).optional(),
+ referencesPage:referencesPageSchema.optional(),photoLinksPage:photoLinksPageSchema.optional(),extraPagesOrder:z.array(z.enum(["references","photos"])).max(2).optional(),sectionOrder:z.array(z.enum(sectionOrderIds)).max(20).optional(),
  selectionBoxes:z.array(selectionBoxSchema).max(20).refine(boxes=>new Set(boxes.map(b=>b.id)).size===boxes.length,"Selection boxes must have unique IDs.").optional(),
  screens:z.array(screenSchema).max(40).optional(),hiddenSections:z.array(z.enum(proposalSectionIds)).max(20).optional(),
 });
@@ -246,6 +249,8 @@ export function defaultReferencesPage():ReferencesPage { return {enabled:false,t
 export function defaultPhotoLinksPage():PhotoLinksPage { return {enabled:false,title:"Event Photo Links",introduction:"Explore photos from previous TeeVents events.",links:[]}; }
 export type ExtraPageId="references"|"photos";
 export function extraPagesOrder(d:WebDocument):ExtraPageId[] { const o=(d.extraPagesOrder??[]).filter((x,i,a)=>a.indexOf(x)===i); return [...o,...(["references","photos"] as ExtraPageId[]).filter(x=>!o.includes(x))]; }
+export function defaultSectionOrder(d:WebDocument):SectionOrderId[] { return ["about","intro","programs","details","addons","screens","questions","sample-event",...extraPagesOrder(d),"next","closure","notice"]; }
+export function proposalSectionOrder(d:WebDocument):SectionOrderId[] { const o=(d.sectionOrder??[]).filter((x,i,a)=>sectionOrderIds.includes(x)&&a.indexOf(x)===i); return [...o,...defaultSectionOrder(d).filter(x=>!o.includes(x))]; }
 export function moveItem<T>(list:T[],index:number,delta:number):T[] { const j=index+delta; if(j<0||j>=list.length) return list; const n=[...list]; [n[index],n[j]]=[n[j],n[index]]; return n; }
 export function proposalReferencesPage(d:WebDocument):ReferencesPage { return d.referencesPage??defaultReferencesPage(); }
 export function proposalPhotoLinksPage(d:WebDocument):PhotoLinksPage { return d.photoLinksPage??defaultPhotoLinksPage(); }

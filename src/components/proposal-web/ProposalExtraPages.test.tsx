@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import ProposalExtraPages from "./ProposalExtraPages";
+import { ReferencesSection, PhotosSection } from "./ProposalExtraPages";
 import { defaultPhotoLinksPage, defaultReferencesPage, emptyDocument } from "./content";
 
 afterEach(cleanup);
@@ -10,7 +10,7 @@ describe("optional proposal pages", () => {
     const d = emptyDocument();
     d.referencesPage = { ...defaultReferencesPage(), enabled: true, entries: [{ id: "ref-1", name: "Jordan Lee", organization: "Community Golf Foundation", description: "Annual charity tournament", contact: "jordan@example.test" }] };
     d.photoLinksPage = { ...defaultPhotoLinksPage(), enabled: true, links: [{ id: "photo-1", title: "2026 Charity Classic", url: "https://images.example.test/classic.jpg", description: "Awards ceremony" }] };
-    render(<ProposalExtraPages document={d} />);
+    render(<><ReferencesSection document={d} /><PhotosSection document={d} /></>);
     expect(screen.getByRole("heading", { name: "References" })).toBeTruthy();
     expect(screen.getByText("Community Golf Foundation")).toBeTruthy();
     const image = screen.getByRole("img", { name: "2026 Charity Classic" });
@@ -22,7 +22,7 @@ describe("optional proposal pages", () => {
   });
 
   it("renders nothing for disabled optional pages", () => {
-    const { container } = render(<ProposalExtraPages document={emptyDocument()} />);
+    const { container } = render(<><ReferencesSection document={emptyDocument()} /><PhotosSection document={emptyDocument()} /></>);
     expect(container).toBeEmptyDOMElement();
   });
 });

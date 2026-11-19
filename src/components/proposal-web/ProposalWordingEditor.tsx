@@ -16,6 +16,7 @@ import {
   proposalPageContent,
   proposalPhotoLinksPage,
   extraPagesOrder,
+  proposalSectionOrder,
   moveItem,
   proposalReferencesPage,
   sectionShown,
@@ -24,8 +25,25 @@ import {
   withProgramDetail,
   type PageContent,
   type ProposalSectionId,
+  type SectionOrderId,
   type WebDocument,
 } from "./content";
+
+const sectionOrderLabels: Record<SectionOrderId, string> = {
+  about: "About TeeVents",
+  intro: "Quick note (intro and reason)",
+  programs: "Programs at a Glance",
+  details: "Program details and expectations",
+  addons: "Add ons",
+  screens: "Sample screens and photos",
+  questions: "Common Questions",
+  "sample-event": "Sample event page",
+  references: "References",
+  photos: "Event Photo Links",
+  next: "Next Steps",
+  closure: "Start choice and signature",
+  notice: "Private-link notice",
+};
 
 function InputLine({ label, value, onChange, type = "text" }: { label: string; value: string; onChange: (value: string) => void; type?: string }) {
   const id = useId();
@@ -66,6 +84,9 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
   const setScreens = (next: typeof screens) => onChange({ ...d, screens: next });
   const shown = (id: ProposalSectionId) => sectionShown(d, id);
   const setShown = (id: ProposalSectionId, v: boolean) => onChange({ ...d, hiddenSections: v ? (d.hiddenSections ?? []).filter(x => x !== id) : [...(d.hiddenSections ?? []).filter(x => x !== id), id] });
+  const order = proposalSectionOrder(d);
+  const num = (id: SectionOrderId) => order.indexOf(id) + 2;
+  const moveSection = (index: number, delta: number) => onChange({ ...d, sectionOrder: moveItem(order, index, delta) });
   const fields_ = (list: FieldDef[]) => list.map(field => field.rows === 1 ? (
     <InputLine key={field.key} label={field.label} type={field.type} value={copy[field.key]} onChange={value => updateCopy(field.key, value)} />
   ) : (
@@ -79,11 +100,25 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
 
       <div className="mt-6 space-y-4">
         <p className="text-sm font-semibold">Sections are listed in the same order the client sees them.</p>
+        <div className="rounded-lg border border-border bg-background p-4">
+          <p className="font-semibold">Section order</p>
+          <p className="mt-1 text-sm text-muted-foreground">Use the arrows to move any section up or down. The cover always stays first. The client page and the printout follow this order.</p>
+          <ol className="mt-4 space-y-2">
+            <li className="flex items-center gap-3 text-sm"><span className="w-6 font-semibold">1.</span><span className="flex-1">Cover and contact details</span><span className="text-xs text-muted-foreground">always first</span></li>
+            {order.map((id, index) => (
+              <li key={id} className="flex items-center gap-3 text-sm">
+                <span className="w-6 font-semibold">{index + 2}.</span>
+                <span className="flex-1">{sectionOrderLabels[id]}</span>
+                <MoveButtons label={sectionOrderLabels[id]} index={index} count={order.length} onMove={delta => moveSection(index, delta)} />
+              </li>
+            ))}
+          </ol>
+        </div>
         <Group title="1. Cover and contact details">{fields_([f("coverSubtitle","Cover subtitle",1),f("coverPromise","Cover promise",3),f("contactWebsite","Website (clickable)",1),f("contactEmail","Email",1,"email"),f("contactPhone","Phone",1,"tel")])}</Group>
-        <Group title="2. About TeeVents" show={shown("about")} onShow={v => setShown("about", v)}>{fields_([f("aboutHeading","Section title",1),f("aboutBody","About TeeVents wording",14),f("aboutIncludes","Every program includes",5)])}</Group>
-        <Group title="3. Quick note (intro and reason)" show={shown("intro")} onShow={v => setShown("intro", v)}>{fields_([f("introHeading","Section title",1)])}<p className="text-sm text-muted-foreground">The recommended program, intro and reason boxes are in this section on the proposal below.</p></Group>
-        <Group title="4. Programs at a Glance" show={shown("programs")} onShow={v => setShown("programs", v)}>{fields_([f("programsHeading","Section title",1)])}<p className="text-sm text-muted-foreground">Pick which programs to include in this section on the proposal below.</p></Group>
-        <Group title="5. Program details and expectations" show={shown("details")} onShow={v => setShown("details", v)}>
+        <Group title={`${num("about")}. About TeeVents`} show={shown("about")} onShow={v => setShown("about", v)}>{fields_([f("aboutHeading","Section title",1),f("aboutBody","About TeeVents wording",14),f("aboutIncludes","Every program includes",5)])}</Group>
+        <Group title={`${num("intro")}. Quick note (intro and reason)`} show={shown("intro")} onShow={v => setShown("intro", v)}>{fields_([f("introHeading","Section title",1)])}<p className="text-sm text-muted-foreground">The recommended program, intro and reason boxes are in this section on the proposal below.</p></Group>
+        <Group title={`${num("programs")}. Programs at a Glance`} show={shown("programs")} onShow={v => setShown("programs", v)}>{fields_([f("programsHeading","Section title",1)])}<p className="text-sm text-muted-foreground">Pick which programs to include in this section on the proposal below.</p></Group>
+        <Group title={`${num("details")}. Program details and expectations`} show={shown("details")} onShow={v => setShown("details", v)}>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">Edit the definition, inclusions, scope, group responsibilities, limits and other terms for each selected program. Price wording shown to this client is editable; platform-fee terms stay connected to the program. Show, hide, rename or reorder any part. Full Service price, deposit, payment and cancellation wording is edited in its pricing area below.</p>
           <div className="mt-5 space-y-4">{shownPrograms(d).map(program => (
             <details key={program} className="rounded-lg border border-border bg-background p-4">
@@ -103,8 +138,8 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
             </details>
           ))}</div>
         </Group>
-        <Group title="6. Add ons" show={shown("addons")} onShow={v => setShown("addons", v)}>{fields_([f("addonsHeading","Section title",2),f("addonsItems","Add ons, one per line",8),f("addonsNote","Processing note",3)])}</Group>
-        <Group title="7. Sample screens and photos" show={shown("screens")} onShow={v => setShown("screens", v)}>
+        <Group title={`${num("addons")}. Add ons`} show={shown("addons")} onShow={v => setShown("addons", v)}>{fields_([f("addonsHeading","Section title",2),f("addonsItems","Add ons, one per line",8),f("addonsNote","Processing note",3)])}</Group>
+        <Group title={`${num("screens")}. Sample screens and photos`} show={shown("screens")} onShow={v => setShown("screens", v)}>
           {fields_([f("screensHeading","Section title",2)])}
           {screens.map((x, index) => (
             <div key={x.id} className="space-y-3 rounded-lg border border-border bg-background p-4">
@@ -116,7 +151,7 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
           {!screens.length && <p className="text-sm text-muted-foreground">No photos. This section stays hidden until you add one.</p>}
           <div className="flex flex-wrap gap-2"><Button type="button" variant="outline" onClick={() => setScreens([...screens, { id: crypto.randomUUID(), title: "", caption: "", url: "" }])}><Plus />Add photo</Button><Button type="button" variant="ghost" onClick={() => setScreens([])}><Trash2 />Remove all</Button><Button type="button" variant="ghost" onClick={() => setScreens(defaultScreens())}><RotateCcw />Restore sample screens</Button></div>
         </Group>
-        <Group title="8. Common Questions" show={shown("questions")} onShow={v => setShown("questions", v)}>{fields_([f("questionsHeading","Section title",1)])}
+        <Group title={`${num("questions")}. Common Questions`} show={shown("questions")} onShow={v => setShown("questions", v)}>{fields_([f("questionsHeading","Section title",1)])}
           <div className="mt-5 space-y-5">{faqs.map((item, index) => (
             <div key={item.id} className="space-y-4 rounded-lg border border-border bg-background p-4">
               <div className="flex items-center justify-between gap-3"><span className="font-semibold">Question {index + 1}</span><Button type="button" variant="ghost" size="sm" onClick={() => onChange({ ...d, faqItems: faqs.filter(faq => faq.id !== item.id) })}><Trash2 />Remove</Button></div>
@@ -126,10 +161,9 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
           ))}</div>
           <Button type="button" variant="outline" className="mt-5" onClick={() => onChange({ ...d, faqItems: [...faqs, { id: crypto.randomUUID(), question: "", answer: "" }] })}><Plus />Add question</Button>
 </Group>
-        <Group title="9. Sample event page" show={shown("sample-event")} onShow={v => setShown("sample-event", v)}>{fields_([f("sampleEventHeading","Section title",1),f("sampleEventBody","Sample event wording",5),f("sampleEventButton","Button text",1),f("sampleEventUrl","Button link",1,"url")])}</Group>
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-border bg-background p-4 text-sm"><span className="font-semibold">Page order: {extraPagesOrder(d).map(x => x === "references" ? "References" : "Event Photo Links").join(" → ")}</span><Button type="button" variant="outline" size="sm" onClick={() => onChange({ ...d, extraPagesOrder: [...extraPagesOrder(d)].reverse() })}><ArrowUp />Swap References and Event Photo Links</Button></div>
+        <Group title={`${num("sample-event")}. Sample event page`} show={shown("sample-event")} onShow={v => setShown("sample-event", v)}>{fields_([f("sampleEventHeading","Section title",1),f("sampleEventBody","Sample event wording",5),f("sampleEventButton","Button text",1),f("sampleEventUrl","Button link",1,"url")])}</Group>
         {extraPagesOrder(d).map(id => id === "references" ? <div key={id}>
-        <Group title={`${10 + extraPagesOrder(d).indexOf("references")}. References`}>
+        <Group title={`${num("references")}. References`}>
           <label className="mt-5 flex items-center gap-3 font-semibold"><input type="checkbox" checked={references.enabled} onChange={event => updateReferences({ ...references, enabled: event.target.checked })} />Include a References page in this proposal</label>
           <div className="mt-5 grid gap-5">
             <InputLine label="References page title" value={references.title} onChange={title => updateReferences({ ...references, title })} />
@@ -146,7 +180,7 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
           </div>
 </Group>
         </div> : <div key={id}>
-        <Group title={`${10 + extraPagesOrder(d).indexOf("photos")}. Event Photo Links`}>
+        <Group title={`${num("photos")}. Event Photo Links`}>
           <label className="mt-5 flex items-center gap-3 font-semibold"><input type="checkbox" checked={photos.enabled} onChange={event => updatePhotos({ ...photos, enabled: event.target.checked })} />Include an Event Photo Links page in this proposal</label>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">Upload a preview photo for each link so clients see a picture. Clicking the picture or link opens the gallery.</p>
           <div className="mt-5 grid gap-5">
@@ -165,9 +199,9 @@ export default function ProposalWordingEditor({ document: d, onChange }: { docum
           </div>
 </Group>
         </div>)}
-        <Group title="12. Next Steps" show={shown("next")} onShow={v => setShown("next", v)}>{fields_([f("nextStepsHeading","Section title",1),f("nextStepsItems","Next steps, one per line",7),f("nextStepsContact","Contact line",3),f("nextStepsFooter","Proposal note",6)])}<p className="text-sm text-muted-foreground">The Contact TeeVents button emails the address in section 1.</p></Group>
-        <Group title="13. Start choice and signature" show={d.closureEnabled !== false} onShow={v => onChange({ ...d, closureEnabled: v })}>{fields_([f("closureHeading","Section title",1),f("closureIntroduction","Start choice introduction",4)])}<SelectionBoxesEditor document={d} onChange={onChange}/><label className="flex items-center gap-3 font-semibold"><input type="checkbox" checked={showValidityLine(d)} onChange={e => onChange({ ...d, validityLineEnabled: e.target.checked })} />Show the validity line at the bottom ("This proposal ... is valid until ...")</label><p className="text-sm text-muted-foreground">Clients pick a program here, answer a few questions, and type their name to sign. You get an email when they submit.</p></Group>
-        <Group title="14. Private-link notice" show={shown("notice")} onShow={v => setShown("notice", v)}>{fields_([f("noticeText","Private-link notice",4)])}</Group>
+        <Group title={`${num("next")}. Next Steps`} show={shown("next")} onShow={v => setShown("next", v)}>{fields_([f("nextStepsHeading","Section title",1),f("nextStepsItems","Next steps, one per line",7),f("nextStepsContact","Contact line",3),f("nextStepsFooter","Proposal note",6)])}<p className="text-sm text-muted-foreground">The Contact TeeVents button emails the address in section 1.</p></Group>
+        <Group title={`${num("closure")}. Start choice and signature`} show={d.closureEnabled !== false} onShow={v => onChange({ ...d, closureEnabled: v })}>{fields_([f("closureHeading","Section title",1),f("closureIntroduction","Start choice introduction",4)])}<SelectionBoxesEditor document={d} onChange={onChange}/><label className="flex items-center gap-3 font-semibold"><input type="checkbox" checked={showValidityLine(d)} onChange={e => onChange({ ...d, validityLineEnabled: e.target.checked })} />Show the validity line at the bottom ("This proposal ... is valid until ...")</label><p className="text-sm text-muted-foreground">Clients pick a program here, answer a few questions, and type their name to sign. You get an email when they submit.</p></Group>
+        <Group title={`${num("notice")}. Private-link notice`} show={shown("notice")} onShow={v => setShown("notice", v)}>{fields_([f("noticeText","Private-link notice",4)])}</Group>
       </div>
     </section>
   );

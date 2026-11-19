@@ -1,7 +1,7 @@
 import { Fmt } from "./RichText";
-import { Fragment, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { ExternalLink } from "lucide-react";
-import { extraPagesOrder, safeExternalUrl, type PhotoLinksPage, type WebDocument } from "./content";
+import { safeExternalUrl, type PhotoLinksPage, type WebDocument } from "./content";
 
 function EventPhotoLink({ link }: { link: PhotoLinksPage["links"][number] }) {
   const url = safeExternalUrl(link.url);
@@ -37,39 +37,37 @@ function EventPhotoLink({ link }: { link: PhotoLinksPage["links"][number] }) {
 }
 
 /** Optional per-proposal pages. Disabled or absent pages render nothing on historical copies. */
-export default function ProposalExtraPages({ document: d }: { document: WebDocument }) {
+export function ReferencesSection({ document: d }: { document: WebDocument }) {
   const references = d.referencesPage;
-  const photos = d.photoLinksPage;
+  if (!references?.enabled) return null;
   return (
-    <>
-      {extraPagesOrder(d).map(id => id === "references" ? <Fragment key={id}>
-      {references?.enabled && (
-        <section id="references" data-track className="proposal-extra-page border-b border-border py-12">
-          <h2 className="font-display text-3xl font-bold text-primary">{references.title || "References"}</h2>
-          {references.introduction && <p className="mt-6 whitespace-pre-wrap text-lg leading-8"><Fmt text={references.introduction}/></p>}
-          <div className="mt-8 grid gap-5 md:grid-cols-2">
-            {references.entries.filter(entry => entry.name || entry.organization || entry.description || entry.contact).map(entry => (
-              <article key={entry.id} className="reference-entry rounded-lg border border-border bg-background p-5">
-                {entry.name && <h3 className="font-display text-xl font-semibold">{entry.name}</h3>}
-                {entry.organization && <p className="mt-1 font-semibold text-primary">{entry.organization}</p>}
-                {entry.description && <p className="mt-4 whitespace-pre-wrap leading-7"><Fmt text={entry.description}/></p>}
-                {entry.contact && <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground"><strong>Contact:</strong> {entry.contact}</p>}
-              </article>
-            ))}
-          </div>
-        </section>
-      )}
-      </Fragment> : <Fragment key={id}>
-      {photos?.enabled && (
-        <section id="event-photos" data-track className="proposal-extra-page border-b border-border py-12">
-          <h2 className="font-display text-3xl font-bold text-primary">{photos.title || "Event Photo Links"}</h2>
-          {photos.introduction && <p className="mt-6 whitespace-pre-wrap text-lg leading-8"><Fmt text={photos.introduction}/></p>}
-          <div className="mt-8 grid gap-6 md:grid-cols-2">
-            {photos.links.map(link => <EventPhotoLink key={link.id} link={link} />)}
-          </div>
-        </section>
-      )}
-      </Fragment>)}
-    </>
+    <section id="references" data-track className="proposal-extra-page border-b border-border py-12">
+      <h2 className="font-display text-3xl font-bold text-primary">{references.title || "References"}</h2>
+      {references.introduction && <p className="mt-6 whitespace-pre-wrap text-lg leading-8"><Fmt text={references.introduction}/></p>}
+      <div className="mt-8 grid gap-5 md:grid-cols-2">
+        {references.entries.filter(entry => entry.name || entry.organization || entry.description || entry.contact).map(entry => (
+          <article key={entry.id} className="reference-entry rounded-lg border border-border bg-background p-5">
+            {entry.name && <h3 className="font-display text-xl font-semibold">{entry.name}</h3>}
+            {entry.organization && <p className="mt-1 font-semibold text-primary">{entry.organization}</p>}
+            {entry.description && <p className="mt-4 whitespace-pre-wrap leading-7"><Fmt text={entry.description}/></p>}
+            {entry.contact && <p className="mt-4 whitespace-pre-wrap break-words text-sm leading-6 text-muted-foreground"><strong>Contact:</strong> {entry.contact}</p>}
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+export function PhotosSection({ document: d }: { document: WebDocument }) {
+  const photos = d.photoLinksPage;
+  if (!photos?.enabled) return null;
+  return (
+    <section id="event-photos" data-track className="proposal-extra-page border-b border-border py-12">
+      <h2 className="font-display text-3xl font-bold text-primary">{photos.title || "Event Photo Links"}</h2>
+      {photos.introduction && <p className="mt-6 whitespace-pre-wrap text-lg leading-8"><Fmt text={photos.introduction}/></p>}
+      <div className="mt-8 grid gap-6 md:grid-cols-2">
+        {photos.links.map(link => <EventPhotoLink key={link.id} link={link} />)}
+      </div>
+    </section>
   );
 }

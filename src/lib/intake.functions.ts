@@ -1,7 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { tournamentIntakeSchema, leagueIntakeSchema, intakeSubject, intakeEmailText } from "./intake.schema";
+import { tournamentIntakeSchema, leagueIntakeSchema } from "./intake.schema";
+import { sendIntakeAdminEmail } from "./signup.functions";
 
 const tokenSchema = z.object({ token: z.string().uuid() });
 
@@ -59,22 +60,7 @@ export const submitIntake = createServerFn({ method: "POST" })
     const status = row.status === "not_submitted" ? "new" : row.status;
     const { error } = await admin.from("organizer_intakes").update({ details, status, submitted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", row.id);
     if (error) return { ok: false as const, message: "We could not save your details. Please try again." };
-    const key = process.env["RESEND_API_KEY"];
-    let emailed = false;
-    if (key) {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: "TeeVents Golf Management <info@notifications.teevents.golf>",
-          to: ["info@teevents.golf"],
-          ...(row.contact["email"] ? { reply_to: String(row.contact["email"]) } : {}),
-          subject: intakeSubject(row.interest_area, details),
-          text: intakeEmailText(row.interest_area, details, row.contact) + "\n\nAdmin queue: https://www.teevents.golf/admin/intakes",
-        }),
-        signal: AbortSignal.timeout(15000),
-      }).catch(() => null);
-      emailed = !!res?.ok;
-    }
+    // Admin notification only on the first submission; edits never re-send.
+    const emailed = row.status === "not_submitted" ? await sendIntakeAdminEmail(row.interest_area, details, row.contact) : false;
     return { ok: true as const, emailed, details };
   });

@@ -52,12 +52,6 @@ export default function AdminVetting() {
     setBusy(false);
   };
 
-  const openDoc = async (r: Row) => {
-    try {
-      const { url } = (await act({ data: { id: r.id, action: "doc_url" } })) as any;
-      window.open(url, "_blank", "noopener");
-    } catch (e: any) { toast.error(e?.message || "Could not open document"); }
-  };
 
   return (
     <div className="space-y-4">
@@ -115,8 +109,6 @@ export default function AdminVetting() {
                   ["IP address", detail.ip_address],
                   ["Submitted", new Date(detail.signup_date || detail.created_at).toLocaleString()],
                   ["Flag reasons", (detail.flag_reasons || []).join("; ") || "—"],
-                  ["Social profile", detail.doc_social_url],
-                  ["Tax / Reg. ID", detail.doc_tax_id],
                 ].map(([k, v]) => (
                   <div key={k as string} className="contents">
                     <dt className="text-muted-foreground">{k}</dt>
@@ -127,11 +119,6 @@ export default function AdminVetting() {
               <div className="text-sm">
                 <div className="text-muted-foreground mb-1">Event description</div>
                 <p className="whitespace-pre-wrap border rounded p-2">{detail.event_description || "—"}</p>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                {detail.doc_social_url && <Button size="sm" variant="outline" asChild><a href={detail.doc_social_url} target="_blank" rel="noopener noreferrer"><ExternalLink className="h-4 w-4 mr-1" />Open profile</a></Button>}
-                {detail.doc_file_path && <Button size="sm" variant="outline" onClick={() => openDoc(detail)}><FileText className="h-4 w-4 mr-1" />View uploaded document</Button>}
-                {!detail.docs_submitted_at && <span className="text-xs text-muted-foreground self-center">No documentation submitted yet.</span>}
               </div>
               <div>
                 <div className="text-sm text-muted-foreground mb-1">Note (optional — included in the email; used as the rejection reason)</div>

@@ -6,38 +6,51 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Trophy, Flag, Loader2, CheckCircle2, ArrowLeft, Mail, ShieldAlert } from "lucide-react";
+import { Trophy, Flag, Loader2, CheckCircle2, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import SEO from "@/components/SEO";
 import logo from "@/assets/logo-black.png";
+import { createSignup } from "@/lib/signup.functions";
+import { getIntake, submitIntake, uploadIntakeLogo } from "@/lib/intake.functions";
+import {
+  FORMATS_TOURNAMENT, WEEKDAYS, BUILD_CHOICES, SUMMARY_KEYS, contactSchema, intakeValue,
+  tournamentEventSchema, tournamentIntakeSchema, leagueEventSchema, leagueIntakeSchema, leagueFeeLines,
+} from "@/lib/intake.schema";
 
-type Step = "interest" | "personal" | "organization" | "security" | "sent" | "flagged";
+type Step = "interest" | "personal" | "event" | "registration" | "done";
 type Interest = "tournament" | "league";
+type D = Record<string, any>;
 
 const planLabels: Record<string, string> = {
   "no-cost": "No Cost to Start",
   "per-event": "Per-Event",
   "per-league": "Per-League",
 };
-const ROLES = ["Tournament Director", "Club Manager", "Event Coordinator", "Coach", "League Manager", "Other"];
-const EVENTS = ["1-2", "3-5", "6-10", "10+"];
-const SOURCES = ["Facebook", "Instagram", "LinkedIn", "Google Search", "Word of Mouth", "Golf Course", "Other"];
-const DISPOSABLE = ["mailinator.com", "temp-mail.org", "tempmail.com", "10minutemail.com", "guerrillamail.com", "yopmail.com", "trashmail.com", "getnada.com", "maildrop.cc", "throwawaymail.com", "sharklasers.com", "dispostable.com", "mailsac.com", "mail.tm"];
+const STEPS: Step[] = ["personal", "event", "registration"];
+const TOKEN_KEY = "teevents.intakeToken";
 
 declare global {
   interface Window { hcaptcha?: any; }
 }
 
-const STEPS: { key: Step; label: string }[] = [
-  { key: "personal", label: "You" },
-  { key: "organization", label: "Organization" },
-  { key: "security", label: "Finish" },
-];
+const blank = (k: Interest): D => k === "tournament"
+  ? { eventDate: "", dateNotSet: false, regStartTime: "08:00", eventName: "", orgName: "", courseName: "", courseCityState: "", format: "Not sure yet", fieldSize: "", priceIndividual: "", priceFoursome: "", registrationDeadline: "", sponsorships: "", logoPath: "", colors: "", beneficiary: "", buildChoice: BUILD_CHOICES[0], notes: "" }
+  : { leagueName: "", orgName: "", seasonStart: "", seasonEnd: "", datesNotSet: false, courseName: "", courseCityState: "", days: [], weeks: "", players: "", feePerPlayer: "", additionalCourses: "", teeTime: "", standingsDetails: "", sponsorships: "", logoPath: "", colors: "", buildChoice: BUILD_CHOICES[0], notes: "" };
 
 function Req() { return <span className="text-destructive">*</span>; }
 function Err({ msg }: { msg?: string }) {
   return msg ? <p className="text-xs text-destructive mt-1">{msg}</p> : null;
+}
+const fmt = (c: number) => `$${(c / 100).toFixed(2)}`;
+const COURSE_HELP = "Leave blank if you do not have a course yet.";
+
+function issues(r: { success: boolean; error?: { issues: { path: (string | number)[]; message: string }[] } }): Record<string, string> {
+  const out: Record<string, string> = {};
+  if (!r.success) for (const i of r.error!.issues) { const k = String(i.path[0]); if (!out[k]) out[k] = i.message; }
+  return out;
 }
 
 export default function Signup() {
@@ -45,34 +58,48 @@ export default function Signup() {
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const selectedPlan = searchParams.get("plan") || "";
+  const editToken = searchParams.get("edit");
 
   const [step, setStep] = useState<Step>("interest");
   const [loading, setLoading] = useState(false);
   const [interest, setInterest] = useState<Interest | null>(null);
-  const [touched, setTouched] = useState<Record<string, boolean>>({});
-
-  const [f, setF] = useState({
-    full_legal_name: "", email: "", phone_number: "",
-    organization_name: "", organization_website: "", role: "", events_per_year: "", event_description: "",
-    paid_registrations: null as boolean | null, referral_source: "",
-  });
-  const set = (k: keyof typeof f, v: any) => { setF((p) => ({ ...p, [k]: v })); setTouched((t) => ({ ...t, [k]: true })); };
+  const [c, setC] = useState({ first_name: "", last_name: "", email: "", phone_number: "" });
+  const [d, setD] = useState<D>(blank("tournament"));
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [skippedDone, setSkippedDone] = useState(false);
 
   const [siteKey, setSiteKey] = useState<string | null>(null);
   const [captchaToken, setCaptchaToken] = useState("");
   const captchaRef = useRef<HTMLDivElement>(null);
   const widgetId = useRef<any>(null);
 
+  const setField = (k: string, v: unknown) => { setD(p => ({ ...p, [k]: v })); setErrors(e => { const n = { ...e }; delete n[k]; return n; }); };
+  const setContact = (k: keyof typeof c, v: string) => { setC(p => ({ ...p, [k]: v })); setErrors(e => { const n = { ...e }; delete n[k]; return n; }); };
+
   useEffect(() => {
+    if (editToken) return;
     const interestParam = searchParams.get("interest");
     const planParam = searchParams.get("plan");
     const planInterest: Interest | null = planParam === "per-league" ? "league"
       : planParam === "no-cost" || planParam === "per-event" ? "tournament" : null;
     if (planInterest || interestParam === "tournament" || interestParam === "league") {
-      setInterest(planInterest || (interestParam as Interest));
+      const k = planInterest || (interestParam as Interest);
+      setInterest(k); setD(blank(k));
       setStep("personal");
     }
-  }, [searchParams]);
+  }, [searchParams, editToken]);
+
+  // Edit my details (or finish details after a plan payment): reopen Steps 2 and 3.
+  useEffect(() => {
+    if (!editToken) return;
+    getIntake({ data: { token: editToken } }).then((row: any) => {
+      if (!row) { toast({ title: "This link is no longer valid.", variant: "destructive" }); return; }
+      const k = row.interest as Interest;
+      setInterest(k); setToken(editToken); setD({ ...blank(k), ...(row.details || {}) }); setStep("event");
+    }).catch(() => {});
+  }, [editToken, toast]);
 
   useEffect(() => {
     supabase.functions.invoke("signup-with-vetting", { method: "GET" })
@@ -80,8 +107,9 @@ export default function Signup() {
       .catch(() => {});
   }, []);
 
+  const needsCaptcha = !token && (step === "event" || step === "registration");
   useEffect(() => {
-    if (step !== "security" || !siteKey || !captchaRef.current) return;
+    if (!needsCaptcha || !siteKey || !captchaRef.current) return;
     const render = () => {
       if (!window.hcaptcha || !captchaRef.current || widgetId.current !== null) return;
       widgetId.current = window.hcaptcha.render(captchaRef.current, {
@@ -91,76 +119,90 @@ export default function Signup() {
       });
     };
     if (window.hcaptcha) { render(); return; }
-    const s = document.createElement("script");
-    s.src = "https://js.hcaptcha.com/1/api.js?render=explicit";
-    s.async = true;
-    s.onload = render;
-    document.head.appendChild(s);
-    return () => { widgetId.current = null; };
-  }, [step, siteKey]);
+    const sc = document.createElement("script");
+    sc.src = "https://js.hcaptcha.com/1/api.js?render=explicit";
+    sc.async = true;
+    sc.onload = render;
+    document.head.appendChild(sc);
+    return () => { widgetId.current = null; setCaptchaToken(""); };
+  }, [needsCaptcha, step, siteKey]);
 
-  const errors: Record<string, string | undefined> = {
-    full_legal_name: f.full_legal_name.trim().length < 2 ? "Enter your full legal name." : undefined,
-    email: !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email.trim()) ? "Enter a valid email address."
-      : DISPOSABLE.includes(f.email.split("@")[1]?.toLowerCase() || "") ? "Temporary email addresses aren't accepted." : undefined,
-    phone_number: f.phone_number.replace(/\D/g, "").length < 10 ? "Enter a valid phone number." : undefined,
-    organization_name: !f.organization_name.trim() ? "Enter your organization name." : undefined,
-    organization_website: f.organization_website.trim() && !/^(https?:\/\/)?[^\s.]+\.[^\s]{2,}$/i.test(f.organization_website.trim()) ? "Enter a valid website (e.g. yourclub.com)." : undefined,
-    role: !f.role ? "Select your role." : undefined,
-    events_per_year: !f.events_per_year ? "Select how many events." : undefined,
-    event_description: f.event_description.trim().length < 10 ? "Tell us a little about your event (10+ characters)." : undefined,
-    paid_registrations: f.paid_registrations === null ? "Please choose Yes or No." : undefined,
+  const kind: Interest = interest || "tournament";
+  const goNextFromPersonal = () => {
+    const e = issues(contactSchema.safeParse(c));
+    setErrors(e);
+    if (!Object.keys(e).length) setStep("event");
   };
-  const show = (k: string) => (touched[k] ? errors[k] : undefined);
-  const stepFields: Record<string, string[]> = {
-    personal: ["full_legal_name", "email", "phone_number"],
-    organization: ["organization_name", "organization_website", "role", "events_per_year", "event_description"],
-    security: ["paid_registrations"],
-  };
-  const next = (from: Step, to: Step) => {
-    const fields = stepFields[from] || [];
-    setTouched((t) => ({ ...t, ...Object.fromEntries(fields.map((k) => [k, true])) }));
-    if (fields.some((k) => errors[k])) return;
-    setStep(to);
+  const goNextFromEvent = () => {
+    const r = (kind === "league" ? leagueEventSchema : tournamentEventSchema).safeParse(d);
+    const e = issues(r);
+    if (kind === "tournament" && !d["dateNotSet"] && !/^\d{4}-\d{2}-\d{2}$/.test(d["eventDate"])) e["eventDate"] = "Choose the tournament date, or check Date not set yet.";
+    if (kind === "league" && !d["datesNotSet"]) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d["seasonStart"])) e["seasonStart"] = "Choose the season start date, or check Dates not set yet.";
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d["seasonEnd"])) e["seasonEnd"] = "Choose the season end date, or check Dates not set yet.";
+    }
+    setErrors(e);
+    if (!Object.keys(e).length) setStep("registration");
   };
 
-  const handleSubmit = async () => {
-    const all = Object.values(stepFields).flat();
-    setTouched((t) => ({ ...t, ...Object.fromEntries(all.map((k) => [k, true])) }));
-    if (!interest || all.some((k) => errors[k])) return;
+  const uploadLogo = async (t: string): Promise<string> => {
+    if (!logoFile) return d["logoPath"] || "";
+    try {
+      const base64 = await new Promise<string>((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(",")[1] || ""); fr.onerror = rej; fr.readAsDataURL(logoFile); });
+      const r = await uploadIntakeLogo({ data: { token: t, fileName: logoFile.name, contentType: logoFile.type === "image/png" ? "image/png" : "image/jpeg", base64 } });
+      return r.path;
+    } catch {
+      toast({ title: "Logo not uploaded", description: "You can send it later." });
+      return "";
+    }
+  };
+
+  const submit = async (skipped: boolean) => {
+    if (!interest) return;
+    if (!skipped) {
+      const e = issues((interest === "league" ? leagueIntakeSchema : tournamentIntakeSchema).safeParse(d));
+      setErrors(e);
+      if (Object.keys(e).length) return;
+    }
+    // Editing an existing account: save details only.
+    if (token) {
+      if (skipped) { navigate("/dashboard"); return; }
+      setLoading(true);
+      try {
+        const logoPath = await uploadLogo(token);
+        const r = await submitIntake({ data: { token, details: { ...d, logoPath } } });
+        if (!r.ok) throw new Error(r.message);
+        setD({ ...d, ...r.details }); setStep("done");
+      } catch (e: any) {
+        toast({ title: "Could not save", description: e?.message || "Please try again.", variant: "destructive" });
+      } finally { setLoading(false); }
+      return;
+    }
     if (siteKey && !captchaToken) {
       toast({ title: "Almost there", description: "Please complete the human verification.", variant: "destructive" });
       return;
     }
     setLoading(true);
     try {
-      const { data, error } = await supabase.functions.invoke("signup-with-vetting", {
-        body: {
-          ...f,
-          email: f.email.trim(),
-          referral_source: f.referral_source || null,
-          interest_area: interest,
-          captcha_token: captchaToken || null,
-          origin: window.location.origin,
-        },
-      });
-      if (error) {
-        let msg = error.message;
-        try { const b = await (error as any).context?.json(); if (b?.error) msg = b.error; } catch { /* ignore */ }
-        throw new Error(msg);
-      }
+      const r = await createSignup({ data: { interest, contact: c, skipped, details: d, selectedPlan, captchaToken, origin: window.location.origin } });
+      if (!r.ok) throw new Error(r.message);
       try {
         localStorage.setItem("teevents.pendingWorkspace", JSON.stringify({
-          interest_area: interest, organization_name: f.organization_name.trim() || null, selected_plan: selectedPlan || null,
+          interest_area: interest, organization_name: String(d["orgName"] || "").trim() || null, selected_plan: selectedPlan || null,
         }));
       } catch { /* ignore */ }
-      const intakeToken = (data as any)?.intake_token as string | undefined;
-      if ((data as any)?.status !== "flagged" && intakeToken) {
-        try { sessionStorage.setItem("teevents.intakeToken", intakeToken); } catch { /* ignore */ }
-        navigate(`/intake?token=${intakeToken}`);
-        return;
+      if (r.tokenHash) await supabase.auth.verifyOtp({ token_hash: r.tokenHash, type: "magiclink" }).catch(() => null);
+      if (r.intakeToken) {
+        setToken(r.intakeToken);
+        try { sessionStorage.setItem(TOKEN_KEY, r.intakeToken); } catch { /* ignore */ }
+        if (!skipped && logoFile) {
+          const logoPath = await uploadLogo(r.intakeToken);
+          if (logoPath) await submitIntake({ data: { token: r.intakeToken, details: { ...r.details, logoPath } } }).catch(() => null);
+        }
       }
-      setStep((data as any)?.status === "flagged" ? "flagged" : "sent");
+      if (skipped) { setSkippedDone(true); navigate("/create-workspace"); return; }
+      setD({ ...d, ...r.details });
+      setStep("done");
     } catch (e: any) {
       toast({ title: "Sign up failed", description: e?.message || "Please try again.", variant: "destructive" });
       if (window.hcaptcha && widgetId.current !== null) { window.hcaptcha.reset(widgetId.current); setCaptchaToken(""); }
@@ -169,7 +211,13 @@ export default function Signup() {
     }
   };
 
-  const stepIdx = STEPS.findIndex((s) => s.key === step);
+  const stepIdx = STEPS.indexOf(step);
+  const stepLabels = ["Your Info", kind === "league" ? "League Info" : "Event Info", "Registration Info"];
+  const fee = kind === "league" && d["feePerPlayer"] !== "" && Number(d["feePerPlayer"]) > 0 ? leagueFeeLines(Number(d["feePerPlayer"])) : null;
+  const later = !skippedDone && (
+    <p className="text-center text-sm"><button type="button" className="text-primary underline underline-offset-4" onClick={() => submit(true)} disabled={loading}>I'll add this later</button></p>
+  );
+  const captcha = needsCaptcha && siteKey && <div ref={captchaRef} className="pt-1" />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-secondary/5 flex items-center justify-center p-4 py-12">
@@ -203,7 +251,7 @@ export default function Signup() {
               </div>
               <div className="flex justify-between items-center pt-2">
                 <Button variant="ghost" asChild><Link to="/"><ArrowLeft className="h-4 w-4 mr-1" /> Back</Link></Button>
-                <Button onClick={() => setStep("personal")} disabled={!interest}>Continue</Button>
+                <Button onClick={() => { if (interest) setD(blank(interest)); setStep("personal"); }} disabled={!interest}>Continue</Button>
               </div>
               <p className="text-center text-sm text-muted-foreground pt-2">
                 Already have an account? <Link to="/get-started?mode=signin" className="text-primary underline">Sign in</Link>
@@ -215,161 +263,292 @@ export default function Signup() {
         {stepIdx >= 0 && interest && (
           <Card>
             <CardContent className="p-8 space-y-5">
-              {/* Progress */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  {[...STEPS, { key: "intake" as Step, label: interest === "league" ? "Your League" : "Your Tournament" }].map((s, i) => (
-                    <div key={s.key} className="flex-1">
+                  {stepLabels.map((label, i) => (
+                    <div key={label} className="flex-1">
                       <div className={`h-1.5 rounded-full ${i <= stepIdx ? "bg-primary" : "bg-muted"}`} />
-                      <p className={`text-xs mt-1 ${i === stepIdx ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{i + 1}. {s.label}</p>
+                      <p className={`text-xs mt-1 ${i === stepIdx ? "font-semibold text-foreground" : "text-muted-foreground"}`}>Step {i + 1} {label}</p>
                     </div>
                   ))}
                 </div>
-                {planLabels[selectedPlan] && (
-                  <p className="text-xs text-muted-foreground">{planLabels[selectedPlan]} selected</p>
-                )}
+                {planLabels[selectedPlan] && <p className="text-xs text-muted-foreground">{planLabels[selectedPlan]} selected</p>}
               </div>
 
               {step === "personal" && (
                 <>
                   <div>
-                    <h1 className="text-2xl font-bold">Personal information</h1>
-                    <p className="text-muted-foreground text-sm">Fields marked <Req /> are required.</p>
+                    <h1 className="text-2xl font-bold">Your Info</h1>
+                    <p className="text-muted-foreground text-sm">Tell us who you are, so your rep knows who to contact.</p>
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="first_name">First Name <Req /></Label>
+                      <Input id="first_name" value={c.first_name} onChange={(e) => setContact("first_name", e.target.value)} maxLength={80} autoComplete="given-name" />
+                      <Err msg={errors["first_name"]} />
+                    </div>
+                    <div>
+                      <Label htmlFor="last_name">Last Name <Req /></Label>
+                      <Input id="last_name" value={c.last_name} onChange={(e) => setContact("last_name", e.target.value)} maxLength={80} autoComplete="family-name" />
+                      <Err msg={errors["last_name"]} />
+                    </div>
                   </div>
                   <div>
-                    <Label htmlFor="full_legal_name">Full Legal Name <Req /></Label>
-                    <Input id="full_legal_name" value={f.full_legal_name} onChange={(e) => set("full_legal_name", e.target.value)} placeholder="Jane Smith" maxLength={120} />
-                    <Err msg={show("full_legal_name")} />
+                    <Label htmlFor="email">Email address <Req /></Label>
+                    <Input id="email" type="email" value={c.email} onChange={(e) => setContact("email", e.target.value)} placeholder="you@yourclub.com" maxLength={255} />
+                    <Err msg={errors["email"]} />
                   </div>
                   <div>
-                    <Label htmlFor="email">Email Address <Req /></Label>
-                    <Input id="email" type="email" value={f.email} onChange={(e) => set("email", e.target.value)} placeholder="you@yourclub.com" maxLength={255} />
-                    <Err msg={show("email")} />
-                  </div>
-                  <div>
-                    <Label htmlFor="phone_number">Phone Number <Req /></Label>
-                    <Input id="phone_number" type="tel" value={f.phone_number} onChange={(e) => set("phone_number", e.target.value)} placeholder="(555) 555-5555" maxLength={30} />
-                    <Err msg={show("phone_number")} />
+                    <Label htmlFor="phone_number">Phone <Req /></Label>
+                    <Input id="phone_number" type="tel" value={c.phone_number} onChange={(e) => setContact("phone_number", e.target.value)} placeholder="(555) 555-5555" maxLength={30} />
+                    <Err msg={errors["phone_number"]} />
                   </div>
                   <div className="flex justify-between pt-2">
                     <Button variant="ghost" onClick={() => setStep("interest")}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
-                    <Button onClick={() => next("personal", "organization")}>Continue</Button>
+                    <Button onClick={goNextFromPersonal}>Next</Button>
                   </div>
                 </>
               )}
 
-              {step === "organization" && (
+              {step === "event" && kind === "tournament" && (
                 <>
                   <div>
-                    <h1 className="text-2xl font-bold">Organization information</h1>
-                    <p className="text-muted-foreground text-sm">Helps us verify legitimate organizers.</p>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="organization_name">Organization Name <Req /></Label>
-                      <Input id="organization_name" value={f.organization_name} onChange={(e) => set("organization_name", e.target.value)} placeholder="Pinehurst Ridge Golf Club" maxLength={150} />
-                      <Err msg={show("organization_name")} />
-                    </div>
-                    <div>
-                      <Label htmlFor="organization_website">Organization Website URL (optional)</Label>
-                      <Input id="organization_website" type="url" value={f.organization_website} onChange={(e) => set("organization_website", e.target.value)} placeholder="https://yourclub.com" maxLength={300} />
-                      <p className="text-xs text-muted-foreground mt-1">Leave blank if you do not have a website.</p>
-                      <Err msg={show("organization_website")} />
-                    </div>
-                  </div>
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <Label>Your Role in the Organization <Req /></Label>
-                      <Select value={f.role} onValueChange={(v) => set("role", v)}>
-                        <SelectTrigger><SelectValue placeholder="Select your role" /></SelectTrigger>
-                        <SelectContent>{ROLES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-                      </Select>
-                      <Err msg={show("role")} />
-                    </div>
-                    <div>
-                      <Label>Tournaments or leagues in the next 12 months <Req /></Label>
-                      <Select value={f.events_per_year} onValueChange={(v) => set("events_per_year", v)}>
-                        <SelectTrigger><SelectValue placeholder="Select a range" /></SelectTrigger>
-                        <SelectContent>{EVENTS.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
-                      </Select>
-                      <Err msg={show("events_per_year")} />
-                    </div>
+                    <h1 className="text-2xl font-bold">Event Info</h1>
+                    <p className="text-muted-foreground text-sm">Tell us about your tournament, so we can start building it.</p>
                   </div>
                   <div>
-                    <Label htmlFor="event_description">Brief Description of Your Upcoming Event(s) <Req /></Label>
-                    <Textarea id="event_description" rows={4} value={f.event_description} onChange={(e) => set("event_description", e.target.value)} placeholder="e.g. Annual charity scramble, 144 players, October 2026" maxLength={2000} />
-                    <Err msg={show("event_description")} />
-                  </div>
-                  <div className="flex justify-between pt-2">
-                    <Button variant="ghost" onClick={() => setStep("personal")}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
-                    <Button onClick={() => next("organization", "security")}>Continue</Button>
-                  </div>
-                </>
-              )}
-
-              {step === "security" && (
-                <>
-                  <div>
-                    <h1 className="text-2xl font-bold">Almost done</h1>
-                    <p className="text-muted-foreground text-sm">A couple of final questions.</p>
+                    <Label htmlFor="eventDate">What is the date of your tournament? {!d["dateNotSet"] && <Req />}</Label>
+                    <Input id="eventDate" type="date" value={d["eventDate"]} disabled={d["dateNotSet"]} onChange={(e) => setField("eventDate", e.target.value)} />
+                    <label className="mt-2 flex items-center gap-2 text-sm"><Checkbox checked={d["dateNotSet"]} onCheckedChange={(v) => { setField("dateNotSet", v === true); if (v === true) setField("eventDate", ""); }} /> Date not set yet</label>
+                    <Err msg={errors["eventDate"]} />
                   </div>
                   <div>
-                    <Label>Will this platform be used for paid registrations? <Req /></Label>
-                    <div className="flex gap-2 mt-2">
-                      {[true, false].map((v) => (
-                        <Button key={String(v)} type="button" variant={f.paid_registrations === v ? "default" : "outline"} onClick={() => set("paid_registrations", v)}>
-                          {v ? "Yes" : "No"}
-                        </Button>
-                      ))}
-                    </div>
-                    <Err msg={show("paid_registrations")} />
+                    <Label htmlFor="regStartTime">What time does registration that day begin?</Label>
+                    <Input id="regStartTime" type="time" value={d["regStartTime"]} onChange={(e) => setField("regStartTime", e.target.value)} />
                   </div>
                   <div>
-                    <Label>How did you hear about TeeVents? <span className="text-muted-foreground text-xs">(optional)</span></Label>
-                    <Select value={f.referral_source} onValueChange={(v) => set("referral_source", v)}>
-                      <SelectTrigger><SelectValue placeholder="Select one" /></SelectTrigger>
-                      <SelectContent>{SOURCES.map((r) => <SelectItem key={r} value={r}>{r}</SelectItem>)}</SelectContent>
+                    <Label htmlFor="eventName">What is the name of your tournament? <Req /></Label>
+                    <Input id="eventName" value={d["eventName"]} onChange={(e) => setField("eventName", e.target.value)} maxLength={200} />
+                    <Err msg={errors["eventName"]} />
+                  </div>
+                  <div>
+                    <Label htmlFor="orgName">What is the name of your organization? <Req /></Label>
+                    <Input id="orgName" value={d["orgName"]} onChange={(e) => setField("orgName", e.target.value)} maxLength={150} />
+                    <Err msg={errors["orgName"]} />
+                  </div>
+                  <div>
+                    <Label htmlFor="courseName">Golf course name</Label>
+                    <Input id="courseName" value={d["courseName"]} onChange={(e) => setField("courseName", e.target.value)} maxLength={200} />
+                    <p className="text-xs text-muted-foreground mt-1">{COURSE_HELP}</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="courseCityState">Course city and state</Label>
+                    <Input id="courseCityState" value={d["courseCityState"]} onChange={(e) => setField("courseCityState", e.target.value)} maxLength={200} />
+                    <p className="text-xs text-muted-foreground mt-1">{COURSE_HELP}</p>
+                  </div>
+                  <div>
+                    <Label>Format</Label>
+                    <Select value={d["format"]} onValueChange={(v) => setField("format", v)}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>{FORMATS_TOURNAMENT.map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
-                  {siteKey && <div ref={captchaRef} className="pt-1" />}
+                  {captcha}
                   <div className="flex justify-between pt-2">
-                    <Button variant="ghost" onClick={() => setStep("organization")}><ArrowLeft className="h-4 w-4 mr-1" /> Back</Button>
-                    <Button onClick={handleSubmit} disabled={loading}>
-                      {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} Create My Account
+                    <Button variant="ghost" onClick={() => setStep("personal")} disabled={!!editToken}><ArrowLeft className="h-4 w-4 mr-1" /> Previous</Button>
+                    <Button onClick={goNextFromEvent}>Next</Button>
+                  </div>
+                  {later}
+                </>
+              )}
+
+              {step === "event" && kind === "league" && (
+                <>
+                  <div>
+                    <h1 className="text-2xl font-bold">League Info</h1>
+                    <p className="text-muted-foreground text-sm">Tell us about your league, so we can start building it.</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="leagueName">What is the name of your league? <Req /></Label>
+                    <Input id="leagueName" value={d["leagueName"]} onChange={(e) => setField("leagueName", e.target.value)} maxLength={200} />
+                    <Err msg={errors["leagueName"]} />
+                  </div>
+                  <div>
+                    <Label htmlFor="orgName">What is the name of your organization? <Req /></Label>
+                    <Input id="orgName" value={d["orgName"]} onChange={(e) => setField("orgName", e.target.value)} maxLength={150} />
+                    <Err msg={errors["orgName"]} />
+                  </div>
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <Label htmlFor="seasonStart">Season start date {!d["datesNotSet"] && <Req />}</Label>
+                      <Input id="seasonStart" type="date" value={d["seasonStart"]} disabled={d["datesNotSet"]} onChange={(e) => setField("seasonStart", e.target.value)} />
+                      <Err msg={errors["seasonStart"]} />
+                    </div>
+                    <div>
+                      <Label htmlFor="seasonEnd">Season end date {!d["datesNotSet"] && <Req />}</Label>
+                      <Input id="seasonEnd" type="date" value={d["seasonEnd"]} disabled={d["datesNotSet"]} onChange={(e) => setField("seasonEnd", e.target.value)} />
+                      <Err msg={errors["seasonEnd"]} />
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 text-sm"><Checkbox checked={d["datesNotSet"]} onCheckedChange={(v) => { setField("datesNotSet", v === true); if (v === true) { setField("seasonStart", ""); setField("seasonEnd", ""); } }} /> Dates not set yet</label>
+                  <div>
+                    <Label htmlFor="courseName">Home golf course name</Label>
+                    <Input id="courseName" value={d["courseName"]} onChange={(e) => setField("courseName", e.target.value)} maxLength={200} />
+                    <p className="text-xs text-muted-foreground mt-1">{COURSE_HELP}</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="courseCityState">Course city and state</Label>
+                    <Input id="courseCityState" value={d["courseCityState"]} onChange={(e) => setField("courseCityState", e.target.value)} maxLength={200} />
+                    <p className="text-xs text-muted-foreground mt-1">{COURSE_HELP}</p>
+                  </div>
+                  <div>
+                    <Label>Day or days of the week</Label>
+                    <div className="mt-2 flex flex-wrap gap-4">
+                      {WEEKDAYS.map((w) => (
+                        <label key={w} className="flex items-center gap-2 text-sm">
+                          <Checkbox checked={(d["days"] as string[]).includes(w)} onCheckedChange={(v) => setField("days", v === true ? [...d["days"], w] : (d["days"] as string[]).filter((x) => x !== w))} /> {w}
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="weeks">Number of weeks</Label>
+                    <Input id="weeks" type="number" min={1} value={d["weeks"]} onChange={(e) => setField("weeks", e.target.value)} />
+                  </div>
+                  {captcha}
+                  <div className="flex justify-between pt-2">
+                    <Button variant="ghost" onClick={() => setStep("personal")} disabled={!!editToken}><ArrowLeft className="h-4 w-4 mr-1" /> Previous</Button>
+                    <Button onClick={goNextFromEvent}>Next</Button>
+                  </div>
+                  {later}
+                </>
+              )}
+
+              {step === "registration" && (
+                <>
+                  <div>
+                    <h1 className="text-2xl font-bold">Registration Info</h1>
+                    <p className="text-muted-foreground text-sm">Tell us about players and price, so we can set up registration.</p>
+                  </div>
+                  {kind === "tournament" ? (
+                    <>
+                      <div>
+                        <Label htmlFor="fieldSize">How many players have you scheduled for? <Req /></Label>
+                        <Input id="fieldSize" type="number" min={1} value={d["fieldSize"]} onChange={(e) => setField("fieldSize", e.target.value)} />
+                        <p className="text-xs text-muted-foreground mt-1">Your best guess is fine.</p>
+                        <Err msg={errors["fieldSize"]} />
+                      </div>
+                      <div>
+                        <Label htmlFor="priceIndividual">How much will you charge per golfer? <Req /></Label>
+                        <Input id="priceIndividual" type="number" min={0} step="0.01" placeholder="$" value={d["priceIndividual"]} onChange={(e) => setField("priceIndividual", e.target.value)} />
+                        <Err msg={errors["priceIndividual"]} />
+                      </div>
+                      <div>
+                        <Label htmlFor="priceFoursome">Entry price, foursome</Label>
+                        <Input id="priceFoursome" type="number" min={0} step="0.01" placeholder="$" value={d["priceFoursome"]} onChange={(e) => setField("priceFoursome", e.target.value)} />
+                      </div>
+                      <div>
+                        <Label htmlFor="registrationDeadline">Registration deadline</Label>
+                        <Input id="registrationDeadline" type="date" value={d["registrationDeadline"]} onChange={(e) => setField("registrationDeadline", e.target.value)} />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <Label htmlFor="players">How many players do you expect? <Req /></Label>
+                        <Input id="players" type="number" min={1} value={d["players"]} onChange={(e) => setField("players", e.target.value)} />
+                        <p className="text-xs text-muted-foreground mt-1">Your best guess is fine.</p>
+                        <Err msg={errors["players"]} />
+                      </div>
+                      <div>
+                        <Label htmlFor="feePerPlayer">How much will you charge per player? <Req /></Label>
+                        <Input id="feePerPlayer" type="number" min={0} step="0.01" placeholder="$" value={d["feePerPlayer"]} onChange={(e) => setField("feePerPlayer", e.target.value)} />
+                        <Err msg={errors["feePerPlayer"]} />
+                        {fee && (
+                          <ul className="mt-2 space-y-1 rounded-md border border-border p-3 text-sm">
+                            <li className="flex justify-between"><span>Registration</span><span>{fmt(fee.registration)}</span></li>
+                            <li className="flex justify-between"><span>TeeVents platform fee 0%</span><span>{fmt(fee.platform)}</span></li>
+                            <li className="flex justify-between"><span>Stripe credit card processing fee 2.9% + $0.30</span><span>{fmt(fee.stripe)}</span></li>
+                            <li className="flex justify-between font-semibold"><span>Total</span><span>{fmt(fee.total)}</span></li>
+                          </ul>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor="additionalCourses">Additional courses</Label>
+                        <Textarea id="additionalCourses" rows={2} value={d["additionalCourses"]} onChange={(e) => setField("additionalCourses", e.target.value)} maxLength={1000} />
+                      </div>
+                      <div>
+                        <Label htmlFor="teeTime">Weekly tee time</Label>
+                        <Input id="teeTime" value={d["teeTime"]} onChange={(e) => setField("teeTime", e.target.value)} maxLength={120} />
+                      </div>
+                      <div>
+                        <Label htmlFor="standingsDetails">Standings, skins, and handicaps details</Label>
+                        <Textarea id="standingsDetails" rows={3} value={d["standingsDetails"]} onChange={(e) => setField("standingsDetails", e.target.value)} maxLength={2000} />
+                      </div>
+                    </>
+                  )}
+                  <div>
+                    <Label htmlFor="sponsorships">Sponsorship levels and prices</Label>
+                    <Textarea id="sponsorships" rows={3} placeholder="Gold $2,500, Silver $1,000, Hole $500" value={d["sponsorships"]} onChange={(e) => setField("sponsorships", e.target.value)} maxLength={2000} />
+                  </div>
+                  <div>
+                    <Label htmlFor="logo">Logo upload</Label>
+                    <Input id="logo" type="file" accept="image/png,image/jpeg" onChange={(e) => setLogoFile(e.target.files?.[0] || null)} />
+                    <p className="text-xs text-muted-foreground mt-1">You can send it later.</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="colors">{kind === "league" ? "League colors" : "Event colors"}</Label>
+                    <Input id="colors" placeholder="Navy and gold" value={d["colors"]} onChange={(e) => setField("colors", e.target.value)} maxLength={200} />
+                  </div>
+                  {kind === "tournament" && (
+                    <div>
+                      <Label htmlFor="beneficiary">Charity or beneficiary</Label>
+                      <Input id="beneficiary" value={d["beneficiary"]} onChange={(e) => setField("beneficiary", e.target.value)} maxLength={300} />
+                    </div>
+                  )}
+                  <div>
+                    <Label>How do you want your page built? <Req /></Label>
+                    <RadioGroup className="mt-2" value={d["buildChoice"]} onValueChange={(v) => setField("buildChoice", v)}>
+                      {BUILD_CHOICES.map((b) => <label key={b} className="flex items-center gap-2 text-sm"><RadioGroupItem value={b} /> {b}</label>)}
+                    </RadioGroup>
+                  </div>
+                  <div>
+                    <Label htmlFor="notes">Notes or special requests</Label>
+                    <Textarea id="notes" rows={3} value={d["notes"]} onChange={(e) => setField("notes", e.target.value)} maxLength={4000} />
+                  </div>
+                  <div className="flex justify-between pt-2">
+                    <Button variant="ghost" onClick={() => setStep("event")}><ArrowLeft className="h-4 w-4 mr-1" /> Previous</Button>
+                    <Button onClick={() => submit(false)} disabled={loading}>
+                      {loading && <Loader2 className="h-4 w-4 mr-2 animate-spin" />} {token ? "Save my details" : "Create My Account"}
                     </Button>
                   </div>
+                  {captcha}
+                  {later}
                 </>
               )}
             </CardContent>
           </Card>
         )}
 
-        {step === "sent" && (
+        {step === "done" && (
           <Card>
-            <CardContent className="p-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto"><Mail className="h-8 w-8 text-primary" /></div>
-              <h1 className="text-2xl font-bold">Thank you!</h1>
-              <p className="text-muted-foreground">
-                We're reviewing your account. You'll receive an email once approved. We also sent a link to{" "}
-                <span className="font-medium text-foreground">{f.email}</span> — click it to verify your email and set your password.
-              </p>
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-2">
-                <CheckCircle2 className="h-4 w-4 text-primary" /> Account created
+            <CardContent className="p-8 space-y-5">
+              <div className="text-center space-y-3">
+                <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto"><CheckCircle2 className="h-8 w-8 text-primary" /></div>
+                <h1 className="text-2xl font-bold">{kind === "league" ? "Thanks, we received your league details." : "Thanks, we received your tournament details."}</h1>
+                <p className="text-muted-foreground">{kind === "league"
+                  ? "Your league is in the build queue. Your dedicated rep will build your branded league page and send you a preview link, live in 7 days or less once we have your logo and details. No phone call needed to get started."
+                  : "Your event is in the build queue. Your dedicated rep will build your branded event page and send you a preview link, live in 7 days or less once we have your logo and details. No phone call needed to get started."}</p>
               </div>
-              <Button variant="outline" onClick={() => navigate("/")}>Back to home</Button>
-            </CardContent>
-          </Card>
-        )}
-
-        {step === "flagged" && (
-          <Card>
-            <CardContent className="p-8 text-center space-y-4">
-              <div className="w-16 h-16 rounded-full bg-accent/20 flex items-center justify-center mx-auto"><ShieldAlert className="h-8 w-8 text-accent-foreground" /></div>
-              <h1 className="text-2xl font-bold">One more step</h1>
-              <p className="text-muted-foreground">
-                We need a little more information to verify your account. Check your email for next steps.
-              </p>
-              <Button variant="outline" onClick={() => navigate("/")}>Back to home</Button>
+              <dl className="divide-y divide-border rounded-md border border-border text-sm">
+                {SUMMARY_KEYS[kind].map(([k, label]) => (
+                  <div key={k} className="flex justify-between gap-4 p-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right font-medium">{intakeValue(kind, d, k) || "Not provided"}</dd></div>
+                ))}
+              </dl>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button variant="outline" onClick={() => { setErrors({}); setStep("event"); }}>Edit my details</Button>
+                <Button onClick={() => navigate(editToken ? "/dashboard" : "/create-workspace")}>Go to my dashboard</Button>
+              </div>
             </CardContent>
           </Card>
         )}

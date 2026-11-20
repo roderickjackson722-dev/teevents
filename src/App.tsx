@@ -168,7 +168,6 @@ import InteractiveDemo from "./pages/InteractiveDemo";
 import VisitTracker from "./components/VisitTracker";
 import CollegeTournament from "./pages/CollegeTournament";
 import ResetPassword from "./pages/ResetPassword";
-import VerifyAccount from "./pages/VerifyAccount";
 import FAQ from "./pages/FAQ";
 import Tips from "./pages/Tips";
 import Features from "./pages/Features";
@@ -483,7 +482,6 @@ const App = () => (
             <Route path="/interactive-demo" element={<InteractiveDemo />} />
            <Route path="/college/:slug" element={<CollegeTournament />} />
            <Route path="/reset-password" element={<ResetPassword />} />
-           <Route path="/verify-account" element={<VerifyAccount />} />
            <Route path="/faq" element={<FAQ />} />
           <Route path="/tips" element={<Tips />} />
            <Route path="/features" element={<Features />} />

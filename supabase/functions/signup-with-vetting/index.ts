@@ -1,7 +1,7 @@
 // Tiered signup: Tier 1 automated checks (disposable email, hCaptcha, IP
 // blacklist/rate limit/velocity), Tier 2 business questions, Tier 3 flagging
 // for manual review. Clean signups get instant access via a set-password
-// (email verification) link. Flagged signups are held until an admin approves.
+// (set-password) link. Flagged signups are noted for rep review only; never held or asked for documents.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { safeOrigin, safeReturnUrl, trustedOriginFor } from "../_shared/safeOrigin.ts";
 import {
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
     if (organization_website && !(await websiteReachable(organization_website))) flags.push("Organization website could not be verified");
 
     const flagged = flags.length > 0;
-    const status = flagged ? "flagged" : "approved";
+    const status = "approved"; // rep review only; no document hold
 
     // Create or reuse auth user
     let userId: string | null = null;
@@ -144,8 +144,8 @@ Deno.serve(async (req) => {
     }
     if (!userId) throw new Error("Could not create account");
 
-    // Hold flagged accounts until approved — never suspend an existing account
-    if (flagged && isNewUser) await admin.auth.admin.updateUserById(userId, { ban_duration: "876000h" });
+    // No hold: flagged signups are reviewed by a rep; accounts are never blocked pending documents.
+    void isNewUser;
 
     const { data: row, error: insErr } = await admin.from("signup_vetting").insert({
       user_id: userId, email, full_name: full_legal_name, phone: phone_number,
@@ -159,46 +159,35 @@ Deno.serve(async (req) => {
     const siteOrigin = (await trustedOriginFor(origin)) || (await safeOrigin(req));
     const name = firstName(full_legal_name);
 
-    if (!flagged) {
+    {
       const { data: link, error: linkErr } = await admin.auth.admin.generateLink({
         type: "recovery", email,
         options: { redirectTo: `${siteOrigin}/reset-password?new=1&type=${interest_area}` },
       });
       if (linkErr) throw linkErr;
       const actionLink = link?.properties?.action_link!;
-      await sendVettingEmail(admin, email, "Welcome to TeeVents — Verify Your Email",
+      await sendVettingEmail(admin, email, "Welcome to TeeVents — Set Your Password",
         shell("Welcome to TeeVents", `<p style="font-size:16px;">Hi ${esc(name)},</p>
-          <p style="font-size:16px;">Thanks for signing up. Please verify your email and set your password to access your dashboard:</p>
-          ${button(actionLink, "Verify Email &amp; Set Password")}
+          <p style="font-size:16px;">Your account is ready. Set a password so you can sign in anytime:</p>
+          ${button(actionLink, "Set My Password")}
           <p style="font-size:14px;color:#6b7280;">This link expires in 24 hours.</p>`),
         "vetting-welcome-verify", { vetting_id: row.id });
-    } else {
-      const docsLink = `${siteOrigin}/verify-account?token=${row.review_token}`;
-      await sendVettingEmail(admin, email, "TeeVents — We need a little more information",
-        shell("Help us verify your account", `<p style="font-size:16px;">Hi ${esc(name)},</p>
-          <p style="font-size:16px;">Thanks for signing up for TeeVents. Before we activate your account, we need to confirm your organization. Please provide:</p>
-          <ul style="font-size:15px;">
-            <li>A link to a verifiable business social profile (e.g., LinkedIn company page)</li>
-            <li>Your business registration number or tax ID</li>
-            <li>A recent utility bill or bank statement in the organization's name</li>
-          </ul>
-          ${button(docsLink, "Submit Verification Details")}
-          <p style="font-size:14px;color:#6b7280;">You'll receive an email as soon as your account is reviewed.</p>`),
-        "vetting-manual-review-request", { vetting_id: row.id });
-
+    }
+    if (flagged) {
       await sendVettingEmail(admin, ADMIN_EMAIL, `🚩 Signup flagged for review – ${full_legal_name}`,
         shell("New account flagged for review", `
           <p><b>${esc(full_legal_name)}</b> · ${esc(email)} · ${esc(phone_number)}</p>
           <p>${esc(organization_name)}${organization_website ? ` · <a href="${esc(organization_website)}">${esc(organization_website)}</a>` : " · No website"}</p>
           <p>Role: ${esc(role)} · Events/yr: ${esc(events_per_year)} · Paid registrations: ${paid_registrations ? "Yes" : "No"}</p>
           <p><b>Reasons:</b></p><ul>${flags.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
+          <p>The account is active. A rep reviews the intake before any page goes public.</p>
           ${button("https://www.teevents.golf/admin?tab=vetting", "Open Vetting Panel")}`),
         "admin-vetting-flagged", { vetting_id: row.id });
     }
 
     // Step 4 intake placeholder (Not submitted) for approved, non-flagged signups only.
     let intake_token: string | null = null;
-    if (!flagged) {
+    {
       const { data: intake } = await admin.from("organizer_intakes").insert({
         user_id: userId, vetting_id: row.id, interest_area,
         contact: { full_legal_name, email, phone_number, organization_name, organization_website: organization_website || null, role, event_description },

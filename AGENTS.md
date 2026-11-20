@@ -56,4 +56,4 @@ Proposals and proposal-web have local AGENTS.md isolation rules.
 - Admin fee_split (player/split/organizer) is the only per-event fee choice for No Cost events; admin-data set-fee-split writes it, a trigger blocks non-admin changes, and src/lib/feeSplit.ts (+ _shared copy) is the single math so admin preview and checkout agree.
 - /t/teevents-annual display overrides live in src/lib/sampleEventDisplay.ts (PublicTournament, LiveLeaderboard) so the demo needs no live database edits.
 - Draft public pages are listed once in src/lib/hiddenPages.ts; sitemap, noindex and guide links filter through it, so hiding never deletes.
-- Step 4 intakes are private `organizer_intakes` rows by access token; they never create or charge events.
+- Signup collects event/league intake in its steps via createSignup (shared intake.schema); rows live in private `organizer_intakes`, no document checks, and never create, publish or charge events so existing workspace and plan checkout stay unchanged.

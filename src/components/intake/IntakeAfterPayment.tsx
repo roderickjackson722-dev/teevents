@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { getMyIntakeToken } from "@/lib/intake.functions";
 
-/** After a successful $399 Per-Event or $599 Per-League payment, open Step 4 if it hasn't been submitted. Read-only check; never changes payments. */
+/** After a successful $399 Per-Event or $599 Per-League payment, reopen the signup details if they hasn't been submitted. Read-only check; never changes payments. */
 export default function IntakeAfterPayment() {
   const { search } = useLocation();
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function IntakeAfterPayment() {
     if (!paid) return;
     const t = setTimeout(async () => {
       const mine = await getMyIntakeToken().catch(() => null);
-      if (mine && !mine.submitted) navigate(`/intake?token=${mine.token}`);
+      if (mine && !mine.submitted) navigate(`/signup?edit=${mine.token}`);
     }, 2500);
     return () => clearTimeout(t);
   }, [search, navigate]);

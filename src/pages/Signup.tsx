@@ -107,7 +107,7 @@ export default function Signup() {
       .catch(() => {});
   }, []);
 
-  const needsCaptcha = !token && (step === "event" || step === "registration");
+  const needsCaptcha = !token && step === "registration";
   useEffect(() => {
     if (!needsCaptcha || !siteKey || !captchaRef.current) return;
     const render = () => {
@@ -179,6 +179,7 @@ export default function Signup() {
       return;
     }
     if (siteKey && !captchaToken) {
+      if (step !== "registration") { setStep("registration"); toast({ title: "Almost there", description: "Complete the human verification at the bottom of this page, then click I'll add this later." }); return; }
       toast({ title: "Almost there", description: "Please complete the human verification.", variant: "destructive" });
       return;
     }

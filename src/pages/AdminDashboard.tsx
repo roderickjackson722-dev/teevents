@@ -1024,6 +1024,12 @@ const AdminDashboard = () => {
                   <Mail className="h-4 w-4" /> Help Chats &amp; Tickets
                 </button>
                 <button
+                  onClick={() => navigate("/admin/intakes")}
+                  className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
+                >
+                  <Mail className="h-4 w-4" /> New intakes
+                </button>
+                <button
                   onClick={() => navigate("/admin/organizer-toolboxes")}
                   className="flex items-center gap-2 px-4 py-2 rounded-t-md text-sm font-medium transition-colors text-muted-foreground hover:text-foreground"
                 >

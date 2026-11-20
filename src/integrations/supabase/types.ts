@@ -7075,6 +7075,48 @@ export type Database = {
           },
         ]
       }
+      organizer_intakes: {
+        Row: {
+          access_token: string
+          contact: Json
+          created_at: string
+          details: Json
+          id: string
+          interest_area: string
+          status: string
+          submitted_at: string | null
+          updated_at: string
+          user_id: string | null
+          vetting_id: string | null
+        }
+        Insert: {
+          access_token?: string
+          contact?: Json
+          created_at?: string
+          details?: Json
+          id?: string
+          interest_area: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+          vetting_id?: string | null
+        }
+        Update: {
+          access_token?: string
+          contact?: Json
+          created_at?: string
+          details?: Json
+          id?: string
+          interest_area?: string
+          status?: string
+          submitted_at?: string | null
+          updated_at?: string
+          user_id?: string | null
+          vetting_id?: string | null
+        }
+        Relationships: []
+      }
       organizer_messages: {
         Row: {
           created_at: string

@@ -65,6 +65,8 @@ import LeagueRegisterPublic from "./pages/LeagueRegisterPublic";
 
 import SelectWorkspace from "./pages/SelectWorkspace";
 import Signup from "./pages/Signup";
+import Intake from "./pages/Intake";
+import AdminIntakes from "./pages/admin/Intakes";
 import CreateWorkspace from "./pages/CreateWorkspace";
 import PlanningGuide from "./pages/dashboard/PlanningGuide";
 import SetupChecklistPage from "./pages/dashboard/SetupChecklistPage";
@@ -311,6 +313,8 @@ const App = () => (
           <Route path="/onboarding" element={<Onboarding />} />
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/intake" element={<Intake />} />
+          <Route path="/admin/intakes" element={<AdminIntakes />} />
           <Route path="/create-workspace" element={<CreateWorkspace />} />
           <Route path="/dashboard" element={<DashboardLayout><DashboardHome /></DashboardLayout>} />
           <Route path="/select-workspace" element={<SelectWorkspace />} />

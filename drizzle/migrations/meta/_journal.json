@@ -484,6 +484,13 @@
       "when": 1795106229987,
       "tag": "0068_fee_split_exact_price",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1795183814966,
+      "tag": "0069_create_organizer_intakes",
+      "breakpoints": true
     }
   ]
 }

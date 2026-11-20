@@ -105,7 +105,7 @@ export default function Signup() {
       : DISPOSABLE.includes(f.email.split("@")[1]?.toLowerCase() || "") ? "Temporary email addresses aren't accepted." : undefined,
     phone_number: f.phone_number.replace(/\D/g, "").length < 10 ? "Enter a valid phone number." : undefined,
     organization_name: !f.organization_name.trim() ? "Enter your organization name." : undefined,
-    organization_website: !/^(https?:\/\/)?[^\s.]+\.[^\s]{2,}$/i.test(f.organization_website.trim()) ? "Enter a valid website (e.g. yourclub.com)." : undefined,
+    organization_website: f.organization_website.trim() && !/^(https?:\/\/)?[^\s.]+\.[^\s]{2,}$/i.test(f.organization_website.trim()) ? "Enter a valid website (e.g. yourclub.com)." : undefined,
     role: !f.role ? "Select your role." : undefined,
     events_per_year: !f.events_per_year ? "Select how many events." : undefined,
     event_description: f.event_description.trim().length < 10 ? "Tell us a little about your event (10+ characters)." : undefined,
@@ -154,6 +154,12 @@ export default function Signup() {
           interest_area: interest, organization_name: f.organization_name.trim() || null, selected_plan: selectedPlan || null,
         }));
       } catch { /* ignore */ }
+      const intakeToken = (data as any)?.intake_token as string | undefined;
+      if ((data as any)?.status !== "flagged" && intakeToken) {
+        try { sessionStorage.setItem("teevents.intakeToken", intakeToken); } catch { /* ignore */ }
+        navigate(`/intake?token=${intakeToken}`);
+        return;
+      }
       setStep((data as any)?.status === "flagged" ? "flagged" : "sent");
     } catch (e: any) {
       toast({ title: "Sign up failed", description: e?.message || "Please try again.", variant: "destructive" });
@@ -212,7 +218,7 @@ export default function Signup() {
               {/* Progress */}
               <div>
                 <div className="flex items-center gap-2 mb-2">
-                  {STEPS.map((s, i) => (
+                  {[...STEPS, { key: "intake" as Step, label: interest === "league" ? "Your League" : "Your Tournament" }].map((s, i) => (
                     <div key={s.key} className="flex-1">
                       <div className={`h-1.5 rounded-full ${i <= stepIdx ? "bg-primary" : "bg-muted"}`} />
                       <p className={`text-xs mt-1 ${i === stepIdx ? "font-semibold text-foreground" : "text-muted-foreground"}`}>{i + 1}. {s.label}</p>
@@ -265,8 +271,9 @@ export default function Signup() {
                       <Err msg={show("organization_name")} />
                     </div>
                     <div>
-                      <Label htmlFor="organization_website">Organization Website URL <Req /></Label>
+                      <Label htmlFor="organization_website">Organization Website URL (optional)</Label>
                       <Input id="organization_website" type="url" value={f.organization_website} onChange={(e) => set("organization_website", e.target.value)} placeholder="https://yourclub.com" maxLength={300} />
+                      <p className="text-xs text-muted-foreground mt-1">Leave blank if you do not have a website.</p>
                       <Err msg={show("organization_website")} />
                     </div>
                   </div>

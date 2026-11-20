@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     const interest_area = b.interest_area === "league" ? "league" : "tournament";
     const origin = s(b.origin, 200);
 
-    if (!full_legal_name || !email || !phone_number || !organization_name || !organization_website ||
+    if (!full_legal_name || !email || !phone_number || !organization_name ||
       !role || !events_per_year || !event_description || typeof b.paid_registrations !== "boolean") {
       return json({ error: "Please complete every required field." }, 400);
     }
@@ -73,7 +73,7 @@ Deno.serve(async (req) => {
     if (!ROLES.includes(role) || !EVENTS.includes(events_per_year) || (referral_source && !SOURCES.includes(referral_source))) {
       return json({ error: "Invalid selection." }, 400);
     }
-    if (!/^https?:\/\//i.test(organization_website)) organization_website = `https://${organization_website}`;
+    if (organization_website && !/^https?:\/\//i.test(organization_website)) organization_website = `https://${organization_website}`;
 
     // Tier 1: disposable email
     if (isDisposable(email)) {
@@ -121,7 +121,7 @@ Deno.serve(async (req) => {
       if ((flaggedCount ?? 0) > 0) flags.push("IP reputation: IP has prior security flags");
     }
     if (events_per_year === "10+") flags.push("High volume: plans to run 10+ events");
-    if (!(await websiteReachable(organization_website))) flags.push("Organization website could not be verified");
+    if (organization_website && !(await websiteReachable(organization_website))) flags.push("Organization website could not be verified");
 
     const flagged = flags.length > 0;
     const status = flagged ? "flagged" : "approved";
@@ -149,7 +149,7 @@ Deno.serve(async (req) => {
 
     const { data: row, error: insErr } = await admin.from("signup_vetting").insert({
       user_id: userId, email, full_name: full_legal_name, phone: phone_number,
-      full_legal_name, phone_number, organization_name, organization_website, role,
+      full_legal_name, phone_number, organization_name, organization_website: organization_website || null, role,
       events_per_year, event_description, paid_registrations, referral_source,
       heard_from: referral_source, interest_area, vetting_status: status, flag_reasons: flags,
       ip_address: ip, email_verified: false,
@@ -189,14 +189,23 @@ Deno.serve(async (req) => {
       await sendVettingEmail(admin, ADMIN_EMAIL, `🚩 Signup flagged for review – ${full_legal_name}`,
         shell("New account flagged for review", `
           <p><b>${esc(full_legal_name)}</b> · ${esc(email)} · ${esc(phone_number)}</p>
-          <p>${esc(organization_name)} · <a href="${esc(organization_website)}">${esc(organization_website)}</a></p>
+          <p>${esc(organization_name)}${organization_website ? ` · <a href="${esc(organization_website)}">${esc(organization_website)}</a>` : " · No website"}</p>
           <p>Role: ${esc(role)} · Events/yr: ${esc(events_per_year)} · Paid registrations: ${paid_registrations ? "Yes" : "No"}</p>
           <p><b>Reasons:</b></p><ul>${flags.map((f) => `<li>${esc(f)}</li>`).join("")}</ul>
           ${button("https://www.teevents.golf/admin?tab=vetting", "Open Vetting Panel")}`),
         "admin-vetting-flagged", { vetting_id: row.id });
     }
 
-    return json({ ok: true, status });
+    // Step 4 intake placeholder (Not submitted) for approved, non-flagged signups only.
+    let intake_token: string | null = null;
+    if (!flagged) {
+      const { data: intake } = await admin.from("organizer_intakes").insert({
+        user_id: userId, vetting_id: row.id, interest_area,
+        contact: { full_legal_name, email, phone_number, organization_name, organization_website: organization_website || null, role, event_description },
+      }).select("access_token").single();
+      intake_token = intake?.access_token ?? null;
+    }
+    return json({ ok: true, status, intake_token });
   } catch (e: any) {
     console.error("[signup-with-vetting]", e?.message || e);
     return json({ error: e?.message || "Unknown error" }, 400);

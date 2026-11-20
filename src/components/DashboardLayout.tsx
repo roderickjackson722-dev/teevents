@@ -17,6 +17,7 @@ import { Loader2, Eye, ArrowRight, ArrowLeft, ShieldCheck, Sparkles, ExternalLin
 import { useDemoMode } from "@/hooks/useDemoMode";
 import { useSampleMode, setSampleModeActive } from "@/hooks/useSampleMode";
 import { Button } from "@/components/ui/button";
+import IntakeAfterPayment from "@/components/intake/IntakeAfterPayment";
 
 interface DashboardLayoutProps {
   children: ReactNode;
@@ -362,6 +363,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </div>
             )}
             <main className="flex-1 bg-muted/30 p-3 sm:p-4 md:p-8 overflow-x-auto dashboard-scroll min-w-0 w-full max-w-full">
+              {orgContext && !isDemoMode && !isSampleMode && !clientDemoSlug && !isAdminOverride && <IntakeAfterPayment />}
               {orgContext && !isDemoMode && !isSampleMode && !clientDemoSlug && <StripeConnectBanner organizationId={orgContext.orgId} loginReminder={!isAdminOverride && !searchParams.has("admin_org")} />}
               {typeof window !== "undefined" && FUNDRAISING_PATHS.includes(window.location.pathname) ? (
                 <div className="fundraising-stack"><FundraisingTabs />{children}</div>

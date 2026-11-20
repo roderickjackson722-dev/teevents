@@ -13,7 +13,7 @@ async function adminClient() {
 async function byToken(token: string) {
   const admin = await adminClient();
   const { data } = await admin.from("organizer_intakes").select("id, interest_area, status, details, contact, submitted_at").eq("access_token", token).maybeSingle();
-  return { admin, row: data as null | { id: string; interest_area: "tournament" | "league"; status: string; details: Record<string, unknown>; contact: Record<string, unknown>; submitted_at: string | null } };
+  return { admin, row: data as null | { id: string; interest_area: "tournament" | "league"; status: string; details: Record<string, any>; contact: Record<string, any>; submitted_at: string | null } };
 }
 
 export const getIntake = createServerFn({ method: "POST" })
@@ -55,7 +55,7 @@ export const submitIntake = createServerFn({ method: "POST" })
     if (!row) return { ok: false as const, message: "This link is no longer valid." };
     const parsed = (row.interest_area === "league" ? leagueIntakeSchema : tournamentIntakeSchema).safeParse(data.details);
     if (!parsed.success) return { ok: false as const, message: parsed.error.issues[0]?.message || "Please check the required fields." };
-    const details = parsed.data as Record<string, unknown>;
+    const details = parsed.data as Record<string, any>;
     const status = row.status === "not_submitted" ? "new" : row.status;
     const { error } = await admin.from("organizer_intakes").update({ details, status, submitted_at: new Date().toISOString(), updated_at: new Date().toISOString() }).eq("id", row.id);
     if (error) return { ok: false as const, message: "We could not save your details. Please try again." };

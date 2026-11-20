@@ -55,5 +55,5 @@ Proposals and proposal-web have local AGENTS.md isolation rules.
 - The organizer Send step's audience choice (players/sponsors/vendors) reads sponsor/vendor sign-up tables and resend-confirmation's audience param, defaulting to players.
 - Admin fee_split (player/split/organizer) is the only per-event fee choice for No Cost events; admin-data set-fee-split writes it, a trigger blocks non-admin changes, and src/lib/feeSplit.ts (+ _shared copy) is the single math so admin preview and checkout agree.
 - /t/teevents-annual display overrides live in src/lib/sampleEventDisplay.ts (PublicTournament, LiveLeaderboard) so the demo needs no live database edits.
-- Draft public pages are listed once in src/lib/hiddenPages.ts; sitemap, pathMeta noindex and guide link lists filter through it, so hiding a page never requires deleting it.
-- Signup Step 4 intakes live in private `organizer_intakes` rows (capability access_token created by signup-with-vetting for non-flagged signups); Step 4 never creates, publishes or charges events/leagues, and admins convert intakes manually from the New intakes queue.
+- Draft public pages are listed once in src/lib/hiddenPages.ts; sitemap, noindex and guide links filter through it, so hiding never deletes.
+- Step 4 intakes are private `organizer_intakes` rows by access token; they never create or charge events.

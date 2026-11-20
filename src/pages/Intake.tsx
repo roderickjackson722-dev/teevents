@@ -49,7 +49,7 @@ export default function Intake() {
       }
       if (!t) { setState("missing"); return; }
       sessionStorage.setItem(TOKEN_KEY, t);
-      const row = await getIntake({ data: { token: t } }).catch(() => null);
+      const row = (await getIntake({ data: { token: t } }).catch(() => null)) as { interest: string; details: D; submitted: boolean } | null;
       if (!row) { setState("missing"); return; }
       setToken(t); setKind(row.interest as Kind);
       setD({ ...blank(row.interest as Kind), ...(row.details as D) });

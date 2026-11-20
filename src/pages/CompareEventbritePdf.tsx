@@ -50,8 +50,8 @@ const CompareEventbritePdf = () => {
 
         <div class="bottom-line">
           <h2>The Bottom Line</h2>
-          <p>Eventbrite charges <strong>~8.7% total fees</strong> on a $100 registration. TeeVents charges a <strong>5% platform fee + 2.9% + $0.30 Stripe processing = $8.20 on $100</strong>. Simple, transparent, and predictable.</p>
-          <p class="save">5% platform fee + golf-specific features Eventbrite can't match</p>
+          <p>Eventbrite charges <strong>~8.7% total fees</strong> on a $100 registration. TeeVents charges a <strong>6% platform fee + 2.9% + $0.30 Stripe processing = $9.20 on $100</strong>. Simple, transparent, and predictable.</p>
+          <p class="save">6% platform fee + golf-specific features Eventbrite can't match</p>
         </div>
 
         <table>
@@ -72,9 +72,9 @@ const CompareEventbritePdf = () => {
             <tr><td>Volunteer Check-in</td><td class="no">✗ Not available</td><td class="yes">✓ QR code + scheduling</td></tr>
 
             <tr class="cat"><td colspan="3">Pricing</td></tr>
-            <tr><td>Platform Fee</td><td class="warn">3.7% + $1.79/ticket</td><td class="yes">5%</td></tr>
+            <tr><td>Platform Fee</td><td class="warn">3.7% + $1.79/ticket</td><td class="yes">6%</td></tr>
             <tr><td>Processing Fee</td><td class="no">2.9% + $0.30 extra</td><td class="warn">2.9% + $0.30 (Stripe)</td></tr>
-            <tr><td>Total on $100</td><td class="no">~$8.69</td><td class="yes">$8.20</td></tr>
+            <tr><td>Total on $100</td><td class="no">~$8.69</td><td class="yes">$9.20</td></tr>
 
             <tr class="cat"><td colspan="3">Payouts</td></tr>
             <tr><td>Payout Speed</td><td class="no">Holds funds until after event</td><td class="yes">Automatic split at checkout</td></tr>
@@ -98,9 +98,9 @@ const CompareEventbritePdf = () => {
           <div class="fee-box tv">
             <h3>TeeVents · $100 Registration</h3>
             <ul>
-              <li>Platform: 5% = $5.00</li>
+              <li>Platform: 6% = $6.00</li>
               <li>Stripe: 2.9% + $0.30 = $3.20</li>
-              <li class="total" style="border-color:#1a5c38">Total: $8.20</li>
+              <li class="total" style="border-color:#1a5c38">Total: $9.20</li>
             </ul>
           </div>
         </div>
@@ -108,7 +108,7 @@ const CompareEventbritePdf = () => {
         <div class="reasons">
           <h2>Why Golf Organizers Switch</h2>
           <ol>
-            <li><strong>5% platform fee</strong> — simple, transparent pricing</li>
+            <li><strong>6% platform fee</strong> — simple, transparent pricing</li>
             <li><strong>Golf-specific features</strong> — Leaderboards, pairings, hole sponsors</li>
             <li><strong>Funds direct to you</strong> — Stripe Connect Direct Charges; we never hold your money</li>
             <li><strong>We build it for you</strong> — Every event includes a dedicated rep — free or paid</li>

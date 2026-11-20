@@ -543,7 +543,7 @@ export default function LeagueEventsTab({ leagueId }: { leagueId: string }) {
                     <div className="flex items-center gap-2">
                       <Switch checked={!!editing.pass_platform_fee_to_player}
                         onCheckedChange={(v) => setEditing({ ...editing, pass_platform_fee_to_player: v })} />
-                      <Label className="text-sm">Pass 5% platform fee to player</Label>
+                      <Label className="text-sm">Pass 6% platform fee to player</Label>
                     </div>
                   </div>
                 </div>

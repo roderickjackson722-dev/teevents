@@ -64,6 +64,11 @@ interface TournamentSite {
   foursome_registration: boolean; max_group_size?: number;
   pass_fees_to_registrants?: boolean;
   fee_split?: string | null;
+  platform_fee_percent?: number | null;
+  pricing_model?: string | null;
+  pricing_version?: string | null;
+  pass_fees_to_participants?: boolean | null;
+  flat_rate_enabled?: boolean | null;
   allow_cover_fees?: boolean;
   refund_policy_text?: string | null;
   // Public Page Design
@@ -1279,8 +1284,9 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                     isNonprofit={nonprofitInfo.isNonprofit}
                     nonprofitName={nonprofitInfo.nonprofitName}
                     ein={nonprofitInfo.ein}
-                    platformFeeRate={nonprofitInfo.platformFeeRate}
-                    passFeesToRegistrants={tournament.fee_split === "exact" ? false : (tournament.pass_fees_to_registrants || false)}
+                    platformFeeRate={tournament.flat_rate_enabled || ["per_event", "per_league", "enterprise"].includes(tournament.pricing_model || "") ? 0 : tournament.platform_fee_percent != null ? Number(tournament.platform_fee_percent) / 100 : nonprofitInfo.platformFeeRate}
+                    feeSplit={tournament.fee_split === "split" || tournament.fee_split === "organizer" || tournament.fee_split === "exact" ? tournament.fee_split : "player"}
+                    passFeesToRegistrants={tournament.fee_split === "exact" || tournament.fee_split === "organizer" ? false : (tournament.pricing_version === "2026-10" && tournament.pricing_model === "free") || tournament.pass_fees_to_participants === true || (tournament.pass_fees_to_registrants || false)}
                     allowCoverFees={tournament.allow_cover_fees !== false}
                     tiers={regTiers}
                     fields={regFields}

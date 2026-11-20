@@ -5,11 +5,11 @@ import { DashboardChatAssistant } from "@/components/DashboardChatAssistant";
 import { CreditCard, DollarSign, Calendar, FileText, Settings, RotateCcw, Globe, Clock, Wallet, ImageUp, ListChecks, Bot } from "lucide-react";
 
 const helpPages = [
-  { title: "How Payments Work", description: "Understand the full payment flow — how the 8% fee works, Stripe Connect, and when you get paid.", icon: DollarSign, path: "/help/how-payments-work" },
+  { title: "How Payments Work", description: "Understand the full payment flow — how the 6% fee works, Stripe Connect, and when you get paid.", icon: DollarSign, path: "/help/how-payments-work" },
   { title: "Understanding Payout Timing", description: "Why new Stripe accounts have a 2–7 day hold, where to check your balance, and when funds become available.", icon: Clock, path: "/help/understanding-payout-timing" },
   { title: "Where to Find Payouts in Stripe", description: "Step-by-step: Stripe Dashboard → Balances → Transfers — exactly where TeeVents-routed payouts appear.", icon: Wallet, path: "/help/finding-stripe-payouts" },
   { title: "Connect Your Bank Account", description: "Set up Stripe Connect to receive automatic payouts to your bank account.", icon: CreditCard, path: "/help/connect-stripe" },
-  { title: "Fees & Payment Flow", description: "Understand the 8% platform fee and how payment splitting works.", icon: DollarSign, path: "/help/fees-and-hold" },
+  { title: "Fees & Payment Flow", description: "Understand the 6% platform fee and how payment splitting works.", icon: DollarSign, path: "/help/fees-and-hold" },
   { title: "Payout Schedule", description: "Learn about automatic payouts and how funds reach your bank.", icon: Calendar, path: "/help/payout-schedule" },
   { title: "Tax Information", description: "1099-K reporting thresholds, annual tax summaries, and record keeping.", icon: FileText, path: "/help/tax-information" },
   { title: "Payment Settings", description: "Choose whether golfers or your organization covers the platform fee.", icon: Settings, path: "/help/payment-settings" },

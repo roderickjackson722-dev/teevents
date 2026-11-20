@@ -49,7 +49,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
         try {
           const res = await verifyFlatRatePayment({ data: { sessionId } });
           if (res.verified) {
-            toast.success("Per-Event pricing is active — no 8% platform fee on this event.");
+            toast.success("Per-Event pricing is active — no 6% platform fee on this event.");
             if (res.tournament_id) await loadStatus(res.tournament_id);
           } else {
             toast.message("Payment is still processing. Refresh in a moment.");
@@ -107,11 +107,11 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
             )}
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Pay once and remove the 8% platform fee for{" "}
+            Pay once and remove the 6% platform fee for{" "}
             <span className="font-semibold text-foreground">{status?.title || "this event"}</span>.
           </p>
           <ul className="mt-4 space-y-1.5 text-sm text-foreground/90">
-            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-secondary mt-0.5" /> No 8% platform fee on any transaction</li>
+            <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-secondary mt-0.5" /> No 6% platform fee on any transaction</li>
             <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-secondary mt-0.5" /> Unlimited transactions</li>
             <li className="flex gap-2"><CheckCircle2 className="h-4 w-4 text-secondary mt-0.5" /> Dedicated TeeVents representative and page build included</li>
           </ul>
@@ -143,7 +143,7 @@ const FlatRateProCard = ({ tournamentId }: { tournamentId: string | null }) => {
             <Percent className="h-4 w-4 text-muted-foreground mt-0.5" />
             <p className="text-sm text-muted-foreground">
               <span className="font-semibold text-foreground">Current plan:</span>{" "}
-              {active ? "Per-Event (no 8% platform fee)" : "No Cost to Start (8% service fee covered by players)"}
+              {active ? "Per-Event (no 6% platform fee)" : "No Cost to Start (6% service fee covered by players)"}
             </p>
           </div>
         </div>

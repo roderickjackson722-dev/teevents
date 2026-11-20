@@ -526,7 +526,7 @@ const Finances = () => {
         <div>
           <p className="text-sm font-medium text-foreground">Transaction history — all payments processed through your tournament.</p>
           <p className="text-xs text-muted-foreground mt-1">
-            A 8% platform fee + Stripe processing fee is deducted per transaction. How you receive funds depends on your payout method (Stripe Connect or Check).{" "}
+            A 6% platform fee + Stripe processing fee is deducted per transaction. How you receive funds depends on your payout method (Stripe Connect or Check).{" "}
             <a href="/dashboard/payout-settings" className="text-primary underline">Manage payout settings</a>
             {" · "}
             <a href="/help/fees-and-hold" target="_blank" rel="noopener noreferrer" className="text-primary underline">Learn more</a>
@@ -581,8 +581,8 @@ const Finances = () => {
           type="button"
           initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
           onClick={() => setBreakdown({
-            title: "Platform Fees (8%)",
-            description: "8% platform fee deducted from each transaction at checkout.",
+            title: "Platform Fees (6%)",
+            description: "6% platform fee deducted from each transaction at checkout.",
             column: "platform_fee_cents",
             items: selectedTransactions.filter((t) => !isManualOffline(t) && t.platform_fee_cents > 0),
           })}
@@ -597,7 +597,7 @@ const Finances = () => {
             </span>
           </div>
           <p className="text-2xl font-bold text-amber-600">${(totalPlatformFees / 100).toFixed(2)}</p>
-          <p className="text-xs text-muted-foreground mt-1">8% per transaction · click for details</p>
+          <p className="text-xs text-muted-foreground mt-1">6% per transaction · click for details</p>
         </motion.button>
 
         <motion.button
@@ -1200,7 +1200,7 @@ const Finances = () => {
                       <th className="text-left p-2 text-xs font-medium text-muted-foreground">Participant</th>
                       <th className="text-left p-2 text-xs font-medium text-muted-foreground">Type</th>
                       <th className="text-right p-2 text-xs font-medium text-muted-foreground">Gross</th>
-                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Fee (8%)</th>
+                      <th className="text-right p-2 text-xs font-medium text-muted-foreground">Fee (6%)</th>
                       <th className="text-right p-2 text-xs font-medium text-muted-foreground">Net</th>
                       <th className="text-left p-2 text-xs font-medium text-muted-foreground">Status</th>
                     </tr>
@@ -1219,7 +1219,7 @@ const Finances = () => {
                         <td data-label="Gross" className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground"}`}>
                           ${(tx.amount_cents / 100).toFixed(2)}
                         </td>
-                        <td data-label="Fee (8%)" className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground"}`}>
+                        <td data-label="Fee (6%)" className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground"}`}>
                           ${(tx.platform_fee_cents / 100).toFixed(2)}
                         </td>
                         <td data-label="Net" className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground"}`}>
@@ -1235,7 +1235,7 @@ const Finances = () => {
                       <td data-label="Gross" className={`p-2 text-right tabular-nums ${breakdown.column === "amount_cents" ? "font-bold text-foreground" : "text-muted-foreground text-xs"}`}>
                         ${(breakdown.items.reduce((s, t) => s + t.amount_cents, 0) / 100).toFixed(2)}
                       </td>
-                      <td data-label="Fee (8%)" className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground text-xs"}`}>
+                      <td data-label="Fee (6%)" className={`p-2 text-right tabular-nums ${breakdown.column === "platform_fee_cents" ? "font-bold text-amber-600" : "text-muted-foreground text-xs"}`}>
                         ${(breakdown.items.reduce((s, t) => s + t.platform_fee_cents, 0) / 100).toFixed(2)}
                       </td>
                       <td data-label="Net" className={`p-2 text-right tabular-nums ${breakdown.column === "net_amount_cents" ? "font-bold text-primary" : "text-muted-foreground text-xs"}`}>

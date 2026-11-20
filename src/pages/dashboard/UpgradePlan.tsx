@@ -237,7 +237,7 @@ const UpgradeFeaturesPage = () => {
             </select>
           </div>
 
-          {/* Per-Event: $150 once instead of the 8% platform fee */}
+          {/* Per-Event: $150 once instead of the 6% platform fee */}
           <FlatRateProCard tournamentId={selectedTournamentId} />
 
 
@@ -263,7 +263,7 @@ const UpgradeFeaturesPage = () => {
             {!quota.unlimited && <Progress value={quotaPct} className="h-2" />}
             {!quota.unlimited && quota.used >= quota.totalLimit && (
               <p className="text-xs text-muted-foreground mt-3">
-                You have used your 10 free manual entries. Additional manual entries will incur a 8% platform fee.
+                You have used your 10 free manual entries. Additional manual entries will incur a 6% platform fee.
                 Unlock unlimited entries below for a one-time $99.
               </p>
             )}

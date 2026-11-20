@@ -40,9 +40,9 @@ const data: CompSection[] = [
   {
     category: "Pricing",
     rows: [
-      { feature: "Platform Fee", eventbrite: "3.7% + $1.79/ticket", teevents: "$0 plan: 5% covered by players; $399 Per-Event: 0%", ebStatus: "warn", tvStatus: "yes" },
+      { feature: "Platform Fee", eventbrite: "3.7% + $1.79/ticket", teevents: "$0 plan: 6% covered by players; $399 Per-Event: 0%", ebStatus: "warn", tvStatus: "yes" },
       { feature: "Payment Processing Fee", eventbrite: "2.9% + $0.30 (extra)", teevents: "2.9% + $0.30 (Stripe)", ebStatus: "warn", tvStatus: "warn" },
-      { feature: "Fees on $100 before pass-through", eventbrite: "~$8.69+", teevents: "$8.20 on $0 plan; $3.20 processing on paid plans", ebStatus: "no", tvStatus: "yes" },
+      { feature: "Fees on $100 before pass-through", eventbrite: "~$8.69+", teevents: "$9.20 on $0 plan; $3.20 processing on paid plans", ebStatus: "no", tvStatus: "yes" },
       { feature: "Monthly Subscription", eventbrite: "No (per-event fees)", teevents: "No", ebStatus: "yes", tvStatus: "yes" },
       { feature: "Pass Fees to Golfers", eventbrite: "Not transparent", teevents: "Yes (toggle on/off)", ebStatus: "warn", tvStatus: "yes" },
     ],
@@ -190,12 +190,12 @@ const CompareEventbrite = () => {
             <div className="rounded-xl border-2 p-6" style={{ borderColor: "#1a5c38", backgroundColor: "#f0f7f3" }}>
               <h3 className="text-lg font-bold mb-3" style={{ color: "#1a5c38" }}>TeeVents on $100 Registration</h3>
               <ul className="space-y-2 text-sm" style={{ color: "#1a5c38" }}>
-                <li>Platform fee: 5% = <strong>$5.00</strong></li>
+                <li>Platform fee: 6% = <strong>$6.00</strong></li>
                 <li>Stripe processing: 2.9% + $0.30 = <strong>$3.20</strong></li>
-                <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $8.20</li>
+                <li className="border-t pt-2 font-bold text-base" style={{ borderColor: "#1a5c38" }}>Total: $9.20</li>
               </ul>
               <p className="mt-3 text-sm font-bold" style={{ color: "#F5A623" }}>
-                Example before pass-through on the $0 plan; players cover the 5% platform fee. Paid plans have 0% platform fees — $399 per tournament, $599 per league, or $2,999 per year for Enterprise. Standard Stripe processing applies.
+                Example before pass-through on the $0 plan; players cover the 6% platform fee. Paid plans have 0% platform fees — $399 per tournament, $599 per league, or $2,999 per year for Enterprise. Standard Stripe processing applies.
               </p>
             </div>
           </motion.div>

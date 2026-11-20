@@ -19,9 +19,9 @@ export const defaultFullService = (): FullServicePricing => ({
  cancellationTerms:"If the event cancels, the deposit is non refundable after agreement, and a work fee applies for work already done, starting at $1,500 after course negotiation and platform build, $3,000 after registration launch and sponsor packet, and the full Full Service Final Price within 30 days of the event. If the event postpones once to a new date, the fee moves with it at no extra charge.",
 });
 export const travelNote="Travel is quoted separately, on top of the Full Service Management price.";
-export const platformNote="The Full Service Management price is the management fee only. The 5 percent platform fee is paid by players at checkout, not by the organizer, and it does not reduce the Full Service Management price. Stripe processing, 2.9 percent plus $0.30, is separate.";
+export const platformNote="The Full Service Management price is the management fee only. The 6 percent platform fee is paid by players at checkout, not by the organizer, and it does not reduce the Full Service Management price. Stripe processing, 2.9 percent plus $0.30, is separate.";
 export const managementLimits="TeeVents negotiates on your behalf, but does not pay for course, food, awards, or vendor costs. TeeVents does not guarantee a player count, sponsorship dollars, or profit. Travel is quoted separately.";
-export const managementPlatformFee="Platform stays No Cost to Start. Players pay the 5 percent platform fee at checkout. Stripe processing is separate. The Full Service Management price does not reduce, and is not reduced by, the 5 percent platform fee.";
+export const managementPlatformFee="Platform stays No Cost to Start. Players pay the 6 percent platform fee at checkout. Stripe processing is separate. The Full Service Management price does not reduce, and is not reduced by, the 6 percent platform fee.";
 export const choiceConfirmation="Thanks, we received your choice. Rod will follow up to confirm and send your next steps.";
 export function fullServiceTotals(p:FullServicePricing) {
  const base=Math.round(p.basePrice*100);

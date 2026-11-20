@@ -73,7 +73,7 @@ export const createFlatRateCheckout = createServerFn({ method: "POST" })
                   currency: "usd",
                   product_data: {
                     name: "TeeVents Per-Event — One Tournament",
-                    description: `Removes the 8% platform fee for: ${t.title}`,
+                    description: `Removes the 6% platform fee for: ${t.title}`,
                   },
                   unit_amount: amount,
                 },

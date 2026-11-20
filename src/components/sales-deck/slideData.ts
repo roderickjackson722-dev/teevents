@@ -166,7 +166,7 @@ export const slides = [
     type: "pricing" as const,
     heading: "Simple, Transparent Pricing",
     plans: [
-      { name: "Free", price: "$0", fee: "8%", highlights: ["1 tournament", "Registration & payments", "Website (1 template)", "Check-in & planning guide", "Email messaging"] },
+      { name: "Free", price: "$0", fee: "6%", highlights: ["1 tournament", "Registration & payments", "Website (1 template)", "Check-in & planning guide", "Email messaging"] },
       { name: "Starter", price: "$299", fee: "0%", popular: true, highlights: ["We build your platform for you", "Live leaderboard & all scoring formats", "Sponsor management & photo gallery", "Donations page & SMS texting", "Custom domain & budget tracking"] },
       { name: "Premium", price: "$999", fee: "0%", highlights: ["$25K hole-in-one insurance (72 golfers)", "Auction item included", "Merch store & auction management", "Surveys & priority support"] },
     ],

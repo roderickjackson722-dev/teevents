@@ -62,7 +62,7 @@ export const PlatformFeesPanel = ({ logs }: { logs: RoutingLog[] }) => {
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <div className="rounded-md border border-border p-3">
-          <p className="text-xs text-muted-foreground">Total platform fee (8%)</p>
+          <p className="text-xs text-muted-foreground">Total platform fee (6%)</p>
           <p className="text-xl font-bold text-foreground">{fmt(stats.total)}</p>
           <p className="text-[11px] text-muted-foreground">{stats.txCount} charges</p>
         </div>

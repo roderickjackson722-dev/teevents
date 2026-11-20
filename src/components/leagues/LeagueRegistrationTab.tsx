@@ -319,7 +319,7 @@ export default function LeagueRegistrationTab({ league }: { league: any }) {
                   checked={!!form.pass_platform_fee_to_player}
                   onCheckedChange={(v) => patch("pass_platform_fee_to_player", v)}
                 />
-                <Label htmlFor="passfee" className="text-sm">Add the 5% platform fee to the member's total</Label>
+                <Label htmlFor="passfee" className="text-sm">Add the 6% platform fee to the member's total</Label>
               </div>
             </div>
           )}

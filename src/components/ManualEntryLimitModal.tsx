@@ -67,7 +67,7 @@ export default function ManualEntryLimitModal({
               <span className="font-medium">${(amountCents / 100).toFixed(2)}</span>
             </div>
             <div className="flex justify-between">
-              <span className="text-muted-foreground">8% platform fee</span>
+              <span className="text-muted-foreground">6% platform fee</span>
               <span className="font-semibold">${(feeCents / 100).toFixed(2)}</span>
             </div>
           </div>

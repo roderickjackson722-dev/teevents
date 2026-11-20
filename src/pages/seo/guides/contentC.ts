@@ -64,7 +64,7 @@ export const eventbriteForGolf: GuideContent = {
       heading: "Fees: comparing apples to apples",
       paragraphs: [
         "Eventbrite charges a per-ticket service fee plus payment processing, and those fees scale with every golfer you register. For a 144-player event at $150 a seat that adds up fast, and the money routes through Eventbrite before it reaches you.",
-        "TeeVents starts at $0 with an 8% player-funded service fee. Per-Event is a one-time $399 with no TeeVents transaction fee and includes a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
+        "TeeVents starts at $0 with a 6% player-funded service fee. Per-Event is a one-time $399 with no TeeVents transaction fee and includes a dedicated representative who builds the event page, leaderboard, and pairings. Dedicated rep included on every plan — even free.",
       ],
       mockup: "pricing",
     },
@@ -90,7 +90,7 @@ export const eventbriteForGolf: GuideContent = {
     },
     {
       q: "Is TeeVents more expensive than Eventbrite?",
-      a: "Usually less, because there is no per-golfer platform ticket fee. TeeVents charges 8% on paid transactions plus Stripe processing, and both can be passed to the registrant.",
+      a: "Usually less, because there is no per-golfer platform ticket fee. TeeVents charges 6% on paid transactions plus Stripe processing, and both can be passed to the registrant.",
     },
     {
       q: "Can I move an event that is already selling?",
@@ -155,7 +155,7 @@ export const registrationPlatform: GuideContent = {
       heading: "Requirement 5: money that lands in your account",
       paragraphs: [
         "Ask exactly one question of every vendor: who is the merchant of record? If the platform holds funds and pays you out weeks later, your cash flow depends on their schedule and their reserve policy.",
-        "TeeVents uses Stripe Connect direct charges, so the organizer is the merchant of record and settlements arrive on the standard Stripe payout schedule. The 8% platform fee is taken as an application fee on each transaction, and processing fees are shown as separate line items at checkout so registrants can see exactly what they are paying. You choose whether to absorb those fees or pass them along.",
+        "TeeVents uses Stripe Connect direct charges, so the organizer is the merchant of record and settlements arrive on the standard Stripe payout schedule. The 6% platform fee is taken as an application fee on each transaction, and processing fees are shown as separate line items at checkout so registrants can see exactly what they are paying. You choose whether to absorb those fees or pass them along.",
       ],
       mockup: "pricing",
     },
@@ -246,7 +246,7 @@ export const bestSoftware: GuideContent = {
       heading: "What each pricing model really costs",
       paragraphs: [
         "Per-golfer pricing looks harmless at $5 to $12 a player until you multiply by 144 and add a second event. Annual subscriptions look predictable until you run only one tournament a year and pay for eleven idle months. Free platforms typically monetize with a donation prompt or a processing markup at checkout, which quietly moves the cost onto your donors.",
-        "TeeVents keeps this simple: start at $0 with a player-funded 8% service fee, or pay $399 per event with no TeeVents transaction fee and dedicated setup support. Dedicated rep included on every plan — even free.",
+        "TeeVents keeps this simple: start at $0 with a player-funded 6% service fee, or pay $399 per event with no TeeVents transaction fee and dedicated setup support. Dedicated rep included on every plan — even free.",
       ],
       mockup: "pricing",
     },
@@ -358,7 +358,7 @@ export const onlineRegistration: GuideContent = {
     {
       heading: "Step 5: choose how fees are handled",
       paragraphs: [
-        "There are two honest ways to handle the 8% platform fee and Stripe processing: absorb them into your ticket price, or show them as separate line items and pass them to the registrant. Golf audiences are generally fine with pass-through when it is labeled clearly, especially at charity events where every dollar absorbed is a dollar off the mission.",
+        "There are two honest ways to handle the 6% platform fee and Stripe processing: absorb them into your ticket price, or show them as separate line items and pass them to the registrant. Golf audiences are generally fine with pass-through when it is labeled clearly, especially at charity events where every dollar absorbed is a dollar off the mission.",
         "Whichever you choose, show the total before the payment step. Surprise fees at the final click are the single biggest cause of abandoned golf registrations.",
       ],
       mockup: "pricing",
@@ -486,7 +486,7 @@ export const golfstatusAlternatives: GuideContent = {
   faqs: [
     {
       q: "Is TeeVents free for nonprofits?",
-      a: "Start at $0 with an 8% player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee and dedicated setup support. Dedicated rep included on every plan — even free.",
+      a: "Start at $0 with a 6% player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee and dedicated setup support. Dedicated rep included on every plan — even free.",
     },
     {
       q: "Can I keep my existing registrations if I switch?",
@@ -494,7 +494,7 @@ export const golfstatusAlternatives: GuideContent = {
     },
     {
       q: "Who holds the money on TeeVents?",
-      a: "You do. Stripe Connect direct charges make the organizer the merchant of record; TeeVents only receives the 8% application fee.",
+      a: "You do. Stripe Connect direct charges make the organizer the merchant of record; TeeVents only receives the 6% application fee.",
     },
     {
       q: "Does TeeVents support golf leagues as well as tournaments?",

@@ -33,7 +33,7 @@ export default function LeagueReconciliation() {
           <ShieldCheck className="h-6 w-6 text-emerald-600" /> League Fee Reconciliation
         </h1>
         <p className="text-sm text-muted-foreground">
-          Compares the 5% TeeVents platform fee recorded in <code>league_payments</code> to Stripe application fees for each Connect account.
+          Compares the 6% TeeVents platform fee recorded in <code>league_payments</code> to Stripe application fees for each Connect account.
         </p>
       </div>
 
@@ -58,7 +58,7 @@ export default function LeagueReconciliation() {
         <>
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Gross</p><p className="text-xl font-bold">{fmt(data.totals.gross)}</p></CardContent></Card>
-            <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">DB 5% fee</p><p className="text-xl font-bold">{fmt(data.totals.db_fee)}</p></CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">DB 6% fee</p><p className="text-xl font-bold">{fmt(data.totals.db_fee)}</p></CardContent></Card>
             <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Stripe app fee</p><p className="text-xl font-bold">{fmt(data.totals.stripe_fee)}</p></CardContent></Card>
             <Card><CardContent className="p-4"><p className="text-xs text-emerald-700">Matched buckets</p><p className="text-xl font-bold text-emerald-800">{data.totals.matched}</p></CardContent></Card>
             <Card><CardContent className="p-4"><p className="text-xs text-amber-700">Mismatched</p><p className="text-xl font-bold text-amber-800">{data.totals.mismatched}</p></CardContent></Card>

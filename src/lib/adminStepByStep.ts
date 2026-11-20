@@ -193,7 +193,7 @@ export const ADMIN_GUIDES: AdminGuide[] = [
     title: "Review payments and fees",
     category: "Money",
     summary:
-      "See every payment, the 8% service fee, credit card processing, and your net proceeds.",
+      "See every payment, the 6% service fee, credit card processing, and your net proceeds.",
     path: "Finances → Transactions",
     steps: [
       { text: "Open Transactions in the Finances group of the left menu." },

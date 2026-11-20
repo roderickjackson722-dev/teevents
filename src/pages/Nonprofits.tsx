@@ -31,7 +31,7 @@ const benefits = [
     icon: Shield,
     title: "Zero Platform Transaction Fees",
     description:
-      "No Cost to Start has an 8% platform fee paid by players. Per-Event, Per-League, and Enterprise have 0% TeeVents platform fees. Only standard Stripe processing fees apply. Transparent pricing you can budget around.",
+      "No Cost to Start has a 6% platform fee paid by players. Per-Event, Per-League, and Enterprise have 0% TeeVents platform fees. Only standard Stripe processing fees apply. Transparent pricing you can budget around.",
   },
   {
     icon: BadgeCheck,
@@ -212,7 +212,7 @@ const Nonprofits = () => {
                   <p className="text-4xl font-display font-bold text-foreground">$150</p>
                   <p className="text-muted-foreground text-sm mt-1">Registration collected</p>
                   <div className="my-6 space-y-2 text-sm text-left">
-                    <div className="flex justify-between"><span className="text-muted-foreground">Platform fee (8%)</span><span className="text-primary font-medium">Donor pays</span></div>
+                    <div className="flex justify-between"><span className="text-muted-foreground">Platform fee (6%)</span><span className="text-primary font-medium">Donor pays</span></div>
                     <div className="flex justify-between"><span className="text-muted-foreground">Processing fee</span><span className="text-primary font-medium">Donor pays</span></div>
                     <div className="border-t border-border pt-2 flex justify-between font-semibold"><span>You keep</span><span className="text-primary text-lg">$150.00</span></div>
                   </div>

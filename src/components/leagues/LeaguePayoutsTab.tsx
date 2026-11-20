@@ -196,7 +196,7 @@ export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }:
         <CardContent className="p-5">
           <h3 className="font-semibold mb-3">Recent payments</h3>
           <p className="text-xs text-muted-foreground mb-3">
-            Gross is what the player paid, fees are the 5% TeeVents fee plus card processing, and net
+            Gross is what the player paid, fees are the 6% TeeVents fee plus card processing, and net
             is what reaches you. Manual (offline) entries carry no fees. Only completed payments are
             shown — abandoned checkouts are excluded.
           </p>
@@ -242,7 +242,7 @@ export default function LeaguePayoutsTab({ leagueId, showRecentCharges = true }:
       </Card>
       )}
       <p className="text-xs text-muted-foreground">
-        Charges go directly to your connected Stripe account. TeeVents keeps a 5% application fee per transaction — payouts follow your Stripe schedule.
+        Charges go directly to your connected Stripe account. TeeVents keeps a 6% application fee per transaction — payouts follow your Stripe schedule.
       </p>
     </div>
   );

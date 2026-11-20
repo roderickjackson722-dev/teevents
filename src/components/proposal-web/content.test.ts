@@ -31,7 +31,7 @@ describe("client proposal rules",()=>{
   expect(reasonTemplates.find(t=>t.program==="Enterprise")!.text).toContain("$2,999");
   expect(reasonTemplates.find(t=>t.program==="Hybrid Managed")!.text).toContain("$5,000");
   expect(reasonTemplates.find(t=>t.program==="Full Service Planning")!.text).toContain("$5,000");
-  expect(reasonTemplates.find(t=>t.program==="No Cost to Start")!.text).toContain("5% platform fee");
+  expect(reasonTemplates.find(t=>t.program==="No Cost to Start")?.text).toContain("6% platform fee");
  });
  it("fills the reason box without repeating or dropping written text",()=>{
   expect(withReason(reasonExample,"T")).toBe("T");
@@ -129,6 +129,14 @@ describe("flexible proposal wording and optional pages",()=>{
 });
 
 describe("proposal section controls", () => {
+  it("snapshots 6% only on new proposals and preserves historical fees",()=>{
+    const current=emptyDocument();
+    expect(current.platformFeePercent).toBe(6);
+    const historical=documentSchema.parse({fields:current.fields,recommended:"",intro:"",reason:""});
+    expect(historical.platformFeePercent).toBeUndefined();
+    expect(programDetails(historical,"No Cost to Start")["Platform fee"]).toBe("5%, paid by players at checkout");
+    expect(programDetails(current,"No Cost to Start")["Platform fee"]).toBe("6%, paid by players at checkout");
+  });
   it("shows every section unless hidden", () => {
     expect(sectionShown({}, "screens")).toBe(true);
     expect(sectionShown({ hiddenSections: ["screens"] }, "screens")).toBe(false);

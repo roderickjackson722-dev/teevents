@@ -79,7 +79,7 @@ export default function LeagueOverviewTab({ leagueId, payoutSettingsPath = "/das
                 {stripe.started ? "Finish connecting Stripe to accept league payments" : "Connect Stripe to accept membership & event fees"}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Members pay directly to your bank account through Stripe. TeeVents keeps a 5% platform fee per transaction — same as tournaments.
+                Members pay directly to your bank account through Stripe. TeeVents keeps a 6% platform fee per transaction — same as tournaments.
               </p>
               <Button asChild size="sm" className="mt-3">
                 <Link to={payoutSettingsPath}>{stripe.started ? "Complete Stripe Onboarding" : "Connect Stripe"}</Link>
@@ -92,7 +92,7 @@ export default function LeagueOverviewTab({ leagueId, payoutSettingsPath = "/das
         <Card className="border-emerald-400 bg-emerald-50">
           <CardContent className="p-3 flex items-center gap-2 text-sm">
             <CheckCircle2 className="h-4 w-4 text-emerald-600" />
-            <span className="font-medium text-emerald-900">Stripe connected — collecting league payments with a 5% platform fee.</span>
+            <span className="font-medium text-emerald-900">Stripe connected — collecting league payments with a 6% platform fee.</span>
             <Link to={payoutSettingsPath} className="ml-auto text-emerald-700 underline text-xs">Manage</Link>
           </CardContent>
         </Card>

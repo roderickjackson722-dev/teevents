@@ -165,7 +165,7 @@ const ManualEntryGrants = () => {
       </div>
 
       <div className="bg-card border border-border rounded-xl p-6 mt-6">
-        <h2 className="text-lg font-bold mb-3">Manual entry fees (8% over quota)</h2>
+        <h2 className="text-lg font-bold mb-3">Manual entry fees (6% over quota)</h2>
         {fees.length === 0 ? (
           <p className="text-sm text-muted-foreground italic">No manual entry fees recorded.</p>
         ) : (

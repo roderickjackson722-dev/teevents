@@ -229,7 +229,7 @@ export default function SampleDashboardPreview() {
   const countdown = getCountdown(sample.event_date);
   const totalRevenue =
     participants.length * (sample.registration_fee_cents || 0);
-  const platformFee = Math.round(totalRevenue * 0.05);
+  const platformFee = Math.round(totalRevenue * 0.06);
   const netPayout = totalRevenue - platformFee;
   const fmt = (c: number) =>
     `$${(c / 100).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
@@ -1166,7 +1166,7 @@ function FinancesPanel() {
         </div>
         <div className="border rounded-md p-3">
           <div className="text-xs text-muted-foreground">
-            Platform Fees (8%)
+            Platform Fees (6%)
           </div>
           <div className="text-xl font-bold text-orange-600">$648.00</div>
         </div>

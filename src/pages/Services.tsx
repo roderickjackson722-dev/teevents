@@ -94,7 +94,7 @@ const Services = () => {
           <div className="grid gap-6 md:grid-cols-2 mb-16">
             <div className="bg-card p-6 rounded-lg border border-border">
               <h3 className="font-display text-xl font-bold text-primary">Online Platform With Your Director</h3>
-              <p className="mt-3 text-foreground/80 leading-relaxed">Your director builds your branded event page, registration, pairings, format, mobile scoring, and live leaderboard for you. You run your tournament, and your rep is on call on event day. Start at no cost with the 8% service fee paid by players, or pay $399 per event with no platform fee.</p>
+              <p className="mt-3 text-foreground/80 leading-relaxed">Your director builds your branded event page, registration, pairings, format, mobile scoring, and live leaderboard for you. You run your tournament, and your rep is on call on event day. Start at no cost with the 6% service fee paid by players, or pay $399 per event with no platform fee.</p>
             </div>
             <div className="bg-card p-6 rounded-lg border border-border">
               <h3 className="font-display text-xl font-bold text-primary">Full Service Management, On Site</h3>

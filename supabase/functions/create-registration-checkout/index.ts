@@ -426,7 +426,7 @@ Deno.serve(async (req) => {
     // - passFeesToParticipants=true → always pass fees
     // - coverFees=true → golfer opted to cover fees voluntarily
     const currentFreePlan = tournament.pricing_version === "2026-10" && tournament.pricing_model === "free";
-    const currentPaidPlan = tournament.pricing_version === "2026-10" && ["per_event", "enterprise"].includes(tournament.pricing_model);
+    const currentPaidPlan = ["per_event", "per_league", "enterprise"].includes(tournament.pricing_model);
     // The current Free plan is always player-funded. Legacy events retain their saved toggle.
     const golferPaysFees = currentFreePlan || passFeesToParticipants || coverFees;
 
@@ -444,8 +444,6 @@ Deno.serve(async (req) => {
     const splitCalc = platformFeeCents > 0 && (golferPaysFees || feeSplitChoice !== "player") ? computeFeeSplit(baseTotalCents, feeRate, feeSplitChoice) : null;
     const stripeFeeCents = splitCalc
       ? splitCalc.processing
-      : golferPaysFees
-      ? calculateGrossedUpStripeFee(baseTotalCents + platformFeeCents)
       : calculateProcessingFee(baseTotalCents);
     const combinedFeesCents = platformFeeCents + stripeFeeCents;
     // Application fee = our full platform fee. Stripe takes its processing fee from the
@@ -454,7 +452,7 @@ Deno.serve(async (req) => {
     const organizerNetCents = splitCalc
       ? splitCalc.organizerReceives
       : golferPaysFees
-      ? baseTotalCents
+      ? baseTotalCents + combinedFeesCents - platformFeeCents - calculateProcessingFee(baseTotalCents + combinedFeesCents)
       : Math.max(baseTotalCents - combinedFeesCents, 0);
     const chargeTotalCents = splitCalc
       ? splitCalc.charge

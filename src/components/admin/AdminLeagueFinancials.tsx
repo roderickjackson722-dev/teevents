@@ -140,7 +140,7 @@ export default function AdminLeagueFinancials() {
         {[
           { label: "Payments", value: String(totals.count), hint: "matching filters" },
           { label: "Gross collected", value: formatCents(totals.gross), hint: "paid by members" },
-          { label: "Platform fees", value: formatCents(totals.platform), hint: "TeeVents 5%" },
+          { label: "Platform fees", value: formatCents(totals.platform), hint: "TeeVents 6%" },
           { label: "Stripe fees", value: formatCents(totals.stripe), hint: "card processing" },
           { label: "Net to leagues", value: formatCents(totals.net), hint: "after all fees" },
         ].map((c) => (

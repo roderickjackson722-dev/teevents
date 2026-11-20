@@ -13,7 +13,7 @@ import { SOFTWARE_TAG } from "@/lib/programTypes";
 const differentiators = [
   { icon: UserRoundCheck, title: "A Named Rep on Every Plan", text: "Your event built by a real person, free or paid." },
   { icon: Paintbrush, title: "Custom Leaderboard & Event Pages", text: "Your rep matches every leaderboard to your event colors. Event pages that look like real websites." },
-  { icon: CircleDollarSign, title: "Free for Organizers", text: "Start at $0, with the 8% platform fee covered by players." },
+  { icon: CircleDollarSign, title: "Free for Organizers", text: "Start at $0, with the 6% platform fee covered by players." },
 ];
 
 function HomeActions({ hero = false }: { hero?: boolean }) {

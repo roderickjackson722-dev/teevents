@@ -21,7 +21,7 @@ const faqs = [
   },
   {
     q: "How much does TeeVents cost?",
-    a: "TeeVents starts at $0 with a player-funded 8% service fee. Per-Event is $399 with no TeeVents transaction fee, live scoring, and a dedicated representative. Per-League is $599 per league, perfect for season-long leagues with multiple events and standings. Enterprise is $2,999 per year for unlimited events. Dedicated rep included on every plan — even free.",
+    a: "TeeVents starts at $0 with a player-funded 6% service fee. Per-Event is $399 with no TeeVents transaction fee, live scoring, and a dedicated representative. Per-League is $599 per league, perfect for season-long leagues with multiple events and standings. Enterprise is $2,999 per year for unlimited events. Dedicated rep included on every plan — even free.",
   },
   {
     q: "Is TeeVents good for charity and nonprofit golf tournaments?",

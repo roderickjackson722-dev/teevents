@@ -16,7 +16,7 @@ import Layout from "@/components/Layout";
 const FLOW_STEPS = [
   { icon: Users, label: "Golfer Pays", detail: "$100 registration", color: "bg-primary" },
   { icon: CreditCard, label: "Stripe Connect Direct Charge", detail: "Lives on organizer's Stripe account", color: "bg-primary/80" },
-  { icon: DollarSign, label: "8% Application Fee", detail: "Routed to TeeVents", color: "bg-secondary" },
+  { icon: DollarSign, label: "6% Application Fee", detail: "Routed to TeeVents", color: "bg-secondary" },
   { icon: Zap, label: "Stripe Processing", detail: "~2.9% + $0.30", color: "bg-primary/60" },
   { icon: Banknote, label: "Net to Organizer", detail: "Lands in YOUR Stripe balance instantly", color: "bg-emerald-600" },
   { icon: Building2, label: "Bank Transfer", detail: "Stripe's 2-day rolling schedule", color: "bg-emerald-700" },
@@ -25,16 +25,16 @@ const FLOW_STEPS = [
 /* ────── $100 breakdown ────── */
 const SAMPLE_BREAKDOWN = [
   { label: "Registration Price (fees absorbed)", amount: "$100.00" },
-  { label: "TeeVents Platform Fee (8%)", amount: "−$8.00" },
+  { label: "TeeVents Platform Fee (6%)", amount: "−$6.00" },
   { label: "Stripe Processing (~2.9% + $0.30)", amount: "−$3.20" },
-  { label: "Net in Your Stripe Account", amount: "$88.80", bold: true },
+  { label: "Net in Your Stripe Account", amount: "$90.80", bold: true },
 ];
 
 /* ────── objections ────── */
 const OBJECTIONS = [
   {
     q: '"How do I know TeeVents won\'t hold my money?"',
-    a: "Every payment uses Stripe Connect Direct Charges. The charge is created on YOUR connected Stripe account — TeeVents only takes an 8% application fee. The funds never touch a TeeVents balance. You can verify it in your own Stripe dashboard.",
+    a: "Every payment uses Stripe Connect Direct Charges. The charge is created on YOUR connected Stripe account — TeeVents only takes a 6% application fee. The funds never touch a TeeVents balance. You can verify it in your own Stripe dashboard.",
   },
   {
     q: '"What about chargebacks and refunds?"',
@@ -58,7 +58,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "Does TeeVents see my money?",
-    a: "No. Only the 8% application fee is routed to TeeVents. The other 92% (minus Stripe processing) settles directly in your Stripe account. We have read-only access via Stripe Connect to show transactions in your TeeVents dashboard.",
+    a: "No. Only the 6% application fee is routed to TeeVents. The other 94% (minus Stripe processing) settles directly in your Stripe account. We have read-only access via Stripe Connect to show transactions in your TeeVents dashboard.",
   },
   {
     q: "What about new Stripe accounts?",
@@ -77,16 +77,16 @@ INTRODUCTION
 HOW FUNDS FLOW
 1. Golfer registers and pays by credit card, Apple Pay, or Google Pay.
 2. The charge is created using Stripe Connect Direct Charges — meaning the payment is processed on YOUR connected Stripe account, not on a TeeVents balance.
-3. TeeVents takes an 8% application fee directly from the charge.
+3. TeeVents takes a 6% application fee directly from the charge.
 4. Stripe takes its standard processing fee (~2.9% + $0.30).
 5. The net amount lands instantly in YOUR Stripe balance.
 6. Stripe transfers funds to your bank on its 2-day rolling schedule (or daily/weekly/instant if you configure it in Stripe).
 
 SAMPLE $100 REGISTRATION (FEES ABSORBED)
 • Registration Price: $100.00
-• TeeVents Platform Fee (8%): −$8.00
+• TeeVents Platform Fee (6%): −$6.00
 • Stripe Processing (~2.9% + $0.30): −$3.20
-• Net in Your Stripe Account: $88.80
+• Net in Your Stripe Account: $90.80
 
 KEY MESSAGE
 "TeeVents is just the online platform. Your money is yours, in your Stripe account, from the moment a golfer pays. We never hold, escrow, or release funds — there's no payout schedule on our end to wait on."
@@ -98,7 +98,7 @@ REFUNDS & CHARGEBACKS
 • You get Stripe's full dispute toolkit, the same as any direct Stripe merchant."
 
 COMMON OBJECTIONS
-• "How do I know you won't hold my money?" → Verify it yourself in your Stripe dashboard. Every charge will show on YOUR account with our 8% application fee broken out.
+• "How do I know you won't hold my money?" → Verify it yourself in your Stripe dashboard. Every charge will show on YOUR account with our 6% application fee broken out.
 • "What about refunds?" → One-click from your TeeVents dashboard, pulled from your Stripe balance.
 • "I already have a Stripe account." → Perfect — connect it during onboarding in 2–3 minutes.
 • "What if I need money before my event?" → It's already in your Stripe account. Configure Stripe to transfer to your bank daily, weekly, or instantly.
@@ -154,7 +154,7 @@ export default function DemoTalkTrack() {
               <Badge variant="outline" className="mb-3 text-xs">SAY THIS</Badge>
               <p className="text-base md:text-lg italic text-foreground/90 leading-relaxed">
                 "TeeVents never holds your money. Every payment lands directly in your Stripe
-                account the moment a golfer pays — we only take an 8% platform fee. Let me walk
+                account the moment a golfer pays — we only take a 6% platform fee. Let me walk
                 you through exactly how it works."
               </p>
             </CardContent>
@@ -278,7 +278,7 @@ export default function DemoTalkTrack() {
                     <Shield className="h-4 w-4" /> Closer
                   </p>
                   <p className="italic text-foreground/90">
-                    "The bottom line: TeeVents is an online platform you rent for 8% per transaction. Your money is yours. Want to start a tournament right now, or would a quick walkthrough be more useful?"
+                    "The bottom line: TeeVents is an online platform you rent for 6% per transaction. Your money is yours. Want to start a tournament right now, or would a quick walkthrough be more useful?"
                   </p>
                   <div className="mt-4 flex gap-2">
                     <a href="/get-started" className="inline-flex items-center gap-1 text-sm font-medium text-secondary hover:underline">
@@ -295,7 +295,7 @@ export default function DemoTalkTrack() {
           </Tabs>
 
           <div className="text-center text-xs text-muted-foreground pt-4">
-            Pricing model: Stripe Connect Direct Charges • 8% TeeVents application fee • No TeeVents hold or escrow
+            Pricing model: Stripe Connect Direct Charges • 6% TeeVents application fee • No TeeVents hold or escrow
             <span className="hidden">{Clock.name}</span>
           </div>
         </div>

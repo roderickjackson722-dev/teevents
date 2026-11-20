@@ -1,11 +1,9 @@
 import { trustedOrigin } from "@/lib/trustedOrigin";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { computeFeeSplit, type FeeSplit } from "@/lib/feeSplit";
 
 const PLATFORM_FEE_RATE = 0.05;
-
-const grossUpProcessingFee = (subtotalCents: number) =>
-  Math.max(0, Math.round((subtotalCents + 30) / (1 - 0.029)) - subtotalCents);
 
 const escapeHtml = (value: string) =>
   value.replace(/[&<>"']/g, (char) => ({
@@ -41,7 +39,7 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
 
     const { data: tournament } = await supabaseAdmin
       .from("tournaments")
-      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, flat_rate_enabled, pass_fees_to_participants, platform_fee_percent")
+      .select("id, title, slug, public_section_titles, organization_id, pricing_version, pricing_model, flat_rate_enabled, pass_fees_to_participants, platform_fee_percent, fee_split")
       .eq("id", registration.tournament_id)
       .maybeSingle();
     if (!tournament) throw new Error("Tournament not found");
@@ -83,13 +81,16 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
     }
 
     const isCurrentFree = tournament.pricing_version === "2026-10" && tournament.pricing_model === "free";
-    const isCurrentPaid = tournament.pricing_version === "2026-10" && ["per_event", "enterprise"].includes(tournament.pricing_model || "");
-    const platformFeeCents = tournament.flat_rate_enabled || isCurrentPaid
-      ? 0
-      : Math.round(data.amountCents * (Number.isFinite(Number((tournament as any).platform_fee_percent)) ? Number((tournament as any).platform_fee_percent) / 100 : PLATFORM_FEE_RATE));
+    const isCurrentPaid = ["per_event", "per_league", "enterprise"].includes(tournament.pricing_model || "");
+    const savedRate = (tournament as any).platform_fee_percent;
+    const feeRate = tournament.flat_rate_enabled || isCurrentPaid ? 0 : savedRate != null && Number.isFinite(Number(savedRate)) ? Number(savedRate) / 100 : PLATFORM_FEE_RATE;
     const golferPaysFees = isCurrentFree || tournament.pass_fees_to_participants !== false;
-    const stripeFeeCents = golferPaysFees ? grossUpProcessingFee(data.amountCents + platformFeeCents) : 0;
-    const chargeTotalCents = data.amountCents + (golferPaysFees ? platformFeeCents + stripeFeeCents : 0);
+    const savedChoice = (tournament as any).fee_split;
+    const choice: FeeSplit = ["player", "split", "organizer", "exact"].includes(savedChoice) ? savedChoice : "player";
+    const fees = computeFeeSplit(data.amountCents, feeRate, choice === "player" && !golferPaysFees ? "organizer" : choice);
+    const platformFeeCents = fees.teeFee;
+    const stripeFeeCents = fees.processing;
+    const chargeTotalCents = fees.charge;
     const applicationFeeCents = stripeAccountId ? platformFeeCents : 0;
 
     const session = await stripe.checkout.sessions.create({
@@ -120,7 +121,7 @@ export const sendRegistrationPaymentLink = createServerFn({ method: "POST" })
         platform_fee_cents: String(platformFeeCents),
         stripe_fee_cents: String(stripeFeeCents),
         application_fee_cents: String(applicationFeeCents),
-        organizer_net_cents: String(golferPaysFees ? data.amountCents : Math.max(data.amountCents - platformFeeCents, 0)),
+        organizer_net_cents: String(fees.organizerReceives),
         charge_total_cents: String(chargeTotalCents),
         player_count: "1",
         payment_link_for_existing_registration: "true",

@@ -37,7 +37,7 @@ const audiences = [
   [CalendarRange, "Leagues and Associations", "Season-long leagues with standings, weekly play, and recurring events."],
 ] as const;
 const plans = [
-  ["No Cost to Start", "$0", "An 8% service fee is included in each player's registration total. You keep 100% of your event revenue."],
+  ["No Cost to Start", "$0", "An 6% service fee is included in each player's registration total. You keep 100% of your event revenue."],
   ["Per-Event", "$399", "Per tournament. No platform transaction fees. Keep every dollar of registration revenue."],
   ["Per-League", "$599", "Per league. Perfect for season-long leagues with multiple events and standings. Everything in Per-Event, plus league standings and leaderboards, and season long reporting. Dedicated TeeVents rep who manages your league."],
   ["Enterprise", "$2,999", "Per year. For courses and clubs running 10 or more events a year."],

@@ -1,4 +1,6 @@
 # Roadmap (Nov 6 2026 request)
+- [x] Nov 20: current fee copy/explicit creation defaults 6%; shared registration/payment-link base-processing math, listed totals covered by 87 tests; signed-in admin previews verified without saves; existing records and league renewal unchanged, not published.
+- [ ] Nov 20 rollout: shared database INSERT default remains 8% until approved live activation; test-mode Stripe checkout/payout not verified (no real payments allowed); do not publish before these checks.
 - [x] Nov 19 proposal captions: remove founder portrait caption and automatic Personalized for line; preserve editable About and introduction wording.
 - [x] Nov 19 editable duplicate selection boxes for packages and payment arrangements; custom choices use signed approval and notification only, preserving existing checkout amounts. Signed-in temporary save/reload, duplication, client selection and phone fit verified; test copy deleted; 51 tests pass, no real email or checkout tested.
 - [x] Nov 17 proposal flexibility: larger edit areas for general and per-program wording, optional References and Event Photo Links pages with image previews and clickable-link fallback, separate print pages; 54 tests pass, signed-in temporary draft save/reload/preview/delete verified, no sends, saved/sent copies, pricing, checkout and events unchanged.

@@ -172,7 +172,7 @@ const leagueCategories: SidebarCategory[] = [
     label: "Finance",
     color: "border-l-yellow-400 bg-yellow-400/5",
     items: [
-      { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Connect Stripe to collect league fees (8% platform fee)" },
+      { title: "Payout Settings", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Connect Stripe to collect league fees (6% platform fee)" },
     ],
   },
 ];

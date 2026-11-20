@@ -19,10 +19,10 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
   const [saved, setSaved] = useState<FeeSplit>("player");
   const [choice, setChoice] = useState<FeeSplit>("player");
   const [noFeePlan, setNoFeePlan] = useState(false);
-  const [rate, setRate] = useState(0.08);
+  const [rate, setRate] = useState(0.06);
   const [amount, setAmount] = useState("");
-  const [savedPct, setSavedPct] = useState(8);
-  const [pctInput, setPctInput] = useState("8");
+  const [savedPct, setSavedPct] = useState(6);
+  const [pctInput, setPctInput] = useState("6");
   const [previewAmt, setPreviewAmt] = useState("125");
 
   useEffect(() => {
@@ -33,8 +33,8 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
       const split = (CHOICES.includes(t?.fee_split) ? t.fee_split : "player") as FeeSplit;
       setSaved(split); setChoice(split);
       setNoFeePlan(!!t?.flat_rate_enabled || ["per_event", "per_league", "enterprise"].includes(String(t?.pricing_model)));
-      const pct = Number(t?.platform_fee_percent);
-      const p0 = Number.isFinite(pct) && pct >= 0 && pct <= 20 ? pct : 8;
+      const pct = t?.platform_fee_percent == null ? NaN : Number(t.platform_fee_percent);
+      const p0 = Number.isFinite(pct) && pct >= 0 && pct <= 20 ? pct : 5;
       setRate(p0 / 100); setSavedPct(p0); setPctInput(String(p0));
       setLoading(false);
     })();
@@ -79,7 +79,8 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
         {small && <div className="font-medium">{feeSplitLabel(c, pct)}</div>}
         <div>Player pays at checkout: <strong>{money(r.charge)}</strong></div>
         <div>TeeVents fee ({pct}%): {money(r.teeFee)} — player {money(r.playerShare)}, organizer {money(r.organizerShare)}</div>
-        <div>Stripe fee: {money(r.realStripe)}</div>
+        <div>Processing shown at checkout: {money(r.processing)}</div>
+        <div>Stripe fee on total charged: {money(r.realStripe)}</div>
         <div>You receive, per registration: <strong>{money(r.organizerReceives)}</strong></div>
       </div>
     );
@@ -90,7 +91,7 @@ export default function AdminFeeSplitSetting({ tournamentId, callAdminApi }: Pro
       <div className="flex items-center gap-2 text-sm font-medium"><DollarSign className="h-4 w-4" /> Checkout fee (admin only)</div>
       <label className="flex flex-wrap items-center gap-2 text-sm">TeeVents platform fee for this event
         <input type="number" min="0" max="20" step="0.1" inputMode="decimal" value={pctInput} onChange={(e) => setPctInput(e.target.value)} className="w-20 rounded border border-input bg-background px-2 py-1" aria-label="TeeVents platform fee percent" />%
-        <span className="text-xs text-muted-foreground">Default 8%. Stripe fee (2.9% + $0.30) is added on top. Saved: {savedPct}%.</span>
+        <span className="text-xs text-muted-foreground">Default 6%. Stripe fee (2.9% + $0.30) is added on top. Saved: {savedPct}%.</span>
       </label>
       <div className="flex flex-col gap-1.5">
         {CHOICES.map((c) => (

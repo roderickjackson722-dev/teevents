@@ -46,7 +46,7 @@ export default function ProposalClosure({ document: d, token }: { document: WebD
   }, []);
 
   const offers: Record<Program, { text: string; button: string; next: string }> = {
-    "No Cost to Start": { text: "$0 to start, 5% platform fee, paid by players at checkout", button: "Start With No Cost to Start", next: "You'll create your TeeVents account, then continue to the No Cost to Start setup, the same as signing up on our website." },
+    "No Cost to Start": { text: `$0 to start, ${d.platformFeePercent ?? 5}% platform fee, paid by players at checkout`, button: "Start With No Cost to Start", next: "You'll create your TeeVents account, then continue to the No Cost to Start setup, the same as signing up on our website." },
     "Per Event": { text: "$399 per event, 0% TeeVents platform fee, Live Leaderboard and Mobile Scoring included", button: "Start With Per Event, $399", next: "You'll create your TeeVents account, then continue to the regular Per Event checkout for $399." },
     "Per League": { text: "$599 per league", button: "Start With Per League, $599", next: "You'll create your TeeVents account, then continue to the regular Per League checkout for $599." },
     "Enterprise": { text: "$2,999 per year, for 10 or more events, 0% TeeVents platform fee", button: "Start With Enterprise, $2,999", next: "You'll pay the $2,999 annual Enterprise fee by card on a secure checkout page. After payment, you'll set up your TeeVents account and Rod will reach out to get started." },

@@ -62,7 +62,7 @@ const DEFAULT_CONTENT = `<h1>Demo Agenda – 15 Minute Screen Share</h1>
 <ul>
   <li>✅ <strong>Free to start</strong> – no credit card required</li>
   <li>✅ <strong>No long-term contract</strong> – pay per tournament when you need Pro features</li>
-  <li>✅ <strong>8% platform fee</strong> – only when you collect payments</li>
+  <li>✅ <strong>6% platform fee</strong> – only when you collect payments</li>
 </ul>
 <h3>Call to Action</h3>
 <ul>

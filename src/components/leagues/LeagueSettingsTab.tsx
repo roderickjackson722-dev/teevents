@@ -131,14 +131,14 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
         <div>
           <h2 className="text-lg font-semibold flex items-center gap-2"><CreditCard className="h-5 w-5" /> Platform Fee</h2>
           <p className="text-sm text-muted-foreground">
-            Choose who covers the 5% TeeVents platform fee and the card processing fee on every league
+            Choose who covers the 6% TeeVents platform fee and the card processing fee on every league
             transaction — memberships, registrations, and event entry fees.
           </p>
         </div>
 
         <div className="flex items-start justify-between gap-4 rounded-md border p-4">
           <div>
-            <p className="font-medium text-sm">Pass the 5% platform fee + card processing fee to members</p>
+            <p className="font-medium text-sm">Pass the 6% platform fee + card processing fee to members</p>
             <p className="text-xs text-muted-foreground">
               On (recommended): both fees are added as line items at checkout and your league receives the
               full amount you set. Off: the fees are deducted from your payout.
@@ -151,7 +151,7 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
           <div className="rounded-md border p-3 space-y-1">
             <p className="font-medium">Fee passed to member (on)</p>
             <div className="flex justify-between text-muted-foreground"><span>Event fee</span><span>$50.00</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>Platform fee (5%)</span><span>$2.50</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Platform fee (6%)</span><span>$2.50</span></div>
             <div className="flex justify-between text-muted-foreground"><span>Card processing</span><span>$1.88</span></div>
             <div className="flex justify-between font-semibold"><span>Member pays</span><span>$54.38</span></div>
             <div className="flex justify-between text-primary"><span>You receive</span><span>$50.00</span></div>
@@ -160,7 +160,7 @@ export default function LeagueSettingsTab({ league, onSaved }: { league: any; on
             <p className="font-medium">League absorbs the fee (off)</p>
             <div className="flex justify-between text-muted-foreground"><span>Event fee</span><span>$50.00</span></div>
             <div className="flex justify-between font-semibold"><span>Member pays</span><span>$50.00</span></div>
-            <div className="flex justify-between text-muted-foreground"><span>Platform fee (5%)</span><span>−$2.50</span></div>
+            <div className="flex justify-between text-muted-foreground"><span>Platform fee (6%)</span><span>−$2.50</span></div>
             <div className="flex justify-between text-muted-foreground"><span>Card processing</span><span>−$1.75</span></div>
             <div className="flex justify-between text-primary"><span>You receive</span><span>$45.75</span></div>
           </div>

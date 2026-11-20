@@ -863,7 +863,7 @@ export default function Vendors() {
                     placeholder="0.00"
                     className="w-40"
                   />
-                  <span className="text-sm text-muted-foreground">Charged after approval. 8% platform fee applies.</span>
+                  <span className="text-sm text-muted-foreground">Charged after approval. 6% platform fee applies.</span>
                 </div>
               </div>
 

@@ -1,5 +1,31 @@
 import { describe, it, expect } from "vitest";
 import { computeFeeSplit } from "./feeSplit";
+import { computeFeeSplit as checkoutFeeSplit } from "../../supabase/functions/_shared/feeSplit";
+describe("approved 6% registration totals", () => {
+  it.each([[12500,750,393,13643],[15000,900,465,16365],[17500,1050,538,19088]])("player pays all on %i cents", (base, fee, processing, total) => {
+    for (const calculate of [computeFeeSplit, checkoutFeeSplit]) {
+      const r = calculate(base, 0.06, "player");
+      expect([r.teeFee,r.processing,r.charge]).toEqual([fee,processing,total]);
+      expect(r.realStripe).toBe(Math.round(total * 0.029 + 30));
+      expect(r.organizerReceives).toBe(total-fee-r.realStripe);
+    }
+  });
+  it.each([[12500,375,393,13268],[15000,450,465,15915]])("split on %i cents", (base, share, processing, total) => {
+    const r=computeFeeSplit(base,0.06,"split");
+    expect([r.playerShare,r.organizerShare,r.processing,r.charge]).toEqual([share,share,processing,total]);
+  });
+  it.each([[12500,11357],[15000,13635],[17500,15912]])("organizer/exact payout on %i cents", (base, payout) => {
+    for (const choice of ["organizer","exact"] as const) {
+      const r=computeFeeSplit(base,0.06,choice);
+      expect([r.charge,r.playerShare,r.processing,r.organizerReceives]).toEqual([base,0,0,payout]);
+    }
+  });
+  it("keeps paid-plan platform fee at zero",()=>expect(computeFeeSplit(17500,0,"exact")).toMatchObject({teeFee:0,organizerReceives:16962}));
+  it("preserves saved 5% and 8% event math",()=>{
+    expect(computeFeeSplit(12500,0.05,"player").teeFee).toBe(625);
+    expect(computeFeeSplit(12500,0.08,"player").teeFee).toBe(1000);
+  });
+});
 describe("fee split at 8%", () => {
   it("Choice A on $125", () => { const r = computeFeeSplit(12500, 0.08, "player"); expect(r.charge).toBe(13893); expect(r.organizerReceives).toBe(12460); });
   it("Choice B on $125", () => { const r = computeFeeSplit(12500, 0.08, "split"); expect([r.playerShare, r.processing, r.charge, r.realStripe, r.organizerReceives]).toEqual([500, 393, 13393, 418, 11975]); });

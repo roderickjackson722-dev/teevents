@@ -45,7 +45,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
     unit: "to start",
     icon: Sparkles,
     flow: "free",
-    desc: "The full tournament platform with an 8% platform fee per paid transaction. No upfront cost.",
+    desc: "The full tournament platform with a 6% platform fee per paid transaction. No upfront cost.",
     features: [
       "Dedicated rep who builds your event — included on every plan",
       "Full tournament management platform",
@@ -62,7 +62,7 @@ export const CHECKOUT_ITEMS: Record<string, CheckoutItem> = {
     icon: BadgeDollarSign,
     flow: "per_event",
     desc: "Pay once per tournament and keep 100% of your registration revenue with no TeeVents transaction fee.",
-    features: ["No 8% platform fee", "Unlimited manual entries", "Live Leaderboard + Mobile Scoring", "Dedicated TeeVents representative", "Full-Service Page Build Out", "Unlimited transactions"],
+    features: ["No 6% platform fee", "Unlimited manual entries", "Live Leaderboard + Mobile Scoring", "Dedicated TeeVents representative", "Full-Service Page Build Out", "Unlimited transactions"],
   },
   "branding-removal": {
     slug: "branding-removal",

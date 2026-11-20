@@ -487,7 +487,7 @@ export const websiteBuilderPage: GuideContent = {
     },
     {
       q: "What does the website cost?",
-      a: "The site is part of the platform. Start at $0 with a 8% player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee.",
+      a: "The site is part of the platform. Start at $0 with a 6% player-funded service fee, or choose Per-Event for $399 with no TeeVents transaction fee.",
     },
   ],
   related: [

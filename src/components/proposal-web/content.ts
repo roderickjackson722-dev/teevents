@@ -127,12 +127,12 @@ export const reasonTemplates: Array<{ program: keyof typeof programs; label: str
   {
     program: "No Cost to Start",
     label: "Experienced group, new platform",
-    text: "You have run tournaments before, likely on another platform, so you do not need to be walked through the process — you want one page that works and a cost you can see before you commit. No Cost to Start puts your branded event page, registration, sponsorships, pairings, check in, and live budget tracking in one place with no plan purchase up front, and players pay the 5% platform fee at checkout. A dedicated TeeVents rep still builds the event page for you."
+    text: "You have run tournaments before, likely on another platform, so you do not need to be walked through the process — you want one page that works and a cost you can see before you commit. No Cost to Start puts your branded event page, registration, sponsorships, pairings, check in, and live budget tracking in one place with no plan purchase up front, and players pay the 6% platform fee at checkout. A dedicated TeeVents rep still builds the event page for you."
   },
   {
     program: "No Cost to Start",
     label: "Wants to see the cost to start",
-    text: "You asked what it costs to get an event live, so I want to be plain about it: No Cost to Start has no plan purchase, and players pay the 5% platform fee at checkout. Your group still gets a branded event page built for you by a dedicated TeeVents rep, along with registration and sponsorships, pairings, check in, and live budget tracking, so you can see how the event performs before deciding on a paid plan."
+    text: "You asked what it costs to get an event live, so I want to be plain about it: No Cost to Start has no plan purchase, and players pay the 6% platform fee at checkout. Your group still gets a branded event page built for you by a dedicated TeeVents rep, along with registration and sponsorships, pairings, check in, and live budget tracking, so you can see how the event performs before deciding on a paid plan."
   },
   {
     program: "Per Event",
@@ -208,7 +208,7 @@ export const selectionBoxSchema=z.object({id:z.string().min(1).max(100),program:
 export type SelectionBox=z.infer<typeof selectionBoxSchema>;
 export const documentSchema = z.object({
  fields: z.object({preparedFor:z.string().max(300),event:z.string().max(300),date:z.string().max(300),contact:z.string().max(300),proposalDate:z.string().max(300),validUntil:z.string().max(300),conversationDate:z.string().max(300)}),
- recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),softwareDefinition:z.string().max(2000).optional(),validityLineEnabled:z.boolean().optional(),hideRecommendedBadge:z.boolean().optional(),
+ recommended: z.union([programEnum,z.literal("")]), packages: z.array(programEnum).max(7).optional(), intro:z.string().max(10000), reason:z.string().max(10000), fullService:fullServiceSchema.optional(), closureEnabled:z.boolean().optional(),platformFeePercent:z.number().min(0).max(20).optional(),softwareDefinition:z.string().max(2000).optional(),validityLineEnabled:z.boolean().optional(),hideRecommendedBadge:z.boolean().optional(),
  pageContent:pageContentSchema.optional(),faqItems:z.array(faqItemSchema).max(40).optional(),
  programOverrides:z.record(programEnum,z.record(z.string().max(100),z.string().max(50000))).optional(),
  programLayout:z.record(programEnum,z.object({order:z.array(z.string().max(100)).max(40).optional(),hidden:z.array(z.string().max(100)).max(40).optional(),titles:z.record(z.string().max(100),z.string().max(200)).optional()})).optional(),
@@ -226,7 +226,7 @@ export type PageContent=z.infer<typeof pageContentSchema>;
 export type ProposalFaqItem=z.infer<typeof faqItemSchema>;
 export type ReferencesPage=z.infer<typeof referencesPageSchema>;
 export type PhotoLinksPage=z.infer<typeof photoLinksPageSchema>;
-export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:["No Cost to Start","Per Event","Full Service Management"],intro:introExample,reason:reasonExample,softwareDefinition:SOFTWARE_DEFINITION,fullService:defaultFullService(),closureEnabled:true,pageContent:defaultPageContent(),faqItems:defaultFaqItems(),programOverrides:{},referencesPage:defaultReferencesPage(),photoLinksPage:defaultPhotoLinksPage()});
+export const emptyDocument = ():WebDocument => ({fields:Object.fromEntries(Object.keys(fields).map(k=>[k,""])) as WebDocument["fields"],recommended:"",packages:["No Cost to Start","Per Event","Full Service Management"],intro:introExample,reason:reasonExample,platformFeePercent:6,softwareDefinition:SOFTWARE_DEFINITION,fullService:defaultFullService(),closureEnabled:true,pageContent:defaultPageContent(),faqItems:defaultFaqItems(),programOverrides:{},referencesPage:defaultReferencesPage(),photoLinksPage:defaultPhotoLinksPage()});
 export const fallbackAnswer = "That is not in this proposal, so I will pass that question to Rod, and he will follow up. Thank you for asking.";
 export function sensitiveQuestion(q:string) { return /(password|bank account|card number|routing number|cvv|social security)|(?:\d[ -]?){12,19}/i.test(q); }
 export function calculator(players:number,fee:number) { const registrations=Math.max(0,players)*Math.max(0,fee); return {registrations,trigger:registrations>=3750,first:1875,balance:3125}; }
@@ -297,8 +297,9 @@ export function programDetails(d:WebDocument,p:(typeof programNames)[number]):Re
  let result={...original};
  if(p==="Full Service Management"&&d.fullService){
   const t=fullServiceTotals(d.fullService);
-  result={...original,Price:`${money(t.final)} per event`,"Platform fee":managementPlatformFee,Includes:"Dedicated manager from agreement through event day",Limits:managementLimits,"Payment Schedule":d.fullService.paymentTerms,Cancellation:d.fullService.cancellationTerms};
+  result={...original,Price:`${money(t.final)} per event`,"Platform fee":managementPlatformFee.replaceAll("6 percent",`${d.platformFeePercent ?? 5} percent`),Includes:"Dedicated manager from agreement through event day",Limits:managementLimits,"Payment Schedule":d.fullService.paymentTerms,Cancellation:d.fullService.cancellationTerms};
  }
+ if(d.platformFeePercent!=null)for(const label of ["Platform fee","Cancellation"])if(result[label])result[label]=result[label].replaceAll("5%",`${d.platformFeePercent}%`);
  const overrides=d.programOverrides?.[p];
  if(overrides)for(const [label,value] of Object.entries(overrides))if(editableProgramDetail(p,label))result[label]=value;
  return result;

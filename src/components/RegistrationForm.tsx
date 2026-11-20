@@ -18,6 +18,7 @@ import type { GroupFieldKey, GroupFieldRules } from "@/lib/groupFieldRules";
 import PartnerRequestForm from "@/components/PartnerRequestForm";
 import { partnerTeamSizes } from "@/lib/partnerRequests.schema";
 import { isAllowedRegistrationGroupSize } from "../../supabase/functions/_shared/groupSize";
+import { computeFeeSplit, type FeeSplit } from "@/lib/feeSplit";
 
 
 interface AddonRow {
@@ -61,6 +62,7 @@ interface RegistrationFormProps {
   nonprofitName?: string;
   ein?: string;
   platformFeeRate?: number;
+  feeSplit?: FeeSplit;
   passFeesToRegistrants?: boolean;
   allowCoverFees?: boolean;
   tiers?: { id: string; name: string; description: string | null; eligibility_description: string | null; price_cents: number; max_registrants: number | null }[];
@@ -290,7 +292,7 @@ const PlayerFields = ({
   );
 };
 
-const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", showAddons = true, captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
+const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primaryColor, secondaryColor, registrationFeeCents = 0, earlyTeamTotalsCents = null, foursomeMode = false, maxGroupSize = foursomeMode ? 4 : 1, allowedGroupSizes = null, isNonprofit = false, nonprofitName, ein, platformFeeRate = 0.05, feeSplit = "player", passFeesToRegistrants = false, allowCoverFees = true, tiers = [], fields = [], addonsSectionTitle = "Optional Add-ons", showAddons = true, captainLabel = null, groupFieldRules = null, showPromoCodeInput = true, donationPrompt = null }: RegistrationFormProps) => {
   const copy = registrationCopy(sectionTitle);
   const [partnerOption, setPartnerOption] = useState(false);
   const [requestMode, setRequestMode] = useState(false);
@@ -486,11 +488,11 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
   // fees are still computed on the full charge so we treat it as part of the fee-bearing base).
   const totalWithDonationCents = baseTotalCents + donationCents;
   const hasFee = totalWithDonationCents > 0;
-  const platformFeeCents = Math.round(totalWithDonationCents * platformFeeRate);
-  // Stripe fee: 2.9% + $0.30 per transaction (on total including platform fee)
-  const stripeFee = totalWithDonationCents > 0 ? Math.round((totalWithDonationCents + platformFeeCents) * 0.029 + 30) : 0;
+  const feePreview = computeFeeSplit(totalWithDonationCents, platformFeeRate, feeSplit === "player" && !coverFees ? "organizer" : feeSplit);
+  const platformFeeCents = feePreview.playerShare;
+  const stripeFee = feePreview.processing;
   const coverageAmount = stripeFee + platformFeeCents;
-  const totalWithCoveredFees = coverFees ? totalWithDonationCents + coverageAmount : totalWithDonationCents;
+  const totalWithCoveredFees = feePreview.charge;
   const feeDisplay = activeFee ? `${formatCents(activeFee)}` : null;
   const totalDisplay = totalWithCoveredFees > 0 ? `${formatCents(totalWithCoveredFees)}` : null;
 
@@ -1271,6 +1273,14 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
           </p>
         )}
 
+        {hasFee && (
+          <div className="space-y-1 text-sm" data-testid="registration-fee-summary">
+            <div className="flex justify-between"><span>Registration</span><span>{formatCents(totalWithDonationCents)}</span></div>
+            {platformFeeCents > 0 && <div className="flex justify-between"><span>Service fee</span><span>{formatCents(platformFeeCents)}</span></div>}
+            {stripeFee > 0 && <div className="flex justify-between"><span>Processing</span><span>{formatCents(stripeFee)}</span></div>}
+            <div className="flex justify-between font-semibold"><span>Total</span><span>{formatCents(totalWithCoveredFees)}</span></div>
+          </div>
+        )}
         <Button
           type="submit"
           disabled={submitting || submitted}

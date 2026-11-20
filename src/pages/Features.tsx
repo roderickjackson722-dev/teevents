@@ -44,7 +44,7 @@ const categories: Category[] = [
     [ShieldCheck, "PCI-Compliant Checkout", "Card, Apple Pay, and Google Pay accepted. No card data touches TeeVents."],
     [Landmark, "Direct-to-Organizer Settlement", "Funds land in your Stripe account. TeeVents never holds your money. Your director connects your Stripe and sets up registration for you."],
     [Receipt, "Tax-Exempt Receipting", "501(c)(3) receipting support for qualifying organizations."],
-  ], callout: "On the No Cost to Start plan, an 8% platform fee is included in each player's registration total. You keep 100% of your event revenue. Your players cover the fee." },
+  ], callout: "On the No Cost to Start plan, a 6% platform fee is included in each player's registration total. You keep 100% of your event revenue. Your players cover the fee." },
   { id: "scoring", nav: "Live Scoring and Leaderboards", title: "Live Scoring and Leaderboards", subtitle: "Real-time scores, custom leaderboards, and mobile scoring from any phone.", items: [
     [Smartphone, "Mobile Live Scoring", "Players score from any phone browser. No app download required."],
     [Hash, "Hole-by-Hole and Per-Round Entry", "Score entry with validation and correction."],

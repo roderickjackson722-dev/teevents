@@ -12,7 +12,7 @@ import TrustAndProof from "@/components/marketing/TrustAndProof";
 const PLAN_DEFINITION = SOFTWARE_DEFINITION.replace("You run event day yourself, using the online platform.", "You can run event day with the same dashboard tools we use, and your TeeVents rep is on call for support.");
 
 const plans = [
-  { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "No cost to start. Golfers cover an 8% service fee that includes your dedicated TeeVents rep, plus standard card processing (Stripe 2.9% + $0.30).", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
+  { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "No cost to start. Golfers cover a 6% service fee that includes your dedicated TeeVents rep, plus standard card processing (Stripe 2.9% + $0.30).", features: ["Full tournament management platform", "Branded tournament website", "Online registration and Stripe payments", "QR check-in from any phone", "Pairings, tee sheets, and drag-and-drop scheduling", "Player management, waitlist, and CSV import", "Volunteer coordination and shift scheduling", "Printables: scorecards, cart signs, name badges", "Email confirmations and basic reporting", "Financial dashboard and Stripe payouts", "Public listing on teevents.golf", "10 manual entries included", "Dedicated TeeVents rep who builds your event", "No monthly subscription"], cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
   { name: "Per-Event", price: "$399", unit: "per tournament", badge: "", description: "Pay once per tournament. No platform transaction fees. Keep 100% of your registration revenue.", features: ['Everything in "No Cost to Start"', "Live Leaderboard and Mobile Scoring included on every event", "Custom Leaderboard Colors matched to your event branding", "0% TeeVents platform transaction fees", "Unlimited manual entries", "Unlimited transactions", "Dedicated TeeVents rep who builds your event", "One-time, per event"], cta: "SELECT PER-EVENT", to: "/signup?plan=per-event", note: "Standard card processing fees still apply." },
   { name: "Per-League", price: "$599", unit: "per league", badge: "", description: "Perfect for season-long leagues with multiple events and standings.", features: ['Everything in "Per-Event"', "Covers the entire league season", "League standings and leaderboards", "Season-long reporting", "Dedicated TeeVents rep who manages your league"], cta: "SELECT PER-LEAGUE", to: "/signup?plan=per-league", note: "One league, one season-long price." },
   { name: "Enterprise", price: "$2,999", unit: "per year", badge: "", description: "For golf courses and organizations running 10+ events a year.", features: ["Unlimited tournaments and leagues", "0% TeeVents transaction fees", "Live leaderboard and mobile scoring included on every event", "Dedicated TeeVents rep who builds every event", "Custom branding", "Staff accounts with role-based permissions", "Priority support", "Club page with all upcoming events"], cta: "REQUEST ENTERPRISE", to: "", note: "Billed annually. No per-event fees." },
@@ -32,14 +32,14 @@ const addons = [
 ];
 const payments = [
   ["Golfer Pays", "Full registration amount charged at checkout via Stripe."],
-  ["Your Plan Applies", "No Cost to Start: an 8% platform fee covered by players. Paid plans: 0% platform transaction fees."],
+  ["Your Plan Applies", "No Cost to Start: a 6% platform fee covered by players. Paid plans: 0% platform transaction fees."],
   ["Stripe Fee Applied", "Standard 2.9% + $0.30 processing fee deducted by Stripe."],
   ["You Get Paid", "Net proceeds land directly in your connected Stripe account. New Stripe accounts: funds typically available within 2 to 7 business days."],
 ];
 const comparison = [
   ["Type", "ONLINE PLATFORM", "ONLINE PLATFORM", "ONLINE PLATFORM", "ONLINE PLATFORM"],
   ["Upfront cost", "$0", "$399 per tournament", "$599 per league", "$2,999 per year"],
-  ["Transaction fee", "8% (covered by players)", "0%", "0%", "0%"],
+  ["Transaction fee", "6% (covered by players)", "0%", "0%", "0%"],
   ["Events included", "Pay as you go", "Pay as you go", "One league season", "Unlimited"],
   ["Dedicated rep", "Included", "Included", "Included", "Included"],
   ["Live Leaderboard and Mobile Scoring", "Add-on: $99", "Included", "Included", "Included"],
@@ -49,8 +49,8 @@ const comparison = [
 ];
 const faqs = [
   ["Do I really get a dedicated rep on the free plan?", "Yes. Every event on TeeVents, free or paid, includes a dedicated TeeVents rep who builds your event page, sets up your registration, and configures your leaderboard."],
-  ["What is the 8% platform fee?","On the No Cost to Start plan, an 8% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."],
-  ["Can I pass the fee to my players?", "Yes. On the No Cost to Start plan, the 8% fee is automatically added to each registration at checkout. Players see it as a service fee."],
+  ["What is the 6% platform fee?","On the No Cost to Start plan, a 6% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."],
+  ["Can I pass the fee to my players?", "Yes. On the No Cost to Start plan, the 6% fee is automatically added to each registration at checkout. Players see it as a service fee."],
   ["When do I get paid?", "Funds land directly in your connected Stripe account. New Stripe accounts typically see funds available within 2 to 7 business days. TeeVents never holds your money."],
   ["What if I run more than 10 events a year?", "Enterprise is built for you. $2,999 per year for unlimited tournaments and leagues, with 0% transaction fees and live leaderboard and mobile scoring included on every event."],
   ["Can I switch plans later?", "Yes. You can upgrade from No Cost to Start to Per-Event, Per-League, or Enterprise at any time."],
@@ -94,7 +94,7 @@ export default function Plans() {
 
       <section aria-label="Pricing example" className="px-5 pb-4 pt-10 md:px-8">
         <div className="mx-auto max-w-3xl rounded-lg border border-secondary bg-card p-6 text-sm leading-relaxed">
-          <p><strong>Example:</strong> 72 golfers at $150 = $10,800 in registrations. No Cost to Start plan service fee: $864 (8%), paid by golfers. Per-Event plan: $399 once, 0% platform fee. Standard card processing applies on both plans.</p>
+          <p><strong>Example:</strong> 72 golfers at $150 = $10,800 in registrations. No Cost to Start plan service fee: $648 (6%), paid by golfers. Per-Event plan: $399 once, 0% platform fee. Standard card processing applies on both plans.</p>
           <p className="mt-3 font-semibold text-primary">Per-Event saves money once registrations pass about $5,000.</p>
         </div>
       </section>

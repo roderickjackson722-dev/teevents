@@ -34,15 +34,15 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
   "items": [
    {
     "q": "How much does TeeVents cost?",
-    "a": "There are four options: No Cost to Start ($0 upfront, with an 8% platform fee paid by players at checkout), Per-Event ($399 per tournament), Per-League ($599 per league), and Enterprise ($2,999 per year for unlimited events)."
+    "a": "There are four options: No Cost to Start ($0 upfront, with a 6% platform fee paid by players at checkout), Per-Event ($399 per tournament), Per-League ($599 per league), and Enterprise ($2,999 per year for unlimited events)."
    },
    {
-    "q": "What is the 8% platform fee?",
-    "a": "On the No Cost to Start plan, an 8% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."
+    "q": "What is the 6% platform fee?",
+    "a": "On the No Cost to Start plan, a 6% platform fee is added to each player's registration total at checkout. You keep 100% of your event revenue. Your players cover the fee."
    },
    {
     "q": "Can I pass the fee to my players?",
-    "a": "Yes. On the No Cost to Start plan, the 8% fee is automatically added to each registration at checkout. Players see it as a service fee, similar to other ticketing platforms."
+    "a": "Yes. On the No Cost to Start plan, the 6% fee is automatically added to each registration at checkout. Players see it as a service fee, similar to other ticketing platforms."
    },
    {
     "q": "What is Per-Event pricing?",

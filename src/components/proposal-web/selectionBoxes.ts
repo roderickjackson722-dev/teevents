@@ -4,7 +4,7 @@ import { fullServiceTotals, money } from "./pricing";
 export function defaultSelectionBoxes(d:WebDocument):SelectionBox[] {
  const totals=d.fullService?fullServiceTotals(d.fullService):null;
  const descriptions:Record<string,string>={
-  "No Cost to Start":"$0 to start, 5% platform fee, paid by players at checkout",
+  "No Cost to Start":`$0 to start, ${d.platformFeePercent ?? 5}% platform fee, paid by players at checkout`,
   "Per Event":"$399 per event, 0% TeeVents platform fee, Live Leaderboard and Mobile Scoring included",
   "Per League":"$599 per league",
   "Enterprise":"$2,999 per year, for 10 or more events, 0% TeeVents platform fee",

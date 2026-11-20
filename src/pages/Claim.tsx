@@ -97,7 +97,7 @@ export default function Claim() {
           </label>
           <label className="flex items-start gap-2 text-sm">
             <Checkbox checked={form.agree2} onCheckedChange={(v) => setForm({ ...form, agree2: !!v })} />
-            <span>I agree to the 8% platform fee per transaction</span>
+            <span>I agree to the 6% platform fee per transaction</span>
           </label>
           <label className="flex items-start gap-2 text-sm">
             <Checkbox checked={form.agree3} onCheckedChange={(v) => setForm({ ...form, agree3: !!v })} />

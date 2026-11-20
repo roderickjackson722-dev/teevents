@@ -334,16 +334,16 @@ const Settings = () => {
             <h2 className="text-lg font-display font-bold text-foreground">Payment & Fee Settings</h2>
           </div>
           <p className="text-sm text-muted-foreground mb-4">
-            Control how the 8% platform fee and Stripe processing fees are handled for each tournament.
+            Control how the 6% platform fee and Stripe processing fees are handled for each tournament.
           </p>
           <div className="space-y-6">
             {tournaments.map((t) => {
               // Example on a $100 registration:
-              // Pass fees: golfer pays 100 + 5 (platform) + grossed-up Stripe fee = ~$108.20
-              // Absorb: golfer pays $100; organizer keeps 100 - 5 - (2.9% of 100 + 0.30) = ~$91.80
+              // Current 6% example: golfer pays base + platform + displayed Stripe.
+              // Actual Stripe payout processing is calculated on the charged total.
               const base = 100;
-              const passTotal = 108.20;
-              const absorbNet = 91.80;
+              const passTotal = 109.20;
+              const absorbNet = 90.80;
               return (
                 <div key={t.id} className="rounded-lg border border-border p-4">
                   <p className="font-semibold text-foreground text-sm mb-3">{t.title}</p>
@@ -362,10 +362,10 @@ const Settings = () => {
                         Pass fees to golfers <span className="text-xs text-primary">(Recommended)</span>
                       </p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Golfers cover the 8% TeeVents fee and Stripe processing. You receive the full ${base.toFixed(2)} of every ${base.toFixed(2)} ticket.
+                        Golfers cover the 6% TeeVents fee and Stripe processing. You receive the full ${base.toFixed(2)} of every ${base.toFixed(2)} ticket.
                       </p>
                       <p className="text-xs font-mono mt-2 text-foreground">
-                        ${base.toFixed(2)} ticket → golfer pays ${passTotal.toFixed(2)} → you keep ${base.toFixed(2)}
+                        ${base.toFixed(2)} ticket → golfer pays ${passTotal.toFixed(2)} → you keep ${(passTotal - 6 - Math.round(passTotal * 0.029 * 100 + 30) / 100).toFixed(2)}
                       </p>
                       <p className="text-[11px] text-muted-foreground mt-1">
                         Best for: charity events, registrations where the published price is the “net to the cause”.
@@ -384,7 +384,7 @@ const Settings = () => {
                     >
                       <p className="font-semibold text-sm text-foreground">Absorb fees</p>
                       <p className="text-xs text-muted-foreground mt-1">
-                        Golfers pay exactly the advertised price. The 8% platform fee and Stripe processing come out of your payout.
+                        Golfers pay exactly the advertised price. The 6% platform fee and Stripe processing come out of your payout.
                       </p>
                       <p className="text-xs font-mono mt-2 text-foreground">
                         ${base.toFixed(2)} ticket → golfer pays ${base.toFixed(2)} → you keep ~${absorbNet.toFixed(2)}
@@ -400,7 +400,7 @@ const Settings = () => {
           </div>
           <div className="bg-muted/50 rounded-lg p-3 mt-4">
             <p className="text-xs text-muted-foreground">
-              Payments now settle directly into your Stripe account. TeeVents automatically deducts its 8% platform fee at the time of each charge — no waiting on transfers, and Stripe processing fees are handled the way you choose above.
+              Payments now settle directly into your Stripe account. TeeVents automatically deducts its 6% platform fee at the time of each charge — no waiting on transfers, and Stripe processing fees are handled the way you choose above.
             </p>
           </div>
         </motion.div>

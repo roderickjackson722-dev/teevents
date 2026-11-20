@@ -34,7 +34,7 @@ const TaxInformation = () => (
           <p className="text-muted-foreground mb-4">TeeVents provides a downloadable Annual Tax Summary from your Finances dashboard that includes:</p>
           <ul className="space-y-2 ml-6 list-disc text-muted-foreground">
             <li>Total gross revenue collected</li>
-            <li>Total platform fees paid (8%)</li>
+            <li>Total platform fees paid (6%)</li>
             <li>Total net amount received</li>
             <li>Breakdown by tournament</li>
           </ul>

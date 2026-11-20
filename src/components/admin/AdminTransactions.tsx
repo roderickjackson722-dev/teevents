@@ -227,7 +227,7 @@ const AdminTransactions = () => {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">${(totalPlatformFees / 100).toFixed(2)}</div>
-            <p className="text-xs text-muted-foreground">8% platform revenue</p>
+            <p className="text-xs text-muted-foreground">6% platform revenue</p>
           </CardContent>
         </Card>
         <Card>
@@ -412,7 +412,7 @@ const AdminTransactions = () => {
                               </div>
                               <div className="space-y-1">
                                 <div><span className="text-muted-foreground">Gross Amount:</span> <strong>${(t.amount_cents / 100).toFixed(2)}</strong></div>
-                                <div><span className="text-muted-foreground">Platform Fee (8%):</span> ${(t.platform_fee_cents / 100).toFixed(2)}</div>
+                                <div><span className="text-muted-foreground">Platform Fee (6%):</span> ${(t.platform_fee_cents / 100).toFixed(2)}</div>
                                 <div><span className="text-muted-foreground">Stripe Fee:</span> ${((t.stripe_fee_cents || 0) / 100).toFixed(2)}</div>
                                 <div><span className="text-muted-foreground">Net to Organizer:</span> <strong className="text-primary">${(t.net_amount_cents / 100).toFixed(2)}</strong></div>
                                 <div><span className="text-muted-foreground">Payout Method:</span> <Badge variant="outline" className="text-xs capitalize">{t.payout_method || "unknown"}</Badge></div>

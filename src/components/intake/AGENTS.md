@@ -1,0 +1,1 @@
+- Signup collects event/league intake via createSignup and shared intake.schema into private organizer_intakes; no document checks, and it never creates, publishes or charges events, so workspace and plan checkout stay unchanged.

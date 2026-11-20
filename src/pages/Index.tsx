@@ -86,7 +86,7 @@ function DirectorSections() {
 export default function Index() {
   const testimonial = ORGANIZER_TESTIMONIALS[0];
   return <Layout>
-    <SEO title="Golf Tournament Management for Charities & Corporate Outings | TeeVents" description="Golf tournament software with a dedicated TeeVents rep who sets up your page, registration, and live leaderboard. Edit anytime. On call. $0 to start." path="/" />
+    <SEO title="TeeVents, Golf Tournament Management for Nonprofit Golf Tournaments" description="TeeVents is a golf tournament management platform for nonprofit organizations, charities, and golf courses. We build your branded event page, registration, sponsorships, live scoring, and custom live leaderboard, and stay on call on event day. Free to start, or $399 per event." path="/" />
     <div className="homepage">
       <section aria-labelledby="homepage-title" className="relative overflow-hidden bg-primary text-primary-foreground">
         <img src={heroGolf} alt="" aria-hidden="true" fetchPriority="high" className="absolute inset-0 h-full w-full object-cover" />
@@ -96,7 +96,7 @@ export default function Index() {
           <h1 id="homepage-title" className="font-display text-3xl font-bold leading-tight md:text-5xl lg:text-6xl">The Golf Tournament Platform That <span className="text-secondary">Builds Your Event For You</span></h1>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Every event includes a dedicated TeeVents rep, free or paid, who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard. Your dedicated tournament director builds it and stays on call on event day for live scoring and leaderboard challenges. You can open your event any time and change anything. You focus on running your tournament while we handle the online platform.&nbsp;</p>
           <p className="mt-2 text-xs font-bold text-secondary">{SOFTWARE_TAG}</p>
-          <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Golf tournament management online platform for charity fundraisers, corporate golf outings, golf courses, and golf leagues.</p>
+          <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Golf tournament management online platform for nonprofit organizations, charity fundraisers, corporate golf outings, golf courses, and golf leagues.</p>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 md:text-base">No spreadsheets. No manual setup. No stress.</p>
           <div className="mt-8"><HomeActions hero /></div>
           <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-primary-foreground/85">We build your event page for you — live in 7 days or less.</p>

@@ -13,10 +13,10 @@ const PLAN_DEFINITION = SOFTWARE_DEFINITION.replace("You run event day yourself,
 
 const NO_COST_FEES = ["TeeVents platform fee: 6%", "Stripe credit card processing fee: 2.9% + $0.30"];
 const PAID_FEES = ["TeeVents platform fee: 0%, $0.00", "Stripe credit card processing fee: 2.9% + $0.30"];
-type Plan = { name: string; price: string; unit: string; badge: string; description: string; features: string[]; fees: string[]; examples?: string[][]; extra?: string; cta: string; to: string; note: string };
+type Plan = { name: string; price: string; unit: string; badge: string; subtitle?: string; description: string; features: string[]; fees: string[]; examples?: string[][]; extra?: string; cta: string; to: string; note: string };
 const plans: Plan[] = [
-  { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", description: "No cost to start. Golfers cover the TeeVents platform fee and the Stripe credit card processing fee, shown on separate lines at checkout.", features: ["Branded event page", "Online registration", "Sponsorships", "Pairings", "Live scoring", "Custom live leaderboard and mobile scoring included", "QR check-in", "Live budget tracking", "Dedicated rep builds the page", "On call on event day", "10 manual entries included"], fees: NO_COST_FEES, examples: [["$125.00", "$7.50", "$3.93", "$136.43"], ["$150.00", "$9.00", "$4.65", "$163.65"], ["$175.00", "$10.50", "$5.38", "$190.88"]], extra: "Pay $399 per event instead once you pass $6,650 in registrations.", cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
-  { name: "Per-Event", price: "$399", unit: "per tournament", badge: "", description: "Pay once per tournament. 0% TeeVents platform fee.", features: ['Everything in "No Cost to Start"', "Unlimited manual entries included", "0% TeeVents platform fee", "Custom live leaderboard and mobile scoring included"], fees: PAID_FEES, examples: [["$150.00", "$0.00", "$4.65", "$154.65"]], cta: "SELECT PER-EVENT", to: "/signup?plan=per-event", note: "One-time, per event." },
+  { name: "No Cost to Start", price: "$0", unit: "", badge: "MOST POPULAR", subtitle: "Most popular for nonprofit organizations", description: "No cost to start. Golfers cover the TeeVents platform fee and the Stripe credit card processing fee, shown on separate lines at checkout.", features: ["Branded event page", "Online registration", "Sponsorships", "Pairings", "Live scoring", "Custom live leaderboard and mobile scoring included", "QR check-in", "Live budget tracking", "Dedicated rep builds the page", "On call on event day", "10 manual entries included"], fees: NO_COST_FEES, cta: "SELECT NO COST TO START", to: "/signup?plan=no-cost", note: "No monthly subscription." },
+  { name: "Per-Event", price: "$399", unit: "per tournament", badge: "", description: "Pay once per tournament. 0% TeeVents platform fee.", features: ['Everything in "No Cost to Start"', "Unlimited manual entries included", "0% TeeVents platform fee", "Custom live leaderboard and mobile scoring included"], fees: PAID_FEES, cta: "SELECT PER-EVENT", to: "/signup?plan=per-event", note: "One-time, per event." },
   { name: "Per-League", price: "$599", unit: "per league", badge: "", description: "Perfect for season-long leagues with multiple events and standings.", features: ['Everything in "Per-Event", for a league', "Custom live leaderboard and mobile scoring included"], fees: PAID_FEES, cta: "SELECT PER-LEAGUE", to: "/signup?plan=per-league", note: "One league, one season-long price." },
   { name: "Enterprise", price: "$2,999", unit: "per year", badge: "", description: "For golf courses and organizations running 10+ events a year.", features: ['Everything in "Per-Event", for 10 or more events a year', "One dashboard for the whole calendar", "Rep builds pages for all events", "On call on event day", "Custom live leaderboard and mobile scoring included"], fees: PAID_FEES, extra: "8 events at $399 is $3,192, Enterprise is $2,999. 10 events at $399 is $3,990, Enterprise is $2,999, a $991 saving.", cta: "REQUEST ENTERPRISE", to: "", note: "Billed annually. No per-event fees." },
 ];
@@ -51,6 +51,7 @@ const comparison = [
   ["Best for", "Nonprofits and first-time organizers", "Mid-size tournaments", "Season-long leagues", "Golf courses and organizations running 10+ events a year"],
 ];
 const faqs = [
+  ["Do you work with nonprofit organizations?", "Yes. Most of our tournaments are nonprofit golf tournament fundraisers. No Cost to Start is most popular for nonprofit organizations, because there is no money up front. You can also choose $399 per event with no platform fee, if that saves money on a larger field."],
   ["Do I really get a dedicated rep on the free plan?", "Yes. Every event on TeeVents, free or paid, includes a dedicated TeeVents rep who builds your event page, sets up your registration, and configures your leaderboard."],
   ["What fees do golfers pay?", "Two separate fees. TeeVents platform fee: 6% on No Cost to Start, 0% on Per-Event, Per-League, and Enterprise. Stripe credit card processing fee: 2.9% + $0.30 on every plan. They are shown on separate lines at checkout, so you can see which fee is which."],
   ["Can I pass the fee to my players?", "Yes. On the No Cost to Start plan, the 6% fee is automatically added to each registration at checkout. Players see it on its own line as the TeeVents platform fee, separate from the Stripe credit card processing fee."],
@@ -64,7 +65,7 @@ const heading = "text-3xl font-display font-bold md:text-4xl";
 
 export default function Plans() {
   return <Layout>
-    <SEO title="Simple, Transparent Pricing | TeeVents" description="Golf tournament software: $0 to start, $399/event, $599/league, $2,999/yr Enterprise. Dedicated rep setup, editing anytime, and on-call event support." path="/pricing" />
+    <SEO title="TeeVents Pricing, Nonprofit Golf Tournament Platform, Free to Start or $399 Per Event" description="Golf tournament software: $0 to start, $399/event, $599/league, $2,999/yr Enterprise. Dedicated rep setup, editing anytime, and on-call event support." path="/pricing" />
     <div className="pricing-page">
       <section aria-labelledby="pricing-title" className={`${section} bg-primary text-primary-foreground text-center`}>
         <div className="mx-auto max-w-3xl">
@@ -82,12 +83,12 @@ export default function Plans() {
             <div className="mb-5 flex min-h-10 items-center">{plan.badge && <span className="rounded-sm bg-secondary px-3 py-2 text-center text-xs font-bold leading-relaxed text-secondary-foreground">{plan.badge}</span>}</div>
             <h2 className="text-2xl font-display font-bold">{plan.name}</h2>
             <p className={`mt-2 text-xs font-bold uppercase tracking-widest ${"text-primary"}`}>{SOFTWARE_TAG}</p>
+            {plan.subtitle && <p className="mt-2 text-xs font-bold uppercase tracking-widest text-primary">{plan.subtitle}</p>}
             <div className="my-5"><span className="text-4xl font-display font-bold">{plan.price}</span>{plan.unit && <p className={`mt-1 text-sm ${"text-muted-foreground"}`}>{plan.unit}</p>}</div>
             <p className={`mb-4 text-xs leading-relaxed ${"text-muted-foreground"}`}>{PLAN_DEFINITION}</p>
             <p className={`mb-6 text-sm leading-relaxed ${"text-muted-foreground"}`}>{plan.description}</p>
             <ul className="mb-8 space-y-3">{plan.features.map(feature => <li key={feature} className="flex gap-2 text-sm leading-relaxed"><Check aria-hidden="true" className={`mt-1 h-4 w-4 shrink-0 ${"text-primary"}`} /><span className={feature.startsWith("Custom live leaderboard") ? "font-semibold" : undefined}>{feature}</span></li>)}</ul>
             <ul aria-label={`${plan.name} fees`} className="mb-6 space-y-1 rounded-md border border-border p-3 text-sm font-semibold">{plan.fees.map(line => <li key={line}>{line}</li>)}</ul>
-            {plan.examples && <table className="mb-6 w-full text-left text-xs"><caption className="mb-2 text-left font-semibold">Example, player pays all</caption><thead><tr className="text-muted-foreground"><th className="py-1 font-medium">Registration</th><th className="py-1 font-medium">TeeVents platform fee</th><th className="py-1 font-medium">Stripe credit card processing fee</th><th className="py-1 font-medium">Total</th></tr></thead><tbody>{plan.examples.map(row => <tr key={row[0]} className="border-t border-border">{row.map((cell, i) => <td key={i} className="py-1">{cell}</td>)}</tr>)}</tbody></table>}
             {plan.extra && <p className="mb-6 text-sm font-semibold leading-relaxed text-primary">{plan.extra}</p>}
             <div className="mt-auto">
               {index === 3 ? <EnterpriseInquiryDialog><Button variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold">{plan.cta}<ArrowRight /></Button></EnterpriseInquiryDialog> : <Button asChild variant="secondary" className="h-auto min-h-12 w-full whitespace-normal px-3 py-3 text-xs font-bold"><Link to={plan.to}>{plan.cta}<ArrowRight /></Link></Button>}
@@ -95,13 +96,6 @@ export default function Plans() {
               {index < 2 && <p className="mt-3 text-center text-sm leading-relaxed text-muted-foreground">We build your event page for you — live in 7 days or less.</p>}
             </div>
           </article>)}
-        </div>
-      </section>
-
-      <section aria-label="Pricing example" className="px-5 pb-4 pt-10 md:px-8">
-        <div className="mx-auto max-w-3xl rounded-lg border border-secondary bg-card p-6 text-sm leading-relaxed">
-          <p><strong>Example:</strong> 72 golfers at $150 = $10,800 in registrations. No Cost to Start: TeeVents platform fee $648 (6%), paid by golfers. Per-Event: $399 once, TeeVents platform fee 0%. The Stripe credit card processing fee (2.9% + $0.30) applies on both plans, on its own line.</p>
-          <p className="mt-3 font-semibold text-primary">Pay $399 per event instead once you pass $6,650 in registrations.</p>
         </div>
       </section>
 
@@ -121,6 +115,10 @@ export default function Plans() {
         <div className="mx-auto max-w-5xl"><h2 id="addons-title" className={heading}>Add-On Features</h2><p className="mt-4 text-muted-foreground">All $99 each. One-time, per event. Select an add-on to go straight to checkout.</p>
           <div className="mt-10 divide-y divide-border">{addons.map(addon => <article key={addon.slug} className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center"><addon.icon aria-hidden="true" className="h-7 w-7 shrink-0 text-primary" /><div className="min-w-0 flex-1"><h3 className="text-xl font-display font-bold">{addon.title}</h3><p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{addon.description}</p></div><div className="shrink-0 sm:text-right"><p className="mb-2 text-2xl font-display font-bold">$99</p><Button asChild variant="link" className="h-auto p-0"><Link to={`/checkout/${addon.slug}`}>Select and check out<ArrowRight /></Link></Button></div></article>)}</div>
         </div>
+      </section>
+
+      <section aria-labelledby="nonprofit-title" className={section}>
+        <div className="mx-auto max-w-3xl text-center"><h2 id="nonprofit-title" className={heading}>Built for nonprofit golf tournaments</h2><p className="mt-5 leading-relaxed text-muted-foreground">Planning a nonprofit golf tournament fundraiser? TeeVents builds your branded event page, sets up registration and sponsorships, runs live scoring and a custom live leaderboard, and stays on call on event day, so your team can focus on donors and sponsors, not setup.</p><p className="mt-4 leading-relaxed text-muted-foreground">For nonprofits, charities, churches, schools, and foundations running a charity golf tournament or nonprofit golf outing.</p><Link to="/signup" className="mt-6 inline-block font-semibold text-primary underline underline-offset-4">Get Started</Link></div>
       </section>
 
       <section aria-labelledby="payments-title" className={`${section} bg-primary text-primary-foreground`}>

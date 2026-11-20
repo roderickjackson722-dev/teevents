@@ -47,7 +47,7 @@ export const uploadIntakeLogo = createServerFn({ method: "POST" })
     return { path };
   });
 
-const saveSchema = tokenSchema.extend({ details: z.record(z.unknown()) });
+const saveSchema = tokenSchema.extend({ details: z.record(z.any()) });
 export const submitIntake = createServerFn({ method: "POST" })
   .inputValidator((i: unknown) => saveSchema.parse(i))
   .handler(async ({ data }) => {

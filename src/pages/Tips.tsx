@@ -44,7 +44,6 @@ const tipSections: { heading: string; tips: string[] }[] = [
 ];
 
 const enhancements: [string, string][] = [
-  ["Live Leaderboard and Mobile Scoring", "$99 on the free plan, included with Per-Event and up"],
   ["Auction Dashboard", "$99"],
   ["Branding Removal and Digital Sponsor", "$99"],
   ["Custom Domain", "$99"],

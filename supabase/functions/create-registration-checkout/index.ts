@@ -544,16 +544,16 @@ Deno.serve(async (req) => {
 
     if (splitCalc) {
       if (splitCalc.playerShare > 0) {
-        lineItems.push({ price_data: { currency: "usd", product_data: { name: "Service fee" }, unit_amount: splitCalc.playerShare }, quantity: 1 });
+        lineItems.push({ price_data: { currency: "usd", product_data: { name: `TeeVents platform fee (${+((feeSplitChoice === "split" ? feeRate / 2 : feeRate) * 100).toFixed(2)}%)` }, unit_amount: splitCalc.playerShare }, quantity: 1 });
       }
       if (splitCalc.processing > 0) {
-        lineItems.push({ price_data: { currency: "usd", product_data: { name: "Processing" }, unit_amount: splitCalc.processing }, quantity: 1 });
+        lineItems.push({ price_data: { currency: "usd", product_data: { name: "Stripe credit card processing fee (2.9% + $0.30)" }, unit_amount: splitCalc.processing }, quantity: 1 });
       }
     } else {
       const visibleProcessingFeeCents = combinedFeesCents;
       if (golferPaysFees && visibleProcessingFeeCents > 0) {
         lineItems.push({
-          price_data: { currency: "usd", product_data: { name: "Fees" }, unit_amount: visibleProcessingFeeCents },
+          price_data: { currency: "usd", product_data: { name: platformFeeCents > 0 ? "TeeVents platform fee and Stripe credit card processing fee" : "Stripe credit card processing fee (2.9% + $0.30)" }, unit_amount: visibleProcessingFeeCents },
           quantity: 1,
         });
       }

@@ -55,7 +55,6 @@ const moneyBullets = [
 ];
 
 const addons = [
-  "Live Leaderboard and Mobile Scoring, on No Cost to Start only, included on Per Event and up",
   "Unlimited Manual Entries",
   "Auction Dashboard",
   "Branding Removal and Digital Sponsor",
@@ -175,7 +174,7 @@ export default function Presentation() {
               "Churches",
               "First time organizers with no budget to vote on yet",
             ]} />
-            <Block heading="Note" bullets={["Live Leaderboard and Mobile Scoring is available as a $99 add on on this plan"]} />
+            <Block heading="Note" bullets={["Custom live leaderboard and mobile scoring included"]} />
           </div>
 
           <div className="rounded-lg border-2 border-secondary bg-muted/40 p-6 space-y-4">

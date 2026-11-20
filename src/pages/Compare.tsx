@@ -94,7 +94,7 @@ export default function Compare() {
             <div key={c} className="grid grid-cols-[1fr_1fr_1fr] border-t border-border text-sm md:text-base">
               <div className="p-3 font-medium md:p-4">{c}</div>
               <div className="flex gap-2 p-3 text-muted-foreground md:p-4"><No m={m} />{t}</div>
-              <div className="flex gap-2 bg-secondary/15 p-3 font-medium md:p-4"><Yes /><span>{us}{(c === "Live leaderboard" || c === "Custom leaderboard colors") && <span className="mt-2 block text-sm font-normal">Live leaderboard: $99 one-time add-on on the free plan, included with Per-Event and up.</span>}</span></div>
+              <div className="flex gap-2 bg-secondary/15 p-3 font-medium md:p-4"><Yes /><span>{us}{(c === "Live leaderboard" || c === "Custom leaderboard colors") && <span className="mt-2 block text-sm font-normal">Custom live leaderboard and mobile scoring included on every plan.</span>}</span></div>
             </div>))}
         </motion.div>
       </div></section>

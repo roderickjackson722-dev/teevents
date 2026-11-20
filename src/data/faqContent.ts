@@ -54,7 +54,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "Is Live Leaderboard included in Per-Event?",
-    "a": "Yes. Live Leaderboard and Mobile Scoring are included in Per-Event, Per-League, and Enterprise plans. On the No Cost to Start plan, it is available as a $99 add-on."
+    "a": "Yes. Live Leaderboard and Mobile Scoring are included in Per-Event, Per-League, and Enterprise plans. It is also included on the No Cost to Start plan."
    },
    {
     "q": "What is Enterprise pricing?",
@@ -70,7 +70,7 @@ export const FAQ_CATEGORIES: FaqCategory[] = [
    },
    {
     "q": "Do add-ons cost extra?",
-    "a": "Yes. Optional add-ons are $99 each and include Live Leaderboard and Mobile Scoring, Unlimited Manual Entries, Auction Dashboard, Branding Removal and Digital Sponsor, and Custom Domain."
+    "a": "Yes. Optional add-ons are $99 each one time per event: Unlimited Manual Entries, Auction Dashboard, Branding Removal and Digital Sponsor, and Custom Domain. Custom live leaderboard and mobile scoring is included on every plan."
    }
   ]
  },

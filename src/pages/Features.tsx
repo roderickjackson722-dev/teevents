@@ -136,7 +136,6 @@ const multiSport: Item[] = [
 ];
 
 const enhancements: [string, string, string][] = [
-  ["Live Leaderboard and Mobile Scoring", "$99 on the free plan, included with Per-Event and up", "Your director sets up mobile scoring and your live leaderboard in your event colors."],
   ["Auction Dashboard", "$99", "Your director sets up your silent auction items and bidding for you."],
   ["Branding Removal and Digital Sponsor", "$99", "Your director removes TeeVents branding and places your digital sponsors for you."],
   ["Custom Domain", "$99", "Your director connects your own web address to your event page for you."],

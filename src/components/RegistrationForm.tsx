@@ -1276,8 +1276,8 @@ const RegistrationForm = ({ tournamentId, sectionTitle = "Registration", primary
         {hasFee && (
           <div className="space-y-1 text-sm" data-testid="registration-fee-summary">
             <div className="flex justify-between"><span>Registration</span><span>{formatCents(totalWithDonationCents)}</span></div>
-            {platformFeeCents > 0 && <div className="flex justify-between"><span>Service fee</span><span>{formatCents(platformFeeCents)}</span></div>}
-            {stripeFee > 0 && <div className="flex justify-between"><span>Processing</span><span>{formatCents(stripeFee)}</span></div>}
+            {(platformFeeCents > 0 || stripeFee > 0) && <div className="flex justify-between"><span>TeeVents platform fee {`${+(platformFeeRate * 100 / (feeSplit === "split" && coverFees ? 2 : 1)).toFixed(2)}%`}</span><span>{formatCents(platformFeeCents)}</span></div>}
+            {stripeFee > 0 && <div className="flex justify-between"><span>Stripe credit card processing fee 2.9% + $0.30</span><span>{formatCents(stripeFee)}</span></div>}
             <div className="flex justify-between font-semibold"><span>Total</span><span>{formatCents(totalWithCoveredFees)}</span></div>
           </div>
         )}

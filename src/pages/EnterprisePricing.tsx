@@ -14,7 +14,7 @@ import { toast } from "sonner";
 
 const enterpriseFeatures = [
   "Unlimited tournaments and leagues",
-  "Live Leaderboard + Mobile Scoring included ($99 value per event)",
+  "Custom live leaderboard and mobile scoring included",
   "Your dedicated rep sets up every event, league, and leaderboard; you can edit anytime",
   "0% transaction fees",
   "Custom branding",

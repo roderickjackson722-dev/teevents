@@ -13459,6 +13459,100 @@ export type Database = {
           },
         ]
       }
+      tournament_team_score_history: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          hole_number: number
+          id: string
+          member_ids: string[]
+          new_strokes: number | null
+          old_strokes: number | null
+          round_number: number
+          team_key: string
+          tournament_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          hole_number: number
+          id?: string
+          member_ids: string[]
+          new_strokes?: number | null
+          old_strokes?: number | null
+          round_number: number
+          team_key: string
+          tournament_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          hole_number?: number
+          id?: string
+          member_ids?: string[]
+          new_strokes?: number | null
+          old_strokes?: number | null
+          round_number?: number
+          team_key?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_team_score_history_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tournament_team_scores: {
+        Row: {
+          created_at: string
+          hole_number: number
+          id: string
+          member_ids: string[]
+          round_number: number
+          strokes: number
+          team_key: string
+          tournament_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          hole_number: number
+          id?: string
+          member_ids: string[]
+          round_number?: number
+          strokes: number
+          team_key: string
+          tournament_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          hole_number?: number
+          id?: string
+          member_ids?: string[]
+          round_number?: number
+          strokes?: number
+          team_key?: string
+          tournament_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tournament_team_scores_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tournament_teams: {
         Row: {
           created_at: string
@@ -13701,6 +13795,7 @@ export type Database = {
           assigned_rep_id: string | null
           auction_tab_title: string | null
           base_fee_cents: number | null
+          best_ball_counting_scores: number
           branding_admin_override_at: string | null
           branding_footer_admin_override: boolean
           branding_footer_admin_show: boolean
@@ -13858,6 +13953,7 @@ export type Database = {
           handicap_allowance_better_pct: number | null
           handicap_allowance_mode: string
           handicap_allowance_percentage: number
+          handicap_allowance_tiers: number[] | null
           handicap_allowance_worse_pct: number | null
           handicap_enabled: boolean | null
           handicap_sync_enabled: boolean
@@ -13911,6 +14007,7 @@ export type Database = {
           max_waitlist_slots: number | null
           media_position: string
           media_tab_title: string | null
+          min_drives_enabled: boolean
           min_drives_per_player: number
           mission_statement: string | null
           org_address: string | null
@@ -14080,6 +14177,7 @@ export type Database = {
           assigned_rep_id?: string | null
           auction_tab_title?: string | null
           base_fee_cents?: number | null
+          best_ball_counting_scores?: number
           branding_admin_override_at?: string | null
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
@@ -14237,6 +14335,7 @@ export type Database = {
           handicap_allowance_better_pct?: number | null
           handicap_allowance_mode?: string
           handicap_allowance_percentage?: number
+          handicap_allowance_tiers?: number[] | null
           handicap_allowance_worse_pct?: number | null
           handicap_enabled?: boolean | null
           handicap_sync_enabled?: boolean
@@ -14290,6 +14389,7 @@ export type Database = {
           max_waitlist_slots?: number | null
           media_position?: string
           media_tab_title?: string | null
+          min_drives_enabled?: boolean
           min_drives_per_player?: number
           mission_statement?: string | null
           org_address?: string | null
@@ -14459,6 +14559,7 @@ export type Database = {
           assigned_rep_id?: string | null
           auction_tab_title?: string | null
           base_fee_cents?: number | null
+          best_ball_counting_scores?: number
           branding_admin_override_at?: string | null
           branding_footer_admin_override?: boolean
           branding_footer_admin_show?: boolean
@@ -14616,6 +14717,7 @@ export type Database = {
           handicap_allowance_better_pct?: number | null
           handicap_allowance_mode?: string
           handicap_allowance_percentage?: number
+          handicap_allowance_tiers?: number[] | null
           handicap_allowance_worse_pct?: number | null
           handicap_enabled?: boolean | null
           handicap_sync_enabled?: boolean
@@ -14669,6 +14771,7 @@ export type Database = {
           max_waitlist_slots?: number | null
           media_position?: string
           media_tab_title?: string | null
+          min_drives_enabled?: boolean
           min_drives_per_player?: number
           mission_statement?: string | null
           org_address?: string | null
@@ -15444,7 +15547,18 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      tournament_scores_with_teams: {
+        Row: {
+          from_team: boolean | null
+          hole_number: number | null
+          id: string | null
+          registration_id: string | null
+          round_number: number | null
+          strokes: number | null
+          tournament_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       _storage_first_folder_uuid: { Args: { _name: string }; Returns: string }
@@ -16118,6 +16232,7 @@ export type Database = {
         Args: { _org_id: string; _user_id: string }
         Returns: boolean
       }
+      is_team_score_format: { Args: { _fmt: string }; Returns: boolean }
       is_tournament_round_closed: {
         Args: { _round_number: number; _tournament_id: string }
         Returns: boolean
@@ -16449,6 +16564,7 @@ export type Database = {
         }
         Returns: Json
       }
+      team_member_ids: { Args: { _registration_id: string }; Returns: string[] }
       update_college_invitation_rsvp_by_token: {
         Args: { _response: string; _token: string }
         Returns: {

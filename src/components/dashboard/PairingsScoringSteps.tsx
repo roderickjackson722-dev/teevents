@@ -3,11 +3,12 @@ import { cn } from "@/lib/utils";
 import { withDashboardContext } from "@/lib/dashboardContext";
 
 const STEPS = [
-  { label: "Format", url: "/dashboard/scoring-payouts", match: (p: string, s: string) => p === "/dashboard/scoring-payouts" && !s.includes("section=flights") },
+  { label: "Format", url: "/dashboard/scoring-payouts", match: (p: string, s: string) => p === "/dashboard/scoring-payouts" && !s.includes("section=flights") && !s.includes("section=handicaps") },
   { label: "Flights", url: "/dashboard/scoring-payouts?section=flights", match: (p: string, s: string) => p === "/dashboard/scoring-payouts" && s.includes("section=flights") },
   { label: "Pairings", url: "/dashboard/players?tab=pairings", match: (p: string, s: string) => p === "/dashboard/players" && s.includes("tab=pairings") },
   { label: "Leaderboard", url: "/dashboard/leaderboard", match: (p: string, s: string) => (p === "/dashboard/leaderboard" || p === "/dashboard/stress-test") && !s.includes("view=scoring") },
   { label: "Score Entry", url: "/dashboard/leaderboard?view=scoring", match: (p: string, s: string) => p === "/dashboard/leaderboard" && s.includes("view=scoring") },
+  { label: "Handicaps", url: "/dashboard/scoring-payouts?section=handicaps", match: (p: string, s: string) => p === "/dashboard/scoring-payouts" && s.includes("section=handicaps") },
 ];
 
 /** Numbered step bar tying the Pairings & Scoring screens into one flow. Navigation only. */

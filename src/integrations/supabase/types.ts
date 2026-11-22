@@ -12774,6 +12774,7 @@ export type Database = {
           team_handicap_percentage: number | null
           team_id: string | null
           team_score_count: number
+          tee_set_id: string | null
           tee_time: string | null
           tier_id: string | null
           tournament_id: string
@@ -12837,6 +12838,7 @@ export type Database = {
           team_handicap_percentage?: number | null
           team_id?: string | null
           team_score_count?: number
+          tee_set_id?: string | null
           tee_time?: string | null
           tier_id?: string | null
           tournament_id: string
@@ -12900,6 +12902,7 @@ export type Database = {
           team_handicap_percentage?: number | null
           team_id?: string | null
           team_score_count?: number
+          tee_set_id?: string | null
           tee_time?: string | null
           tier_id?: string | null
           tournament_id?: string
@@ -12926,6 +12929,13 @@ export type Database = {
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "tournament_teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tournament_registrations_tee_set_id_fkey"
+            columns: ["tee_set_id"]
+            isOneToOne: false
+            referencedRelation: "course_tee_sets"
             referencedColumns: ["id"]
           },
           {

@@ -1,0 +1,1 @@
+ALTER TABLE public.tournament_registrations ADD COLUMN IF NOT EXISTS tee_set_id uuid REFERENCES public.course_tee_sets(id) ON DELETE SET NULL;

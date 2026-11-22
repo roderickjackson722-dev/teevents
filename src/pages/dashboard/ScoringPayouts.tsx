@@ -14,6 +14,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import PairingsScoringSteps from "@/components/dashboard/PairingsScoringSteps";
 import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
+import EventHandicapsTab from "@/components/dashboard/EventHandicapsTab";
 import FlightsManager from "@/components/dashboard/FlightsManager";
 import DivisionSkinsManager from "@/components/dashboard/DivisionSkinsManager";
 import { enterpriseLink } from "@/lib/enterpriseNavigation";
@@ -130,6 +131,16 @@ export default function ScoringPayouts({ enterpriseEventId }: { enterpriseEventI
       <div className="max-w-2xl">
         <h1 className="text-2xl md:text-3xl font-display font-bold mb-2">Scoring &amp; Payouts</h1>
         <p className="text-muted-foreground">Create a tournament first to configure scoring and payouts.</p>
+      </div>
+    );
+  }
+
+  if (!enterpriseEventId && searchParams.get("section") === "handicaps") {
+    return (
+      <div className="max-w-5xl space-y-6">
+        <PairingsScoringSteps />
+        <h1 className="text-2xl md:text-3xl font-display font-bold text-foreground">Handicaps</h1>
+        {selected && <EventHandicapsTab tournamentId={selected} />}
       </div>
     );
   }

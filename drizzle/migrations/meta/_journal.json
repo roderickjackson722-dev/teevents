@@ -491,6 +491,13 @@
       "when": 1795183814966,
       "tag": "0069_create_organizer_intakes",
       "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1795371953300,
+      "tag": "0070_registration_tee_set",
+      "breakpoints": true
     }
   ]
 }

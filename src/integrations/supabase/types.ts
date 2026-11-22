@@ -13855,7 +13855,10 @@ export type Database = {
           golfers_register_first: boolean
           group_field_rules: Json | null
           handicap_allowance: number | null
+          handicap_allowance_better_pct: number | null
+          handicap_allowance_mode: string
           handicap_allowance_percentage: number
+          handicap_allowance_worse_pct: number | null
           handicap_enabled: boolean | null
           handicap_sync_enabled: boolean
           history: string | null
@@ -14231,7 +14234,10 @@ export type Database = {
           golfers_register_first?: boolean
           group_field_rules?: Json | null
           handicap_allowance?: number | null
+          handicap_allowance_better_pct?: number | null
+          handicap_allowance_mode?: string
           handicap_allowance_percentage?: number
+          handicap_allowance_worse_pct?: number | null
           handicap_enabled?: boolean | null
           handicap_sync_enabled?: boolean
           history?: string | null
@@ -14607,7 +14613,10 @@ export type Database = {
           golfers_register_first?: boolean
           group_field_rules?: Json | null
           handicap_allowance?: number | null
+          handicap_allowance_better_pct?: number | null
+          handicap_allowance_mode?: string
           handicap_allowance_percentage?: number
+          handicap_allowance_worse_pct?: number | null
           handicap_enabled?: boolean | null
           handicap_sync_enabled?: boolean
           history?: string | null

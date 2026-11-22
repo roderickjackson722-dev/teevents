@@ -498,6 +498,13 @@
       "when": 1795371953300,
       "tag": "0070_registration_tee_set",
       "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1795372260633,
+      "tag": "0071_team_handicap_allowance",
+      "breakpoints": true
     }
   ]
 }

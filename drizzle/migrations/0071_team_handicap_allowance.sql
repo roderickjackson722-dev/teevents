@@ -1,0 +1,1 @@
+ALTER TABLE public.tournaments ADD COLUMN IF NOT EXISTS handicap_allowance_mode text NOT NULL DEFAULT 'event', ADD COLUMN IF NOT EXISTS handicap_allowance_better_pct numeric, ADD COLUMN IF NOT EXISTS handicap_allowance_worse_pct numeric;

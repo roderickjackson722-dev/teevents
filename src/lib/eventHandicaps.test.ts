@@ -29,3 +29,20 @@ describe("event handicaps tab", () => {
     expect(validateAllowance(0)).toBeNull();
   });
 });
+
+import { allowanceFor } from "./eventHandicaps";
+describe("team allowance", () => {
+  const players = [
+    { id: "a", teamId: "t1", raw: 4 }, { id: "b", teamId: "t1", raw: 18 },
+    { id: "c", teamId: null, raw: 10 },
+  ];
+  it("defaults to the event allowance of 100%", () => {
+    expect(allowanceFor(players, { mode: "event", eventPct: 100, betterPct: 35, worsePct: 15 }).get("a")).toBe(100);
+  });
+  it("gives the better player and worse player their own percentages", () => {
+    const m = allowanceFor(players, { mode: "team", eventPct: 100, betterPct: 35, worsePct: 15 });
+    expect(m.get("a")).toBe(35);
+    expect(m.get("b")).toBe(15);
+    expect(m.get("c")).toBe(100);
+  });
+});

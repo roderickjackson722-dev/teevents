@@ -8,11 +8,11 @@ import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import {
   displayCourseHandicap, playingFromRaw, unroundedCourseHandicap,
-  validateAllowance, validateIndex, validateTeeSet,
+  validateAllowance, validateIndex, validateTeeSet, allowanceFor,
 } from "@/lib/eventHandicaps";
 
 type Tee = { key: string; id?: string; name: string; slope: string; rating: string; par: string };
-type Player = { id: string; name: string; index: string; teeKey: string };
+type Player = { id: string; name: string; index: string; teeKey: string; teamId: string | null };
 
 let seq = 0;
 const newKey = () => `new-${++seq}`;
@@ -24,14 +24,17 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
   const [deleted, setDeleted] = useState<string[]>([]);
   const [players, setPlayers] = useState<Player[]>([]);
   const [allowance, setAllowance] = useState("100");
+  const [mode, setMode] = useState<"event" | "team">("event");
+  const [betterPct, setBetterPct] = useState("100");
+  const [worsePct, setWorsePct] = useState("100");
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
     const [teeRes, regRes, tRes] = await Promise.all([
       supabase.from("course_tee_sets").select("id, tee_name, slope_rating, course_rating, par_total").eq("tournament_id", tournamentId).order("created_at"),
-      supabase.from("tournament_registrations").select("id, first_name, last_name, handicap_index, handicap, tee_set_id, status").eq("tournament_id", tournamentId).order("last_name"),
-      supabase.from("tournaments").select("handicap_allowance_percentage").eq("id", tournamentId).maybeSingle(),
+      supabase.from("tournament_registrations").select("id, first_name, last_name, handicap_index, handicap, tee_set_id, status, team_id").eq("tournament_id", tournamentId).order("last_name"),
+      supabase.from("tournaments").select("handicap_allowance_percentage, handicap_allowance_mode, handicap_allowance_better_pct, handicap_allowance_worse_pct").eq("id", tournamentId).maybeSingle(),
     ]);
     const t = (teeRes.data || []).map((r) => ({ key: r.id, id: r.id, name: r.tee_name, slope: String(r.slope_rating), rating: String(r.course_rating), par: String(r.par_total) }));
     setTees(t);
@@ -41,8 +44,12 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
       name: `${r.first_name} ${r.last_name}`.trim(),
       index: r.handicap_index != null ? String(r.handicap_index) : r.handicap != null ? Number(r.handicap).toFixed(1) : "",
       teeKey: r.tee_set_id || "",
+      teamId: r.team_id,
     })));
     setAllowance(String(tRes.data?.handicap_allowance_percentage ?? 100));
+    setMode(tRes.data?.handicap_allowance_mode === "team" ? "team" : "event");
+    setBetterPct(String(tRes.data?.handicap_allowance_better_pct ?? 100));
+    setWorsePct(String(tRes.data?.handicap_allowance_worse_pct ?? 100));
     setLoading(false);
   }
 
@@ -50,6 +57,16 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
 
   const teeByKey = useMemo(() => new Map(tees.map((t) => [t.key, t])), [tees]);
   const allowancePct = Number(allowance);
+  const rawFor = (p: Player) => {
+    const tee = teeByKey.get(p.teeKey);
+    const idx = p.index.trim() === "" || validateIndex(p.index) ? null : Number(p.index);
+    return tee ? unroundedCourseHandicap(idx, Number(tee.slope), Number(tee.rating), Number(tee.par)) : null;
+  };
+  const safe = (v: string) => (Number.isFinite(Number(v)) && v.trim() !== "" ? Number(v) : 100);
+  const pctById = allowanceFor(
+    players.map((p) => ({ id: p.id, teamId: p.teamId, raw: rawFor(p) })),
+    { mode, eventPct: safe(allowance), betterPct: safe(betterPct), worsePct: safe(worsePct) },
+  );
 
   const updateTee = (key: string, patch: Partial<Tee>) => setTees((ts) => ts.map((t) => (t.key === key ? { ...t, ...patch } : t)));
   const removeTee = (key: string) => {
@@ -72,6 +89,9 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
     }
     const aMsg = validateAllowance(allowancePct);
     if (aMsg) return setError(aMsg);
+    if (mode === "team" && (validateAllowance(Number(betterPct)) || validateAllowance(Number(worsePct)))) {
+      return setError("Better and worse player allowances must be between 0 and 100 percent.");
+    }
 
     setSaving(true);
     try {
@@ -92,7 +112,7 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
           keyToId.set(t.key, data.id);
         }
       }
-      const { error: aErr } = await supabase.from("tournaments").update({ handicap_allowance_percentage: allowancePct }).eq("id", tournamentId);
+      const { error: aErr } = await supabase.from("tournaments").update({ handicap_allowance_percentage: allowancePct, handicap_allowance_mode: mode, handicap_allowance_better_pct: mode === "team" ? Number(betterPct) : null, handicap_allowance_worse_pct: mode === "team" ? Number(worsePct) : null }).eq("id", tournamentId);
       if (aErr) throw aErr;
       for (const p of players) {
         const tee = teeByKey.get(p.teeKey);
@@ -102,7 +122,7 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
           handicap_index: idx,
           tee_set_id: keyToId.get(p.teeKey) ?? null,
           course_handicap: raw == null ? null : Number(displayCourseHandicap(raw)),
-          playing_handicap: playingFromRaw(raw, allowancePct),
+          playing_handicap: playingFromRaw(raw, pctById.get(p.id) ?? allowancePct),
         }).eq("id", p.id);
         if (error) throw error;
       }
@@ -141,9 +161,27 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
       <Card>
         <CardHeader><CardTitle className="text-lg">Players</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="max-w-xs">
-            <Label htmlFor="hcp-allowance">Handicap Allowance (%)</Label>
-            <Input id="hcp-allowance" type="number" min={0} max={100} value={allowance} onChange={(e) => setAllowance(e.target.value)} />
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-4 text-sm">
+              <label className="flex items-center gap-2"><input type="radio" checked={mode === "event"} onChange={() => setMode("event")} /> Same allowance for every player</label>
+              <label className="flex items-center gap-2"><input type="radio" checked={mode === "team"} onChange={() => setMode("team")} /> Different allowance for the better and worse player on each team</label>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-3 max-w-2xl">
+              <div>
+                <Label htmlFor="hcp-allowance">{mode === "team" ? "Players without a team (%)" : "Handicap Allowance (%)"}</Label>
+                <Input id="hcp-allowance" type="number" min={0} max={100} value={allowance} onChange={(e) => setAllowance(e.target.value)} />
+              </div>
+              {mode === "team" && (<>
+                <div>
+                  <Label htmlFor="hcp-better">Better player, lower handicap (%)</Label>
+                  <Input id="hcp-better" type="number" min={0} max={100} value={betterPct} onChange={(e) => setBetterPct(e.target.value)} />
+                </div>
+                <div>
+                  <Label htmlFor="hcp-worse">Worse player, higher handicap (%)</Label>
+                  <Input id="hcp-worse" type="number" min={0} max={100} value={worsePct} onChange={(e) => setWorsePct(e.target.value)} />
+                </div>
+              </>)}
+            </div>
           </div>
           <p className="text-sm font-medium text-foreground">TeeVents calculated Course Handicap. Not an official USGA Handicap Index. No GHIN sync.</p>
           <div className="overflow-x-auto">
@@ -152,16 +190,16 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
                 <tr className="border-b border-border text-left text-muted-foreground">
                   <th className="py-2 pr-2">Player name</th><th className="py-2 pr-2">Handicap Index</th><th className="py-2 pr-2">Tee</th>
                   <th className="py-2 pr-2">Slope Rating</th><th className="py-2 pr-2">Course Rating</th><th className="py-2 pr-2">Par</th>
-                  <th className="py-2 pr-2">Course Handicap</th><th className="py-2">Playing Handicap</th>
+                  <th className="py-2 pr-2">Course Handicap</th><th className="py-2 pr-2">Allowance</th><th className="py-2">Playing Handicap</th>
                 </tr>
               </thead>
               <tbody>
-                {players.length === 0 && <tr><td colSpan={8} className="py-4 text-muted-foreground">No players on the registration list yet.</td></tr>}
+                {players.length === 0 && <tr><td colSpan={9} className="py-4 text-muted-foreground">No players on the registration list yet.</td></tr>}
                 {players.map((p) => {
                   const tee = teeByKey.get(p.teeKey);
                   const idx = p.index.trim() === "" || validateIndex(p.index) ? null : Number(p.index);
                   const raw = tee ? unroundedCourseHandicap(idx, Number(tee.slope), Number(tee.rating), Number(tee.par)) : null;
-                  const play = playingFromRaw(raw, Number.isFinite(allowancePct) ? allowancePct : 100);
+                  const play = playingFromRaw(raw, pctById.get(p.id) ?? 100);
                   return (
                     <tr key={p.id} className="border-b border-border/60">
                       <td className="py-2 pr-2 font-medium">{p.name}</td>
@@ -176,6 +214,7 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
                       <td className="py-2 pr-2">{tee?.rating ?? "—"}</td>
                       <td className="py-2 pr-2">{tee?.par ?? "—"}</td>
                       <td className="py-2 pr-2">{displayCourseHandicap(raw)}</td>
+                      <td className="py-2 pr-2">{pctById.get(p.id) ?? 100}%</td>
                       <td className="py-2">{play == null ? "—" : play}</td>
                     </tr>
                   );

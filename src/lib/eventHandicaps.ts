@@ -49,3 +49,30 @@ export function validateIndex(v: string): string | null {
 export function validateAllowance(v: number): string | null {
   return Number.isFinite(v) && v >= 0 && v <= 100 ? null : "Handicap Allowance must be between 0 and 100 percent.";
 }
+
+export type AllowanceSettings = { mode: "event" | "team"; eventPct: number; betterPct: number; worsePct: number };
+
+/**
+ * Allowance % for each player. "team" mode: within each team, the player with the lowest
+ * unrounded Course Handicap gets betterPct, everyone else worsePct. Players without a team
+ * or a Course Handicap fall back to the event allowance.
+ */
+export function allowanceFor(
+  players: { id: string; teamId: string | null; raw: number | null }[],
+  s: AllowanceSettings,
+): Map<string, number> {
+  const out = new Map<string, number>();
+  for (const p of players) out.set(p.id, s.eventPct);
+  if (s.mode !== "team") return out;
+  const teams = new Map<string, { id: string; raw: number }[]>();
+  for (const p of players) {
+    if (!p.teamId || p.raw == null) continue;
+    teams.set(p.teamId, [...(teams.get(p.teamId) || []), { id: p.id, raw: p.raw }]);
+  }
+  for (const members of teams.values()) {
+    if (members.length < 2) continue;
+    const best = members.reduce((a, b) => (b.raw < a.raw ? b : a));
+    for (const m of members) out.set(m.id, m.id === best.id ? s.betterPct : s.worsePct);
+  }
+  return out;
+}

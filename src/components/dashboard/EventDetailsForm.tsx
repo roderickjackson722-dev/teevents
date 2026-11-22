@@ -159,10 +159,17 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
         <div>
           <Label>Scoring Format</Label>
           <Select value={form.scoring_format} onValueChange={(v) => set("scoring_format", v)}>
-            <SelectTrigger><SelectValue placeholder="Select format" /></SelectTrigger>
-            <SelectContent>
+            <SelectTrigger>
+              <SelectValue placeholder="Select format">
+                {SCORING_FORMATS.find((f) => f.id === form.scoring_format)?.name}
+              </SelectValue>
+            </SelectTrigger>
+            <SelectContent className="max-w-[min(32rem,calc(100vw-2rem))]">
               {SCORING_FORMATS.map((f) => (
-                <SelectItem key={f.id} value={f.id}>{f.name}</SelectItem>
+                <SelectItem key={f.id} value={f.id} className="items-start py-2">
+                  <span className="block font-medium">{f.name}</span>
+                  <span className="block whitespace-normal text-xs text-muted-foreground">{f.description}</span>
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>

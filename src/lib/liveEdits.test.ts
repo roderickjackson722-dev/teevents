@@ -29,3 +29,11 @@ describe("live page edits", () => {
       .toBe(".tv-public > :nth-child(2) > :nth-child(1){font-size:20px!important}");
   });
 });
+
+import { styleToCss as _moveCss, cleanStyle as _moveClean } from "./liveEdits";
+import { describe as _d, it as _i, expect as _e } from "vitest";
+_d("moved parts", () => {
+  _i("saves a dragged position as a page shift", () => {
+    _e(_moveCss(_moveClean({ moveX: 40, moveY: -25 }))).toContain("translate:40px -25px");
+  });
+});

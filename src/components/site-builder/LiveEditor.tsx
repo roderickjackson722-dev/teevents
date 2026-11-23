@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AlignCenter, AlignJustify, AlignLeft, AlignRight, ArrowUpLeft, Bold, EyeOff, Italic, RotateCcw, Underline, Undo2, X } from "lucide-react";
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpLeft, Bold, Move, EyeOff, Italic, RotateCcw, Underline, Undo2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   EDIT_FONTS, cleanElementEdits, isTextLeaf, selectorFor,
@@ -55,6 +55,8 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
   const pending = useRef<StyleOverrides | null>(null);
   const rowRef = useRef(row);
   rowRef.current = row;
+  const overridesRef = useRef(overrides);
+  overridesRef.current = overrides;
 
   // Only signed-in organizers of this event (or admins) can edit.
   useEffect(() => {
@@ -126,6 +128,7 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
     const click = (e: MouseEvent) => {
       if (!inRoot(e.target)) return;
       e.preventDefault(); e.stopPropagation();
+      if (dragMoved.current) { dragMoved.current = false; return; }
       const sel = selectorFor(e.target, root);
       if (!sel) return;
       setSelected({ el: e.target, sel });
@@ -148,6 +151,39 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
     if (!selected) return;
     selected.el.setAttribute("data-tv-selected", "");
     return () => selected.el.removeAttribute("data-tv-selected");
+  }, [selected]);
+
+  // Drag the selected part to move it anywhere on the page.
+  const dragApply = useRef<((x: number, y: number) => void) | null>(null);
+  const dragMoved = useRef(false);
+  useEffect(() => {
+    if (!selected) return;
+    const el = selected.el as HTMLElement;
+    const down = (e: PointerEvent) => {
+      if (e.button !== 0 || !(e.target instanceof Node) || !el.contains(e.target)) return;
+      const cur = cleanElementEdits(cleanOverrides(overridesRef.current).elements)[selected.sel]?.style ?? {};
+      const baseX = cur.moveX ?? 0, baseY = cur.moveY ?? 0, sx = e.clientX, sy = e.clientY;
+      let x = baseX, y = baseY;
+      dragMoved.current = false;
+      const move = (m: PointerEvent) => {
+        const dx = m.clientX - sx, dy = m.clientY - sy;
+        if (!dragMoved.current && Math.hypot(dx, dy) < 5) return;
+        dragMoved.current = true;
+        m.preventDefault();
+        x = Math.round(baseX + dx); y = Math.round(baseY + dy);
+        el.style.setProperty("translate", `${x}px ${y}px`, "important");
+      };
+      const up = () => {
+        window.removeEventListener("pointermove", move, true);
+        window.removeEventListener("pointerup", up, true);
+        if (dragMoved.current) { el.style.removeProperty("translate"); dragApply.current?.(x, y); }
+      };
+      window.addEventListener("pointermove", move, true);
+      window.addEventListener("pointerup", up, true);
+    };
+    el.style.touchAction = "none";
+    el.addEventListener("pointerdown", down, true);
+    return () => { el.removeEventListener("pointerdown", down, true); el.style.touchAction = ""; };
   }, [selected]);
 
   const writeDesign = async (patch: Record<string, unknown>, history: DesignSnapshot[], message: string) => {
@@ -196,6 +232,11 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
     const s = { ...style, ...patch } as Record<string, unknown>;
     for (const k of Object.keys(s)) if (s[k] === undefined || s[k] === "") delete s[k];
     update({ style: s as ElementStyle });
+  };
+  dragApply.current = (x, y) => setStyle({ moveX: x || undefined, moveY: y || undefined });
+  const nudge = (dx: number, dy: number) => {
+    const x = (style.moveX ?? 0) + dx, y = (style.moveY ?? 0) + dy;
+    setStyle({ moveX: x || undefined, moveY: y || undefined });
   };
   const resetElement = () => {
     if (!selected) return;
@@ -340,6 +381,18 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
               {numField("See-through (0–1)", "opacity", Number(computed.opacity), 0, 1, 0.05)}
             </div>
             {colorField("Border color", "borderColor", computed.borderTopColor)}
+          </div>
+
+          <div className="space-y-2 border-t border-border pt-3">
+            <p className="text-xs font-semibold flex items-center gap-1"><Move className="h-3.5 w-3.5" />Move</p>
+            <p className="text-xs text-muted-foreground">Drag the outlined part on the page, or nudge it with the arrows.</p>
+            <div className="flex flex-wrap items-center gap-2">
+              {toggle(false, "Move left", <ArrowLeft className="h-4 w-4" />, () => nudge(-10, 0))}
+              {toggle(false, "Move up", <ArrowUp className="h-4 w-4" />, () => nudge(0, -10))}
+              {toggle(false, "Move down", <ArrowDown className="h-4 w-4" />, () => nudge(0, 10))}
+              {toggle(false, "Move right", <ArrowRight className="h-4 w-4" />, () => nudge(10, 0))}
+              <Button size="sm" variant="ghost" disabled={!style.moveX && !style.moveY} onClick={() => setStyle({ moveX: undefined, moveY: undefined })}>Back to original spot</Button>
+            </div>
           </div>
 
           <div className="flex flex-wrap gap-2 border-t border-border pt-3">

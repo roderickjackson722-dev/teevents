@@ -20,6 +20,9 @@ export interface ElementStyle {
   borderColor?: string;
   borderWidth?: number;
   opacity?: number;
+  /** Organizer-chosen position shift in px (drag to move). */
+  moveX?: number;
+  moveY?: number;
 }
 
 export interface ElementEdit {
@@ -72,6 +75,8 @@ export function cleanStyle(raw: unknown): ElementStyle {
   s.borderRadius = num(r.borderRadius, 0, 200);
   s.borderWidth = num(r.borderWidth, 0, 20);
   s.opacity = num(r.opacity, 0, 1);
+  s.moveX = num(r.moveX, -2000, 2000);
+  s.moveY = num(r.moveY, -2000, 2000);
   for (const k of Object.keys(s) as (keyof ElementStyle)[]) if (s[k] === undefined) delete s[k];
   return s;
 }
@@ -113,6 +118,7 @@ export function styleToCss(s: ElementStyle): string {
   if (s.borderWidth !== undefined) d.push(`border-width:${s.borderWidth}px;border-style:solid`);
   if (s.borderColor) d.push(`border-color:${s.borderColor}`);
   if (s.opacity !== undefined) d.push(`opacity:${s.opacity}`);
+  if (s.moveX || s.moveY) d.push(`translate:${Math.round(s.moveX ?? 0)}px ${Math.round(s.moveY ?? 0)}px`);
   return d.map((x) => `${x}!important`).join(";");
 }
 

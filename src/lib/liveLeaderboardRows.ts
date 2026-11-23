@@ -35,6 +35,9 @@ export interface LeaderboardRow {
   holesByRound?: Record<number, Record<number, number>>;
   /** Shootout: eliminated on this hole (shown as DNF below survivors). */
   dnfHole?: number | null;
+  /** Registration ids represented by this row. */
+  memberIds?: string[];
+  verification?: "attested" | "unverified" | "disputed";
 }
 
 
@@ -231,6 +234,7 @@ export function buildLeaderboard(
           thru: s.thru,
           isTeam: true,
           players: players.map((p) => p.name),
+          memberIds: entries.map((e) => e.key),
           key,
           today: s.today,
           parPlayed: s.parPlayed,

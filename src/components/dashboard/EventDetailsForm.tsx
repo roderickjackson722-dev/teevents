@@ -26,12 +26,14 @@ interface FormState {
   best_ball_counting_scores: string;
   min_drives_enabled: boolean;
   min_drives_per_player: string;
+  score_verification: "off" | "standard" | "strict";
 }
 
 const EMPTY: FormState = {
   title: "", date: "", end_date: "", location: "", course_name: "",
   registration_fee: "", scoring_format: "scramble_4", site_hero_subtitle: "",
   best_ball_counting_scores: "1", min_drives_enabled: false, min_drives_per_player: "",
+  score_verification: "off",
 };
 
 /**
@@ -53,7 +55,7 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("title, date, end_date, location, course_name, registration_fee_cents, scoring_format, best_ball_counting_scores, min_drives_enabled, min_drives_per_player, site_hero_title, site_hero_subtitle, slug")
+      .select("title, date, end_date, location, course_name, registration_fee_cents, scoring_format, best_ball_counting_scores, min_drives_enabled, min_drives_per_player, score_verification, site_hero_title, site_hero_subtitle, slug")
       .eq("id", tournamentId)
       .maybeSingle()
       .then(({ data }) => {
@@ -71,6 +73,7 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
           best_ball_counting_scores: String(d.best_ball_counting_scores ?? 1),
           min_drives_enabled: !!d.min_drives_enabled,
           min_drives_per_player: d.min_drives_per_player != null ? String(d.min_drives_per_player) : "",
+          score_verification: d.score_verification === "standard" || d.score_verification === "strict" ? d.score_verification : "off",
         });
         setSavedFormat(d.scoring_format || "scramble_4");
         setHeroTitle(d.site_hero_title || "");
@@ -125,6 +128,7 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
       best_ball_counting_scores: form.scoring_format === "best_ball_4" && form.best_ball_counting_scores === "2" ? 2 : 1,
       min_drives_enabled: isScrambleFormat ? form.min_drives_enabled : false,
       min_drives_per_player: isScrambleFormat && form.min_drives_enabled ? minDrives : null,
+      score_verification: form.score_verification,
       site_hero_subtitle: form.site_hero_subtitle || null,
       registration_fee_cents: form.registration_fee === "" || Number.isNaN(feeNum)
         ? null
@@ -234,6 +238,27 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
               )}
               <p className="text-xs text-muted-foreground">This is your event rule, not a USGA rule. TeeVents never sets a number for you.</p>
             </div>
+          )}
+        </div>
+        <div>
+          <Label>Score verification</Label>
+          <Select
+            value={form.score_verification === "off" ? "off" : "on"}
+            onValueChange={(v) => setForm((p) => ({ ...p, score_verification: v === "off" ? "off" : (p.score_verification === "off" ? "standard" : p.score_verification) }))}
+          >
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="off">Off</SelectItem>
+              <SelectItem value="on">On</SelectItem>
+            </SelectContent>
+          </Select>
+          {form.score_verification !== "off" ? (
+            <div className="mt-3 space-y-1 text-sm">
+              <label className="flex items-start gap-2"><input type="radio" className="mt-1" checked={form.score_verification === "standard"} onChange={() => setForm((p) => ({ ...p, score_verification: "standard" }))} /> <span><b>Standard</b> — a mismatch is flagged and must be resolved before the scorecard can be submitted. The group keeps playing.</span></label>
+              <label className="flex items-start gap-2"><input type="radio" className="mt-1" checked={form.score_verification === "strict"} onChange={() => setForm((p) => ({ ...p, score_verification: "strict" }))} /> <span><b>Strict</b> — each hole must be confirmed by the marker before the group can move to the next hole.</span></label>
+            </div>
+          ) : (
+            <p className="mt-1 text-xs text-muted-foreground">Off: one entry per hole and one player taps Verify and Submit Scorecard, as today.</p>
           )}
         </div>
         <div className="sm:col-span-2">

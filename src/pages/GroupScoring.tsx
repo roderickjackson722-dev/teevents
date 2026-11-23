@@ -21,6 +21,8 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "
 import { isBrandingRemoved } from "@/components/BrandingTagline";
 import { TeeventsFooter } from "@/components/TeeventsFooter";
 import { ScoreMark, ScoreLegend, scoreFillClass } from "@/components/scoring/ScoreMark";
+import { GroupVerificationPanel, type VerificationState } from "@/components/scoring/GroupVerificationPanel";
+import { strictGateHole } from "@/lib/scoreVerification";
 
 interface Reg {
   id: string;
@@ -72,6 +74,20 @@ export default function GroupScoring() {
   const [submission, setSubmission] = useState<{ submitted_at: string; admin_edited_at: string | null } | null>(null);
   const [reviewOpen, setReviewOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [verif, setVerif] = useState<VerificationState | null>(null);
+  const [verifRefresh, setVerifRefresh] = useState(0);
+  const verifOn = !!verif && verif.mode !== "off";
+  const strictGate = verif?.mode === "strict"
+    ? strictGateHole(verif.statuses, [...new Set(verif.statuses.map((r) => r.subject_key))])
+    : null;
+  const goHole = (h: number) => {
+    if (strictGate != null && h > strictGate) {
+      toast({ title: `Hole ${strictGate} needs confirming`, description: "In Strict verification, each marker must confirm this hole before the group moves on." });
+      setCurrentHole(strictGate);
+      return;
+    }
+    setCurrentHole(h);
+  };
 
 
   useEffect(() => {
@@ -349,8 +365,9 @@ export default function GroupScoring() {
       return next;
     });
     setDraft({});
-    toast({ title: "Saved" });
-    if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
+    setVerifRefresh((n) => n + 1);
+    toast({ title: "Saved", description: verif?.mode === "strict" ? "Waiting for markers to confirm this hole." : undefined });
+    if (currentHole < NUM_HOLES && verif?.mode !== "strict") setCurrentHole(currentHole + 1);
   };
 
   const holesArr = Array.from({ length: NUM_HOLES }, (_, i) => i + 1);
@@ -454,7 +471,7 @@ export default function GroupScoring() {
 
   const handleSave = () => {
     if (!hasPending) {
-      if (currentHole < NUM_HOLES) setCurrentHole(currentHole + 1);
+      if (currentHole < NUM_HOLES) goHole(currentHole + 1);
       return;
     }
     if (tournament?.live_require_confirm_save) setConfirmOpen(true);
@@ -525,12 +542,12 @@ export default function GroupScoring() {
                 <p className="text-xs text-muted-foreground">Hole</p>
                 <p className="text-2xl font-bold">{currentHole} <span className="text-base font-normal text-muted-foreground">of {NUM_HOLES}</span></p>
               </div>
-              <Button variant="outline" size="icon" onClick={() => setCurrentHole((h) => Math.min(NUM_HOLES, h + 1))} disabled={currentHole === NUM_HOLES}>
+              <Button variant="outline" size="icon" onClick={() => goHole(Math.min(NUM_HOLES, currentHole + 1))} disabled={currentHole === NUM_HOLES}>
                 <ChevronRight className="h-4 w-4" />
               </Button>
             </div>
             <div className="flex items-center gap-2">
-              <Select value={String(currentHole)} onValueChange={(v) => setCurrentHole(parseInt(v, 10))}>
+              <Select value={String(currentHole)} onValueChange={(v) => goHole(parseInt(v, 10))}>
                 <SelectTrigger className="flex-1"><SelectValue /></SelectTrigger>
                 <SelectContent>
                   {Array.from({ length: NUM_HOLES }, (_, i) => i + 1).map((h) => {
@@ -734,6 +751,18 @@ export default function GroupScoring() {
         )}
 
 
+        {tournament && code && (
+          <GroupVerificationPanel
+            tournamentId={tournament.id}
+            code={code}
+            roundNumber={roundNumber}
+            players={players}
+            roundComplete={roundComplete}
+            refreshKey={verifRefresh}
+            onState={setVerif}
+          />
+        )}
+
         {/* Hole summary */}
         <Card>
           <CardHeader className="pb-2"><CardTitle className="text-sm">Round Progress</CardTitle></CardHeader>
@@ -744,7 +773,7 @@ export default function GroupScoring() {
               return (
                 <button
                   key={h}
-                  onClick={() => setCurrentHole(h)}
+                  onClick={() => goHole(h)}
                   className={`aspect-square rounded text-xs font-semibold border transition-colors ${
                     isCurrent
                       ? "bg-primary text-primary-foreground border-primary"
@@ -779,7 +808,7 @@ export default function GroupScoring() {
                     {holesArr.map((h) => (
                       <th
                         key={h}
-                        onClick={() => setCurrentHole(h)}
+                        onClick={() => goHole(h)}
                         className={`p-2 text-center min-w-[34px] border-b border-border cursor-pointer ${h === currentHole ? "text-primary font-bold" : ""}`}
                       >
                         {h}
@@ -811,7 +840,7 @@ export default function GroupScoring() {
                             <td key={h} className="p-0 text-center border-b border-border">
                               <button
                                 type="button"
-                                onClick={() => { setCurrentHole(h); openEdit(p.id, h); }}
+                                onClick={() => { goHole(h); openEdit(p.id, h); }}
                                 className={`w-full h-9 text-center ${scoreFillClass(v, markPar(h)) || (h === currentHole ? "bg-primary/10" : "")}`}
                                 aria-label={`${submission ? "View" : "Edit"} ${label} hole ${h}${par ? "" : ""}`}
                               >
@@ -920,12 +949,15 @@ export default function GroupScoring() {
             );
           })}
           <ScoreLegend />
+          {!submission && verifOn && !verif?.allAttested && (
+            <p className="text-xs text-muted-foreground">Every card needs "My card is correct" from the player and the marker's attestation before you can submit.</p>
+          )}
           <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setReviewOpen(false)}>{submission ? "Close" : "Keep Editing"}</Button>
             {!submission && (
               <Button
                 onClick={submitScorecard}
-                disabled={submitting || !roundComplete}
+                disabled={submitting || !roundComplete || (verifOn && !verif?.allAttested)}
                 style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
               >
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : "Verify and Submit Scorecard"}

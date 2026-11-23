@@ -519,6 +519,34 @@
       "when": 1795392530404,
       "tag": "0073_team_scores_readers",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1795442322072,
+      "tag": "0074_score_verification",
+      "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1795442347093,
+      "tag": "0075_score_verification_marker_rule",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1795442386379,
+      "tag": "0076_score_verification_group_teams",
+      "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1795442709391,
+      "tag": "0077_score_verification_entry_kind",
+      "breakpoints": true
     }
   ]
 }

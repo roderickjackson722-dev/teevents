@@ -19,6 +19,8 @@ export interface LbRow {
   key?: string;
   /** Secondary line under the name (division / flight / team). */
   subtitle?: string;
+  /** Score verification label, only set when the event has verification On. */
+  verification?: "attested" | "unverified" | "disputed";
   /** Strokes recorded in the round currently in play. */
   today?: number | null;
   /** Par for the holes actually played — drives an accurate multi-round To Par. */
@@ -102,6 +104,8 @@ interface RendererProps {
   compact?: boolean;
   /** Optional banner above the leaderboard (eg. "Preview Mode"). */
   topNotice?: React.ReactNode;
+  /** One-line legend under each board (score verification). */
+  boardLegend?: string;
   /** Optional subtitle under title (date · course). */
   subtitle?: React.ReactNode;
   /**
@@ -155,6 +159,7 @@ export function LeaderboardRenderer({
   logoUrl,
   compact = false,
   topNotice,
+  boardLegend,
   subtitle,
   boards,
   boardColumns = 2,
@@ -381,7 +386,7 @@ export function LeaderboardRenderer({
                     data-testid="lb-row"
                     onClick={clickable ? () => onRowClick!(row) : undefined}
                     className={clickable ? "cursor-pointer hover:opacity-80 transition-opacity" : undefined}
-                    style={{ backgroundColor: design.row_stripe && i % 2 === 1 ? `${headerBg}66` : "transparent" }}
+                    style={{ backgroundColor: design.row_stripe && i % 2 === 1 ? `${headerBg}66` : "transparent", opacity: row.verification === "unverified" ? 0.55 : undefined }}
                   >
                     {showPos && (
                       <td className={`${padX} ${padY} font-bold`} style={{ color: i < 3 ? accent : textColor }}>
@@ -392,6 +397,11 @@ export function LeaderboardRenderer({
                       <td className={`${padX} ${padY} whitespace-normal`}>
                         <div className="font-semibold leading-tight break-words">{nameCell.primary}</div>
                         {row.subtitle && <div className="text-[0.85em] leading-tight opacity-70 break-words">{row.subtitle}</div>}
+                        {row.verification && (
+                          <div data-testid="lb-verification" className="text-[0.75em] font-semibold uppercase tracking-wide leading-tight" style={{ color: row.verification === "disputed" ? "hsl(var(--destructive))" : undefined }}>
+                            {row.verification === "attested" ? "Attested" : row.verification === "disputed" ? "Disputed" : "Unverified"}
+                          </div>
+                        )}
                         {nameCell.secondary && (
                           <div className="text-[0.85em] leading-tight opacity-70 truncate max-w-full sm:max-w-[300px]">{nameCell.secondary}</div>
                         )}
@@ -428,6 +438,7 @@ export function LeaderboardRenderer({
                 })}
               </tbody>
             </table>
+            {boardLegend && <p className={`${padX} py-2 text-[0.8em] opacity-80`}>{boardLegend}</p>}
           </div>
         )}
       </section>

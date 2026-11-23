@@ -9951,6 +9951,59 @@ export type Database = {
           },
         ]
       }
+      score_cards: {
+        Row: {
+          attested_at: string | null
+          attested_by_registration: string | null
+          attested_remote: boolean
+          force_attested_by: string | null
+          member_ids: string[]
+          player_ok_at: string | null
+          player_ok_registration: string | null
+          player_state: string | null
+          round_number: number
+          subject_key: string
+          tournament_id: string
+          updated_at: string
+        }
+        Insert: {
+          attested_at?: string | null
+          attested_by_registration?: string | null
+          attested_remote?: boolean
+          force_attested_by?: string | null
+          member_ids: string[]
+          player_ok_at?: string | null
+          player_ok_registration?: string | null
+          player_state?: string | null
+          round_number?: number
+          subject_key: string
+          tournament_id: string
+          updated_at?: string
+        }
+        Update: {
+          attested_at?: string | null
+          attested_by_registration?: string | null
+          attested_remote?: boolean
+          force_attested_by?: string | null
+          member_ids?: string[]
+          player_ok_at?: string | null
+          player_ok_registration?: string | null
+          player_state?: string | null
+          round_number?: number
+          subject_key?: string
+          tournament_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_cards_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       score_edits: {
         Row: {
           created_at: string
@@ -10001,6 +10054,188 @@ export type Database = {
           },
           {
             foreignKeyName: "score_edits_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      score_hole_events: {
+        Row: {
+          actor_registration_id: string | null
+          actor_user_id: string | null
+          created_at: string
+          hole_number: number
+          id: string
+          kind: string
+          reason: string | null
+          round_number: number
+          strokes: number | null
+          subject_key: string
+          tournament_id: string
+        }
+        Insert: {
+          actor_registration_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          hole_number: number
+          id?: string
+          kind: string
+          reason?: string | null
+          round_number: number
+          strokes?: number | null
+          subject_key: string
+          tournament_id: string
+        }
+        Update: {
+          actor_registration_id?: string | null
+          actor_user_id?: string | null
+          created_at?: string
+          hole_number?: number
+          id?: string
+          kind?: string
+          reason?: string | null
+          round_number?: number
+          strokes?: number | null
+          subject_key?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_hole_events_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      score_hole_status: {
+        Row: {
+          confirmed_at: string | null
+          confirmed_by_registration: string | null
+          entered_at: string
+          entered_by_user: string | null
+          entered_strokes: number | null
+          hole_number: number
+          marker_strokes: number | null
+          member_ids: string[]
+          organizer_entered: boolean
+          resolution_reason: string | null
+          resolved_at: string | null
+          round_number: number
+          status: string
+          subject_key: string
+          tournament_id: string
+        }
+        Insert: {
+          confirmed_at?: string | null
+          confirmed_by_registration?: string | null
+          entered_at?: string
+          entered_by_user?: string | null
+          entered_strokes?: number | null
+          hole_number: number
+          marker_strokes?: number | null
+          member_ids: string[]
+          organizer_entered?: boolean
+          resolution_reason?: string | null
+          resolved_at?: string | null
+          round_number?: number
+          status?: string
+          subject_key: string
+          tournament_id: string
+        }
+        Update: {
+          confirmed_at?: string | null
+          confirmed_by_registration?: string | null
+          entered_at?: string
+          entered_by_user?: string | null
+          entered_strokes?: number | null
+          hole_number?: number
+          marker_strokes?: number | null
+          member_ids?: string[]
+          organizer_entered?: boolean
+          resolution_reason?: string | null
+          resolved_at?: string | null
+          round_number?: number
+          status?: string
+          subject_key?: string
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_hole_status_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      score_markers: {
+        Row: {
+          assigned_at: string
+          assigned_by: string | null
+          marker_registration_id: string
+          registration_id: string
+          round_number: number
+          tournament_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_by?: string | null
+          marker_registration_id: string
+          registration_id: string
+          round_number?: number
+          tournament_id: string
+        }
+        Update: {
+          assigned_at?: string
+          assigned_by?: string | null
+          marker_registration_id?: string
+          registration_id?: string
+          round_number?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_markers_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      score_round_status: {
+        Row: {
+          locked_at: string | null
+          locked_by: string | null
+          published_at: string | null
+          published_by: string | null
+          round_number: number
+          tournament_id: string
+        }
+        Insert: {
+          locked_at?: string | null
+          locked_by?: string | null
+          published_at?: string | null
+          published_by?: string | null
+          round_number?: number
+          tournament_id: string
+        }
+        Update: {
+          locked_at?: string | null
+          locked_by?: string | null
+          published_at?: string | null
+          published_by?: string | null
+          round_number?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_round_status_tournament_id_fkey"
             columns: ["tournament_id"]
             isOneToOne: false
             referencedRelation: "tournaments"
@@ -14083,6 +14318,7 @@ export type Database = {
           saved_course_id: string | null
           schedule_info: string | null
           schedule_info_html: string | null
+          score_verification: string
           scoring_format: string
           scoring_rounds: number
           setup_checklist_dismissed: boolean
@@ -14465,6 +14701,7 @@ export type Database = {
           saved_course_id?: string | null
           schedule_info?: string | null
           schedule_info_html?: string | null
+          score_verification?: string
           scoring_format?: string
           scoring_rounds?: number
           setup_checklist_dismissed?: boolean
@@ -14847,6 +15084,7 @@ export type Database = {
           saved_course_id?: string | null
           schedule_info?: string | null
           schedule_info_html?: string | null
+          score_verification?: string
           scoring_format?: string
           scoring_rounds?: number
           setup_checklist_dismissed?: boolean
@@ -15727,6 +15965,20 @@ export type Database = {
         Args: { _tournament_id: string }
         Returns: boolean
       }
+      confirm_hole_score: {
+        Args: {
+          _actor_registration_id: string
+          _agree: boolean
+          _code: string
+          _group_number: number
+          _hole_number: number
+          _round_number: number
+          _strokes?: number
+          _subject_key: string
+          _tournament_id: string
+        }
+        Returns: string
+      }
       convert_client_demo: {
         Args: { _notes?: string; _organization_id: string; _sample_id: string }
         Returns: Json
@@ -15892,6 +16144,15 @@ export type Database = {
           last_name: string
           playing_handicap: number
         }[]
+      }
+      get_group_verification: {
+        Args: {
+          _code: string
+          _group_number?: number
+          _round_number?: number
+          _tournament_id: string
+        }
+        Returns: Json
       }
       get_league_event_leaderboard: {
         Args: { _event_id: string }
@@ -16092,6 +16353,10 @@ export type Database = {
           winner_name: string
           winner_ticket_number: number
         }[]
+      }
+      get_public_score_verification: {
+        Args: { _tournament_id: string }
+        Returns: Json
       }
       get_public_sponsor_registrations: {
         Args: { _tournament_id: string }
@@ -16326,11 +16591,45 @@ export type Database = {
         }
         Returns: boolean
       }
+      org_card_action: {
+        Args: {
+          _action: string
+          _member_ids: string[]
+          _round_number: number
+          _subject_key: string
+          _tournament_id: string
+        }
+        Returns: undefined
+      }
       org_has_active_league_subscription: {
         Args: { _org_id: string }
         Returns: boolean
       }
       org_is_demo_only: { Args: { _org_id: string }; Returns: boolean }
+      org_resolve_hole: {
+        Args: {
+          _hole_number: number
+          _reason: string
+          _round_number: number
+          _strokes: number
+          _subject_key: string
+          _tournament_id: string
+        }
+        Returns: undefined
+      }
+      org_round_action: {
+        Args: { _action: string; _round_number: number; _tournament_id: string }
+        Returns: undefined
+      }
+      org_set_marker: {
+        Args: {
+          _marker_registration_id: string
+          _registration_id: string
+          _round_number: number
+          _tournament_id: string
+        }
+        Returns: undefined
+      }
       platform_health_capture: { Args: never; Returns: Json }
       platform_health_live: { Args: never; Returns: Json }
       prune_platform_health_snapshots: { Args: never; Returns: undefined }
@@ -16542,6 +16841,19 @@ export type Database = {
         Args: { _max_deduct_cents: number; _organization_id: string }
         Returns: number
       }
+      sign_score_card: {
+        Args: {
+          _actor_registration_id: string
+          _code: string
+          _group_number: number
+          _remote?: boolean
+          _round_number: number
+          _step: string
+          _subject_key: string
+          _tournament_id: string
+        }
+        Returns: undefined
+      }
       submit_age_update: {
         Args: { _age: number; _token: string }
         Returns: boolean
@@ -16563,6 +16875,36 @@ export type Database = {
           _token: string
         }
         Returns: Json
+      }
+      sv_can_mark: {
+        Args: {
+          _actor: string
+          _group_ids: string[]
+          _members: string[]
+          _rn: number
+          _t: string
+        }
+        Returns: boolean
+      }
+      sv_is_org_member_of: {
+        Args: { _tournament_id: string }
+        Returns: boolean
+      }
+      sv_mode: { Args: { _tournament_id: string }; Returns: string }
+      sv_notify: {
+        Args: { _meta: Json; _msg: string; _t: string; _title: string }
+        Returns: undefined
+      }
+      sv_record_entry: {
+        Args: {
+          _hole: number
+          _key: string
+          _members: string[]
+          _rn: number
+          _strokes: number
+          _t: string
+        }
+        Returns: undefined
       }
       team_member_ids: { Args: { _registration_id: string }; Returns: string[] }
       update_college_invitation_rsvp_by_token: {

@@ -30,6 +30,7 @@ import ScoreEditHistory from "@/components/dashboard/ScoreEditHistory";
 import LeaderboardHeaderCard from "@/components/dashboard/LeaderboardHeaderCard";
 import LeaderboardResetCard from "@/components/dashboard/LeaderboardResetCard";
 import RoundClosureCard from "@/components/dashboard/RoundClosureCard";
+import ScoreVerificationCloseOut from "@/components/dashboard/ScoreVerificationCloseOut";
 import LeaderboardExportCard from "@/components/dashboard/LeaderboardExportCard";
 
 import { activeRoundNumber, parsePairingsConfig, roundLabel } from "@/lib/pairingsConfig";
@@ -1462,6 +1463,7 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       {showEntry && selectedTournament && (
         <RoundClosureCard tournamentId={selectedTournament} />
       )}
+      {selectedTournament && <ScoreVerificationCloseOut tournamentId={selectedTournament} />}
 
 
       {showEntry && selectedTournament && (

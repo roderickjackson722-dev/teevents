@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPublicLeaderboardScores, fetchAllRegistrations } from "@/lib/fetchLeaderboardScores";
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
 import { applySampleLeaderboard, applySampleTournament } from "@/lib/sampleEventDisplay";
+import { rowVerification, type PublicLabel } from "@/lib/scoreVerification";
 import { buildLeaderboard, compareByTotal, parForHole, summarize, type LeaderboardRow } from "@/lib/liveLeaderboardRows";
 import { Trophy, Loader2 } from "lucide-react";
 import { type LeaderboardDesign } from "@/components/dashboard/LeaderboardDesignCard";
@@ -469,10 +470,25 @@ function LiveLeaderboardBoard({
 
   const holePars = (course?.hole_pars as number[] | null) || null;
 
+  const [verification, setVerification] = useState<{ mode: string; published_rounds?: number[]; labels?: Record<string, PublicLabel> } | null>(null);
+  useEffect(() => {
+    if (!tournament) return;
+    let alive = true;
+    const pull = () => (supabase as any).rpc("get_public_score_verification", { _tournament_id: tournament.id })
+      .then(({ data }: any) => { if (alive) setVerification(data || null); });
+    pull();
+    const t = setInterval(pull, 30000);
+    return () => { alive = false; clearInterval(t); };
+  }, [tournament?.id]);
+  const verificationOn = !!verification && verification.mode !== "off";
+  const withVerification = <R extends LeaderboardRow>(rows: R[]): R[] =>
+    !verificationOn ? rows : rows.map((r) => ({ ...r, verification: rowVerification(r.memberIds ?? (r.key ? [r.key] : []), verification!.labels || {}) }));
+
   const leaderboard = useMemo(() => {
     if (!tournament) return [];
-    return applySampleLeaderboard(slug, buildLeaderboard(filteredScores, tournament, holePars));
-  }, [filteredScores, tournament, holePars]);
+    return withVerification(applySampleLeaderboard(slug, buildLeaderboard(filteredScores, tournament, holePars)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredScores, tournament, holePars, verification]);
 
   /** Rounds that have posted scores, and the round currently in play. */
   const rounds = useMemo(() => {
@@ -488,21 +504,21 @@ function LiveLeaderboardBoard({
     const boards = flights.map((f) => ({
       key: f.id,
       label: f.tier_name,
-      rows: buildLeaderboard(
+      rows: withVerification(buildLeaderboard(
         scores.filter((s: any) => flightOf(s) === f.id),
         tournament,
         holePars,
-      ),
+      )),
     }));
     if (design.flight_include_overall !== false) {
       boards.push({
         key: "__overall",
         label: "Overall",
-        rows: buildLeaderboard(scores, tournament, holePars),
+        rows: withVerification(buildLeaderboard(scores, tournament, holePars)),
       });
     }
     return boards.length > 0 ? boards : undefined;
-  }, [tournament, flightMode, flights, scores, regFlights, design.flight_include_overall, holePars]);
+  }, [tournament, flightMode, flights, scores, regFlights, design.flight_include_overall, holePars, verification]);
 
 
 
@@ -653,6 +669,11 @@ function LiveLeaderboardBoard({
         }}
         boardColumns={design.flight_columns || 2}
         presentedBy={presentedBy}
+        boardLegend={verificationOn
+          ? ((verification!.published_rounds || []).includes(currentRound)
+            ? "Live scores are provisional until verified."
+            : "Provisional - unverified scores included. Live scores are provisional until verified.")
+          : undefined}
 
 
         topNotice={

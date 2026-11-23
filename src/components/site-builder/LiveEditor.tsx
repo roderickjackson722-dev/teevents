@@ -55,6 +55,8 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
   const pending = useRef<StyleOverrides | null>(null);
   const rowRef = useRef(row);
   rowRef.current = row;
+  const statusRef = useRef(status);
+  statusRef.current = status;
   const overridesRef = useRef(overrides);
   overridesRef.current = overrides;
 
@@ -95,8 +97,9 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
       .update({ site_style_overrides: next, site_design_history: history, site_design_original: original } as any)
       .eq("id", tournamentId)
       .select("id");
-    if (error || !data?.length) { setStatus("error"); toast.error("Could not save this change", { description: error?.message }); return; }
+    if (error || !data?.length) { statusRef.current = "error"; setStatus("error"); toast.error("Could not save this change", { description: error?.message }); return; }
     setRow({ ...nextRow, site_design_history: history, site_design_original: original });
+    statusRef.current = "saved";
     setStatus("saved");
   }, [tournamentId]);
 
@@ -110,6 +113,12 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
     if (saveTimer.current) window.clearTimeout(saveTimer.current);
     saveTimer.current = window.setTimeout(() => void flush(), 700);
   };
+
+  useEffect(() => {
+    const warn = (e: BeforeUnloadEvent) => { if (pending.current) { void flush(); e.preventDefault(); } };
+    window.addEventListener("beforeunload", warn);
+    return () => window.removeEventListener("beforeunload", warn);
+  }, [flush]);
 
   useEffect(() => () => { if (saveTimer.current) window.clearTimeout(saveTimer.current); void flush(); }, [flush]);
 
@@ -204,8 +213,10 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
     if (!confirm("Go back to this event's original design? You can still use Undo afterward.")) return;
     void writeDesign(snapshotPatch(row.site_design_original), pushDesignHistory(history, row, snapshotPatch(row.site_design_original)), "Original design restored");
   };
-  const done = () => {
-    void flush();
+  const done = async () => {
+    if (saveTimer.current) { window.clearTimeout(saveTimer.current); saveTimer.current = null; }
+    await flush();
+    if (pending.current || statusRef.current === "error") return;
     const url = new URL(window.location.href);
     url.searchParams.delete("edit");
     window.location.href = url.toString();
@@ -296,7 +307,7 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
           <span className="ml-auto text-xs text-muted-foreground">{status === "saving" ? "Saving…" : status === "error" ? "Not saved" : "All changes saved"}</span>
           <Button size="sm" variant="outline" disabled={!history.length || status === "saving"} onClick={undo}><Undo2 className="h-3.5 w-3.5 mr-1" />Undo</Button>
           <Button size="sm" variant="ghost" disabled={!row?.site_design_original || status === "saving"} onClick={reset}><RotateCcw className="h-3.5 w-3.5 mr-1" />Reset to Original</Button>
-          <Button size="sm" onClick={done}>Done</Button>
+          <Button size="sm" onClick={() => void done()}>Done</Button>
         </div>
       </div>
       {selected && panelOpen && computed && (

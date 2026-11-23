@@ -9761,6 +9761,7 @@ export type Database = {
         Row: {
           admin_id: string | null
           background_color: string | null
+          builder_details: Json | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
@@ -9792,6 +9793,7 @@ export type Database = {
           secondary_color: string | null
           shared_at: string | null
           team_fee_cents: number | null
+          text_color: string | null
           tour_completed: boolean
           tour_completed_at: string | null
           tournament_name: string
@@ -9802,6 +9804,7 @@ export type Database = {
         Insert: {
           admin_id?: string | null
           background_color?: string | null
+          builder_details?: Json | null
           conversion_notes?: string | null
           conversion_status?: string
           converted_at?: string | null
@@ -9833,6 +9836,7 @@ export type Database = {
           secondary_color?: string | null
           shared_at?: string | null
           team_fee_cents?: number | null
+          text_color?: string | null
           tour_completed?: boolean
           tour_completed_at?: string | null
           tournament_name: string
@@ -9843,6 +9847,7 @@ export type Database = {
         Update: {
           admin_id?: string | null
           background_color?: string | null
+          builder_details?: Json | null
           conversion_notes?: string | null
           conversion_status?: string
           converted_at?: string | null
@@ -9874,6 +9879,7 @@ export type Database = {
           secondary_color?: string | null
           shared_at?: string | null
           team_fee_cents?: number | null
+          text_color?: string | null
           tour_completed?: boolean
           tour_completed_at?: string | null
           tournament_name?: string
@@ -15837,6 +15843,7 @@ export type Database = {
         Returns: {
           admin_id: string | null
           background_color: string | null
+          builder_details: Json | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
@@ -15868,6 +15875,7 @@ export type Database = {
           secondary_color: string | null
           shared_at: string | null
           team_fee_cents: number | null
+          text_color: string | null
           tour_completed: boolean
           tour_completed_at: string | null
           tournament_name: string
@@ -15891,6 +15899,7 @@ export type Database = {
         Returns: {
           admin_id: string | null
           background_color: string | null
+          builder_details: Json | null
           conversion_notes: string | null
           conversion_status: string
           converted_at: string | null
@@ -15922,6 +15931,7 @@ export type Database = {
           secondary_color: string | null
           shared_at: string | null
           team_fee_cents: number | null
+          text_color: string | null
           tour_completed: boolean
           tour_completed_at: string | null
           tournament_name: string
@@ -16038,6 +16048,7 @@ export type Database = {
         Returns: Json
       }
       delete_old_demo_tournaments: { Args: never; Returns: number }
+      duplicate_client_sample: { Args: { _sample_id: string }; Returns: string }
       ensure_client_demo: { Args: { _sample_id: string }; Returns: Json }
       find_leagues: {
         Args: { _query: string }

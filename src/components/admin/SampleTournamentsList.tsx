@@ -528,6 +528,14 @@ export default function SampleTournamentsList({ reloadKey }: { reloadKey?: numbe
                             <Button size="sm" variant="secondary" onClick={() => openEdit(r)}>
                               <Pencil className="h-3 w-3 mr-1" /> Edit
                             </Button>
+                            <Button size="sm" variant="outline" onClick={async () => {
+                              const { error } = await (supabase as any).rpc("duplicate_client_sample", { _sample_id: r.id });
+                              if (error) { toast({ title: "Could not duplicate", description: error.message, variant: "destructive" }); return; }
+                              toast({ title: "Sample duplicated", description: "The copy is a new unshared Sample." });
+                              load();
+                            }}>
+                              <Copy className="h-3 w-3 mr-1" /> Duplicate
+                            </Button>
                             <Button
                               size="sm"
                               className="bg-[#1a5c38] text-white hover:bg-[#1a5c38]/90"

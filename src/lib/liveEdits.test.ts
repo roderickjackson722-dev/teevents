@@ -37,3 +37,12 @@ _d("moved parts", () => {
     _e(_moveCss(_moveClean({ moveX: 40, moveY: -25 }))).toContain("translate:40px -25px");
   });
 });
+
+import { elementEditsToCss as _cssAll } from "./liveEdits";
+_d("phone-only moves", () => {
+  _i("applies phone position only on small screens", () => {
+    const css = _cssAll({ '[data-tv="hero-badges"]': { style: { moveY: 40 }, mobile: { moveX: 0, moveY: 120 } } });
+    _e(css).toContain('@media (max-width: 767px){.tv-public [data-tv="hero-badges"]{translate:0px 120px');
+    _e(css).toContain("translate:0px 40px");
+  });
+});

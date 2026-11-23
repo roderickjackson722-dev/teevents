@@ -30,6 +30,8 @@ export interface ElementEdit {
   text?: string;
   src?: string;
   hidden?: boolean;
+  /** Phone-only style changes (screens under 768px wide); override `style` there. */
+  mobile?: ElementStyle;
 }
 
 export type ElementEdits = Record<string, ElementEdit>;
@@ -90,6 +92,8 @@ export function cleanElementEdits(raw: unknown): ElementEdits {
     const edit: ElementEdit = {};
     const style = cleanStyle(e.style);
     if (Object.keys(style).length) edit.style = style;
+    const mobile = cleanStyle(e.mobile);
+    if (Object.keys(mobile).length) edit.mobile = mobile;
     if (typeof e.text === "string") edit.text = e.text.slice(0, 5000);
     if (typeof e.src === "string" && isSafeUrl(e.src)) edit.src = e.src;
     if (e.hidden === true) edit.hidden = true;
@@ -118,7 +122,7 @@ export function styleToCss(s: ElementStyle): string {
   if (s.borderWidth !== undefined) d.push(`border-width:${s.borderWidth}px;border-style:solid`);
   if (s.borderColor) d.push(`border-color:${s.borderColor}`);
   if (s.opacity !== undefined) d.push(`opacity:${s.opacity}`);
-  if (s.moveX || s.moveY) d.push(`translate:${Math.round(s.moveX ?? 0)}px ${Math.round(s.moveY ?? 0)}px`);
+  if (s.moveX !== undefined || s.moveY !== undefined) d.push(`translate:${Math.round(s.moveX ?? 0)}px ${Math.round(s.moveY ?? 0)}px`);
   return d.map((x) => `${x}!important`).join(";");
 }
 
@@ -131,6 +135,10 @@ export function elementEditsToCss(raw: unknown): string {
       const css = styleToCss(e.style);
       if (css) rules.push(`.tv-public ${cssSelector(sel)}{${css}}`);
     }
+    if (e.mobile) {
+      const css = styleToCss(e.mobile);
+      if (css) rules.push(`@media (max-width: 767px){.tv-public ${cssSelector(sel)}{${css}}}`);
+    }
     if (e.hidden) {
       rules.push(`.tv-public:not([data-tv-editing]) ${cssSelector(sel)}{display:none!important}`);
       rules.push(`.tv-public[data-tv-editing] ${cssSelector(sel)}{opacity:.35!important;outline:2px dashed #999!important}`);
@@ -142,8 +150,7 @@ export function elementEditsToCss(raw: unknown): string {
 export function googleFontsHref(raw: unknown): string | null {
   const fams = new Set<string>();
   for (const e of Object.values(cleanElementEdits(raw))) {
-    const f = e.style?.fontFamily;
-    if (f && !SYSTEM_FONTS.has(f)) fams.add(f);
+    for (const f of [e.style?.fontFamily, e.mobile?.fontFamily]) if (f && !SYSTEM_FONTS.has(f)) fams.add(f);
   }
   if (!fams.size) return null;
   return `https://fonts.googleapis.com/css2?${[...fams].map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}:ital,wght@0,400;0,700;1,400`).join("&")}&display=swap`;

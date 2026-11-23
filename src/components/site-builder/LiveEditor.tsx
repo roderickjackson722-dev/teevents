@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { AlignCenter, AlignJustify, AlignLeft, AlignRight, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpLeft, Bold, Move, EyeOff, Italic, RotateCcw, Underline, Undo2, X } from "lucide-react";
+import { AlignCenter, AlignJustify, AlignLeft, AlignRight, ArrowDown, ArrowLeft, ArrowRight, ArrowUp, ArrowUpLeft, Bold, Monitor, Move, Smartphone, EyeOff, Italic, RotateCcw, Underline, Undo2, X } from "lucide-react";
 import { toast } from "sonner";
 import {
   EDIT_FONTS, cleanElementEdits, isTextLeaf, selectorFor,
@@ -51,6 +51,16 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
   const [selected, setSelected] = useState<{ el: Element; sel: string } | null>(null);
   const [status, setStatus] = useState<"saved" | "saving" | "error">("saved");
   const [panelOpen, setPanelOpen] = useState(true);
+  // Phone screens (or the phone preview frame) edit phone-only styles.
+  const [isPhone, setIsPhone] = useState(false);
+  const isPhoneRef = useRef(false);
+  const [phonePreview, setPhonePreview] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 767px)");
+    const set = () => { isPhoneRef.current = mq.matches; setIsPhone(mq.matches); };
+    set(); mq.addEventListener("change", set);
+    return () => mq.removeEventListener("change", set);
+  }, []);
   const saveTimer = useRef<number | null>(null);
   const pending = useRef<StyleOverrides | null>(null);
   const rowRef = useRef(row);
@@ -170,7 +180,8 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
     const el = selected.el as HTMLElement;
     const down = (e: PointerEvent) => {
       if (e.button !== 0 || !(e.target instanceof Node) || !el.contains(e.target)) return;
-      const cur = cleanElementEdits(cleanOverrides(overridesRef.current).elements)[selected.sel]?.style ?? {};
+      const curEdit = cleanElementEdits(cleanOverrides(overridesRef.current).elements)[selected.sel];
+      const cur = (isPhoneRef.current ? { ...curEdit?.style, ...curEdit?.mobile } : curEdit?.style) ?? {};
       const baseX = cur.moveX ?? 0, baseY = cur.moveY ?? 0, sx = e.clientX, sy = e.clientY;
       let x = baseX, y = baseY;
       dragMoved.current = false;
@@ -232,7 +243,9 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
   }
 
   const edit: ElementEdit = selected ? edits[selected.sel] ?? {} : {};
-  const style: ElementStyle = edit.style ?? {};
+  const ownStyle: ElementStyle = (isPhone ? edit.mobile : edit.style) ?? {};
+  // On phones, show desktop moves as the starting point until changed for phone.
+  const style: ElementStyle = isPhone ? { ...(edit.style?.moveX !== undefined || edit.style?.moveY !== undefined ? { moveX: edit.style?.moveX, moveY: edit.style?.moveY } : {}), ...ownStyle } : ownStyle;
   const computed = selected ? getComputedStyle(selected.el) : null;
   const update = (patch: Partial<ElementEdit>) => {
     if (!selected) return;
@@ -241,9 +254,10 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
     commit(cleanElementEdits(next));
   };
   const setStyle = (patch: Partial<ElementStyle>) => {
-    const s = { ...style, ...patch } as Record<string, unknown>;
+    const s = { ...ownStyle, ...patch } as Record<string, unknown>;
+    if (isPhone && ("moveX" in patch || "moveY" in patch)) { s.moveX = patch.moveX ?? 0; s.moveY = patch.moveY ?? 0; }
     for (const k of Object.keys(s)) if (s[k] === undefined || s[k] === "") delete s[k];
-    update({ style: s as ElementStyle });
+    update(isPhone ? { mobile: s as ElementStyle } : { style: s as ElementStyle });
   };
   dragApply.current = (x, y) => setStyle({ moveX: x || undefined, moveY: y || undefined });
   const nudge = (dx: number, dy: number) => {
@@ -305,14 +319,29 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
         <div className="flex flex-wrap items-center gap-2 px-3 py-2">
           <span className="text-sm font-semibold">Editing live page</span>
           <span className="text-xs text-muted-foreground hidden sm:inline">Click anything on the page to change it. Changes save as you go.</span>
+          {isPhone ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-secondary px-2 py-0.5 text-xs font-semibold text-secondary-foreground"><Smartphone className="h-3.5 w-3.5" />Phone view edits</span>
+          ) : (
+            <div className="inline-flex rounded-md border border-border p-0.5">
+              <Button size="sm" variant={phonePreview ? "ghost" : "default"} className="h-7 px-2" onClick={() => setPhonePreview(false)}><Monitor className="h-3.5 w-3.5 mr-1" />Desktop</Button>
+              <Button size="sm" variant={phonePreview ? "default" : "ghost"} className="h-7 px-2" onClick={async () => { await flush(); setSelected(null); setPhonePreview(true); }}><Smartphone className="h-3.5 w-3.5 mr-1" />Mobile</Button>
+            </div>
+          )}
           <span className="ml-auto text-xs text-muted-foreground">{status === "saving" ? "Saving…" : status === "error" ? "Not saved" : "All changes saved"}</span>
           <Button size="sm" variant="outline" disabled={!history.length || status === "saving"} onClick={undo}><Undo2 className="h-3.5 w-3.5 mr-1" />Undo</Button>
           <Button size="sm" variant="ghost" disabled={!row?.site_design_original || status === "saving"} onClick={reset}><RotateCcw className="h-3.5 w-3.5 mr-1" />Reset to Original</Button>
           <Button size="sm" onClick={() => void done()}>Done</Button>
         </div>
       </div>
+      {phonePreview && !isPhone && (
+        <div className="fixed inset-x-0 top-[52px] bottom-0 z-[99] flex flex-col items-center bg-muted/95 p-3">
+          <p className="mb-2 text-xs text-muted-foreground">Phone view — changes here apply only on phones. Desktop stays as it is.</p>
+          <iframe title="Phone view editor" src={window.location.href} className="w-[400px] max-w-full flex-1 rounded-xl border-4 border-foreground bg-background" />
+          <Button size="sm" className="mt-2" onClick={() => { setPhonePreview(false); window.location.reload(); }}>Back to desktop</Button>
+        </div>
+      )}
       {selected && panelOpen && computed && (
-        <aside className="fixed z-[100] right-2 top-14 bottom-2 w-[min(340px,calc(100vw-1rem))] overflow-y-auto rounded-lg border border-border bg-card text-card-foreground shadow-xl p-4 space-y-4">
+        <aside className="fixed z-[100] inset-x-1 bottom-1 max-h-[45vh] md:inset-x-auto md:right-2 md:top-14 md:bottom-2 md:max-h-none md:w-[340px] overflow-y-auto rounded-lg border border-border bg-card text-card-foreground shadow-xl p-4 space-y-4">
           <div className="flex items-center gap-2">
             <h2 className="font-semibold text-sm">{describe(selected.el)}</h2>
             <Button size="sm" variant="ghost" className="ml-auto h-8 px-2 text-xs" onClick={selectParent}><ArrowUpLeft className="h-3.5 w-3.5 mr-1" />Select bigger area</Button>

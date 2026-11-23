@@ -197,6 +197,7 @@ export function LiveEditor({ tournamentId, root, overrides, onOverridesChange }:
 
   const writeDesign = async (patch: Record<string, unknown>, history: DesignSnapshot[], message: string) => {
     if (!row) return;
+    if (pending.current) { if (saveTimer.current) window.clearTimeout(saveTimer.current); await flush(); }
     setStatus("saving");
     const original = row.site_design_original ?? designSnapshot(row);
     const { error } = await supabase.from("tournaments")

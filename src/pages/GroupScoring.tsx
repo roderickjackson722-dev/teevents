@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Loader2, ChevronLeft, ChevronRight, Trophy, Pencil, Check, Minus, Plus, Users, Eraser } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { allocateStrokes } from "@/lib/handicapUtils";
-import { getFormatById } from "@/lib/scoringFormats";
+import { isTeamScoreFormat, getFormatById } from "@/lib/scoringFormats";
 import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import {
@@ -147,7 +147,7 @@ export default function GroupScoring() {
 
       const ids = (regs as Reg[]).map((r) => r.id);
       const { data: sc } = await supabase
-        .from("tournament_scores")
+        .from("tournament_scores_with_teams")
         .select("registration_id, hole_number, strokes, round_number")
         .eq("round_number", activeRound)
         .in("registration_id", ids);
@@ -200,12 +200,33 @@ export default function GroupScoring() {
         { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` },
         (payload: any) => {
           const row = payload.new || payload.old;
+          // Team-score formats keep one team record; per-player rows are only transient.
+          if (isTeamScoreFormat(tournament.scoring_format)) return;
           if (!row || !ids.includes(row.registration_id)) return;
           setScores((prev) => {
             const next = { ...prev };
             next[row.registration_id] = { ...(next[row.registration_id] || {}) };
             if (payload.eventType === "DELETE") delete next[row.registration_id][row.hole_number];
             else next[row.registration_id][row.hole_number] = row.strokes;
+            return next;
+          });
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "tournament_team_scores", filter: `tournament_id=eq.${tournament.id}` },
+        (payload: any) => {
+          const row = payload.new?.member_ids ? payload.new : payload.old;
+          const members: string[] = (row?.member_ids || []).filter((id: string) => ids.includes(id));
+          if (members.length === 0 && payload.eventType !== "DELETE") return;
+          setScores((prev) => {
+            const next = { ...prev };
+            (members.length ? members : ids).forEach((id) => {
+              next[id] = { ...(next[id] || {}) };
+              if (payload.eventType === "DELETE") {
+                if (row?.hole_number && (!row.member_ids || row.member_ids.includes(id))) delete next[id][row.hole_number];
+              } else next[id][row.hole_number] = row.strokes;
+            });
             return next;
           });
         }

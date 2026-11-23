@@ -512,6 +512,13 @@
       "when": 1795386792851,
       "tag": "0072_team_hole_scores",
       "breakpoints": true
+    },
+    {
+      "idx": 73,
+      "version": "7",
+      "when": 1795392530404,
+      "tag": "0073_team_scores_readers",
+      "breakpoints": true
     }
   ]
 }

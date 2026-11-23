@@ -315,6 +315,13 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
           queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'tournament_team_scores', filter: `tournament_id=eq.${selectedTournament}` },
+        () => {
+          queryClient.invalidateQueries({ queryKey: ["tournament-scores", selectedTournament] });
+        }
+      )
       .subscribe();
     return () => { supabase.removeChannel(channel); };
   }, [selectedTournament, queryClient]);
@@ -833,6 +840,17 @@ export default function Leaderboard({ mode = "all" }: { mode?: "all" | "settings
       .in("registration_id", regIds);
     if (holesToClear) q = q.in("hole_number", holesToClear);
     const { error } = await q;
+    // Scramble / Alternate Shot keep one team score per hole in its own list.
+    if (!error) {
+      let tq = (supabase as any)
+        .from("tournament_team_scores")
+        .delete()
+        .eq("tournament_id", selectedTournament)
+        .eq("round_number", workingRound)
+        .overlaps("member_ids", regIds);
+      if (holesToClear) tq = tq.in("hole_number", holesToClear);
+      await tq;
+    }
     if (error) {
       toast({ title: "Couldn't clear scores", description: error.message, variant: "destructive" });
       return;

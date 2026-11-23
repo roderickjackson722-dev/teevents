@@ -77,7 +77,7 @@ const PostEventReport = () => {
       supabase.from("tournament_registrations").select("*").eq("tournament_id", selected),
       supabase.from("platform_transactions").select("*").eq("tournament_id", selected),
       supabase
-        .from("tournament_scores")
+        .from("tournament_scores_with_teams")
         .select("registration_id, hole_number, strokes, round_number")
         .eq("tournament_id", selected),
       supabase.from("tournament_sponsors").select("name, tier, amount, is_paid").eq("tournament_id", selected),

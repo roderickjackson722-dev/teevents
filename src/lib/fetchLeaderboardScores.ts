@@ -128,7 +128,7 @@ export async function fetchAllTournamentScores(
       fetchAllPages(
         () => {
           let query = (supabase as any)
-            .from("tournament_scores")
+            .from("tournament_scores_with_teams")
             .select(columns)
             .eq("tournament_id", tournamentId);
           if (opts?.roundNumber != null) query = query.eq("round_number", opts.roundNumber);

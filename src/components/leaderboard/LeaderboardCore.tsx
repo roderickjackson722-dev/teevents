@@ -385,7 +385,7 @@ export function LeaderboardRenderer({
                   >
                     {showPos && (
                       <td className={`${padX} ${padY} font-bold`} style={{ color: i < 3 ? accent : textColor }}>
-                        {positionFor(i)}
+                        {(row as any).dnfHole ? "DNF" : positionFor(i)}
                       </td>
                     )}
                     {showPlayer && (
@@ -409,7 +409,7 @@ export function LeaderboardRenderer({
                         ) : "—"}
                       </td>
                     )}
-                    {showThru && <td className={`${padX} ${padY} text-right opacity-80`}>{row.thru ? (row.thru >= 18 ? 18 : row.thru) : "—"}</td>}
+                    {showThru && <td className={`${padX} ${padY} text-right opacity-80 whitespace-nowrap`}>{(row as any).dnfHole ? `Out H${(row as any).dnfHole}` : row.thru ? (row.thru >= 18 ? 18 : row.thru) : "—"}</td>}
                     {priorRounds.map((r) => (
                       <td key={`${row.name}-r${r}`} className={`${padX} ${padY} text-right font-mono opacity-90`}>
                         {row.roundTotals?.[r] || "—"}

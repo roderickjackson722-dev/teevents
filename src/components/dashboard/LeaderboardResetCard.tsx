@@ -100,6 +100,11 @@ export default function LeaderboardResetCard({ tournamentId, canManage, lastRese
         .delete()
         .eq("tournament_id", tournamentId);
       if (delErr) throw delErr;
+      const { error: teamDelErr } = await (supabase as any)
+        .from("tournament_team_scores")
+        .delete()
+        .eq("tournament_id", tournamentId);
+      if (teamDelErr) throw teamDelErr;
 
       const { data: tRow } = await supabase
         .from("tournaments")

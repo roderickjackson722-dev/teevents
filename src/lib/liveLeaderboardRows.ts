@@ -1,4 +1,5 @@
 import { getFormatById, stablefordPoints } from "@/lib/scoringFormats";
+import { shootoutStandings } from "@/lib/shootout";
 import { splitFoursomeTeams, teamDisplayName } from "@/lib/foursomeTeams";
 
 /**
@@ -9,6 +10,8 @@ import { splitFoursomeTeams, teamDisplayName } from "@/lib/foursomeTeams";
 export interface LeaderboardTournamentInfo {
   scoring_format?: string | null;
   course_par?: number | null;
+  /** 4-Man Best Ball: best 1 or best 2 scores count per hole. */
+  best_ball_counting_scores?: number | null;
 }
 
 export interface LeaderboardRow {
@@ -30,6 +33,8 @@ export interface LeaderboardRow {
   roundTotals?: Record<number, number>;
   /** Hole-by-hole strokes per round. */
   holesByRound?: Record<number, Record<number, number>>;
+  /** Shootout: eliminated on this hole (shown as DNF below survivors). */
+  dnfHole?: number | null;
 }
 
 
@@ -49,6 +54,8 @@ export function summarize(
   currentRound: number,
   holePars: number[] | null | undefined,
   coursePar: number,
+  /** Best 2 of 4 counts two scores per hole, so par counts twice. */
+  parMultiplier = 1,
 ) {
   let total = 0;
   let parPlayed = 0;
@@ -62,9 +69,9 @@ export function summarize(
     let holesCount = 0;
     Object.entries(holes).forEach(([h, strokes]) => {
       roundTotal += strokes;
-      parPlayed += parForHole(Number(h), holePars, coursePar);
+      parPlayed += parForHole(Number(h), holePars, coursePar) * parMultiplier;
       holesCount++;
-      if (round === currentRound) parToday += parForHole(Number(h), holePars, coursePar);
+      if (round === currentRound) parToday += parForHole(Number(h), holePars, coursePar) * parMultiplier;
     });
     roundTotals[round] = roundTotal;
     total += roundTotal;
@@ -150,7 +157,21 @@ export function buildLeaderboard(
     playerData[key].holesByRound[round][s.hole_number] = s.strokes;
   });
 
-  if (isTeam && fmt && (fmt.scoring === "best_ball" || fmt.scoring === "scramble" || fmt.scoring === "shamble")) {
+  if (fmt?.scoring === "shootout") {
+    const list = Object.entries(playerData).map(([regId, p]) => ({ id: regId, p, holes: p.holesByRound[currentRound] || {} }));
+    const res = shootoutStandings(list.map((x) => ({ id: x.id, holes: x.holes })));
+    const rowFor = (id: string, dnfHole: number | null) => {
+      const p = playerData[id]!;
+      const s = summarize(p.holesByRound, currentRound, holePars, cPar);
+      return { name: p.name, total: s.total, thru: s.thru, key: id, today: s.today, parPlayed: s.parPlayed, parToday: s.parToday, roundTotals: s.roundTotals, holesByRound: p.holesByRound, dnfHole };
+    };
+    // Survivors first in playing order, then eliminated players in elimination order.
+    const survivors = res.survivors.map((id) => rowFor(id, null)).sort(compareByTotal);
+    return [...survivors, ...res.eliminated.map((e) => rowFor(e.id, e.hole))];
+  }
+
+  if (isTeam && fmt && (fmt.scoring === "best_ball" || fmt.scoring === "scramble" || fmt.scoring === "shamble" || fmt.scoring === "alternate_shot")) {
+    const countBest = fmt.id === "best_ball_4" && Number(t.best_ball_counting_scores) === 2 ? 2 : 1;
     const groups: Record<number, { key: string; player: typeof playerData[string] }[]> = {};
     Object.entries(playerData).forEach(([regId, p]) => {
       if (p.group != null) {
@@ -187,11 +208,18 @@ export function buildLeaderboard(
             const strokes = players
               .map((p) => p.holesByRound[round]?.[h])
               .filter((v) => v != null) as number[];
-            if (strokes.length > 0) holesByRound[round][h] = Math.min(...strokes);
+            // Scramble / Alternate Shot: the one team score. Best Ball / Shamble:
+            // the counting score(s) — never the members' scores added together.
+            if (countBest === 2) {
+              if (strokes.length >= 2) {
+                const [a, b] = [...strokes].sort((x, y) => x - y);
+                holesByRound[round][h] = (a as number) + (b as number);
+              }
+            } else if (strokes.length > 0) holesByRound[round][h] = Math.min(...strokes);
           }
           if (Object.keys(holesByRound[round]).length === 0) delete holesByRound[round];
         });
-        const s = summarize(holesByRound, currentRound, holePars, cPar);
+        const s = summarize(holesByRound, currentRound, holePars, cPar, countBest);
         // Prefer the organizer-entered team name; fall back to the default "Team X".
         const rawName = players.find((p) => p.teamName)?.teamName || null;
         const teamName = split

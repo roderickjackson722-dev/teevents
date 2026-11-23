@@ -23,11 +23,15 @@ interface FormState {
   registration_fee: string;
   scoring_format: string;
   site_hero_subtitle: string;
+  best_ball_counting_scores: string;
+  min_drives_enabled: boolean;
+  min_drives_per_player: string;
 }
 
 const EMPTY: FormState = {
   title: "", date: "", end_date: "", location: "", course_name: "",
   registration_fee: "", scoring_format: "scramble_4", site_hero_subtitle: "",
+  best_ball_counting_scores: "1", min_drives_enabled: false, min_drives_per_player: "",
 };
 
 /**
@@ -42,13 +46,14 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
   const [heroTitle, setHeroTitle] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savedFormat, setSavedFormat] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("title, date, end_date, location, course_name, registration_fee_cents, scoring_format, site_hero_title, site_hero_subtitle, slug")
+      .select("title, date, end_date, location, course_name, registration_fee_cents, scoring_format, best_ball_counting_scores, min_drives_enabled, min_drives_per_player, site_hero_title, site_hero_subtitle, slug")
       .eq("id", tournamentId)
       .maybeSingle()
       .then(({ data }) => {
@@ -63,7 +68,11 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
           registration_fee: d.registration_fee_cents ? (d.registration_fee_cents / 100).toString() : "",
           scoring_format: d.scoring_format || "scramble_4",
           site_hero_subtitle: d.site_hero_subtitle || "",
+          best_ball_counting_scores: String(d.best_ball_counting_scores ?? 1),
+          min_drives_enabled: !!d.min_drives_enabled,
+          min_drives_per_player: d.min_drives_per_player != null ? String(d.min_drives_per_player) : "",
         });
+        setSavedFormat(d.scoring_format || "scramble_4");
         setHeroTitle(d.site_hero_title || "");
         setSlug(d.slug || null);
         setLoading(false);
@@ -72,12 +81,38 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
   }, [tournamentId]);
 
   const set = (k: keyof FormState, v: string) => setForm((p) => ({ ...p, [k]: v }));
+  const isScrambleFormat = form.scoring_format.startsWith("scramble_");
 
   const save = async () => {
     if (demoGuard()) return;
     const title = form.title.trim();
     if (!title) { toast.error("Tournament name is required"); return; }
+    const minDrives = parseInt(form.min_drives_per_player, 10);
+    if (isScrambleFormat && form.min_drives_enabled && (!Number.isFinite(minDrives) || minDrives < 1 || minDrives > 18)) {
+      toast.error("Enter a minimum number of drives between 1 and 18.");
+      return;
+    }
     setSaving(true);
+
+    // Changing the format after scores exist never converts old scores: the
+    // organizer must confirm, and only then are this event's scores cleared.
+    const formatChanged = savedFormat != null && form.scoring_format !== savedFormat;
+    if (formatChanged) {
+      const { count } = await supabase
+        .from("tournament_scores_with_teams")
+        .select("id", { count: "exact", head: true })
+        .eq("tournament_id", tournamentId);
+      if ((count ?? 0) > 0) {
+        const ok = window.confirm(
+          "This event already has scores. Changing the format will clear the scores for this event. Clear the scores and change the format?",
+        );
+        if (!ok) { setSaving(false); return; }
+        const del1 = await supabase.from("tournament_scores").delete().eq("tournament_id", tournamentId);
+        const del2 = await (supabase as any).from("tournament_team_scores").delete().eq("tournament_id", tournamentId);
+        const delErr = del1.error || del2.error;
+        if (delErr) { toast.error(delErr.message); setSaving(false); return; }
+      }
+    }
 
     const feeNum = parseFloat(form.registration_fee);
     const updates: Record<string, any> = {
@@ -87,6 +122,9 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
       location: form.location || null,
       course_name: form.course_name || null,
       scoring_format: form.scoring_format,
+      best_ball_counting_scores: form.scoring_format === "best_ball_4" && form.best_ball_counting_scores === "2" ? 2 : 1,
+      min_drives_enabled: isScrambleFormat ? form.min_drives_enabled : false,
+      min_drives_per_player: isScrambleFormat && form.min_drives_enabled ? minDrives : null,
       site_hero_subtitle: form.site_hero_subtitle || null,
       registration_fee_cents: form.registration_fee === "" || Number.isNaN(feeNum)
         ? null
@@ -98,6 +136,7 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
     const { error } = await supabase.from("tournaments").update(updates as any).eq("id", tournamentId);
     if (error) toast.error(error.message);
     else {
+      setSavedFormat(form.scoring_format);
       toast.success("Event details saved — your public page is updated.");
       onSaved?.();
     }
@@ -173,6 +212,29 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
               ))}
             </SelectContent>
           </Select>
+          {form.scoring_format === "best_ball_4" && (
+            <div className="mt-3 space-y-1 text-sm">
+              <p className="font-medium text-foreground">Scores that count per hole</p>
+              <label className="flex items-center gap-2"><input type="radio" checked={form.best_ball_counting_scores !== "2"} onChange={() => set("best_ball_counting_scores", "1")} /> Best 1 of 4</label>
+              <label className="flex items-center gap-2"><input type="radio" checked={form.best_ball_counting_scores === "2"} onChange={() => set("best_ball_counting_scores", "2")} /> Best 2 of 4</label>
+              <p className="text-xs text-muted-foreground">Set this before the round starts.</p>
+            </div>
+          )}
+          {isScrambleFormat && (
+            <div className="mt-3 space-y-2 text-sm">
+              <label className="flex items-center gap-2">
+                <input type="checkbox" checked={form.min_drives_enabled} onChange={(e) => setForm((p) => ({ ...p, min_drives_enabled: e.target.checked }))} />
+                Require a minimum number of drives per player (optional)
+              </label>
+              {form.min_drives_enabled && (
+                <div className="max-w-[12rem]">
+                  <Label htmlFor="ed-min-drives">Drives per player</Label>
+                  <Input id="ed-min-drives" type="number" min={1} max={18} value={form.min_drives_per_player} onChange={(e) => set("min_drives_per_player", e.target.value)} />
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">This is your event rule, not a USGA rule. TeeVents never sets a number for you.</p>
+            </div>
+          )}
         </div>
         <div className="sm:col-span-2">
           <Label htmlFor="ed-sub">Tagline / Helpful Info (shown under the title)</Label>

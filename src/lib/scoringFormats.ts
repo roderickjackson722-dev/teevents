@@ -100,13 +100,28 @@ export function getFormatById(id: string): ScoringFormat | undefined {
   return SCORING_FORMATS.find((f) => f.id === id);
 }
 
-/** Stableford points for a hole given strokes and par */
-export function stablefordPoints(strokes: number, holePar: number): number {
+/**
+ * Formats that record exactly ONE score per team per hole (stored as a single
+ * team record, never one per player): every Scramble and Alternate Shot.
+ */
+export const TEAM_SCORE_FORMAT_IDS = ["scramble_2", "scramble_3", "scramble_4", "alternate_shot"] as const;
+export function isTeamScoreFormat(id: string | null | undefined): boolean {
+  return !!id && (TEAM_SCORE_FORMAT_IDS as readonly string[]).includes(id);
+}
+
+/**
+ * Stableford points for a hole from strokes and par: more than 1 over par 0,
+ * bogey 1, par 2, birdie 3, eagle 4, albatross 5, 4 under par 6.
+ * A blank or picked-up hole (null) is worth 0.
+ */
+export function stablefordPoints(strokes: number | null | undefined, holePar: number): number {
+  if (strokes == null || !Number.isFinite(strokes) || strokes <= 0) return 0;
   const diff = strokes - holePar;
-  if (diff >= 2) return 0;  // double bogey or worse
-  if (diff === 1) return 1; // bogey
-  if (diff === 0) return 2; // par
-  if (diff === -1) return 3; // birdie
-  if (diff === -2) return 4; // eagle
-  return 5; // albatross or better
+  if (diff >= 2) return 0;
+  if (diff === 1) return 1;
+  if (diff === 0) return 2;
+  if (diff === -1) return 3;
+  if (diff === -2) return 4;
+  if (diff === -3) return 5;
+  return 6;
 }

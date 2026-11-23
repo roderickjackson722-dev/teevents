@@ -444,6 +444,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
     const channel = supabase
       .channel("live-scores")
       .on("postgres_changes", { event: "*", schema: "public", table: "tournament_scores", filter: `tournament_id=eq.${tournament.id}` }, refresh)
+      .on("postgres_changes", { event: "*", schema: "public", table: "tournament_team_scores", filter: `tournament_id=eq.${tournament.id}` }, refresh)
       .subscribe();
     const poll = window.setInterval(refresh, 30000);
     const onVisible = () => { if (document.visibilityState === "visible") refresh(); };

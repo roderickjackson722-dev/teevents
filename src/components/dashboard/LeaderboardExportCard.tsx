@@ -31,7 +31,7 @@ export default function LeaderboardExportCard({ tournamentId }: Props) {
     const [tRes, fRes, rRes, cRes, scores] = await Promise.all([
       (supabase as any)
         .from("tournaments")
-        .select("title, scoring_format, course_par, course_name, date")
+        .select("title, scoring_format, best_ball_counting_scores, course_par, course_name, date")
         .eq("id", tournamentId)
         .maybeSingle(),
       (supabase as any)

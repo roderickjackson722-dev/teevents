@@ -547,6 +547,13 @@
       "when": 1795442709391,
       "tag": "0077_score_verification_entry_kind",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1795442925315,
+      "tag": "0078_score_verification_scorer_phone",
+      "breakpoints": true
     }
   ]
 }

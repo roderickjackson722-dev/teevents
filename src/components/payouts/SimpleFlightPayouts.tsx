@@ -1,3 +1,4 @@
+import { useVerifiedResultsGate, VerifiedResultsNotice } from "@/hooks/useVerifiedResultsGate";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -100,6 +101,7 @@ export default function SimpleFlightPayouts({
   onAddFlight,
   onAssignPlayers,
 }: Props) {
+  const resultsGate = useVerifiedResultsGate(tournamentId);
   const { toast } = useToast();
   const [method, setMethod] = useState<FlightMethod>(flightMethod === "none" ? "custom" : flightMethod);
   const [rows, setRows] = useState<Row[]>([]);
@@ -373,6 +375,7 @@ export default function SimpleFlightPayouts({
   return (
     <Card>
       <CardHeader className="pb-3">
+        <VerifiedResultsNotice unpublished={resultsGate.unpublished} />
         <CardTitle className="flex items-center gap-2 text-lg">
           <Scale className="h-5 w-5 text-primary" /> Flights &amp; Payouts
         </CardTitle>

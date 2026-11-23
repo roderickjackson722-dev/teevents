@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Loader2, Save, Coins, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { useVerifiedResultsGate, VerifiedResultsNotice } from "@/hooks/useVerifiedResultsGate";
 import { formatCents } from "@/lib/formatCurrency";
 import { recomputeDivisionSkins, skinsCompetitionMembers, type SkinsGame } from "@/lib/divisionSkins";
 import { recordedSkinsResult, calculateEqualWinningHolePayouts } from "@/lib/skinsCarryover";
@@ -31,6 +32,7 @@ type PlayerRow = {
 
 
 export default function DivisionSkinsManager({ tournamentId }: { tournamentId: string }) {
+  const resultsGate = useVerifiedResultsGate(tournamentId);
   const [divisions, setDivisions] = useState<Division[]>([]);
   const [games, setGames] = useState<SkinsGame[]>([]);
   const [selected, setSelected] = useState<Record<string, boolean>>({});
@@ -471,12 +473,13 @@ export default function DivisionSkinsManager({ tournamentId }: { tournamentId: s
           </div>}
         </div>
 
+        <VerifiedResultsNotice unpublished={resultsGate.unpublished} />
         <div className="flex flex-wrap gap-2">
           <Button onClick={save} disabled={saving}>
             {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
             Save Skins Settings
           </Button>
-          <Button variant="outline" onClick={recompute} disabled={computing}>
+          <Button variant="outline" onClick={recompute} disabled={computing || resultsGate.blocked}>
             {computing ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <RefreshCw className="h-4 w-4 mr-2" />}
             Calculate Skin Payouts
           </Button>

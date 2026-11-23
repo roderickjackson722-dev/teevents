@@ -10061,6 +10061,38 @@ export type Database = {
           },
         ]
       }
+      score_group_scorers: {
+        Row: {
+          claimed_at: string
+          device_token: string
+          group_key: string
+          round_number: number
+          tournament_id: string
+        }
+        Insert: {
+          claimed_at?: string
+          device_token: string
+          group_key: string
+          round_number?: number
+          tournament_id: string
+        }
+        Update: {
+          claimed_at?: string
+          device_token?: string
+          group_key?: string
+          round_number?: number
+          tournament_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "score_group_scorers_tournament_id_fkey"
+            columns: ["tournament_id"]
+            isOneToOne: false
+            referencedRelation: "tournaments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       score_hole_events: {
         Row: {
           actor_registration_id: string | null
@@ -15945,9 +15977,31 @@ export type Database = {
         Args: { _expected_updated_at: string; _program: string; _token: string }
         Returns: Json
       }
+      claim_group_scorer: {
+        Args: {
+          _code: string
+          _device_token: string
+          _group_number: number
+          _round_number: number
+          _tournament_id: string
+        }
+        Returns: boolean
+      }
       clear_group_hole_scores: {
         Args: {
           _code: string
+          _group_number?: number
+          _hole_number: number
+          _registration_id?: string
+          _round_number?: number
+          _tournament_id: string
+        }
+        Returns: number
+      }
+      clear_group_hole_scores_as_scorer: {
+        Args: {
+          _code: string
+          _device_token: string
           _group_number?: number
           _hole_number: number
           _registration_id?: string
@@ -16606,6 +16660,14 @@ export type Database = {
         Returns: boolean
       }
       org_is_demo_only: { Args: { _org_id: string }; Returns: boolean }
+      org_reset_scorer: {
+        Args: {
+          _group_key: string
+          _round_number: number
+          _tournament_id: string
+        }
+        Returns: undefined
+      }
       org_resolve_hole: {
         Args: {
           _hole_number: number
@@ -16718,6 +16780,17 @@ export type Database = {
         Args: {
           _code: string
           _group_number?: number
+          _scores: Json
+          _tournament_id: string
+        }
+        Returns: undefined
+      }
+      save_group_scores_as_scorer: {
+        Args: {
+          _code: string
+          _device_token: string
+          _group_number?: number
+          _round_number?: number
           _scores: Json
           _tournament_id: string
         }
@@ -16886,6 +16959,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      sv_group_key: { Args: { _ids: string[] }; Returns: string }
       sv_is_org_member_of: {
         Args: { _tournament_id: string }
         Returns: boolean
@@ -16903,6 +16977,16 @@ export type Database = {
           _rn: number
           _strokes: number
           _t: string
+        }
+        Returns: undefined
+      }
+      sv_require_scorer: {
+        Args: {
+          _code: string
+          _device_token: string
+          _group_number: number
+          _round_number: number
+          _tournament_id: string
         }
         Returns: undefined
       }

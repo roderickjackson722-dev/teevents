@@ -77,6 +77,21 @@ export default function GroupScoring() {
   const [verif, setVerif] = useState<VerificationState | null>(null);
   const [verifRefresh, setVerifRefresh] = useState(0);
   const verifOn = !!verif && verif.mode !== "off";
+  const [deviceToken, setDeviceToken] = useState("");
+  const [isScorer, setIsScorer] = useState<boolean | null>(null);
+  useEffect(() => {
+    try {
+      let tok = localStorage.getItem("tv-scorer-device");
+      if (!tok) { tok = crypto.randomUUID(); localStorage.setItem("tv-scorer-device", tok); }
+      setDeviceToken(tok);
+    } catch { setDeviceToken(crypto.randomUUID()); }
+  }, []);
+  useEffect(() => {
+    if (!verifOn || !tournament || !code || !deviceToken) { setIsScorer(null); return; }
+    (supabase as any).rpc("claim_group_scorer", {
+      _tournament_id: tournament.id, _code: code, _round_number: roundNumber, _group_number: null, _device_token: deviceToken,
+    }).then(({ data, error }: any) => setIsScorer(error ? null : !!data));
+  }, [verifOn, tournament?.id, code, roundNumber, deviceToken, verifRefresh]);
   const strictGate = verif?.mode === "strict"
     ? strictGateHole(verif.statuses, [...new Set(verif.statuses.map((r) => r.subject_key))])
     : null;
@@ -328,8 +343,9 @@ export default function GroupScoring() {
     return NUM_HOLES + 1;
   })();
 
-  const editLocked = !!submission || (isPastHole && tournament && !tournament.live_allow_edit_past_holes);
-  const lockedMessage = submission ? "This scorecard was submitted. Scores can no longer be changed here." : "Editing past holes is locked by the organizer.";
+  const viewOnly = verifOn && isScorer === false;
+  const editLocked = !!submission || viewOnly || (isPastHole && tournament && !tournament.live_allow_edit_past_holes);
+  const lockedMessage = viewOnly ? "View only — another phone is this group's scorer. Ask the organizer to switch the scorer phone." : submission ? "This scorecard was submitted. Scores can no longer be changed here." : "Editing past holes is locked by the organizer.";
 
   const performSave = async () => {
     if (!tournament || !code) return;
@@ -347,11 +363,15 @@ export default function GroupScoring() {
           round_number: roundNumber,
           strokes: parseInt(draft[p.id], 10),
         }));
-    const { error } = await supabase.rpc("save_group_scores", {
-      _tournament_id: tournament.id,
-      _code: code,
-      _scores: rows,
-    });
+    const { error } = verifOn
+      ? await (supabase as any).rpc("save_group_scores_as_scorer", {
+          _tournament_id: tournament.id, _code: code, _scores: rows, _device_token: deviceToken, _round_number: roundNumber,
+        })
+      : await supabase.rpc("save_group_scores", {
+          _tournament_id: tournament.id,
+          _code: code,
+          _scores: rows,
+        });
     setSaving(false);
     if (error) {
       toast({ title: "Save failed", description: error.message, variant: "destructive" });
@@ -406,11 +426,15 @@ export default function GroupScoring() {
     const rows = isScramble
       ? players.map((p) => ({ registration_id: p.id, hole_number: editTarget.hole, round_number: roundNumber, strokes: n }))
       : [{ registration_id: editTarget.pid, hole_number: editTarget.hole, round_number: roundNumber, strokes: n }];
-    const { error } = await supabase.rpc("save_group_scores", {
-      _tournament_id: tournament.id,
-      _code: code,
-      _scores: rows,
-    });
+    const { error } = verifOn
+      ? await (supabase as any).rpc("save_group_scores_as_scorer", {
+          _tournament_id: tournament.id, _code: code, _scores: rows, _device_token: deviceToken, _round_number: roundNumber,
+        })
+      : await supabase.rpc("save_group_scores", {
+          _tournament_id: tournament.id,
+          _code: code,
+          _scores: rows,
+        });
     setSavingEdit(false);
     if (error) {
       toast({ title: "Save failed", description: error.message, variant: "destructive" });
@@ -436,7 +460,8 @@ export default function GroupScoring() {
     const label = who ? `${who.first_name} ${who.last_name}` : "this group";
     if (!window.confirm(`Clear the Hole ${hole} score for ${label}? This cannot be undone.`)) return;
     setClearing(true);
-    const { error } = await supabase.rpc("clear_group_hole_scores", {
+    const { error } = await (supabase as any).rpc(verifOn ? "clear_group_hole_scores_as_scorer" : "clear_group_hole_scores", {
+      ...(verifOn ? { _device_token: deviceToken } : {}),
       _tournament_id: tournament.id,
       _code: code,
       _hole_number: hole,

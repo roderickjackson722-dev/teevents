@@ -19,6 +19,7 @@ export default function ScoreVerificationCloseOut({ tournamentId }: { tournament
   const [cards, setCards] = useState<any[]>([]);
   const [markers, setMarkers] = useState<any[]>([]);
   const [roundStatus, setRoundStatus] = useState<any>(null);
+  const [scorers, setScorers] = useState<any[]>([]);
   const [fix, setFix] = useState<Record<string, { strokes: string; reason: string }>>({});
   const [busy, setBusy] = useState<string | null>(null);
 
@@ -34,6 +35,8 @@ export default function ScoreVerificationCloseOut({ tournamentId }: { tournament
       sb.from("score_markers").select("*").eq("tournament_id", tournamentId).eq("round_number", round),
       sb.from("score_round_status").select("*").eq("tournament_id", tournamentId).eq("round_number", round).maybeSingle(),
     ]);
+    const { data: sc } = await sb.from("score_group_scorers").select("*").eq("tournament_id", tournamentId).eq("round_number", round);
+    setScorers(sc || []);
     setRegs((r.data || []).filter((x: any) => (x.status ?? "active") !== "wd"));
     setRows(s.data || []); setCards(c.data || []); setMarkers(m.data || []); setRoundStatus(rs.data || null);
   }, [tournamentId, round]);
@@ -184,6 +187,18 @@ export default function ScoreVerificationCloseOut({ tournamentId }: { tournament
             );
           })}
         </div>
+        {scorers.length > 0 && (
+          <div className="space-y-1">
+            <p className="font-semibold">Scorer phones</p>
+            <p className="text-xs text-muted-foreground">The first phone to open a group's scoring is its scorer; other phones are view-only. Switch it if the scorer phone dies.</p>
+            {scorers.map((x) => (
+              <div key={x.group_key} className="flex flex-wrap items-center gap-2 text-xs">
+                <span className="flex-1">{(x.group_key as string).split(",").map((i) => name(i)).join(", ")}</span>
+                <Button variant="ghost" size="sm" disabled={!!busy} onClick={() => call(`s${x.group_key}`, "org_reset_scorer", { _tournament_id: tournamentId, _round_number: round, _group_key: x.group_key }, "Scorer released — the next phone to open scoring becomes the scorer")}>Switch scorer phone</Button>
+              </div>
+            ))}
+          </div>
+        )}
         <p className="text-xs text-muted-foreground">A paper scorecard stays the backup for any group whose phones fail.</p>
       </CardContent>
     </Card>

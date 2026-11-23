@@ -1719,7 +1719,8 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
           const posKey = (tournament as any).site_hero_position || "center";
           const objectPosition =
             posKey === "top" ? "center top" : posKey === "bottom" ? "center bottom" : "center center";
-          const showBlurBackdrop = fit === "contain" && (tournament as any).site_hero_blur !== false;
+          // Backdrop also fills the letterbox gaps when mobile CSS switches the hero to show the whole image.
+          const showBlurBackdrop = (tournament as any).site_hero_blur !== false;
           return (
             <div
               data-tv="hero-photo"
@@ -1744,7 +1745,7 @@ const PublicTournament = ({ slugOverride, clientSampleSlug }: { slugOverride?: s
                 alt={heroTitle}
                 fetchPriority="high"
                 decoding="async"
-                className="absolute inset-0 h-full w-full"
+                className="tv-hero-main absolute inset-0 h-full w-full"
                 style={{ objectFit: fit, objectPosition }}
               />
             </div>

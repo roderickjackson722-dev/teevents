@@ -544,7 +544,8 @@ export default function LiveScoring() {
   const handicapEnabled = tournament?.handicap_enabled === true;
   const activeFormat = getFormatById(tournament?.scoring_format || "stroke_play");
   // Team formats play one ball / one team score per hole — hide individual entry entirely.
-  const TEAM_ENTRY_SCORING = ["scramble", "best_ball", "alternate_shot", "shootout"];
+  // Best Ball, Shamble and Shootout: every player enters their own gross score.
+  const TEAM_ENTRY_SCORING = ["scramble", "alternate_shot"];
   const isScramble = !!activeFormat && TEAM_ENTRY_SCORING.includes(activeFormat.scoring);
 
 
@@ -1057,21 +1058,24 @@ export default function LiveScoring() {
               <CardTitle className="text-sm">Team Score Entry</CardTitle>
             </CardHeader>
             <CardContent className="p-4 pt-0 space-y-3">
-              {(() => {
+              {splitFoursomeTeams(players).map((team) => {
+                const members = team.members;
+                const teamLabel = teamDisplayName(members.find((m) => m.team_name)?.team_name ?? teamName, members);
                 const par = courseData?.hole_pars?.[focusHole - 1] ?? Math.round((tournament.course_par || 72) / 18);
-                const val = getTeamScore(focusHole);
+                const val = getTeamScore(focusHole, members);
                 const display = typeof val === "number" ? val : "";
                 return (
-                  <div className="flex items-center justify-between gap-4 border rounded-lg p-3 bg-card">
+                  <div key={team.key} className="flex items-center justify-between gap-4 border rounded-lg p-3 bg-card">
                     <div className="min-w-0 flex-1">
-                      <div className="font-semibold text-base">Hole {focusHole} · Par {par}</div>
-                      <div className="text-xs text-muted-foreground truncate">
-                        {players.map((p) => `${p.first_name} ${p.last_name?.[0] ?? ""}.`).join(", ")}
-                      </div>
+                      <div className="font-semibold text-base">{teamLabel}</div>
+                      <div className="text-xs text-muted-foreground">Hole {focusHole} · Par {par}</div>
+                      <ul className="text-xs text-muted-foreground mt-1">
+                        {members.map((p) => <li key={p.id}>{p.first_name} {p.last_name}</li>)}
+                      </ul>
                     </div>
                     <div className="flex items-center gap-3">
                       <button
-                        onClick={() => adjustTeamScore(focusHole, -1)}
+                        onClick={() => adjustTeamScore(focusHole, -1, members)}
                         disabled={roundLocked}
                         className="h-12 w-12 rounded-full border-2 bg-background hover:bg-muted disabled:opacity-40 flex items-center justify-center"
                         aria-label="Decrease team score"
@@ -1088,7 +1092,7 @@ export default function LiveScoring() {
                         {display === "" ? par : display}
                       </div>
                       <button
-                        onClick={() => adjustTeamScore(focusHole, +1)}
+                        onClick={() => adjustTeamScore(focusHole, +1, members)}
                         disabled={roundLocked}
                         className="h-12 w-12 rounded-full border-2 bg-primary text-primary-foreground hover:opacity-90 disabled:opacity-40 flex items-center justify-center"
                         aria-label="Increase team score"
@@ -1096,7 +1100,7 @@ export default function LiveScoring() {
                         <Plus className="h-5 w-5" />
                       </button>
                       <button
-                        onClick={() => clearHole(focusHole)}
+                        onClick={() => clearHole(focusHole, members.map((m) => m.id), teamLabel)}
                         disabled={saving || display === "" || roundLocked}
                         className="h-7 w-7 -mr-1 rounded-full border bg-background hover:bg-destructive/10 text-destructive disabled:opacity-40 flex items-center justify-center"
                         aria-label="Clear team score for this hole"
@@ -1108,7 +1112,7 @@ export default function LiveScoring() {
 
                   </div>
                 );
-              })()}
+              })}
               <p className="text-xs text-muted-foreground">
                 One score per hole for the whole group — it applies to every player on the team.
                 Entered a score on the wrong hole? Tap the eraser to clear it.

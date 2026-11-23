@@ -46,3 +46,27 @@ describe("team allowance", () => {
     expect(m.get("c")).toBe(100);
   });
 });
+
+describe("format allowance tiers", () => {
+  it("4-person scramble recommended split is 25/20/15/10 low to high", async () => {
+    const { recommendedAllowance, allowanceFor } = await import("./eventHandicaps");
+    const rec = recommendedAllowance("scramble_4");
+    expect(rec.tiers).toEqual([25, 20, 15, 10]);
+    const m = allowanceFor(
+      [{ id: "d", teamId: "t", raw: 20 }, { id: "a", teamId: "t", raw: 2 }, { id: "c", teamId: "t", raw: 12 }, { id: "b", teamId: "t", raw: 8 }],
+      { mode: "team", eventPct: 100, betterPct: 25, worsePct: 10, tiersPct: rec.tiers },
+    );
+    expect([m.get("a"), m.get("b"), m.get("c"), m.get("d")]).toEqual([25, 20, 15, 10]);
+  });
+  it("format defaults match the published table", async () => {
+    const { recommendedAllowance } = await import("./eventHandicaps");
+    expect(recommendedAllowance("stroke_play").eventPct).toBe(95);
+    expect(recommendedAllowance("scramble_2").tiers).toEqual([35, 15]);
+    expect(recommendedAllowance("scramble_3").tiers).toEqual([30, 20, 10]);
+    expect(recommendedAllowance("best_ball_2").eventPct).toBe(85);
+    expect(recommendedAllowance("best_ball_4", 1).eventPct).toBe(75);
+    expect(recommendedAllowance("best_ball_4", 2).eventPct).toBe(85);
+    expect(recommendedAllowance("alternate_shot").eventPct).toBe(50);
+    expect(recommendedAllowance("shamble_2").eventPct).toBe(85);
+  });
+});

@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { getFormatById } from "@/lib/scoringFormats";
 import {
   displayCourseHandicap, playingFromRaw, unroundedCourseHandicap,
-  validateAllowance, validateIndex, validateTeeSet, allowanceFor,
+  validateAllowance, validateIndex, validateTeeSet, allowanceFor, recommendedAllowance,
 } from "@/lib/eventHandicaps";
 
 type Tee = { key: string; id?: string; name: string; slope: string; rating: string; par: string };
@@ -27,6 +28,9 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
   const [mode, setMode] = useState<"event" | "team">("event");
   const [betterPct, setBetterPct] = useState("100");
   const [worsePct, setWorsePct] = useState("100");
+  const [tiers, setTiers] = useState<string[]>([]);
+  const [formatId, setFormatId] = useState("stroke_play");
+  const [bestBallCount, setBestBallCount] = useState(1);
   const [error, setError] = useState<string | null>(null);
 
   async function load() {
@@ -34,7 +38,7 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
     const [teeRes, regRes, tRes] = await Promise.all([
       supabase.from("course_tee_sets").select("id, tee_name, slope_rating, course_rating, par_total").eq("tournament_id", tournamentId).order("created_at"),
       supabase.from("tournament_registrations").select("id, first_name, last_name, handicap_index, handicap, tee_set_id, status, team_id").eq("tournament_id", tournamentId).order("last_name"),
-      supabase.from("tournaments").select("handicap_allowance_percentage, handicap_allowance_mode, handicap_allowance_better_pct, handicap_allowance_worse_pct").eq("id", tournamentId).maybeSingle(),
+      supabase.from("tournaments").select("handicap_allowance_percentage, handicap_allowance_mode, handicap_allowance_better_pct, handicap_allowance_worse_pct, handicap_allowance_tiers, scoring_format, best_ball_counting_scores").eq("id", tournamentId).maybeSingle(),
     ]);
     const t = (teeRes.data || []).map((r) => ({ key: r.id, id: r.id, name: r.tee_name, slope: String(r.slope_rating), rating: String(r.course_rating), par: String(r.par_total) }));
     setTees(t);
@@ -50,6 +54,10 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
     setMode(tRes.data?.handicap_allowance_mode === "team" ? "team" : "event");
     setBetterPct(String(tRes.data?.handicap_allowance_better_pct ?? 100));
     setWorsePct(String(tRes.data?.handicap_allowance_worse_pct ?? 100));
+    const td = tRes.data as any;
+    setFormatId(td?.scoring_format || "stroke_play");
+    setBestBallCount(Number(td?.best_ball_counting_scores) === 2 ? 2 : 1);
+    setTiers(Array.isArray(td?.handicap_allowance_tiers) ? td.handicap_allowance_tiers.map((v: any) => String(v)) : []);
     setLoading(false);
   }
 
@@ -63,9 +71,20 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
     return tee ? unroundedCourseHandicap(idx, Number(tee.slope), Number(tee.rating), Number(tee.par)) : null;
   };
   const safe = (v: string) => (Number.isFinite(Number(v)) && v.trim() !== "" ? Number(v) : 100);
+  const teamSize = Math.max(2, Math.min(4, getFormatById(formatId)?.teamSize ?? 2));
+  // Allowance boxes from the lowest to the highest Course Handicap on a team.
+  const tierValues = Array.from({ length: teamSize }, (_, i) => tiers[i] ?? (i === 0 ? betterPct : worsePct));
+  const tierLabels = ["Lowest handicap (%)", "2nd lowest (%)", "3rd lowest (%)", "Highest handicap (%)"];
+  const labelFor = (i: number) => (i === teamSize - 1 ? "Highest handicap (%)" : tierLabels[i]!);
+  const rec = recommendedAllowance(formatId, bestBallCount);
+  const applyRecommended = () => {
+    setMode(rec.mode);
+    setAllowance(String(rec.eventPct));
+    if (rec.tiers) setTiers(rec.tiers.map(String));
+  };
   const pctById = allowanceFor(
     players.map((p) => ({ id: p.id, teamId: p.teamId, raw: rawFor(p) })),
-    { mode, eventPct: safe(allowance), betterPct: safe(betterPct), worsePct: safe(worsePct) },
+    { mode, eventPct: safe(allowance), betterPct: safe(tierValues[0]!), worsePct: safe(tierValues[tierValues.length - 1]!), tiersPct: tierValues.map(safe) },
   );
 
   const updateTee = (key: string, patch: Partial<Tee>) => setTees((ts) => ts.map((t) => (t.key === key ? { ...t, ...patch } : t)));
@@ -89,8 +108,8 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
     }
     const aMsg = validateAllowance(allowancePct);
     if (aMsg) return setError(aMsg);
-    if (mode === "team" && (validateAllowance(Number(betterPct)) || validateAllowance(Number(worsePct)))) {
-      return setError("Better and worse player allowances must be between 0 and 100 percent.");
+    if (mode === "team" && tierValues.some((v) => v.trim() === "" || validateAllowance(Number(v)))) {
+      return setError("Each team allowance must be between 0 and 100 percent.");
     }
 
     setSaving(true);
@@ -112,7 +131,7 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
           keyToId.set(t.key, data.id);
         }
       }
-      const { error: aErr } = await supabase.from("tournaments").update({ handicap_allowance_percentage: allowancePct, handicap_allowance_mode: mode, handicap_allowance_better_pct: mode === "team" ? Number(betterPct) : null, handicap_allowance_worse_pct: mode === "team" ? Number(worsePct) : null }).eq("id", tournamentId);
+      const { error: aErr } = await supabase.from("tournaments").update({ handicap_allowance_percentage: allowancePct, handicap_allowance_mode: mode, handicap_allowance_better_pct: mode === "team" ? Number(tierValues[0]) : null, handicap_allowance_worse_pct: mode === "team" ? Number(tierValues[tierValues.length - 1]) : null, handicap_allowance_tiers: mode === "team" ? tierValues.map(Number) : null } as any).eq("id", tournamentId);
       if (aErr) throw aErr;
       for (const p of players) {
         const tee = teeByKey.get(p.teeKey);
@@ -164,23 +183,27 @@ export default function EventHandicapsTab({ tournamentId }: { tournamentId: stri
           <div className="space-y-3">
             <div className="flex flex-wrap gap-4 text-sm">
               <label className="flex items-center gap-2"><input type="radio" checked={mode === "event"} onChange={() => setMode("event")} /> Same allowance for every player</label>
-              <label className="flex items-center gap-2"><input type="radio" checked={mode === "team"} onChange={() => setMode("team")} /> Different allowance for the better and worse player on each team</label>
+              <label className="flex items-center gap-2"><input type="radio" checked={mode === "team"} onChange={() => setMode("team")} /> Different allowance for each player on a team, from lowest to highest handicap</label>
+            </div>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <Button type="button" variant="outline" size="sm" onClick={applyRecommended}>Use recommended for {getFormatById(formatId)?.name ?? "this format"}</Button>
+              <span className="text-muted-foreground">
+                {rec.tiers ? rec.tiers.map((t) => `${t}%`).join(", ") + " from lowest to highest" : `${rec.eventPct}%`}
+                {rec.note ? ` · ${rec.note}` : ""}
+              </span>
             </div>
             <div className="grid sm:grid-cols-3 gap-3 max-w-2xl">
               <div>
                 <Label htmlFor="hcp-allowance">{mode === "team" ? "Players without a team (%)" : "Handicap Allowance (%)"}</Label>
                 <Input id="hcp-allowance" type="number" min={0} max={100} value={allowance} onChange={(e) => setAllowance(e.target.value)} />
               </div>
-              {mode === "team" && (<>
-                <div>
-                  <Label htmlFor="hcp-better">Better player, lower handicap (%)</Label>
-                  <Input id="hcp-better" type="number" min={0} max={100} value={betterPct} onChange={(e) => setBetterPct(e.target.value)} />
+              {mode === "team" && tierValues.map((v, i) => (
+                <div key={i}>
+                  <Label htmlFor={`hcp-tier-${i}`}>{labelFor(i)}</Label>
+                  <Input id={`hcp-tier-${i}`} type="number" min={0} max={100} value={v}
+                    onChange={(e) => setTiers(() => { const next = [...tierValues]; next[i] = e.target.value; return next; })} />
                 </div>
-                <div>
-                  <Label htmlFor="hcp-worse">Worse player, higher handicap (%)</Label>
-                  <Input id="hcp-worse" type="number" min={0} max={100} value={worsePct} onChange={(e) => setWorsePct(e.target.value)} />
-                </div>
-              </>)}
+              ))}
             </div>
           </div>
           <p className="text-sm font-medium text-foreground">TeeVents calculated Course Handicap. Not an official USGA Handicap Index. No GHIN sync.</p>

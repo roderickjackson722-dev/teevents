@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import CustomScoringBoards from "@/components/leaderboard/CustomScoringBoards";
+import { DEFAULT_CUSTOM_SCORING, activeRules, parseCustomScoring } from "@/lib/customScoring";
 import { useParams, useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { fetchAllPublicLeaderboardScores, fetchAllRegistrations } from "@/lib/fetchLeaderboardScores";
@@ -174,7 +176,7 @@ function LiveLeaderboardBoard({
       const match = Array.isArray(resolved) ? resolved[0] : null;
       const baseQuery = supabase
         .from("tournaments")
-        .select("id, title, slug, scoring_format, best_ball_counting_scores, course_par, course_name, date, site_logo_url, site_primary_color, live_display_enabled, live_leaderboard_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_sponsor_rotation_order, leaderboard_sponsor_banner_position, leaderboard_sponsor_scroll_seconds, leaderboard_rotating_logos, branding_removed, branding_removed_by_admin, is_enterprise");
+        .select("id, title, slug, scoring_format, custom_scoring, best_ball_counting_scores, course_par, course_name, date, site_logo_url, site_primary_color, live_display_enabled, live_leaderboard_enabled, live_display_refresh_seconds, site_published, leaderboard_design, show_branding_badge, is_pro, show_branding_footer, branding_footer_admin_override, branding_footer_admin_show, branding_footer_custom_text, leaderboard_show_sponsor, leaderboard_sponsor_name, leaderboard_sponsor_logo_url, leaderboard_sponsor_label, leaderboard_title, leaderboard_sponsor_banner_enabled, leaderboard_sponsor_style, leaderboard_sponsor_interval_ms, leaderboard_sponsor_rotation_order, leaderboard_sponsor_banner_position, leaderboard_sponsor_scroll_seconds, leaderboard_rotating_logos, branding_removed, branding_removed_by_admin, is_enterprise");
       const { data } = match?.id
         ? await baseQuery.eq("id", match.id).maybeSingle()
         : await baseQuery.or(`custom_slug.eq.${slug},slug.eq.${slug}`).limit(1).maybeSingle();
@@ -480,6 +482,33 @@ function LiveLeaderboardBoard({
     const t = setInterval(pull, 30000);
     return () => { alive = false; clearInterval(t); };
   }, [tournament?.id]);
+  // Custom Scoring Rules (or a single Birdie Bash format) use team boards with hidden holes.
+  const customRules = useMemo(() => {
+    if (!tournament) return null;
+    const cs = activeRules((tournament as any).custom_scoring);
+    if (cs) return cs;
+    if (tournament.scoring_format === "birdie_bash") {
+      const base = parseCustomScoring((tournament as any).custom_scoring) || DEFAULT_CUSTOM_SCORING;
+      return { ...base, enabled: true, championship: "separate" as const, rounds: [{ round: 1, segments: [{ from: 1, to: 18, format: "birdie_bash" }], hidden: null }] };
+    }
+    return null;
+  }, [tournament]);
+  const [customExtra, setCustomExtra] = useState<{ published: number[]; hidden: any[] }>({ published: [], hidden: [] });
+  useEffect(() => {
+    if (!tournament || !customRules) return;
+    let alive = true;
+    const pull = async () => {
+      const sb = supabase as any;
+      const [p, h] = await Promise.all([
+        sb.rpc("get_public_round_published", { _tournament_id: tournament.id }),
+        sb.rpc("get_public_hidden_progress", { _tournament_id: tournament.id }),
+      ]);
+      if (alive) setCustomExtra({ published: p.data || [], hidden: h.data || [] });
+    };
+    pull();
+    const t = setInterval(pull, 30000);
+    return () => { alive = false; clearInterval(t); };
+  }, [tournament?.id, customRules]);
   const verificationOn = !!verification && verification.mode !== "off";
   const withVerification = <R extends LeaderboardRow>(rows: R[]): R[] =>
     !verificationOn ? rows : rows.map((r) => ({ ...r, verification: rowVerification(r.memberIds ?? (r.key ? [r.key] : []), verification!.labels || {}) }));
@@ -639,6 +668,29 @@ function LiveLeaderboardBoard({
   ) : null;
 
 
+
+  if (customRules) {
+    return (
+      <>
+        <div className="bg-background min-h-[50vh]">
+          <div className="text-center pt-6 px-4">
+            <h1 className="text-2xl font-display font-bold text-foreground break-words">{displayTitle}</h1>
+            <div className="text-sm text-muted-foreground mt-1">{subtitle}</div>
+          </div>
+          {isPreview ? <p className="text-center text-xs mt-2 text-muted-foreground">Preview Mode — this is how your leaderboard will appear to players.</p> : null}
+          <CustomScoringBoards
+            rules={customRules}
+            scores={scores}
+            hiddenProgress={customExtra.hidden}
+            holePars={holePars}
+            publishedRounds={customExtra.published}
+            fallbackFormat={tournament.scoring_format}
+          />
+        </div>
+        {!embedded && !isBrandingRemoved(tournament as any) && <TeeventsFooter tournament={tournament as any} />}
+      </>
+    );
+  }
 
   return (
     <>

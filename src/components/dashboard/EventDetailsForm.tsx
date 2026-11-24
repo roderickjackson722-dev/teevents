@@ -8,6 +8,12 @@ import { Loader2, Save, Globe } from "lucide-react";
 import { toast } from "sonner";
 import { SCORING_FORMATS } from "@/lib/scoringFormats";
 import { useDemoMode } from "@/hooks/useDemoMode";
+import CustomScoringRulesEditor from "@/components/dashboard/CustomScoringRulesEditor";
+import { DEFAULT_CUSTOM_SCORING, parseCustomScoring, validateCustomScoring, type CustomScoring } from "@/lib/customScoring";
+
+/** The part of the custom rules that changes how scores are recorded (clearing requires confirmation). */
+const rulesSignature = (c: CustomScoring) =>
+  c.enabled ? JSON.stringify(c.rounds.map((r) => ({ round: r.round, segments: r.segments }))) : "off";
 
 interface Props {
   tournamentId: string;
@@ -49,13 +55,15 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [savedFormat, setSavedFormat] = useState<string | null>(null);
+  const [custom, setCustom] = useState<CustomScoring>(DEFAULT_CUSTOM_SCORING);
+  const [savedRules, setSavedRules] = useState<string>("off");
 
   useEffect(() => {
     let cancelled = false;
     setLoading(true);
     supabase
       .from("tournaments")
-      .select("title, date, end_date, location, course_name, registration_fee_cents, scoring_format, best_ball_counting_scores, min_drives_enabled, min_drives_per_player, score_verification, site_hero_title, site_hero_subtitle, slug")
+      .select("title, date, end_date, location, course_name, registration_fee_cents, scoring_format, best_ball_counting_scores, min_drives_enabled, min_drives_per_player, score_verification, custom_scoring, site_hero_title, site_hero_subtitle, slug")
       .eq("id", tournamentId)
       .maybeSingle()
       .then(({ data }) => {
@@ -76,6 +84,9 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
           score_verification: d.score_verification === "standard" || d.score_verification === "strict" ? d.score_verification : "off",
         });
         setSavedFormat(d.scoring_format || "scramble_4");
+        const cs = parseCustomScoring(d.custom_scoring) || DEFAULT_CUSTOM_SCORING;
+        setCustom(cs);
+        setSavedRules(rulesSignature(cs));
         setHeroTitle(d.site_hero_title || "");
         setSlug(d.slug || null);
         setLoading(false);
@@ -95,11 +106,13 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
       toast.error("Enter a minimum number of drives between 1 and 18.");
       return;
     }
+    const rulesProblem = validateCustomScoring(custom);
+    if (rulesProblem) { toast.error(rulesProblem); return; }
     setSaving(true);
 
     // Changing the format after scores exist never converts old scores: the
     // organizer must confirm, and only then are this event's scores cleared.
-    const formatChanged = savedFormat != null && form.scoring_format !== savedFormat;
+    const formatChanged = (savedFormat != null && form.scoring_format !== savedFormat) || rulesSignature(custom) !== savedRules;
     if (formatChanged) {
       const { count } = await supabase
         .from("tournament_scores_with_teams")
@@ -107,7 +120,7 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
         .eq("tournament_id", tournamentId);
       if ((count ?? 0) > 0) {
         const ok = window.confirm(
-          "This event already has scores. Changing the format will clear the scores for this event. Clear the scores and change the format?",
+          "This event already has scores. Changing the format or custom scoring rules will clear the scores for this event. Clear the scores and change the format?",
         );
         if (!ok) { setSaving(false); return; }
         const del1 = await supabase.from("tournament_scores").delete().eq("tournament_id", tournamentId);
@@ -129,6 +142,7 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
       min_drives_enabled: isScrambleFormat ? form.min_drives_enabled : false,
       min_drives_per_player: isScrambleFormat && form.min_drives_enabled ? minDrives : null,
       score_verification: form.score_verification,
+      custom_scoring: custom.enabled || savedRules !== "off" ? custom : undefined,
       site_hero_subtitle: form.site_hero_subtitle || null,
       registration_fee_cents: form.registration_fee === "" || Number.isNaN(feeNum)
         ? null
@@ -141,6 +155,7 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
     if (error) toast.error(error.message);
     else {
       setSavedFormat(form.scoring_format);
+      setSavedRules(rulesSignature(custom));
       toast.success("Event details saved — your public page is updated.");
       onSaved?.();
     }
@@ -239,6 +254,9 @@ export default function EventDetailsForm({ tournamentId, onSaved }: Props) {
               <p className="text-xs text-muted-foreground">This is your event rule, not a USGA rule. TeeVents never sets a number for you.</p>
             </div>
           )}
+        </div>
+        <div className="sm:col-span-2">
+          <CustomScoringRulesEditor value={custom} onChange={setCustom} />
         </div>
         <div>
           <Label>Score verification</Label>

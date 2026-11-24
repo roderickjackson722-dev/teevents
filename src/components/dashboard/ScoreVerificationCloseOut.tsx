@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
+import { activeRules } from "@/lib/customScoring";
 import { assignMarkers, cardStatus, type CardRow, type HoleStatusRow } from "@/lib/scoreVerification";
 
 interface Reg { id: string; first_name: string | null; last_name: string | null; group_number: number | null; group_id: string | null }
@@ -22,11 +23,19 @@ export default function ScoreVerificationCloseOut({ tournamentId }: { tournament
   const [scorers, setScorers] = useState<any[]>([]);
   const [fix, setFix] = useState<Record<string, { strokes: string; reason: string }>>({});
   const [busy, setBusy] = useState<string | null>(null);
+  const [hiddenRule, setHiddenRule] = useState(false);
 
   const load = useCallback(async () => {
     const sb = supabase as any;
-    const { data: t } = await sb.from("tournaments").select("score_verification").eq("id", tournamentId).maybeSingle();
+    const { data: t } = await sb.from("tournaments").select("score_verification, custom_scoring").eq("id", tournamentId).maybeSingle();
     setMode(t?.score_verification || "off");
+    const cs = activeRules(t?.custom_scoring);
+    setHiddenRule(!!cs?.rounds.some((r) => r.hidden));
+    if (t && t.score_verification === "off" && cs?.rounds.some((r) => r.hidden)) {
+      const { data: rs } = await sb.from("score_round_status").select("*").eq("tournament_id", tournamentId).eq("round_number", round).maybeSingle();
+      setRoundStatus(rs || null);
+      return;
+    }
     if (!t || t.score_verification === "off") return;
     const [r, s, c, m, rs] = await Promise.all([
       sb.from("tournament_registrations").select("id, first_name, last_name, group_number, group_id, status").eq("tournament_id", tournamentId),
@@ -51,7 +60,7 @@ export default function ScoreVerificationCloseOut({ tournamentId }: { tournament
     return [...g.entries()].sort((a, b) => a[0] - b[0]);
   }, [regs]);
 
-  if (mode === "off") return null;
+  if (mode === "off" && !hiddenRule) return null;
 
   const call = async (key: string, fn: string, args: Record<string, unknown>, ok: string) => {
     setBusy(key);
@@ -67,6 +76,36 @@ export default function ScoreVerificationCloseOut({ tournamentId }: { tournament
   const published = !!roundStatus?.published_at;
   const subjName = (ids: string[]) => ids.map((i) => name(i)).join(" & ");
   const fmt = (iso?: string | null) => iso ? new Date(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+
+  if (mode === "off") {
+    return (
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex flex-wrap items-center justify-between gap-2">
+            <span>Publish results · hidden holes</span>
+            <span className="flex items-center gap-2 text-sm font-normal">
+              Round
+              <Input type="number" min={1} max={8} value={round} onChange={(e) => setRound(Math.max(1, Math.min(8, parseInt(e.target.value, 10) || 1)))} className="w-16 h-8" />
+            </span>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3 text-sm">
+          <div className="flex flex-wrap items-center gap-2">
+            <Badge variant={published ? "default" : "outline"}>{published ? `Published ${fmt(roundStatus.published_at)}` : locked ? `Locked ${fmt(roundStatus.locked_at)}` : "Open — provisional"}</Badge>
+            {!locked && <Button variant="outline" size="sm" disabled={!!busy} onClick={() => call("lock", "org_round_action", { _tournament_id: tournamentId, _round_number: round, _action: "lock" }, "Round locked")}>Lock round</Button>}
+            {(locked || published) && <Button variant="ghost" size="sm" disabled={!!busy} onClick={() => { if (confirm("Reopen this round? Hidden holes are hidden again until you publish.")) call("reopen", "org_round_action", { _tournament_id: tournamentId, _round_number: round, _action: "reopen" }, "Round reopened"); }}>Reopen round</Button>}
+            {locked && !published && (
+              <Button size="sm" disabled={!!busy} style={{ backgroundColor: "#F5A623", color: "#1a5c38" }}
+                onClick={() => call("publish", "org_round_action", { _tournament_id: tournamentId, _round_number: round, _action: "publish" }, "Results published")}>
+                Publish Results
+              </Button>
+            )}
+          </div>
+          <p className="text-xs text-muted-foreground">Lock first, then Publish Results to reveal hidden holes on the public leaderboard. Results are never published automatically.</p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card>

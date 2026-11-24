@@ -11,6 +11,7 @@ import { Loader2, ChevronLeft, ChevronRight, Trophy, Pencil, Check, Minus, Plus,
 import { toast } from "@/hooks/use-toast";
 import { allocateStrokes } from "@/lib/handicapUtils";
 import { isTeamScoreFormat, getFormatById } from "@/lib/scoringFormats";
+import { activeRules, holeFormat, isTeamHole } from "@/lib/customScoring";
 import { activeRoundNumber, parsePairingsConfig } from "@/lib/pairingsConfig";
 import { closedRoundSet, nextOpenRound, type TournamentRoundRow } from "@/lib/tournamentRounds";
 import {
@@ -135,7 +136,7 @@ export default function GroupScoring() {
       // Fetch scoring_format separately (lookup RPC doesn't return it)
       const { data: tRow } = await supabase
         .from("tournaments")
-        .select("scoring_format, pairings_config, date, branding_removed, branding_removed_by_admin")
+        .select("scoring_format, custom_scoring, pairings_config, date, branding_removed, branding_removed_by_admin")
         .eq("id", t.id)
         .maybeSingle();
       // Hole sponsor banners (display only)
@@ -146,6 +147,7 @@ export default function GroupScoring() {
         .eq("hole_banner_enabled", true)
         .then(({ data: hs }) => setHoleSponsors((hs as HoleSponsor[]) || []));
       if (tRow?.scoring_format) t.scoring_format = tRow.scoring_format;
+      (t as any).custom_scoring = (tRow as any)?.custom_scoring ?? null;
       t.branding_removed = (tRow as any)?.branding_removed ?? false;
       t.branding_removed_by_admin = (tRow as any)?.branding_removed_by_admin ?? false;
       const cfg = parsePairingsConfig((tRow as any)?.pairings_config);
@@ -232,7 +234,7 @@ export default function GroupScoring() {
         (payload: any) => {
           const row = payload.new || payload.old;
           // Team-score formats keep one team record; per-player rows are only transient.
-          if (isTeamScoreFormat(tournament.scoring_format)) return;
+          if (isTeamScoreFormat(tournament.scoring_format) && !activeRules((tournament as any).custom_scoring)) return;
           if (!row || !ids.includes(row.registration_id)) return;
           setScores((prev) => {
             const next = { ...prev };
@@ -306,8 +308,15 @@ export default function GroupScoring() {
     return out;
   }, [players]);
 
-  const format = useMemo(() => getFormatById(tournament?.scoring_format || "stroke_play"), [tournament]);
-  const isScramble = format?.scoring === "scramble";
+  // Custom Scoring Rules: the current hole's segment format decides team vs per-player entry.
+  const customRules = useMemo(() => activeRules((tournament as any)?.custom_scoring), [tournament]);
+  const format = useMemo(
+    () => getFormatById(customRules ? holeFormat(customRules, roundNumber, currentHole, tournament?.scoring_format || "stroke_play") : (tournament?.scoring_format || "stroke_play")),
+    [tournament, customRules, roundNumber, currentHole],
+  );
+  const isScramble = customRules
+    ? isTeamHole(customRules, roundNumber, currentHole, tournament?.scoring_format || "stroke_play")
+    : format?.scoring === "scramble";
 
   // Team score already recorded for this hole (all players share the same value in a scramble)
   const teamScoreForHole = (hole: number) => {

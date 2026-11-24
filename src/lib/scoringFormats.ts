@@ -4,7 +4,7 @@ export interface ScoringFormat {
   description: string;
   teamSize: number;
   /** How the final score per hole is determined */
-  scoring: "individual" | "best_ball" | "scramble" | "stableford" | "alternate_shot" | "shamble" | "shootout";
+  scoring: "individual" | "best_ball" | "scramble" | "stableford" | "alternate_shot" | "shamble" | "shootout" | "birdie_bash";
 }
 
 export const SCORING_FORMATS: ScoringFormat[] = [
@@ -94,6 +94,20 @@ export const SCORING_FORMATS: ScoringFormat[] = [
     teamSize: 4,
     scoring: "shamble",
   },
+  {
+    id: "birdie_bash",
+    name: "Birdie Bash",
+    description: "Two partners play their own ball. Only a birdie or better counts. Most birdies or better wins.",
+    teamSize: 2,
+    scoring: "birdie_bash",
+  },
+  {
+    id: "modified_alternate_shot",
+    name: "Modified Alternate Shot",
+    description: "Both partners tee off, the team picks the best drive, then they take turns hitting that one ball until it is holed. One team score per hole.",
+    teamSize: 2,
+    scoring: "alternate_shot",
+  },
 ];
 
 export function getFormatById(id: string): ScoringFormat | undefined {
@@ -104,7 +118,7 @@ export function getFormatById(id: string): ScoringFormat | undefined {
  * Formats that record exactly ONE score per team per hole (stored as a single
  * team record, never one per player): every Scramble and Alternate Shot.
  */
-export const TEAM_SCORE_FORMAT_IDS = ["scramble_2", "scramble_3", "scramble_4", "alternate_shot"] as const;
+export const TEAM_SCORE_FORMAT_IDS = ["scramble_2", "scramble_3", "scramble_4", "alternate_shot", "modified_alternate_shot"] as const;
 export function isTeamScoreFormat(id: string | null | undefined): boolean {
   return !!id && (TEAM_SCORE_FORMAT_IDS as readonly string[]).includes(id);
 }

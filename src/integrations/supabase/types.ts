@@ -14115,6 +14115,7 @@ export type Database = {
           custom_domain_renewal_session_id: string | null
           custom_domain_renewed_at: string | null
           custom_org_sections: Json
+          custom_scoring: Json | null
           custom_slug: string | null
           date: string | null
           day_before_approved: boolean
@@ -14498,6 +14499,7 @@ export type Database = {
           custom_domain_renewal_session_id?: string | null
           custom_domain_renewed_at?: string | null
           custom_org_sections?: Json
+          custom_scoring?: Json | null
           custom_slug?: string | null
           date?: string | null
           day_before_approved?: boolean
@@ -14881,6 +14883,7 @@ export type Database = {
           custom_domain_renewal_session_id?: string | null
           custom_domain_renewed_at?: string | null
           custom_org_sections?: Json
+          custom_scoring?: Json | null
           custom_slug?: string | null
           date?: string | null
           day_before_approved?: boolean
@@ -16347,6 +16350,14 @@ export type Database = {
         Args: { _tournament_id: string }
         Returns: number
       }
+      get_public_hidden_progress: {
+        Args: { _tournament_id: string }
+        Returns: {
+          hole_number: number
+          registration_id: string
+          round_number: number
+        }[]
+      }
       get_public_leaderboard_scores: {
         Args: { _tournament_id: string }
         Returns: {
@@ -16418,6 +16429,10 @@ export type Database = {
           winner_name: string
           winner_ticket_number: number
         }[]
+      }
+      get_public_round_published: {
+        Args: { _tournament_id: string }
+        Returns: number[]
       }
       get_public_score_verification: {
         Args: { _tournament_id: string }
@@ -16540,6 +16555,14 @@ export type Database = {
       has_tournament_role: {
         Args: { _roles?: string[]; _tournament_id: string; _user_id: string }
         Returns: boolean
+      }
+      hole_hidden: {
+        Args: { _hole: number; _round: number; _tid: string }
+        Returns: boolean
+      }
+      hole_score_format: {
+        Args: { _hole: number; _round: number; _tid: string }
+        Returns: string
       }
       increment_event_ticket_sold: {
         Args: { _qty: number; _tier_id: string }

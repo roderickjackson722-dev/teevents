@@ -13432,6 +13432,7 @@ export type Database = {
       tournament_setup_progress: {
         Row: {
           completed_at: string | null
+          due_date: string | null
           id: string
           status: string
           task_id: string
@@ -13440,6 +13441,7 @@ export type Database = {
         }
         Insert: {
           completed_at?: string | null
+          due_date?: string | null
           id?: string
           status?: string
           task_id: string
@@ -13448,6 +13450,7 @@ export type Database = {
         }
         Update: {
           completed_at?: string | null
+          due_date?: string | null
           id?: string
           status?: string
           task_id?: string

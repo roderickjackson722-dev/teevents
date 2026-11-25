@@ -79,10 +79,11 @@ function toEmbedUrl(url: string): { type: "iframe" | "video" | "unknown"; src: s
   return { type: "unknown", src: url };
 }
 
-export default function MediaClipsPage() {
+export default function MediaClipsPage({ embeddedTournamentId, embeddedOrgId }: { embeddedTournamentId?: string; embeddedOrgId?: string } = {}) {
+  const embedded = Boolean(embeddedTournamentId);
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
-  const [tournamentId, setTournamentId] = useState<string | null>(null);
-  const [orgId, setOrgId] = useState<string | null>(null);
+  const [tournamentId, setTournamentId] = useState<string | null>(embeddedTournamentId ?? null);
+  const [orgId, setOrgId] = useState<string | null>(embeddedOrgId ?? null);
   const [clips, setClips] = useState<Clip[]>([]);
   const [loading, setLoading] = useState(false);
   const [editing, setEditing] = useState<Partial<Clip> | null>(null);
@@ -92,6 +93,7 @@ export default function MediaClipsPage() {
   const fileRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
+    if (embeddedTournamentId) { setTournamentId(embeddedTournamentId); setOrgId(embeddedOrgId ?? null); return; }
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -106,7 +108,7 @@ export default function MediaClipsPage() {
         setOrgId(picked.organization_id);
       }
     })();
-  }, []);
+  }, [embeddedTournamentId, embeddedOrgId]);
 
   useEffect(() => {
     if (!tournamentId) return;
@@ -217,14 +219,14 @@ export default function MediaClipsPage() {
   };
 
   return (
-    <div className="p-6 space-y-6">
+    <div className={embedded ? "space-y-4" : "p-6 space-y-6"}>
       <div>
-        <h1 className="text-2xl font-bold">Media Clips</h1>
+        {embedded ? <h3 className="text-lg font-display font-bold">Media Clips</h3> : <h1 className="text-2xl font-bold">Media Clips</h1>}
         <p className="text-muted-foreground text-sm">Add video clips and highlights that appear on your public tournament page.</p>
       </div>
 
       <div className="flex flex-wrap items-end gap-4">
-        <div>
+        {!embedded && <div>
           <Label className="text-xs">Tournament</Label>
           <Select value={tournamentId ?? undefined} onValueChange={setTournamentId}>
             <SelectTrigger className="w-[280px]"><SelectValue placeholder="Select a tournament" /></SelectTrigger>
@@ -232,11 +234,11 @@ export default function MediaClipsPage() {
               {tournaments.map((t) => <SelectItem key={t.id} value={t.id}>{t.title}</SelectItem>)}
             </SelectContent>
           </Select>
-        </div>
+        </div>}
         {tournamentId && (
           <TabTitleInput tournamentId={tournamentId} field="media_tab_title" defaultValue="Media" label="Public tab title" />
         )}
-        <Button onClick={() => setEditing({ is_active: true, display_order: clips.length })} disabled={!tournamentId}>
+        <Button variant={embedded ? "outline" : "default"} onClick={() => setEditing({ is_active: true, display_order: clips.length })} disabled={!tournamentId}>
           <Plus className="w-4 h-4 mr-1" /> Add Clip
         </Button>
       </div>

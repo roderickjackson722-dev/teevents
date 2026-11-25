@@ -4,14 +4,14 @@ import { supabase } from "@/integrations/supabase/client";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { useAdminLink } from "@/hooks/useAdminLink";
 import { useSetupChecklist } from "@/hooks/useSetupChecklist";
-import { ArrowRight, CheckCircle2, Clock, Package, Pin, PinOff, Rocket, Trophy, Zap } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, Package, Pin, PinOff, Rocket, ShoppingBag, Trophy, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import UpgradeToProBanner from "@/components/UpgradeToProBanner";
 import ToolboxDashboardWidgets from "@/components/toolbox/ToolboxDashboardWidgets";
 import OrganizerNotes from "@/pages/dashboard/OrganizerNotes";
 import { QUICK_ACTION_OPTIONS, quickActionsStorageKey } from "@/pages/dashboard/QuickActions";
-import { itemCount, loadToolbox } from "@/lib/organizerToolbox";
+import { itemCount, loadToolbox, sectionsComplete, type Toolbox } from "@/lib/organizerToolbox";
 import { sortTournamentsForPicker } from "@/lib/tournamentOrder";
 import { toast } from "sonner";
 
@@ -53,6 +53,7 @@ const DashboardHome = () => {
   const [tournaments, setTournaments] = useState<Tournament[]>([]);
   const [current, setCurrent] = useState<Tournament | null>(null);
   const [toolboxCount, setToolboxCount] = useState<number | null>(null);
+  const [toolbox, setToolbox] = useState<Toolbox | null>(null);
   const [pinned, setPinned] = useState<string[] | null>(null);
   const [editingPins, setEditingPins] = useState(false);
 
@@ -93,7 +94,7 @@ const DashboardHome = () => {
       // Same rule as before: explicit ?tournament_id= first, else the newest event.
       setCurrent(list.find((t) => t.id === explicitTournamentId) || list[0] || null);
     })();
-    loadToolbox(org.orgId).then((t) => { if (!cancelled) setToolboxCount(itemCount(t ?? null)); });
+    loadToolbox(org.orgId).then((t) => { if (!cancelled) { setToolboxCount(itemCount(t ?? null)); setToolbox(t); } });
     setPinned(readPinned(org.orgId));
     return () => { cancelled = true; };
   }, [org, explicitTournamentId]);
@@ -278,6 +279,25 @@ const DashboardHome = () => {
       {current && !current.is_pro && (
         <UpgradeToProBanner tournamentId={current.id} tournamentTitle={current.title} />
       )}
+
+      <div className="grid gap-4 sm:grid-cols-2">
+        <article className="rounded-lg border border-border bg-card p-5">
+          <h2 className="flex items-center gap-2 font-display text-lg font-bold"><ShoppingBag className="h-5 w-5 text-primary" />Tournament Director Shop</h2>
+          <p className="mt-3 text-sm text-muted-foreground">Browse premium tournament products, signage, merchandise, and accessories to elevate your event.</p>
+          <Button asChild variant="link" className="mt-3 px-0"><Link to={buildLink("/dashboard/director-shop")}>Browse the Shop <ArrowRight className="h-4 w-4" /></Link></Button>
+        </article>
+        <article className="rounded-lg border border-border bg-card p-5">
+          <h2 className="font-display text-lg font-bold">Rep Review Status</h2>
+          <dl className="mt-3 space-y-3 text-sm">
+            <div><dt className="text-muted-foreground">Items Uploaded</dt><dd className="font-semibold">{toolboxCount ?? "Loading…"}</dd></div>
+            <div><dt className="text-muted-foreground">Last Updated</dt><dd>{toolbox?.updated_at && toolbox.id ? new Date(toolbox.updated_at).toLocaleString("en-US", { dateStyle: "medium", timeStyle: "short" }) : "Not saved yet"}</dd></div>
+            <div><dt className="text-muted-foreground">Rep Status</dt><dd>{toolbox?.reviewed_at ? "Your rep has reviewed your toolbox" : "Your rep has not yet reviewed your toolbox"}</dd></div>
+          </dl>
+          <p className="mb-2 mt-4 text-sm">{sectionsComplete(toolbox)} of 7 sections complete</p>
+          <Progress value={sectionsComplete(toolbox) / 7 * 100} aria-label="Toolbox sections complete" />
+          <Button asChild variant="link" className="mt-3 px-0"><Link to={current ? buildLink(`/dashboard/tournaments/${current.id}/site-builder`) : buildLink("/dashboard/public-page-editor")}>View Branding <ArrowRight className="h-4 w-4" /></Link></Button>
+        </article>
+      </div>
     </div>
   );
 };

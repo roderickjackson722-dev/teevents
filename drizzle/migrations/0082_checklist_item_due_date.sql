@@ -1,0 +1,2 @@
+ALTER TABLE public.tournament_setup_progress ADD COLUMN IF NOT EXISTS due_date date;
+COMMENT ON COLUMN public.tournament_setup_progress.due_date IS 'Optional shared due date for this event checklist task; independent of completion status.';

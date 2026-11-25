@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useOrgContext } from "@/hooks/useOrgContext";
 import { supabase } from "@/integrations/supabase/client";
 import SetupChecklist from "@/components/SetupChecklist";
-import EventTimeline from "@/components/dashboard/EventTimeline";
 import UpcomingRemindersWidget from "@/components/dashboard/UpcomingRemindersWidget";
 import { Loader2 } from "lucide-react";
 import { useTournamentIdParam, pickTournamentId } from "@/hooks/useTournamentIdParam";
@@ -60,11 +59,7 @@ export default function SetupChecklistPage() {
           straight to that section. Tasks auto-complete as you save your work.
         </p>
       </div>
-      <SetupChecklist tournamentId={tournamentId} autoRecompute />
-      {/* Timeline of Due Dates moved here from Home (Home no longer has a Timeline tab). */}
-      <div className="mt-8">
-        <EventTimeline eventDate={tournament?.date ?? null} title={tournament?.title} tournamentId={tournamentId} />
-      </div>
+      <SetupChecklist tournamentId={tournamentId} showDueDates />
       <div className="mt-6">
         <UpcomingRemindersWidget tournamentId={tournamentId} />
       </div>

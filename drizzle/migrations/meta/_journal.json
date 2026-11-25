@@ -575,6 +575,13 @@
       "when": 1795554311302,
       "tag": "0081_custom_scoring_hidden_progress",
       "breakpoints": true
+    },
+    {
+      "idx": 82,
+      "version": "7",
+      "when": 1795579179135,
+      "tag": "0082_checklist_item_due_date",
+      "breakpoints": true
     }
   ]
 }

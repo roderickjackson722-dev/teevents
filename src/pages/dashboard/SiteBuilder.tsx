@@ -52,6 +52,8 @@ import { Wand2, EyeOff } from "lucide-react";
 import { US_STATES } from "@/lib/usStates";
 import { PublicTabsManager } from "@/components/site-builder/PublicTabsManager";
 import PhotoGalleryManager from "@/components/site-builder/PhotoGalleryManager";
+import MediaClipsPage from "@/pages/dashboard/MediaClips";
+import { withDashboardContext } from "@/lib/dashboardContext";
 import { RichTextEditor, sanitizeHtml } from "@/components/ui/rich-text-editor";
 import { TemplatePicker } from "@/components/dashboard/TemplatePicker";
 import {
@@ -449,6 +451,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
         contact_name: (settings as any).contact_name ?? null,
         schedule_info: settings.schedule_info,
         schedule_info_html: (settings as any).schedule_info_html ?? null,
+        ...(!enterprise ? { public_tabs: settings.public_tabs, public_tabs_order: settings.public_tabs_order, public_section_titles: settings.public_section_titles } : {}),
         registration_url: settings.registration_url,
         registration_open: settings.registration_open,
         description: settings.description,
@@ -651,7 +654,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
     { key: "content" as const, label: "Content", icon: Type },
     { key: "contact" as const, label: "Contact", icon: Phone },
     { key: "printables" as const, label: "Printables", icon: Printer },
-    { key: "public_view" as const, label: "Public View", icon: EyeIcon },
+    { key: "public_view" as const, label: enterprise ? "Public View" : "Page Sections", icon: EyeIcon },
     { key: "domain" as const, label: "Domain", icon: Globe },
   ].filter((tab) => !enterprise || tab.key === "branding" || tab.key === "domain");
 
@@ -688,7 +691,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
             {enterprise ? "Back to Enterprise Admin" : "Back to Tournaments"}
           </Link>
           <h1 className="text-xl sm:text-2xl font-display font-bold text-foreground break-words">
-            Site Builder — {settings.title}
+            {enterprise ? "Site Builder" : "Event Page Editor"} — {settings.title}
           </h1>
         </div>
         {!enterprise && <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
@@ -719,14 +722,6 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
               </Link>
             </Button>
           )}
-          {publicUrl && (
-            <Button size="sm" asChild className="shrink-0">
-              <a href={`${publicUrl}?edit=1`} target="_blank" rel="noopener noreferrer">
-                <Pencil className="h-3.5 w-3.5 mr-1.5" />
-                Edit Live Page
-              </a>
-            </Button>
-          )}
           {!settings.site_published && (
             <span className="text-xs text-muted-foreground">
               Only you can see the preview until you turn on Publish and save.
@@ -734,6 +729,15 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
           )}
         </div>}
       </div>
+
+      {!enterprise && publicUrl && (
+        <Button asChild variant="secondary" className="mb-6 h-auto w-full justify-between gap-4 whitespace-normal rounded-lg px-6 py-6 text-left text-primary shadow-md">
+          <a href={`${publicUrl}?edit=1`} target="_blank" rel="noopener noreferrer">
+            <span className="flex min-w-0 items-center gap-4"><Pencil className="h-8 w-8 shrink-0" /><span><span className="block text-xl font-bold">Edit Live Page</span><span className="mt-1 block text-sm font-normal">Click here to edit your live event page</span></span></span>
+            <ExternalLink className="h-5 w-5 shrink-0" />
+          </a>
+        </Button>
+      )}
 
       {/* Guided steps */}
       <ol className="mb-6 grid grid-cols-2 gap-1 rounded-lg border border-border bg-card p-1 sm:grid-cols-3 lg:grid-cols-6">
@@ -1408,6 +1412,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
               {id && (
                 <>
                   <PhotoGalleryManager tournamentId={id} orgId={org?.orgId} />
+                  {!enterprise && <MediaClipsPage embeddedTournamentId={id} embeddedOrgId={org?.orgId} />}
 
                   <div className="pt-4 border-t border-border">
                     <Label className="text-sm font-bold">Photo Gallery Position</Label>
@@ -1431,7 +1436,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                   <div className="pt-4 border-t border-border">
                     <Label className="text-sm font-bold">Media Clips Position</Label>
                     <p className="text-xs text-muted-foreground mb-2">
-                      Choose where the Media Clips section appears on your public tournament page. Add or edit clips under <strong>Dashboard → Media Clips</strong>.
+                      Choose where the Media Clips section appears on your public tournament page. Add or edit clips in the Media Clips section above.
                     </p>
                     <select
                       value={settings.media_position || "default"}
@@ -1454,157 +1459,15 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
             </>
           )}
 
-          {activeTab === "content" && (
+          {activeTab === "content" && !enterprise && (
             <>
-              <h2 className="text-lg font-display font-bold text-foreground">Site Content</h2>
-
-              <div>
-                <Label htmlFor="heroTitle">Hero Title</Label>
-                <Input
-                  id="heroTitle"
-                  value={settings.site_hero_title || ""}
-                  onChange={(e) => updateField("site_hero_title", e.target.value)}
-                  placeholder={settings.title}
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="heroSubtitle">Hero Subtitle</Label>
-                <Input
-                  id="heroSubtitle"
-                  value={settings.site_hero_subtitle || ""}
-                  onChange={(e) => updateField("site_hero_subtitle", e.target.value)}
-                  placeholder="e.g. Join us for a day of golf and giving back"
-                />
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="description">Event Description</Label>
-                  <TemplatePicker
-                    hasContent={htmlHasContent((settings as any).description_html || "") || !!(settings.description || "").trim()}
-                    onBlank={() => updateField("description_html" as any, "")}
-                    options={EVENT_DESCRIPTION_TEMPLATES.map((t) => ({
-                      id: t.id,
-                      label: t.label,
-                      apply: () => updateField("description_html" as any, templateTextToHtml(fillTemplatePlaceholders(t.text, settings as any))),
-                    }))}
-                  />
-                </div>
-                <p className="text-xs text-muted-foreground mb-2">
-                  Format text with bold, headings, fonts, colors, and links. Falls back to plain text if left empty.
-                </p>
-                <RichTextEditor
-                  value={(settings as any).description_html || ""}
-                  onChange={(html) => updateField("description_html" as any, html)}
-                  placeholder="Tell visitors about your tournament..."
-                />
-                <details className="mt-2">
-                  <summary className="text-xs text-muted-foreground cursor-pointer">Plain text fallback (optional)</summary>
-                  <Textarea
-                    id="description"
-                    className="mt-2"
-                    value={settings.description || ""}
-                    onChange={(e) => updateField("description", e.target.value)}
-                    placeholder="Plain text version (used if rich text is empty)"
-                    rows={3}
-                  />
-                </details>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="courseName">Golf Course</Label>
-                  <Input
-                    id="courseName"
-                    value={settings.course_name || ""}
-                    onChange={(e) => updateField("course_name", e.target.value)}
-                    placeholder="Pine Valley Golf Club"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="location">Location</Label>
-                  <Input
-                    id="location"
-                    value={settings.location || ""}
-                    onChange={(e) => updateField("location", e.target.value)}
-                    placeholder="Dallas, TX"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="eventDate">Start Date</Label>
-                  <Input
-                    id="eventDate"
-                    type="date"
-                    value={settings.date || ""}
-                    onChange={(e) => updateField("date", e.target.value)}
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="endDate">End Date</Label>
-                  <Input
-                    id="endDate"
-                    type="date"
-                    value={(settings as any).end_date || ""}
-                    onChange={(e) => updateField("end_date" as any, e.target.value || null)}
-                    min={settings.date || undefined}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1">Leave blank for single-day events</p>
-                </div>
-              </div>
-
-              <div>
-                <div className="flex items-center justify-between gap-2">
-                  <Label htmlFor="schedule">Schedule / Timeline</Label>
-                  <TemplatePicker
-                    hasContent={htmlHasContent((settings as any).schedule_info_html || "") || !!(settings.schedule_info || "").trim()}
-                    onBlank={() => updateFields({ schedule_info_html: "", schedule_info: "" })}
-                    options={SCHEDULE_TEMPLATES.map((t) => ({
-                      id: t.id,
-                      label: t.label,
-                      apply: () =>
-                        updateFields({
-                          schedule_info_html: templateTextToHtml(fillTemplatePlaceholders(t.text, settings as any)),
-                          schedule_info: t.text,
-                        }),
-                    }))}
-                  />
-                </div>
-                <RichTextEditor
-                  value={(settings as any).schedule_info_html || ""}
-                  onChange={(html) => {
-                    // keep plain-text fallback in sync for legacy consumers,
-                    // in a SINGLE state update so neither value is dropped.
-                    const tmp = document.createElement("div");
-                    tmp.innerHTML = html;
-                    updateFields({
-                      schedule_info_html: html,
-                      schedule_info: tmp.textContent || "",
-                    });
-                  }}
-                  placeholder="10:00 AM — Registration\n11:00 AM — Shotgun Start"
-                />
-                <p className="text-xs text-muted-foreground mt-1">
-                  Use the toolbar to bold key items, change fonts, or highlight (e.g. SOLD OUT, LIMITED SPOTS).
-                </p>
-                <div className="mt-3 flex items-center gap-3">
-                  <Button variant="outline" onClick={handleSave} disabled={saving}>
-                    {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
-                    <span className="ml-1.5">Save Schedule</span>
-                  </Button>
-                  <span className="text-xs text-muted-foreground">
-                    Saves this section and all other site settings — same as the Save button at the top.
-                  </span>
-                </div>
-              </div>
-
-
-              <p className="text-xs text-muted-foreground italic">
-                Registration pricing is managed in the Registration Management tab — the single source of truth for fees.
-              </p>
+              <h2 className="text-lg font-display font-bold text-foreground">Event Content</h2>
+              <Button asChild variant="outline"><Link to={withDashboardContext(`/dashboard/tournaments?tournament_id=${settings.id}`, search)}>Edit in Event Details <ExternalLink className="ml-2 h-4 w-4" /></Link></Button>
+              <dl className="space-y-5 text-sm">
+                {[ ["Hero Title", settings.site_hero_title || settings.title], ["Hero Subtitle", settings.site_hero_subtitle], ["Golf Course / Location", [settings.course_name, settings.location].filter(Boolean).join(" — ")], ["Start Date", settings.date], ["End Date", (settings as any).end_date] ].map(([label, value]) => <div key={label}><dt className="font-semibold">{label}</dt><dd className="mt-1 whitespace-pre-wrap break-words text-muted-foreground">{value || "Not entered"}</dd></div>)}
+                <div><dt className="font-semibold">Event Description</dt><dd className="mt-1 break-words text-muted-foreground">{(settings as any).description_html ? <div dangerouslySetInnerHTML={{ __html: sanitizeHtml((settings as any).description_html) }} /> : settings.description || "Not entered"}</dd></div>
+                <div><dt className="font-semibold">Schedule / Timeline</dt><dd className="mt-1 whitespace-pre-wrap break-words text-muted-foreground">{(settings as any).schedule_info_html ? <div dangerouslySetInnerHTML={{ __html: sanitizeHtml((settings as any).schedule_info_html) }} /> : settings.schedule_info || "Not entered"}</dd></div>
+              </dl>
             </>
           )}
 
@@ -1775,7 +1638,7 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
           {activeTab === "public_view" && (
             <>
               <div>
-                <h2 className="text-lg font-display font-bold text-foreground">Public View</h2>
+                <h2 className="text-lg font-display font-bold text-foreground">{enterprise ? "Public View" : "Page Sections"}</h2>
                 <p className="text-xs text-muted-foreground mt-1">
                   Choose how your tournament appears in the public directory and which sections are visible on your event page.
                 </p>
@@ -1899,6 +1762,9 @@ const SiteBuilder = ({ enterpriseEventId }: { enterpriseEventId?: string } = {})
                 initialOrder={settings.public_tabs_order}
                 initialTitles={settings.public_section_titles}
                 onSaved={(values) => updateFields(values)}
+                enhancedDrag={!enterprise}
+                hideSave={!enterprise}
+                onChange={!enterprise ? (values) => updateFields(values) : undefined}
               />
             </>
           )}

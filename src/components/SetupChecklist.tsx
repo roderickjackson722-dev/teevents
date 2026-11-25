@@ -1,4 +1,5 @@
 import { useEffect } from "react";
+import { Input } from "@/components/ui/input";
 import { Link } from "react-router-dom";
 import { CheckCircle2, Circle, ArrowRight, Sparkles, Loader2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -20,10 +21,11 @@ interface Props {
   onDismiss?: () => void;
   /** When true, runs the smart auto-detect recompute on mount. */
   autoRecompute?: boolean;
+  showDueDates?: boolean;
 }
 
-export default function SetupChecklist({ tournamentId, compact = false, onDismiss, autoRecompute = false }: Props) {
-  const { items, loading, setStatus, percent, completed, total, recompute } = useSetupChecklist(tournamentId);
+export default function SetupChecklist({ tournamentId, compact = false, onDismiss, autoRecompute = false, showDueDates = false }: Props) {
+  const { items, loading, setStatus, setDueDate, percent, completed, total, recompute } = useSetupChecklist(tournamentId);
 
   useEffect(() => {
     if (autoRecompute && tournamentId) {
@@ -128,6 +130,8 @@ export default function SetupChecklist({ tournamentId, compact = false, onDismis
                       task={task}
                       tournamentId={tournamentId}
                       onToggle={(s) => setStatus(task.id, s)}
+                      dueDate={showDueDates ? task.due_date ?? "" : undefined}
+                      onDueDateChange={showDueDates ? (date) => { void setDueDate(task.id, date); } : undefined}
                     />
                   ))}
                 </ul>
@@ -144,17 +148,21 @@ function TaskRow({
   task,
   tournamentId,
   onToggle,
+  dueDate,
+  onDueDateChange,
 }: {
   task: ChecklistItem;
   tournamentId: string;
   onToggle: (status: ChecklistItem["status"]) => void;
+  dueDate?: string;
+  onDueDateChange?: (date: string) => void;
 }) {
   const isDone = task.status === "completed";
   // Interpolate {tid} in stored link templates so each task opens the
   // currently-selected tournament's page.
   const resolvedLink = task.link ? task.link.replace(/\{tid\}/g, tournamentId) : null;
   return (
-    <li className="flex items-start gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
+    <li className="flex flex-wrap items-start gap-3 p-3 rounded-lg border border-border hover:bg-muted/30 transition-colors">
       <button
         type="button"
         onClick={() => onToggle(isDone ? "not_started" : "completed")}
@@ -185,6 +193,7 @@ function TaskRow({
         {task.description && !isDone && (
           <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{task.description}</p>
         )}
+        {onDueDateChange && <label className="mt-2 block max-w-44 text-xs text-muted-foreground">Due date<Input type="date" className="mt-1 h-8 text-sm" aria-label={`Due date for ${task.task_name}`} value={dueDate ?? ""} onChange={(event) => onDueDateChange(event.target.value)} /></label>}
       </div>
       {resolvedLink && (
         <Button asChild variant="ghost" size="sm" className="flex-shrink-0">

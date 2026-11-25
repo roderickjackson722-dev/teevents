@@ -1,4 +1,8 @@
 # Roadmap (Nov 6 2026 request)
+- [x] Nov 25: organizer sidebar labels/removals and consolidated existing destinations; preserve permissions and routes.
+- [x] Nov 25: append Director Shop and rep-review cards to Home without changing existing cards/actions.
+- [x] Nov 25: single Setup Checklist with database-backed per-item due dates (approved exception); 28 items and 11/28 · 39% preserved; sample save/readback on two devices verified and date restored, completion unchanged.
+- [x] Nov 25: Event Page Editor read-only event content, Page Sections label, shared photo/media tools, prominent live edit entry and drag indicators; desktop/481px checks, clip dialog and highlighted drag verified; 11 tests pass, no publishing or emails.
 - [x] Nov 20: current fee copy/explicit creation defaults 6%; shared registration/payment-link base-processing math, listed totals covered by 87 tests; signed-in admin previews verified without saves; existing records and league renewal unchanged, not published.
 - [ ] Nov 20 rollout: shared database INSERT default remains 8% until approved live activation; test-mode Stripe checkout/payout not verified (no real payments allowed); do not publish before these checks.
 - [x] Nov 19 proposal captions: remove founder portrait caption and automatic Personalized for line; preserve editable About and introduction wording.

@@ -1,6 +1,7 @@
 # Project Architecture Rules
 
 Proposals and proposal-web have local AGENTS.md isolation rules.
+Organizer UI isolation rules live in src/pages/dashboard/AGENTS.md.
 
 - Manual Enterprise approval is separate from billing; Enterprise portfolios list all existing organization tournaments without converting them.
 - Partner requests use separate private holding storage and CAPTCHA-validated submission; never create roster entries or checkout sessions.

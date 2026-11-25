@@ -76,10 +76,7 @@ const categories: SidebarCategory[] = [
       { title: "Event Details", url: "/dashboard/tournaments", icon: Trophy, feature: null, description: "Event info, registration fee, format, and course setup" },
       { title: "Setup Checklist", url: "/dashboard/setup-checklist", icon: ClipboardCheck, feature: null, description: "Every setup task and its due date" },
       { title: "Registration Management", url: "/dashboard/registration", icon: FileEdit, feature: "registration", description: "Custom fields, captain label, required toggles, fee model" },
-      { title: "Public Page Editor", url: "/dashboard/public-page-editor", icon: Trophy, feature: null, description: "Edit your public tournament page: branding, content, contact, domain" },
-      { title: "Webpage Layout", url: "/dashboard/webpage-layout", icon: LayoutTemplate, feature: null, description: "Reorder and show/hide sections and top-nav tabs on your public page" },
-      { title: "Getting Started", url: "/dashboard/getting-started", icon: Rocket, feature: null, description: "What happens next and what you can do now" },
-      { title: "Organizer Toolbox", url: "/dashboard/toolbox", icon: Package, feature: null, description: "Upload logos, images, and event assets for your rep" },
+      { title: "Event Page Editor", url: "/dashboard/public-page-editor", icon: Trophy, feature: null, description: "Edit your public tournament page: branding, content, contact, domain" },
     ],
   },
   {
@@ -96,7 +93,7 @@ const categories: SidebarCategory[] = [
     label: "Pairings & Scoring",
     color: "border-l-orange-400 bg-orange-400/5",
     items: [
-      { title: "Format & Flights", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, skins, flights, and payouts" },
+      { title: "Scoring", url: "/dashboard/scoring-payouts", icon: Sliders, feature: null, description: "Scoring format, skins, flights, and payouts" },
       { title: "Pairings", url: "/dashboard/players?tab=pairings", icon: Users, feature: "players", description: "Groups, tee times, and starting holes" },
       { title: "Leaderboard & Live Scoring", url: "/dashboard/leaderboard", icon: BarChart3, feature: "leaderboard", description: "Enter scores and manage the live leaderboard" },
       // Stress Test is reached from the Test Readiness button on the Leaderboard screen.
@@ -107,13 +104,11 @@ const categories: SidebarCategory[] = [
     color: "border-l-purple-400 bg-purple-400/5",
     items: [
       { title: "Sponsors", url: "/dashboard/sponsors", icon: Award, feature: null, description: "Sponsor levels, prices, benefits, logos, and vendors" },
-      { title: "Sponsorship Tools", url: "/dashboard/sponsorship-tools", icon: Megaphone, feature: null, description: "Digital Sponsor package, outreach email template, and sponsor QR code" },
+      { title: "Tools", url: "/dashboard/sponsorship-tools", icon: Megaphone, feature: null, description: "Digital Sponsor package, outreach email template, and sponsor QR code" },
       { title: "Vendors", url: "/dashboard/vendors", icon: Store, feature: null, description: "Vendor booths: packages, registrations, documents, and hole locations" },
       { title: "Donations", url: "/dashboard/donations", icon: Heart, feature: "donations", description: "Track fundraising, tax receipts" },
       { title: "Auctions", url: "/dashboard/auctions", icon: Gavel, feature: "auction", description: "Silent auction items, bidding, winners" },
-      { title: "Raffles", url: "/dashboard/raffles", icon: Ticket, feature: "auction", description: "50/50, prize raffles, auto‑draw" },
-      { title: "Event Day Sales", url: "/dashboard/event-day-sales", icon: ShoppingCart, feature: null, description: "Walk‑up registrations, mulligans, contests, custom items with QR codes" },
-      { title: "Add On Store", url: "/dashboard/store", icon: ShoppingBag, feature: "store", description: "Merchandise, mulligans, side events, extras" },
+      { title: "Sell", url: "/dashboard/event-day-sales", icon: ShoppingCart, feature: null, description: "Walk‑up registrations, mulligans, contests, custom items with QR codes" },
     ],
   },
   {
@@ -124,6 +119,7 @@ const categories: SidebarCategory[] = [
       { title: "Payouts", url: "/dashboard/payout-settings", icon: CreditCard, feature: null, description: "Stripe Connect, check" },
             { title: "Budget", url: "/dashboard/budget", icon: DollarSign, feature: "budget", description: "Planned vs. actual expenses" },
       { title: "Upgrades", url: "/dashboard/upgrade", icon: Receipt, feature: null, description: "Per-Event pricing, current plan and add-on features" },
+      { title: "Reports", url: "/dashboard/finances?tab=reports", icon: FileText, feature: null, description: "Event financial reports" },
     ],
   },
   {
@@ -145,8 +141,7 @@ const categories: SidebarCategory[] = [
     items: [
       { title: "Team Members", url: "/dashboard/team", icon: Building2, feature: null, description: "Add staff, assign roles, track referral performance" },
       { title: "Volunteers", url: "/dashboard/volunteers", icon: UserCheck, feature: "volunteers", description: "Shift scheduling, QR check‑in" },
-      { title: "Team HQ", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
-      { title: "CRM", url: "/dashboard/crm", icon: ContactRound, feature: null, description: "Prospects, communications, tasks, audit log" },
+      { title: "Day-Of Page", url: "/dashboard/team-hq", icon: Users, feature: null, description: "Control the mobile team homepage players open on event day" },
     ],
   },
   {
@@ -501,16 +496,6 @@ export function DashboardSidebar() {
         </SidebarContent>
 
         <SidebarFooter className="bg-primary border-t border-primary-foreground/10 p-3 space-y-2">
-          {!isLeagueWorkspace && (
-            <NavLink
-              to={withContext("/dashboard/director-shop")}
-              onClick={() => { if (isMobile) setOpenMobile(false); }}
-              className="flex items-center gap-2 text-xs text-primary-foreground/60 hover:text-primary-foreground transition-colors w-full"
-            >
-              <ShoppingCart className="h-3.5 w-3.5" />
-              {!collapsed && <span>Director Shop</span>}
-            </NavLink>
-          )}
           <button
             onClick={async () => {
               clearDashboardContext();

@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { checklistDueDatePatch } from "@/lib/checklistDueDates";
+import { toast } from "sonner";
 
 export type ChecklistPhase =
   | "account"
@@ -26,11 +28,13 @@ export interface ChecklistProgress {
   task_id: string;
   status: "not_started" | "in_progress" | "completed";
   completed_at: string | null;
+  due_date: string | null;
 }
 
 export interface ChecklistItem extends ChecklistTask {
   status: ChecklistProgress["status"];
   completed_at: string | null;
+  due_date: string | null;
 }
 
 export const PHASE_LABELS: Record<ChecklistPhase, string> = {
@@ -71,7 +75,7 @@ export function useSetupChecklist(tournamentId: string | null | undefined) {
         .order("display_order", { ascending: true }),
       supabase
         .from("tournament_setup_progress")
-        .select("task_id, status, completed_at")
+        .select("task_id, status, completed_at, due_date")
         .eq("tournament_id", tournamentId),
     ]);
 
@@ -84,6 +88,7 @@ export function useSetupChecklist(tournamentId: string | null | undefined) {
         ...(t as ChecklistTask),
         status: (p?.status as ChecklistItem["status"]) ?? "not_started",
         completed_at: p?.completed_at ?? null,
+        due_date: p?.due_date ?? null,
       };
     });
     setItems(merged);
@@ -116,6 +121,24 @@ export function useSetupChecklist(tournamentId: string | null | undefined) {
     [tournamentId, load],
   );
 
+  const setDueDate = useCallback(async (taskId: string, date: string) => {
+    if (!tournamentId) return;
+    const patch = checklistDueDatePatch(date);
+    setItems((prev) => prev.map((item) => item.id === taskId ? { ...item, ...patch } : item));
+    // Update only the date; never overwrite a concurrent completion change.
+    const { data, error } = await supabase.from("tournament_setup_progress")
+      .update(patch).eq("tournament_id", tournamentId).eq("task_id", taskId).select("id");
+    if (error) { toast.error("Could not save the due date."); await load(); return; }
+    if (!data?.length) {
+      const { error: insertError } = await supabase.from("tournament_setup_progress")
+        .upsert({ tournament_id: tournamentId, task_id: taskId, ...patch }, { onConflict: "tournament_id,task_id", ignoreDuplicates: true });
+      if (insertError) { toast.error("Could not save the due date."); await load(); return; }
+      const { error: retryError } = await supabase.from("tournament_setup_progress")
+        .update(patch).eq("tournament_id", tournamentId).eq("task_id", taskId);
+      if (retryError) { toast.error("Could not save the due date."); await load(); return; }
+    }
+  }, [tournamentId, load]);
+
   const recompute = useCallback(async () => {
     if (!tournamentId) return;
     await supabase.functions.invoke("update-checklist-task", {
@@ -134,6 +157,7 @@ export function useSetupChecklist(tournamentId: string | null | undefined) {
     items,
     loading,
     setStatus,
+    setDueDate,
     reload: load,
     recompute,
     total,

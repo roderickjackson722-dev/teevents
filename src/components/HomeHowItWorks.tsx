@@ -4,7 +4,13 @@ export const eventSetupSteps = [
   { number: "03", title: "Run Your Tournament", text: "Everything is ready to go, with your dedicated partner before, during, and after the event." },
 ];
 
-export default function HomeHowItWorks({ showTurnaroundPromise = false, showEventDaySupport = false }: { showTurnaroundPromise?: boolean; showEventDaySupport?: boolean }) {
+const homepageStepText = [
+  "You tell us about your event once, and you never have to explain it twice. Your rep knows your tournament from the first call.",
+  "Your page, your registration, your pairings, and your scoring are ready before your golfers ever see them, so launch day is not a scramble.",
+  "On event day, you run the tournament while your rep watches the scoring and the leaderboard. When something comes up, you call one person who already knows your event.",
+];
+
+export default function HomeHowItWorks({ showTurnaroundPromise = false, showEventDaySupport = false, benefitCopy = false }: { showTurnaroundPromise?: boolean; showEventDaySupport?: boolean; benefitCopy?: boolean }) {
   return (
     <section id="how-it-works" aria-labelledby="how-it-works-title" className="scroll-mt-20 bg-background py-14 md:py-24">
       <div className="mx-auto max-w-6xl px-6">
@@ -13,13 +19,13 @@ export default function HomeHowItWorks({ showTurnaroundPromise = false, showEven
           <h2 id="how-it-works-title" className="font-display text-3xl font-bold leading-tight text-primary md:text-4xl">You Tell Us. We Build It. You Run It.</h2>
         </div>
         <ol className="grid gap-8 md:grid-cols-3 md:gap-12">
-          {eventSetupSteps.map(step => (
+          {eventSetupSteps.map((step, index) => (
             <li key={step.number} className="flex gap-5 md:block">
               <span className="shrink-0 font-display text-3xl text-secondary md:mb-5 md:block md:text-5xl" aria-hidden="true">{step.number}</span>
               <div>
                 <h3 className="mb-3 font-display text-xl font-semibold text-primary">{step.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground md:text-base">{step.text}</p>
-                {showEventDaySupport && step.number === "03" && <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">Your rep is on call on event day for live scoring and leaderboard challenges.</p>}
+                <p className="text-sm leading-relaxed text-muted-foreground md:text-base">{benefitCopy ? homepageStepText[index] : step.text}</p>
+                {showEventDaySupport && !benefitCopy && step.number === "03" && <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">Your rep is on call on event day for live scoring and leaderboard challenges.</p>}
                 {showTurnaroundPromise && step.number === "02" && <p className="mt-3 text-sm leading-relaxed text-muted-foreground md:text-base">We build your event page for you. Send us your logo and tournament details, and your page is live in 7 days or less.</p>}
               </div>
             </li>

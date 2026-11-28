@@ -9,11 +9,12 @@ import { ORGANIZER_TESTIMONIALS } from "@/components/OrganizerTestimonials";
 import { Button } from "@/components/ui/button";
 import heroGolf from "@/assets/hero-golf.jpg";
 import { SOFTWARE_TAG } from "@/lib/programTypes";
+import SampleEventGallery from "@/components/marketing/SampleEventGallery";
 
 const differentiators = [
-  { icon: UserRoundCheck, title: "A Named Rep on Every Plan", text: "Your event built by a real person, free or paid." },
-  { icon: Paintbrush, title: "Custom Leaderboard & Event Pages", text: "Your rep matches every leaderboard to your event colors. Event pages that look like real websites." },
-  { icon: CircleDollarSign, title: "Free for Organizers", text: "Start at $0, with the 6% platform fee covered by players." },
+  { icon: UserRoundCheck, title: "A Named Rep on Every Plan", text: "You get a real person who knows your event, on every plan, free or paid, so you never have to explain your tournament to a stranger when it matters." },
+  { icon: Paintbrush, title: "Custom Leaderboard & Event Pages", text: "Your leaderboard and your page carry your colors and your name, so your event looks like your event, not like a form." },
+  { icon: CircleDollarSign, title: "Free for Organizers", text: "You pay nothing to start, and the 6% platform fee is covered by players at checkout, so there is no bill waiting for you before the first golfer signs up." },
 ];
 
 function HomeActions({ hero = false }: { hero?: boolean }) {
@@ -25,24 +26,24 @@ function HomeActions({ hero = false }: { hero?: boolean }) {
 }
 
 const directorTasks = [
-  "Builds your branded event page",
-  "Sets up your sponsor page",
-  "Sets up registration",
-  "Builds your pairings",
-  "Sets your format, scramble, best ball, stroke play, and more",
-  "Sets up mobile scoring, sends scoring codes to your players, and runs your live leaderboard in your event colors",
-  "Connects your Stripe, so the money goes straight to you",
-  "Stays on call on event day for live scoring and leaderboard challenges",
+  "Your event page looks like your tournament, not like a template, so sponsors and golfers take it seriously from the first click.",
+  "Your sponsors get seen, so they come back next year.",
+  "Golfers sign up on one page, so you stop chasing names across email and paper forms.",
+  "Your foursomes are set before the morning of the event, so nobody is standing around waiting to find out who they play with.",
+  "Your format runs the way you want it, so the scoring matches the game your golfers actually played.",
+  "Your golfers enter scores from their phones and watch the leaderboard move, so the competition stays alive all day and the awards ceremony starts on time.",
+  "Registration money lands in your account as golfers sign up, so you are not waiting weeks for a payout.",
+  "When something goes wrong on event day, you call one person who already knows your tournament.",
 ];
 const pathCards = [
-  { title: "Running Your First Tournament?", text: "You have never run a golf tournament before, and you do not have to figure it out alone. Your dedicated tournament director builds everything for you, your branded event page, registration, pairings, your format, and your live leaderboard. You tell us about your event, we set it up, and your rep is on call on event day if anything comes up.", items: ["We build your event page for you", "We set up registration, pairings, and scoring", "Your rep is on call on event day", "You can open your event any time and change anything"] },
-  { title: "Running Your Annual Event Again?", text: "You know your event. You have run it before, and you do not need someone to hold your hand. You get the same platform. We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use. Registration, pairings, live scoring, leaderboard, sponsors, and payments, all on one branded page. Your rep is still there when you need them, and you can change anything any time.", items: ["We set up your page, you edit anytime", "Registration, pairings, live scoring, and sponsors on one page", "Change anything, any time", "Your rep is there when you need them"] },
+  { title: "Running Your First Tournament?", text: "You have never run a golf tournament before, and you do not have to figure it out alone. Your rep builds everything, and you get answers from someone who has done this before, so you walk into event day knowing it is handled.", items: ["Your page is built for you, so you never touch a website builder.", "Registration, pairings, and scoring are set up before your golfers see them, so launch day is not a scramble.", "Your rep is on call on event day, so a problem gets a person, not a support ticket.", "You can change anything any time, so nothing is locked in before you are ready."] },
+  { title: "Running Your Annual Event Again?", text: "You know your event, and you do not need someone to hold your hand. You get the same platform, your page and registration set up for you, and you can change anything any time, so year two starts ahead instead of starting over. Registration, pairings, live scoring, leaderboard, sponsors, and payments, all on one branded page.", items: ["We set up your page, you change anything any time.", "Registration, pairings, live scoring, and sponsors on one page, so your golfers and your sponsors see one event, not five tools.", "Change anything, any time.", "Your rep is there when you need them, so a question on event day gets an answer from someone who knows your event."] },
 ];
 const standards = [
   "Your page is live in 7 days or less",
-  "Your format, pairings, and leaderboard are set the way you want them",
+  "Your format, pairings, and leaderboard work the way you planned them, so event day runs on your plan, not on a workaround.",
   "Your rep is on call on event day",
-  "You can open your event and change anything, any time",
+  "You can change anything, any time, so a late change never means starting over.",
 ];
 
 function CheckList({ items }: { items: string[] }) {
@@ -56,7 +57,7 @@ function DirectorSections() {
         <h2 id="director-title" className="text-center font-display text-3xl font-bold leading-tight text-primary md:text-4xl">What Your Dedicated Tournament Director Does For You</h2>
         <p className="mx-auto mt-5 max-w-3xl text-center text-base leading-relaxed text-muted-foreground md:text-lg">Setting up a tournament takes months of preparation, and that is why good events do not come back for year two. Your dedicated tournament director does the setup for you, so your event comes back.</p>
         <div className="mx-auto mt-10 max-w-2xl text-foreground"><CheckList items={directorTasks} /></div>
-        <p className="mx-auto mt-10 max-w-3xl text-center font-display text-lg leading-relaxed text-primary md:text-xl">We set up your event page and registration, and you can edit anything anytime with the same dashboard tools we use.</p>
+        <p className="mx-auto mt-10 max-w-3xl text-center font-display text-lg leading-relaxed text-primary md:text-xl">We set up your page and registration, and you can change anything any time with the same dashboard tools we use, so a late sponsor or a new foursome never means starting over.</p>
       </div>
     </section>
     <section aria-labelledby="paths-title" className="bg-background py-14 md:py-24">
@@ -94,17 +95,19 @@ export default function Index() {
         <div className="relative mx-auto flex min-h-[680px] max-w-5xl flex-col justify-center px-6 py-14 text-center md:py-20">
           <p className="mb-4 text-sm font-semibold uppercase tracking-wider text-secondary">Your Dedicated Tournament Director</p>
           <h1 id="homepage-title" className="font-display text-3xl font-bold leading-tight md:text-5xl lg:text-6xl">The Golf Tournament Platform That <span className="text-secondary">Builds Your Event For You</span></h1>
-          <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Every event includes a dedicated TeeVents rep, free or paid, who sets up your branded event page, sponsor page, registration, mobile scoring, pairings, and live leaderboard. Your dedicated tournament director builds it and stays on call on event day for live scoring and leaderboard challenges. You can open your event any time and change anything. You focus on running your tournament while we handle the online platform.&nbsp;</p>
+          <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">You tell us about your tournament once. Your dedicated rep builds your branded event page, your registration, your pairings, and your live leaderboard, and stays on call on event day. You spend your time with sponsors and golfers, not with a website builder, and you can change anything any time.</p>
           <p className="mt-2 text-xs font-bold text-secondary">{SOFTWARE_TAG}</p>
           <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-primary-foreground/95 md:text-lg">Golf tournament management online platform for nonprofit organizations, charity fundraisers, corporate golf outings, golf courses, and golf leagues.</p>
           <p className="mx-auto mt-5 max-w-2xl text-sm leading-relaxed text-primary-foreground/80 md:text-base">No spreadsheets. No manual setup. No stress.</p>
           <div className="mt-8"><HomeActions hero /></div>
-          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-primary-foreground/85">We build your event page for you — live in 7 days or less.</p>
-          <p className="mx-auto mt-6 flex max-w-2xl items-start justify-center gap-2 text-xs leading-relaxed text-primary-foreground/85 md:text-sm"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-secondary" aria-hidden="true" /><span>No credit card to start. Payments go straight to your connected Stripe account. We never hold your money.</span></p>
+          <p className="mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-primary-foreground/85">We build your event page for you, live in 7 days or less.</p>
+          <p className="mx-auto mt-6 flex max-w-2xl items-start justify-center gap-2 text-xs leading-relaxed text-primary-foreground/85 md:text-sm"><ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-secondary" aria-hidden="true" /><span>You pay nothing to start, and registration money goes straight to your Stripe account as golfers sign up. We never hold your money.</span></p>
         </div>
       </section>
 
-      <HomeHowItWorks showTurnaroundPromise showEventDaySupport />
+      <SampleEventGallery />
+
+      <HomeHowItWorks showTurnaroundPromise showEventDaySupport benefitCopy />
 
       <DirectorSections />
 
@@ -117,14 +120,14 @@ export default function Index() {
               <div><h3 className="mb-3 font-display text-xl font-semibold">{title}</h3><p className="text-sm leading-relaxed text-primary-foreground/80 md:text-base">{text}</p>{title === "A Named Rep on Every Plan" && <p className="mt-3 text-sm leading-relaxed text-primary-foreground/80 md:text-base">We build your event page for you. Send us your logo and tournament details, and your page is live in 7 days or less.</p>}</div>
             </div>)}
           </div>
-          <p className="mx-auto mt-10 max-w-3xl border-t border-primary-foreground/20 pt-8 text-center font-display text-lg leading-relaxed text-secondary md:mt-14 md:text-xl">That's why organizers choose TeeVents. Not because the online platform is better, but because the service behind it is.</p>
+          <p className="mx-auto mt-10 max-w-3xl border-t border-primary-foreground/20 pt-8 text-center font-display text-lg leading-relaxed text-secondary md:mt-14 md:text-xl">That is why organizers choose TeeVents. Not because the online platform is better, but because the service behind it is.</p>
         </div>
       </section>
 
       <section aria-labelledby="social-proof-title" className="bg-background py-14 md:py-24">
         <div className="mx-auto max-w-6xl px-6">
           <h2 id="social-proof-title" className="mx-auto max-w-3xl text-center font-display text-3xl font-bold leading-tight text-primary md:text-4xl">Trusted by Leaders in Collegiate and HBCU Golf</h2>
-          <p className="mt-4 text-center text-base text-muted-foreground">Here's what organizers say about working with TeeVents.</p>
+          <p className="mt-4 text-center text-base text-muted-foreground">Here is what organizers say about working with TeeVents.</p>
           <figure className="mx-auto my-10 max-w-3xl md:my-14">
             <Quote className="mx-auto mb-5 h-8 w-8 text-secondary" aria-hidden="true" />
             <blockquote className="text-base leading-relaxed text-foreground md:text-center md:text-xl">“{testimonial.quote.replace(" — ", ", ").replace("NCAA-sanctioned", "NCAA sanctioned")}”</blockquote>
@@ -133,7 +136,7 @@ export default function Index() {
           <figure className="mx-auto my-10 max-w-3xl md:my-14">
             <Quote className="mx-auto mb-5 h-8 w-8 text-secondary" aria-hidden="true" />
             <blockquote className="text-base leading-relaxed text-foreground md:text-center md:text-xl">“We turned over the golf tournament management duties to Roderick and the TeeVents team, and we have been beyond pleased with the service. From the initial setup to the conclusion of the event, everything was handled with the highest level of professionalism. We look forward to a lasting partnership with TeeVents.”</blockquote>
-            <figcaption className="mt-6 text-center text-sm leading-relaxed"><span className="font-semibold text-primary">M. Jackson</span><br /><span className="text-muted-foreground">Executive Directo, National Black College Alumni Hall of Fame</span></figcaption>
+            <figcaption className="mt-6 text-center text-sm leading-relaxed"><span className="font-semibold text-primary">M. Jackson</span><br /><span className="text-muted-foreground">Executive Director, National Black College Alumni Hall of Fame</span></figcaption>
           </figure>
           <p className="mb-10 text-center text-base font-medium text-primary">On November 7, 2026, the ATL 2-Person Team Shamble ran 48 players on TeeVents live scoring.</p>
           <div className="logo-marquee border-t border-border pt-8 pb-2" aria-label="Golf organizations and events">
@@ -146,12 +149,12 @@ export default function Index() {
         </div>
       </section>
 
-      <TrustAndProof showTestimonial={false} />
+      <TrustAndProof showTestimonial={false} homepageBenefitCopy />
 
       <section aria-labelledby="final-cta-title" className="bg-primary px-6 py-16 text-center text-primary-foreground md:py-24">
         <div className="mx-auto max-w-3xl">
           <h2 id="final-cta-title" className="font-display text-3xl font-bold leading-tight md:text-4xl">Ready to See Your Event on TeeVents?</h2>
-          <p className="mt-5 text-base text-primary-foreground/85 md:text-lg">Your dedicated TeeVents rep sets up your event page. You can edit anything anytime with the same dashboard tools we use.</p>
+          <p className="mt-5 text-base text-primary-foreground/85 md:text-lg">Your rep builds your page, and you can change anything any time, so your event is ready when your golfers are.</p>
           <div className="mt-8"><HomeActions /></div>
         </div>
       </section>

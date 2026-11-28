@@ -19,7 +19,7 @@ const faqs = [
 ];
 
 /** Presentation-only trust section shared by the homepage and pricing page. */
-export default function TrustAndProof({ showTestimonial = true }: { showTestimonial?: boolean }) {
+export default function TrustAndProof({ showTestimonial = true, homepageBenefitCopy = false }: { showTestimonial?: boolean; homepageBenefitCopy?: boolean }) {
   return <section aria-labelledby="trust-proof-title" className="bg-background px-5 py-14 md:px-8 md:py-20">
     <div className="mx-auto max-w-5xl space-y-14">
       {showTestimonial && <figure className="mx-auto max-w-3xl">
@@ -39,7 +39,7 @@ export default function TrustAndProof({ showTestimonial = true }: { showTestimon
           {steps.map(([title, text], i) => <li key={title} className="rounded-lg border border-border bg-card p-5">
             <span className="mb-3 flex h-9 w-9 items-center justify-center rounded-full border border-secondary font-bold text-primary">{i + 1}</span>
             <p className="font-semibold text-foreground">{title}</p>
-            <p className="mt-1 text-sm text-muted-foreground">{text}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{homepageBenefitCopy && i === 3 ? "We are on call on tournament day, so a scoring question never becomes a delay." : text}</p>
           </li>)}
         </ol>
       </div>

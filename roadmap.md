@@ -1,4 +1,6 @@
 # Roadmap (Nov 6 2026 request)
+- [x] Nov 28: exact homepage benefit-copy updates and four uploaded sample screenshots after hero; 1280px, 762px and 390px checks confirm loaded uncropped images, sample link, existing actions and no page errors; shared copy changes are homepage-only, not published.
+- [ ] Nov 28: public golf-course page content prepared with supplied copy and screenshots; route, leaf metadata, navigation and Pricing link held pending address approval because /enterprise is the existing dashboard; page flow not yet verified.
 - [x] Nov 25: organizer sidebar labels/removals and consolidated existing destinations; preserve permissions and routes.
 - [x] Nov 25: append Director Shop and rep-review cards to Home without changing existing cards/actions.
 - [x] Nov 25: single Setup Checklist with database-backed per-item due dates (approved exception); 28 items and 11/28 · 39% preserved; sample save/readback on two devices verified and date restored, completion unchanged.
